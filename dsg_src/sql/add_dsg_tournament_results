@@ -1,0 +1,15 @@
+create table if not exists dsg_tournament_results(
+result_id bigint unsigned not null primary key auto_increment,
+pid1 bigint unsigned not null,
+pid2 bigint unsigned not null,
+event_id int unsigned not null,
+round tinyint unsigned not null,
+section tinyint unsigned not null,
+result enum('0', '1', '2') not null default '0',
+forfeit enum('Y', 'N') not null default 'N',
+wins tinyint not null,
+losses tinyint not null
+);
+
+alter table dsg_tournament
+add column seed tinyint;

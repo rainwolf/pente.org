@@ -1,0 +1,30 @@
+          <tr>
+            <td bgcolor="black">
+              <table border="0" cellspacing="0" cellpadding="3" width="100%">
+                <tr>
+                  <td bgcolor="<%= bgColor1 %>">
+                    <font face="Verdana, Arial, Helvetica, sans-serif" size="3" color="<%= textColor1 %>">
+                      <b>Documentation</b>
+                    </font>
+                  </td>
+                </tr>
+                <tr>
+                  <td bgcolor="<%= bgColor2 %>">
+                    <font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b>
+                      <a href="/gameServer/help/helpWindow.jsp?file=gettingStarted">
+                        Getting Started</a></b></font><br>
+                      <font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b>
+                      <a href="/gameServer/help/helpWindow.jsp?file=faq">
+                        FAQ</a><br>
+                      <a href="<%= request.getContextPath() + "/gameServer/forums/forum.jspa?forumID=3&start=0" %>">
+                        Help Forum</a><br>
+                      <a href="<%= request.getContextPath() + "/gameServer/links.jsp" %>">
+                        Pente Links</a><br>
+                      <a href="<%= request.getContextPath() + "/gameServer/about.jsp" %>">
+                        About Pente.org</a>
+                    </b></font>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>

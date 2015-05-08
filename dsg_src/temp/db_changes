@@ -1,0 +1,33 @@
+alter table pente_move
+change position next_move smallint unsigned not null,
+add game tinyint unsigned not null,
+add winner tinyint unsigned not null,
+drop index hash_index;
+
+update pente_move m, pente_game g
+set m.game = g.game, m.winner = g.winner
+where m.gid = g.gid;
+
+alter table player
+add name_lower varchar(100) not null,
+add index(name_lower);
+update player set name_lower=lower(name);
+
+run UpdatePenteMove
+
+alter table pente_move
+drop primary key,
+add primary key (gid, hash_key, move_num),
+add index(hash_key, move_num, game, next_move, rotation, winner);
+
+alter table pente_game
+drop index play_date,
+drop index site_id,
+drop index game,
+drop index winner,
+drop index player1_pid,
+drop index player2_pid,
+add index(game, site_id, event_id, round, section),
+add index(game, play_date),
+add index(game, player1_pid),
+add index(game, player2_pid);

@@ -1,0 +1,157 @@
+Overview
+--------
+1. The drop-down list of games remains the same in the game table.
+2. When users modify the timer settings to be what we define as a speed game, the board background will change to display "Speed Pente" instead of Pente.
+3. The game will be stored in the db with game="speed pente" but that doesn't really matter, it's a backend issue.
+4. To search the games history, speed pente games could be grouped together with pente games (probably what would happen initially). Later I could add a filter option to search "All Games", "Normal Games", "Speed Games".
+5. To search the ratings you'd have to select the speed game from a drop-down list of games, or check a box to search for speed ratings, not sure which I prefer.
+6. Player profiles would list ratings for each normal game and each speed
+game at the same time like up2ng suggested, so the drop down-list of games
+would stay the same but when you actually select say Pente you'd see both
+stats for normal games and speed games. On the player profile web page I might
+have to changes things a bit to make that work but no big deal there.
+
+Throughout
+----------
+X need to check for hard-coded game #'s in existing code
+X  check db javascript for one thing
+X need to check for anywhere that looks at dsg_player.status_cd since adding a new value
+X need to check game database lookup code for any impacts
+
+X Game.java (new file)
+--------------------
+maybe need a new Game object with getName(), getId(), isSpeed(), isNormal(), static isSpeedGame(int initial, int incremental)
+isSpeedGame() {
+   return (initial + incremental * 15) < 331; // < 5 1/2 minutes with/without incremental time
+}
+
+X GridStateFactory.java
+-----------------
+figure out a system to give each game and speed-game a unique #, system also needs to be able to group game+speed game
+new functions
+Vector<Game> getAllGames();
+Vector<Game> getSpeedGames();
+Vector<Game> getNormalGames();
+Game getSpeedGame(Game normalGame)
+Game getNormalGame(Game speedGame)
+
+modify function createGridState(Game game)
+alter switch statement to include speed games along with normal ones
+
+X database.js
+-----------
+Make this a jsp so we can reference the changed game #'s, or just change manually
+
+X Caching games in DB, and db lookup
+-------------------
+DB lookup groups speed games with normal games
+Added code to cache speed games with normal games
+Updated cache stats servlet for default game id
+
+X ServerTable.java
+----------------
+new local variable "speed"
+when change table state event comes in, check time controls, apply alg. to determine if speed/normal game via Game.isSpeedGame(initial, inc)
+if isSpeedGame != local.speed
+	local.speed = isSpeedGame()
+	if (local.speed) game = getSpeedGame(game)
+	else game = getNormalGame(game);
+
+send out modified change table state event
+
+any checks for = PENTE must be or = SPEED_PENTE, for all games
+
+X GameBoardFrame.java
+-------------------
+call new function getNormalGames() to get names for populating drop-down
+modify game choice state changed function to get correct game, there are some special cases for g-pente i think...
+get rid of experimental games differentiation
+
+any checks for = PENTE must be or = SPEED_PENTE, for all games
+
+X statsMain.jsp
+-------------
+call new function getAllGames() to get names for populating drop-down
+modify ratings search to work correctly?
+
+X profile, lookup and jsp
+------------------------
+Maybe if looking up a speed name, redirect to the actual name
+On JSP, list out each game including speed games
+
+X PlayerStatsDialog.java
+----------------------
+Update to display speed-stats along with normal ones, or easier to just consider it a separate game
+
+X SmallLoginHandler.java
+----------------------
+Need to check status for 'S', if so return a special error page that the speed account has been merged with your main account
+
+X CustomTablesPanel
+-----------------
+Speed Poof-Pente doesn't fit in space for game, hmm...
+Ok, fixed that up
+
+X AI
+--
+Can't play speed games against AI, this will probably work by default since
+once you hit play against AI the timers get changed.  Have to test that though.
+Actually can't even invite AI when playing speed game.
+
+X Help screens, FAQ's
+-------------------
+Explain about speed games and the formula involved
+
+X Tutorials applet
+----------------
+Make sure works when switching games, had to change some of that code
+
+Email deleted speed players?
+---------------------------
+Maybe
+
+db changes - see sql/speed.sql
+----------
+X -update pente_game.game and dsg_player_game.game if make changes to existing game #'s
+X -identify and copy over speed accounts that match up with regular accounts
+X -create table temp_speed(normal_pid bigint unsigned not null, speed_pid bigint unsigned not null, primary key(normal_pid));
+X -insert all known speed accounts into temp_speed
+X -update pente_game.game to change game for games where both pid's are speed accounts, or just when meets the time limits?
+X -update dsg_player.status to 'S' for old speed names and add a deregister_date
+X -update pente_game.player1_pid, player2_pid to point from speed_pid to normal_pid
+X -delete from jivewatch where speed_pid
+X -delete other tables, like dsg_ip, dsg_player_avatar, return_email,forum tables?
+
+
+
+
+Testing
+-------
+
+X Get copy of full database.
+X Identify 1-2 players for each game type that have speed names that will be converted
+X Run conversion script, verify it runs ok and does the correct thing.
+
+X 1. Try to login as speed players, verify error on login
+X 2. Login as normal player, verify stats for speed games
+X 3. Lookup older games in db, verify they are marked as speed if appropriate
+x 4. Lookup in db any games with speed name, shouldn't find any
+X 5. Filter by different events, sites, etc., verify working properly
+X 6. Filter by all games, verify correct and speed games included in results
+X 7. Lookup rankings for all game types, verify correct
+
+X 10. View each type of game (speed and normal) in tables
+X 11. Play each type of game in tables, verify results stored correctly in
+a. ratings on profile and game room
+b. game table
+c. database search
+
+X 20. Test rules tutorials, make sure correct boards get created
+X 21. Test that tournament rule enforced for all games in game table correctly
+X 22. Test AI plays correctly for pente, keryo-pente (knows the correct game)
+
+x 30. Test database game output for d-pente, speed d-pente, verify swap field present
+
+x 40. Test database profile name links
+X 41. Test de-register player with avatar (removes avatar)
+X 42. Test ai's in table don't show up in login counts

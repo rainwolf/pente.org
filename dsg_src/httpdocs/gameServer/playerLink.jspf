@@ -1,0 +1,12 @@
+<% 
+   {
+       if (d.isGuest()) {	%>
+            <%= d.getName() %>
+<%     } else { 
+            int tourneyWinner = d.getTourneyWinner(); %>
+	        <span class="name"><a href="/gameServer/profile?viewName=<%= d.getName() %>">
+            <% if (d.hasPlayerDonated()) { %><span style="font-weight:bold;color:#<%= Integer.toHexString(d.getNameColorRGB()).substring(2) %>"><% } %>
+            <%= d.getName() %><% if (d.hasPlayerDonated()) { %></span><% } %></a><%@ include file="tournaments/crown.jspf" %></span>
+<%     }
+   }
+%>

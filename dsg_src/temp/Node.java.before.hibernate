@@ -1,0 +1,95 @@
+package org.pente.tree;
+
+import java.util.*;
+
+public class Node implements java.io.Serializable {
+
+    private int position;
+    private int player;
+    
+    public static final int TYPE_WIN = 3;
+    public static final int TYPE_LOSE = 4;
+    public static final int TYPE_UNKNOWN = 5;
+    private int type;
+    
+    private Node parent;
+    private List nextMoves;
+    private Node defaultNode;
+    
+    public Node() {
+        nextMoves = new ArrayList(1);
+    }
+    public Node(int position, int player, int type) {
+        setPosition(position);
+        setPlayer(player);
+        setType(type);
+        
+        nextMoves = new ArrayList(5);
+        defaultNode = createDefault(this);
+    }
+
+    public static Node createRoot() {
+        Node n = new Node();
+        n.defaultNode = Node.createDefault(n);
+        return n;
+    }
+    public static Node createDefault(Node parent) {
+        Node n = new Node();
+        n.setParent(parent);
+        return n;
+    }
+    
+    public void addNextMove(Node n) {
+        nextMoves.add(n);
+        n.setParent(this);
+    }
+    public void removeNextMove(Node n) {
+        n.setParent(null);
+        nextMoves.remove(n);
+    }
+    public void addDefaultNextMove(Node afterDefault) {
+        defaultNode.addNextMove(afterDefault);
+    }
+    public Node getNextMove(int position) {
+        for (Iterator it = getNextMoves(); it.hasNext();) {
+            Node n = (Node) it.next();
+            if (n.position == position) {
+                return n;
+            }
+        }
+        return defaultNode;
+    }
+    public Iterator getNextMoves() {
+        return nextMoves.iterator();
+    }
+    
+    public int getPlayer() {
+        return player;
+    }
+    public void setPlayer(int player) {
+        this.player = player;
+    }
+    public int getPosition() {
+        return position;
+    }
+    public void setPosition(int position) {
+        this.position = position;
+    }
+    public int getType() {
+        return type;
+    }
+    public void setType(int type) {
+        this.type = type;
+    }
+    
+    public boolean isRoot() {
+        return parent == null;
+    }
+    public Node getParent() {
+        return parent;
+    }
+    public void setParent(Node parent) {
+        this.parent = parent;
+    }
+
+}

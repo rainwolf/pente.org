@@ -1,0 +1,795 @@
+AI updates
+===============
+-create a new page to allow players to play the computer w/o logging into server
+-simple html page w/ ads, applet
+-needs options to undo, restart, set game options
+-could make it playable w/o applet for mobile users/wii users, etc!
+-use C code AI on server for better performance
+-remove or comment out computer code from server rooms
+-update gameroom client-remove computer options?
+-redesign web pages so users know about how to play AI
+
+mysql> show master status;
++------------------+----------+--------------+--------------------+
+| File             | Position | Binlog_Do_DB | Binlog_Ignore_DB   |
++------------------+----------+--------------+--------------------+
+| mysql-bin.000292 |   862457 |              | dsg_test,dsg_test2 |
++------------------+----------+--------------+--------------------+
+
+1. D-Pente format, changes to server to handle multiple formats
+    - See tournaments.txt
+    
+X 2. Increase donor picture size
+X   a. I think for performance reasons, it might be better to have client
+X      load picture from web page, instead of sending it through socket
+X      Hunch is that many small changes to profile cause pictures to get sent
+X      again and again, slowing things down.
+
+X 3. Add more donor name colors
+X   Add color wheel clickable, also allow #FFFFFF html colors
+X   But need way to check that not to "light", invisible users
+
+X 4. Add dummy classes that jws tries to load, see web page link at work
+X 5. Who's online page?
+
+6. New stats template with interesting stats, updated not in real-time
+   could do it in a cron-job maybe?
+   a. top rated pente player
+   b. most total games played
+   c. most active player (most games played against humans) yesterday
+   d. longest active pente streak
+   Update how often? and to memory, or db table?
+   
+7. Create a new db client
+   a. New AWT client
+   b. Pretty much same as before, but displays info about game when loaded
+   c. Not sure how easy the tables will be to code...
+   
+8. Create a way to view players games from their profile
+   a. List all games, recent games, by game type
+      - needs to be scrollable - next/prev links, show 50 at a time?
+      - show p1 name, p2 name, winner, date, link to display game
+   b. Links to games go to new db client, or slightly modified version that
+      shows the game and all data in an applet.
+      - link goes to new screen that has new applet
+      X - show game board + coordinate list
+      X - shows all data about game found in PGN format
+      - pass all data to applet by params
+        OR
+        pass game id to applet by param + applet request to server to load data
+      - 2.0  list games like current GH tool
+      - 2.0  2 modes
+          a. one is game review - given a list of games, provide interface
+             to scroll through them, load them
+             while in this mode, button to "Search Games" visible, switch to search mode
+             current game position carried over to
+             any prev. filter options also carried over
+          b. two is search - 
+             2 search modes
+                 i. using game position + filters, search and show
+             		next moves + count + % wins, same as current GH tool
+                 ii. search using just p1+p2 names, gets all games with those 2 players
+                    switches back to Review mode
+             while in this mode, button to "Review Games" visible, switch to game review mode
+      
+      Tasks
+      X 1. httpstorer depends on cookie, if user doesn't do anything, cookie can
+         expire.  needs to accept username+pass, send always and set session cookie also
+      2. show beyond 100 games with > < buttons
+      3. allow users to play their own moves on board
+      4. 
+      
+9. Add additional features to db client
+   a. filter by player rating
+   b. filter by speed/not speed/both
+   
+Speed enhancements for game db
+Problems:
+1.queries used are as efficient as they can be with current db schema
+2. but for searches on moves 1-3 are slow because of number of games
+3. also slows system when reading from tables that must be locked for updates
+for other queries
+
+Ideas:
+X 1. Remove games vs. computer (gets rid of 128,000 games, thats alot)
+X 2. Add column to pente_move for "next_move".
+     - Increased size of db
+     + But allows the queries that look for next moves to improve because
+     group by function is on columns from just pente_move, also if index
+     is extended to include this, might become much faster.
+X 3. Remove querying using player table, instead use DSGPlayerStorer to lookup
+   player by name, then use pid directly in queries
+     + removes potential for locking issue on player table
+   but doesn't help since also need to check other sites...
+4. Do query against copy of pente_game, pente_move somehow?
+     use a slave db for all db searches
+     http://dev.mysql.com/doc/mysql/en/replication-faq.html
+5. Sort tables by indexes, this is supposed to help, not sure
+X 6. Add better indexes on pente_game
+X 7. Mess with mysql parameters, should definitely do this!
+     Not sure about memory usage though, since tomcat sucks up alot of it
+  8. Use delayed insert syntax, might be better  
+  9. Still slow for searches on sites, due to large number of games
+  adding site to pente_move might help, but i don't think it would work
+  with existing index, because most ppl search on all sites
+
+10. 3, 4 player pente?  How hard would this be I wonder...
+    Lots of things to consider
+    a. Rated games allowed?  If so, need new formulas
+    b. Lookup games in db allowed, probably not right away?
+    c. Probably create a new game type 3 Player Pente, 4 Player Pente and speed
+       as well
+    d. Undos, cancels, require acceptance from all players
+    e. Sitting constant changes from 3 to 5, make sure 3's not hard-coded anywhere
+    f. All server validation has to make sure methods like allPlayersSitting,
+       sittingPlayers, playingPlayers, etc. account for > 2 players.
+    g. When player booted, who decides fate of game, everyone has to agree?
+    h. Need > 2 colors, preferences
+    i. Move history needs to know about this, game board probably needs changes
+       for this
+    j. Table view in main room needs to change
+    k. Player returning code might have to change a bit, since > 1 player could
+       be disconnected.
+    l. GridState code needs to handle this as well.
+    m. Can different players pieces be captured together?
+
+X 11. Speed tournies
+    - See tournaments.txt
+    
+12. Idle time for logged in players, time spend logged in also
+
+X 13. Better invite dialog, place for text message to/from
+
+   x 1. user chooses person to invite, window updated w/
+      new textfield to enter message
+      game type, rated, timed options
+      sends out text+game
+   x 2. upon submitting a new window appears w/
+     title - invitation sent to <player>
+     chatbox - put system message "<user message>"
+   x 3. user receiving invite gets a new window w/
+     title - invitation received from <player>, <text>, <game>, <rating>
+     chatbox with <incoming-text>
+     accept button, decline button
+    
+   4. Also split out Play AI from Invite Player
+      x a. Split up functionality
+      x b. Make sure both work correctly with GBF
+      x    if game changes, close Play AI if game is not supported 
+      c. Figure out where to put Play AI Button
+         add logic: if no ai is in table, 
+           show Play AI dialog
+         else 
+           assume want to play again, mimic click play
+      x d. After sitting, change board message to say "...or click Play AI
+           to play against the computer.".
+      e. Change server to start game after play ai (one click start AI game).
+      
+X 14. Ratings in player list, for Pente I guess
+    Features:
+    1. Show ratings, configurable per game, blank if none
+    2. Color-coded rating sections
+    3. For tournaments, seed
+    How to get data into PlayerList?
+    sources - DsgPlayerData, TourneyPlayerData
+    Option 1.
+      Allow multiple event types to push player data out to client
+      Create multiple socket listeners that then call methods on PlayerList to update display
+      Pros. might be more flexible for later additions
+      Cons. more events, listeners, complex code
+    Option 2.
+      Integrate additional data into DSGPlayerData as generic properties
+      Something like Vector propertyNames, Vector propertyValues (mapped together)
+      Pros. Everything communicated through DSGPlayerData, no additional event
+            listeners, playerlist simpler maybe
+      Cons. Performance maybe, sending out all player data more often?
+            Might be more work to encode everything as simple strings
+            Not sure how works with multiple tournaments
+
+    Think I'll go with op1.
+    PlayerListPanel
+    v1
+    - display name, rating
+    - show header row?
+    - when game changed in table, update panel to show proper ratings
+      setGame(int game)
+    v2 
+    - setColumns(String headers[]);
+    - updateColumn(String player, int column, String data);
+
+X 15. robots.txt
+
+16. Run JProbe on server, see what can easily be improved
+    
+    a. Would think that not serializing objects for all events might be a good place to start
+       1. create a protocol for events
+          byte eventID byte tableNum String fromPlayer [String toPlayer] byte errorCode [extra event specific bytes]
+       2. Sockets read in these events into int id, int table, String from, String to, byte errorCode, byte extra[]
+          create a new DSGGenericEvent to store this
+       3. SocketListener register with a specific eventid, sockethandler
+          can create a simple array[256] of Lists to send out events to listeners
+       4. To read in specific extra stuff, call unpackInt(), unpackFloat(), unpackString(), unpackObject()
+          unpack() methods use DataInputStream(ByteArrayInputStream)
+       5. To send events, create a new DSGGenericEvent with standard fields
+          then call pack(int), pack(float), pack(String), pack(Object) to add to byte extra[]
+          pack() methods use DataOutputStream(ByteArrayOutputStream)
+       6. Logging, on server side could add new inner classes for each event type
+          that knows how to unpack and output all fields, seems like a waste
+          though to unpack just for this, how much performance is this?
+
+X 17. Upgrade to JDK5.0, Tomcat 5.5
+
+18. Upgrade to Jive 3.2x - latest release
+
+X 19. Make the helpwin.jsp return a last-mod-date - performance issue
+    Can't actually do that, change to just a js file
+    Still a problem for forums/style.jsp
+
+20. Add thread priorities, ai-low, game server threads-high
+
+X 21. Investigate why it takes so long to load moves on the board when joining
+    a table.
+    Its because of stopping/starting timers often
+    Fix by sending all moves at once, switching timers only once
+
+X 22. Auto-swap after game
+
+23. Auto-accept undo's within 5 seconds of play - preference
+
+24. New event type that aggregates multiple events together (performance)
+
+30. Put player prefs in DSGPlayerData so can be cached
+
+31. Don't reload caches in client when switching rooms, just remove listeners?
+
+32. Create a swing based game room
+    a. possible for donors only?
+    b. better chat
+    c. for jws version, maybe allow it to be minimized in taskbar
+       then can have idle message, invite popups, etc.
+    d. redo the game board with fancy graphics
+    e. more sounds
+    f. for unrated games, allow option to show db results with game
+
+Admin functionality
+25. Create admin screen to be able to send messages to all players in main room
+2x 6. Give admins ability to boot players from game room
+27. Give admins ability to cancel game/force resign if player leaves
+28. For repeat donors, pre-populate name color
+
+Bugs
+1. who's online shows wrong room sometimes after switching
+
+Tournament updates
+X 1. player swapping issue, shows up wrong on user end somehow?
+X 2. custom table says 20min game instead of 1/5 or whatever
+  3. fix problems with tourney creation screen, make it easier to use
+X  4. refactor restrictions to allow multiple (rating restriction, provisional restriction...)
+  
+  create table dsg_tournament_restriction(
+  event_id int unsigned not null,
+  type tinyint unsigned not null,
+  primary key(event_id, type),
+  value smallint unsigned not null);
+  
+  insert into dsg_tournament_restriction
+  values(1089, 2, 1700), (1089, 3, 20), (1084, 3, 20);
+
+  alter table dsg_tournament_detail
+  modify event_id int unsigned not null,
+  drop column rating_restriction_type,
+  drop column rating_restriction;
+
+  5. new screen to erase a tourney game and reset tourney
+  a. select tourney screen
+  b. select players screen (list players with checkbox)
+  c. show display of games (round, section, date)
+  d. all games have checkboxes, one submit button
+  e. upon submit, update db, delete game
+  
+  
+  
+DSG Time on applet
+send server time with each event
+applet creates millisecondgametimer, set time to a bunch of minutes
+keep track of time difference between server & local, use that to create current time
+and display every second
+
+
+
+
+x Simpler front page and guest access to game room
+
+x What should front page have on it?
+If cookie detected, go directly to a player status screen
+   with links to login to game room
+   turn-based games stuff
+   links to account, etc.
+else
+   show some of the stuff from the current front page
+   big button to get started OR
+   big button to login as guest
+
+
+to login as a guest
+   xallowed to play unrated games only, if click play send error message
+   xcreate new guest name
+   xnot issue-no access to player stats, or temporary stats?
+   x will not update stats so just allow
+   
+   xstore games to database?  with temp id or something?
+   
+   xnot allowed to ignore, but other players should be able to ignore guests
+
+   xnew guest flag in DSGPlayerData
+   xchanges to ServerPlayer to handle guests
+   xServerMainRoom probably ok
+   xServerTable update to not store games, or update stats anyways
+   x   and to send error if try to play rated game
+      
+   client knows about DSGPlayerData.guest flag
+   what to disable though? email game
+   x pass in guest in jsp so applet knows to login with guest flag?
+   
+   x don't allow users to register with guest names?
+   xdelete their accounts (5 currently)
+   
+   xcreate new guest account and use it for storing games
+
+Xlater- change start playing button
+
+x create top border gradient
+
+do i need to ask guests about java stuff?
+probably a good idea before opening the game room, or if no java then just
+go right to a java install page?
+
+x new features page
+
+x new join page, player goes here after clicking Join or Start Playing!
+  x has alert / big button to play as guest
+
+x new header/footer for whole site with my email, hewittsoft.com, dweebo's blog, privacy
+
+x remove dsg gear ads, remove google referral ads, amazon pente ad, game room ad
+x keep top add only
+
+
+To test
+xas guest play some games, make sure works ok
+xshould guests have a way to view rest of the site like rankings,links,etc.?
+x   i guess they should be able to see those things from features page...
+
+xtest new dashboard w/o java, x with jws, etc.
+x test new dashboard with turn-based stuff, redirect from old tb dashboard
+
+x test with new players, make sure looks ok
+
+x play.jsp redirect to gameServer/index.jsp if logged in
+
+what else for dashboard
+x tb
+x game room
+x stats
+x messages
+xallow specifying game room size here
+xshow avatar, or if not donor mention it?
+xlinks to myprofile
+xNO link to database?
+tip-of-the-day?
+
+x put up welcome messages is numlogins is < 5?
+
+x could put ads inside dashboard somewhere to get more attention
+
+->make it so when click play from dashboard opens game room immediately
+  and save plugin choice from ad.jsp instead of in dashboard
+
+xfor tb games, allow greater than 800 width and therefore bigger board
+xfor tb games, view games, drop the left nav links for even bigger!
+xand make messages area take up less space by default
+
+xno ads for donors above game room
+maybe put in an ajax change color/picture instead?
+
+x in donor prefs area, if not a donor say that in an alert box!
+
+xprofile tabs css messed up
+xtop tabs not right for content
+figure out why play link not appearing sometimes
+x ad applet not working for donors
+xmake sure jws/java choices are repopulated correctly
+
+xlist of top players
+ x css/ajax to update w/ diff games
+
+
+x move top level images to images and styles to style dir
+x   and don't filter them in loginfilter
+
+dsg.jnlp, change name
+x change favicon.ico
+change colors
+remove unused jsps
+
+db - right side put sidebar ad
+
+mouseover link on donor name, show avatar and/or quick stat view
+
+x add paypal link somewhere on template
+
+show "active" on player stats
+x and last play date
+decrease active time to 7 days?
+
+x crown, make png and transparent background
+
+xfirefox and apple mac running Tiger 10.4.11 intel here
+
+play sounds when chat message in main, 
+xor receive invite
+
+play sound when new tb games or messages in index.jsp?
+
+x viewgames area doesn't display name colors, and it doesn't load dsgplayerdata
+x  is there a way to make it fast but still load player colors?
+
+x remove detach buttons from tb
+
+x resize images for donors
+x donor picture display on main page
+
+show completed games even if player has only played unrated games
+  would need to look in pente_game to get distinct game types....
+
+show player colors on donations page
+
+
+make 404 page for embedded games in forum posts, or allow access for guests
+
+x change left nav links around, get rid of them altogether if possible
+
+
+new images for board background
+x load images
+x size text
+game name somewhere else
+handle avatar's
+color on designs at top/bottom, make them colored with whatever player color chooses
+number of captures looks bad in red
+show player name somewhere
+requires 1.5 for resizing stuff
+load images not as part of jar?
+make way to select background, turn off borders
+
+
+REDESIGN v2
+-----------
+Test everything
+x Fix width forums bug with IE and padding-left i think
+show tournaments (or wait until we have some again?)
+
+x show messages link
+
+x show forum messages as a new section
+
+ and use different images for tutorials, db, etc.?
+
+replace tb buttons with new button look?
+
+x site stats somewhere, on right side i guess
+
+x board images broken
+
+x show number of active tb games in tb section
+
+REDO tutorial to be bigger and use message area on board instead of popups
+ create separate applets for each tutorial
+ allow user's to comment, rate tutorials, send, stumbleupon, etc.
+ allow user's to create tutorials!
+
+more puzzles
+ allow user's to
+   solve
+   comment
+   rate difficulty
+   rate overall appeal
+   send via email
+   submit to stumbleupon, or other services
+   create their own puzzles
+ 
+ screen of puzzles, highlight top puzzles
+ then display rest of puzzles sortable by criteria
+ 
+ view a puzzle,
+ load puzzle data into new applet
+ 
+ applet allows solving/attempting
+ 
+ ratings done on diff page
+ 
+ new tables
+ puzzle
+   id
+   creator string
+   creation_dt date
+   game int
+   win_in_moves int
+   white_cap_num int
+   black_cap_num int
+   views int
+   solve int
+   solve_fail int
+
+ puzzle_move
+   pos smallint pk
+   player 1/2
+ 
+ puzzle_solution
+   move_num tinyint
+   pos smallint
+   pk(move_num, pos)
+   response_pos smallint
+ 
+ puzzle_review
+   puzzle_id  long
+   pid long
+   rating 0-10 int
+   difficulty 0-10 int
+   comment text
+ 
+ puzzle_solve
+   puzzle_id long
+   pid long
+   attempts int
+   solved 0/1
+
+ steps
+ 1. create data structure, applet to allow solving
+ TODO
+  - highlight solved subtrees
+  - create puzzle editor to enter in moves rather than hardcoding
+  - show num moves left
+  - reset button
+  - solve/fail handling
+  - generic move handling (for white moves off the known solution tree)
+    - need to make it look like black knows what its doing (use mmai1?)
+      hmm, also should add in multiple moves if possible, perhaps use my threat analysis tool?
+      if no threats found to respond to, find any random position that is not a pair, but is 2 away from another black stone
+ 
+ need a tree structure for moves/responses
+ user must solve all branches to complete puzzle
+ use a tree move list like in pentedb to represent branches and those solved,
+  but only show the current moves, not future ones
+
+ challenges
+ user's can challenge the puzzle, if they can prove black can prevent the puzzle solution they get points
+ so basically user can play as white or black
+   if they are solving puzzle, play as white and black moves are put on board based on tree of moves
+   if they are challenging puzzle, play as black and white moves are put on board based on one solution
+
+ X need to be able to setup board position AND board state based on pieces only,
+ X not a list of ordered moves...need to modify gridstate i think for that
+ 
+ 2. create tables and store/load procedures
+ 3. create web interface
+ 4. create a way for player's to create puzzles
+ 4. add puzzles from old newsletter's and sjustice page
+
+Add practice board to strategy area
+
+Add play computer to strategy area (opens game room w/ new table and computer dialog?)
+
+x search for other player in the my stats area?
+
+HOLD - put "Donate $5 for Photo" in no photo picture
+
+x fix java web start link
+x Test installation
+
+add like wordpress.com has title of page with a light shade of green across page
+and a big title
+
+x direct user to java 6 download page if no java found
+
+x put jws install on a new page to make index smaller kb
+  x reload index with jws=1
+  
+get rid of table layout stuff
+
+player rankings, jump directly to rankings, provide css hidden search area (advanced search)
+
+x restructure game db page a bit
+
+sort completed games on profile by total games and use scrollbar to make it smaller
+
+x move javascript, fonts from index
+
+create-a-game variant combiner lepews idea
+
+store count of views to a player profile
+store counts of views to a game
+
+still issues with garbage collection
+
+ignore tb invites, opposite (don't show open invites to play you ignore)
+
+  set based ratings & leaderboard changes
+
+    new table/ds to track sets
+    live_set
+        sid
+        p1_pid
+        p2_pid
+        g1_gid
+        g2_gid
+        result canNceled by users, Completed, Forced, canceled Disconnect
+        winner 1|2
+        creation_date
+        completion_date
+    
+    associate sid with pente_game
+    
+    when set starts create and store live_set
+    update after game 1
+    
+    if set is cancelled by both players
+       update live_set as cancelled
+    if player disconnected
+       can force resign, and set is over one way or the other
+    if both players disconnected
+       cancel game
+    
+    cancel button becomes a cancel set button 
+
+    show a game 1 over, waiting for game 2 dialog with ticking clock once one
+    player clicks play? and start timer on server
+    
+    game 1 over
+      game 2 click play #1
+      send out start timer message 
+        client then starts 7:00 countdown timer for playing players
+        server starts a countdown timer as well
+        when server countdown timer ends
+          if only one player seated, allow them to decide
+          else if only one player clicked play, allow them to decide
+          send a startsettimer event with time 0
+          
+        when client receives startsettimer w/ time 0
+          open dialog to end set or keep waiting
+
+        need to send out timer if player is reconnecting also
+
+        each player gets up to seven minutes to reconnect if disconnected
+
+      if p1 clicks play
+        start the player left timer
+        p2 could be disconnected, should not affect anything
+          no new player left timer
+          set the game message to something better though
+          
+        p1 could be disconnected!
+          allow p2 to click play
+          reset timer to 7 minutes to allow p1 to reconnect
+          if p1 reconnects, start game if both players have clicked
+          if p2 does not reconnect, allow p2 to end game
+       
+      if p2 disconnected
+        start player left timer & send out start timeup event
+        if p1 clicks play, just record it
+        if p2 comes back and disconnected again...don't start timer again
+
+      if p2 disconnected
+      p2 reconnects
+      p2 clicks play
+      timer runs out
+      
+      Xwhat if p1 disconnected and returns
+        neither player clicks play and timer runs out?  cancel set?
+        not the best because player might not click play while they are waiting for opponent to return
+        i guess if after timer runs out, if one player clicks play then allow
+        them to decide?  seems strange though...
+        OR
+        reset the timer again if there is no one to allow to resolve the game
+        since both players are there shouldn't be a big deal
+
+
+      if p1 disconnected during 1st game, then 
+      resign or force resign should resign the set, not just the game
+      
+      if p1 won 1st game, and gets disconnected BEFORE 2nd, and p2 forced resign
+      then game is being re-inserted! bug
+      save set as forced? or save that info in pente_game?
+      
+      if g1 completed and then g2 is canceled, how to show that in completed games?
+
+    Notes:
+    x client can't allow changing rated after game 1 or change any other settings
+    x client can't allow player to exit after game 1 
+    x state of GAME_IN_PROGRESS is true when game is going
+    x in between games state is SET_IN_PROGRESS or WAITING_GAME_2
+    
+    state diagram
+    NO_GAME_IN_PROGRESS -> GAME_IN_PROGRESS 
+    
+    GAME_IN_PROGRESS -> WAIT_GAME_TWO_OF_SET
+                     -> GAME_WAITING_FOR_PLAYER_TO_RETURN
+                     -> NO_GAME_IN_PROGRESS (after cancel, game over unrated, game over)
+    
+    WAIT_GAME_TWO_OF_SET -> GAME_IN_PROGRESS (game 2)
+                         -> NO_GAME_IN_PROGRESS (after cancel, resign, dbl disconnect, game over)
+                         -> GAME_WAITING_FOR_PLAYER_TO_RETURN
+    GAME_WAITING_FOR_PLAYER_TO_RETURN -> GAME_IN_PROGRESS
+                                      -> WAIT_GAME_TWO_OF_SET
+
+
+    game view will show player rating the same after game 1 of set...
+
+    for game database, show win/loss set information?
+    
+    if forced set resign, there might not be a game 2!
+    
+    for completed GAME area, change to completed SET area
+    must work for legacy rating system
+    
+    tournaments? can those games be rated AND still use sets? might have to change
+    some of the formats?  no probably not, just the code
+
+    computer player ratings?  stay on game rated?
+
+    Scenarios
+    1. p1 wins both games, p1 wins set
+    2. p2 wins both games, p2 wins set
+    3. p1 wins one, p2 wins one = drawn set
+    4. p1 wins g1, g2 = draw, p1 wins set
+    5. p2 wins g1, g2 = draw, p2 wins set
+    6. g1 and g2 draw = drawn set
+    7. p1 wins g1, p2 leaves during g2
+      7a. p1 forces resignation, p1 wins set
+      7b. p1 cancels set - g1 is still in database
+      7c. p1 resigns - drawn set
+      7d. p2 returns - wins game - drawn set
+    8. p2 leaves during g1
+      8a. p1 forces resignation of SET, p1 wins set
+      8b. p1 resigns SET, p2 wins set
+      8c. p1 cancels SET, nothing in db
+      8d. p2 returns and completes set, normal result
+    9. p1 wins g1, p2 leaves before g2
+      9a. p1 forces resignation of g2, p1 wins set
+      9b. p1 cancels set, drawn set, g1 in db
+      9c. p2 resigns g2, drawn set
+    10. p1 wins g1, clicks play, p2 doesn't click play and timer expires
+      10a,b,c same as 9a,b,c
+    11. p1 wins g1, clicks play, p2 disconnected
+      same as 10, except timer starts from click play
+    12. p1 wins g1, p1 clicks play, gets disconnected, returns, then neither
+        player clicks play
+        timer resets itself after ending
+    13. p1 wins g1, p1 clicks play, p2 gets disconnected, returns
+        p1 gets disconnected
+        restart timer so p1 has full 7 min to return
+    14. continuation of 13
+        14a. p1 returns and disconnects again, no timer restart
+        14b. p1 returns, p2 disconnects again, no timer restart
+    15. p1 wins g1, p1 clicks play, p2 disconnect, returns, p1 disconnect
+        p2 can decide set
+    16. p1 and p2 disconnect during g1 - cancel set
+    17. p1 and p2 disconnect between g1 and g2 - cancel set
+    18. p1 and p2 disconnnect during g2 - cancel set
+    
+    In all scenarios, have a 3rd player entering table at various points to
+    make sure table state is correct
+
+  puzzles
+
+  tournaments
+  
+  pente db
+  
+  android
+
+USER TOURNAMENTS
+----------------
+
+Start with nightly speed tournaments since that might be easiest
+

@@ -1,0 +1,82 @@
+What:  Tool to display end-game scenarios, to prove a line of play wins for one player or the other.
+How: Display pente board with black/white positions.  Then display other marker stones
+for "next moves".  Next moves can have different meanings.
+White's turn:
+- Green stones have a proven winning line.
+- Yellow stones have further positions available (with posible wins somewhere down the tree) but the
+  move isn't a proven winner (hard to explain, but some subtrees of the move can be proven wins but not all)
+Black's turn:
+- Yellow stones - essentially the same as above
+- Red stones - proven loss for black (opposite of green)
+
+Navigating the moves works like game room and games history tool.
+Each move could also have associated data, like games used in, notes, etc. (future)
+
+Interface: java awt applet or swing applet.  with awt can probably reuse screen
+needs a way to "enter" new positions.  maybe there is a toggle btw "View | Edit"
+Edit - clicking on new spot opens window to edit color and notes
+
+Backend, tree structure of "moves", persisted how???  hibernate? would it work?
+
+
+
+Issues/Features: 
+        - X rotation, mirroring of positions, make sure that works
+        - X also seems difficult to account for same position that is arrived at through different sequence of moves (possible to reverse generate all games leading up to a given position?)
+	- X navigation through moves (back and forth but ALSO down a new line, do i show everything or just current line?)
+	- X how to code situation where we have a proven win but black plays weird move (A1)
+	- X need to be able to delete/alter existing "next moves"
+	- X make this a separate project? requiring a dsg library i guess
+	  X or just have all libs, build scripts, conf and stuff under a different subdir under dsg?
+	- make tool a little smarter
+	    mark in yellow by default
+	    detect when all moves + default are red, mark other player's moves as green (and propogate back up until find a node that doesn't have all red)
+
+
+How do I get there:
+start with local awt app (implement applet/servlet interface later)
+X 1. get existing awt board to work - display only
+   input/data = new Node(move) --> new component wrapping existing awt board -- > talks to awt board (put moves, remove moves, etc.)
+X 2. add edit capability
+X 3. integrate with persistence
+X 4. make it work across network into applet
+5. make into a swing app?
+
+X 3. integrate with persistence - want to use hibernate, should work well with lazy initialization
+   the id field should be the hashcode of the position, using same alg. as game db (results have to be translated, etc.)
+   so each node also needs rotation field
+
+   basic layout of search
+   user makes moves on the board (not sure if each move triggers lookup or user has to explicitly hit "search")
+   moves transferred to controller
+   controller puts into what? data structure and generates rotations and search hashcode
+            GridState state = GridStateFactory.createGridState(
+                int game, MoveData data);
+            state.updateHashes();
+            int hash = state.getHash();
+
+   session.load(hashcode id) // also force load of children, parent?
+   rotate results
+   return results
+
+
+
+X Implement multiple NodeSearchers
+X Hibernate - used on backend for server and for editing app
+X LocalFile - used for early implementation
+X Local - used for all in memory trees (subsets of whole db probably)
+
+Could create an applet that loads a specific root (add another class to add symbolic links to roots?)
+applet talks to servlet, which uses hibernate to lookup root, sends back root Node as streamed serialized objects
+applet loads that into LocalNodeSearcher and client uses that for view-only
+applet would use RemoteHttpNodeSearcher which would contact server and wrap a LocalNodeSearcher for the results
+  problems encountered during sending of Node using ObjectOutputStream because
+   1. Node nextMoves List is actually a Hibernate List
+   2. Runtime class modifications done by Hibernate add dependencies
+   3. Can't replace nextMoves with a normal list, tried that and it failed due to hibernate error
+   4. Ended up implementing my own simple serialization routines to get around these issues
+problem with above is that localnodesearcher needs to be able to search for hashes
+  must modify it to keep a hashtable of all nodes, should be simply enough
+currently it's talking to servlet for each move, need to modify above and also
+servlet to send ALL nodes, maybe make servlet load all at init, then everything is cached
+need to also modify SimpleNode.java to write entire object graph, not just immediate children

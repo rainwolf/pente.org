@@ -1,0 +1,160 @@
+Currently scans for "most" threats.
+Also picks up potential captures along the way.
+Then orders next moves by threat "ranks".
+
+Need to add the following before threat ranking:
+
+1. For each potential capture (capture for me)
+  if moves in pc exist in any of my opponents 4's or 3's
+    add capture move to start of responses (capture)
+    add capture move to end of next moves (block)
+    remove potential capture from threat list (since it's now covered here)
+
+2. For each of my opponents pair
+  if moves in pair exist in any of my opponents 3's
+    add both ends to start of responses (try to capture, this should either win or lose quickly so makes sense to try it 1st)
+    remove pair from threat list???
+
+3. For each potential capture and pair
+     if moves in pc exist as a block on any of my 3's, 4's
+       mark pc as a keystone pair for that threat (somehow)
+       when ranking is applied to the pc or pair, augment the value of the rank
+       depending on what is blocked (somehow)
+       Problem:
+       Works fine for straight 3's 4's, but not for say X0XX, X0XXX, XX0XX.
+       Solutions:
+       Could figure out from Line if X0XX, X0XXX, XX0XX
+         X0XX, XX0XX could be determined if myLen==1 and by counting # of opp stones at ends (would have to change threat.player to opponent and classify as BLOCKED_TRIA, BLOCKED_FOUR) 
+         X0XXX could be determined when classifying 0XXX if move[0] == player
+         not sure how to classify that
+         0XXX_0 is also a potential 3 with the capture move
+         0O____
+         X_____
+
+
+4. During ranking, check if either player can win by capturing and take appropriate action (increase ranking on capture or block to force it)
+5. Ordering of moves by threat needs to improved somehow (i.e. w/ a tria, making XX_XX is very
+   unusual, instead XXXX is better).  Current system allows XX_XX to be a good move
+   if for example capturing a pair occurs at the same time.
+
+Other problems with rankings.
+Has problems where it thinks it has a good move, but then it plays into a capture, or
+plays into the opponent blocking+creating threat.  Then waste a bunch of time
+looking down a bad sub-tree.
+Solution(s):
+1. Keep a sorted set of nodes to visit.  This would then search in a better order,
+as soon as a scenario like above occurred, the above subtree's next moves would
+have very low "ranking", so would not be visited again for some time.
+2. Similar approach is to do iterative-deepening.  Search with depth 5, then
+stop and start again with all leaves and another depth of 5.  Could also rank
+leaves at this point I guess.
+
+Other problems
+1. Doesn't detect certain defensive moves against threats.  Say I have a closed 4
+and my opponent makes a split 3 where i can play a move to capture across the threat
+IF my opponent makes it a 4 by playing into the split.  It gets trickier too, say
+i have a closed 3 X_000X and I can create the above situation by playing my
+move at the _ above, hard to detect that I bet!
+
+
+Hashing problems:
+Apparently the hashing algorithm does result in clashes fairly frequently when
+scanning positions.  Fix is to then check that the results really are the same
+by examining the full move list.  Already done this in FastPenteState.
+Overview.
+1. Assert equals # moves
+2. Assert equal cap #'s
+3. Rotate all moves from one state to the other (use the final rotation value
+   for the rotate).
+4. Now compare the BOARD's of both states to see if they are equal.
+
+Problem now becomes storing these in LocalNodeSearcher (and later HibernateNodeSearcher I guess).
+Need to store potentially multiple Nodes for each hashcode in a list.
+When retrieving, need to check that the passed in STATE (that's a change) matches
+the state implicit in the Node (would have to go up the tree to the root to get
+actual state).
+
+Is it possible to make above check PART of the hashcode, or a 2nd hashcode perhaps.
+In other words, to create hashcode do the following steps.
+1. Calculate 8 hashcodes (one for each rotation) for each move in game. (current system)
+2. Rotate all moves to ZERO rotation.
+3. Create some other hashcode to encapsulate all of the moves on the board.
+   (How to do this part!!!)
+   "zip" up the board[]?  all 0's packed together into a single digit (count), would fit in byte
+   1's and 2's stored in single-bit....
+   for a 4-move game, would have.
+   1. 0-segment
+   2. 1
+   3. 0-segment
+   4. 2
+   5. 0-segment
+   6. 1
+   7. 0-segment
+   8. 2
+   Potential space used would be 
+   4 bytes + 4 bits
+   For a 40-move game, space could be 40 bytes + 40 bits = 45 bytes
+
+   Could do something else too, "shrink" down the size of the board.
+   Specify upper-leftmost position used on board and lower-rightmost position.
+   Then need to keep track of smaller number of positions, probably 1/2.
+
+Other issues, speed!
+Potential improvements.
+X 1. hibernate.  Create the local hashmap version of nodesearcher for use by ai, load in everything at startup for quick access.  Need to then save off results when appropriate (at end perhaps). Maybe whole client uses hash version, save button just updates the root in HibernateNodeSearcher and calls saveOrUpdate() (slow but that's ok).
+
+2. Use jprobe analyzer to figure out where time is spent.
+3. Possibly could create quicker PenteState that is more integrated with PenteAnalyzer (to avoid repeating similar scans.
+4. Line detection could have some improvements (scan left and keep track of stuff, small improvement)
+5. Threat detection could have slight improvements.
+6. Replace Collections used with faster arrays (not sure how much that would save)
+7. Use of PenteState calculating hashes is inefficient (recalculates for each move, could possibly improve that)
+
+
+X Other improvements.
+Make more interactive.
+Scan current position, show results.
+User selects line they want, scan again, show results.
+User can choose to do full scan at any point when they know it's a win.
+
+
+
+
+
+
+
+Ideas from paper on gomoku proof.
+1. Uses a db-search to "evaluate" threat sequences.
+   Assumes that opponent blocks at ALL responses, that was something very interesting.
+   It's not trying to prove the threat sequence WORKS for all responses but that there is a sequence that could win.
+   Could possibly be used to focus on certain subtrees.
+2. Pn-search as search alg., also interesting idea of limiting depth by initializing proof/disproof numbers.
+
+Problems/assumptions that don't hold from gomoku to pente
+1. Responses for gomoku are always 2-3 for a threat.  For Pente adding captures greatly increases this in certain
+   cases (could be 8+ captures + 3 blocks).
+2. More types of threats (captures)
+3. Many more ways for a local/global defense strategy (p1 has a threat but p2 can counter it by creating it's own threats)
+   p2 can capture across a p1 threat revealing a p2 threat!
+4. Not sure I understand "how" to implement db-search, it's a bit confusing.  Not sure it could be implemented with captures
+   in mind.
+5. Not sure how moves were evaluated early on in gomoku proof (before 11 moves for example).  I guess a start would be
+   to create a program that could solve a "deep" subtree and work backwards.
+6. For pn-search (or any non-depth 1st search), it seems that jumping around btw different positions not on the same
+   path takes more time (since you have to re-create the game board).  Unless I keep a game board around in each node?
+   Then just load it into a FastPenteState and run the analysis.
+
+
+What I need to do to move forward:
+  1. Complete the implementation of next/response move detection:
+    1. Finish implementing my threat response rankings to filter out bad appropriately.
+    2. Implement finding possible next moves that are captures revealing my threats.
+    3. Implement detection of moving to create a potential capture across a 3-threat.
+    4. Implement detection of moving to create a potential capture across the NEXT move in the threat.
+  2. Implement pn-search.
+  3. db-search?  or something like it...
+  
+  
+Possible heuristics.
+- Something to avoid playing into a capture (sometimes it's worth doing but
+  most of the time it will be a bad move).

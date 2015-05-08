@@ -1,0 +1,1194 @@
+things left before alpha release are
+x 1. drag/drop
+x2. import/export
+  x- show progress or results for import
+  x- allow saving games with just moves + database
+  x  everything else can be null, and should default to "Unknown"
+x 2b. allow copying games from results into a different db
+  x- should allow multiple selections
+  x - should allow getting more than 10 games
+
+3. known major bugs
+  x - rotate the game results if necessary
+  x - filtering by player name when complete
+  x - update filtering drop-downs when a game changes (new game or edit existing game)
+  
+    x 1. x make gamereviewpanels
+       x     viewgamepanels 
+         listen for changes to venue data and update drop-downs
+    x 2. cached search results may now be invalid
+       if game existed before the change
+          for i=0 to # old moves
+            if old move isn't same as new move or new move doesn't exist (deleted)
+              remove all cached search results with the same hash as old move AND new move
+              and with filterdata that matches the game data
+          for i to # new moves
+            remove all cached search results with the same new hash
+            and with filterdata that matches the game data
+       else if new game
+          for i=0 to # moves
+            remove all cached search results with the same hash as move and
+            with filterdata that matches the game data
+       3. after game deletes cached search results are invalid
+       
+  X - if no winner for custom games, won't show in results tab and won't show moves on the board 
+   
+  X - changing filter db caused rotation to change (back to original)
+   
+  X - if game over in game analysis, allows to continue clicking
+   
+4. deployment code
+   X a. redo the pro database and check it in
+   
+mysql> insert into pente_game_pro
+       select * from pente_game 
+       where game=1 and private='N' and rated='Y' and//rated?
+       player1_rating >= 1700 and player2_rating >= 1700;
+       //or from brainking?
+       
+mysql> insert into pente_move_pro
+       select m.gid,m.move_num,m.next_move,m.hash_key,m.rotation,m.game,m.winner,m.play_date
+       from pente_move m, pente_game_pro g
+       where m.gid = g.gid;
+       
+mysql> create table temp_p (pid bigint unsigned);
+mysql> insert into temp_p 
+       select distinct(player1_pid) as pid from pente_game as g1 union distinct 
+       select distinct(player2_pid) as pid from pente_game as g2;
+mysql> insert into player_slim 
+       select p.pid, p.name, p.site_id, p.name_lower 
+       from player p, temp_p p2 
+       where p.pid=p2.pid;
+
+   dweebo@penny:/home/dweebo$ mysqldump -uroot -p --fields-enclosed-by='"' --field
+s-terminated-by=',' dsg_test2 player -T /tmp
+replace \' with '' and \N with nothing and \" with ""
+ij> call syscs_util.syscs_import_table(null,'PLAYER','player.txt',null,null,null,0);
+
+need 3 versions of installer?
+1 includes just my program
+2 includes my program and propente db
+3 includes my program and propente db and java 1.6
+
+   installer
+   x0. welcome
+   x3. license page
+   x2. check jre6 installed
+   x3. components
+   x4. directory
+   x5. install files
+    x  and create database 
+   x6. start menu? registry keys?
+   x7. finish page (and run)
+
+   still to do
+   x-add to start menu
+   x-custom texts/icons
+   x-jre check+install
+   x-actual license
+   x-provide better text in details for FirstInstall program and always show details
+   x -test uninstall
+   -error handling
+   
+x 5. plan ahead for future updates (and test one)
+
+   basic plan should be for installer to just put jars,db file and executables out there
+   installer can also run java programs
+   so check if db exists and check version in db
+   then apply necessary updates
+   
+
+-> part of installer? 6. license popup
+-> part of installer 7. eula
+8. basic web pages? plus forums?
+   need at the least a place to download,
+   - applet to check if user needs to download the jre version of installer or not
+   instructions
+   Forum threads
+   - known issues
+   - planned features
+   
+9. serial numbers????
+x10. test myself
+x11. remove output logging stuff
+x    add error logging
+12. think performance should be a little better especially on startup
+    x - use splashscreen
+    x - see if can delay loading stuff until screen is visible
+    - filechooser zip bug 
+    - make venue loading quicker somehow
+    x - fix double/triple searching on 1st move
+x13. startup sample db and game
+x    need to import and store on 1st run
+x    on later runs if only tree is sample then open it
+    
+x 14. disable menu options that aren't implemented yet
+x 15.  startup comments is too small
+16. longer video showing how to use all features
+x 17. use jsessionid when connecting to pente.org
+x     and modify pente.org who's online to count only names, not sessions
+x 18. add winner filter
+19. draw player name with white/black piece along side of board
+   sort of working, but determine x coordinate by how coordinates does it instead
+
+beta 20. allow user to associate names, like snut==snutter and use that when searching
+x 21. auto-complete for filter player names and game entry names
+  for player names, remove all entries from player table where there are no games played
+  that won't mess any games up but will make it quicker for auto-complete
+
+x 22. detect duplicate games in a database and don't allow saving
+23. slow shutdown after large imports
+23. double-exit causes error
+x 24. multi-game delete can be slow, show progress dialog
+25. show stack trace in default error window
+       eventually allow sending data directly to pente.org as feedback
+x26. show get all games button if searching a local db
+x27. open game in analysis view
+ can this be done better?
+28. save prop of last import/export location and reuse it in filedialog
+x 29. importing
+  if importing several files show 2 progress bars, one for progress in list of files
+  and one for progress of each file
+  when loading sgf file
+     set status reading data
+     set progress max 
+     parse
+  
+30. cancel import/export should attempt to cleanup 
+      for export, try to delete the export file
+      for import, keep track of saved game gid's and then delete them
+
+31. keep track of running threads at main level and attempt to gracefully
+    close them if user exits
+
+32. support proxy configuration for db access
+
+Overall design
+--------------
+
+main screen
+-----------
+X have the tree view be what can be saved w/ comments to the local db
+   - save automatically? no
+   - allow multiple trees in a tab pane
+   
+X then user can choose to search any database they want using that tree
+   - how is that chosen by user?
+   - searching local db's should be done without having to click search
+   
+X plus any filtering options are used when searching
+
+X user can import/export the tree view w/ comments using flat file
+
+X user can Xopen/Xclose/Xadd/delete tree views
+
+X user can add name to a node and symbols like bad move, good move, see moyogo?
+
+X user can delete game(s) from game results view
+X now that we have tabs should be able to do multi-delete of games or multi-opens
+
+2.0 user can draw colored lines on board between any 2 grid points
+   - storing is pretty easy, add a blob column to pente_move, store an optional
+     list of line data objects
+   - to add a line, need a switch from making moves mode to line mode
+   - in line mode, first click starts the line at the grid selected
+     then draws line as mouse moves
+     2nd click completes the line, esc or switch mode removes it
+   - to edit line need ability to detect which line was clicked and then
+     delete it, or move either endpoint?  requires different visual indicators
+     of being selected
+   
+view game screen
+----------------
+X when viewing individual games, a different set of notes is shown
+   - using same code as "viewlivegame" messages box?
+
+X user can import/export their local game db w/ comments using flat file
+
+X user can add games to new local dbs
+
+2.0 editing existing (db/site/event) names in future release
+
+X add/edit game screen
+---------------
+used for entering new games to a local db
+or editing games
+
+2.0 -> play at pente.org
+------------------
+for rated games don't allow searching
+for unrated games, allow use of everything
+
+beta -> usability
+--------------------
+add keyboard commands for all menu items, buttons
+allow selecting position on board using the 'A|B|C' notation of existing tree moves
+  how to handle when some nodes have names?
+<< < > >> buttons map to arrow keys
+ works for analysis but not working for games
+shift + arrow keys could be used to move the stone around board
+
+
+1. Allow searching for all parameters (game, site, players, moves, etc.)
+   X  for the caching of results, when user searches for a different set of
+     parameters we can just clear the cached results and start over (maybe
+     keep the game data though) OR better would be to keep cached results
+     in a map w/ a key being the parameters, in case user goes back to earlier
+     search parameters
+X don't show all filter stuff on screen due to space, have a filter popup
+ dialog, and show a short text label of current filtering somewhere
+
+X2. Switching back from game view to results view [new window handles this]
+X3. show game statistics somewhere when viewing a game [new window handles this]
+X4. move forward/backward in game list
+     requires adding games to the existing results
+     
+5. show a searching dialog....?
+   better would be to show a progress bar and text in status bar (like web browser)
+   and show a hourglass icon (only do this for pente.org search)
+   requires some work on server side as well, to take a guess at how much work
+   it will be (use explain for this?) and then get the sql results, write them
+   to memory to get size, set content-length and return results
+   
+   on client side take a guess as to how long and start the progress bar, then
+   once receive content-length start to nail it down.  or only start the progress
+   bar once get content-length, before that just show text status
+   
+X6. move << > >> in coordinates list while showing results, change results
+X   and allow clicking board
+beta 7. check users not playing game at same time?
+X8. when loading game, load only to current move num?
+x 9. if wrong name/password fails because httpgameservlet shows login error html page
+
+   
+   have a separate login page w/ text output for this
+   
+   store username/password in new plunk_properties table (encrypt it?)
+   store serial number there, etc.
+   store plunk version there
+   store preferences here, like auto-search, window size, etc.
+   
+   
+x   when connect to pente.org 1st time
+   a. load username/password from properties
+   b. if not found, prompt user for them
+      when user clicks ok, close login prompt and show hourglass
+   c. connect to pente.org remoteloginservlet
+      if fail to connect show error dialog
+   d. if invalid login show error w/ ok, then prompt again
+   e. once logged in, store encrypted password and login in properties table
+   f. then connect using them to venue servlet/search
+   
+good enough for 1.0
+-> 10. show database search results move as different colors/intensities for the better moves
+      a. need to figure out how to determine the colors
+
+         NO
+         just use r=255,b=41,g=237(yellow) to g=41(red)
+         not sure on algorithm for determining "best" move
+           by just percentage or combination of games+percentage?
+           also try to remove outliers
+
+      show more colors??
+
+      Xb. need to allow each gridpiece to have a color or a value to determine how to color it
+
+      c. show key for colors
+
+      x d. is it good to have it show red when move is only 30% (but it is best move?)
+      No, don't do it
+
+X 11. show ratings graphics in game results & game view
+(still need to load icons from deployed location though)
+
+beta 12. rotate buttons
+beta 13. help files
+14. license stuff
+x 15. deployment code
+2.0 16. run on mac, linux?
+x 17. log errors to log file, some sort of default swing error handler for this?
+
+X 18. show on board any of the potential next moves from the tree view
+      if user has set as good move/bad move etc. then highlight that somehow
+      even allow tooltips over stone of the comment? 
+
+      if move has no text like a,b,c,
+        then add a dot
+      else
+        add a,b,c (use first letter of name property)
+
+      if there is a database result next move showing
+        add above on top, figure out good color so it shows
+      else
+        add new colored node, like blue maybe?
+        or just leave it blank?
+
+2.0 19. performance
+    create faster way to get venue data for local db
+2.0 20. have "favorite" concept for positions (like for turn-based games you
+    are currently playing)
+    this could be another tab in move list, not closable
+      if selected position and the move list wasn't available, then open it automatically
+      and then switch to that tab, position
+      
+beta 21. sound for placing stone?
+beta 22. about page w/ licensing (derby)
+beta. pretty buttons
+2.0 24. for c6, should return search results by next 2 moves
+    requires storing c6 moves in a different table, or adding next_move2 to pente_move and populating
+    and would need to ensure always have same order w/ next_move, next_move2, maybe need 2 new columns then
+   
+    for displaying next moves on board, use the better % if same position is
+    in multiple groupings, or don't show next moves at all, instead rely on
+    highlighting from the table
+
+x25. drag and drop capable, so could drag in game from brainking, or from
+    pente.org (either email, or ongoing turn-based game)
+
+2.0 26. play at pente.org
+    do this with a new tab in move tree
+      and replace the board with a board + gameboardframe buttons and chat area and player list
+    turn-based games same way
+      could be in a new tab
+
+2.0 27. icons for tabs?
+2.0 28. add icon or something for moves with comments
+    add icon or something for games with comments/named nodes/type
+    
+2.0 29. allow naming of games
+2.0 30. allow flagging of games with star or something
+2.0 31. add a game tree for solved gomoku, from renju lib
+2.0 32. is there a way to display next move when jumping over to a different path?
+    would need to implement a "twin" idea maybe
+beta 33. memory leak checking
+x 34. need to think ahead for how updates will be handled
+2.0 35. allow renju games
+X 36. Mark's AI
+    how to integrate
+x 37. show threats on board
+x 38. have AI tell you decent next moves
+2.0 39. allow export of any set of filtered games from game results screen
+
+x 40. display # of captures below them
+41. allow new window or tabs
+
+X42. right click go back move (if in analysis)
+   right-click+shift then delete
+   mouse wheel control
+   
+X 43. create game analysis out of mark's ai opening book
+     would be really cool to be able to modify it and save
+44. create game analysis out of mark's opening book word doc
+
+45. game over indicator in the move list(sound or color?)
+
+46. bug, autocomplete text fields, if enter then delete so its empty shows all entries
+    bug, autocomplete text fields esc doesn't remove
+    bug, autocomplete text fields tab should select and close
+
+x47. show error dialog when search fails 
+47b. with retry/abort option
+
+x 48. bug if match game entirely in analysis and try to open it, no moves shown
+
+49. derby 10.4 allows use of row_number function, can be used to limit returned games
+    instead of current method
+    
+    from documentation
+    To limit the number of rows returned from a query to the 10 first rows of table T, use the following query:
+
+    SELECT * FROM (
+       SELECT 
+         ROW_NUMBER() OVER () AS R, 
+         T.* 
+       FROM T
+    ) AS TR 
+       WHERE R <= 10; 
+
+50. store ai, filter, game table settings to database with analysis
+    a. requires that analysis has been saved
+    b. save on change if analysis already saved
+    c. save all when user saves analysis if 1st save
+    d. use new tables, not java objects
+    
+51. modify build to remove unneeded classes (compiled due to references but shouldn't be actually needed)
+
+x 52. scrollbar on game info tab like filter tab, and remote white, black border
+
+x 53. right-click delete broken on game entry
+54. add mousewheel listener to move tree component
+
+x 55. computer game broken if don't change player
+56. if change computer seat, need to allow/disallow player to click board
+56. if change computer seat or level, need to change name of players in info and board
+57. modify board display captures/names starting at center vertically
+
+store nodes in db table
+long hash_key
+long parent_hash_key
+int rotation
+int move;
+int type; //good move,bad move,interesting,etc/
+varchar(32) name; //shows in tree
+varchar(1024?) comments; //shows in comments box
+
+X 3. make it a coordinates list TREE
+
+  What does it need to do?
+ x 1. when move is played, add to tree in correct location
+ x  2. when move is selected in tree, update board, gridstates
+ x    this means updating potentially ALL the moves
+ x 3. allow << < > >> buttons and arrow keys to move back/forth like current coordinateslist
+ x 4. each node knows its depth and color for painting a stone
+ x 5. make it pretty
+ x 6. allow editing nodes to name them (or allow good/bad notation)
+ x 7. allow deleting nodes
+     needs a similar algorithm to adding to redo tree
+ x 8. keyboard arrow keys, make sure they do the right thing
+ x 9. rotate child nodes when user enters a matched position in a different rotation
+-> 10. future allow dragging nodes within its siblings
+->  11. future auto-name each alternate child w/ a,b,c.etc?
+x  12. allow multiple trees under one view? no
+ 
+  
+X4. cache games/results and redisplay when move back/forth
+     show highlighted (green) moves as different color when cached results exist
+
+5. paying customers only
+ x 1. standalone client w/ installer and launch program or jws?
+  2. advertise it on current db screens
+  3. show donors how much they have donated, allow them to "give" access
+     to other players w/ their donation amounts
+     show their subscription time frame
+  4. new table for access because of above
+  5. code must check username as being allowed access
+  6. allow credit card payments, figure that out, get ssl certificate for secure ordering
+  7. price??? different tiers
+  
+  
+-> 6. zip search results, probably not necessary as it will be pretty quick already
+-> 7. somehow load only games not already cached
+8. make board and moves prettier
+
+
+X 9.
+db faster
+slow when ordering by for selecting games
+make faster by ordering by timestamp in pente_move table
+and adding that timestamp to pk index (gid,hash_key,move_num,time)
+
+
+alter table pente_move
+add play_date timestamp not null;
+
+update pente_move m
+set m.play_date = (select g.play_date from pente_game g where g.gid=m.gid)
+
+alter table pente_move
+add index (hash_key, move_num, game, play_date);
+
+modify sql to select from m instead of g
+modify sql to store moves to store it?or maybe not since uses current_timestamp by default
+
+X 10. "pro" game search
+allow searching by ratings if we add ratings data
+or create a rule that adds a bit to pente_move if game is considered "pro"
+  maybe if both ratings > 1700
+NO, just maintain a "pro" game database
+
+11. add site to pente_move to speed that up also
+2.0 12. add a column to list of games for "next move"
+AND/OR highlight the next move on the board when mouseover?
+
+
+NO 13. allow game results table to add/remove columns
+
+X 14. allow local storing in database of games
+    could even allow users to download ALL games
+    user entered games could be added as well, could be saved to file
+    and shared between users
+    
+    issues
+    major one is finding database to use that is fast
+     (embed mysql?) possible but licensing fees seem to be the issue?
+     work arounds, sell tool but require users to install their own mysql?  seems crappy
+     gpl the tool but sell access to my games?  seems crappy as well plus easy for someone to post games somewhere
+     
+     hsqldb, free but requires some rework most likely and learning?
+     
+     steps.....
+     1. download and figure out how to setup hsql
+     2. create tables, player, pente_game, pente_move, game_site, game_event
+     
+     create tables manually w/ sqltool
+     create cached table name (data indentity or primary key)
+     
+     java -jar dsg_src/lib/hsqldb.jar gamedb
+      
+     to dump mysql tables
+     mysqldump -uroot -p --compact -q -t --extended-insert=FALSE --skip-quote-names dsg_test2 player > player.db
+     
+     then replace \' with '' for player, game_event tables
+     add commit at end of file
+     
+     java -jar dsg_src/lib/hsqldb.jar gamedb player.db > out
+     use -Xmx128M for bigger tables
+     
+
+     apache derby
+     do same sort of steps as hsql
+
+     performance is better if cache basically all pages, running with pages of 10,000 and -Xmx150M works
+
+     hsql performance is still better a bit, but really slow starting/stopping, so go with derby
+
+     3. determine if it will work, speed w/ full game db
+     write a test program to execute a series of common searches and time it for both hsql and derby after
+     all setup and w/ indexes
+
+
+problem seems to be the size of local database since is close to 1gig on pente.org
+decent alternative might be to distribute w/ "pro" database of smaller subset of games (both > 1700 is only 11,300 games instead of 250,000)
+and allow querying the pente.org online db as well
+and you can "transfer" any games over to your local db if you want
+
+
+     
+     advanced
+     0. allow user to select local or pente.org database
+     1. get updated games from pente.org (gets all)
+     2. or allow adding game to local db when viewing from pente.org     
+     3. add code to store new games
+     4. add code to import/export game dbs     
+     
+     issues
+     1. since could be used local only, need to worry about serial #'s?
+     
+     generate serial w/ good algorithm
+     store in db
+     when user enters serial # for 1st time require them to connect to pente.org
+     to verify the number, and make sure it isn't blacklisted
+     
+     if verified then store serial in local db
+     
+
+
+
+
+
+15. X should the different sections be "internal frames" to allow user
+to move stuff around?  ideally, not sure how hard it is
+what really want is "docking" but haven't found a good free implementation yet
+save that for future release
+
+x 16. TODO for BK import
+modify pente_move, pente_game at pente.org
+put up new database code, verify it works
+run importer on live db
+NO, keep pente.org database without the dbid columns due to performance issues
+use separate classes for loading stuff on pente.org and plunk
+
+17. alter pente_game add p1_provisional, p2_provisional
+    script to update it by examining all games for each player
+    that way could show correct ratings icons for games
+    (and weed out from pro db easier)
+
+    
+    
+derby tuning
+trying to add index to pente_game venue columns to speed them up, if
+selecting a pretty specific site/event should only match a small # of rows
+but derby doesn't use the venue index. i think this is because i use ?'s for
+site_id,event_id,dbid,game.  if i hard-code the values in sql string it might be 
+able to figure it out better, at least according to the derby tuning pages
+
+same thing for player indexes
+
+confirmed by testing hard-coded, TODO replace all ?'s with hard-coded
+works good for venues
+but for player, uses nextm index instead of player index...
+TODO, figure above out!
+ok, if use ? instead it uses the player index for some reason....bizarro
+select nextm, rot, win, count(*) from 
+( select * from (select m.next_move as nextm, m.rotation as rot, m.winner as win 
+                 from pente_move m , player p1 , pente_game g
+		 where m.hash_key = 9014722736856571802 
+		 and m.move_num = 1 
+		 and m.game = 1 and g.game = 1 
+		 and m.dbid = 1 and g.dbid = 1 
+		 and m.gid = g.gid 
+		 and g.player1_pid = p1.pid and p1.name_lower = 'karlw' ) as d1 
+  union 
+  select * from (select m.next_move as nextm, m.rotation as rot, m.winner as win
+                 from pente_move m , player p1 , pente_game g 
+		 where m.hash_key = 9014722736856571802 
+		 and m.move_num = 1 
+		 and m.game = 1 and g.game = 1 
+		 and m.dbid = 1 and g.dbid = 1 
+		 and m.gid = g.gid 
+		 and g.player2_pid = p1.pid and p1.name_lower = 'karlw' ) as d2 
+) as main group by nextm, rot, win
+
+
+
+also test index "covering", create index on all columns in pente_move to see
+if that improves speed, since won't need to read data pages (any way to just
+store data sorted instead of replicating it?)
+SEEMS LIKE IT DOES HELP A LITTLE
+
+for 1st move search, could just search pente_game table for games since all games returned from pente_move
+if also store 1st move, 1st rotation in pente_game could just search pente_game 
+for everything in 1st move
+
+since only 14000 rows in pente_game as opposed to 344000+ in pente_move should
+be faster right?
+
+
+consider storing venue tree as a java object in a table for quick retrieval
+update it whenever a new site/game/round/section is added
+
+try hashing player names in memory in storer and mapping to pids that way
+
+
+
+
+
+
+
+--------------------
+saving trees
+--------------------
+only save when user requests it, or on exit
+long hash_key
+long parent_hash_key
+tinyint rotation
+smallint move;
+smallint depth;
+tinyint type; //good move,bad move,interesting,etc/
+varchar(32) name; //shows in tree
+varchar(1024?) comments; //shows in comments box
+
+when load a tree, get everything, need to make sure to load parent before children
+so can link everything up.  so keep depth as well and order by it
+
+sql select
+store nodes in a hashmap
+store nodes in a custom tree structure 1st (temporary just for building below)
+  lookup parent in hashmap and add to it, parent keeps track of children too
+then use that to transfer it all to the visible tree since it has different structure
+  could just call modified addMove that knows how to add a single node
+  
+  but probably faster to build all at once, level by level
+   use recursion
+  
+  addNode(parent, child, parentIncreasingDepth)
+    if child.childrenCount >= 2
+      for each child.child[]
+        add child to parent in jtree
+        addNode(child, child[i], false)
+    else if child.childrenCount == 1
+      if parentIncreasingDepth
+        add child to parent.parent in jtree
+        addNode(parent, child.child[0], true);
+      else
+        add child to parent in jtree
+        addNode(child, child.child[0], true)
+    else  //leaf
+      return
+      
+when user adds new nodes
+create node
+add data to tree
+add to a list of "dirty" nodes that need to be saved
+
+when save
+save dirty nodes
+
+---
+OR
+---
+
+store next moves in database as well (like tree program)
+see node, node_next of tree program
+
+load all node by depth into map
+load all node_next and add them to children of nodes
+
+ok that is same thing but w/ extra node_next table i think
+
+
+
+-----
+twins
+-----
+
+when encounter a hash w/ different rotation
+a. just enter move into tree (duplicate) and copy over children?
+  pros
+  1. easier
+  cons
+  1. if copy all children is huge waste
+  2. could copy just 1st level of children and then as user goes copy more
+
+b. jump to other hash and rotate it's moves by the current rotation
+  pros
+  1. doesn't store multiple entries of moves
+  cons
+  1. harder to program
+  2. appearance might look odd in tree
+       could color the node or icon different so user knows it is a "twin"
+
+i think b is better
+
+
+if user enters a move that switches over to existing line a, but now user
+is in different line b (with rotation b).....
+
+a's children display changes to b's rotation
+when user clicks a's children, how does model know what moves to send to board?
+
+
+or if user uses back button, currently it would go back a's line, not b's
+
+
+------------------------------
+before sneak peak forum post
+-------------------------------
+X have menu bar (even if not working)
+X filter stuff figured out
+xtoolbar
+better looking notes box
+board wood background
+xmove database moves displayed on board w/ !!, !$,$ notation
+
+
+------
+names
+------
+plunk
+
+or acronym
+pente analysis tool
+dweebos ultimate pente 
+
+smartepente
+stonedb
+stone store
+pentagious
+stonezone
+stone boss
+stone hone
+pente permanente -too hard to say
+permapente -too hard to say
+smart stones
+pentewhiz
+connectmaster
+
+plonk
+plunker
+plunky
+stonedb
+perfect
+profound
+perceptive
+pure
+skill
+master
+ace
+expert
+prime
+supreme
+boss
+agile
+brainy
+bright
+clever
+crafty
+genius
+whiz
+round
+circle
+stone
+grid
+net
+web
+line
+inline
+groove
+connect
+unite
+complete
+db
+database
+knowledge
+compile
+compilation
+editor
+win
+smarter
+store
+record
+analyze
+
+
+
+renju
+connect6
+keryo
+
+-------------
+import/export
+-------------
+
+need to worry about loading in games from another player where we match
+on gid?  no, but if match dbid!  i guess just create a new dbid and use that, no biggie
+
+import allows user to select a file
+need code to read in various file types
+
+dsg format
+pbem
+tool import/export files
+  either game files
+  or move database
+
+interface importer
+boolean attemptImport(File f)
+  if this is the right file type then do the import work
+
+x for pbem or dsg file
+  read in game data
+  prompt if user wants this as a new game or a game search
+  if new game create
+  else open game search with those moves added
+  
+for a database import file
+  read in all games and add them to a database of the users choice?
+  should databases/players be stored also?
+
+---------
+import v2
+---------
+-provide better feedback to user about import process
+  -during the reading of files/parsing, show progress
+  -show a table of games/analysis's after import
+   Filename		Object		 Type	Db				Status
+   -------------------------------------------------------
+   file1.txt	BRF vs. LISA Game	BRF's Games		Loaded|Saved|Failed
+
+  NO-double-click or right click to open the object
+  NO-rightclick and save
+  NO-Db column header and column value's is dropdown of all db names?
+     selecting header sets all db's
+     db blank for game analysis files
+  NO-Save all button at bottom
+  -Cancel button
+  -Ok button
+  -Save to db right away
+  -If game, and no db specified, then add to special db "My Games"
+  fix later=(if later exporting then will go to my games and sending to another player
+      could merge the db's, might not be what the user wants...)
+  
+-importing one object just opens it, more than one uses above
+
+
+GameImporter
+boolean attemptImport(File f|InputStream in|byte b[], GameImporterListener l)
+   
+GameImporterListener
+void gameRead(PlunkGameData g)
+void analysisRead(PlunkTree t)
+
+GameImporterDialog(File files[])
+
+------
+export
+------
+
+need to look into comments and special characters
+
+need to know what to export
+1. current game
+2. current move tree (1 and 2 could be combined to be just whatever tab is visible)
+3. all games, all move trees? 
+4. all games from selected database from list, selected move trees from list
+
+   if exporting all games from db, then do a special search of the database
+   that gets ALL games and also gets the moves (including comments etc)
+
+upon importing then
+option1. open game in viewpanel (unsaved)
+      2. open move tree in viewpanel (unsaved)
+      3/4. store games into database using database property (create db if necessary)
+         store trees in database
+
+2.0 and what format
+1. games can be pgn or sgf
+2. move tree must be sgf (could code it pgn eventually i suppose)
+
+also store custom properties for each move
+HASH[]
+ROTATION[]
+rotatedmove?
+
+also store custom property for each game
+DATABASE[dbname]
+
+
+
+--------
+serial #
+--------
+as basic as it gets below
+doesn't prevent users from
+1. getting access to the java code
+2. bypassing the serial # check
+
+store install date in db as prop name 'd'
+if serial number is a trial version and sysdate-d > 30 then popup and don't allow access
+how do i know trial version? part of the serial number added after hash before encrypt
+or put it in a license file, that includes (name, install date, trial/full, serial, public key)
+
+trial version can't export
+
+serial number checking
+On the website:
+CODE
+h = hash(customer_info) // where hash() is a cryptographic hash function
+s = RSAEncrypt(h, private_key)
+print hex(s) // the serial number in some transferrable format... hex, base64, whatever
+
+
+In the app:
+CODE
+h = hash(customer_info)
+s = unhex(s) // s is user-supplied as the serial number
+r = RSADecrypt(s, public_key)
+if r == h then
+    return valid
+else
+    return invalid
+    
+problem is the encrypted hash is long
+
+simpler idea is to just require a name and serial number from within the program
+server side
+hash name, email
+use private key to encrypt above [diff private keys for trial vs. paid]
+base64encode above, thats the serial
+
+client side
+hash name, email
+base64decode 
+use public key to decrypt serial
+check it matches
+if only matches with the trial public key
+  then check install date
+
+server side algorithm is
+1. when paying for program, gather name, email address, date
+2. hash user name, email, date, license type = paid into hash
+3. encrypt hash using private key
+4. add hash + user name, email, date, license type, serial, public key to a
+   string delimited by something.  base64encode all that into a license file 
+   that the user can download.
+
+algorithm is
+1. load public key from db
+1b. load serial # from db if exists
+2. read in encrypted data from database plunk_prop license
+3. use public key to unencrypt data from license
+4. parse out following fields
+   a. user name
+   b. user email address
+   c. install date
+   d. license type
+   e. serial number
+   f. public key
+5. hash user name,email,install date, license type into newHash
+6. base64decode serial number (4e) into s
+7. decrypt s using public key (4f) into oldHash
+8. if oldHash != newHash
+    license error
+9. else if license type = trial and install date is too old
+    license error
+10. else if license type = trial and serial # doesn't match serial from db
+    license error (prevents user loading a new serial # from web site)
+    
+if not license error and trial version
+  insert serial # into db
+
+so uninstalling/reinstalling with new serial would work but maybe can live with that
+
+
+another idea
+------------
+create random serial # to give out after purchase
+1st time user enters it must be verified at pente.org
+pente.org takes the value, shifts things around a little, encrypts it using private
+key and returns it
+then client needs to
+shift serial around same way and compare that to 
+
+
+    
+---------
+jprobe
+---------
+1. moveiconrenderer getcomponent is slow
+x2. drawing the new pieces is slow
+
+
+
+$ find . -name '*.java' -exec wc -l {} \; > wc
+
+-----------
+beta access
+-----------
+brf
+zoeyk
+mmammel
+mickeyss
+richardiii
+quiji
+
+
+---------
+docking
+---------
+continue to have tabs for each open analysis or entry right?
+tabs can be moved around, floated, minimized, etc.
+
+then within each tab the components can also be moved around
+tree
+comments
+results
+games
+filter
+board
+
+
+mydoggy api
+each tab (game entry or analysis) would be a "ToolWindowGroup", not sure
+how the user sees those (is able to navigate between them)
+
+then within a tab the components are as follows
+tree,comments,results,games,filter = ToolWindow
+board = Content
+
+
+-----------------
+AI notes
+-----------
+$ g++ -mno-cygwin -I"$JAVA_HOME"/include -I"$JAVA_HOME"/include/win32 -Wl,--add-stdcall-alias -shared -o Ai.dll CPoint.c AiWrapper.cpp Ai.cpp
+
+AI features
+
+1. "new game against computer" option
+       x select seat, level, vct on/off
+       x then pre-populate the game data
+       
+       x while thinking need way to cancel the ai thinking
+       
+       x will crash i think if the getmove() is still running and
+         the privatedestroy is called
+       
+       X allow user to delete moves
+       
+       x show computer thinking progress bar, could be unknown length type
+       
+       currently not using opening book, could use the opening book that is converted
+       x -allow user to specify which opening book!
+       -and/or allow user to specify a database to use as an opening book!
+           I suppose ideally the database would be analyzed fully (the entire move tree mapped out) and have the wins/losses summed up the tree from the leaves, that way we could use alpha/beta type functionality to tell better if a move is good or not.  That would solve the current problem of when a move shows the win % as 60 % for white, but then when you go to that move black has a certain move with 80% wins.  Because of all the junk games it
+       x -ship mark's opening book
+       
+       x for opening book, lookup current position by hash in plunk_node for
+         whatever opening book.  if position found, then randomly pick one of the
+         children
+       
+       x show computer's current thinking state by using callback from c code
+       x - would be nice to reduce the flickering if possible
+       x - allow turning it off
+       x - show number of positions scanned
+       x - show if using opening book position or not
+       x - show clock while thinking
+       
+       x widths are off and annoying
+       
+       x if go back in move list while ai thinking it will make a variation!
+       
+       x figure out how to package Ai.dll and the data files
+          try out releasing an upgrade executable
+       
+       X can 2 ai games go on at once?  might be a problem with way jni is now
+       
+       x test with jprobe to determine how much visualization slows performance
+       
+       NO after game over, show button for user to save game, when clicked would
+         show the game details view pre-populated somewhat
+       
+       x when user closes window of game in progress, prompts for game info
+       x but no way to enter it, what to do?
+       
+       x maybe always show game details but in a tabbed component at bottom?
+       
+       allow saved games to be restarted with computer?
+       
+       show a popup note when screen opens about going back moves
+       
+       allow user to pause ai thinking, not sure how to do that!
+       
+       x allow user to setup a position before starting the game
+       x  - new tab with ai type fields and button to start the game
+       x  - new visualization panel to be shared in game view and analysis view
+       
+       x allow keryo games
+       
+       store completed ai moves in a separate analysis file for each level
+       and reuse them to save time
+       
+       x provide instructions in screen text until player places a stone or
+         starts a game
+       
+       if Ai goes put up its your turn
+       
+2. x allow user to see computer in analysis view
+
+   x show AI settings / vis panels (vis after click start)
+   
+   x if game state changes cancel the AI?
+   
+   show the computer's move with a name of mmai[level]
+   or show it on the visualization screen, clicking screen adds move to screen?
+   
+
+   if don't show visualization, then don't show the gray board, just showed
+   disabled settings
+   
+   display count/time after computer done
+   display recommended move in game analysis window?
+   
+   save last selected ai settings in database
+
+-------------------
+meta info notes
+-------------------
+
+provide way for users to add lines to a board position
+
+x provide way for threats to be visualized for beginners
+
+x provide a data object with move1, move2, color, style
+
+how to determine threats
+ use the threatanalysis from my ai to figure it out
+ what threats to highlight?  ones that require an immediate response? captures in diff color?
+ allow user to configure which threats to display?
+   offensive, defensive, captures included, how to display in UI?
+
+how to draw the outline of the line, make it stick out farther
+  draw 2 end point circles
+  find the polygon endpoints for rectangle between circles
+  endpoints are on circle at angle between 2 moves, always either 0,45,90etc,
+  points on vertical grid point have rotation -180, 0

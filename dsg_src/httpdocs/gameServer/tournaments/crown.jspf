@@ -1,0 +1,20 @@
+<% switch (tourneyWinner) {
+   case DSGPlayerGameData.TOURNEY_WINNER_NONE:
+     break;
+   case DSGPlayerGameData.TOURNEY_WINNER_GOLD: %>
+     <img src="/gameServer/images/crown.gif"
+          alt="Current Tournament Champ!">
+<%   break;
+   case DSGPlayerGameData.TOURNEY_WINNER_SILVER: %>
+     <img src="/gameServer/images/scrown.gif"
+          alt="Current Tournament Champ!">
+<%   break;
+   case DSGPlayerGameData.TOURNEY_WINNER_BRONZE: %>
+     <img src="/gameServer/images/bcrown.gif"
+          alt="Current Tournament Champ!">
+<%   break;
+   case DSGPlayerGameData.KINGOFTHEHILL_WINNER: %>
+     <img src="/gameServer/images/kothcrown.gif"
+          alt="Current King Of The Hill Champ!">
+<%   break;
+   } %>

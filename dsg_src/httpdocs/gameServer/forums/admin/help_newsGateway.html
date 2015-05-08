@@ -1,0 +1,183 @@
+<a name="top"></a>
+
+<font size="-1"><b><a name="host" style="text-decoration:none;"
+ ></a>Host</b></font>
+<ul>
+    <font size="-1">
+    The host that Jive should connect to for retrieving or posting NNTP messages
+    for this forum.
+    </font>
+</ul>
+
+<font size="-1"><b><a name="newsgroup" style="text-decoration:none;"
+ ></a>Newsgroup</b></font>
+<ul>
+    <font size="-1">
+    The newsgroup that Jive should use for retrieving or posting NNTP messages
+    for this forum.
+    </font>
+</ul>
+
+<font size="-1"><b><a name="defaultfrom" style="text-decoration:none;"
+ ></a>Default "From" address</b></font>
+<ul>
+    <font size="-1">
+    This is the address that Jive will use when exporting guest messages or all
+    messages if the "Honor user email preference" is set to false.
+    </font>
+</ul>
+
+<font size="-1"><b><a name="port" style="text-decoration:none;"
+ ></a>NNTP Server Port</b></font>
+<ul>
+    <font size="-1">
+    NNTP servers by default are configured to use port 119, however it is possible
+    that the server may be configured to use another port. If that is the case, you
+    can configure the newsgroup gateway to use that port when connecting to the NNTP
+    server by setting this property.
+    </font>
+</ul>
+
+<font size="-1"><b><a name="username" style="text-decoration:none;"
+ ></a>NNTP server username</b></font>
+<ul>
+    <font size="-1">
+    If the NNTP server the newsgroup gateway is configured to connect to requires a
+    username, you can configure the newsgroup gateway to use a username when
+    connecting to the NNTP server by setting this property.
+    </font>
+</ul>
+
+<font size="-1"><b><a name="password" style="text-decoration:none;"
+ ></a>NNTP server password</b></font>
+<ul>
+    <font size="-1">
+    If the NNTP server the newsgroup gateway is configured to connect to requires a
+    password, you can configure the newsgroup gateway to use a password when
+    connecting to the NNTP server by setting this property.
+    </font>
+</ul>
+
+<font size="-1"><b><a name="organization" style="text-decoration:none;"
+ ></a>Organization</b></font>
+<ul>
+    <font size="-1">
+    Newsgroup messages can have an "Organization" header set which will show up in
+    many popular newsreaders such as Microsoft Outlook newsreader. Setting this
+    property will cause outbound newsgroup messages to have the Organization header
+    set to the value you enter.
+    </font>
+</ul>
+
+<font size="-1"><b><a name="honouremail" style="text-decoration:none;"
+ ></a>Honor user email preference</b></font>
+<ul>
+    <font size="-1">
+    Setting this property to true (the default) will cause this gateway to honor user
+    preferences to either show or hide their email address depending on the user
+    preferences. If the user chooses to not show their email address and this property
+    is set to true, the newsgroup gateway will use the 'Default "From" address' property
+    as the from address. Setting this property to false will use the user's email address
+    as the from address regardless of the users preferences.
+    </font>
+</ul>
+
+<font size="-1"><b><a name="attachments" style="text-decoration:none;"
+ ></a>Allow import/export of attachments</b></font>
+<ul>
+    <font size="-1">
+    Setting this property to true will allow this gateway to import and export attachments
+    to messages. Importing of attachments will honor any attachment settings you have made.
+    <br><i>Note: importing of attachments that cross multiple messages is not supported</i>
+    </font>
+</ul>
+
+<font size="-1"><b><a name="subjectcheck" style="text-decoration:none;"
+ ></a>Enabled threading via subject line matching</b></font>
+<ul>
+    <font size="-1">
+    Setting this property to true will allow this gateway to attempt to create threads through
+    matching the subject line with subject lines of messages already imported in the last 60
+    days. This is a fall back method of threading when the primary method of using the threading
+    headers that normally occur in mail messages are not found.<p>
+
+    Subject line matching will only occur is the subject of the message being imported starts
+    with "re:" (case ignored, configurable). If that is not the case, threading via subject line
+    matching will not occur.
+    </font>
+</ul>
+
+<font size="-1"><b><a name="tempparent" style="text-decoration:none;"
+ ></a>Temporary Parent Body</b></font>
+<ul>
+    <font size="-1">
+    It's possible with email accounts, mailing lists and newsgroups to get a response to
+    a message before getting the original message. If this happens and only the child
+    message is available at the time of the gateway import, Jive must still have a way
+    to establish a correct parent/child relationship. Therefore, a temporary fake parent
+    message is created using an extrapolated subject from the child, and a body with the
+    value given by this property. By default, this value will be an empty string. However,
+    you may wish to create a short message that explains the nature of the fake parent
+    message to the user.<br>
+    On subsequent imports when a real parent message is found, the fake data will be replaced
+    with the correct subject and body.
+    </font>
+</ul>
+
+<font size="-1"><b><a name="debug" style="text-decoration:none;"
+ ></a>Debug</b></font>
+<ul>
+    <font size="-1">
+    Setting this property to true will cause the NNTP provider that the newgroup gateway uses
+    to output debugging information to the standard output stream. Where that stream show up
+    depends on your application server, but often it shows up either on the console or in a
+    file called stdout.log
+    </font>
+</ul>
+
+<font size="-1"><b><a name="importafter" style="text-decoration:none;"
+ ></a>Import messages after</b></font>
+<ul>
+    <font size="-1">
+    Setting this property to a date in the format of dd/mm/yyyy will cause the gateway to
+    import messages that have a date equal to or newer than the date specified.
+    <br><i>Note: this option is only available when importing a gateway once.</i>
+    </font>
+</ul>
+
+<font size="-1"><b><a name="exportafter" style="text-decoration:none;"
+ ></a>Export messages after</b></font>
+<ul>
+    <font size="-1">
+    Setting this property to a date in the format of dd/mm/yyyy will cause the gateway to
+    export messages that have a creation date as old or older than the date specified. One
+    note is that the gateway will export a whole thread if any of the messages in the thread
+    meet the date criteria. This is done so that the consistency of the thread is preserved.
+    <br><i>Note: this option is only available when exporting a gateway once.</i>
+    </font>
+</ul>
+
+<font size="-1"><b><a name="allowexportagain" style="text-decoration:none;"
+ ></a>Allow messages to be exported again</b></font>
+<ul>
+    <font size="-1">
+    Setting this property to true will cause this gateway to reexport messages that have
+    already either been imported through the gateway or exported through the gateway.
+    <br><i>Note: that Jive created messages are never exported, even if this property is set to
+    true.</i>
+    <br><i>Note: this option is only available when exporting a gateway once.</i>
+    </font>
+</ul>
+
+<font size="-1"><b><a name="updatemessageid" style="text-decoration:none;"
+ ></a>Update NNTP message ID stored in Jive</b></font>
+<ul>
+    <font size="-1">
+    Setting this property to true will cause the gateway to update the messageID message
+    property stored in Jive upon export of a message. By default, the messageID is stored
+    in Jive so that the message won't be reexported or reimported.
+    <br><i>Note: This setting has no effect unless the 'Allow messages to be exported
+    again' property is also set to true.
+    <br><i>Note: this option is only available when exporting a gateway once.</i>
+    </font>
+</ul>

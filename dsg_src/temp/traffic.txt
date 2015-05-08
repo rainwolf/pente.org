@@ -1,0 +1,22 @@
+Need more traffic, better ads by google
+
+X 1. more content somehow, something for adsense to use to find out its pente stupid
+
+X 2. allow googlebot's into login-only pages
+X   in LoginFilter.java, detect google, or all robots and assign request to user
+X   robot, or something like that
+X   not a security risk i don't think, someone could figure that out and use it,
+X   but so what.  but do need to not show player emails!
+   
+X 3. if ppl search for pente game, free pente, pente online, DSG nowhere to be seen
+X   need to fix that somehow, update titles, index
+   
+X 4. help pages not indexed, since javascript opens window
+X    create hidden link to them
+
+Status
+-------
+keywords seemed to help, google shows DSG at top or near for several pente+words
+need to get Pente+Game though, put in title, Pente+Rules, added to getting started area
+hidden link not picked up yet, make it smaller clickable link instead
+ads on restricted pages seem to work also
