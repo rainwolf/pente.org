@@ -1,0 +1,418 @@
+X 1. Separate server on diff port
+X   a. Create admin jsp to add/remove servers
+X   b. Server data stored in new db table
+   
+X 2. Somehow play page has links to different applet pages
+X   a. Select which room to play in select box
+X   b. Port sent to applet.jsp for connecting to correct server
+X   c. How will JWS be affected?  That's a tough one.
+X      1. Could create simple servlet that returns a dump of server names, ports
+X      2. JWS could connect to that page first, then populate choice on login screen
+X      3. Requires login screen to change a bit (dont' get connection to server
+X         until user hits button, want to do that anyways, and make applet version
+X         simply not show login screen)
+X   d. One of the faqs mentions the game server port, need to update that
+X   e. Remove game server port from web.xml
+   
+X3. Need a different applet, or the same one but configurable
+X   a. Maybe server sends back info on login, like "tournament", "name", etc.
+X   b. Or could put that in applet.jsp, but security concern
+   
+4. Need modified main room client 
+2.0   a. maybe we have no create table button (system invites only)
+X   b. name of tournament somewhere
+X   c. instructions on login
+   
+5. Need modified game table client
+X   a. no changing times,rated,game
+X   b. sit once, then server auto swaps
+2.0   c. no standing once sitting
+yes   d. cancelling games allowed?
+2.0   e. what happens when player is disconnected and doesn't return?
+X   f. not allowed to play if not matched up in a current tourney?
+
+X 6. Logging, how is that altered since 2 or more servers?
+X   a. If keep 1 log file for X servers
+X        Might want to pass in name of server so logging can include it
+X      Pass in server id and include that in all logging
+X   b. Or create multiple log files?
+   
+7. What sorts of tournaments, format
+X   a. Think I want something simple, like what BK does
+X   b. Need new tables for rounds, sections, not sure
+X   c. Need a way to assign players to sections (auto would be good)
+X   d. How to display status of sections (IYT or BK?)
+X   e. 1 or 2 week for rounds? 20 minute timers?  
+X      might be a big commitment of time if have to play 6-8 games, nah.
+2.0   f. Do that additional tie-breaker thingy BK does?
+2.0   g. Neither game counts unless both are played?
+   
+8. Server side
+X   a. Need a check that players are allowed to play
+X   b. Needs to set correct table settings
+X   c. Needs to record games in db as being in tourney (event, round, section)
+X   d. Needs to update tournament tables
+X   e. Needs to switch player seats after 1st game
+X   f. Needs to know if players have already played 1 game (error condition)
+2.0   g. Auto-invite players to a new table once in main room?
+X   h. Needs to figure this all out based on data from dsg_server+game_event 
+
+   
+Can I release this stuff in stages (to debug issues along the way)
+XStage 1.  Support for configurable servers, that can be done standalone
+X          Supporting JWS is possible but also optional
+
+Stage 2.  Everything else pretty much?
+2.1 X Client shows game room name
+    X Client knows if tournament or not
+      X if tournament, can't change timers, rated, or game
+    X Server sends out correct timers
+    X Server knows its a tournament
+    X Server sends out game room name at login
+    X Server/client doesn't allow inviting computer
+    2.0 Server/client only allows tourney players to create table?
+    X Main room messages controlled/configurable by admin page
+      X - then can provide specific messages to each room
+      X - admin page updates db table, and updates server held object used
+      X   by server to send to players upon login
+        
+        // X could setup db somehow to know all games+eid's allowed in server
+        // X then pass those in to servertable and to client
+        // X (no) client lists only those allowed games
+        // X server allows only those games
+        // X server uses those to record game in pente_game
+        // X new table to associate server_id, game id's, event_id's?
+        // X ServerData updated to include list of game:eid pairs
+        // X ServerStorer updated to pull this, and also isTournament
+        // X LoginEvent sends back ServerData
+        // X admin screen update to allow passing in games+eid's?  yucky
+
+X 2.2 X Server checks players allowed to play
+    X Server records game in db with correct event, round, section
+    X Server updates tournament table with game result
+
+2.4 X Create new signup, confirm screens
+    Create program or admin screen to create next round with auto-sectioning by seeds
+    X - server can run it after each game, if round is finished (useful for speed tournies)
+    X - round is finished if all games have been played
+    X - need admin screen to initially run it
+    X  - also, if players forfeit match, need way to record that
+    X  - winner algorithm needs to know about forfeits as well
+    X  - forfeits = 3 in db, counted as game played, but doesn't show up
+    X    anywhere else (not on results)
+    X - need admin screen to mark forfeits? i guess could just look at all matches
+    X   unplayed and mark them
+    X Create new screen to show tournament status and results
+    X Reorganize current tournament layout, older tournaments
+    X Create new tournament rules, help section?
+
+X 2.5 Create tournament forum for just those members in tournament
+X    All messages posted there, members can also use it to setup game times
+No      (auto setup messages for each matchup?)
+
+X 2.6 Activity logging check, add server id to log messages
+
+
+
+gs.core.MySQLTournamentStorer
+
+X addPlayer(pid, eid) // used by jsp
+X getDetails(eid) // used by jsp, servertable
+X getPlayers(eid)
+
+X getUnplayedMatch(pid1, pid2)  // used by servertable
+X  updateMatch(match data)
+  
+X createSections(eid) // used by servertable, or admin screen
+X  insertMatch(data...)
+X getMatches(eid) // used by jsp, others?
+
+X TourneyRoundData
+X groups sections together for display
+XTourneySectionData
+X groups matches together for display
+X String[] getWinners() // for display
+X TourneyMatchData
+
+
+X db changes
+----------
+
+tournament_details
+event_id,
+status enum('N','S','A','C'),
+timed enum('Y','N'),
+initial_time,
+incremental_time
+dates
+
+tournament_players
+event_id,
+pid,
+signup_date,
+seed
+
+tournament_match
+event_id,
+round,
+section,
+gid,
+p1_pid,
+p2_pid,
+result (1, 0)
+
+
+Release/Tourney schedule
+------------------------
+X Put up latest code prior to start of tourney to give a little more live testing
+X This includes guest ro access to forums
+X  - add anybody ro access to appropriate forums
+X  - make sure to test that everything still working here
+
+On Thursday 3/3 morning
+X - create new category for tournaments
+X - create new forum w/ admin screen (can add latecomers tomorrow)
+X - create email list of all players, bcc them all to check forum for details
+    and last chance to dropout (can add latecomers tomorrow)
+X - post simple message on forum
+X - admin screen - create/start new server instance
+X - admin screen - update messages in main room, tournament room
+
+On Friday 3/4 morning
+X - make sure signups not on anymore (can still get to it...)
+X - admin screen - create initial round
+X - post detailed message to forum about start of tourney, details
+X - post message about when dweebo can play as sample
+X - add latejoiners to forum/email list and email them
+
+Additional changes needed soon
+X 1. admin screen to set forfeits
+X  a. new column in match for forfeit?
+X  b. show forfeits on status screen
+X 2. minor changes to status screens
+X 3. who.jsp, show which room logged into?
+X 4. cross-links to/from status/forum
+no 5. list when round starts/finishes in status screen
+X 6. % played on round status page
+
+later changes
+1. show section, seed in tourney game room
+X 2. turnoff GH access during games
+
+Tournies V2.0
+-------------
+
+Main goals
+X 1. Speed tournies
+2. Other formats like single-elimination, april d-pente format
+3. Niceties
+
+Double-elimination, single-elimination format changes
+---------------------------------
+X 1. Need to make TourneyStorer an interface, with non-static methods
+X 2. Create caching TourneyStorer
+X 3. Add method to Tourney,TourneyFormat to store match
+X    depending on type of format, can simply store - round-robin
+X    or can store and create more matches - double-elimination after tied match
+X 4. Update ServerTable to use Tourney to store match, and make it work for
+X   double-elimination style tourney
+X 5. Update TourneyMatch, db table, to add a sequence to games, either for pair
+X    of games, or every game, pair of games might be easier
+X 6. Create double-elimination format class, with code for sectioning
+X   Create single-elimination format class
+X 7. TourneySection needs to have different methods probably to create display
+X    matrices
+X 8. Status Round jsp needs to know how to display different formats
+X 9. Format.jsp needs to be updated
+X 10. Servertable should send out match status, like dweebo up 2-1, or tied at 1-1
+X 11. Need to mark matches(games that is) as forfeit or not with flag.
+X 12. Create dsg_tournament_admin table, associate N admins with a tourney
+X    list them in tourney details
+
+Speed tournies
+--------------
+later 1. signup button in lobby
+   a. signup tourney event
+   b. disable after registration end, another event, or just an error?
+
+X 2. single-elimination to start with
+X 3. print out matchups/results in lobby automatically
+later 4. create tables and add players to them automatically
+no, admin 5. forfeits need to be handled automatically
+X   a. what to do if both players are booted, how long do they have to return...
+X   b. if they don't return, other player must forfeit match for them (not just game)
+X 6. will it work if server is restarted in middle of tourney?  probably
+X 7. will it work if both players booted and return and restart new game, probably
+admin 6. need admin to create initial round, or have custom cron job thingy do it
+X 7. close tables after match is done, no, players might want to review game still
+X   no big deal if another game is played there, will still check that its allowed
+admin handles 8. also have to deal with what if a player(s) never starts a game in a match
+X   (drops out after a round, but still in tourney?)
+X   easiest, most reliable thing to do might be to require an admin at all tournies
+X   that can mark players as forfeiting their matches, in order to move the tourney
+X   along. this also allows players to decide to wait for longer for someone to return.
+
+later 8. Don't turn off registrations even if time is up, turn it off when admin
+   creates the 1st round
+X 9. When 1st round created, send event to main room to print matchups
+X 10. Create force forfeit screen, 1st choose tourney, then from list of players
+X     select checkbox to force their forfeits.  this will update db and possibly
+X     create next round.
+X      Hmm, if BOTH players are forfeiting, current code won't work, need to
+X      check that if both players in a match are forfeiting, to give none of them
+X      wins and make sure this gets displayed properly.
+X      So when marking forfeits, if only one player is forfeiting in match, other
+X      player gets win(s), otherwise, no-one gets wins.
+X 11. Update format page
+X 12. Update getting started guide
+X 13. Add complete-tourney method to storer
+X 14. Update index.jsp page to list completed tournies, goes to statusRound i guess
+X 15. Show winner,completion date on completed tournies in details
+X 16. Show add/drop players from tournament in server room
+X 17. Allow access to admin/ to partica
+X 18. Could show running commentary of games in main room, as games are finished.
+
+Fixes/additions after 1st week
+X 1. Make main room show ratings for tournament type (speed-pente)
+X 2. updating games slow if someone else is searching db i think, make search not require lock?
+      searching db doesn't lock, but getting venue info does, and that is slow...
+X 3. add note to db about restricted search - refer to getting started
+X 4. add crown to current winner of speed-tourney, reg tourney
+    put data in dsg_player_data
+    show in lobby, and everywhere else listed?
+    or could just keep it in dsg_player_data and maintain it manually, would need
+    to clear cache however, or update automatically
+    (in long term, could make it fully auto, for now, create way to flush player data cache,
+     and reload certain player)
+X 5. add a new template to tourney page about current winners, with pics
+X 6. fix tourney.getWinners(), bug in tourney/index    
+X 7. Games don't show up in speed-tournaments in GH
+8. Screen to email players about tournament stuff
+9. for the drop player screen, auto-check names that aren't in room for speed tournies
+
+Other additions/fixes
+1. swiss algorithm
+  a. also, vacation time, need a way to mark that when creating a round
+     this means handling 1/2 byes as well
+2. tournament type that combines several tournies (swiss+single-elim finals)
+    
+
+
+X 3. prize listed
+X 4. rating restrictions
+X 5. double-elimination, make sure dropping players works
+
+Swiss algorithm
+---------------
+1st round easy, if odd, give #1 bye, split rest in 1/2, match up
+2nd round easy, if odd, give highest rank w/ a win bye
+ take 1/2 with wins, split in 1/2 and match up
+ take 1/2 with losses, split in 1/2 and match up
+ 
+general algorithm
+1. sort players, by some means
+  a. wins
+  b. opponent wins
+  c. randomness
+2. if odd # of players, lowest player who doesn't already have bye (so 1st round
+   will be random)
+3. find best possible grouping for players, maybe work below on double-elim could
+   help
+   
+   need to track wins in player data, opponent wins
+   
+   assign matches as 1v2, 3v4, that is optimal
+   can reuse potential round, potential match
+   recursive List getMatches(List players in order)
+     
+     if (list size = 2) return 
+        new PotentialRound(new match(pi,pj,0), isDup(pi,pj))
+        
+     int i = 1;
+     
+     PotentialRound pr = null;
+     for (j = i+1 to n) {
+         create copy of list
+         remove pi, pj from list
+         PotentialRound sub = getMatches(copy)
+         int distance = abs(p1 wins - p2 wins) * 1000 + abs(p1 opp wins - p2 opp wins)
+         sub.addMatch(new match(pi,pj,distance))
+         if (pr == null) pr = sub
+         else if (sub is better than pr) pr = sub
+     }
+     return pr
+   }
+
+4. issues still to resolve
+   a. byes, vacation vs. normal
+   b. getWinner, deal with round 5 being final
+   c. create single-elim playoff at end...
+
+
+X Double-elimination algorithm
+1. group players into brackets
+   no-losses - bracket 1
+   1 loss - bracket 2
+   2 loss - remove
+   if bracket 1 has <= 1 player
+     if bracket 2 empty, we are done, won't get here
+     else move all bracket 2 players into bracket 1, no bracket 2
+   
+2. for each bracket
+3. sort players by seed
+4. if odd # players, give bye to highest seed that hasn't already had bye
+5. create matrix of players who've already played by looking at all past matches
+     need to do this at tourney level
+6. determine matches by #1 vs #n-1 except when players have already played
+   
+   thats the hard part, how to find the best possible setup, very difficult
+   a. want to minimize matches where players have already played
+   b. among matches with minimum recurring players, choose the one that
+      is least out of place in respect to #1v#n-1,
+      use the distance out of place squared.
+
+   checking all combinations could work...using recursive alg.  take top player
+   in list and for each other player, create a match, and run recursion on
+   new sublist to find best possible round of remaining players.
+    
+    class PotentialMatch
+      p1, p2
+      int distance
+      
+    class PotentialRound
+      List of PotentialMatches
+      int numDupMatches;
+      int distanceFromOptimal
+      public PotentialRound(PotentialMatch match, boolean dup)
+         addMatch(match)
+         numDupMatches+=dup?1:0
+      addMatch(Match)
+         list.add(match)
+         distanceFromOptimal+=distance*distance
+      isBetter(PotentialRound pr2)
+        if (pr2.numDupMatches > numDupMatches) return false
+        else if (pr2.numDupMatches < numDupMatches) return true
+        else if (pr2.distanceFromOptimal >= distanceFromOptional) return false
+        else return true
+
+   recursive List getMatches(List players in order)
+     
+     if (list size = 2) return 
+        new PotentialRound(new match(pi,pj,0), isDup(pi,pj))
+        
+     int i = 1;
+     
+     PotentialRound pr = null;
+     for (j = n to i+1) {
+         create copy of list
+         remove pi, pj from list
+         PotentialRound sub = getMatches(copy)
+         sub.addMatch(new match(pi,pj,n-j))
+         if (pr == null) pr = sub
+         else if (sub is better than pr) pr = sub
+     }
+     return pr
+   }
+    
+    
+    

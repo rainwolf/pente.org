@@ -1,0 +1,423 @@
+What needs to happen to support turn-based
+
+Features - visible
+1. board where moves can be made
+    view board, coordinates, players, timers, rated
+    alternatives
+    	a. simple web pages with html controls, links from list of games to game screen
+    	b. an applet that lists all games, links to board
+    	c. possibly integrate playing turn-based games from within the game server?
+
+x 2. need way to invite player to a game, and accept/decline
+
+x 3. need "home-page" for each user, where they can view things like
+    current games, possibly message-box functionality
+
+
+x 5. need page to post open invitation to games (hey come play me...)
+
+
+
+
+Features - system
+x 100. need clock watcher that continually checks for games where timers have run
+   out, update game as complete
+
+thread
+millisecond timer
+synchronized access to all active games (list)
+sort list by timeout_time nearest at top
+every minute
+  for i = 0 to end of list
+    synch on game
+      if current time > timeout_time
+        end_game
+      else break;
+
+x 102. new code obviously to handle making moves, creating games, etc.
+
+db layer
+create_game(data)
+load_game(gid)
+update_game(gid, new timeout, move, text)
+accept_invite(gid, int player, int pid)
+end_game(gid)
+load_open_games()
+load_player_games(pid)
+
+servlets
+make_move
+  input gid
+  load_game gid
+  synch game
+    if (game over) exception
+    else update_game(...)
+    if (game now over)
+      end_game
+
+create_game
+  input all params, create_game
+
+probably want a caching game handler, for speed, and for the timer thread
+that looks for games to expire
+- seems like easiest way is to cache ALL active games...but that might not last
+if this becomes popular...could instead cache all games that will expire soon (say 2 hours)
+update that cache every hour to be safe.
+
+so caching game storer does the following
+- has a cache of games, not all games, but just whatever gets loaded by players
+- also queries on its own and stores all games due to expire soon
+
+x 101. possibly need new tables to track all this info
+x 103. probably want new tables to store temporary games+moves
+     x optimized for speed, won't interfere with game db searches
+
+
+tb_game
+gid pk (can be conflicting with other gids, but lets not)
+state (N, S, C) n=not started s=started c=complete
+p1_pid could be null
+p2_pid could be null
+creation_time,
+start_time
+last_move_time
+timeout_time
+end_time
+game
+event_id
+round
+section
+timer
+rated
+initial_time
+incremental_time
+
+tb_moves
+gid
+move
+text_message
+
+
+x 104. new ratings for turn-based games
+x just create one new game type for each game
+
+tb games created with tb game ids, (tb event ids?)
+show tb game ratings on screens for tb games
+in game db, store with normal game id, and new flag to indicate tb game
+     but store using tb-ratings
+
+
+tb games have gids in 500... range, need to also change mysqlpentegamestorer
+logic that gets new gids to handle this
+
+
+106. server downtime a much bigger deal for turn-based, since affects
+games that would end during downtime...
+
+
+Order of implementation
+x 1. create db tables
+x 2. mysql storage routines
+3. caching storage implementation
+   need test program for this as well
+   create a bunch of active games (1000+)
+   create a bunch of "user" threads, all making moves at random timer intervals
+   create other threads creating new games, accepting invites
+
+x 4. page to create a new game vs. player
+X 5. page to show my current games + invitations
+X 6. page to accept/decline a game
+x 7. making moves
+   x to have an applet show moves, and make move
+   x need to pass into applet (moves, gid, messages)
+   x pass out (new move, gid)
+   xx confirmation screen
+   x pass out new move, message, gid, where to go next
+   x moveservlet
+   x  - get gid, player logged in
+   x  - load game
+    x - check game is active
+   x  - check player is playing this game and its their turn (if making a move, loading ok)
+   
+   show additional data on move screen
+    x - p1,p2 w/ ratings
+    x - days per move, rated
+    x - messages (for each move show associated message)
+    x - event,   2.0  round,section
+    x - timeout date
+    2.0  - timeout date i18n
+   2.0 handle resigns
+x  make first move at K10 auto
+   
+X 8. page to cancel an invite before other player accepts or declines
+
+x 9. messagebox
+   x new table dsg_player_message
+   x pid, message, subject, send date, frompid
+   x make interface look like forums
+   2.0 allow messages to be emailed as well
+   x new classes to represent data, storers
+   
+   x compose, reply
+   x view all messages
+   2.0  back/forth views
+   x delete messages
+   x see #new messages in left-nav
+   x cache messages
+   
+X 9b. redo the my profile page to split up options in separate pages, like
+    how jive forums do it
+    integrate with the jive forums options as well, so everything is in one place
+   
+x 10. handling completed games
+x   need to update existing code that gets gids, need to reuse tb-gids and
+x   not use them for live games
+   
+2.0 11. thread to expire games from cache, tricky
+x 12. additional cache stuff, like reporting all games, cache hit rate, etc.
+
+x 15. new l&f?
+    X 1. update remaining pages
+    X 2. move tournament rules/formats pages into the help files location
+    X 3. update help files layout to include better header, google ads somewhere
+    X 4. skip game db beginning page
+    x 5. skip play page if player is returning with proper cookies
+    2.0  5a. could also maybe handle clicking play on play screen that way
+    X 6. help link in status bar
+    X 7. updated my profile page
+
+x 16. update security, no access to new/mod pages
+17. test tb applet works with java 1.2+
+2.0 18. internationalization
+    - 2.0 display all dates (tournaments, turn-based) using stored locale for user
+    - 2.0 move setting of locale to a different settings page
+    - 2.0 allow international text messages
+x 19. make sure storing games works tb and rt
+x       make sure loading both works, gids don't interfere
+x 20. enable only for donors initially
+x 21. bug in # waiting games left side, includes my own invitations
+x 22. bug, 1st move of game doesn't start clock running (games don't time out)
+x 23. update tournament page with aaru
+x 24. update donations image
+x 25. bug in message handling of reply invites
+x 26. filtering of messages sent during game play
+x     (make sure handles "'s in messages)
+x 27. cache - need to have a way to purge it admin screen
+x 28. millisecond game timer bugs (waits 58 seconds, not 1 min)
+x 29. bug, accepting open invite doesn't add game to players cache
+x 30. show dates in messages in game view
+
+xx31. how to handle downtime?, bring back games?
+worry about that during alpha/beta
+
+2.0 32. create a way to stylize text (buttons to bold/italics,colors, smileys)
+x 33. sending messages to players not updated,
+x    also add link/button on profile page to message player
+    2.0 and/or invite to a game
+x 34. tutorial applet needs to be updated
+x 35. puzzle applet needs to be updated
+x 37. update game events to be "Live Game", "Turn-based Game" for DSG
+x 38. bug - allows making duplicate moves in client applet
+
+When going into beta
+- run test on dsg_test2
+  - x recopy dsg
+  - x run scripts
+  - x do a build
+  - x run a bunch of tests
+  - x install tomcat 5.5.10
+  - x run at test.pente.org
+  - x run build reconfig
+  - x update start tomcat2 script
+
+x 1. setup down-time server
+x 2. backup db
+x 3. run db scripts
+x 4. build code
+x 5. release code
+x 6. upgrade to tomcat 5.5.10
+x 7. copy mysql jdbc driver to tomcat
+
+todo after release
+x 1. v4 changelog
+x 2. email to donors & DSG message
+x 3. setup turn-based forum for questions/features
+
+8/15
+x fix donations - brf
+x pass applet version info to logging servlet
+x add winner to tb_game table
+x finish viewing completed games task
+x  add completion date to applet
+x  showMessages?
+x update applet tags
+x fix brf time bug
+
+8/16 Dpente
+x modify client to allow first 4 moves
+x modify server to read in first 4 moves and store correctly
+x modify client to allow swap decision
+x modify server to read/store swap decision
+x modify server to swap players if necessary
+x modify client to display swap decision during rest of game
+x store swap decision in game database
+x make messages work
+x alter tbmessage to store player pid who wrote message
+x alter server/client to pass along player name and use it
+x change seqnbr to be just 0 or 1, only times it is 1 is during move 0
+x   and move 4 for dpente
+x script to update existing messages
+
+8/17
+x tb resign
+
+show live games in player profile history
+xx  separate servlets for loading games for tb and live
+xx  move tb stuff out of viewprofileservlet
+x  show 100 games at a time, sorted by date
+x  provide < > arrows
+x  create separate jsp to load tb applet for live game
+x  current mysql search is slooooow
+x  current mysql search includes turn-based games
+ xx    one optimization would be to pass a new filter param that skips returning
+ xx    the next move results
+     
+ xx    also, try running on test.pente.org
+ x    also, try upgrading mysql and using server prepared stmts
+   
+ x  update to work for tb-games also
+ x    remove stuff specific to tb-games
+ x    add param to fastlookup to ignore/use tb event ids
+
+limitations
+  -ratings color box can't display provisional properly since don't have that data
+  -num moves not displayed
+  -event not displayed
+
+8/20+
+x add profile option to send dsg messages sent/received to email account
+x   add link on message screen to preferences
+x add option to open game room in 640x480 mode or 800x600 mode
+  add on play screen
+  x add in profile prefs screen
+  add plugin pref on profile prefs screen
+
+9/8
+x fix keryo overline tb bug
+x add diff colors for background of tb games
+x fix d-pente swap store bug
+x fix couple of dead links
+x add code to restart tb timers
+
+weekend time
+  when make a move, update timeout to now+length of time per move
+  
+  get opponents weekend days in order of next occurence (1-7)  wk1, wk2
+  determine todays date (1-7) td
+  determine new timeouts date (1-7) tod
+  
+  temp=start millis of today
+  do
+     //temp=next wk1 away from temp
+     tempday=day(temp)
+     wk1diff=wk1-tempday
+     if (wk1diff<0) wk1diff+=7;
+     temp+=(wk1diff*millis_in_day)
+     
+     if (timeout > temp) // if timeout crosses 1st weekend day, add day
+       timout += 1 day
+     else break;
+     if (now > wk1 && (now - wk1 < 1 day)) // if currently in the weekend day
+       timeout -= (now - wk1);			   // then only add rest of today
+      
+     temp=next wk2 away from temp
+     if (timeout > temp) // if timeout crosses 1st weekend day, add day
+       timout += 1 day
+     else break;
+     if (now > wk2 && (now - wk2 < 1 day)) // if currently in the weekend day
+       timeout -= (now - wk2);			   // then only add rest of today
+  while true
+
+  determine millis need to add from now initially = millis_per_day*daysPerMove
+  long ml = millis_per_day*daysPerMove;
+  long t = System.currentTimeMillis();
+  get opponents weekend days in order of next occurence (1-7)  wk1, wk2
+  while (ml > 0) {
+    int day = t day
+    if (day == wk1)
+      t += millis left in day
+    else if (day == wk2)
+      t += millis left in day
+    else {
+      determine diff to get to wk1
+      t += diff
+      ml -= diff
+  }
+
+  when resetting the weekend time
+    need to recalculate t/o for all active games
+    redo above calculation using last_move_date as start and new wk days
+    if any games would time out, add them to list and warn user, make them confirm
+
+When out of beta
+x 36. update top 10 (turn based, puzzles)
+x 13. getting started guide updates
+x 100. remove donor only restriction (LoginFilter)
+101. update front page, link to turn-based play also
+
+Later improvements (during alpha or beta phase)
+d-pente (because of swap)
+email notifications
+sortable list of games
+player is online indicator
+auto-refresh
+invitation restrictions (ratings, games, etc.)
+x links to stats page
+X check messages for html
+when making moves, go to next game (or select a game)
+weekend days, vacation days
+X show number of my turn games in left-nav area
+x show completed games
+tournament support
+applet version that can play live, or play turn-based
+i18n
+upon login go to tb page if have games
+game over messages should link to completed game
+game over messages could show ratings change
+allow message length > 256
+update downtime l&f
+replace spaces with &nbsp;
+
+ignore completed games
+add indexes to tb tables
+problems with loadexpire games thread, is hanging or dying...
+
+
+
+
+
+
+
+
+tournaments
+link together tb code and tourney code
+
+in tb code, when game over
+need to know if game is in a tourney
+  then set appropriate event name for storing
+       call tourney code updateMatch to update tournament status
+       
+when new round created
+ new tourney matches are created
+ need to create associated turn-based set and games
+ 
+when creating tb games, create with correct event type
+
+don't allow cancelling sets
+
+no need for admin functionality since timeouts take care of it
+
+what we need though is:
+more game timing options
+support for different tournament formats
+allow director to set how seeding is done

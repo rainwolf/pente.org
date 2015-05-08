@@ -1,0 +1,29 @@
+TODO for 3d pente board
+
+x 1. move over to dsg_src
+x 2. finish texturing and border
+3. add methods to load pieces (addMove()), extend whatever necessary interface
+4. package as applet, figure out that stuff
+   - sign applet
+   - include dll files in jar file at root level
+   - store jogl dll's on users machine in temp dir
+     -  could add a check and do this just once i suppose
+
+5. package as jws?  how would that work
+6. cleanup code a bit
+7. make option to use board for turn-based
+
+Details
+1. Grid lines not quite right yet, use z-offset?
+2. Need grid coordinates
+x 3. Need game name displayed
+4. Different colors for different games?
+5. Aliasing
+6. Texture for stones?
+7. Gaps (white space) in border between boards
+8. collision detection on borders
+9. different jars for different OS's
+
+Fancy stuff
+1. Intro with spinning board and pieces coming in fancily
+2. Put avatar images on board

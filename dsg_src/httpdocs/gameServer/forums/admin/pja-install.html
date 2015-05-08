@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+
+<html>
+<head><title>Jive Forums 3 - PJA documentation</title>
+    <style type="text/css">
+    BODY, TD, P, UL, OL, LI, .header, .subheader {
+        font-family : arial,helvetica,sans-serif;
+        font-size : 90%;
+    }
+    TT, CODE, PRE {
+        font-size : 9pt;
+        color : #009900;
+        font-weight : bold;
+    }
+    .header {
+        font-size : 110%;
+        font-weight : bold;
+    }
+    .subheader {
+        font-weight : bold;
+    }
+    </style>
+</head>
+
+<body>
+
+<span class="header">
+Jive Forums 3 - PJA Documentation
+</span>
+<hr size="0">
+
+<p>
+In UNIX, Java requires the use of the display to create images. This is a
+limitation of the Java AWT libraries that is fixed in the new JDK 1.4 release.
+Until then there are two possible solutions for applications such as
+Jive Forums, which run in a Java application server. It is possible to set the
+<tt>DISPLAY</tt> environment variable and have a writeable display that Java can
+use. However, this is not a good solution for most servers as it creates
+security problems and is an ungainly solution at best. The solution we recommend
+is the use of a toolkit such as PJA (Pure Java AWT).
+</p>
+
+<p>
+Before you attempt to install PJA, please run the Server-Side Graphics Capability
+test on the Report Configuration page of the Jive Forums Admin tool. This test
+will determine if you need to install PJA.
+</p>
+
+<span class="subheader">
+General Java Setup
+</span>
+
+<p>
+To use PJA, you'll first need to download the latest release from
+<a href="http://www.eteks.com/pja/en/" target="_new">http://www.eteks.com/pja/en/</a>.
+For purposes of this example installation, we'll assume you have Java installed
+in <tt>/opt/java</tt> and an application server
+installed in <tt>/opt/&lt;appServer&gt;</tt>.
+</p>
+
+<ol>
+    <li>Extract the <tt>pja_2.4.zip</tt> file.
+    <li>Locate the pja.jar file in the newly created directory <tt>pja_2.4/lib</tt>
+    <li>Copy pja.jar to a usable location (we'll use <tt>/opt/&lt;appServer&gt;/lib</tt> for this
+        example)
+</ol>
+
+<p>
+To add the <tt>pja.jar</tt> file to your "bootclasspath" directory
+you will need to set three Java system properties that will allow your
+application server's Java instance to find and use PJA properly.  If you wish
+to set these options on the command line as arguments to the java executable,
+it would look like the following (ignore the backslashes, they are there to
+represent that the newline is irrelevant):
+</p>
+
+<pre>
+java -Xbootclasspath/a:/opt/&lt;appServer&gt;/lib/pja.jar     \
+   -Dawt.toolkit=com.eteks.awt.PJAToolkit               \
+   -Djava.awt.fonts=/opt/java/jre/lib/fonts             \
+   -Djava.awt.graphicsenv=com.eteks.java2d.PJAGraphicsEnvironment
+</pre>
+
+<span class="subheader">
+Specific Application Server Setup
+</span>
+
+<p><i>Resin</i></p>
+
+<ul>
+    For this example, we'll assume you have Resin installed at <tt>/opt/resin</tt>.
+    With Resin, the application server is started using a command line program. The
+    arguments above can be added to our command line, however resin requires you to
+    prepend each argument with a "-J" that specifies that the argument should be
+    passed to Java directly. An example Resin command line could look like this:
+
+    <pre>
+    /opt/resin/bin/httpd.sh start -J-Xbootclasspath/a:/opt/resin/lib/pja.jar \
+       -J-Dawt.toolkit=com.eteks.awt.PJAToolkit                              \
+       -J-Djava.awt.fonts=/opt/java/jre/lib/fonts                            \
+       -J-Djava.awt.graphicsenv=com.eteks.java2d.PJAGraphicsEnvironment
+    </pre>
+</ul>
+
+<p><i>Tomcat 4.x</i></p>
+<ul>
+    In Tomcat 4, setup is easy to do. In the <tt>tomcat4.conf</tt> file, simply add
+    a line that looks like this (it is assumed Tomcat is installed at
+    <tt>/opt/tomcat4</tt>):
+    <p>
+    <pre>
+    CATALINA_OPTS="$JAVA_HOME/bin/java -Xbootclasspath/a:/opt/tomcat4/lib/pja.jar   \
+        -Dawt.toolkit=com.eteks.awt.PJAToolkit              		       \
+        -Djava.awt.fonts=/opt/java/jre/lib/fonts             		       \
+        -Djava.awt.graphicsenv=com.eteks.java2d.PJAGraphicsEnvironment"
+    </pre>
+</ul>
+
+<p>
+Under other application servers these setting can be made from GUI configuration
+tools. In JRun, for instance, you are given a web based administration page.
+Under the "Java Settings" section you are allowed to add Java arguments.
+That is where you'd want to put the arguments described above.
+</p>
+
+<p>
+If you've followed all the documentation above and have problems, please
+post a support question in the
+<a href="http://www.jivesoftware.com/jive/" target="_new">Jive Software Support Forums</a>.
+</p>
+
+</body>
+</html>

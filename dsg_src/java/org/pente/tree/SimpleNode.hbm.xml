@@ -1,0 +1,111 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 2.0//EN" 
+    "http://hibernate.sourceforge.net/hibernate-mapping-2.0.dtd">
+
+<hibernate-mapping>
+    <class
+        name="org.pente.tree.SimpleNode"
+        table="treeNode"
+        dynamic-update="true"
+        dynamic-insert="true">
+
+        <cache usage="read-write" />
+
+        <id name="id"
+            column="nodeId"
+            type="long">
+            <generator class="increment"></generator>
+        </id>
+            
+        <property
+            name="position"
+            type="int"
+            update="true"
+            insert="true"
+            column="position"
+            not-null="true" />
+
+        <property
+            name="player"
+            type="int"
+            update="true"
+            insert="true"
+            column="player"
+            not-null="true" />
+
+        <property
+            name="type"
+            type="int"
+            update="true"
+            insert="true"
+            column="type"
+            not-null="true" />
+
+        <property
+            name="comment"
+            type="string"
+            update="true"
+            insert="true"
+            column="comment"
+            not-null="false" />
+
+        <property
+            name="hash"
+            type="int"
+            update="true"
+            insert="true"
+            column="hash"
+            not-null="true" />
+            
+        <property
+            name="rotation"
+            type="int"
+            update="true"
+            insert="true"
+            column="rotation"
+            not-null="true" />
+
+        <property
+            name="depth"
+            type="int"
+            update="true"
+            insert="true"
+            column="depth"
+            not-null="true" />
+
+        <many-to-one
+            name="parent"
+            class="org.pente.tree.SimpleNode"
+            cascade="none"
+            outer-join="auto"
+            update="true"
+            insert="true"
+            column="parentId" />
+            
+        <many-to-one
+            name="defaultNextMove"
+            class="org.pente.tree.SimpleNode"
+            cascade="none"
+            outer-join="auto"
+            update="true"
+            insert="true"
+            column="defaultNextMoveId" />
+            
+
+        <list
+            name="nextMoves"
+            table="treeNode"
+            lazy="true"
+            inverse="false"
+            cascade="all-delete-orphan">
+              <cache usage="read-write" />
+              <key column="parentId" />
+              <index column="nextMoveIndex" />
+              <one-to-many class="org.pente.tree.SimpleNode" />
+        </list>
+
+    </class>
+
+</hibernate-mapping>

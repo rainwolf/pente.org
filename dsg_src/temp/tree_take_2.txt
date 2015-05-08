@@ -1,0 +1,348 @@
+Things to do.
+1. Re-implement hashing code everywhere.
+
+
+faster way
+script2
+select * into outfile [dsg_test2 1000 rows took 25 seconds]
+loop on file
+{
+  select * from pente_move
+  where gid > ?
+  order by gid, move_num
+  limit 100;
+
+  for each game in 100
+    load moves, calculate hash as we go
+    output to a 2nd file the following:
+    gid + [tab] + move_num + [tab] + next_move + [tab] + hash_key + [tab] +
+    	rotation + [tab] + game + [tab] + winner + [newline]
+}
+
+truncate table pente_move;
+alter table pente_move disable keys;
+alter table pente_move
+modify hash_key bigint not null;
+
+load data infile 'file' to pente_move;
+
+alter table pente_move enable keys;
+
+could do the above for just 1000 latest games and see that the code is
+working on a test db.
+
+2. Re-implement code to store stuff in db directly, no hibernate.
+
+
+3. Get it working for me, so I can enter in position trees
+
+From there add other things.
+1. Database view
+2. Tree move interface instead of what I have now
+3. Public, allow user rankings, comments
+
+
+
+
+
+
+
+
+
+For ai
+
+When examining a position look at these data sources
+1. past AI play
+   If we store the full AI analysis of each position in past games, then we
+   don't have to calculate it again.
+   We could also store wins/losses for the AI at each position, might have
+   to adjust these based on age.
+2. AI analysis of current position
+3. database
+   Need to make some guesses of which moves are actually good based on
+   the # games, % wins.
+4. Expert input (me)  If this exists it should have a rating like 1-100
+   Initially I could put in positions I know a win for w/ rating=100
+5. Marks AI.  Last resort if not sure what to do.  Especially for the opening
+   if the database doesn't know, use Mark's AI?
+   
+  
+
+TODO
+//removing bad lines from hashset and replacing with reference to Object blank;
+//add depth to rank tree's ranking sort
+X//figure out how to correctly handle duplicate positions (since they might
+X// not yet be fully solved).  I think I have to record the move as having multiple
+X// parents so that if it ever is solved it can update both parents.
+
+// other ideas
+// examine TWO of ops best moves for every of mine?
+// do a more breadth first for first few levels so don't miss anything
+//   that also helps to catch any things the "smart" analysis missed before
+
+how do we go from this algorithm to a full blown AI that can play?
+1. use database for opening moves
+   a. if can't find anything in db can try to do a scan
+   b. or use marks ai as a cheat
+2. do the scanning algorithm, if find win we're done
+3. else after a certain amount of time stop searching and propogate up the results
+   to the root of the search, make a decision from there.
+4. keep the past moves search results around, when the opp makes a move, trim
+   the results and start again
+5. what would be really cool would be at the end of every game, store the positions
+   that the scanner has proven to the database.  then modify the scanner algorithm
+   to check the db for every move (would that really slow it down?) and incorporate
+   that info into the results (saves time).
+6. need to modify algorithm to handle default move.  thinking if after all ops moves
+   are proven losers, make a fake move, like to 362.  then proceed with the 
+   analysis from there.  then while playing, if the AI knew it had a win the prev
+   move but now can't find what to do in the saved db (step 5), make the fake move
+   and then find what to do.
+
+analysis issues
+X 1. need to check groups, seems like a high defensive move group is taking precedence
+   over offense moves for MY moves
+2. doesn't pick up X00__0 as a potential X000_0 move.
+3. i bet it won't find things where opponent has a 3 threat, but i already
+   have a capture across it AND if i place a stone near where the capture will
+   land would end up with the capture creating a 4 threat for me.
+
+   or similar case where I have a
+   									X
+   									O
+   								    O
+   									O
+   								    O
+   								    X
+                                  XX X
+                                  
+X 4. found a situation where the node, state had different moves but same hash
+   they were just transpositions, but that causes problems when moving up
+   the tree after a win
+X  5. not chasing captures when only need 1 to win, big problem
+  6. configurable logging using different categories
+X  7. new board interface, cut out other crap
+X  8. makes bad choices sometimes when has an open 3 like this
+X     X_000_____, sometimes chooses to go by the X
+  
+  9. seems like the alg. might not be ideal when the best line is found
+     by allowing opponent to extend some 4's and cause trouble.  in the
+     end it might be the only way to find a win, but because those situations
+     are avoided by alg. until the end will not search there for quite awhile.
+     
+     Solution seems to be that a given move needs to reflect the offense/defense
+     after the move for the whole board, now it just considers the offense/defense
+     caused by that particular move.  In other words I block a 4 and that move
+     doesn't create any offense, but if I already have a tria somewhere else then
+     that block is the same thing as creating a tria.
+     
+     Or another situation is I have a tria and my opponent is attacking a keystone
+     pair, by blocking the pair I am essentially making a tria again.
+     
+     How to do it....before removing ranks that are not relevant for next moves
+     Find max threat(s) on board now by lowest offense group
+     maxThreatGroup = maxThreat.offenseGroup + 2;
+
+ 	 if the new rank offenseGroup >= maxThreatGroup
+ 	   new rank setOffenseGroup(maxThreatGroup)
+ 	   for max threats
+ 	     if new rank move not part of threat next moves
+  	       new rank addOffenseRank(RANK_OFFENSE[TYPE_PRIOR[t.type]]
+
+X 10. won't go for caps in X_XX or X__XX positions since those are assigned as
+     threats other than POTENTIAL_CAP
+     possible solutions
+     a. do a separate scan just for pairs _OO_ and record them as either threats
+        or a separate thing
+     b. keep that data in the higher level threats
+     c. when creating higher level threats, also note the pair and create a pair threat
+     
+     I think a is best, keeping pairs in a separate data struture so as to not
+     affect the ranking alg. any.
+  
+  11. doesn't attack keystone pairs very well, especially not when there is
+      a double keystone pair, those should always been looked at closely
+  
+X  12. doesn't detect X__XXXX correctly
+  13. sometimes thinks XXX should go XXX_X first for some reason
+      probably related, when have o_xxx goes to oXxxx instead of o_xxxX
+      because that move has a small defensive gain
+      ideally ai would know that the open 4 is better than the closed 4 by
+      a mile, that requires the next moves to contain the threat level, not 
+      the threat class...big change
+  
+  14. when go back to before 1st move, rotation gets messed up
+ 
+X  15. would be nice to allow start/stop
+  16. keep track of the order positions were visited and allow looking through
+      the positions in the rank tree
+  
+  
+  
+New scanner algorithm
+
+scan(state, node)
+
+	create ranktree
+	scan_my_turn(state, node)
+	
+	while (rank tree not empty and not max scanned nodes)
+	
+		pick out highest ranked node from ranktree
+		Node n = highrank.addNextMoveFromPotential()
+		if (highrank.hasNoMorePotentials()) {
+		  ranktree.remove(highrank);
+		}
+		
+		// undo moves until same depth as new move
+		while (state.getNumMoves() > n.depth())
+			state.undoMove();
+		Node p = n;
+		Node path = new ArrayList<Node>();
+		// undo moves until find a common position
+		for (int i=state.getNumMoves(); i--; i>0) {
+		  if (state.getHash(i) != p.getHash())
+		    path.add(p);
+		    p = p.getParent();
+		    state.undoMove();
+		  }
+		  else {
+		    break;
+		  }
+		}
+		//now add moves until at correct position
+		for (Node a : path)
+		  state.addMove(a.getMove());
+
+		scan_op_turn(state, n)
+     }
+}
+
+scan_my_turn(state, node)
+
+  if state already looked at (hash in hashtable) and that node marked
+  as a win
+    updateOpWon(node);
+    return;
+    
+  if (state.isGameOver())
+    updateOpWon(node);
+    return;
+    
+  List<Rank> next = PenteAnalyzer.analyze, find next moves
+  node.addPotentials(next);
+  
+  Node nw = node.getBestPotential();
+  state.addMove(nw.getMove());
+  scan_op_turn(state, node);
+
+scan_op_turn(state, node)
+
+  if state already looked at (hash in hashtable) and that node marked
+  as a win
+    updateIWon(node);
+    return;
+  
+  if (state.isGameOver())
+    updateIWon(node);
+    return;
+  
+  List<Rank> next = PenteAnalyzer.analyze, find next moves
+  
+  node.addPotentials(next);
+  rankTree.add(node);
+    
+
+updateOpWon(state, node)
+{
+    node.setType(win);
+    rankTree.remove(node);
+    if (node.isRoot()) //ha good one
+      return;
+    node.getParent().removePotentials()
+    node.getParent().trimNonWinning();//optional to free up space
+    node.getParent().setType(loss);
+    rankTree.remove(node.getParent());
+    
+    Node pp = node.getParent().getParent();
+    if (pp.allNextMovesLose()) {
+      updateWon(pp);
+}
+
+updateIWon(state, node)
+{
+    node.setType(win);
+    rankTree.remove(node);
+    if (node.isRoot()) //ha good one
+      return;
+    node.getParent().removePotentials()
+    node.getParent().trimNonWinning();//optional to free up space
+    node.getParent().setType(loss);
+    rankTree.remove(node.getParent());
+    
+    Node pp = node.getParent().getParent();
+    if (pp.allNextMovesLose()) {
+      updateWon(pp);
+    else
+      Node nw = pp.getBestPotential();
+      state.undo, state.undo
+      state.add(new.getMove())
+      scan_op_turn(state, node)
+}
+
+
+
+
+
+
+
+
+updateIWon(state, node)
+updateILost(state, node)
+updateOpWon(state, node)
+updateOpLost(state, node)
+
+
+updateIWon
+	setType(win)
+	updateOpLost(state, node.getParent();
+	for all twins updateIWon(twin)
+
+updateOpLost(state, node)
+	clear potentials
+	setType(lose)
+	rankTree remove(node)
+	if (node == scanRoot)
+		return
+	p = node.parent();
+	if (p.allNextMovesLose())
+		updateIWon(p);
+	else
+		get best next potential
+		if (best hash clash)
+			if clash unknown
+				clash.setTwin(best);
+			else if clash wins
+				updateOpWon(state, best)
+			else if clash loses
+				updateOpLost(state, best)
+		else
+			scanMyTurn(best)
+	
+	for all twins updateOpLost(state, twin)
+
+updateOpWon(state, node)
+	setType(win)
+	updateILost(state, node.getParent())
+	for all twins updateOpWon(state, twin)
+	
+
+updateILost(state, node)
+	clear potentials
+	setType(lose)
+	p = node.getParent()
+	if (p.allNextMovesLose())
+		updateOpWon(state, p)	
+	
+	for all twins updateILost(state, node)
+		

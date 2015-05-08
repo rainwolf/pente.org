@@ -1,0 +1,15 @@
+What do we want admins to be able to do?
+- Check logs for a given day for all suspicious activity
+- Check IP's of a given player
+   (given player check IPs, given IP check players)
+- Send warning emails, isn't that just DSGMessage though?
+- Deactivate players
+
+From admin area
+Cheating section
+- Log overview
+   scans log dir and provides month, day, year drop downs
+   upon selecting one, scan file line by line looking for events
+   simply report them on screen, user has to look in files for details
+   (or provide events with links, link goes to 100 activity+- event in question)
+   

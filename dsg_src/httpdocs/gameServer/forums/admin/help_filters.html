@@ -1,0 +1,43 @@
+
+<font size="-1"><b><a name="current_filters" style="text-decoration:none;"
+ ></a>Current Filters</b></font>
+<ul>
+    <font size="-1">
+    Filters dynamically format the contents of messages for end-users. For
+    example, the HTML filter removes potentially malicious HTML and scripting,
+    and the Newline filter converts linefeeds to HTML newlines for proper
+    display in a browser. The list of installed filters shows you which filters
+    are currently enabled, as well as their order. The order of filters is
+    important since the flow of control passes through them from the top down.
+    A good rule of thumb is to always have the HTML filter installed as the
+    first filter, and the Newline filter installed as the last (except for
+    the JavaCodeHighlighter filter, which should come after Newline). You can
+    adjust the order of filters using the up and down arrows.<p>
+
+    Some filters have additional properties that can be set. You can edit
+    these properties by clicking the edit icon.
+    </font>
+</ul>
+
+<font size="-1"><b><a name="install_filter" style="text-decoration:none;"
+ ></a>Install Filter</b></font>
+<ul>
+    <font size="-1">
+    The install filter dialog shows you the list of filters that are available
+    for installation. Click each filter in the list for more information about
+    it.
+    </font>
+</ul>
+
+<font size="-1"><b><a name="add_filter_class" style="text-decoration:none;"
+ ></a>Add Filter Class</b></font>
+<ul>
+    <font size="-1">
+    New filters created by you or by third parties can be dynamically added to
+    the system so that they are available for installation. Enter the Java
+    class name of the filter such as com.foo.filter.XYZFilter and then add it.
+    Jive Forums will attempt to load the named class. If this succeeds, the
+    filter will be added to the list of filters available for installation. If
+    loading the filter fails, you'll be notified of the error.
+    </font>
+</ul>

@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<actions>
+
+    <!-- Utility Actions -->
+    <action name="util.RedirectAction" alias="doRedirect">
+        <view name="error">error.jsp</view>
+        <view name="default">index.jspa</view>
+    </action>
+
+    <!-- Default skin -->
+    <action name="ForumCategoryAction" alias="index">
+        <view name="error">error.jsp</view>
+        <view name="success">main.jsp</view>
+    </action>
+    <action name="ForumAction" alias="forum">
+        <view name="error">error.jsp</view>
+        <view name="success">viewforum.jsp</view>
+        <view name="markreadsuccess">doRedirect.jspa?url={last}</view>
+        <view name="login">doRedirect.jspa?url=login!default.jspa</view>
+    </action>
+    <action name="ForumThreadAction" alias="thread">
+        <view name="error">error.jsp</view>
+        <view name="login">doRedirect.jspa?url=login!default.jspa</view>
+        <view name="threaded">thread-threaded.jsp</view>
+        <view name="flat">thread-flat.jsp</view>
+        <view name="tree">thread-tree.jsp</view>
+    </action>
+    <action name="ForumMessageAction" alias="message">
+        <view name="error">error.jsp</view>
+        <view name="success">viewmessage.jsp</view>
+    </action>
+
+
+	<action name="PostAction" alias="post">
+        <view name="attach">attach!default.jspa</view>
+        <view name="cancel">doRedirect.jspa?url={last}</view>
+		<view name="error">postform.jsp</view>
+		<view name="input">postform.jsp</view>
+		<view name="login">loginform.jsp</view>
+        <view name="preview">viewpreview.jsp</view>
+        <view name="rejected">postform.jsp</view>
+        <view name="spellcheck">spell!default.jspa</view>
+        <view name="success-moderation">postform-success.jsp</view>
+        <view name="success-newreply">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}&amp;messageID={messageID}&amp;start={start}&#{messageID}</view>
+        <view name="success-newthread">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}</view>
+	</action>
+    <action name="AttachAction" alias="attach">
+        <view name="input">attachform.jsp</view>
+        <view name="error">attachform.jsp</view>
+        <view name="success-newreply">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}&amp;messageID={messageID}&amp;start={start}&#{messageID}</view>
+        <view name="success-newthread">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}</view>
+        <view name="success-moderation">doRedirect.jspa?url=postModSuccess.jspa</view>
+        <view name="cancel">post!default.jspa</view>
+        <view name="unauth">error.jsp</view>
+    </action>
+    <action name="EditAttachAction" alias="editattach">
+        <view name="input">editattachments.jsp</view>
+        <view name="error">editattachments.jsp</view>
+        <view name="success">doRedirect.jspa?url={last}</view>
+        <view name="success-edit">doRedirect.jspa?url=editattach!default.jspa?forumID={forumID}&amp;threadID={threadID}&amp;messageID={messageID}</view>
+        <view name="goback">doRedirect.jspa?url={last}</view>
+        <view name="unauth">error.jsp</view>
+        <view name="cancel">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}&amp;messageID={messageID}&#{messageID}</view>
+    </action>
+    <action name="SpellAction" alias="spell">
+        <view name="input">spellform.jsp</view>
+        <view name="success">spellform.jsp</view>
+        <view name="error">spellform.jsp</view>
+    </action>
+    <action name="EditAction" alias="edit">
+        <view name="cancel">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}&amp;messageID={messageID}&#{messageID}</view>
+        <view name="success">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}&amp;messageID={messageID}&#{messageID}</view>
+        <view name="error">error.jsp</view>
+        <view name="input">editform.jsp</view>
+    </action>
+	<action name="SearchAction" alias="search">
+		<view name="error">error.jsp</view>
+		<view name="input">searchresults.jsp</view>
+		<view name="success">searchresults.jsp</view>
+	</action>
+    <action name="SettingsAction" alias="settings">
+        <view name="error">editsettings.jsp</view>
+        <view name="input">editsettings.jsp</view>
+        <view name="success">doRedirect.jspa?url=settings!default.jspa</view>
+        <view name="profile">doRedirect.jspa?url=editprofile!default.jspa</view>
+        <view name="watches">doRedirect.jspa?url=editwatches!default.jspa</view>
+        <view name="roster">doRedirect.jspa?url=roster!default.jspa</view>
+    </action>
+    <action name="WatchesAction" alias="watches">
+        <view name="error">error.jsp</view>
+        <view name="disabled"></view>
+        <view name="login">login!default.jspa</view>
+        <view name="addsuccess">doRedirect.jspa?url={last}</view>
+        <view name="removesuccess">doRedirect.jspa?url={last}</view>
+    </action>
+    <action name="EditWatchesAction" alias="editwatches">
+        <view name="error">error.jsp</view>
+        <view name="disabled"></view>
+        <view name="login">login!default.jspa</view>
+        <view name="input">editwatches.jsp</view>
+        <view name="success">doRedirect.jspa?url=editwatches!default.jspa</view>
+    </action>
+    <action name="LockThreadAction" alias="lock">
+        <view name="error">error.jsp</view>
+        <view name="input">lock.jsp</view>
+        <view name="cancel">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}</view>
+        <view name="success">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}</view>
+    </action>
+    <action name="UnlockThreadAction" alias="unlock">
+        <view name="error">error.jsp</view>
+        <view name="input">unlock.jsp</view>
+    </action>
+    <action name="MoveThreadAction" alias="move">
+        <view name="error">error.jsp</view>
+        <view name="input">move.jsp</view>
+        <view name="cancel">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}</view>
+        <view name="success">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}</view>
+    </action>
+    <action name="DeleteAction" alias="delete">
+        <view name="error">error.jsp</view>
+        <view name="input">delete.jsp</view>
+        <view name="success">delete-success.jsp</view>
+        <view name="cancel-deletethread">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}</view>
+        <view name="cancel-deletemessage">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}&amp;messageID={messageID}&#{messageID}</view>
+    </action>
+    <action name="BranchAction" alias="branch">
+        <view name="error">error.jsp</view>
+        <view name="input">branch.jsp</view>
+        <view name="cancel">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}&amp;messageID={messageID}&#{messageID}</view>
+        <view name="success">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}</view>
+    </action>
+
+    <!-- Setup tool -->
+    <action name="setup.SetupAction" alias="setup.index">
+        <view name="error">main.jsp</view>
+        <view name="success">main.jsp</view>
+    </action>
+    <action name="setup.UserSystemSetupAction" alias="setup.usersystem">
+        <view name="custom">usersystem-custom.jsp</view>
+        <view name="error">usersystem.jsp</view>
+        <view name="next">doRedirect.jspa?url=setup.datasource!default.jspa</view>
+        <view name="success">usersystem.jsp</view>
+    </action>
+    <action name="setup.DatasourceSetupAction" alias="setup.datasource">
+        <view name="error">datasource.jsp</view>
+        <view name="success">datasource.jsp</view>
+        <view name="embedded">datasource-embedded.jsp</view>
+        <view name="thirdparty">datasource-thirdparty.jsp</view>
+        <view name="datasource">datasource-datasource.jsp</view>
+        <view name="next">doRedirect.jspa?url=setup.email!default.jspa</view>
+    </action>
+    <action name="setup.EmailSetupAction" alias="setup.email">
+        <view name="error">email.jsp</view>
+        <view name="success">email.jsp</view>
+        <view name="next">doRedirect.jspa?url=setup.adminacct!default.jspa</view>
+    </action>
+    <action name="setup.AdminSetupAction" alias="setup.adminacct">
+        <view name="error">adminacct.jsp</view>
+        <view name="input">adminacct.jsp</view>
+        <view name="success">finish.jsp</view>
+    </action>
+
+</actions>

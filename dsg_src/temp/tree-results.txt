@@ -1,0 +1,21 @@
+scan count = 628000 depth=28 rankTree size = 22721
+  time = 14484 milliseconds.
+scan count = 629000 depth=28 rankTree size = 22979
+  time = 13360 milliseconds.
+scan count = 630000 depth=35 rankTree size = 23204
+  time = 13531 milliseconds.
+scan count = 631000 depth=30 rankTree size = 22939
+  time = 23109 milliseconds.
+scan count = 632000 depth=32 rankTree size = 23028
+  time = 16156 milliseconds.
+scan count = 633000 depth=36 rankTree size = 22884
+  time = 20672 milliseconds.
+scan count = 634000 depth=32 rankTree size = 22719
+  time = 20813 milliseconds.
+rankTree size = 0
+scanned nodes = 634147
+scanRoot type = SOLVED FOR WIN!
+hash hits = 55959
+twins set = 51246
+total time = 6795640 milliseconds.
+scantime/node = 9.84724 milliseconds

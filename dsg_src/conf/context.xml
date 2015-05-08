@@ -1,0 +1,23 @@
+<Context path="" docBase="ROOT.war" debug="7"
+         privileged="false" crossContext="false" reloadable="true">
+
+  <Valve className="org.apache.catalina.valves.AccessLogValve"
+         directory="@log@"  prefix="access." suffix=".log"
+         pattern="combined" />
+  
+  <Resource name="jdbc/dsg"
+            auth="Container"
+            type="javax.sql.DataSource"
+            maxActive="100" maxIdle="30" maxWait="10000"
+            username="@db.user@" password="@db.password@"
+            driverClassName="com.mysql.jdbc.Driver"
+            url="jdbc:mysql://@db.host@/@db.name@?useServerPrepStmts=true" />
+            
+  <Resource name="jdbc/dsg_ro"
+            auth="Container"
+            type="javax.sql.DataSource"
+            maxActive="100" maxIdle="30" maxWait="10000"
+            username="@db_ro.user@" password="@db_ro.password@"
+            driverClassName="com.mysql.jdbc.Driver"
+            url="jdbc:mysql://@db_ro.host@/@db_ro.name@?useServerPrepStmts=true" />
+</Context>

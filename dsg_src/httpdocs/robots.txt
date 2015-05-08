@@ -1,0 +1,14 @@
+User-agent: *
+Disallow: /gameServer/newMessage.jsp
+Disallow: /gameServer/tb
+Disallow: /gameServer/mymessages
+Disallow: /gameServer/myprofile.jsp
+Disallow: /gameServer/myprofile
+Disallow: /gameServer/deletePlayer
+Disallow: /gameServer/deletePlayer.jsp
+Disallow: /gameServer/tournaments/tournamentSignup.jsp
+Disallow: /gameServer/viewLiveGames
+Disallow: /gameServer/viewLiveGame
+Disallow: /gameServer/tbpgn.jsp
+Disallow: /gameServer/pgn.jsp
+Disallow: /rss.xml

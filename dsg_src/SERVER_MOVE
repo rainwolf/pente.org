@@ -1,0 +1,37 @@
+X 1. update dns on current pente.org to lower refresh times to 5 min
+
+X 2. create new dns record for test2.pente.org pointing to new machine ip
+
+3. setup new pente.org machine software
+  a. snmp, snmpd, mrtg, apache2
+  xb. ntp
+  xc. tomcat6
+  xd. mysql
+  d2. mysql2
+  xe. bind9
+    just a copy of dns files from current pente.org
+    update ns2.pente.org to new.pente.org address
+    can release that any time
+    
+  e1. also, add records for ns1.hewittsoft.com, ns2.hewittsoft.com
+    after a couple of days can switch name servers to those for clients
+  
+  f. qmail2
+  xg. pente.org app as test2.pente.org
+  xh. hostname
+  i. start scripts
+  j. backups to current pente.org
+  k. java [upgrade 6u10?], include dns hack code?
+  
+4. test pente.org app
+
+5. edit dns to make the switch official
+
+
+
+Once make the switch, ask sago to provide correct reverse dns listing
+Actually ask them if they can do it earlier than that or not
+
+Make current machine hostname hewittsoft.com and reverse dns also
+  And notify HIRB related company about change for TLS
+  
