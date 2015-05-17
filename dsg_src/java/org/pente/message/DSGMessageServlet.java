@@ -11,6 +11,8 @@ import org.pente.gameServer.server.*;
 
 import org.apache.log4j.*;
 
+import org.pente.turnBased.SendNotification;
+
 public class DSGMessageServlet extends HttpServlet {
 	
 	private static final Category log4j = Category.getInstance(
@@ -271,6 +273,14 @@ public class DSGMessageServlet extends HttpServlet {
 				m.setFromPid(playerData.getPlayerID());
 				m.setToPid(toPlayerData.getPlayerID());
 				m.setCreationDate(new Date());
+
+					ServletContext ctx = getServletContext();
+					String penteLiveAPNSkey = ctx.getInitParameter("penteLiveAPNSkey");
+					String penteLiveAPNSpwd = ctx.getInitParameter("penteLiveAPNSpassword");
+					boolean productionFlag = ctx.getInitParameter("penteLiveAPNSproductionFlag").equals("true");
+					Thread thread = new Thread(new SendNotification(0, 0, playerData.getPlayerID(), toPlayerData.getPlayerID(), 
+						"\n" + subject, penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, resources.getDbHandler() ) );
+					thread.start();
 
 				dsgMessageStorer.createMessage(m);
 				

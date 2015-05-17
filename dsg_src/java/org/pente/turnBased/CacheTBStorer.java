@@ -542,37 +542,37 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 				
 				
 				winText += ".\n" + "You can view your game at http://pente.org/gameServer/viewLiveGame?g=" + game.getGid();
-        if (set.isTwoGameSet()) {
-            if (set.isCompleted()) {
-        				 winText += "\n or invite " + loserData.getName() + 
-        					" for another game of " + GridStateFactory.getGameName(game.getGame()) + " with the following link: http://www.pente.org/gameServer/tb/new.jsp?game=" + 
-        					game.getGame() + "&invitee=" + loserData.getName();
-    				}
-    		}
+				if (set.isTwoGameSet()) {
+				    if (set.isCompleted()) {
+						 winText += "\n or invite " + loserData.getName() + 
+							" for another game of " + GridStateFactory.getGameName(game.getGame()) + " with the following link: http://www.pente.org/gameServer/tb/new.jsp?game=" + 
+							game.getGame() + "&invitee=" + loserData.getName();
+					}
+				}
 				lossText += ".\n" + "You can view your game at http://pente.org/gameServer/viewLiveGame?g=" + game.getGid();
-        if (set.isTwoGameSet()) {
-            if (set.isCompleted()) {
-                lossText += "\n or invite " + winnerData.getName() + 
-                " for another game of " + GridStateFactory.getGameName(game.getGame()) + " with the following link: http://www.pente.org/gameServer/tb/new.jsp?game=" + 
-    					game.getGame() + "&invitee=" + winnerData.getName();
-    				}
-    		}
-        drawGameWinSetText += ".\n" + "You can view your game at http://pente.org/gameServer/viewLiveGame?g=" + game.getGid();
-        if (set.isTwoGameSet()) {
-            if (set.isCompleted()) {
-        				 drawGameWinSetText += "\n or invite " + loserData.getName() + 
-        					" for another game of " + GridStateFactory.getGameName(game.getGame()) + " with the following link: http://www.pente.org/gameServer/tb/new.jsp?game=" + 
-        					game.getGame() + "&invitee=" + loserData.getName();
-    				}
-    		}
-        drawGameLoseSetText += ".\n" + "You can view your game at http://pente.org/gameServer/viewLiveGame?g=" + game.getGid();
-        if (set.isTwoGameSet()) {
-            if (set.isCompleted()) {
-                drawGameLoseSetText += "\n or invite " + winnerData.getName() + 
-                " for another game of " + GridStateFactory.getGameName(game.getGame()) + " with the following link: http://www.pente.org/gameServer/tb/new.jsp?game=" + 
-    					game.getGame() + "&invitee=" + winnerData.getName();
-    				}
-    		}
+				if (set.isTwoGameSet()) {
+				    if (set.isCompleted()) {
+				        lossText += "\n or invite " + winnerData.getName() + 
+				        " for another game of " + GridStateFactory.getGameName(game.getGame()) + " with the following link: http://www.pente.org/gameServer/tb/new.jsp?game=" + 
+								game.getGame() + "&invitee=" + winnerData.getName();
+					}
+				}
+		        drawGameWinSetText += ".\n" + "You can view your game at http://pente.org/gameServer/viewLiveGame?g=" + game.getGid();
+		        if (set.isTwoGameSet()) {
+		            if (set.isCompleted()) {
+		        				 drawGameWinSetText += "\n or invite " + loserData.getName() + 
+		        					" for another game of " + GridStateFactory.getGameName(game.getGame()) + " with the following link: http://www.pente.org/gameServer/tb/new.jsp?game=" + 
+		        					game.getGame() + "&invitee=" + loserData.getName();
+					}
+				}
+		        drawGameLoseSetText += ".\n" + "You can view your game at http://pente.org/gameServer/viewLiveGame?g=" + game.getGid();
+		        if (set.isTwoGameSet()) {
+		            if (set.isCompleted()) {
+		                drawGameLoseSetText += "\n or invite " + winnerData.getName() + 
+		                " for another game of " + GridStateFactory.getGameName(game.getGame()) + " with the following link: http://www.pente.org/gameServer/tb/new.jsp?game=" + 
+		    					game.getGame() + "&invitee=" + winnerData.getName();
+					}
+				}
 
 				
 				if (data.reason == Data.REASON_RESIGN) {
