@@ -75,6 +75,10 @@
     <param-value>@conf@/cipher.key</param-value>
   </context-param>
 
+  <context-param>
+    <param-name>penteLiveAPNSkey</param-name>
+    <param-value>@conf@/PenteLiveAPNSkey.p12</param-value>
+  </context-param>
  
   <filter>
     <filter-name>LoginFilter</filter-name>

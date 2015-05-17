@@ -13,6 +13,8 @@ import org.pente.gameServer.server.*;
 
 import org.apache.log4j.*;
 
+import org.pente.turnBased.SendNotification;
+
 public class MoveServlet extends HttpServlet {
 	
 	private static final Category log4j = Category.getInstance(
@@ -168,6 +170,8 @@ public class MoveServlet extends HttpServlet {
 			}
 			else if (command.equals("move")) {
 				
+// log4j.debug("************current player initial pid " + game.getCurrentPlayer());
+
 				if (game.getCurrentPlayer() != playerData.getPlayerID()) {
 					log4j.debug("MoveServlet, " + playerData.getName() + "" +
 							"attempted to make move out of turn: " + game.getGid());
@@ -305,6 +309,22 @@ public class MoveServlet extends HttpServlet {
 						tbGameStorer.storeNewMessage(game.getGid(), message);
 					}
 				}
+
+
+// log4j.debug("************current player pid " + game.getCurrentPlayer());
+
+
+				if (!game.isCompleted()) {
+					ServletContext ctx = getServletContext();
+					String penteLiveAPNSkey = ctx.getInitParameter("penteLiveAPNSkey");
+					String penteLiveAPNSpwd = ctx.getInitParameter("penteLiveAPNSpassword");
+					boolean productionFlag = ctx.getInitParameter("penteLiveAPNSproductionFlag").equals("true");
+					Thread thread = new Thread(new SendNotification(game.getGid(), 0, (game.getCurrentPlayer() == game.getPlayer1Pid())?game.getPlayer2Pid():game.getPlayer1Pid(), game.getCurrentPlayer(), 
+						GridStateFactory.getGameName(game.getGame()), penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, resources.getDbHandler() ) );
+					thread.start();
+				}
+
+
 				//redirect to somewhere
 		        response.sendRedirect(moveRedirectPage);
 			}

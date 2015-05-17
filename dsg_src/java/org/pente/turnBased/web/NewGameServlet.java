@@ -13,6 +13,8 @@ import org.pente.gameServer.server.*;
 
 import org.apache.log4j.*;
 
+import org.pente.turnBased.SendNotification;
+
 public class NewGameServlet extends HttpServlet {
 	
 	private static final Category log4j = Category.getInstance(
@@ -189,6 +191,16 @@ public class NewGameServlet extends HttpServlet {
 				tbs.setInviterPid(invitePlayerData.getPlayerID());
 				tbs.setPrivateGame(privateGame);
 				tbGameStorer.createSet(tbs);
+
+				if (inviteePlayerData != null) {
+					ServletContext ctx = getServletContext();
+					String penteLiveAPNSkey = ctx.getInitParameter("penteLiveAPNSkey");
+					String penteLiveAPNSpwd = ctx.getInitParameter("penteLiveAPNSpassword");
+					boolean productionFlag = ctx.getInitParameter("penteLiveAPNSproductionFlag").equals("true");
+					Thread thread = new Thread(new SendNotification(0, 1, invitePlayerData.getPlayerID(), inviteePlayerData.getPlayerID(), 
+						GridStateFactory.getGameName(game), penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, resources.getDbHandler() ) );
+					thread.start();
+				}
 
 				if (inviterMessage != null) {
 					TBMessage m = new TBMessage();
