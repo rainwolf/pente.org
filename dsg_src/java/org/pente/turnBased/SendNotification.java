@@ -15,8 +15,8 @@ import org.apache.log4j.*;
 
 public class SendNotification implements Runnable {
 
-    private long gameID;
-    private long setID;
+    private int notificationType;
+    private long gsmID;
     private long opponentPID;
     private long myPID;
     private String gameName;
@@ -28,10 +28,10 @@ public class SendNotification implements Runnable {
     private Category log4j = Category.getInstance(
         SendNotification.class.getName());
 
-    public SendNotification(long gameID, long setID, long opponentPID, long myPID, String gameName, String penteLiveAPNSkey, String penteLiveAPNSpwd, boolean productionFlag, DBHandler dbHandler) {
+    public SendNotification(int notificationType, long gsmID, long opponentPID, long myPID, String gameName, String penteLiveAPNSkey, String penteLiveAPNSpwd, boolean productionFlag, DBHandler dbHandler) {
         // , String penteLiveAPNSkey, String penteLiveAPNSpwd, boolean productionFlag
-        this.gameID = gameID;
-        this.setID = setID;
+        this.notificationType = notificationType;
+        this.gsmID = gsmID;
         this.opponentPID = opponentPID;
         this.myPID = myPID;
         this.gameName = gameName;
@@ -49,7 +49,7 @@ public class SendNotification implements Runnable {
 
         try {
 
-            log4j.debug("Notification from pid " + opponentPID + " to my pid " + myPID);
+            log4j.debug("Notification from pid " + this.opponentPID + " to my pid " + this.myPID + " of type " + this.notificationType);
 
             con = dbHandler.getConnection();
 
@@ -80,17 +80,17 @@ public class SendNotification implements Runnable {
                     try{
                         PushNotificationPayload payload = PushNotificationPayload.complex();
 
-                        if (gameID > 0) {
+                        if (notificationType == 1) {
                             payload.addAlert("It's your move in a game of " + gameName + " against " + name);
-                            payload.addCustomDictionary("gameID", "" + gameID);
-                        } else if (setID > 0) {
+                            payload.addCustomDictionary("gameID", "" + this.gsmID);
+                        } else if (notificationType == 2) {
                             payload.addAlert("" + name + " has invited you to a game of " + gameName);
-                            payload.addCustomDictionary("setID", "" + setID);
-                        } else {
-                            payload.addAlert("" + name + " sent you a new message! " + gameName);
-                            payload.addCustomDictionary("newMessage", "newMsg");
+                            payload.addCustomDictionary("setID", "" + this.gsmID);
+                        }  else if (notificationType == 3) {
+                            payload.addAlert("" + name + " sent you a new message! \"" + gameName + "\"");
+                            payload.addCustomDictionary("msgID", "" + this.gsmID);
                         }
-                        payload.addSound("default");
+                        payload.addSound("penteLiveNotificationSound.caf");
 
                         String device = rs.getString("token");
                         List<PushedNotification> notifications = Push.payload(payload, penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, device);

@@ -42,13 +42,14 @@
        <a name="paypal"><h3>Donate</h3></a>
 
           You can make your donations using 
-          <b><a href="javascript:document.paypal_form.submit()">paypal</a></b>, make sure to communicate your username when you donate.<br><br>
+          <b><a href="javascript:document.paypal_form.submit()">paypal</a></b>, make sure to communicate your <font color="red">username</font> when you donate.<br><br>
           <center>
              <a href="javascript:document.paypal_form.submit()"><img src="<%= request.getContextPath() %>/gameServer/images/paypal.gif" border="0"></a></center>
           <form action="https://www.paypal.com/cgi-bin/webscr" name="paypal_form" method="post">
             <input type="hidden" name="cmd" value="_xclick">
             <input type="hidden" name="business" value="walied.othman@gmail.com">
-            <input type="hidden" name="item_name" value="Pente.org">
+            <input type="hidden" name="item_name" value="Pente.org donation from <%= request.getAttribute("name") %>">
+            <input type="hidden" name="amount" value="10">
             <input type="hidden" name="no_shipping" value="1">
             <input type="hidden" name="return" value="http://www.pente.org/gameServer/donations?command=thanks">
             <input type="hidden" name="cancel_return" value="http://www.pente.org/gameServer/donations">

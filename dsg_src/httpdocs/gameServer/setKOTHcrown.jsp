@@ -8,7 +8,7 @@
 
 <%
     String sendername = request.getParameter("name");
-    if (sendername.equals("invictus") || sendername.equals("rainwolf")) {
+    if (sendername.equals("invictus") || sendername.equals("rainwolf") || sendername.equals("katysmom")) {
         String name = request.getParameter("kothname");
         String name1 = null;
         if (name != null && !name.equals("")) {
