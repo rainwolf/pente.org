@@ -1,5 +1,6 @@
 <%@ page import="org.pente.game.*, org.pente.turnBased.*,
-                 java.util.*,
+                 java.util.*, java.security.MessageDigest,
+                 org.apache.commons.codec.binary.Base64,
                  org.pente.gameServer.client.web.*,
                  org.pente.gameServer.server.*,
                  org.pente.gameServer.core.*"
@@ -50,6 +51,62 @@ if (gc > 0) {
 }
 int numMessages = resources.getDsgMessageStorer().getNumNewMessages(dsgPlayerData.getPlayerID());
 int numGames = resources.getTbGameStorer().getNumGamesMyTurn(dsgPlayerData.getPlayerID());
+
+
+List<TBSet> waitingSets = tbGameStorer.loadWaitingSets();
+int openTBgames = 0;
+long myPID = dsgPlayerData.getPlayerID();
+for (TBSet s : waitingSets) {
+     if (s.getPlayer1Pid() != myPID && s.getPlayer2Pid() != myPID) 
+        openTBgames++;
+        
+    int nrGamesPlaying = 0;
+    String setGame = GridStateFactory.getGameName(s.getGame1().getGame());
+    boolean alreadyPlaying = false, iAmIgnored = false;
+    long theirPID = (myPID == s.getPlayer1Pid()) ? s.getPlayer2Pid() : s.getPlayer1Pid();
+    for (TBGame g : myTurn) {
+        long oppPid = myPID == g.getPlayer1Pid() ? g.getPlayer2Pid() : g.getPlayer1Pid();
+        String myTurnGame = GridStateFactory.getGameName(g.getGame());
+        if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
+            nrGamesPlaying++;
+            if (nrGamesPlaying > 1) {
+                alreadyPlaying = true;
+                break;
+            }
+        };
+    };
+    if (!alreadyPlaying) {
+        for (TBGame g : oppTurn) {
+            long oppPid = myPID == g.getPlayer1Pid() ? g.getPlayer2Pid() : g.getPlayer1Pid();
+            String myTurnGame = GridStateFactory.getGameName(g.getGame());
+            if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
+                nrGamesPlaying++;
+                if (nrGamesPlaying > 1) {
+                    alreadyPlaying = true;
+                    break;
+                }
+            };
+        };
+    }
+    
+    if (alreadyPlaying)
+        openTBgames--;
+
+		List<DSGIgnoreData> ignoreData = dsgPlayerStorer.getIgnoreData(theirPID);
+		for (Iterator<DSGIgnoreData> it = ignoreData.iterator(); it.hasNext();) {
+        DSGIgnoreData i = it.next();
+        if (i.getIgnorePid() == myPID) {
+            if (i.getIgnoreInvite()) {
+                iAmIgnored = true;
+                break;
+            }	
+        }	
+    }
+    if (iAmIgnored && !alreadyPlaying)
+        openTBgames--;
+}
+
+
 %>
 <% pageContext.setAttribute("title", title2); %>
 <% pageContext.setAttribute("current", "Dashboard"); %>
@@ -116,7 +173,7 @@ window.google_analytics_uacct = "UA-20529582-2";
     consult the <a href="/gameServer/forums">Forums</a>.<br>
     <br>
     <a href="/gameServer/myprofile">My Profile</a> - change your email address, 
-    or any other information in your profile.<br>
+    or any other information in your profile.<br> <hr>
 <% } %>
 <% if (numMessages > 0 || numGames > 0) {  %>
     <% if (numMessages > 0) {  %>
@@ -126,43 +183,6 @@ window.google_analytics_uacct = "UA-20529582-2";
     It is your turn in <%= numGames %> turn-based <%= numGames > 1 ? "games" : "game" %>. 
     <% } %>
 <% } %>
-		<%
-		Resources resources1 = (Resources) application.getAttribute(
-		   Resources.class.getName());
-
-		String name1 = (String) request.getAttribute("name");
-		DSGPlayerData meData1 = dsgPlayerStorer.loadPlayer(name1);
-
-		TBGameStorer tbGameStorer1 = resources1.getTbGameStorer();
-		List<TBSet> waitingSets = tbGameStorer1.loadWaitingSets();
-		int count = 0;
-    long myPID = meData1.getPlayerID();
-		for (TBSet s : waitingSets) {
-         if (s.getPlayer1Pid() != myPID && s.getPlayer2Pid() != myPID) 
-            count++;
-        String setGame = GridStateFactory.getGameName(s.getGame1().getGame());
-        boolean alreadyPlaying = false;
-        long theirPID = (myPID == s.getPlayer1Pid()) ? s.getPlayer2Pid() : s.getPlayer1Pid();
-        for (TBGame g : myTurn) {
-            long oppPid = myPID == g.getPlayer1Pid() ? g.getPlayer2Pid() : g.getPlayer1Pid();
-            String myTurnGame = GridStateFactory.getGameName(g.getGame());
-            if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
-                alreadyPlaying = true;
-                break;
-            };
-        };
-        for (TBGame g : oppTurn) {
-            long oppPid = myPID == g.getPlayer1Pid() ? g.getPlayer2Pid() : g.getPlayer1Pid();
-            String myTurnGame = GridStateFactory.getGameName(g.getGame());
-            if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
-                alreadyPlaying = true;
-                break;
-            };
-        };
-        if (alreadyPlaying)
-            count--;
-		}
-		%>
 
 	<%= (numGames + numMessages) > 0 ? "<hr>" : ""%>
 <%--
@@ -170,13 +190,23 @@ window.google_analytics_uacct = "UA-20529582-2";
         <hr>
 --%>
         <ul>
-    <%--
-        	<li>Brainking tournament! More details <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230000&tstart=0">here</a>.<hr>
-        	</li>
+<%--
         	<li>Public/Open Invitations have been <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=5&threadID=230031&tstart=0">limited</a>.<hr>
         	</li>
-	--%>
-            <li>Trouble finding a game? Try posting an <a href="http://www.pente.org/gameServer/tb/new.jsp">open invitation</a><%= count > 0 ? " or try " + (count == 1 ? "" : "one of ") + "the <a href=\"http://www.pente.org/gameServer/tb/waiting.jsp\">" + count + " open turn-based invitation" + (count == 1 ? "" : "s") + "</a>" : ""%>.</li>
+        	<li><font color ="red">Pente.org is going offline at half past the hour.</font> We are moving servers, more updates on our <a href="https://www.facebook.com/pente.org">Facebook page</a>. <hr>
+        	</li>
+        	<li>New BK tournament. More information <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=3312&start=60&tstart=0">here</a>. (March 17th, 2014)
+        	</li>
+        	<li><a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230251">King of the Hill!</a> Every Tuesday from 6pm EST (3pm PST, 12am CET).<br>
+        	Want a <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230250">crown</a>? Come and get it!
+        	</li>
+--%>
+          <li><a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230403">King of the Hill!</a> Every 3rd and Thirsty Thursday of the month from 6pm EST (3pm PST, 12am CET), starting May 21st.<br>
+          Want a <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230250">crown</a>? Come and get it!
+          </li>
+        	<li>Looking for <a href="http://www.pente.org/gameServer/forums/forum.jspa?forumID=34&start=0">resources</a> to get started?
+        	</li>
+            <li>Want to play turn-based? Try posting an <a href="http://www.pente.org/gameServer/tb/new.jsp">open invitation</a><%= openTBgames > 0 ? " or try " + (openTBgames == 1 ? "" : "one of ") + "the <a href=\"http://www.pente.org/gameServer/tb/waiting.jsp\">" + openTBgames + " open turn-based invitation" + (openTBgames == 1 ? "" : "s") + "</a>" : ""%>.</li>
             </li>
     <%--
     --%>
@@ -296,11 +326,69 @@ addLoadEvent(goJws);
    </div>
 </div>
 
+</form>
+
+
+
+
+
+
+
+
+<%
+SessionListener sessionListener = (SessionListener) application.getAttribute(SessionListener.class.getName());
+List<WhosOnlineRoom> rooms = WhosOnline.getPlayers(globalResources, sessionListener);
+
+boolean inLiveGameRoom = false;
+for (int i = 0; i < rooms.size(); i++) {
+    WhosOnlineRoom room = rooms.get(i);
+    if (room.getName().equals("web")) {
+      continue;
+    }
+
+    for (DSGPlayerData d : room.getPlayers()) {
+      if (d.getName().equals(nm)) {
+        inLiveGameRoom = true;
+        break;
+      }
+    }
+    if (inLiveGameRoom) {
+      break;
+    }
+}
+
+if (inLiveGameRoom) {
+  MessageDigest md = MessageDigest.getInstance("SHA-256");
+  String text = "pente seeds-" + dsgPlayerData.getPlayerID();
+  md.update(text.getBytes("UTF-8")); 
+  Base64 base64 = new Base64();
+  String checkHash = new String(base64.encode( md.digest() ));
+  %>
+  <form method="post" action="bootMe.jsp" style="float: right;">
+      <input type="hidden" name="name" value="<%= nm %>" >
+      <input type="hidden" name="pidHash" value="<%= checkHash %>" >
+      <input type="submit" value="boot me NOW!!!">
+  </form> 
+<%
+}
+%>
+
+
+
+
+
+
+
 <div style="margin-top:5px;">
      or <a href="/gameServer/index.jsp?jws=1"><span>install</span></a> the game room on your desktop
 </div>
 
-</form>
+
+
+
+
+
+
 <br>
 <%--
 <% if (!dsgPlayerData.hasPlayerDonated()) { %>
@@ -368,44 +456,6 @@ addLoadEvent(goJws);
 </div>
 <br>
 
-<%
-		Resources resources1 = (Resources) application.getAttribute(
-		   Resources.class.getName());
-
-		String name1 = (String) request.getAttribute("name");
-		DSGPlayerData meData1 = dsgPlayerStorer.loadPlayer(name1);
-
-		TBGameStorer tbGameStorer1 = resources1.getTbGameStorer();
-		List<TBSet> waitingSets = tbGameStorer1.loadWaitingSets();
-		int count = 0;
-    long myPID = meData1.getPlayerID();
-		for (TBSet s : waitingSets) {
-         if (s.getPlayer1Pid() != myPID && s.getPlayer2Pid() != myPID) 
-            count++;
-        String setGame = GridStateFactory.getGameName(s.getGame1().getGame());
-        boolean alreadyPlaying = false;
-        long theirPID = (myPID == s.getPlayer1Pid()) ? s.getPlayer2Pid() : s.getPlayer1Pid();
-        for (TBGame g : myTurn) {
-            long oppPid = myPID == g.getPlayer1Pid() ? g.getPlayer2Pid() : g.getPlayer1Pid();
-            String myTurnGame = GridStateFactory.getGameName(g.getGame());
-            if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
-                alreadyPlaying = true;
-                break;
-            };
-        };
-        for (TBGame g : oppTurn) {
-            long oppPid = myPID == g.getPlayer1Pid() ? g.getPlayer2Pid() : g.getPlayer1Pid();
-            String myTurnGame = GridStateFactory.getGameName(g.getGame());
-            if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
-                alreadyPlaying = true;
-                break;
-            };
-        };
-        if (alreadyPlaying)
-            count--;
-		}
-%>
-
 <div style="width:100%;margin-top:10px">
 <h2 style="background:#e5e5e5">My Turn-Based Games</h2> 
 </div>
@@ -419,10 +469,10 @@ addLoadEvent(goJws);
   <tr>
    <td align="left" colspan="2">
       <div class="buttonwrapper">
-       <a class="boldbuttons" href="/gameServer/tb/new.jsp"><span>Start a Game</span></a> <a class="boldbuttons" href="/gameServer/tb/waiting.jsp" style="margin-right:6px; margin-left: 6px"><span>Find an Open Game <b>(<%=count%>)</b></span></a>
+       <a class="boldbuttons" href="/gameServer/tb/new.jsp"><span>Start a Game</span></a> <a class="boldbuttons" href="/gameServer/tb/waiting.jsp" style="margin-right:6px; margin-left: 6px"><span>Find an Open Game <b>(<%=openTBgames %>)</b></span></a>
 
        <div style="margin-top:7px;">
-          Active games: <b><%= numberFormat.format(siteStatsData.getNumTbGames()) %></b>, Open TB games: <b><%=count%></b><%-- --%>
+          Active games: <b><%= numberFormat.format(siteStatsData.getNumTbGames()) %></b>, Open TB games: <b><%=openTBgames %></b><%-- --%>
        </div>
       </div>
    </td>

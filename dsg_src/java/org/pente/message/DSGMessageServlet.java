@@ -274,15 +274,15 @@ public class DSGMessageServlet extends HttpServlet {
 				m.setToPid(toPlayerData.getPlayerID());
 				m.setCreationDate(new Date());
 
+				dsgMessageStorer.createMessage(m);
+
 					ServletContext ctx = getServletContext();
 					String penteLiveAPNSkey = ctx.getInitParameter("penteLiveAPNSkey");
 					String penteLiveAPNSpwd = ctx.getInitParameter("penteLiveAPNSpassword");
 					boolean productionFlag = ctx.getInitParameter("penteLiveAPNSproductionFlag").equals("true");
-					Thread thread = new Thread(new SendNotification(0, 0, playerData.getPlayerID(), toPlayerData.getPlayerID(), 
+					Thread thread = new Thread(new SendNotification(3, m.getMid(), playerData.getPlayerID(), toPlayerData.getPlayerID(), 
 						"\n" + subject, penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, resources.getDbHandler() ) );
 					thread.start();
-
-				dsgMessageStorer.createMessage(m);
 				
 				response.sendRedirect("/gameServer/mymessages?command=load");
 				

@@ -100,7 +100,7 @@ if (dsgPlayerData != null) {
        </font>
       </td>
      <% int tourneyWinner = dsgPlayerData.getTourneyWinner(); %>
-     <% if (name.equals("invictus")) { %>
+     <% if (name.equals("invictus") || name.equals("rainwolf") || name.equals("katysmom")) { %>
 	  <td colspan="2">
        <font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="<%= textColor2 %>"><b>
             <form method="GET" action="setKOTHcrown.jsp">
@@ -228,7 +228,7 @@ if (dsgPlayerData != null) {
         <%-- don't show email addresses to spiders --%>
         <%
         if (request.getAttribute("spider") == null && 
-            (dsgPlayerData.getEmailVisible() || (name != null && name.equals("dweebo")))) {
+            (dsgPlayerData.getEmailVisible() || (name != null && name.equals("rainwolf")))) {
             out.println("<b><a href=\"mailto:" + dsgPlayerData.getEmail() + "\">" + dsgPlayerData.getEmail() + "</a></b>");
         }
         else {

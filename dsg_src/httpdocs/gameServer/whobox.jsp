@@ -6,9 +6,9 @@
 
 
 <%
-SessionListener sessionListener = (SessionListener)
-    application.getAttribute(SessionListener.class.getName());
-List<WhosOnlineRoom> rooms = WhosOnline.getPlayers(globalResources, sessionListener);
+// SessionListener sessionListener = (SessionListener)
+//     application.getAttribute(SessionListener.class.getName());
+// List<WhosOnlineRoom> rooms = WhosOnline.getPlayers(globalResources, sessionListener);
 %>
 <style type="text/css">
   .box { width:200px; }
