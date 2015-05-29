@@ -49,7 +49,12 @@ public class SendNotification implements Runnable {
 
         try {
 
-            log4j.debug("Notification from pid " + this.opponentPID + " to my pid " + this.myPID + " of type " + this.notificationType);
+            // log4j.debug("Notification from pid " + this.opponentPID + " to my pid " + this.myPID + " of type " + this.notificationType);
+
+            // if (this.myPID == 23000000016237) {
+            //     this.productionFlag = false;
+            //     this.penteLiveAPNSkey = "/etc/dsg/PenteLiveDevAPNSkey.p12";
+            // }
 
             con = dbHandler.getConnection();
 
@@ -91,10 +96,31 @@ public class SendNotification implements Runnable {
                             payload.addCustomDictionary("msgID", "" + this.gsmID);
                         }
                         payload.addSound("penteLiveNotificationSound.caf");
+                        payload.addBadge(1);
 
                         String device = rs.getString("token");
-                        List<PushedNotification> notifications = Push.payload(payload, penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, device);
+                        List<PushedNotification> notifications = Push.payload(payload, this.penteLiveAPNSkey, this.penteLiveAPNSpwd, this.productionFlag, device);
 
+                        String logString = "Notification from pid " + this.opponentPID + " to my pid " + this.myPID + " of type " + this.notificationType;
+                        for (PushedNotification notification : notifications) {
+                                if (notification.isSuccessful()) {
+                                    logString += " was successful";
+                                } else {
+                                        String invalidToken = notification.getDevice().getToken();
+                                        /* Add code here to remove invalidToken from your database */  
+        
+                                        /* Find out more about what the problem was */  
+                                        Exception theProblem = notification.getException();
+                                        theProblem.printStackTrace();
+        
+                                        /* If the problem was an error-response packet returned by Apple, get it */  
+                                        ResponsePacket theErrorResponse = notification.getResponse();
+                                        if (theErrorResponse != null) {
+                                                logString += " was unsuccessful because: " + theErrorResponse.getMessage() + " with token " + device;
+                                        }
+                                }
+                        }
+                        log4j.debug(logString);
 
                     } catch(Exception e){
                         return;            // Always must return something

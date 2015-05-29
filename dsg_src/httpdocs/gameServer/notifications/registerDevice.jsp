@@ -1,11 +1,15 @@
 <%@ page import="org.pente.database.*, 
                  org.pente.gameServer.core.*, 
-				 org.pente.gameServer.server.*,
-				 java.sql.*, 
+                 org.pente.gameServer.server.*,
+                 java.sql.*, 
                  javapns.Push,
                  javapns.devices.*, 
                  java.util.Date,
-                 java.util.List" %>
+                 java.util.List,
+                 org.apache.log4j.*" %>
+
+<%! private static Category log4j = 
+        Category.getInstance("org.pente.gameServer.web.client.jsp"); %>
 
 <html>
 <body>
@@ -59,10 +63,12 @@
                 stmt.setString(2, token);
                 rs = stmt.executeQuery();
                 if (rs.next()) {
-                    stmt = con.prepareStatement("update notifications set lastping=NOW() where pid=? and token=?");
-                    firstTime = false;
-                } else {
                     stmt = con.prepareStatement("INSERT INTO notifications (pid, token, lastping) VALUES (?, ?, NOW())");
+                    log4j.info("Notification: updating for " + name + ", " + pid + " with token " + token);
+                } else {
+                    stmt = con.prepareStatement("update notifications set lastping=NOW() where pid=? and token=?");
+                    log4j.info("Notification: registering for " + name + ", " + pid + " with token " + token);
+                    firstTime = false;
                 }
                 stmt.setLong(1, pid);
                 stmt.setString(2, token);
@@ -105,6 +111,7 @@
             long yesterday = yesterdayTimestamp.getTime() - (1000*3600*24);
             yesterdayTimestamp.setTime(yesterday);
             if (yesterdayTimestamp.after(lastPing)) {
+                log4j.info("Notification: it has been more than a day since I last checked the feedback server.");
                 List<Device> inactiveDevices = Push.feedback(penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag);
                 Device nonactiveDevice;
                 int deletedDevices = 0;
@@ -117,6 +124,7 @@
                     if (rs.next()) {
                         lastPing = rs.getTimestamp("lastping");
                         if (nonactiveDevice.getLastRegister().after(lastPing)) {
+                            log4j.info("Notification: removing the token " + nonactiveDevice.getToken());
                             stmt = con.prepareStatement("DELETE from notifications where token=?");
                             stmt.setString(1, nonactiveDevice.getToken());
                             if (stmt.executeUpdate() > 0) {
