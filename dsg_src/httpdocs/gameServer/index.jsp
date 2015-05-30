@@ -201,7 +201,7 @@ window.google_analytics_uacct = "UA-20529582-2";
         	Want a <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230250">crown</a>? Come and get it!
         	</li>
 --%>
-          <li><a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230403">King of the Hill!</a> Every 3rd and Thirsty Thursday of the month from 6pm EST (3pm PST, 12am CET), starting May 21st.<br>
+          <li><a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230403">King of the Hill!</a> Every 3rd and Thirsty Thursday of the month from 6pm EST (3pm PST, 12am CET). Next one: June 18th.<br>
           Want a <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230250">crown</a>? Come and get it!
           </li>
         	<li>Looking for <a href="http://www.pente.org/gameServer/forums/forum.jspa?forumID=34&start=0">resources</a> to get started?
@@ -296,9 +296,22 @@ addLoadEvent(goJws);
 </script>
 
 
-<form name="mainPlayForm" method="post" action="" style="margin:0;padding:0;">
 
 
+
+
+
+
+
+
+
+
+
+ <table style="width:100%">
+  <tr>
+    <td style="width: 88%;">
+      
+ <form name="mainPlayForm" method="post" action="" style="margin:0;padding:0;">
 <div class="buttonwrapper">
 
     <a class="boldbuttons" href="javascript:void(0);" 
@@ -328,7 +341,12 @@ addLoadEvent(goJws);
 
 </form>
 
+<div style="margin-top:5px;">
+     or <a href="/gameServer/index.jsp?jws=1"><span>install</span></a> the game room on your desktop
+</div>
 
+   </td>
+      
 
 
 
@@ -364,32 +382,27 @@ if (inLiveGameRoom) {
   Base64 base64 = new Base64();
   String checkHash = new String(base64.encode( md.digest() ));
   %>
-  <form method="post" action="bootMe.jsp" style="float: right;">
-      <input type="hidden" name="name" value="<%= nm %>" >
-      <input type="hidden" name="pidHash" value="<%= checkHash %>" >
-      <input type="submit" value="boot me NOW!!!">
-  </form> 
+    <td style="width: 12%;">
+      <form method="post" action="bootMe.jsp">
+          <input type="hidden" name="name" value="<%= nm %>" >
+          <input type="hidden" name="pidHash" value="<%= checkHash %>" >
+          <input type="image" src="images/bootButton.png" alt="Submit" title="boot me NOW!!!" align="center" width="50" height="50">
+      </form> 
+    </td>
 <%
 }
 %>
 
 
 
-
-
-
-
-<div style="margin-top:5px;">
-     or <a href="/gameServer/index.jsp?jws=1"><span>install</span></a> the game room on your desktop
-</div>
+  </tr>
+</table> 
 
 
 
 
 
 
-
-<br>
 <%--
 <% if (!dsgPlayerData.hasPlayerDonated()) { %>
 <div align="left">
