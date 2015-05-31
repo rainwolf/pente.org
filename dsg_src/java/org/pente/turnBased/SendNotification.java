@@ -107,14 +107,21 @@ public class SendNotification implements Runnable {
                                     logString += " was successful";
                                 } else {
                                         String invalidToken = notification.getDevice().getToken();
-                                        /* Add code here to remove invalidToken from your database */  
-        
-                                        /* Find out more about what the problem was */  
-                                        Exception theProblem = notification.getException();
-                                        theProblem.printStackTrace();
-        
-                                        /* If the problem was an error-response packet returned by Apple, get it */  
                                         ResponsePacket theErrorResponse = notification.getResponse();
+                                        /* Add code here to remove invalidToken from your database */  
+
+                                        if (theErrorResponse.getMessage().indexOf("Invalid token") != -1) {
+                                            PreparedStatement stmt1 = con.prepareStatement("DELETE from notifications where token=?");
+                                            stmt1.setString(1, invalidToken);
+                                            stmt1.executeUpdate();
+                                            stmt1.close();
+                                        } else {
+                                            /* Find out more about what the problem was */  
+                                            Exception theProblem = notification.getException();
+                                            theProblem.printStackTrace();
+                                        }
+
+                                        /* If the problem was an error-response packet returned by Apple, get it */  
                                         if (theErrorResponse != null) {
                                                 logString += " was unsuccessful because: " + theErrorResponse.getMessage() + " with token " + device;
                                         }

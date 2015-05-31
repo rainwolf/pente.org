@@ -1,0 +1,10 @@
+<% 
+   {
+       if (dsgPlayerGameData.getTotalGames() > 0) {	%>
+	<img src="/gameServer/images/<%= dsgPlayerGameData.getRatingGif() %>"> <%= (int) Math.round(dsgPlayerGameData.getRating()) %>
+<%     }
+       else { %> 
+         &nbsp; 
+    <% }
+   }
+%>

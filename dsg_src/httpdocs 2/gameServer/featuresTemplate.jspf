@@ -1,0 +1,52 @@
+<%@ taglib uri="webwork" prefix="ww" %>
+<%@ taglib uri="jivetags" prefix="jive" %>
+
+          <tr>
+            <td bgcolor="black">
+              <table border="0" cellspacing="0" cellpadding="3" width="100%">
+                <tr>
+                  <td bgcolor="<%= bgColor1 %>">
+                    <font face="Verdana, Arial, Helvetica, sans-serif" size="3" color="<%= textColor1 %>">
+                      <b>Features</b>
+                    </font>
+                  </td>
+                </tr>
+                <tr>
+                  <td bgcolor="<%= bgColor2 %>">
+                    <font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b>
+                      <a href="/gameServer/controller/search?quick_start=1">
+                        Game Database</a></b></font><br>
+                      <font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b>
+                      <a href="/gameServer/puzzle.jsp">
+                        Game Puzzles</a> <!-- <span style="font-family:verdana;font-size:7pt;color:<%= textColor2 %>">New!
+                      </span>-->
+<br>
+                      <a href="<%= request.getContextPath() + "/gameServer/strategy.jsp" %>">
+                        Game Tutorials</a><br>	
+                      <a href="http://www.cafepress.com/dweebos">
+                        Pente.org Store</a><br>
+                      <a href="/gameServer/forums">
+                        Discussion Forums</a><br>
+                    </b>
+                    Popular topics<br>
+                    </font>
+                    <% if (forumFactory.getPopularThreads().hasNext()) {
+				       	 for (Iterator it = forumFactory.getPopularThreads(); it.hasNext();) {
+				           ForumThread thread = (ForumThread) it.next();
+				           Forum forum = thread.getForum(); %>
+				
+                                                  <span style="font-family:verdana;font-size:7pt">
+				           &#149; <a href="<%= request.getContextPath() %>/gameServer/forums/thread.jspa?forumID=<%= forum.getID() %>&threadID=<%= thread.getID() %>"
+				                 ><%= thread.getName() %></a></span><br>
+					<%   }
+					   }
+					   else { %>
+					        <%-- No popular dicussions. --%>
+					        <jive:i18n key="populartopics.no_popular_discussions" />
+					<% } %>
+                     
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>

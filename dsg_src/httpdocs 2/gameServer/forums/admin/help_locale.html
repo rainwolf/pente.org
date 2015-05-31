@@ -1,0 +1,52 @@
+
+<font size="-1"><b><a name="locale" style="text-decoration:none;"
+ ></a>Locale</b></font>
+<ul>
+    <font size="-1">
+    Sets the global Jive Forums locale. The locale is used for formatting dates
+    and numbers. Additionally, if a language file corresponding to the locale
+    is available with the default skin, that language will be used.
+    Languages listed in a
+    <span style="background-color:#dddddd;">gray background</span>
+    represent supported Jive Forums languages. If you choose one of these languages
+    the default forum interface will be translated into that language.
+    </font>
+</ul>
+
+<font size="-1"><b><a name="time_zone" style="text-decoration:none;"
+ ></a>Time Zone</b></font>
+<ul>
+    <font size="-1">
+    The default time zone that should be used to display times to end-users.
+    </font>
+</ul>
+
+<font size="-1"><b><a name="charset" style="text-decoration:none;"
+ ></a>Character Set</b></font>
+<ul>
+    <font size="-1">
+    The character set controls how content is encoded and stored in the
+    database. The default encoding is ISO-8859-1, which is suitable for
+    most Latin languages. If you need to support double byte character sets
+    such as Chinese or Japanese, it's recommend that you use utf-8
+    as the charset (Unicode). Unicode offers simultaneous support for a
+    large number of languages and is easy to convert into native charsets
+    as necessary. You may also specifiy any other charset that is supported
+    by your JVM. A list of encodings supported by the Sun JVM can be found
+    <a href="http://java.sun.com/j2se/1.3/docs/guide/intl/encoding.doc.html"
+     target="_blank">
+    here.</a><p>
+
+    In order for a particular encoding to work (such as Unicode), your
+    application server and database may need to be specially configured.
+    Please consult your server documentation for more information. For
+    example, SQLServer has a special column type for Unicode text, and the
+    Resin application server can be configured to use a custom charset by
+    adding a &lt;character-encoding&gt; element to the web.xml or resin.conf
+    files. Any Servlet 2.3 compliant application servers also supports the
+    method HttpServletRequest.setCharacterEncoding(String). A Servlet 2.3
+    Filter called SetCharacterEncodingFilter is installed in the default
+    Jive Forums web.xml file, which  will set the incoming character encoding
+    to global Jive encoding.
+    </font>
+</ul>

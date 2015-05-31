@@ -1,0 +1,37 @@
+    input.emailinput{ height: 20px; font-size:9pt; width:435px;}
+    input.invalid { color: red; background-color:yellow; font-style:italic; width:320px;}
+    input.value { color: black; background-color: #ffffff; width:320px; }
+
+    table.inbox { border: solid 1px gray; border-spacing: 0px; border-collapse: collapse; margin-top: 15px; margin-left: 25px; margin-right: 25px; width: 95%; }
+    table.inbox tr th.centerText, table.inbox tr td.centerText { border: 1px solid #555555; border-collapse: collapse; padding: 10px; }
+    table.inbox tr th.activityHistoryEntry, table.inbox tr td.activityHistoryEntry { border: 1px solid #555555; border-collapse: collapse; padding: 10px; }
+    
+    table.inbox td, table.inbox th { border: solid gray 1px; padding: 2px; font-size: 0.8em; }
+    td.optionsCell { background-color:#ccccff; }
+
+    /* Used when displaying the "Reply" button in the activity history
+       and Data Bank Correspondence pages */    
+   .buttonDiv { float: right; margin: 10px 10px 10px 20px; width: 60px; padding: 5px; border: 1px solid #797979; text-align: center; background: white; vertical-align: middle; }
+   
+   
+    table.inbox tr th, table.inbox tr td { border: 1px solid #555555; border-collapse: collapse; padding: 3px; }
+    table.inbox tr th { background-color: #ccccff; }
+
+    .header { font-weight: bold; font-size: 18pt; margin-top: 20px; margin-bottom: 15px; margin-left: 15px; }
+    .mostRecent { background-color: #ffffcc; }
+    
+    .centerText { text-align: center; }
+    table.inbox tr.correspondenceRow td { padding: 10px; }
+    .dateCol { width: 15%; }
+    
+    .headerLabel { font-weight: bold; }
+    .headerSeparator { width: 95%; margin: 10px auto 10px auto; border: 0; color: #aeaeae; background-color: #aeaeae; height: 1px; }
+    
+    .replySection { margin-left: 25px; margin-top: 10px; }
+    .replyTitle { font-size: 18pt; font-weight: bold; margin-bottom: 10px; }
+    .replySubject { font-size: 10pt; margin-bottom: 10px; }
+    .replyMessageLabel { font-size: 10pt; margin-bottom: 10px; margin-top: 10px; font-weight: bold; }
+    .originalMessageBox { width: 800px; background: #dddddd; height: 200px; overflow: scroll; border: 1px solid #7F9DB9; margin-bottom: 10px; }
+    .originalMessage { margin: 5px; }
+    .sendBox { margin-top: 15px; }
+    .separatorBox { margin-top: 20px; margin-bottom: 5px; } 

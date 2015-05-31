@@ -21,33 +21,56 @@ List<TBGame> oppTurn = new ArrayList<TBGame>();
 Utilities.organizeGames(meData.getPlayerID(), currentSets,
     invitesTo, invitesFrom, myTurn, oppTurn);
 
-int count = 0;
+int openTBgames = 0;
 long myPID = meData.getPlayerID();
 for (TBSet s : waitingSets) {
      if (s.getPlayer1Pid() != meData.getPlayerID() &&
-         s.getPlayer2Pid() != meData.getPlayerID()) count++;
+         s.getPlayer2Pid() != meData.getPlayerID()) openTBgames++;
 
+    int nrGamesPlaying = 0;
     String setGame = GridStateFactory.getGameName(s.getGame1().getGame());
-    boolean alreadyPlaying = false;
+    boolean alreadyPlaying = false, iAmIgnored = false;
     long theirPID = (myPID == s.getPlayer1Pid()) ? s.getPlayer2Pid() : s.getPlayer1Pid();
     for (TBGame g : myTurn) {
         long oppPid = myPID == g.getPlayer1Pid() ? g.getPlayer2Pid() : g.getPlayer1Pid();
         String myTurnGame = GridStateFactory.getGameName(g.getGame());
         if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
-            alreadyPlaying = true;
-            break;
+            nrGamesPlaying++;
+            if (nrGamesPlaying > 1) {
+                alreadyPlaying = true;
+                break;
+            }
         };
     };
-    for (TBGame g : oppTurn) {
-        long oppPid = myPID == g.getPlayer1Pid() ? g.getPlayer2Pid() : g.getPlayer1Pid();
-        String myTurnGame = GridStateFactory.getGameName(g.getGame());
-        if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
-            alreadyPlaying = true;
-            break;
+    if (!alreadyPlaying) {
+        for (TBGame g : oppTurn) {
+            long oppPid = myPID == g.getPlayer1Pid() ? g.getPlayer2Pid() : g.getPlayer1Pid();
+            String myTurnGame = GridStateFactory.getGameName(g.getGame());
+            if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
+                nrGamesPlaying++;
+                if (nrGamesPlaying > 1) {
+                    alreadyPlaying = true;
+                    break;
+                }
+            };
         };
-    };
+    }
+
     if (alreadyPlaying)
-        count--;
+        openTBgames--;
+
+		List<DSGIgnoreData> ignoreData = dsgPlayerStorer.getIgnoreData(theirPID);
+		for (Iterator<DSGIgnoreData> it = ignoreData.iterator(); it.hasNext();) {
+        DSGIgnoreData i = it.next();
+        if (i.getIgnorePid() == myPID) {
+            if (i.getIgnoreInvite()) {
+                iAmIgnored = true;
+                break;
+            }	
+        }	
+    }
+    if (iAmIgnored && !alreadyPlaying)
+        openTBgames--;
 }
 
 
@@ -56,7 +79,7 @@ for (TBSet s : waitingSets) {
 Here you can find other players who want to play turn-based games.<br>
 An open invitation will not show up for you if you are already playing that particular game against the person inviting. <br>
 Games here can be accepted by anyone.  To post a game here, click the button
-below and don't specify a player to invite.<br>
+below and do not specify a player to invite.<br>
 <br>
 <input type="button" value="Create Game"
    onclick="javascript:window.location='/gameServer/tb/new.jsp';"><br>
@@ -64,7 +87,7 @@ below and don't specify a player to invite.<br>
 <table border="0" cellpadding="0" cellspacing="0" width="100%">
   <tr>
    <td>
-     <% if (count == 0) { %>
+     <% if (openTBgames == 0) { %>
      <h3>Open Invitation Games</h3>
         No open invitation games found.<br>
      <% }
@@ -74,7 +97,7 @@ below and don't specify a player to invite.<br>
 	 	<tr bgcolor="<%= textColor2 %>">
 	     <td colspan="5">
 	       <font color="white">
-	         <b>Open Invitation Games (<%= count %>)
+	         <b>Open Invitation Games (<%= openTBgames %>)
 	       </font>
 	     </td>
 	   </tr>
@@ -90,28 +113,48 @@ below and don't specify a player to invite.<br>
         if (s.getPlayer1Pid() == myPID ||
              s.getPlayer2Pid() == myPID) continue;
         
+        int nrGamesPlaying = 0;
         String setGame = GridStateFactory.getGameName(s.getGame1().getGame());
-        boolean alreadyPlaying = false;
+        boolean alreadyPlaying = false, iAmIgnored = false;
         long theirPID = (myPID == s.getPlayer1Pid()) ? s.getPlayer2Pid() : s.getPlayer1Pid();
         for (TBGame g : myTurn) {
             long oppPid = myPID == g.getPlayer1Pid() ? g.getPlayer2Pid() : g.getPlayer1Pid();
             String myTurnGame = GridStateFactory.getGameName(g.getGame());
             if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
-                alreadyPlaying = true;
-                break;
+                nrGamesPlaying++;
+                if (nrGamesPlaying > 1) {
+                    alreadyPlaying = true;
+                    break;
+                }
             };
         };
+        if (!alreadyPlaying) {
+            for (TBGame g : oppTurn) {
+                long oppPid = myPID == g.getPlayer1Pid() ? g.getPlayer2Pid() : g.getPlayer1Pid();
+                String myTurnGame = GridStateFactory.getGameName(g.getGame());
+                if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
+                    nrGamesPlaying++;
+                    if (nrGamesPlaying > 1) {
+                        alreadyPlaying = true;
+                        break;
+                    }
+                };
+            };
+        }
         if (alreadyPlaying)
             continue;
-        for (TBGame g : oppTurn) {
-            long oppPid = myPID == g.getPlayer1Pid() ? g.getPlayer2Pid() : g.getPlayer1Pid();
-            String myTurnGame = GridStateFactory.getGameName(g.getGame());
-            if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
-                alreadyPlaying = true;
-                break;
-            };
-        };
-        if (alreadyPlaying)
+
+    		List<DSGIgnoreData> ignoreData = dsgPlayerStorer.getIgnoreData(theirPID);
+    		for (Iterator<DSGIgnoreData> it = ignoreData.iterator(); it.hasNext();) {
+            DSGIgnoreData i = it.next();
+            if (i.getIgnorePid() == myPID) {
+                if (i.getIgnoreInvite()) {
+                    iAmIgnored = true;
+                    break;
+                }	
+            }	
+        }
+        if (iAmIgnored && !alreadyPlaying)
             continue;
         
              

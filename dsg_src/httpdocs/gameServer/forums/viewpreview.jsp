@@ -221,6 +221,7 @@
             <% }
       %>
 </ww:if>
+
 <ww:if test="!$recaptcha_challenge_field">
     I am not sure how you got here, but this is not supposed to happen.
 </ww:if>
