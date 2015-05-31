@@ -10,6 +10,7 @@
                 { "/gameServer/forums", "Forums" }
    };
 %>
+
 <% if (request.getAttribute("name") != null && request.getAttribute("spider") == null && request.getParameter("s") == null) {
 	response.sendRedirect("/gameServer/index.jsp");
    }
@@ -48,7 +49,6 @@ google_ad_height = 600;
 <script type="text/javascript"
 src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
 </script>
--->
 
 <script type="text/javascript"><!--
 google_ad_client = "ca-pub-3326997956703582";
@@ -110,7 +110,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
     <br>
          <div style="padding:10px;border: 1px solid gray">
 	   <b style="font-size:14px;color:red">New!</b>
-	   <p style="font-size:14px">Play Pente from your mobile phone! <br/><br/><a href="/pente-android.jsp">Learn how</a>.</p>
+	   <p style="font-size:14px">Play Pente from your mobile phone! <br/><br/><a href="https://itunes.apple.com/us/app/pente-live/id595426592?mt=8">Learn how</a>.</p>
 	 </div>
 	</div>
 

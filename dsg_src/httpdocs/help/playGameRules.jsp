@@ -117,15 +117,18 @@ this case until one player has an advantage (i.e., gets more captured stones
 or gets five-in-a-row). There are no draws right now in Poof-Pente.<br>
 <br>
 <a name="boat-pente"><u>Boat-Pente</u></a><br>
-Boat-Pente is a variation of Pente proposed by player zoeyk.  Also known
-as "boat rules" Pente.<br>
+Boat-Pente is a variation of Pente proposed to Pente.org by player zoeyk.  Also known
+as "boat rules" Pente. Boat-Pente aka "Boat Rules" Pente was originally invented in 
+the mid 1980's by a man named "Jay E. Hoff". The late Jay E. Hoff, (also know at this 
+website by the player name of jayehoff) was the stepfather of player zoeyk (aka Zoey King).<br>
 <br>
 The main difference between this game and Pente is in the end game.  
 Once a Pente is made (5 stones in a row), the game can continue as long as the 
 opponent is able to capture across the Pente!  So in the example game below
 white hasn't won yet because black can capture on the next turn, removing the
 Pente.  If after black moves the Pente is still in place then white wins.<br>
-<img src="../images/boat_pente_ex1.jpg"><br>
+<center><img src="../gameServer/images/boat_pente_ex1.jpg"></center>
+<br>
 <br>
 Capturing 5 pairs is still a win like in Pente and the tournament rule is used
 for rated games.<br>

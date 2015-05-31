@@ -44,6 +44,7 @@ a {text-decoration:none;}
 			<div id="signupnow-text">
 				<h2>Just want to try it out? </h2>
 				<p>...it's ok, I hate filling out forms too</p>
+        <p> Or perhaps you just want to <a href="features.jsp">check out all our features.</a></p>
 			</div>
 
 			<div id="signupnow-button">
@@ -72,12 +73,12 @@ a {text-decoration:none;}
       </td>
       <td>
         <%
-		String registerName = request.getParameter("registerName");
+		String registerName = request.getParameter("name");
 		if (registerName == null) {
 		    registerName = "";
 		}
 	    %>
-        <input type="text" name="registerName" id="registerName" size="30" maxlength="10" value="<%= registerName %>"><br>
+        <input type="text" name="name" id="registerName" size="30" maxlength="10" value="<%= registerName %>"><br>
         <p class="s">5 to 10 characters, digits or underscore _</p>
       </td>
      </tr>

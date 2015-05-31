@@ -29,8 +29,10 @@
 			}
 			else {
 				// update player color to green
-				data.setNameColorRGB(Integer.parseInt(request.getParameter("color")));
-				dsgPlayerStorer.updatePlayer(data);
+				if (!data.hasPlayerDonated()) {
+    				data.setNameColorRGB(Integer.parseInt(request.getParameter("color")));
+    				dsgPlayerStorer.updatePlayer(data);
+        }
 
 				String addColorOnlyStr = request.getParameter("addColorOnly");
 			    boolean addColorOnly = addColorOnlyStr != null && !addColorOnlyStr.equals("");
@@ -47,9 +49,9 @@
 
 					// email player thank you message
 					SendMail2.sendMail(
-						"dweebo", "dweebo@pente.org",
+						"rainwolf", "rainwolf@submanifold.be",
 						name, request.getParameter("email"),
-						"dweebo", "dweebo@pente.org",
+						"rainwolf", "rainwolf@submanifold.be",
 						"Pente.org Donation",
 						request.getParameter("emailMessage"),
 						false,
@@ -101,13 +103,13 @@ Initial color: <select name="color">
 <%  	} %>
 </select><br>
 Email message to donor:
-<textarea name="emailMessage" cols="80" rows="10">donor,
+<textarea name="emailMessage" cols="80" rows="10">Hi there,
 Thank you for your donation, it will really help out Pente.org!
 
 I have updated your player profile so you can now change the color of your name, upload a picture and add a note to your profile whenever you like at http://pente.org/gameServer/myprofile/donor.
 
 Thanks again for the donation and enjoy the extra features!
--dweebo</textarea><br>
+-rainwolf</textarea><br>
 <br>
 <input type="submit" value="submit">
 

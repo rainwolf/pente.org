@@ -23,25 +23,29 @@ List completed = resources.getTourneyStorer().getCompletedTournies();
      <b>Current Tournament Champs!</b>
      <table border="1" cellpadding="2" cellspacing="0" bordercolor="black">
        <tr bgcolor="<%= bgColor1 %>">
+        <td><font color="white">Pente</font></td>
         <td><font color="white">D-Pente</font></td>
         <td><font color="white">Pente</font></td>
         <td><font color="white">Pente</font></td>
        </tr>
       </tr>
       <tr>
+        <td>Pente -  carson75's Pente Tournament</td>
         <td>D-Pente - Fall 2005</td>
         <td>Summer 2007 Pente Open</td>
         <td>Pente - Winter 2007 Below 1700</td>
       </tr>
       <tr>
+        <td><a href="../profile?viewName=zoeyk">zoeyk</a> <img src="/gameServer/images/crown.gif"></td>
         <td><a href="../profile?viewName=richardiii">richardiii</a> <img src="/gameServer/images/crown.gif"></td>
         <td><a href="../profile?viewName=richardiii">richardiii</a> <img src="/gameServer/images/crown.gif"></td>
         <td><a href="../profile?viewName=spifster">spifster</a> <img src="/gameServer/images/scrown.gif"></td>
       </tr>
       <tr>
+        <td><img src="/gameServer/avatar?name=zoeyk"></td>
         <td><img src="/gameServer/avatar?name=richardiii"></td>
         <td><img src="/gameServer/avatar?name=richardiii"></td>
-        <td>&nbsp;</td>
+        <td><img src="/gameServer/avatar?name=spifster"></td>
       </tr>
      </table>
 

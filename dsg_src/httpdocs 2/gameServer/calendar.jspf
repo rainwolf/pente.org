@@ -1,0 +1,111 @@
+<%! DateFormat dfmy = new SimpleDateFormat("MMMMMMMM yyyy"); %>
+
+<%
+int month = 0;
+int year = 0;
+
+Calendar cal = Calendar.getInstance();
+int currentDay = cal.get(Calendar.DATE);
+int currentMonth = cal.get(Calendar.MONTH);
+int currentYear = cal.get(Calendar.YEAR);
+
+String monthYear = (String) request.getAttribute("monthYear");
+if (monthYear != null && !monthYear.equals("")) {
+    year = Integer.parseInt(monthYear.substring(0, 4));
+    month = Integer.parseInt(monthYear.substring(4));
+}
+else {
+    month = currentMonth;
+    year = currentYear;
+}
+
+cal.set(Calendar.MONTH, month);
+cal.set(Calendar.YEAR, year);
+cal.set(Calendar.DATE, 1);
+cal.add(Calendar.MONTH, 1);
+cal.add(Calendar.DATE, -1);
+int daysInMonth = cal.get(Calendar.DATE);
+
+cal.set(Calendar.DATE, 1);
+int firstDay = cal.get(Calendar.DAY_OF_WEEK);
+
+int rows = ((firstDay - 1) + daysInMonth + 6) / 7;
+%>
+
+<input type="hidden" name="vacationMonth" value="<%= month %>">
+<input type="hidden" name="vacationYear" value="<%= year %>">
+
+<table border="1" cellspacing="0" cellpadding="1" bordercolor="gray">
+  <tr bgcolor="<%= bgColor1 %>">
+    <td colspan="7">
+      <table border="0">
+        <tr>
+          <td>
+		      <select name="monthYear"> <%
+		        for (int i = 0; i < 3; i++) {
+		          for (int j = 0; j < 12; j++) {
+		            if (i == 0 && j < currentMonth) {
+		              continue;
+		            }
+		            cal.set(Calendar.YEAR, currentYear + i);
+		            cal.set(Calendar.MONTH, j); 
+		            String val = Integer.toString(currentYear + i);
+		            val += Integer.toString(j); 
+		            String selected = (currentYear + i == year && j == month) ? " selected" : ""; %>
+		            <option value="<%= val %>"<%= selected %>><%= dfmy.format(cal.getTime()) %></option> <%
+		          }
+		        } %>
+		      </select>
+          </td>
+          <td>
+            <input type="submit" value="Change">
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr bgcolor="<%= bgColor2 %>">
+	<td><b>Sun</b></td>
+	<td><b>Mon</b></td>
+	<td><b>Tue</b></td>
+	<td><b>Wed</b></td>
+	<td><b>Thu</b></td>
+	<td><b>Fri</b></td>
+	<td><b>Sat</b></td>
+  </tr>
+<% int d = 1;
+
+   for (int i = 0; i < rows; i++) { %>
+       <tr> <%
+       for (int j = 1; j < 8; j++) {
+           if (i == 0 && j < firstDay) { %> 
+              <td width="40">&nbsp;</td> <%
+           }
+           else if (d <= daysInMonth) {
+               boolean iswk = (j == weekend[0] || j == weekend[1]);
+               boolean isvc = false;
+               String checked = "";
+               String disabled = "";
+               for (Date vc : vacationDays) {
+                 if (vc.getDate() == d && vc.getMonth() == month && vc.getYear() == (year - 1900)) {
+                   isvc = true;
+                   checked = " checked";
+                   break;
+                 }
+               } 
+               if (month == currentMonth && year == currentYear &&
+                   d < currentDay) {
+                   disabled = " disabled";
+               }
+               %>
+               <td align="right" width="40" <% if (iswk || isvc) { %>bgcolor="#ffd16d" <% } %>> <%
+                 if (!iswk) { %>
+                 <input type="checkbox" name="vacationDay" value="<%= d %>"<%= checked %><%= disabled %>><%
+                 } %><%= d++ %>
+               </td> <%
+           }
+       } %>
+       </tr> <%
+   }
+%>
+</table>

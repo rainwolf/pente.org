@@ -63,12 +63,12 @@
                 stmt.setString(2, token);
                 rs = stmt.executeQuery();
                 if (rs.next()) {
-                    stmt = con.prepareStatement("INSERT INTO notifications (pid, token, lastping) VALUES (?, ?, NOW())");
+                    stmt = con.prepareStatement("update notifications set lastping=NOW() where pid=? and token=?");
+                    firstTime = false;
                     log4j.info("Notification: updating for " + name + ", " + pid + " with token " + token);
                 } else {
-                    stmt = con.prepareStatement("update notifications set lastping=NOW() where pid=? and token=?");
+                    stmt = con.prepareStatement("INSERT INTO notifications (pid, token, lastping) VALUES (?, ?, NOW())");
                     log4j.info("Notification: registering for " + name + ", " + pid + " with token " + token);
-                    firstTime = false;
                 }
                 stmt.setLong(1, pid);
                 stmt.setString(2, token);
