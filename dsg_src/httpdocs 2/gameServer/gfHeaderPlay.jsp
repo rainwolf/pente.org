@@ -1,2 +1,0 @@
-<a href="http://www.tkqlhce.com/click-2164465-10275177" target="_blank">
-<img src="http://www.afcyhf.com/image-2164465-10275177" width="468" height="60" alt="Unlimited Game Rentals Delivered - Free Trial" border="0"/></a>
