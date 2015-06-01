@@ -1,7 +1,0 @@
-<%!
-private static final String bgColor1 = "#2C862F";//"#164317";
-private static final String bgColor2 = "#deecde"; //#bfd7bf
-private static final String linkColor = "#2C862F";
-private static final String textColor1 = "#ffec49";//"#ff8105";
-private static final String textColor2 = "#ff8105";
-%>
