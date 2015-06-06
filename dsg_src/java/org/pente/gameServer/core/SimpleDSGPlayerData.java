@@ -34,6 +34,7 @@ public class SimpleDSGPlayerData implements DSGPlayerData, java.io.Serializable 
     private int			age;
     private String		homepage;
     private int         logins;
+    private int         subscriberLevel;
     private Date        lastLoginDate;
     private Date        registerDate;
     private Date        deRegisterDate;
@@ -103,6 +104,14 @@ public class SimpleDSGPlayerData implements DSGPlayerData, java.io.Serializable 
 	public boolean hasPlayerDonated() {
 		return nameColor != null;
 	}
+
+    Public void getSubscriberLevel(int subscriberLevel) {
+        this.subscriberLevel = subscriberLevel;
+    }
+
+    Public int getSubscriberLevel() {
+        return this.subscriberLevel;
+    }
 
     public void setPassword(String password) {
         this.password = password;

@@ -69,7 +69,7 @@ for (TBSet s : waitingSets) {
         String myTurnGame = GridStateFactory.getGameName(g.getGame());
         if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
             nrGamesPlaying++;
-            if (nrGamesPlaying > 1) {
+            if (nrGamesPlaying > 0) {
                 alreadyPlaying = true;
                 break;
             }
@@ -81,7 +81,7 @@ for (TBSet s : waitingSets) {
             String myTurnGame = GridStateFactory.getGameName(g.getGame());
             if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
                 nrGamesPlaying++;
-                if (nrGamesPlaying > 1) {
+                if (nrGamesPlaying > 0) {
                     alreadyPlaying = true;
                     break;
                 }
