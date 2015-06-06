@@ -35,6 +35,8 @@ public interface DSGPlayerData extends Cloneable {
 	public int getNameColorRGB();
 
 	public boolean hasPlayerDonated();
+    Public void getSubscriberLevel(int subscriberLevel);
+    Public int getSubscriberLevel();
 
     public void setPassword(String password);
     public String getPassword();

@@ -248,6 +248,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
         if (dsgPlayerData != null) {
             loadPlayerGames(dsgPlayerData);
             loadAvatar(dsgPlayerData);
+            getSubscriberData(dsgPlayerData);
         }
 
         return dsgPlayerData;
@@ -311,6 +312,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
         if (dsgPlayerData != null) {
 	        loadPlayerGames(dsgPlayerData);
             loadAvatar(dsgPlayerData);
+            getSubscriberData(dsgPlayerData);
         }
        
         return dsgPlayerData;
@@ -323,6 +325,52 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
 			data.addPlayerGameData(g);
 		}
 	}
+
+    private void getSubscriberData(DSGPlayerData dsgPlayerData) throws DSGPlayerStoreException {
+
+        Connection con = null;
+        PreparedStatement stmt = null;
+        ResultSet result = null;
+
+        try {
+            try {
+                con = dbHandler.getConnection();
+
+                java.util.Date dt = new java.util.Date();
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                String currentTime = sdf.format(dt);
+                int lastYear = Integer.parseInt(currentTime.substring(0,4)) - 1;
+                String lastYearString = "" + lastYear + currentTime.substring(4);
+
+                stmt = con.prepareStatement(
+                    "select level " +
+                    "from dsg_subscribers " +
+                    "where pid = ? and paymentdate >= ?");
+                stmt.setLong(1, dsgPlayerData.getPlayerID());
+                stmt.setString(1, lastYearString);
+                result = stmt.executeQuery();
+                int level = 0;
+                while (result.next()) {
+                    level = level | result.getInt(1);
+                }
+
+                dsgPlayerData.setSubscriberLevel(level);
+                    
+            } finally {
+                if (result != null) {
+                    result.close();
+                }
+                if (stmt != null) {
+                    stmt.close();
+                }
+                if (con != null) {
+                    dbHandler.freeConnection(con);
+                }
+            }
+        } catch (Throwable t) {
+            throw new DSGPlayerStoreException("Load subscriber data problem", t);
+        }
+    }
 
     public void loadAvatar(DSGPlayerData dsgPlayerData) 
         throws DSGPlayerStoreException {

@@ -19,6 +19,8 @@
     String timeZoneID = "";
     if (dsgPlayerData != null) {
     	timeZoneID = dsgPlayerData.getTimezone();
+    } else {
+        timeZoneID = (String) request.getAttribute("timezone");
     }
 %>
 
