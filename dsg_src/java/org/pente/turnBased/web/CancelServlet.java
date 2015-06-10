@@ -22,6 +22,7 @@ public class CancelServlet extends HttpServlet {
 	private static final String confirmRedirectPage = "/gameServer/tb/requestCancel.jsp";
     private static final String requestRedirectPage = "/gameServer/tb/";
 	private static final String cancelRedirectPage = "/gameServer/index.jsp";
+	private static final String mobileRedirectPage = "/gameServer/mobile/empty.jsp";
 	
 	private Resources resources;
 	
@@ -149,8 +150,14 @@ public class CancelServlet extends HttpServlet {
                     return;
                 }
                 
-                getServletContext().getRequestDispatcher(requestRedirectPage).
-                    forward(request, response);
+				String isMobile = (String) request.getParameter("mobile");
+				if (isMobile == null) {
+	                getServletContext().getRequestDispatcher(requestRedirectPage).
+	                    forward(request, response);
+				} else {
+	                getServletContext().getRequestDispatcher(mobileRedirectPage).
+	                    forward(request, response);
+				}
                 return;             
             }
             // from jsp
@@ -170,8 +177,14 @@ public class CancelServlet extends HttpServlet {
 				
 				tbGameStorer.cancelSet(set);
    
-				getServletContext().getRequestDispatcher(cancelRedirectPage).
-					forward(request, response);
+				String isMobile = (String) request.getParameter("mobile");
+				if (isMobile == null) {
+	                getServletContext().getRequestDispatcher(cancelRedirectPage).
+	                    forward(request, response);
+				} else {
+	                getServletContext().getRequestDispatcher(mobileRedirectPage).
+	                    forward(request, response);
+				}
 			}
             // from jsp
             else if (command.equals("No")) {
@@ -203,8 +216,14 @@ public class CancelServlet extends HttpServlet {
                     redirect = cancelRedirectPage;
                 }
                 
-                getServletContext().getRequestDispatcher(redirect).forward(
-                    request, response);
+				String isMobile = (String) request.getParameter("mobile");
+				if (isMobile == null) {
+	                getServletContext().getRequestDispatcher(redirect).forward(
+	                    request, response);
+				} else {
+	                getServletContext().getRequestDispatcher(mobileRedirectPage).
+	                    forward(request, response);
+				}
             }
 
 		} catch (TBStoreException tbe) {

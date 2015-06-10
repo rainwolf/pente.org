@@ -18,6 +18,7 @@ public class CancelInvitationServlet extends HttpServlet {
 
 	private static final String successPage = "/gameServer/index.jsp";
 	private static final String loadRedirectPage = "/gameServer/tb/cancelInvitation.jsp";
+	private static final String mobileRedirectPage = "/gameServer/mobile/empty.jsp";
 	
 	private Resources resources;
 	
@@ -120,7 +121,12 @@ public class CancelInvitationServlet extends HttpServlet {
 
 				tbGameStorer.cancelSet(set);
 
-				response.sendRedirect(request.getContextPath() + successPage);
+				String isMobile = (String) request.getParameter("mobile");
+				if (isMobile == null) {
+					response.sendRedirect(request.getContextPath() + successPage);
+				} else {
+			        response.sendRedirect(mobileRedirectPage);
+				}
 				return;
 			}
 			

@@ -21,6 +21,7 @@ public class ResignServlet extends HttpServlet {
 	private static final String errorRedirectPage = "/gameServer/tb/error.jsp";
 	private static final String confirmRedirectPage = "/gameServer/tb/confirmResign.jsp";
 	private static final String resignRedirectPage = "/gameServer/index.jsp";
+	private static final String mobileRedirectPage = "/gameServer/mobile/empty.jsp";
 	
 	private Resources resources;
 	
@@ -147,8 +148,12 @@ public class ResignServlet extends HttpServlet {
 					tbGameStorer.storeNewMessage(game.getGid(), message);
 				}
 				
-				getServletContext().getRequestDispatcher(resignRedirectPage).
-					forward(request, response);
+				String isMobile = (String) request.getParameter("mobile");
+				if (isMobile == null) {
+					getServletContext().getRequestDispatcher(resignRedirectPage).forward(request, response);
+				} else {
+					getServletContext().getRequestDispatcher(mobileRedirectPage).forward(request, response);
+				}
 			}
 
 		} catch (TBStoreException tbe) {

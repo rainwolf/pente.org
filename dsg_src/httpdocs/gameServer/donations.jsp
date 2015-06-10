@@ -43,6 +43,7 @@
 
           You can make your donations using 
           <b><a href="javascript:document.paypal_form.submit()">paypal</a></b>, make sure to communicate your <font color="red">username</font> when you donate.<br><br>
+          <h3><font color="red">Notice:</font> Pente.org is transitioning to a subscription model, your donation will get you the abovementioned features for one year following your donation.</h3> <br>
           <center>
              <a href="javascript:document.paypal_form.submit()"><img src="<%= request.getContextPath() %>/gameServer/images/paypal.gif" border="0"></a></center>
           <form action="https://www.paypal.com/cgi-bin/webscr" name="paypal_form" method="post">

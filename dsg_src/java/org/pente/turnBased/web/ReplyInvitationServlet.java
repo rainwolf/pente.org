@@ -21,6 +21,7 @@ public class ReplyInvitationServlet extends HttpServlet {
 
 	private static final String successPage = "/gameServer/index.jsp";
 	private static final String loadRedirectPage = "/gameServer/tb/replyInvitation.jsp";
+	private static final String mobileRedirectPage = "/gameServer/mobile/empty.jsp";
 	
 	private Resources resources;
 	
@@ -178,7 +179,12 @@ public class ReplyInvitationServlet extends HttpServlet {
 							}
 						}
 						
-				        response.sendRedirect(request.getContextPath() + successPage);
+						String isMobile = (String) request.getParameter("mobile");
+						if (isMobile == null) {
+					        response.sendRedirect(request.getContextPath() + successPage);
+						} else {
+					        response.sendRedirect(mobileRedirectPage);
+						}
 				        return;
 					}
 					else if (command.equals("Decline")) {
@@ -205,7 +211,12 @@ public class ReplyInvitationServlet extends HttpServlet {
 							log4j.error("Problem sending message for decline.", dmse);
 						}
 
-						response.sendRedirect(request.getContextPath() + successPage);
+						String isMobile = (String) request.getParameter("mobile");
+						if (isMobile == null) {
+					        response.sendRedirect(request.getContextPath() + successPage);
+						} else {
+					        response.sendRedirect(mobileRedirectPage);
+						}
 						return;
 					}
 				}

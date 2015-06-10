@@ -2,7 +2,7 @@
 org.pente.game.*, java.text.*, java.util.*" %>
 
 <%! private static final NumberFormat percentFormat =
-		NumberFormat.getPercentInstance();
+        NumberFormat.getPercentInstance();
     
     static {
         percentFormat.setMaximumFractionDigits(1);
@@ -17,8 +17,8 @@ org.pente.game.*, java.text.*, java.util.*" %>
         String event = filterData.getEvent() == null ? "" : filterData.getEvent();
         String round = filterData.getRound() == null ? "" : filterData.getRound();
         String section = filterData.getSection() == null ? "" : filterData.getSection();
-		
-		onLoad += "'" + GridStateFactory.getGameName(filterData.getGame()) + "', ";
+        
+        onLoad += "'" + GridStateFactory.getGameName(filterData.getGame()) + "', ";
         onLoad += "'" + safeSingleQuote(site) + "', ";
         onLoad += "'" + safeSingleQuote(event) + "', ";
         onLoad += "'" + safeSingleQuote(round) + "', ";
@@ -39,16 +39,16 @@ org.pente.game.*, java.text.*, java.util.*" %>
         return sb.toString();
     }
 
-    	
+        
     private String[][] buildBoardImages(String context,
-    	GameStorerSearchResponseData data) {
+        GameStorerSearchResponseData data) {
 
         String BLANK_IMAGE = context + "/gameServer/images/blank.gif";
         String DOT_IMAGE = context + "/gameServer/images/dot.gif";
         String PLAYER_IMAGES[] = new String[] { 
-    		context + "/gameServer/images/white.gif",
-    		context + "/gameServer/images/black.gif" };
-    		
+            context + "/gameServer/images/white.gif",
+            context + "/gameServer/images/black.gif" };
+            
         // fill the board with blank spaces
         String boardImages[][] = new String[19][19];
         for (int i = 0; i < boardImages.length; i++) {
@@ -107,6 +107,16 @@ and some older Pro-Pente tournament games from <a href="http://www.itsyourturn.c
 <br>
 Read the <b><a href="/help/helpWindow.jsp?file=gamesHistory">
 Game Database Instructions</a></b> to get the most information out of this tool.<br>
+
+    <%
+    String nm = (String) request.getAttribute("name");
+    DSGPlayerData pdata = null;
+    if (nm != null) {
+        pdata = dsgPlayerStorer.loadPlayer(nm);
+    }
+    if (pdata == null || pdata.hasPlayerDonated()) { %>
+
+
 <br>
 <table width="390" border="1" cellspacing="0" cellpadding="1" bordercolor="black" bgcolor="<%= bgColor1 %>">
 <tr>
@@ -127,12 +137,13 @@ Game Database Instructions</a></b> to get the most information out of this tool.
 
 </td>
 
+<%--
     <td valign="top" align="left" rowspan="3" width="300">
     <%
     String nm = (String) request.getAttribute("name");
     DSGPlayerData pdata = null;
     if (nm != null) {
-    	pdata = dsgPlayerStorer.loadPlayer(nm);
+        pdata = dsgPlayerStorer.loadPlayer(nm);
     }
     if (pdata == null || !pdata.hasPlayerDonated()) { %>
           <div style="width:160px;height:600px;margin-top:50px">
@@ -145,9 +156,10 @@ Game Database Instructions</a></b> to get the most information out of this tool.
             <script>
             (adsbygoogle = window.adsbygoogle || []).push({});
             </script>
-  	  </div>
+      </div>
     <% } %>
     </td>
+--%>
 
 </tr>
 <tr><td>&nbsp;</td></tr>
@@ -170,14 +182,14 @@ Game Database Instructions</a></b> to get the most information out of this tool.
       an IP address with them.  Try again in a little while.</li>
     </ol>
     Please read <a href="javascript:helpWin('ratedPolicy');">
-      Pente.org's policy for Rated Games</a> for more information.
+      Pente.org''s policy for Rated Games</a> for more information.
   </font>
  </td>
 </tr>
 <% } %>
 
 <tr>
-<td width="420" align="left" valign="top">
+<td width="800" align="left" valign="top">
 <table cellspacing="0" cellpadding="0" border="0">
 <tr>
 <td>&nbsp;</td>
@@ -193,8 +205,8 @@ Game Database Instructions</a></b> to get the most information out of this tool.
 <td></td>
 <td>&nbsp;</td>
 </tr>
-<tr>
-<td></td><td colspan="21" width="371"><img src="<%= request.getContextPath() %>/gameServer/images/black_pixel.gif" width="371" height="5"></td><td></td></tr>
+
+<tr><td></td><td colspan="21" width="694"><img src="<%= request.getContextPath() %>/gameServer/images/black_pixel.gif" width="694" height="5"></td><td></td></tr>
 
 <%
         String boardImages[][] = buildBoardImages(request.getContextPath(), data);
@@ -204,7 +216,7 @@ Game Database Instructions</a></b> to get the most information out of this tool.
 <tr>
 <td width="19"><%= (19 - i) %></td>
 <%-- left column black border --%>
-<td width="5"><img src="<%= request.getContextPath() %>/gameServer/images/black_pixel.gif" width="5" height="19"></td> 
+<td width="5"><img src="<%= request.getContextPath() %>/gameServer/images/black_pixel.gif" width="5" height="36"></td> 
 
 <%          for (int j = 0; j < 19; j++) {
 
@@ -215,17 +227,17 @@ Game Database Instructions</a></b> to get the most information out of this tool.
 <%              if (boardImages[i][j].endsWith("light_green.gif")) { %>
 onmouseover="javascript:highlightStat('<%= moveStr %>s');" onmouseout="javascript:unHighlightStat('<%= moveStr %>s');"
 <%              } %>
-><img name="<%= moveStr %>" src="<%= boardImages[i][j] %>" width="19" height="19" border="0"></td>
+><img name="<%= moveStr %>" src="<%= boardImages[i][j] %>" width="36" height="36" border="0"></td>
 <%          } %>
 
 <%-- right column black border --%>
-<td width="5"><img src="<%= request.getContextPath() %>/gameServer/images/black_pixel.gif" width="5" height="19"></td>
+<td width="5"><img src="<%= request.getContextPath() %>/gameServer/images/black_pixel.gif" width="5" height="36"></td>
 <td width="19"><%= (19 - i) %></td>
 </tr>
 <%      } %>
 
 
-<tr><td></td><td colspan="21" width="371"><img src="<%= request.getContextPath() %>/gameServer/images/black_pixel.gif" width="371" height="5"></td><td></td></tr>
+<tr><td></td><td colspan="21" width="694"><img src="<%= request.getContextPath() %>/gameServer/images/black_pixel.gif" width="694" height="5"></td><td></td></tr>
 
 <tr>
 <td>&nbsp;</td>
@@ -497,7 +509,7 @@ var imagePath = "<%= request.getContextPath() %>/gameServer/images/";
 </tr>
 
 <%      SimpleGameStorerSearchRequestFormat searchFormat =
-			new SimpleGameStorerSearchRequestFormat();
+            new SimpleGameStorerSearchRequestFormat();
         Vector games = data.getGames();
         for (int i = 0; i < games.size(); i++) {
             GameData gameData = (GameData) games.elementAt(i);
@@ -617,6 +629,17 @@ if (gameData.getShortSite().equals("Pente.org")) {
 </tr></table></td></tr></table>
 </form>
 </div>
+
+    <% } else { %>
+
+    <br>
+    <br>
+This feature is currently available to <a href="../donations">donors</a> only.
+    <br>
+    <br>
+
+    <% } %>
+
 </td></tr>
 
 </table>

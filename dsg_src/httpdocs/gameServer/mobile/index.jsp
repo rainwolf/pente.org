@@ -41,6 +41,10 @@
 
         if (loginResult == loginHandler.VALID) { 
 
+        if (name.equals("rainwolf")) {
+        %>Unlimited Games No Ad
+        <% }
+
 ServletContext ctx = getServletContext();
 DSGPlayerStorer dsgPlayerStorer = (DSGPlayerStorer) ctx.getAttribute(DSGPlayerStorer.class.getName());
 DSGPlayerData dsgPlayerData = dsgPlayerStorer.loadPlayer(name);
