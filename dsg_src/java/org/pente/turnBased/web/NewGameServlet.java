@@ -22,6 +22,7 @@ public class NewGameServlet extends HttpServlet {
 
 	private static final String redirectPage = "/gameServer/index.jsp";
 	private static final String errorRedirectPage = "/gameServer/tb/new.jsp";
+	private static final String mobileRedirectPage = "/gameServer/mobile/empty.jsp";
 	
 	private Resources resources;
 	
@@ -229,7 +230,12 @@ public class NewGameServlet extends HttpServlet {
                 request, response);
 		}
 		else {
-            response.sendRedirect(request.getContextPath() + redirectPage);
+			String isMobile = (String) request.getParameter("mobile");
+			if (isMobile == null) {
+	            response.sendRedirect(request.getContextPath() + redirectPage);
+			} else {
+		        response.sendRedirect(mobileRedirectPage);
+			}
 		}
     }
 	

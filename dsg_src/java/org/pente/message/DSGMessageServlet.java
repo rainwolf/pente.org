@@ -21,6 +21,7 @@ public class DSGMessageServlet extends HttpServlet {
 	private static final String messagesPage = "/gameServer/myMessages.jsp";
 	private static final String messagePage = "/gameServer/viewMessage.jsp";
 	private static final String newMessagePage = "/gameServer/newMessage.jsp";
+	private static final String mobileRedirectPage = "/gameServer/mobile/empty.jsp";
 	
 	private Resources resources;
 	
@@ -134,7 +135,12 @@ public class DSGMessageServlet extends HttpServlet {
 				}
 			}
 			
-			response.sendRedirect("/gameServer/mymessages?command=load");
+			String isMobile = (String) request.getParameter("mobile");
+			if (isMobile == null) {
+				response.sendRedirect("/gameServer/mymessages?command=load");
+			} else {
+		        response.sendRedirect(mobileRedirectPage);
+			}
 		}
 		else if (command.equals("view")) {
 
@@ -284,7 +290,12 @@ public class DSGMessageServlet extends HttpServlet {
 						"\n" + subject, penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, resources.getDbHandler() ) );
 					thread.start();
 				
-				response.sendRedirect("/gameServer/mymessages?command=load");
+				String isMobile = (String) request.getParameter("mobile");
+				if (isMobile == null) {
+					response.sendRedirect("/gameServer/mymessages?command=load");
+				} else {
+			        response.sendRedirect(mobileRedirectPage);
+				}
 				
 			} catch (DSGPlayerStoreException dpse) {
 				log4j.error("MessageServlet, lookup to player error.", dpse);

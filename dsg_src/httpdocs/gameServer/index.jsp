@@ -341,10 +341,11 @@ addLoadEvent(goJws);
 
 </form>
 
+<%--
 <div style="margin-top:5px;">
      or <a href="/gameServer/index.jsp?jws=1"><span>install</span></a> the game room on your desktop
 </div>
-
+--%>
    </td>
       
 

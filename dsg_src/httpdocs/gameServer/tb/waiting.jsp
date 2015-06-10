@@ -93,6 +93,8 @@ below and do not specify a player to invite.<br>
      <% }
         else { %>
 
+        Be kind. Don't gobble all the open invitations to yourself, and post some in return.
+
 	 <table border="0"  cellspacing="0" cellpadding="0" width="600">
 	 	<tr bgcolor="<%= textColor2 %>">
 	     <td colspan="5">

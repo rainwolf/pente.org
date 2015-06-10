@@ -21,7 +21,7 @@ String changeProfileSuccess = (String) request.getAttribute("changeProfileSucces
 <link rel="stylesheet" type="text/css" href="<%= request.getContextPath() %>/gameServer/forums/style.jsp" />
 
 
-<%  String selectedTab = "Donor Settings"; %>
+<%  String selectedTab = "Subscriber Settings"; %>
 <%@ include file="tabs.jsp" %>
 
 
@@ -38,7 +38,7 @@ String changeProfileSuccess = (String) request.getAttribute("changeProfileSucces
 
 <tr>
  <td>
-  <a name="myInfo"><h3>Donor Settings</h3></a>
+  <a name="myInfo"><h3>Subscriber Settings</h3></a>
  </td>
 </tr>
 
@@ -85,7 +85,7 @@ String changeProfileSuccess = (String) request.getAttribute("changeProfileSucces
     - You will not see any ads<br>
     <br>
     <b><a href="/gameServer/donations">
-      Donate now to Pente.org!</a></b>
+      Subscribe now to Pente.org!</a></b>
     </div>
    </td>
 </tr>

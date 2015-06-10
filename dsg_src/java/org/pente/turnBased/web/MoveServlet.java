@@ -24,6 +24,7 @@ public class MoveServlet extends HttpServlet {
 	private static final String errorRedirectPage = "/gameServer/tb/error.jsp";
 	private static final String moveRedirectPage = "/gameServer/index.jsp";
 	private static final String cancelRedirectPage = "/gameServer/tb/cancelReply.jsp";
+	private static final String mobileRedirectPage = "/gameServer/mobile/empty.jsp";
     
 	private Resources resources;
 	
@@ -326,7 +327,12 @@ public class MoveServlet extends HttpServlet {
 
 
 				//redirect to somewhere
-		        response.sendRedirect(moveRedirectPage);
+				String isMobile = (String) request.getParameter("mobile");
+				if (isMobile == null) {
+			        response.sendRedirect(moveRedirectPage);
+				} else {
+			        response.sendRedirect(mobileRedirectPage);
+				}
 			}
 			
 		} catch (TBStoreException tbe) {

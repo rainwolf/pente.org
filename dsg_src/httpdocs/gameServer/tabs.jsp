@@ -26,7 +26,7 @@
 <%  tabs = new String[][] {
         {"My Info", "/gameServer/myprofile"},
         {"Preferences", "/gameServer/myprofile/prefs"},
-        {"Donor Settings", "/gameServer/myprofile/donor"},
+        {"Subscriber Settings", "/gameServer/myprofile/donor"},
         {"Forum Settings", "/gameServer/forums/settings!tab.jspa"},
         {"Forum Watches", "/gameServer/forums/editwatches!default.jspa"}
     };
