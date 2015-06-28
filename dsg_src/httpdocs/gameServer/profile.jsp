@@ -152,12 +152,24 @@ if (dsgPlayerData != null) {
      <tr>
       <td>
        <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
-        <b><a href="donations">Donor</a>:</b>
+        <b><a href="subscriptions">Subscriber</a>:</b>
        </font>
       </td>
       <td>
        <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
-         <%= dsgPlayerData.hasPlayerDonated() ? "Yes" : "No" %>
+         <% if (dsgPlayerData.hasPlayerDonated()) { %>
+         Yes
+         <% } else if (!dsgPlayerData.getName().equals(name)) { %>
+
+         <form method="POST" action="subscriptions">
+            <input type="hidden" name="gifter" value="<%=name %>" />
+            <input type="hidden" name="name" value="<%= dsgPlayerData.getName() %>" />
+         No 
+                <input type="submit" value="Gift <%= dsgPlayerData.getName() %> a subscription">
+            </form>
+         <% } else { %> 
+         No
+         <%}%>
        </font>
       </td>
      </tr>
@@ -225,7 +237,7 @@ if (dsgPlayerData != null) {
       </td>
       <td>
        <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
-        <%-- don't show email addresses to spiders --%>
+        <%-- do not show email addresses to spiders --%>
         <%
         if (request.getAttribute("spider") == null && 
             (dsgPlayerData.getEmailVisible() || (name != null && name.equals("rainwolf")))) {
@@ -310,7 +322,7 @@ if (dsgPlayerData != null) {
       </td>
       <td>
         <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
-          <% String note = dsgPlayerData.getNote() != null ? dsgPlayerData.getNote() : ""; %>
+          <% String note = ((dsgPlayerData.getNote() != null)  && dsgPlayerData.hasPlayerDonated()) ? dsgPlayerData.getNote() : ""; %>
           <%= note %>
         </font>
       </td>
@@ -318,7 +330,7 @@ if (dsgPlayerData != null) {
      
 	<% if (!dsgPlayerData.getName().equals(name)) { %>
 	<tr>
-	  <td colspan="2">
+	  <td colspan="5">
         <input type="button" value="Send Message"
          onclick="javascript:window.location='/gameServer/newMessage.jsp?to=<%= dsgPlayerData.getName() %>';">
         <input type="button" value="Invite to Turn-based Game"
@@ -329,7 +341,7 @@ if (dsgPlayerData != null) {
         
    </table>
   </td>
-<% if (dsgPlayerData.hasAvatar()) { %>
+<% if (dsgPlayerData.hasAvatar() && dsgPlayerData.hasPlayerDonated()) { %>
   <td valign="top">
     <img src="<%= request.getContextPath() %>/gameServer/avatar?name=<%= dsgPlayerData.getName() %>">
   </td>

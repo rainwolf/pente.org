@@ -39,7 +39,7 @@
             /* general settings */
             {"My Info", "/gameServer/myprofile"},
             {"Preferences", "/gameServer/myprofile/prefs"},
-            {"Donor Settings", "/gameServer/myprofile/donor"},
+            {"Subscriber Settings", "/gameServer/myprofile/donor"},
             {act.getText("global.general_settings"), "settings!tab.jspa"},
             /* Watches */
             {act.getText("global.watches"), "editwatches!default.jspa"}

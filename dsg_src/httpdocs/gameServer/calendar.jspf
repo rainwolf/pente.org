@@ -1,8 +1,8 @@
 <%! DateFormat dfmy = new SimpleDateFormat("MMMMMMMM yyyy"); %>
 
 <%
-int month = 0;
-int year = 0;
+int calMonth = 0;
+int calYear = 0;
 
 Calendar cal = Calendar.getInstance();
 int currentDay = cal.get(Calendar.DATE);
@@ -11,16 +11,16 @@ int currentYear = cal.get(Calendar.YEAR);
 
 String monthYear = (String) request.getAttribute("monthYear");
 if (monthYear != null && !monthYear.equals("")) {
-    year = Integer.parseInt(monthYear.substring(0, 4));
-    month = Integer.parseInt(monthYear.substring(4));
+    calYear = Integer.parseInt(monthYear.substring(0, 4));
+    calMonth = Integer.parseInt(monthYear.substring(4));
 }
 else {
-    month = currentMonth;
-    year = currentYear;
+    calMonth = currentMonth;
+    calYear = currentYear;
 }
 
-cal.set(Calendar.MONTH, month);
-cal.set(Calendar.YEAR, year);
+cal.set(Calendar.MONTH, calMonth);
+cal.set(Calendar.YEAR, calYear);
 cal.set(Calendar.DATE, 1);
 cal.add(Calendar.MONTH, 1);
 cal.add(Calendar.DATE, -1);
@@ -32,8 +32,8 @@ int firstDay = cal.get(Calendar.DAY_OF_WEEK);
 int rows = ((firstDay - 1) + daysInMonth + 6) / 7;
 %>
 
-<input type="hidden" name="vacationMonth" value="<%= month %>">
-<input type="hidden" name="vacationYear" value="<%= year %>">
+<input type="hidden" name="vacationMonth" value="<%= calMonth %>">
+<input type="hidden" name="vacationYear" value="<%= calYear %>">
 
 <table border="1" cellspacing="0" cellpadding="1" bordercolor="gray">
   <tr bgcolor="<%= bgColor1 %>">
@@ -51,7 +51,7 @@ int rows = ((firstDay - 1) + daysInMonth + 6) / 7;
 		            cal.set(Calendar.MONTH, j); 
 		            String val = Integer.toString(currentYear + i);
 		            val += Integer.toString(j); 
-		            String selected = (currentYear + i == year && j == month) ? " selected" : ""; %>
+		            String selected = (currentYear + i == calYear && j == calMonth) ? " selected" : ""; %>
 		            <option value="<%= val %>"<%= selected %>><%= dfmy.format(cal.getTime()) %></option> <%
 		          }
 		        } %>
@@ -86,14 +86,16 @@ int rows = ((firstDay - 1) + daysInMonth + 6) / 7;
                boolean isvc = false;
                String checked = "";
                String disabled = "";
-               for (Date vc : vacationDays) {
-                 if (vc.getDate() == d && vc.getMonth() == month && vc.getYear() == (year - 1900)) {
-                   isvc = true;
-                   checked = " checked";
-                   break;
-                 }
-               } 
-               if (month == currentMonth && year == currentYear &&
+               if (vacationDays != null) {
+                   for (Date vc : vacationDays) {
+                     if (vc.getDate() == d && vc.getMonth() == calMonth  && vc.getYear() == (calYear - 1900)) {
+                       isvc = true;
+                       checked = " checked";
+                       break;
+                     }
+                   } 
+                }
+               if (calMonth == currentMonth && calYear == currentYear &&
                    d < currentDay) {
                    disabled = " disabled";
                }

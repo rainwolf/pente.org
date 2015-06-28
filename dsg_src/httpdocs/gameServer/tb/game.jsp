@@ -98,7 +98,7 @@ DSGPlayerData meData = dsgPlayerStorer.loadPlayer(me);
 
 String cancelRequested="false";
 %>
-<% if (!meData.hasPlayerDonated()) { %>
+<% if (meData.showAds()) { %>
 	<center>
 	    <div id = "senseReplace" style="width:728px;height:90px;" top="50%"> </div>
 	    <%@include file="728x90ad.jsp" %>

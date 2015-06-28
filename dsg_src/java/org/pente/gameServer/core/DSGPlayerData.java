@@ -35,8 +35,22 @@ public interface DSGPlayerData extends Cloneable {
 	public int getNameColorRGB();
 
 	public boolean hasPlayerDonated();
-    Public void getSubscriberLevel(int subscriberLevel);
-    Public int getSubscriberLevel();
+    public void setSubscriberLevel(int subscriberLevel);
+    public int getSubscriberLevel();
+    public boolean getShowAds();
+    public boolean getUnlimitedTBGames();
+    public boolean getUnlimitedMobileTBGames();
+    public boolean getDatabaseAccess();
+    public Date getSubscriptionExpiration();
+    public void setShowAds(boolean showAds);
+    public void setUnlimitedTBGames(boolean unlimitedTBGames);
+    public void setUnlimitedMobileTBGames(boolean unlimitedMobileTBGames);
+    public void setDatabaseAccess(boolean databaseAccess);
+    public void setSubscriptionExpiration(Date expirationDate);
+    public boolean showAds();
+    public boolean unlimitedTBGames();
+    public boolean unlimitedMobileTBGames();
+    public boolean databaseAccess();
 
     public void setPassword(String password);
     public String getPassword();

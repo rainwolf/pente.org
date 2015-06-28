@@ -13,7 +13,7 @@
   </div>
   <div class="boxcontents">
     <center>
-        <div class="fb-page" data-href="https://www.facebook.com/pente.org" data-width="192" data-height="208" data-hide-cover="false" data-show-facepile="true" data-show-posts="false"><div class="fb-xfbml-parse-ignore"><blockquote cite="https://www.facebook.com/pente.org"><a href="https://www.facebook.com/pente.org">pente.org</a></blockquote></div></div>
+        <div class="fb-page" data-href="https://www.facebook.com/pente.org" data-width="192" data-height="230" data-hide-cover="false" data-show-facepile="true" data-show-posts="false"><div class="fb-xfbml-parse-ignore"><blockquote cite="https://www.facebook.com/pente.org"><a href="https://www.facebook.com/pente.org">pente.org</a></blockquote></div></div>
 
         <hr>
         <!-- Place this tag where you want the +1 button to render. -->

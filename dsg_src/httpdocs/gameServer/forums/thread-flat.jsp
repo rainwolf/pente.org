@@ -355,7 +355,7 @@ DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
         <br>
     <%  } %>
     
-<% if (count % 15 == 0 && (data == null || !data.hasPlayerDonated())) { %>
+<% if (count % 15 == 0 && (data == null || data.showAds())) { %>
 
 <center>
     <div id = "senseReplace" style="width:728px;height:90px;" top="50%"> </div>

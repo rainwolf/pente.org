@@ -73,6 +73,27 @@ for (TBSet s : waitingSets) {
         openTBgames--;
 }
 
+boolean limitExceeded;
+int gamesLimit = 6;
+if (meData.unlimitedTBGames()) {
+  limitExceeded = false;
+} else {
+  int currentCount = myTurn.size() + oppTurn.size();
+  if (!invitesFrom.isEmpty()) {
+    for (TBSet s : invitesFrom) {
+      if (s.isTwoGameSet()) {
+        currentCount += 2;
+      } else {
+        currentCount++;
+      }
+    }
+  }
+  if (currentCount > gamesLimit) {
+    limitExceeded = true;
+  } else {
+    limitExceeded = false;
+  }
+}
 
 %>
 <br>
@@ -81,9 +102,18 @@ An open invitation will not show up for you if you are already playing that part
 Games here can be accepted by anyone.  To post a game here, click the button
 below and do not specify a player to invite.<br>
 <br>
+
+<table align="center" style="width:180px">
+  <tr>
+    <td>
+        <a class="boldbuttons" href="/gameServer/tb/new.jsp" align="center" style="margin-right:6px; margin-left: 6px"><span>Create Game Invitation </span></a>
+    </td>
+  </tr>
+</table>
+<%--
 <input type="button" value="Create Game"
-   onclick="javascript:window.location='/gameServer/tb/new.jsp';"><br>
-<br>
+   onclick="javascript:window.location='/gameServer/tb/new.jsp';">
+--%>
 <table border="0" cellpadding="0" cellspacing="0" width="100%">
   <tr>
    <td>
@@ -93,8 +123,17 @@ below and do not specify a player to invite.<br>
      <% }
         else { %>
 
+        <br>
         Be kind. Don't gobble all the open invitations to yourself, and post some in return.
+        <br>
+        <br>
 
+<% if (limitExceeded) { %> 
+        You have reached the limit of games you can play simultaenously on a free account. You can accept these invitations when you finish some games.
+        This limit can be removed by becoming a subscriber.
+        <br>
+        <br>
+<%}%>
 	 <table border="0"  cellspacing="0" cellpadding="0" width="600">
 	 	<tr bgcolor="<%= textColor2 %>">
 	     <td colspan="5">
@@ -171,14 +210,19 @@ below and do not specify a player to invite.<br>
         	 color = "black";
          }
         DSGPlayerData opp = dsgPlayerStorer.loadPlayer(s.getInviterPid());
+        DSGPlayerData d = opp;
         DSGPlayerGameData dsgPlayerGameData = opp.getPlayerGameData(s.getGame1().getGame());
         String oppName = "<a href=/gameServer/profile?viewName=" + opp.getName() +
           ">" + opp.getName() + "</a>"; %>
          <tr>
-           <td><a href="/gameServer/tb/replyInvitation?command=load&sid=<%= s.getSetId() %>">
-             <%= GridStateFactory.getGameName(s.getGame1().getGame()) %></a> </td>
-             
-           <td><%= oppName %><% if (dsgPlayerGameData != null) { %><%@ include file="../ratings.jspf" %><% } %></td>
+          <td>
+          <%  if (limitExceeded) { %>
+           <%= GridStateFactory.getGameName(s.getGame1().getGame()) %>
+          <%} else {%>
+           <a href="/gameServer/tb/replyInvitation?command=load&sid=<%= s.getSetId() %>">
+             <%= GridStateFactory.getGameName(s.getGame1().getGame()) %></a>
+          <%}%></td>
+           <td><%@include file="../playerLink.jspf" %><%@ include file="../ratings.jspf" %></td>
            <td><%= color %></td>
            <td><%= s.getGame1().getDaysPerMove() %> days</td>
            <td><%= s.getGame1().isRated() ? "Rated" : "Not Rated" %></td>

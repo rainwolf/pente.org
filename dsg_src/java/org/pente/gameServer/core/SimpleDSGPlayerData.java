@@ -35,6 +35,11 @@ public class SimpleDSGPlayerData implements DSGPlayerData, java.io.Serializable 
     private String		homepage;
     private int         logins;
     private int         subscriberLevel;
+    private boolean     showAds;
+    private boolean     unlimitedTBGames;
+    private boolean     unlimitedMobileTBGames;
+    private boolean     databaseAccess;
+    private Date        subscriptionExpiration;
     private Date        lastLoginDate;
     private Date        registerDate;
     private Date        deRegisterDate;
@@ -56,10 +61,10 @@ public class SimpleDSGPlayerData implements DSGPlayerData, java.io.Serializable 
     private String      note;
     
     
-    private Vector      gameData;
+    private Vector<DSGPlayerGameData>      gameData;
 
 	public SimpleDSGPlayerData() {
-		gameData = new Vector();
+		gameData = new Vector<DSGPlayerGameData>();
 		sex = UNKNOWN;
 		age = 0;
 	}
@@ -102,15 +107,72 @@ public class SimpleDSGPlayerData implements DSGPlayerData, java.io.Serializable 
 	}
 
 	public boolean hasPlayerDonated() {
-		return nameColor != null;
+        // return nameColor != null;
+        return this.subscriberLevel > 0;
 	}
 
-    Public void getSubscriberLevel(int subscriberLevel) {
+    public void setSubscriberLevel(int subscriberLevel) {
         this.subscriberLevel = subscriberLevel;
     }
 
-    Public int getSubscriberLevel() {
+    public int getSubscriberLevel() {
         return this.subscriberLevel;
+    }
+
+    public boolean getShowAds() {
+        return this.showAds;
+    }
+
+    public boolean getUnlimitedTBGames() {
+        return this.unlimitedTBGames;
+    }
+
+    public boolean getUnlimitedMobileTBGames() {
+        return (this.unlimitedMobileTBGames | this.unlimitedTBGames);
+    }
+
+    public boolean getDatabaseAccess() {
+        return this.databaseAccess;
+    }
+
+    public Date getSubscriptionExpiration() {
+        return this.subscriptionExpiration;
+    }
+
+    public void setShowAds(boolean showAds) {
+        this.showAds = showAds;
+    }
+
+    public void setUnlimitedTBGames(boolean unlimitedTBGames) {
+        this.unlimitedTBGames = unlimitedTBGames;
+    }
+
+    public void setUnlimitedMobileTBGames(boolean unlimitedMobileTBGames) {
+        this.unlimitedMobileTBGames = unlimitedMobileTBGames;
+    }
+
+    public void setDatabaseAccess(boolean databaseAccess) {
+        this.databaseAccess = databaseAccess;
+    }
+
+    public void setSubscriptionExpiration(Date expirationDate) {
+        this.subscriptionExpiration = expirationDate;
+    }
+
+    public boolean showAds() {
+        return this.showAds;
+    }
+
+    public boolean unlimitedTBGames() {
+        return this.unlimitedTBGames;
+    }
+
+    public boolean unlimitedMobileTBGames() {
+        return (this.unlimitedMobileTBGames | this.unlimitedTBGames);
+    }
+
+    public boolean databaseAccess() {
+        return this.databaseAccess;
     }
 
     public void setPassword(String password) {
@@ -256,7 +318,7 @@ public class SimpleDSGPlayerData implements DSGPlayerData, java.io.Serializable 
         return type == COMPUTER;
     }
 
-    public void setPlayerGameData(Vector gameData) {
+    public void setPlayerGameData(Vector<DSGPlayerGameData> gameData) {
         this.gameData = gameData;
     }
     public void addPlayerGameData(DSGPlayerGameData dsgPlayerGameData) {

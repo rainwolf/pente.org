@@ -43,7 +43,7 @@ public class DonationServlet extends HttpServlet {
                        HttpServletResponse response)
         throws ServletException, IOException {
     
-        String redirectPage = "/gameServer/donations.jsp";
+        String redirectPage = "/gameServer/subscribe.jsp";
         String lineSeparator = "\n";
 
 		String command = request.getParameter("command");
@@ -59,7 +59,7 @@ public class DonationServlet extends HttpServlet {
 				donations = dsgPlayerStorer.getAllPlayersWhoDonated();
 			} catch (DSGPlayerStoreException e) {
 				cat.error("Problem loading donation list.", e);
-				donations = new Vector();
+				donations = new Vector<DSGDonationData>();
 			}
 			
 			request.setAttribute(DONATION_LIST, donations);

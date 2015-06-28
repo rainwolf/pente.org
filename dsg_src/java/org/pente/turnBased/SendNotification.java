@@ -85,6 +85,7 @@ public class SendNotification implements Runnable {
                     try{
                         PushNotificationPayload payload = PushNotificationPayload.complex();
 
+                        payload.addSound("penteLiveNotificationSound.caf");
                         if (notificationType == 1) {
                             payload.addAlert("It's your move in a game of " + gameName + " against " + name);
                             payload.addCustomDictionary("gameID", "" + this.gsmID);
@@ -94,8 +95,10 @@ public class SendNotification implements Runnable {
                         }  else if (notificationType == 3) {
                             payload.addAlert("" + name + " sent you a new message! \"" + gameName + "\"");
                             payload.addCustomDictionary("msgID", "" + this.gsmID);
+                        } else if (notificationType == 0) {
+                            payload.addAlert(gameName);
+                            payload.addSound("default");
                         }
-                        payload.addSound("penteLiveNotificationSound.caf");
                         payload.addBadge(1);
 
                         String device = rs.getString("token");
