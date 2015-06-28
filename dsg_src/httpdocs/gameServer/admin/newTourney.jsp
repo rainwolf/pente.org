@@ -18,6 +18,7 @@
    if (action != null && action.equals("add")) {
        
        int game = Integer.parseInt(request.getParameter("game"));
+       System.out.print("------------ here kitty " + request.getParameter("game"));
        String name = request.getParameter("name");
 
        tourney = new Tourney();
@@ -109,7 +110,7 @@
           <select name="game">
           <% Game games[] = GridStateFactory.getAllGames();
              for (int i = 1; i < games.length; i++) { %>
-               <option value="<%= games[i].getId() %>"><%= games[i].getName() %>
+               <option <% if (i == 1) { %>selected <% } %>value="<%= games[i].getId() %>"><%= games[i].getName() %></option>
           <% } %>
         </td>
     </tr>

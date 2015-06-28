@@ -191,7 +191,7 @@ public class MoveServlet extends HttpServlet {
 				// load moves
 				int moves[] = null;
 				String moveStr = request.getParameter("moves");
-				if (moveStr != null) {
+				if ((moveStr != null) && !"(null)".equals(moveStr)) {
 					try {
 						StringTokenizer st = new StringTokenizer(moveStr, ",");
 						moves = new int[st.countTokens()];

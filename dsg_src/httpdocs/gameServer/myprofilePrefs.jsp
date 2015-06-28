@@ -155,7 +155,7 @@ pageContext.setAttribute("current", "My Profile");
   <td>
     <b>Vacation and Weekend Days</b><br>
     Vacation and weekend days protect your turn-based games from running out of time.
-    You can choose up to 10 days a year for vacation.  You have <%= (10 - vacationDays.size()) %>
+    You can choose up to 10 days a year for vacation.  You have <%=(10 - (vacationDays == null ? 0 : vacationDays.size())) %>
     vacation days left.
   </td>
 </tr>
@@ -206,14 +206,14 @@ pageContext.setAttribute("current", "My Profile");
       <td><b>Ignore Invites</td>
       <td><b>Ignore Messages</td>
      </tr>
-       <% for (DSGIgnoreData i : ignoreData) { 
+       <% if (ignoreData != null) { for (DSGIgnoreData i : ignoreData) { 
               DSGPlayerData ignored = dsgPlayerStorer.loadPlayer(i.getIgnorePid()); %>
          <tr>
            <td><b><a href="../profile?viewName=<%= ignored.getName() %>"><%= ignored.getName() %></a></b></td>
            <td><input type="checkbox" name="<%= i.getIgnorePid() %>_invite"<%= i.getIgnoreInvite() ? " checked" : "" %> value="Y"></td>
            <td><input type="checkbox" name="<%= i.getIgnorePid() %>_chat"<%= i.getIgnoreChat() ? " checked" : "" %> value="Y"></td>
         </tr>
-       <% } %>
+       <% }} %>
       <tr>
         <td><input type="text" size="10" name="ignore_name"></td>
         <td><input type="checkbox" name="ignore_invite" value="Y"></td>

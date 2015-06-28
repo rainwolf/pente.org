@@ -42,7 +42,14 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
     private static final String DSG_PLAYER_AVATAR_TABLE = "dsg_player_avatar";
     private static final String DSG_PLAYER_PREFS_TABLE = "dsg_player_prefs";
     
-    private static final Vector PLAYER_TABLES = new Vector();
+    public static final int NOADS = 1;
+    public static final int UNLIMITEDTBGAMES = (1 << 1);
+    public static final int DBACCESS = (1 << 2);
+    public static final int UNLIMITEDMOBILETBGAMES = (1 << 8);
+    public static final int ONEMONTH = (1 << 16);
+    public static final int ONEYEAR = (1 << 17);
+
+    private static final Vector<String> PLAYER_TABLES = new Vector<String>();
     static {
         PLAYER_TABLES.addElement(PLAYER_TABLE);
         PLAYER_TABLES.addElement(DSG_PLAYER_TABLE);
@@ -336,26 +343,84 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
             try {
                 con = dbHandler.getConnection();
 
-                java.util.Date dt = new java.util.Date();
-                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                String currentTime = sdf.format(dt);
-                int lastYear = Integer.parseInt(currentTime.substring(0,4)) - 1;
-                String lastYearString = "" + lastYear + currentTime.substring(4);
+                Calendar lastMonth = Calendar.getInstance();
+                lastMonth.add(java.util.Calendar.DATE, -31);
+                Calendar lastYear = Calendar.getInstance();
+                lastYear.add(java.util.Calendar.YEAR, -1);
 
                 stmt = con.prepareStatement(
-                    "select level " +
+                    "select level, paymentdate " +
                     "from dsg_subscribers " +
-                    "where pid = ? and paymentdate >= ?");
+                    "where pid = ?");
                 stmt.setLong(1, dsgPlayerData.getPlayerID());
-                stmt.setString(1, lastYearString);
                 result = stmt.executeQuery();
                 int level = 0;
+                Calendar expirationDate = null;
+                Calendar paymentDate;
                 while (result.next()) {
-                    level = level | result.getInt(1);
+                    paymentDate = Calendar.getInstance();
+                    paymentDate.setTime(result.getDate("paymentdate"));
+                    int registeredLvl = result.getInt(1);
+                    if ((registeredLvl & ONEMONTH) != 0) {
+                        if (paymentDate.after(lastMonth)) {
+                            level = level | registeredLvl;
+                            paymentDate.add(java.util.Calendar.DATE, 31);
+                            if (expirationDate == null) {
+                                expirationDate = paymentDate;
+                            } else {
+                                if (paymentDate.after(expirationDate)) {
+                                    expirationDate = paymentDate;
+                                }
+                            }
+                        }
+                    } else  if ((registeredLvl & ONEYEAR) != 0) {
+                        if (paymentDate.after(lastYear)) {
+                            level = level | registeredLvl;
+                            paymentDate.add(java.util.Calendar.YEAR, 1);
+                            if (expirationDate == null) {
+                                expirationDate = paymentDate;
+                            } else {
+                                if (paymentDate.after(expirationDate)) {
+                                    expirationDate = paymentDate;
+                                }
+                            }
+                        }
+                    }
                 }
 
                 dsgPlayerData.setSubscriberLevel(level);
+                if (expirationDate != null) {
+                    dsgPlayerData.setSubscriptionExpiration(expirationDate.getTime());
+                } 
+
+                if ((level & NOADS) == 0) {
+                    dsgPlayerData.setShowAds(true);
+                } else {
+                    dsgPlayerData.setShowAds(false);
+                }
                     
+                if ((level & UNLIMITEDTBGAMES) == 0) {
+                    dsgPlayerData.setUnlimitedTBGames(false);
+                } else {
+                    dsgPlayerData.setUnlimitedTBGames(true);
+                }
+                    
+                if ((level & UNLIMITEDMOBILETBGAMES) == 0) {
+                    dsgPlayerData.setUnlimitedMobileTBGames(false);
+                } else {
+                    dsgPlayerData.setUnlimitedMobileTBGames(true);
+                }
+
+                if (dsgPlayerData.unlimitedTBGames()) {
+                    dsgPlayerData.setUnlimitedMobileTBGames(true);
+                }
+                    
+                if ((level & DBACCESS) == 0) {
+                    dsgPlayerData.setDatabaseAccess(false);
+                } else {
+                    dsgPlayerData.setDatabaseAccess(true);
+                }
+
             } finally {
                 if (result != null) {
                     result.close();
@@ -554,7 +619,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
 	}
 	public Collection getDonations(long playerID) throws DSGPlayerStoreException {
 		
-		Collection donations = new Vector();
+		Collection<DSGDonationData> donations = new Vector<DSGDonationData>();
 
         try {
 
@@ -797,7 +862,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
 
     public Vector loadAllGames(long playerID) throws DSGPlayerStoreException {
 
-		Vector allGames = new Vector();
+		Vector<DSGPlayerGameData> allGames = new Vector<DSGPlayerGameData>();
 
         try {
         	Connection con = null;
@@ -876,7 +941,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
         boolean showProvisional, boolean showInactive,
         int playerType) throws DSGPlayerStoreException {
     
-    	Vector searchResults = new Vector();
+    	Vector<DSGPlayerData> searchResults = new Vector<DSGPlayerData>();
     	
 		String searchString = 
             "select player.name, dsg_player_game.wins, " +
@@ -1052,7 +1117,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
     public List loadPlayerPreferences(long playerID)
         throws DSGPlayerStoreException {
         
-        List prefs = new ArrayList(5);
+        List<DSGPlayerPreference> prefs = new ArrayList<DSGPlayerPreference>(5);
 
         try {
             Connection con = null;

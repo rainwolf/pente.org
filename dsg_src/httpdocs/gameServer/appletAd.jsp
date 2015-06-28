@@ -6,7 +6,7 @@
         if (!document.getElementById('aswift_0')) {
             s = '<center><p class="senseText" style="border: 1px solid red; background: #cf9; padding: .1em;margin: 0; text-align:left; font-style:italic;">'+
             'Adblocker activated? Please note that <b>pente.org</b> balances its '+
-            'expenses with ads. Perhaps you can consider making an exception for this site <b>or</b> <a href="/gameServer/donations">donate</a> instead?'+ '</p>'+ '</center>';  
+            'expenses with ads. Perhaps you can consider making an exception for this site <b>or</b> <a href="/gameServer/subscriptions">subscribe</a> instead?'+ '</p>'+ '</center>';  
             document.getElementById('senseReplace').innerHTML = s;
             document.getElementById('bannerAd').setAttribute("style","width:1px; height:1px;");
             document.getElementById('senseReplace').setAttribute("style","width:468px;");

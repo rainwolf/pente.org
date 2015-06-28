@@ -27,7 +27,7 @@ if (d.hasAvatar()) {
 
 <div style="margin-top:5px;":>
 <div style="float:left;text-align:right;width:45%;margin-right:5px;" class="name">
-<a href="/gameServer/donations"><span style="color:#ff8105">Donate<br>today!</span></a></div>
-<div style="float:right;text-align:left;width:45%;"><a href="/gameServer/donations"><img src="/gameServer/images/paypal.gif"></a></div>
+<a href="/gameServer/subscriptions"><span style="color:#ff8105">Subscribe<br>today!</span></a></div>
+<div style="float:right;text-align:left;width:45%;"><a href="/gameServer/subscriptions"><img src="/gameServer/images/paypal.gif"></a></div>
 </div>
 <div style="clear:both"></div>

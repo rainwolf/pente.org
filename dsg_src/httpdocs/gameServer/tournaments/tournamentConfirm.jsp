@@ -63,7 +63,7 @@ if (name != null) {
 
 		        You are going to sign-up with the name <b><font color="red"><%= name %></font></b>,
 		        make sure this is the user name you wish to play with.  Also note that you must
-		        sign-up with your <b>primary</b> user name, that is the user name you've
+		        sign-up with your <b>primary</b> user name, that is the username you have
 		        played the most games with.<br>
 		        <br>
 		        

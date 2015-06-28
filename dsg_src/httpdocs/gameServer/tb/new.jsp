@@ -7,6 +7,49 @@ if (invitee == null) {
 <% pageContext.setAttribute("title", "New Game"); %>
 <%@ include file="../begin.jsp" %>
 
+<%
+Resources resources = (Resources) application.getAttribute(
+   Resources.class.getName());
+
+String name = (String) request.getAttribute("name");
+DSGPlayerData meData = dsgPlayerStorer.loadPlayer(name);
+
+TBGameStorer tbGameStorer = resources.getTbGameStorer();
+List<TBSet> waitingSets = tbGameStorer.loadWaitingSets();
+List<TBSet> currentSets = tbGameStorer.loadSets(meData.getPlayerID());
+List<TBSet> invitesTo = new ArrayList<TBSet>();
+List<TBSet> invitesFrom = new ArrayList<TBSet>();
+List<TBGame> myTurn = new ArrayList<TBGame>();
+List<TBGame> oppTurn = new ArrayList<TBGame>();
+Utilities.organizeGames(meData.getPlayerID(), currentSets,
+    invitesTo, invitesFrom, myTurn, oppTurn);
+
+
+boolean limitExceeded;
+int gamesLimit = 6;
+if (meData.unlimitedTBGames()) {
+  limitExceeded = false;
+} else {
+  int currentCount = myTurn.size() + oppTurn.size();
+  if (!invitesFrom.isEmpty()) {
+    for (TBSet s : invitesFrom) {
+      if (s.isTwoGameSet()) {
+        currentCount += 2;
+      } else {
+        currentCount++;
+      }
+    }
+  }
+  if (currentCount > gamesLimit) {
+    limitExceeded = true;
+  } else {
+    limitExceeded = false;
+  }
+}
+
+%>
+
+
 <script language="javascript">
 var ns4 = (document.layers) ? true : false;
 var ie4 = (document.all) ? true : false;
@@ -58,6 +101,13 @@ function SelectElement(valueToSelect)
 
 </script>
 
+<script type="text/javascript">
+function submitnewgameform()
+{
+  document.new_game_form.submit();
+}
+</script>
+
 <table align="left" width="100%" border="0" colspacing="1" colpadding="1">
 
 <tr>
@@ -66,17 +116,33 @@ function SelectElement(valueToSelect)
      
      <div align="left" style="position:relative;font-weight:bold;border:2px <%= textColor2 %> solid; background:#ffd0a7">
        Pente.org turn-based games that are rated must be
-	   played in a set of two games to make the ratings system fair (most games give
-	   player 1 a slight advantage).  If you choose rated below Pente.org will create a
-	   set of two games.<br>
-	   <br>
-	   If you play unrated, you can choose to play as white or black and choose
-	   to make the game private.
+     played in a set of two games to make the ratings system fair (most games give
+     player 1 a slight advantage).  If you choose rated below Pente.org will create a
+     set of two games.<br>
+     <br>
+     If you play unrated, you can choose to play as white or black and choose
+     to make the game private.
+     </div> 
+     <br>
+     <div align="left" style="position:relative;font-weight:bold;border:2px <%= textColor2 %> solid; background:#ffd0a7">
+     - Players in your Ignored list will not be able to see or accept your open invitations.
+     </div> 
+     <br>
+ </td>
+</tr>
+<%
+if (limitExceeded) {%>
+<tr>
+ <td>
+     <div align="left" style="position:relative;font-weight:bold;border:2px <%= textColor2 %> solid; background:#ffd0a7">
+     You have reached the limit of games you can play simultaneously on a free account. You can only send open invitations until you finish some games.
+     This limit can be removed by becoming a <a href="../subscriptions">subscriber </a>.
      </div> 
      <br>
  </td>
 </tr>
 
+<%}%>
 
 <% String error = (String) request.getAttribute("error");
    if (error != null) { %>
@@ -108,8 +174,14 @@ function SelectElement(valueToSelect)
       </td>
       <td>
        <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
+<%
+if (!limitExceeded) {%>
         <input type="text" name="invitee" size="10"
                maxlength="10" value="<%= invitee %>"> (leave blank for open invitation)
+<%} else {%>
+        <input type="hidden" name="invitee" size="10"
+               maxlength="10" value="<%= invitee %>"> (You can currently only post open invitations)
+<%}%>
        </font>
       </td>
      </tr>
@@ -173,42 +245,43 @@ function SelectElement(valueToSelect)
          <table border="0" cellspacing="0" cellpadding="0">
           <tr>
            <td width="150">
-		     <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
-		       Play as color:
-		     </font>
+         <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
+           Play as color:
+         </font>
            </td>
-       	   <td>
-	         <select size="1" name="playAs">
-	           <option value="1">White</option>
-	           <option value="2">Black</option>
-	
-	         </select>
-	       </td>
-	      </tr>
-	     <tr>
-	      <td>
-	       <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
-	        Private game:
-	       </font>
-	      </td>
-	      <td>
-	        <select size="1" name="privateGame">
-	         <option selected value="N">No</option>
-	         <option value="Y">Yes</option>
-	        </select>
-	      </td>
-	     </tr>
-	     </table>
-	     </div>
-	   </td>
+           <td>
+           <select size="1" name="playAs">
+             <option value="1">White</option>
+             <option value="2">Black</option>
+  
+           </select>
+         </td>
+        </tr>
+       <tr>
+        <td>
+         <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
+          Private game:
+         </font>
+        </td>
+        <td>
+          <select size="1" name="privateGame">
+           <option selected value="N">No</option>
+           <option value="Y">Yes</option>
+          </select>
+        </td>
+       </tr>
+       </table>
+       </div>
+     </td>
      </tr>
    </table>
    <br>
 
     Message (Optional, 255 character max):<br>
-    <textarea cols="50" rows="3" name="inviterMessage"></textarea><br>
+    <textarea cols="50" rows="3" name="inviterMessage"></textarea><br><br>
 
-    <input type="submit" value="Create Game">
+        <a class="boldbuttons" href="javascript: submitnewgameform()" style="margin-right:6px; margin-left: 6px"><span>Create Game Invitation</span></a>
+    
 
    
    </form>
@@ -217,5 +290,7 @@ function SelectElement(valueToSelect)
 
 </table>
 
+    <br>
+    <br>
 
 <%@ include file="../end.jsp" %>

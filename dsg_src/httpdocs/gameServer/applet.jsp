@@ -80,7 +80,7 @@ String appletFore="#C2E1CA";
  <tr>
    <td width="10">&nbsp;</td>
    <td align="left" width="475">
-      <% if (guest != null || meData == null || !meData.hasPlayerDonated()) { %>
+      <% if (guest != null || meData == null || meData.showAds()) { %>
       <iframe src="/gameServer/appletAd.jsp" width="475" height="60" scrolling="no" frameborder="0" marginwidth="0" marginheight="0">
 		<%-- for browsers that do not support iframe --%>
 		<%@ include file="amazonHeaderPlay.jsp" %>

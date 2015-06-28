@@ -114,7 +114,7 @@ Game Database Instructions</a></b> to get the most information out of this tool.
     if (nm != null) {
         pdata = dsgPlayerStorer.loadPlayer(nm);
     }
-    if (pdata == null || pdata.hasPlayerDonated()) { %>
+    if (pdata == null || pdata.databaseAccess()) { %>
 
 
 <br>
@@ -137,15 +137,14 @@ Game Database Instructions</a></b> to get the most information out of this tool.
 
 </td>
 
-<%--
-    <td valign="top" align="left" rowspan="3" width="300">
     <%
-    String nm = (String) request.getAttribute("name");
-    DSGPlayerData pdata = null;
+//    String nm = (String) request.getAttribute("name");
+//    DSGPlayerData pdata = null;
     if (nm != null) {
         pdata = dsgPlayerStorer.loadPlayer(nm);
     }
-    if (pdata == null || !pdata.hasPlayerDonated()) { %>
+    if (pdata == null || pdata.showAds()) { %>
+    <td valign="top" align="center" rowspan="3" width="300">
           <div style="width:160px;height:600px;margin-top:50px">
             <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
             <!-- penteORGDB -->
@@ -157,8 +156,9 @@ Game Database Instructions</a></b> to get the most information out of this tool.
             (adsbygoogle = window.adsbygoogle || []).push({});
             </script>
       </div>
-    <% } %>
     </td>
+    <% } %>
+<%--
 --%>
 
 </tr>
@@ -206,7 +206,11 @@ Game Database Instructions</a></b> to get the most information out of this tool.
 <td>&nbsp;</td>
 </tr>
 
-<tr><td></td><td colspan="21" width="694"><img src="<%= request.getContextPath() %>/gameServer/images/black_pixel.gif" width="694" height="5"></td><td></td></tr>
+<%  int borderWidth = 5;
+    int tileWidth = 24;
+    int totalWidth = 19*tileWidth + 2*borderWidth; %>
+
+<tr><td></td><td colspan="21" width="<%=totalWidth%>"><img src="<%= request.getContextPath() %>/gameServer/images/black_pixel.gif" width="<%=totalWidth%>" height="5"></td><td></td></tr>
 
 <%
         String boardImages[][] = buildBoardImages(request.getContextPath(), data);
@@ -216,7 +220,7 @@ Game Database Instructions</a></b> to get the most information out of this tool.
 <tr>
 <td width="19"><%= (19 - i) %></td>
 <%-- left column black border --%>
-<td width="5"><img src="<%= request.getContextPath() %>/gameServer/images/black_pixel.gif" width="5" height="36"></td> 
+<td width="5"><img src="<%= request.getContextPath() %>/gameServer/images/black_pixel.gif" width="5" height="<%=tileWidth%>"></td> 
 
 <%          for (int j = 0; j < 19; j++) {
 
@@ -227,17 +231,17 @@ Game Database Instructions</a></b> to get the most information out of this tool.
 <%              if (boardImages[i][j].endsWith("light_green.gif")) { %>
 onmouseover="javascript:highlightStat('<%= moveStr %>s');" onmouseout="javascript:unHighlightStat('<%= moveStr %>s');"
 <%              } %>
-><img name="<%= moveStr %>" src="<%= boardImages[i][j] %>" width="36" height="36" border="0"></td>
+><img name="<%= moveStr %>" src="<%= boardImages[i][j] %>" width="<%=tileWidth%>" height="<%=tileWidth%>" border="0"></td>
 <%          } %>
 
 <%-- right column black border --%>
-<td width="5"><img src="<%= request.getContextPath() %>/gameServer/images/black_pixel.gif" width="5" height="36"></td>
+<td width="5"><img src="<%= request.getContextPath() %>/gameServer/images/black_pixel.gif" width="5" height="<%=tileWidth%>"></td>
 <td width="19"><%= (19 - i) %></td>
 </tr>
 <%      } %>
 
 
-<tr><td></td><td colspan="21" width="694"><img src="<%= request.getContextPath() %>/gameServer/images/black_pixel.gif" width="694" height="5"></td><td></td></tr>
+<tr><td></td><td colspan="21" width="<%=totalWidth%>"><img src="<%= request.getContextPath() %>/gameServer/images/black_pixel.gif" width="<%=totalWidth%>" height="5"></td><td></td></tr>
 
 <tr>
 <td>&nbsp;</td>
@@ -634,7 +638,7 @@ if (gameData.getShortSite().equals("Pente.org")) {
 
     <br>
     <br>
-This feature is currently available to <a href="../donations">donors</a> only.
+This feature is currently available to <a href="../subscriptions">subscribers</a> only.
     <br>
     <br>
 

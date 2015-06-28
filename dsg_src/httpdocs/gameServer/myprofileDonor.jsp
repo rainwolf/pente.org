@@ -69,7 +69,6 @@ String changeProfileSuccess = (String) request.getAttribute("changeProfileSucces
 
 
 <% String disabled = dsgPlayerData.hasPlayerDonated() ? "" : "disabled"; %>
-<% if (!dsgPlayerData.hasPlayerDonated()) { %>
 <tr>
   <td colspan="2">
     <div style="font-family:Verdana, Arial, Helvetica, sans-serif;
@@ -78,18 +77,34 @@ String changeProfileSuccess = (String) request.getAttribute("changeProfileSucces
      padding:5px;
      font-weight:bold;
      width:90%;">
-    If you support pente.org by donating you can customize your account:<br>
-    - You can change the color of your name in the live game room<br>
-    - You can upload a picture for your account<br>
-    - You can specify a note with your profile for other people to see<br>
-    - You will not see any ads<br>
+<% if (!dsgPlayerData.hasPlayerDonated()) { %>
+    If you support pente.org by subscribing you can customize your account:<br>
+    - You can change the color of your name in the live game room,<br>
+    - You can upload a picture for your account,<br>
+    - You can specify a note with your profile for other people to see,<br>
+    - You get to play unlimited turn-based games, <br>
+    and optionally, <br>
+    - Get acccess to the database, and/or, <br>
+    - Not see any ads<br>
     <br>
-    <b><a href="/gameServer/donations">
+    <b><a href="/gameServer/subscriptions">
       Subscribe now to Pente.org!</a></b>
+<% } else { 
+DateFormat profileDateFormat = null;
+TimeZone playerTimeZone = null;
+if (dsgPlayerData != null) { 
+  TimeZone tz = TimeZone.getTimeZone(dsgPlayerData.getTimezone());
+  profileDateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm z");
+  profileDateFormat.setTimeZone(tz);
+}
+%>
+You have unlimited <%=(dsgPlayerData.unlimitedMobileTBGames() && (!dsgPlayerData.unlimitedTBGames()))?"(mobile-only) ":""%>turn-based games<%=dsgPlayerData.databaseAccess()?", database access":""%><%=dsgPlayerData.showAds()?" but you will get advertisements":", and you will not see advertisements"%>.<br>
+Your subscription ends on <%=dsgPlayerData.hasPlayerDonated()?""+profileDateFormat.format(dsgPlayerData.getSubscriptionExpiration()):""%>.
+
+<% } %>
     </div>
    </td>
 </tr>
-<% } %>
 <tr><td>&nbsp;</td></tr>
 <tr>
   <td>
@@ -146,7 +161,7 @@ String changeProfileSuccess = (String) request.getAttribute("changeProfileSucces
        </td>
      </tr>
      
-     <% if (dsgPlayerData.hasAvatar()) { %>
+     <% if (dsgPlayerData.hasAvatar() && dsgPlayerData.hasPlayerDonated()) { %>
      <tr>
        <td>
          <font face="Verdana, Arial, Helvetica, sans-serif" size="2">

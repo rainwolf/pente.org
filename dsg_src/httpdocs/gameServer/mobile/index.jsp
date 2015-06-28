@@ -18,7 +18,11 @@
 
 
 <%
-    String name = request.getParameter("name").toLowerCase();
+    String loginname = request.getParameter("name");
+    String name = null;
+    if (loginname != null) {
+        name = loginname.toLowerCase();
+    }
     String password = request.getParameter("password");
     String lineBreak =  System.getProperty("line.separator");
 
@@ -41,9 +45,6 @@
 
         if (loginResult == loginHandler.VALID) { 
 
-        if (name.equals("rainwolf")) {
-        %>Unlimited Games No Ad
-        <% }
 
 ServletContext ctx = getServletContext();
 DSGPlayerStorer dsgPlayerStorer = (DSGPlayerStorer) ctx.getAttribute(DSGPlayerStorer.class.getName());
@@ -70,6 +71,17 @@ Collections.sort(messages, new Comparator<DSGMessage>() {
         return (m2.getMid() - m1.getMid());
     }
 });
+
+
+
+
+if (dsgPlayerData.unlimitedTBGames() || dsgPlayerData.unlimitedMobileTBGames() ) { %>
+Unlimited Games
+<%}
+if (!dsgPlayerData.showAds()) { %>
+No Ads
+<%}%>
+
 
 %>
 Invitations received<%

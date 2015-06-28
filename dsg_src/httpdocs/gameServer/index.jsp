@@ -52,6 +52,27 @@ if (gc > 0) {
 int numMessages = resources.getDsgMessageStorer().getNumNewMessages(dsgPlayerData.getPlayerID());
 int numGames = resources.getTbGameStorer().getNumGamesMyTurn(dsgPlayerData.getPlayerID());
 
+boolean limitExceeded;
+int gamesLimit = 6;
+if (dsgPlayerData.unlimitedTBGames()) {
+  limitExceeded = false;
+} else {
+  int currentCount = myTurn.size() + oppTurn.size();
+  if (!invitesFrom.isEmpty()) {
+    for (TBSet s : invitesFrom) {
+      if (s.isTwoGameSet()) {
+        currentCount += 2;
+      } else {
+        currentCount++;
+      }
+    }
+  }
+  if (currentCount > gamesLimit) {
+    limitExceeded = true;
+  } else {
+    limitExceeded = false;
+  }
+}
 
 List<TBSet> waitingSets = tbGameStorer.loadWaitingSets();
 int openTBgames = 0;
@@ -92,15 +113,15 @@ for (TBSet s : waitingSets) {
     if (alreadyPlaying)
         openTBgames--;
 
-		List<DSGIgnoreData> ignoreData = dsgPlayerStorer.getIgnoreData(theirPID);
-		for (Iterator<DSGIgnoreData> it = ignoreData.iterator(); it.hasNext();) {
+    List<DSGIgnoreData> ignoreData = dsgPlayerStorer.getIgnoreData(theirPID);
+    for (Iterator<DSGIgnoreData> it = ignoreData.iterator(); it.hasNext();) {
         DSGIgnoreData i = it.next();
         if (i.getIgnorePid() == myPID) {
             if (i.getIgnoreInvite()) {
                 iAmIgnored = true;
                 break;
-            }	
-        }	
+            } 
+        } 
     }
     if (iAmIgnored && !alreadyPlaying)
         openTBgames--;
@@ -133,12 +154,12 @@ window.google_analytics_uacct = "UA-20529582-2";
 
 
 
-<% if (!dsgPlayerData.hasPlayerDonated()) { %>
+<% if (dsgPlayerData.showAds()) { %>
     <div id = "senseReplace" style="width:728px;height:90px;" top="50%"> </div>
     <%@ include file="728x90ad.jsp" %>
     <br style="clear:both">
 <% } %>
-<% if (!dsgPlayerData.hasPlayerDonated()) { %>
+<% if (dsgPlayerData.showAds()) { %>
     <script type="text/javascript">
         sensePage();
     </script>
@@ -159,13 +180,13 @@ window.google_analytics_uacct = "UA-20529582-2";
       </font>
 
 <% if (true || dsgPlayerData.getLogins() < 5 || numMessages > 0 || numGames > 0) { %>
-	 <div style="font-family:Verdana, Arial, Helvetica, sans-serif;
-	 margin-top:10px;margin-bottom:10px;
-	 background:#fffbcc;
-	 border:1px solid #e6db55;
-	 padding:5px;
-	 font-weight:bold;
-	 width:100%;">
+   <div style="font-family:Verdana, Arial, Helvetica, sans-serif;
+   margin-top:10px;margin-bottom:10px;
+   background:#fffbcc;
+   border:1px solid #e6db55;
+   padding:5px;
+   font-weight:bold;
+   width:100%;">
 <% if (dsgPlayerData.getLogins() < 5) { %>
     Welcome to pente.org!<br>
     Read the <a href="/help/helpWindow.jsp?file=gettingStarted"><b>
@@ -184,28 +205,28 @@ window.google_analytics_uacct = "UA-20529582-2";
     <% } %>
 <% } %>
 
-	<%= (numGames + numMessages) > 0 ? "<hr>" : ""%>
+  <%= (numGames + numMessages) > 0 ? "<hr>" : ""%>
 <%--
-		The server will undergo maintenance at 11am CET (2am PST), this may take 6hrs to complete.        
+    The server will undergo maintenance at 11am CET (2am PST), this may take 6hrs to complete.        
         <hr>
 --%>
         <ul>
 <%--
-        	<li>Public/Open Invitations have been <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=5&threadID=230031&tstart=0">limited</a>.<hr>
-        	</li>
-        	<li><font color ="red">Pente.org is going offline at half past the hour.</font> We are moving servers, more updates on our <a href="https://www.facebook.com/pente.org">Facebook page</a>. <hr>
-        	</li>
-        	<li>New BK tournament. More information <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=3312&start=60&tstart=0">here</a>. (March 17th, 2014)
-        	</li>
-        	<li><a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230251">King of the Hill!</a> Every Tuesday from 6pm EST (3pm PST, 12am CET).<br>
-        	Want a <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230250">crown</a>? Come and get it!
-        	</li>
---%>
-          <li><a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230403">King of the Hill!</a> Every 3rd and Thirsty Thursday of the month from 6pm EST (3pm PST, 12am CET). Next one: June 18th.<br>
+          <li>Public/Open Invitations have been <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=5&threadID=230031&tstart=0">limited</a>.<hr>
+          </li>
+          <li><font color ="red">Pente.org is going offline at half past the hour.</font> We are moving servers, more updates on our <a href="https://www.facebook.com/pente.org">Facebook page</a>. <hr>
+          </li>
+          <li>New BK tournament. More information <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=3312&start=60&tstart=0">here</a>. (March 17th, 2014)
+          </li>
+          <li><a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230251">King of the Hill!</a> Every Tuesday from 6pm EST (3pm PST, 12am CET).<br>
           Want a <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230250">crown</a>? Come and get it!
           </li>
-        	<li>Looking for <a href="http://www.pente.org/gameServer/forums/forum.jspa?forumID=34&start=0">resources</a> to get started?
-        	</li>
+--%>
+          <li><a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230403">King of the Hill!</a> Every 3rd and Thirsty Thursday of the month from 6pm EST (3pm PST, 12am CET). Next one: July 16th.<br>
+          Want a <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230250">crown</a>? Come and get it!
+          </li>
+          <li>Looking for <a href="http://www.pente.org/gameServer/forums/forum.jspa?forumID=34&start=0">resources</a> to get started?
+          </li>
             <li>Want to play turn-based? Try posting an <a href="http://www.pente.org/gameServer/tb/new.jsp">open invitation</a><%= openTBgames > 0 ? " or try " + (openTBgames == 1 ? "" : "one of ") + "the <a href=\"http://www.pente.org/gameServer/tb/waiting.jsp\">" + openTBgames + " open turn-based invitation" + (openTBgames == 1 ? "" : "s") + "</a>" : ""%>.</li>
             </li>
     <%--
@@ -259,18 +280,18 @@ End If
 <script language="javascript">
 
 function goJws() {
-	// send to the jnlp file, load it up
-	if (javawsInstalled || (navigator.userAgent.indexOf("Gecko") !=-1)) {
-	  document.jws.action="/gameServer/pente.jnlp";
-	  document.jws.method="get";
-	}
-	// try to autoinstall
-	else {
-	  document.jws.action="http://java.sun.com/PluginBrowserCheck";
-	  document.jws.method="get";
-	}
-	    
-	document.jws.submit();
+  // send to the jnlp file, load it up
+  if (javawsInstalled || (navigator.userAgent.indexOf("Gecko") !=-1)) {
+    document.jws.action="/gameServer/pente.jnlp";
+    document.jws.method="get";
+  }
+  // try to autoinstall
+  else {
+    document.jws.action="http://java.sun.com/PluginBrowserCheck";
+    document.jws.method="get";
+  }
+      
+  document.jws.submit();
 }
 addLoadEvent(goJws);
 </script>
@@ -279,13 +300,13 @@ addLoadEvent(goJws);
 <% } %>
 
 <% 
-	LoginCookieHandler handler = new LoginCookieHandler();
-	handler.loadCookie(request);
-	
-	boolean plugin = true;
-	if (handler.pluginChoiceMade() && !handler.usePlugin()) {
-	    plugin = false;
-	} 
+  LoginCookieHandler handler = new LoginCookieHandler();
+  handler.loadCookie(request);
+  
+  boolean plugin = true;
+  if (handler.pluginChoiceMade() && !handler.usePlugin()) {
+      plugin = false;
+  } 
 %>
 
 <script language="javascript" src="/gameServer/js/openwin.js"></script>
@@ -431,10 +452,10 @@ if (inLiveGameRoom) {
   <table style="padding-left:5px;">
    <tr>
     <td width="170px">
-	  <div class="buttonwrapper">
-	    <a class="boldbuttons" href="/gameServer/controller/search?quick_start=1" 
-	       style="margin-right:5px;"><span>Game Database</span></a>
-	  </div>
+    <div class="buttonwrapper">
+      <a class="boldbuttons" href="/gameServer/controller/search?quick_start=1" 
+         style="margin-right:5px;"><span>Game Database</span></a>
+    </div>
     </td>
     <td style="vertical-align:middle">
       Search and filter <span style="color:<%= textColor2 %>;font-weight:bold"><%= numberFormat.format(siteStatsData.getNumGames()) %></span> games by position
@@ -442,10 +463,10 @@ if (inLiveGameRoom) {
    </tr>
    <tr>
     <td>
-	  <div class="buttonwrapper" style="margin-top:5px;">
-	    <a class="boldbuttons" href="javascript:play();" 
-	       style="margin-right:5px;"><span>Play the Computer</span></a>
-	  </div>
+    <div class="buttonwrapper" style="margin-top:5px;">
+      <a class="boldbuttons" href="javascript:play();" 
+         style="margin-right:5px;"><span>Play the Computer</span></a>
+    </div>
     </td>
     <td style="vertical-align:middle">
      Challenge the tough computer opponent with 8 skill levels
@@ -453,12 +474,12 @@ if (inLiveGameRoom) {
    </tr>
    <tr>
     <td>
-	  <div class="buttonwrapper" style="margin-top:5px;">
+    <div class="buttonwrapper" style="margin-top:5px;">
         <a class="boldbuttons" href="/gameServer/strategy.jsp" 
            style="margin-right:5px;"><span>Tutorials</span></a> 
-	    <a class="boldbuttons" href="/gameServer/puzzle.jsp" 
-	       style="margin-right:5px;"><span>Puzzles</span></a>
-	  </div>
+      <a class="boldbuttons" href="/gameServer/puzzle.jsp" 
+         style="margin-right:5px;"><span>Puzzles</span></a>
+    </div>
     </td>
     <td style="vertical-align:middle">
       Learn the basics with the tutorials and challenge yourself with some fun puzzles
@@ -483,7 +504,7 @@ if (inLiveGameRoom) {
   <tr>
    <td align="left" colspan="2">
       <div class="buttonwrapper">
-       <a class="boldbuttons" href="/gameServer/tb/new.jsp"><span>Start a Game</span></a> <a class="boldbuttons" href="/gameServer/tb/waiting.jsp" style="margin-right:6px; margin-left: 6px"><span>Find an Open Game <b>(<%=openTBgames %>)</b></span></a>
+       <a class="boldbuttons" href="/gameServer/tb/new.jsp"><span>Start a New Game</span></a> <a class="boldbuttons" href="/gameServer/tb/waiting.jsp" style="margin-right:6px; margin-left: 6px"><span>Find an Open Game <b>(<%=openTBgames %>)</b></span></a>
 
        <div style="margin-top:7px;">
           Active games: <b><%= numberFormat.format(siteStatsData.getNumTbGames()) %></b>, Open TB games: <b><%=openTBgames %></b><%-- --%>
@@ -507,7 +528,7 @@ if (inLiveGameRoom) {
        <tr bgcolor="<%= textColor2 %>">
          <td colspan="5">
            <font color="white">
-             <b>Invitations received (<%= invitesTo.size() %>)
+             <b>Invitations received (<%= invitesTo.size() %>) <%=(limitExceeded?"(Free account limit reached)":"")%>
            </font>
          </td>
        </tr>
@@ -533,8 +554,13 @@ if (inLiveGameRoom) {
          DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(s.getGame1().getGame());
          %>
          <tr>
-           <td><a href="/gameServer/tb/replyInvitation?command=load&sid=<%= s.getSetId() %>">
-             <%= GridStateFactory.getGameName(s.getGame1().getGame()) %></a></td>
+          <td>
+          <%  if (limitExceeded) { %>
+           <%= GridStateFactory.getGameName(s.getGame1().getGame()) %>
+          <%} else {%>
+           <a href="/gameServer/tb/replyInvitation?command=load&sid=<%= s.getSetId() %>">
+             <%= GridStateFactory.getGameName(s.getGame1().getGame()) %></a>
+          <%}%></td>
            <td><%@include file="playerLink.jspf" %><%@ include file="ratings.jspf" %></td>
            <td><%= color %></td>
            <td><%= s.getGame1().getDaysPerMove() %> days</td>
@@ -700,7 +726,7 @@ int tourneyWinner = 0; %>
 <td valign="top" align="right" >
 <%@ include file="leaderboard.jsp" %>
 
-<% if (!dsgPlayerData.hasPlayerDonated()) { %>
+<% if (dsgPlayerData.showAds()) { %>
 <div class="box" style="background-color:white; border: 1px solid white;">
 <%@ include file="dash200ad.jsp" %>
 </div>

@@ -1,7 +1,7 @@
 package org.pente.turnBased.web;
 
 import java.io.*;
-import java.util.Date;
+import java.util.*;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
@@ -163,29 +163,65 @@ public class ReplyInvitationServlet extends HttpServlet {
 					
 					if (command.equals("Accept")) {
 
-						log4j.debug("ReplyInvitationServlet, accept");
-						tbGameStorer.acceptInvite(set, invitee.getPlayerID());
-						if (inviteeMessage != null) {
-							TBMessage m = new TBMessage();
-							m.setDate(new Date());
-							m.setMessage(inviteeMessage);
-							m.setMoveNum(0);
-							m.setSeqNbr(2);
-							m.setPid(invitee.getPlayerID());
-							for (int i = 0; i < 2; i++) {
-								TBGame game = set.getGames()[i];
-								if (game == null) break;
-								tbGameStorer.storeNewMessage(game.getGid(), m);
+						String isMobile = (String) request.getParameter("mobile");
+				        ServletContext ctx = getServletContext();
+						List<TBSet> currentSets = tbGameStorer.loadSets(invitee.getPlayerID());
+						List<TBSet> invitesTo = new ArrayList<TBSet>();
+						List<TBSet> invitesFrom = new ArrayList<TBSet>();
+						List<TBGame> myTurn = new ArrayList<TBGame>();
+						List<TBGame> oppTurn = new ArrayList<TBGame>();
+						Utilities.organizeGames(invitee.getPlayerID(), currentSets,
+						    invitesTo, invitesFrom, myTurn, oppTurn);
+						boolean limitExceeded;
+						int gamesLimit = Integer.parseInt(ctx.getInitParameter("TBGamesLimit"));
+						if (invitee.unlimitedMobileTBGames() && (isMobile != null)) {
+							limitExceeded = false;
+						} else if (invitee.unlimitedTBGames()) {
+						  	limitExceeded = false;
+						} else {
+							int currentCount = myTurn.size() + oppTurn.size();
+							if (!invitesFrom.isEmpty()) {
+								for (TBSet s : invitesFrom) {
+									if (s.isTwoGameSet()) {
+										currentCount += 2;
+									} else {
+										currentCount++;
+									}
+								}
+							}
+							if (currentCount > gamesLimit) {
+								limitExceeded = true;
+							} else {
+								limitExceeded = false;
 							}
 						}
-						
-						String isMobile = (String) request.getParameter("mobile");
-						if (isMobile == null) {
-					        response.sendRedirect(request.getContextPath() + successPage);
+
+						if (limitExceeded) {
+							error = "Free account games limit exceeded.";
 						} else {
-					        response.sendRedirect(mobileRedirectPage);
+							log4j.debug("ReplyInvitationServlet, accept");
+							tbGameStorer.acceptInvite(set, invitee.getPlayerID());
+							if (inviteeMessage != null) {
+								TBMessage m = new TBMessage();
+								m.setDate(new Date());
+								m.setMessage(inviteeMessage);
+								m.setMoveNum(0);
+								m.setSeqNbr(2);
+								m.setPid(invitee.getPlayerID());
+								for (int i = 0; i < 2; i++) {
+									TBGame game = set.getGames()[i];
+									if (game == null) break;
+									tbGameStorer.storeNewMessage(game.getGid(), m);
+								}
+							}
+							
+							if (isMobile == null) {
+						        response.sendRedirect(request.getContextPath() + successPage);
+							} else {
+						        response.sendRedirect(mobileRedirectPage);
+							}
+					        return;
 						}
-				        return;
 					}
 					else if (command.equals("Decline")) {
 

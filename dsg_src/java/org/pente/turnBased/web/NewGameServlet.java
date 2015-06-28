@@ -1,6 +1,7 @@
 package org.pente.turnBased.web;
 
 import java.io.*;
+import java.util.*;
 import java.util.Date;
 
 import javax.servlet.*;
@@ -116,6 +117,52 @@ public class NewGameServlet extends HttpServlet {
 		    error = "Database error, please try again later.";
 		}
 		
+		if (inviteePlayer != null && !inviteePlayer.equals("") && (error == null)) {
+
+	        try {
+				String isMobile = (String) request.getParameter("mobile");
+		        ServletContext ctx = getServletContext();
+				List<TBSet> currentSets = tbGameStorer.loadSets(invitePlayerData.getPlayerID());
+				List<TBSet> invitesTo = new ArrayList<TBSet>();
+				List<TBSet> invitesFrom = new ArrayList<TBSet>();
+				List<TBGame> myTurn = new ArrayList<TBGame>();
+				List<TBGame> oppTurn = new ArrayList<TBGame>();
+				Utilities.organizeGames(invitePlayerData.getPlayerID(), currentSets,
+				    invitesTo, invitesFrom, myTurn, oppTurn);
+				boolean limitExceeded;
+				int gamesLimit = Integer.parseInt(ctx.getInitParameter("TBGamesLimit"));
+				if (invitePlayerData.unlimitedMobileTBGames() && (isMobile != null)) {
+					limitExceeded = false;
+				} else if (invitePlayerData.unlimitedTBGames()) {
+				  	limitExceeded = false;
+				} else {
+					int currentCount = myTurn.size() + oppTurn.size();
+					if (!invitesFrom.isEmpty()) {
+						for (TBSet s : invitesFrom) {
+							if (s.isTwoGameSet()) {
+								currentCount += 2;
+							} else {
+								currentCount++;
+							}
+						}
+					}
+					if (currentCount > gamesLimit) {
+						limitExceeded = true;
+					} else {
+						limitExceeded = false;
+					}
+				}
+
+				if (limitExceeded) {
+					error = "Free account games limit exceeded.";
+				} 
+			} catch (TBStoreException tbe) {
+		    	log4j.error("NewGameServlet: ", tbe);
+		    	error = "Database error, please try again later.";
+			}
+		}
+
+
 		
 		if (gameStr != null) {
 			try {
@@ -228,8 +275,7 @@ public class NewGameServlet extends HttpServlet {
     		request.setAttribute("error", error);
 	       	getServletContext().getRequestDispatcher(errorRedirectPage).forward(
                 request, response);
-		}
-		else {
+		} else {
 			String isMobile = (String) request.getParameter("mobile");
 			if (isMobile == null) {
 	            response.sendRedirect(request.getContextPath() + redirectPage);
