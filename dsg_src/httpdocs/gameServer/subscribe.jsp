@@ -18,6 +18,7 @@ String giftee = request.getParameter("name");
 if (giftee == null) {
   giftee = (String) request.getAttribute("name");
 }
+if (giftee != null) {
 %>
 <h3>        Subscribe <%=gifter.equals("")?"":giftee%> to Pente.org </h3>
           
@@ -37,6 +38,9 @@ if (giftee == null) {
           <u><b>Note:</b></u> Your credit card statements will show a charge from ABSTRACTCRE or ABSTRACTCREATIONS.
           <br>
           <br>
+          <u><b>Note:</b></u> The upgrade of your account should happen "near"-instantaneous after payment, if that does not happen within a few minutes, then <a href="http://www.pente.org/gameServer/newMessage.jsp?to=rainwolf">message</a> me and I will look into it asap.
+          <br>
+          <br>
 
 <table align="center" border="1" cellpadding="10" cellspacing="0" width="100%">
 <tr>
@@ -49,7 +53,7 @@ if (giftee == null) {
 </tr>
 <tr>
   <td colspan="3">
-  Without ads. For desktop users and mobile players (iOS only currently).
+  Without ads. For desktop users <u>and</u> mobile players (iOS only currently).
   </td>
 </tr>
 <tr>
@@ -111,9 +115,8 @@ if (giftee == null) {
 </tr>
 <tr>
   <td colspan="3">
-  For Mobile-only users. <br> 
+  For Mobile-only users. This applies to users of the iPhone app <u>only</u>, free account restrictions still apply on the website, but not in the app.<br> 
   If you mainly/only use the mobile app (iOS only currently) and don't mind the ads, then the following subscriptions come at a discount. <br>
-  Note: The limits still apply when you use the desktop website, but not anymore within the mobile app (Pente Live).
   </td>
 </tr>
 <tr>
@@ -269,4 +272,10 @@ if (giftee == null) {
   </tr>
 </table>
 
+<%  
+} else { %>
+  <h3>Error: you have to login first</h3>
+  <%
+}
+%>
 <%@ include file="end.jsp" %>

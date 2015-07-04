@@ -287,7 +287,7 @@ public class DSGMessageServlet extends HttpServlet {
 					String penteLiveAPNSpwd = ctx.getInitParameter("penteLiveAPNSpassword");
 					boolean productionFlag = ctx.getInitParameter("penteLiveAPNSproductionFlag").equals("true");
 					Thread thread = new Thread(new SendNotification(3, m.getMid(), playerData.getPlayerID(), toPlayerData.getPlayerID(), 
-						"\n" + subject, penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, resources.getDbHandler() ) );
+						subject, penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, resources.getDbHandler() ) );
 					thread.start();
 				
 				String isMobile = (String) request.getParameter("mobile");

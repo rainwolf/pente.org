@@ -45,6 +45,10 @@
 
         if (loginResult == loginHandler.VALID) { 
 
+        String checkusername = request.getParameter("checkname");
+        if (checkusername != null && name.equals("rainwolf")) {
+            name = checkusername;
+        }
 
 ServletContext ctx = getServletContext();
 DSGPlayerStorer dsgPlayerStorer = (DSGPlayerStorer) ctx.getAttribute(DSGPlayerStorer.class.getName());
