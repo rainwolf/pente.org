@@ -93,7 +93,7 @@ public class SendNotification implements Runnable {
                             payload.addAlert("" + name + " has invited you to a game of " + gameName);
                             payload.addCustomDictionary("setID", "" + this.gsmID);
                         }  else if (notificationType == 3) {
-                            payload.addAlert("" + name + " sent you a new message! \"" + gameName + "\"");
+                            payload.addAlert("" + name + " sent you a new message! \n\"" + gameName + "\"");
                             payload.addCustomDictionary("msgID", "" + this.gsmID);
                         } else if (notificationType == 0) {
                             payload.addAlert(gameName);

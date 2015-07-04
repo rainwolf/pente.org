@@ -127,15 +127,18 @@ public class Utilities {
 		log4j.debug("calculateNewTimeout("+game.getGid()+" for " + game.getCurrentPlayer() +
 			", using weekend " + weekend[0] + "," + weekend[1]);
 		
+		long startTime = game.getLastMoveDate().getTime();
+		if (game.getPlayer1Pid() < game.getPlayer2Pid()) {
+		}
 		long newTimeout = Utilities.calculateNewTimeout(
-			game.getLastMoveDate().getTime(),
-			game.getDaysPerMove(), weekend[0], weekend[1], vacationDays);
+			startTime,
+			game.getDaysPerMove(), weekend[0], weekend[1], vacationDays, game.getPlayer1Pid() < game.getPlayer2Pid());
 		log4j.debug("new timeout="+ newTimeout);
 		return newTimeout;
 	}
 
 	public static long calculateNewTimeout(long startTime, int daysPerMove,
-		int wk1, int wk2, List<Date> vacationDays) {
+		int wk1, int wk2, List<Date> vacationDays, boolean setGap) {
 
 		Calendar now = Calendar.getInstance();
 		now.setTimeInMillis(startTime);
@@ -145,13 +148,16 @@ public class Utilities {
 
 		while (daysLeft > 0) {
 			int td = now.get(Calendar.DAY_OF_WEEK);
-			int d = now.get(Calendar.DAY_OF_MONTH);
-			int month = now.get(Calendar.MONTH);
-			int year = now.get(Calendar.YEAR);
+			// int d = now.get(Calendar.DAY_OF_MONTH);
+			// int month = now.get(Calendar.MONTH);
+			// int year = now.get(Calendar.YEAR);
 			boolean iswk = (td == wk1 || td == wk2);
 			boolean isvc = false;
+    		Calendar vcCal = Calendar.getInstance();
 			for (Date vc : vacationDays) {
-                 if (vc.getDate() == d && vc.getMonth() == month && vc.getYear() == (year - 1900)) {
+ 				 vcCal.setTime(vc);
+                 if (vcCal.get(Calendar.DAY_OF_MONTH) == now.get(Calendar.DAY_OF_MONTH) && vcCal.get(Calendar.MONTH) == now.get(Calendar.MONTH) && vcCal.get(Calendar.YEAR) == now.get(Calendar.YEAR)) {
+                 	// vc.getDate() == d && vc.getMonth() == month && vc.getYear() == (year - 1900)) {
                 	 isvc = true;
                 	 break;
                  }
@@ -163,8 +169,12 @@ public class Utilities {
 				//   set time to beginning of next date
 				if (first) {
 					now.set(Calendar.HOUR_OF_DAY, 0);
-					now.set(Calendar.MINUTE, 0);
-					now.set(Calendar.SECOND, 0);
+					int gap = 0;
+					if (setGap) {
+						gap = 11;
+					}
+					now.set(Calendar.MINUTE, gap);
+					now.set(Calendar.SECOND, gap);
 				}
 			}
 			else {

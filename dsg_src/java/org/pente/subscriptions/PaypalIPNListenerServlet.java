@@ -72,8 +72,13 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                 String indentString = "\n                          ";
 
                 String transactionID = map.get("txn_id");
-                logString = logString + "transactionID = " + transactionID;
-                logString = indentString + " receiver_email = " + receiverEmail;
+                logString = logString + indentString + "transactionID = " + transactionID;
+                String refundTXid = null;
+                if ("refund".equals(map.get("reason_code"))) {
+                    refundTXid = map.get("parent_txn_id");
+                    logString = logString + indentString + "refund for " + refundTXid;
+                }
+                logString = logString + indentString + " receiver_email = " + receiverEmail;
                 if (!map.get("receiver_email").equals(receiverEmail)) {
                     log4j.error(logString + indentString + "Error: wrong recipient: " + map.get("receiver_email") + " and I am " + receiverEmail);
                     return;
@@ -121,7 +126,7 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                     return;
                 }
                 long gifterPid = 0;
-                if ((customParts[0] != null)  && !"".equals(customParts[0])) {
+                if ((customParts[0] != null)  && !"".equals(customParts[0]) && !"null".equals(customParts[0])) {
                     stmt = con.prepareStatement("select pid from player where name = ?");
                     stmt.setString(1, customParts[0]);
                     rs = stmt.executeQuery();
@@ -133,6 +138,11 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                     }
                 } else {
                     logString = logString + indentString + " no gifter username";
+                }
+
+                if ((customParts[1] == null)  || "".equals(customParts[1]) || "null".equals(customParts[1])) {
+                    log4j.error(logString + indentString + "Error: giftee username not recognized: " + customParts[1]);
+                    return;
                 }
 
                 String itemID = map.get("item_number");
@@ -175,6 +185,18 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                     log4j.error(logString + indentString + "Error: itemID not recognized: " + itemID);
                     return;
                 }
+                if (refundTXid != null) {
+                    subscriptionLvl = 0;
+                    stmt = con.prepareStatement("UPDATE dsg_subscribers SET level=0 WHERE transactionid = ?");
+                    stmt.setString(1, refundTXid);
+                    int worked = stmt.executeUpdate();
+                    if (worked < 1) {
+                        log4j.error(logString + indentString + "Error: updating after refund FAILED **");
+                        return;
+                    } else {
+                        log4j.info(logString + indentString + "Refund successfully registered");
+                    }
+                }
                 stmt = con.prepareStatement("INSERT INTO dsg_subscribers (pid, level, paymentdate, transactionid, amount) VALUES (?, ?, NOW(), ?, ?)");
                 stmt.setLong(1, subscriberPid);
                 stmt.setInt(2, subscriptionLvl);
@@ -194,26 +216,28 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                     dsgPlayerStorer.updatePlayer(dsgPlayerData);
                 }
 
-                DSGMessageStorer dsgMessageStorer = resources.getDsgMessageStorer();
-                DSGMessage message = new DSGMessage();
-                message.setCreationDate(new java.util.Date());
-                message.setFromPid(23000000016237L);
-                message.setToPid(subscriberPid);
-                message.setSubject("Subscription purchase successful");
-                if (gifterPid != 0) {
-                    message.setBody(msg.replace("You have purchased ", customParts[0] + " has purchased for you ") + "\nnHave oodles of fun here at pente.org.\n\nPS: if you have any questions, feel free to reply to this message.");
-                } else {
-                    message.setBody(msg + "\nHave oodles of fun here at pente.org.\n\nPS: if you have any questions, feel free to reply to this message.");
-                }
-                dsgMessageStorer.createMessage(message);
-                if (gifterPid != 0) {
-                    message = new DSGMessage();
+                if (refundTXid == null) {
+                    DSGMessageStorer dsgMessageStorer = resources.getDsgMessageStorer();
+                    DSGMessage message = new DSGMessage();
                     message.setCreationDate(new java.util.Date());
                     message.setFromPid(23000000016237L);
-                    message.setToPid(gifterPid);
+                    message.setToPid(subscriberPid);
                     message.setSubject("Subscription purchase successful");
-                    message.setBody(msg + " for " + customParts[1] + ".");
+                    if (gifterPid != 0) {
+                        message.setBody(msg.replace("You have purchased ", customParts[0] + " has purchased for you ") + "\nnHave oodles of fun here at pente.org.\n\nPS: if you have any questions, feel free to reply to this message.");
+                    } else {
+                        message.setBody(msg + "\nHave oodles of fun here at pente.org.\n\nPS: if you have any questions, feel free to reply to this message.");
+                    }
                     dsgMessageStorer.createMessage(message);
+                    if (gifterPid != 0) {
+                        message = new DSGMessage();
+                        message.setCreationDate(new java.util.Date());
+                        message.setFromPid(23000000016237L);
+                        message.setToPid(gifterPid);
+                        message.setSubject("Subscription purchase successful");
+                        message.setBody(msg + " for " + customParts[1] + ".");
+                        dsgMessageStorer.createMessage(message);
+                    }
                 }
 
                 CacheDSGPlayerStorer d = (CacheDSGPlayerStorer) resources.getDsgPlayerStorer();
@@ -230,7 +254,7 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                 String penteLiveAPNSpwd = ctx.getInitParameter("penteLiveAPNSpassword");
                 boolean productionFlag = ctx.getInitParameter("penteLiveAPNSproductionFlag").equals("true");
                 Thread thread = new Thread(new SendNotification(0, 0, 23000000016237L, 23000000016237L, 
-                    customParts[1] + " subscribed" + ((gifterPid != 0)?" by "+customParts[0]:"") + " for EUR " + amount + ", the total is now: " + totalSum, penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, dbHandler ) );
+                    customParts[1] + ((refundTXid == null)?" subscribed":" was refunded") + ((gifterPid != 0)?" by "+customParts[0]:"") + " for EUR " + amount + ", the total is now: " + totalSum, penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, dbHandler ) );
                 thread.start();
 
             } catch (SQLException e) {
