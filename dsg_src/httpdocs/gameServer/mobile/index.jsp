@@ -11,13 +11,9 @@
                  java.util.Date,
                  java.util.List,
                  java.util.*,
-                 org.apache.log4j.*" %>
-
-<%! private static Category log4j = 
-        Category.getInstance("org.pente.gameServer.web.client.jsp"); %>
-
-
-<%
+                 org.apache.log4j.*" 
+%> <%! private static Category log4j = 
+        Category.getInstance("org.pente.gameServer.web.client.jsp"); %> <%
     String loginname = request.getParameter("name");
     String name = null;
     if (loginname != null) {
@@ -77,17 +73,17 @@ Collections.sort(messages, new Comparator<DSGMessage>() {
 });
 
 
-
-
 if (dsgPlayerData.unlimitedTBGames() || dsgPlayerData.unlimitedMobileTBGames() ) { %>
 Unlimited Games
+<%} else { %>
+tbGamesLimit;<%=ctx.getInitParameter("TBGamesLimit")%>;tbGamesLimit
 <%}
 if (!dsgPlayerData.showAds()) { %>
 No Ads
 <%}%>
 
+EndOfSettingsParameters
 
-%>
 Invitations received<%
         for (TBSet s : invitesTo) {
                  String color = null;

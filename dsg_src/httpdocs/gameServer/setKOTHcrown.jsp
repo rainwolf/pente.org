@@ -115,7 +115,7 @@
                             update = false;
                         }
                     }
-
+        
                     if (data.getNameColorRGB() == 0) {
                         data.setNameColorRGB(-16751616);
                         dsgPlayerStorer.updatePlayer(data);
