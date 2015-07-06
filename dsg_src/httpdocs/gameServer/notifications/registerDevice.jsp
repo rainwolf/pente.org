@@ -105,6 +105,11 @@
         stmt = con.prepareStatement("select lastping from notifications where token='0000'");
         rs = stmt.executeQuery();  
         if (rs.next()) {
+            Calendar local = Calendar.getInstance();
+            local.clear();
+            local.set(1970, Calendar.JANUARY, 1, 0, 0, 0);
+            long offSet = local.getTimeInMillis();
+
             Timestamp lastPing = rs.getTimestamp("lastping");
             java.util.Date date = new java.util.Date();
             Timestamp yesterdayTimestamp = new Timestamp(date.getTime());
@@ -118,13 +123,15 @@
                 int idx = 0;
                 while (idx < inactiveDevices.size()) {
                     nonactiveDevice = inactiveDevices.get(idx);
-                    stmt = con.prepareStatement("select lastping from notifications where token=?");
+                    stmt = con.prepareStatement("select pid,lastping from notifications where token=?");
                     stmt.setString(1, nonactiveDevice.getToken());
                     rs = stmt.executeQuery();
                     if (rs.next()) {
                         lastPing = rs.getTimestamp("lastping");
+                        long lastPingLong = lastPing.getTime() - offSet;
+                        lastPing.setTime(lastPingLong);
                         if (nonactiveDevice.getLastRegister().after(lastPing)) {
-                            log4j.info("Notification: removing the token " + nonactiveDevice.getToken());
+                            log4j.info("Notification: removing the token " + nonactiveDevice.getToken() + " from pid: " + rs.getLong("pid"));
                             stmt = con.prepareStatement("DELETE from notifications where token=?");
                             stmt.setString(1, nonactiveDevice.getToken());
                             if (stmt.executeUpdate() > 0) {

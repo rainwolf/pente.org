@@ -9,7 +9,12 @@
 <%@ page import="com.jivesoftware.base.*,
                  com.jivesoftware.forum.*,
                  com.jivesoftware.util.*,
-                 java.util.ArrayList" %>
+                 java.util.ArrayList,
+                 java.io.BufferedReader, 
+                 java.io.IOException,
+                 java.io.InputStreamReader,
+                 java.net.HttpURLConnection,
+                 java.net.URL" %>
 
 
 <%@ page import="net.tanesha.recaptcha.ReCaptchaImpl" %>
@@ -61,18 +66,24 @@
 </table>
 
 
-<%-- reCaptcha checking --%>
+<%-- reCaptcha checking 
 <%! Boolean validCaptcha = false; %> 
-<ww:if test="$recaptcha_challenge_field">
+--%>
+<ww:if test="$g-recaptcha-response">
       <%
-        String remoteAddr = request.getRemoteAddr();
-        ReCaptchaImpl reCaptcha = new ReCaptchaImpl();
-        reCaptcha.setPrivateKey("***REMOVED***");
+        String gResponse = "nothing yet";
+        String gReCaptchaResponse = request.getParameter("g-recaptcha-response");
 
-        String challenge = request.getParameter("recaptcha_challenge_field");
-        String uresponse = request.getParameter("recaptcha_response_field");
-        ReCaptchaResponse reCaptchaResponse = reCaptcha.checkAnswer(remoteAddr, challenge, uresponse);
-        if (!reCaptchaResponse.isValid()) { %>
+        URL url = new URL("https://www.google.com/recaptcha/api/siteverify?secret=***REMOVED***&response=" + gReCaptchaResponse);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        String line, outputString = "";
+        BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        while ((line = reader.readLine()) != null) {
+            outputString += line;
+        }
+        if (!outputString.contains("\"success\": true")) { 
+        %>
                 <table class="jive-error-message" cellpadding="3" cellspacing="2" border="0" width="350">
                 <tr valign="top">
                     <td width="1%"><img src="images/error-16x16.gif" width="16" height="16" border="0"></td>
@@ -222,6 +233,6 @@
       %>
 </ww:if>
 
-<ww:if test="!$recaptcha_challenge_field">
+<ww:if test="!$g-recaptcha-response">
     I am not sure how you got here, but this is not supposed to happen.
 </ww:if>

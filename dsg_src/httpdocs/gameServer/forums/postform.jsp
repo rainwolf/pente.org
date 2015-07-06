@@ -283,6 +283,7 @@
     <td>&nbsp;</td>
     <td>
 
+<!--
     <%@ page import="net.tanesha.recaptcha.ReCaptcha" %>
     <%@ page import="net.tanesha.recaptcha.ReCaptchaFactory" %>
     <script type="text/javascript">
@@ -295,9 +296,15 @@
           ReCaptcha c = ReCaptchaFactory.newReCaptcha("***REMOVED***", "***REMOVED***", false);
           out.print(c.createRecaptchaHtml(null, null));
         %>
-<!--        <input type="submit" value="submit" />
---> 
+        <input type="submit" value="submit" />
        </form>
+--> 
+     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <!-- <form action="?" method="POST"> -->
+      <div class="g-recaptcha" data-sitekey="***REMOVED***"></div>
+      <br/>
+      <!-- <input type="submit" value="Submit"> -->
+    <!-- </form> -->
 
     </td>
 </tr>
