@@ -1,6 +1,6 @@
 <%@ page import="org.pente.game.*, org.pente.turnBased.*,
                  java.util.*, java.security.MessageDigest,
-                 org.apache.commons.codec.binary.Base64,
+                 org.apache.commons.codec.binary.Hex,
                  org.pente.gameServer.client.web.*,
                  org.pente.gameServer.server.*,
                  org.pente.gameServer.core.*"
@@ -53,7 +53,9 @@ int numMessages = resources.getDsgMessageStorer().getNumNewMessages(dsgPlayerDat
 int numGames = resources.getTbGameStorer().getNumGamesMyTurn(dsgPlayerData.getPlayerID());
 
 boolean limitExceeded;
-int gamesLimit = 6;
+ServletContext ctx = getServletContext();
+int gamesLimit = Integer.parseInt(ctx.getInitParameter("TBGamesLimit"));
+// int gamesLimit = 6;
 if (dsgPlayerData.unlimitedTBGames()) {
   limitExceeded = false;
 } else {
@@ -126,7 +128,9 @@ for (TBSet s : waitingSets) {
     if (iAmIgnored && !alreadyPlaying)
         openTBgames--;
 }
-
+if ("rainwolf".equals(nm)) {
+  openTBgames = waitingSets.size();
+}
 
 %>
 <% pageContext.setAttribute("title", title2); %>
@@ -172,7 +176,11 @@ window.google_analytics_uacct = "UA-20529582-2";
  float:left;width:70%">
  
     <h2 style="margin:0;padding:0;">Dashboard - Hi <%= (dsgPlayerData.hasPlayerDonated() ? "<span style='color:#" + Integer.toHexString(dsgPlayerData.getNameColorRGB()).substring(2) + "'>" : "<span>") %><%= dsgPlayerData.getName() %></span>!</h2>
-    <a href="/gameServer/myprofile">Edit Profile</a> | <a href="/gameServer/mymessages">My Messages <%= numMessages > 0 ? "("+numMessages+" unread)" : "" %></a><br>
+    <a href="/gameServer/myprofile">Edit Profile</a> | <a href="/gameServer/mymessages">My Messages <%= numMessages > 0 ? "("+numMessages+" unread)" : "" %></a>
+    <% if ("rainwolf".equals(dsgPlayerData.getName())) { %>
+ | <a href="/gameServer/admin">adminLink</a>
+  <%}%>
+    <br>
     
       <font size="-1">
       Refresh: <%= refresh == 0 ? "No refresh" : refresh + " minute" + (refresh == 1 ? "" : "s") %> - 
@@ -222,7 +230,7 @@ window.google_analytics_uacct = "UA-20529582-2";
           Want a <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230250">crown</a>? Come and get it!
           </li>
 --%>
-          <li><a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230403">King of the Hill!</a> Every 3rd and Thirsty Thursday of the month from 6pm EST (3pm PST, 12am CET). Next one: July 16th.<br>
+          <li><a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230403">King of the Hill!</a> Every 3rd and Thirsty Thursday of the month from 6pm EST (3pm PST, 12am CET). Next one: August 20th.<br>
           Want a <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230250">crown</a> and subscriber goodies? Come and get it!
           </li>
           <li>Looking for <a href="http://www.pente.org/gameServer/forums/forum.jspa?forumID=34&start=0">resources</a> to get started?
@@ -330,7 +338,7 @@ addLoadEvent(goJws);
 
  <table style="width:100%">
   <tr>
-    <td style="width: 88%;">
+    <td style="width: 72%;">
       
  <form name="mainPlayForm" method="post" action="" style="margin:0;padding:0;">
 <div class="buttonwrapper">
@@ -401,16 +409,19 @@ if (inLiveGameRoom) {
   MessageDigest md = MessageDigest.getInstance("SHA-256");
   String text = "pente seeds-" + dsgPlayerData.getPlayerID();
   md.update(text.getBytes("UTF-8")); 
-  Base64 base64 = new Base64();
-  String checkHash = new String(base64.encode( md.digest() ));
+  String checkHash = new String(Hex.encodeHex( md.digest() ));
   %>
-    <td style="width: 12%;">
-      <form method="post" action="bootMe.jsp">
+    <td style="width: 18%;">
+    <div class="buttonwrapper">
+      <a class="boldbuttons" href="bootMe.jsp?name=<%= nm %>&pidHash=<%= checkHash %>" 
+         style="margin-right:5px;"><span>Boot me NOW!!!</span></a>
+    </div>
+<!--       <form method="post" action="bootMe.jsp">
           <input type="hidden" name="name" value="<%= nm %>" >
           <input type="hidden" name="pidHash" value="<%= checkHash %>" >
           <input type="image" src="images/bootButton.png" alt="Submit" title="boot me NOW!!!" align="center" width="50" height="50">
       </form> 
-    </td>
+ -->    </td>
 <%
 }
 %>
@@ -555,12 +566,15 @@ if (inLiveGameRoom) {
          %>
          <tr>
           <td>
-          <%  if (limitExceeded) { %>
+<!--           <%  if (limitExceeded) { %>
            <%= GridStateFactory.getGameName(s.getGame1().getGame()) %>
           <%} else {%>
            <a href="/gameServer/tb/replyInvitation?command=load&sid=<%= s.getSetId() %>">
              <%= GridStateFactory.getGameName(s.getGame1().getGame()) %></a>
-          <%}%></td>
+          <%}%>
+ -->           <a href="/gameServer/tb/replyInvitation?command=load&sid=<%= s.getSetId() %>">
+             <%= GridStateFactory.getGameName(s.getGame1().getGame()) %></a>
+          </td>
            <td><%@include file="playerLink.jspf" %><%@ include file="ratings.jspf" %></td>
            <td><%= color %></td>
            <td><%= s.getGame1().getDaysPerMove() %> days</td>
@@ -645,8 +659,11 @@ if (inLiveGameRoom) {
      %>
            
          <tr>
-           <td><a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load');">
-             <%= GridStateFactory.getGameName(g.getGame()) %></a></td>
+           <td>
+         <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><img src="/gameServer/images/mobile.png" title="Without Java" height="12" width="12"></a> - 
+           <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load');">
+             <%= GridStateFactory.getGameName(g.getGame()) %></a>
+             </td>
            <td><%@ include file="playerLink.jspf" %>&nbsp;<% if (dsgPlayerGameData != null) { %><%@ include file="ratings.jspf" %><% } %></td>
            <td><%= color %></td>
            <td><%= g.getNumMoves() + 1 %></td>
@@ -686,8 +703,11 @@ if (inLiveGameRoom) {
       %>
            
          <tr>
-           <td><a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load');">
-             <%= GridStateFactory.getGameName(g.getGame()) %></a></td>
+           <td>
+         <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><img src="/gameServer/images/mobile.png" title="Without Java" height="12" width="12"></a> - 
+           <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load');">
+             <%= GridStateFactory.getGameName(g.getGame()) %></a>
+             </td>
            <td><%@ include file="playerLink.jspf" %></a>&nbsp;<% if (dsgPlayerGameData != null) { %><%@ include file="ratings.jspf" %><% } %></td>
            <td><%= color %></td>
            <td><%= g.getNumMoves() + 1 %></td>

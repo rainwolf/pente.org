@@ -328,16 +328,22 @@ if (dsgPlayerData != null) {
       </td>
      </tr>
      
+  <tr>
+    <td colspan="5">
 	<% if (!dsgPlayerData.getName().equals(name)) { %>
-	<tr>
-	  <td colspan="5">
         <input type="button" value="Send Message"
          onclick="javascript:window.location='/gameServer/newMessage.jsp?to=<%= dsgPlayerData.getName() %>';">
         <input type="button" value="Invite to Turn-based Game"
          onclick="javascript:window.location='/gameServer/tb/new.jsp?invitee=<%= dsgPlayerData.getName() %>';">
+    <% } %>
+<% if ("rainwolf".equals(name)) { %>
+        <input type="button" value="Refresh Player Cache"
+         onclick="javascript:window.location='/gameServer/admin/refreshPlayer.jsp?name=<%= dsgPlayerData.getName() %>';">
+        <input type="button" value="View TB Cache"
+         onclick="javascript:window.location='/gameServer/admin/tb/player.jsp?pid=<%= dsgPlayerData.getPlayerID() %>';">
+<%}%>
       </td>
     </tr>    
-    <% } %>
         
    </table>
   </td>
