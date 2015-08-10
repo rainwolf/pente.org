@@ -21,19 +21,19 @@ int refresh = 5;
 if (prefs != null) {
 	for (Iterator it = prefs.iterator(); it.hasNext();) {
 		DSGPlayerPreference p = (DSGPlayerPreference) it.next();
-		if (p.getName().equals("gameRoomSize")) {
+		if ("gameRoomSize".equals(p.getName())) {
 			grs = (String) p.getValue();
 		}
-		else if (p.getName().equals("emailDsgMessages")) {
+		else if ("emailDsgMessages".equals(p.getName())) {
 			email = ((Boolean) p.getValue()).booleanValue();
 		}
-		else if (p.getName().equals("emailSentDsgMessages")) {
+		else if ("emailSentDsgMessages".equals(p.getName())) {
 			emailSent = ((Boolean) p.getValue()).booleanValue();
 		}
-		else if (p.getName().equals("weekend")) {
+		else if ("weekend".equals(p.getName())) {
 			weekend = (int[]) p.getValue();
 		}
-		else if (p.getName().equals("refresh")) {
+		else if ("refresh".equals(p.getName())) {
 		    refresh = ((Integer) p.getValue());
 		}
 	}

@@ -1,6 +1,7 @@
 <%@ page import="org.pente.database.*, 
                  org.pente.gameServer.core.*, 
                  org.pente.gameServer.server.*,
+                 org.pente.message.*,
                  java.sql.*,
                  java.util.*,
                  org.apache.log4j.*" %>
@@ -65,26 +66,11 @@
                     int level = 0;
                     Calendar paymentDate;
                     boolean update = false;
+                    boolean insert = true;
                     Calendar lastMonth = Calendar.getInstance();
                     lastMonth.add(java.util.Calendar.DATE, -31);
                     Calendar lastYear = Calendar.getInstance();
                     lastYear.add(java.util.Calendar.YEAR, -1);
-                    if (!result.isBeforeFirst()) {
-                        int subscriptionLvl = 0;
-                        subscriptionLvl = (subscriptionLvl | org.pente.gameServer.core.MySQLDSGPlayerStorer.ONEMONTH);
-                        subscriptionLvl = (subscriptionLvl | org.pente.gameServer.core.MySQLDSGPlayerStorer.UNLIMITEDTBGAMES);
-                        subscriptionLvl = (subscriptionLvl | org.pente.gameServer.core.MySQLDSGPlayerStorer.NOADS);
-                        subscriptionLvl = (subscriptionLvl | org.pente.gameServer.core.MySQLDSGPlayerStorer.DBACCESS);
-                        stmt = con.prepareStatement("INSERT INTO dsg_subscribers (pid, level, paymentdate, transactionid, amount) VALUES (?, ?, NOW(), NOW(), 0)");
-                        stmt.setLong(1, pid);
-                        stmt.setInt(2, subscriptionLvl);
-                        int worked = stmt.executeUpdate();
-                        if (worked < 1) {
-                            log4j.info(" KotH: inserting " + name + " failed");
-                        } else {
-                            log4j.info(" KotH: inserting " + name + " success");
-                        }
-                    }
                     while (result.next()) {
                         paymentDate = Calendar.getInstance();
                         paymentDate.setTime(result.getDate("paymentdate"));
@@ -99,6 +85,7 @@
                             }
                         }
                         if (update) {
+                            insert = false;
                             paymentDate.add(java.util.Calendar.DATE, 31);
                             java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                             String dateTime = sdf.format(paymentDate.getTime());
@@ -115,12 +102,41 @@
                             update = false;
                         }
                     }
+                    if (insert) {
+                        int subscriptionLvl = 0;
+                        subscriptionLvl = (subscriptionLvl | org.pente.gameServer.core.MySQLDSGPlayerStorer.ONEMONTH);
+                        subscriptionLvl = (subscriptionLvl | org.pente.gameServer.core.MySQLDSGPlayerStorer.UNLIMITEDTBGAMES);
+                        subscriptionLvl = (subscriptionLvl | org.pente.gameServer.core.MySQLDSGPlayerStorer.NOADS);
+                        subscriptionLvl = (subscriptionLvl | org.pente.gameServer.core.MySQLDSGPlayerStorer.DBACCESS);
+                        stmt = con.prepareStatement("INSERT INTO dsg_subscribers (pid, level, paymentdate, transactionid, amount) VALUES (?, ?, NOW(), NOW(), 0)");
+                        stmt.setLong(1, pid);
+                        stmt.setInt(2, subscriptionLvl);
+                        int worked = stmt.executeUpdate();
+                        if (worked < 1) {
+                            log4j.info(" KotH: inserting " + name + " failed");
+                        } else {
+                            log4j.info(" KotH: inserting " + name + " success");
+                        }
+                    }
         
                     if (data.getNameColorRGB() == 0) {
                         data.setNameColorRGB(-16751616);
                         dsgPlayerStorer.updatePlayer(data);
                     }
         
+                    DSGMessageStorer dsgMessageStorer = resources.getDsgMessageStorer();
+                    DSGMessage message = new DSGMessage();
+                    message.setCreationDate(new java.util.Date());
+                    message.setFromPid(23000000016237L);
+                    message.setToPid(pid);
+                    message.setSubject("KotH subscriber goodies!");
+                    if (insert) {
+                        message.setBody("Congratulations on winning the latst KotH!\n\n In addition to the crown, I also made you a subscriber for a month and gave you full access to Pente.org. \n\n Enjoy!");
+                    } else {
+                        message.setBody("Congratulations on winning the latst KotH!\n\n In addition to the crown, I also extended your subscription by a month. \n\n Enjoy!");
+                    }
+                    dsgMessageStorer.createMessage(message);
+
                     stmt = con.prepareStatement("update dsg_player_game set tourney_winner='0' where tourney_winner='4'");
                     stmt.executeUpdate();
 

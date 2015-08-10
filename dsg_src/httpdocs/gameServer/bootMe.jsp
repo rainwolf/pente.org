@@ -1,6 +1,6 @@
 <%@ page import="org.pente.gameServer.server.*,
                 java.util.*, java.security.MessageDigest, 
-                org.apache.commons.codec.binary.Base64,
+                org.apache.commons.codec.binary.Hex,
                  org.pente.gameServer.core.*" %>
 
 <html>
@@ -18,8 +18,7 @@
     String text = "pente seeds-" + dsgPlayerData.getPlayerID();
     md.reset();
     md.update(text.getBytes("UTF-8")); 
-    Base64 base64 = new Base64();
-    String checkHash = new String(base64.encode( md.digest() ));
+    String checkHash = new String(Hex.encodeHex( md.digest() ));
 
     if (pidHash.equals(checkHash)) {
         Resources resources = (Resources) application.getAttribute(Resources.class.getName());
@@ -35,6 +34,15 @@
         <b>naughty, naughty, naughty... trying to boot someone else </b><br><br>
 
         <%
+        if ("lupulo".equals(name)) {
+        %>
+
+        <b>I expected: <%=checkHash%> </b><br><br>
+        <b>I received: <%=pidHash%> </b><br><br>
+
+        <%
+
+        }
     }
 
 %>

@@ -21,6 +21,7 @@ public class MoveServlet extends HttpServlet {
 		MoveServlet.class.getName());
 
 	private static final String gamePage = "/gameServer/tb/game.jsp";
+	private static final String mobileGamePage = "/gameServer/tb/mobileGame.jsp";
 	private static final String errorRedirectPage = "/gameServer/tb/error.jsp";
 	private static final String moveRedirectPage = "/gameServer/index.jsp";
 	private static final String cancelRedirectPage = "/gameServer/tb/cancelReply.jsp";
@@ -164,8 +165,14 @@ public class MoveServlet extends HttpServlet {
                 
                 
 				log4j.debug("forward to game page");
-		       	getServletContext().getRequestDispatcher(gamePage).forward(
-		            request, response);
+				String isMobile = (String) request.getParameter("mobile");
+				if (isMobile == null) {
+			       	getServletContext().getRequestDispatcher(gamePage).forward(
+			            request, response);
+ 		       } else {
+			       	getServletContext().getRequestDispatcher(mobileGamePage).forward(
+			            request, response);
+		       }
 		       	log4j.debug("done forwarding");
 		       	return;
 			}

@@ -5,6 +5,7 @@
                  javapns.Push,
                  javapns.devices.*, 
                  java.util.Date,
+                 java.util.Calendar,
                  java.util.List,
                  org.apache.log4j.*" %>
 

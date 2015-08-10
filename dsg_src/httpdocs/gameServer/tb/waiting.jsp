@@ -72,9 +72,13 @@ for (TBSet s : waitingSets) {
     if (iAmIgnored && !alreadyPlaying)
         openTBgames--;
 }
+if ("rainwolf".equals(name)) {
+  openTBgames = waitingSets.size();
+}
 
 boolean limitExceeded;
-int gamesLimit = 6;
+ServletContext ctx = getServletContext();
+int gamesLimit = Integer.parseInt(ctx.getInitParameter("TBGamesLimit"));
 if (meData.unlimitedTBGames()) {
   limitExceeded = false;
 } else {
@@ -151,26 +155,16 @@ below and do not specify a player to invite.<br>
 	   </tr>
      <% for (TBSet s : waitingSets) {
     
-        if (s.getPlayer1Pid() == myPID ||
-             s.getPlayer2Pid() == myPID) continue;
+        if (s.getPlayer1Pid() == myPID || s.getPlayer2Pid() == myPID) {
+          continue;
+        }
         
-        int nrGamesPlaying = 0;
-        String setGame = GridStateFactory.getGameName(s.getGame1().getGame());
-        boolean alreadyPlaying = false, iAmIgnored = false;
-        long theirPID = (myPID == s.getPlayer1Pid()) ? s.getPlayer2Pid() : s.getPlayer1Pid();
-        for (TBGame g : myTurn) {
-            long oppPid = myPID == g.getPlayer1Pid() ? g.getPlayer2Pid() : g.getPlayer1Pid();
-            String myTurnGame = GridStateFactory.getGameName(g.getGame());
-            if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
-                nrGamesPlaying++;
-                if (nrGamesPlaying > 0) {
-                    alreadyPlaying = true;
-                    break;
-                }
-            };
-        };
-        if (!alreadyPlaying) {
-            for (TBGame g : oppTurn) {
+        if (!"rainwolf".equals(name)) {
+            int nrGamesPlaying = 0;
+            String setGame = GridStateFactory.getGameName(s.getGame1().getGame());
+            boolean alreadyPlaying = false, iAmIgnored = false;
+            long theirPID = (myPID == s.getPlayer1Pid()) ? s.getPlayer2Pid() : s.getPlayer1Pid();
+            for (TBGame g : myTurn) {
                 long oppPid = myPID == g.getPlayer1Pid() ? g.getPlayer2Pid() : g.getPlayer1Pid();
                 String myTurnGame = GridStateFactory.getGameName(g.getGame());
                 if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
@@ -181,22 +175,37 @@ below and do not specify a player to invite.<br>
                     }
                 };
             };
-        }
-        if (alreadyPlaying)
-            continue;
+            if (!alreadyPlaying) {
+                for (TBGame g : oppTurn) {
+                    long oppPid = myPID == g.getPlayer1Pid() ? g.getPlayer2Pid() : g.getPlayer1Pid();
+                    String myTurnGame = GridStateFactory.getGameName(g.getGame());
+                    if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
+                        nrGamesPlaying++;
+                        if (nrGamesPlaying > 0) {
+                            alreadyPlaying = true;
+                            break;
+                        }
+                    };
+                };
+            }
+            if (alreadyPlaying) {
+                continue;
+            }
 
-    		List<DSGIgnoreData> ignoreData = dsgPlayerStorer.getIgnoreData(theirPID);
-    		for (Iterator<DSGIgnoreData> it = ignoreData.iterator(); it.hasNext();) {
-            DSGIgnoreData i = it.next();
-            if (i.getIgnorePid() == myPID) {
-                if (i.getIgnoreInvite()) {
-                    iAmIgnored = true;
-                    break;
+        		List<DSGIgnoreData> ignoreData = dsgPlayerStorer.getIgnoreData(theirPID);
+        		for (Iterator<DSGIgnoreData> it = ignoreData.iterator(); it.hasNext();) {
+                DSGIgnoreData i = it.next();
+                if (i.getIgnorePid() == myPID) {
+                    if (i.getIgnoreInvite()) {
+                        iAmIgnored = true;
+                        break;
+                    }	
                 }	
-            }	
+            }
+            if (iAmIgnored && !alreadyPlaying) {
+                continue;
+            }
         }
-        if (iAmIgnored && !alreadyPlaying)
-            continue;
         
              
          String color = null;

@@ -41,6 +41,50 @@ if (error == null) {
 	inviter = (DSGPlayerData) request.getAttribute("inviter");
 	dsgPlayerGameData = inviter.getPlayerGameData(game.getGame());
 }
+
+
+
+
+Resources resources = (Resources) application.getAttribute(
+   Resources.class.getName());
+
+String nm = (String) request.getAttribute("name");
+DSGPlayerData dsgPlayerData = dsgPlayerStorer.loadPlayer(nm);
+
+TBGameStorer tbGameStorer = resources.getTbGameStorer();
+List<TBSet> currentSets = tbGameStorer.loadSets(dsgPlayerData.getPlayerID());
+List<TBSet> invitesTo = new ArrayList<TBSet>();
+List<TBSet> invitesFrom = new ArrayList<TBSet>();
+List<TBGame> myTurn = new ArrayList<TBGame>();
+List<TBGame> oppTurn = new ArrayList<TBGame>();
+Utilities.organizeGames(dsgPlayerData.getPlayerID(), currentSets,
+    invitesTo, invitesFrom, myTurn, oppTurn);
+String title2 = "Dashboard";
+
+boolean limitExceeded;
+ServletContext ctx = getServletContext();
+int gamesLimit = Integer.parseInt(ctx.getInitParameter("TBGamesLimit"));
+// int gamesLimit = 6;
+if (dsgPlayerData.unlimitedTBGames()) {
+  limitExceeded = false;
+} else {
+  int currentCount = myTurn.size() + oppTurn.size();
+  if (!invitesFrom.isEmpty()) {
+    for (TBSet s : invitesFrom) {
+      if (s.isTwoGameSet()) {
+        currentCount += 2;
+      } else {
+        currentCount++;
+      }
+    }
+  }
+  if (currentCount > gamesLimit) {
+    limitExceeded = true;
+  } else {
+    limitExceeded = false;
+  }
+}
+
 %>
 
 <table align="left" width="490" border="0" colspacing="1" colpadding="1">
@@ -179,7 +223,11 @@ if (error == null) {
     <% if (!set.isWaitingSet()) { %>
     <input type="checkbox" name="ignore" value="Y"> Ignore invites from this player<br>
     <% } %>
+    <% if (!limitExceeded) { %>
     <input type="button" onclick="javascript:acceptInvite();" value="Accept">
+    <% } else { %>
+    (Free account limit reached.) 
+    <% } %>
     <% if (!set.isWaitingSet()) { %>
     <input type="button" onclick="javascript:declineInvite();" value="Decline">
     <% } %>

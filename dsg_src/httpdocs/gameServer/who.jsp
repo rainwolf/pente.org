@@ -163,8 +163,8 @@ pageContext.setAttribute("title", "Who's Online");
           <br>
 			 <%
 			 List<String> names = sessionListener.getActivePlayers(); 
-			 String width = (me != null && me.equals("dweebo")) ? "500" : "350";
-			 String columns = (me != null && me.equals("dweebo")) ? "4" : "3";
+			 String width = (me != null && me.equals("rainwolf")) ? "500" : "350";
+			 String columns = (me != null && me.equals("rainwolf")) ? "4" : "3";
 			 %>
 		     <table border="1" cellpadding="1" cellspacing="0" 
                    bordercolor="black" width="<%= width %>">
@@ -177,7 +177,7 @@ pageContext.setAttribute("title", "Who's Online");
                    <td><b>Pente Rating</b></td>
                    <td><b>Total # Games</b></td>
 
-				   <% if (me != null && me.equals("dweebo")) { %>
+				   <% if (me != null && me.equals("rainwolf")) { %>
 				   <td><b>Last Page</b></td>
 				   <% } %>
                 </tr>
@@ -201,7 +201,7 @@ pageContext.setAttribute("title", "Who's Online");
                     <% } %>
                   </td>
                   <td><%= nf.format(dsgPlayerData.getTotalGames()) %></td>
-				  <% if (me != null && me.equals("dweebo")) { %>
+				  <% if (me != null && me.equals("rainwolf")) { %>
 				  <td><%= sessionListener.getLastPage(name) %></td>
 				  <% } %>
                   </tr>
