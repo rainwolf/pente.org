@@ -16,7 +16,7 @@ else if (request.getParameter("g") != null) {
 %>
 <table>
   <tr>
-    <th></th>
+    <!-- <th></th> -->
     <th>Player</th>
     <th>Rating</th>
     <th>Games</th>
@@ -26,7 +26,7 @@ else if (request.getParameter("g") != null) {
     	 DSGPlayerData d = leaders.get(i);
     	 DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(game); %> 
        <tr>
-        <td><%= (i + 1) %></td>
+        <!-- <td><%= (i + 1) %></td> -->
         <td><%@ include file="playerLink.jspf" %>&nbsp;</td>
         <td><%@ include file="ratings.jspf" %>&nbsp;</td>
         <td><%= nf.format(dsgPlayerGameData.getTotalGames()) %></td>

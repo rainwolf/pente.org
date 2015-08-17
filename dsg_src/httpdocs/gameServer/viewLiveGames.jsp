@@ -11,10 +11,10 @@ DSGPlayerData dsgPlayerData = (DSGPlayerData) request.getAttribute("dsgPlayerDat
 List<GameData> wins = (List<GameData>) request.getAttribute("wins");
 List<GameData> losses = (List<GameData>) request.getAttribute("losses");
 if (wins == null) {
-	wins = new ArrayList<GameData>(0);
+  wins = new ArrayList<GameData>(0);
 }
 if (losses == null) {
-	losses = new ArrayList<GameData>(0);
+  losses = new ArrayList<GameData>(0);
 }
 int game = ((Integer) request.getAttribute("game")).intValue();
 String gameStr = GridStateFactory.getDisplayName(game);
@@ -67,8 +67,8 @@ gameDateFormat.setTimeZone(tz);
 
 <%   if (totalGames > 100) { %> [ <% 
       for (int i=0;i<totalGames/100+1;i++) {
-	    if (i==startNum) { %><%= i+1 %><% }
-	    else { %><a href="/gameServer/viewLiveGames?p=<%= dsgPlayerData.getName() %>&g=<%= game %>&s=<%= i*100 %>"><%= i+1 %></a> <% } %>
+      if (i==startNum) { %><%= i+1 %><% }
+      else { %><a href="/gameServer/viewLiveGames?p=<%= dsgPlayerData.getName() %>&g=<%= game %>&s=<%= i*100 %>"><%= i+1 %></a> <% } %>
 <%     } %>
    ]</font>
 <%   }
@@ -77,36 +77,38 @@ gameDateFormat.setTimeZone(tz);
 <% if (wins.isEmpty()) { %>
      No wins<br><br>
 <% } else { %>
-	 <table border="0"  cellspacing="0" cellpadding="0" width="100%">
-	   <tr bgcolor="<%= textColor2 %>">
-	     <td colspan="8">
-	       <font color="white">
-	         <b>Wins (<%= wins.size() %>)
-	       </font>
-	     </td>
-	   </tr>
-	   <tr>
-	     <td><b>Game</b></td>
-	     <td><b>Player 1</b></td>
-	     <td><b>Rating</b></td>
-	     <td><b>Player 2</b></td>
-	     <td><b>Rating</b></td>
-	     <td><b>Rated</b></td>
-	     <td><b>Timer</b></td>
-	     <td><b>Completion Date</b></td>
-	   </tr>
+   <table border="0"  cellspacing="0" cellpadding="0" width="100%">
+     <tr bgcolor="<%= textColor2 %>">
+       <td colspan="8">
+         <font color="white">
+           <b>Wins (<%= wins.size() %>)
+         </font>
+       </td>
+     </tr>
+     <tr>
+       <td><b>Game</b></td>
+       <td><b>Player 1</b></td>
+       <td><b>Rating</b></td>
+       <td><b>Player 2</b></td>
+       <td><b>Rating</b></td>
+       <td><b>Rated</b></td>
+       <td><b>Timer</b></td>
+       <td><b>Completion Date</b></td>
+     </tr>
      <% for (GameData g : wins) { %>
          <tr>
-           <td><a href="javascript:goWH('/gameServer/viewLiveGame?g=<%= g.getGameID() %>');">
-             <%= gameStr %></a></td>
+           <td>
+           <a href="javascript:goWH('/gameServer/viewLiveGame?mobile&g=<%= g.getGameID() %>');">
+             <%= gameStr %></a> - (<a href="javascript:goWH('/gameServer/viewLiveGame?g=<%= g.getGameID() %>');"><img src="/gameServer/images/java.png" title="With Java" height="14" width="14"></a>)
+             </td>
            <td><% PlayerData d = g.getPlayer1Data(); %><%@include file="vgplayerLink.jspf" %></td>
            <td><%= g.getPlayer1Data().getRating() %> 
                <img src="/gameServer/images/<%= SimpleDSGPlayerGameData.
-               		getRatingsGifRatingOnly(g.getPlayer1Data().getRating()) %>"></td>
+                  getRatingsGifRatingOnly(g.getPlayer1Data().getRating()) %>"></td>
            <td><% d = g.getPlayer2Data(); %><%@include file="vgplayerLink.jspf" %></td>
            <td><%= g.getPlayer2Data().getRating() %> 
                <img src="/gameServer/images/<%= SimpleDSGPlayerGameData.
-               		getRatingsGifRatingOnly(g.getPlayer2Data().getRating()) %>"></td>
+                  getRatingsGifRatingOnly(g.getPlayer2Data().getRating()) %>"></td>
            <td><%= g.getRated() ? "Rated" : "Not Rated" %></td>
            <td><% if (g.getTimed()) { %><%= g.getInitialTime() %> / <%= g.getIncrementalTime() %>
                <% } else { %>No<% } %></td>
@@ -121,36 +123,38 @@ gameDateFormat.setTimeZone(tz);
 <% if (losses.isEmpty()) { %>
      No losses<br><br>
 <% } else { %>
-	 <table border="0"  cellspacing="0" cellpadding="0" width="100%">
-	   <tr bgcolor="<%= textColor2 %>">
-	     <td colspan="8">
-	       <font color="white">
-	         <b>Losses (<%= losses.size() %>)
-	       </font>
-	     </td>
-	   </tr>
-	   <tr>
-	     <td><b>Game</b></td>
-	     <td><b>Player 1</b></td>
-	     <td><b>Rating</b></td>
-	     <td><b>Player 2</b></td>
-	     <td><b>Rating</b></td>
-	     <td><b>Rated</b></td>
-	     <td><b>Timer</b></td>
-	     <td><b>Completion Date</b></td>
-	   </tr>
+   <table border="0"  cellspacing="0" cellpadding="0" width="100%">
+     <tr bgcolor="<%= textColor2 %>">
+       <td colspan="8">
+         <font color="white">
+           <b>Losses (<%= losses.size() %>)
+         </font>
+       </td>
+     </tr>
+     <tr>
+       <td><b>Game</b></td>
+       <td><b>Player 1</b></td>
+       <td><b>Rating</b></td>
+       <td><b>Player 2</b></td>
+       <td><b>Rating</b></td>
+       <td><b>Rated</b></td>
+       <td><b>Timer</b></td>
+       <td><b>Completion Date</b></td>
+     </tr>
      <% for (GameData g : losses) { %>
          <tr>
-         <td><a href="javascript:goWH('/gameServer/viewLiveGame?g=<%= g.getGameID() %>');">
-           <%= gameStr %></a></td>
+           <td>
+           <a href="javascript:goWH('/gameServer/viewLiveGame?mobile&g=<%= g.getGameID() %>');">
+             <%= gameStr %></a> - (<a href="javascript:goWH('/gameServer/viewLiveGame?g=<%= g.getGameID() %>');"><img src="/gameServer/images/java.png" title="With Java" height="14" width="14"></a>)
+             </td>
          <td><% PlayerData d = g.getPlayer1Data(); %><%@include file="vgplayerLink.jspf" %></td>
          <td><%= g.getPlayer1Data().getRating() %> 
              <img src="/gameServer/images/<%= SimpleDSGPlayerGameData.
-             		getRatingsGifRatingOnly(g.getPlayer1Data().getRating()) %>"></td>
+                getRatingsGifRatingOnly(g.getPlayer1Data().getRating()) %>"></td>
          <td><% d = g.getPlayer2Data(); %><%@include file="vgplayerLink.jspf" %></td>
          <td><%= g.getPlayer2Data().getRating() %> 
              <img src="/gameServer/images/<%= SimpleDSGPlayerGameData.
-             		getRatingsGifRatingOnly(g.getPlayer2Data().getRating()) %>"></td>
+                getRatingsGifRatingOnly(g.getPlayer2Data().getRating()) %>"></td>
          <td><%= g.getRated() ? "Rated" : "Not Rated" %></td>
          <td><% if (g.getTimed()) { %><%= g.getInitialTime() %> / <%= g.getIncrementalTime() %>
              <% } else { %>No<% } %></td>
