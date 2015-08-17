@@ -539,7 +539,7 @@ if (inLiveGameRoom) {
        <tr bgcolor="<%= textColor2 %>">
          <td colspan="5">
            <font color="white">
-             <b>Invitations received (<%= invitesTo.size() %>) <%=(limitExceeded?"(Free account limit reached)":"")%>
+             <b>Invitations received (<%= invitesTo.size() %>) <%=(limitExceeded?"(Free account limit reached)":"")%></b>
            </font>
          </td>
        </tr>
@@ -589,7 +589,7 @@ if (inLiveGameRoom) {
      <table border="0"  cellspacing="0" cellpadding="0" width="100%">
        <tr bgcolor="<%= bgColor2 %>">
          <td colspan="5">
-           <b>Invitations sent (<%= invitesFrom.size() %>)
+           <b>Invitations sent (<%= invitesFrom.size() %>)</b>
          </td>
        </tr>
        <tr>
@@ -637,7 +637,7 @@ if (inLiveGameRoom) {
        <tr bgcolor="<%= textColor2 %>">
          <td colspan="6">
            <font color="white">
-             <b>Active Games - My Turn (<%= myTurn.size() %>)
+             <b>Active Games - My Turn (<%= myTurn.size() %>)</b>
            </font>
          </td>
        </tr>
@@ -660,9 +660,9 @@ if (inLiveGameRoom) {
            
          <tr>
            <td>
-         <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><img src="/gameServer/images/mobile.png" title="Without Java" height="12" width="12"></a> - 
-           <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load');">
-             <%= GridStateFactory.getGameName(g.getGame()) %></a>
+         <!-- <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><img src="/gameServer/images/mobile.png" title="Without Java" height="12" width="12"></a> -  -->
+         <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><%= GridStateFactory.getGameName(g.getGame()) %></a> - 
+           (<a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load');"><img src="/gameServer/images/java.png" title="With Java" height="14" width="14"></a>)
              </td>
            <td><%@ include file="playerLink.jspf" %>&nbsp;<% if (dsgPlayerGameData != null) { %><%@ include file="ratings.jspf" %><% } %></td>
            <td><%= color %></td>
@@ -681,7 +681,7 @@ if (inLiveGameRoom) {
        <tr  bgcolor="<%= bgColor1 %>">
          <td colspan="6">
            <font color="white">
-             <b>Active Games - Opponents Turn (<%= oppTurn.size() %>)
+             <b>Active Games - Opponents Turn (<%= oppTurn.size() %>)</b>
            </font>
          </td>
        </tr>
@@ -704,9 +704,9 @@ if (inLiveGameRoom) {
            
          <tr>
            <td>
-         <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><img src="/gameServer/images/mobile.png" title="Without Java" height="12" width="12"></a> - 
-           <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load');">
-             <%= GridStateFactory.getGameName(g.getGame()) %></a>
+         <!-- <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><img src="/gameServer/images/mobile.png" title="Without Java" height="12" width="12"></a> -  -->
+         <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><%= GridStateFactory.getGameName(g.getGame()) %></a> - 
+           (<a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load');"><img src="/gameServer/images/java.png" title="With Java" height="14" width="14"></a>)
              </td>
            <td><%@ include file="playerLink.jspf" %></a>&nbsp;<% if (dsgPlayerGameData != null) { %><%@ include file="ratings.jspf" %><% } %></td>
            <td><%= color %></td>

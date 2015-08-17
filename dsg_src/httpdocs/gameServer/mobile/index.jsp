@@ -160,24 +160,16 @@ Active Games - Opponents Turn<%
 %>
 Open Invitation Games<%
         for (TBSet s : waitingSets) {
-                if (s.getPlayer1Pid() == myPID || s.getPlayer2Pid() == myPID) continue;
-                int nrGamesPlaying = 0;
-                String setGame = GridStateFactory.getGameName(s.getGame1().getGame());
+                if (s.getPlayer1Pid() == myPID || s.getPlayer2Pid() == myPID) {
+                    continue;
+                }
                 boolean alreadyPlaying = false, iAmIgnored = false;
                 long theirPID = (myPID == s.getPlayer1Pid()) ? s.getPlayer2Pid() : s.getPlayer1Pid();
-                for (TBGame g : myTurn) {
-                    long oppPid = myPID == g.getPlayer1Pid() ? g.getPlayer2Pid() : g.getPlayer1Pid();
-                    String myTurnGame = GridStateFactory.getGameName(g.getGame());
-                    if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
-                        nrGamesPlaying++;
-                        if (nrGamesPlaying > 0) {
-                            alreadyPlaying = true;
-                            break;
-                        }
-                    };
-                };
-                if (!alreadyPlaying) {
-                    for (TBGame g : oppTurn) {
+
+                if (!"rainwolf".equals(name)) {
+                    int nrGamesPlaying = 0;
+                    String setGame = GridStateFactory.getGameName(s.getGame1().getGame());
+                    for (TBGame g : myTurn) {
                         long oppPid = myPID == g.getPlayer1Pid() ? g.getPlayer2Pid() : g.getPlayer1Pid();
                         String myTurnGame = GridStateFactory.getGameName(g.getGame());
                         if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
@@ -188,9 +180,22 @@ Open Invitation Games<%
                             }
                         };
                     };
-                }
-                if (alreadyPlaying) {
-                    continue;
+                    if (!alreadyPlaying) {
+                        for (TBGame g : oppTurn) {
+                            long oppPid = myPID == g.getPlayer1Pid() ? g.getPlayer2Pid() : g.getPlayer1Pid();
+                            String myTurnGame = GridStateFactory.getGameName(g.getGame());
+                            if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
+                                nrGamesPlaying++;
+                                if (nrGamesPlaying > 0) {
+                                    alreadyPlaying = true;
+                                    break;
+                                }
+                            };
+                        };
+                    }
+                    if (alreadyPlaying) {
+                        continue;
+                    }
                 }
 
                 List<DSGIgnoreData> ignoreData = dsgPlayerStorer.getIgnoreData(theirPID);
@@ -206,7 +211,7 @@ Open Invitation Games<%
                 if (iAmIgnored && !alreadyPlaying) {
                     continue;
                 }
-
+            
                  String color = null;
                  if (s.isTwoGameSet()) {
                      color = "whiteblack";

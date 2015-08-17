@@ -75,7 +75,7 @@ if (giftee != null) {
     </form>
   </td>
 </tr>
-<tr>
+<!-- <tr>
   <td align="left">
       <u> 1 Year</u> of unlimited turn-based games and no advertisements: 
   </td>
@@ -94,7 +94,7 @@ if (giftee != null) {
     </form>
   </td>
 </tr>
-<tr>
+ --><tr>
   <td align="left">
       <u> 1 Year</u> of unlimited turn-based games and no advertisements, including database access: 
   </td>
@@ -114,6 +114,25 @@ if (giftee != null) {
   </td>
 </tr>
 <tr>
+  <td align="left">
+      <u> 1 Year</u> of unlimited turn-based games, including database access, but <b>with</b> advertisements: 
+  </td>
+  <td align="center">
+     8 EUR 
+  </td>
+  <td align="center">
+    <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+    <input type="hidden" name="cmd" value="_s-xclick">
+    <input type="hidden" name="hosted_button_id" value="XSXJJYYGAJB7G">
+<%--
+--%>
+    <input type="hidden" name="custom" value="<%=gifter + ";" + giftee%>"/>
+    <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_buynow_SM.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+    <img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+    </form>
+  </td>
+</tr>
+<!-- <tr>
   <td colspan="3">
   For Mobile-only users. This applies to users of the iPhone app <u>only</u>, free account restrictions still apply on the website, but not in the app.<br> 
   If you mainly/only use the mobile app (iOS only currently) and don't mind the ads, then the following subscriptions come at a discount. <br>
@@ -157,7 +176,8 @@ if (giftee != null) {
     </form>
   </td>
 </tr>
-<%if ("rainwolf".equals(giftee) || "rainwolf".equals(gifter)) { %> 
+ -->
+ <%if ("rainwolf".equals(giftee) || "rainwolf".equals(gifter)) { %> 
 <tr>
   <td align="center">
       <u> 1 month</u> test purchase:  

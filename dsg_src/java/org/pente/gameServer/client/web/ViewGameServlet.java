@@ -54,6 +54,9 @@ public class ViewGameServlet extends HttpServlet {
         throws ServletException, IOException {
 
         String redirectPage = "/gameServer/viewLiveGame.jsp";
+        if (request.getParameter("mobile") != null) {
+            redirectPage = "/gameServer/viewLiveGameMobile.jsp";
+        }
         try {
         	String gidStr = (String) request.getParameter("g");
             
