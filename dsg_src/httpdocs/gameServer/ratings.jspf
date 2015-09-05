@@ -1,7 +1,7 @@
 <% 
    {
        if (dsgPlayerGameData.getTotalGames() > 0) {	%>
-	<img src="/gameServer/images/<%= dsgPlayerGameData.getRatingGif() %>"> <%= (int) Math.round(dsgPlayerGameData.getRating()) %>
+	<img src="/gameServer/images/<%= dsgPlayerGameData.getRatingGif() %>" title="<%= ((dsgPlayerGameData.getGame() == GridStateFactory.TB_PENTE)?"Turn-Based ":"Live ") %>Pente"> <%= (int) Math.round(dsgPlayerGameData.getRating()) %>
 <%     }
        else { %> 
          &nbsp; 

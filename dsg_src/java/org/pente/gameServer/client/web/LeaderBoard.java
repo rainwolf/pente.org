@@ -57,9 +57,11 @@ public class LeaderBoard {
 						"and g.game = ? " +
 						"and p.player_type = '" + DSGPlayerData.HUMAN + "' " +
 						"and g.computer = 'N' " +
-						"and (g.wins + g.losses + g.draws >= 100) " +
-						"and last_game_date > date_add(sysdate(), interval -1 " +
-						(GridStateFactory.isTurnbasedGame(game) ? "week) " : "month) ") +
+						"and (g.wins + g.losses + g.draws >= 50) " +
+						// "and (g.wins + g.losses + g.draws >= 100) " +
+						"and last_game_date > date_add(sysdate(), interval -1 month) " +
+						// "and last_game_date > date_add(sysdate(), interval -1 " +
+						// (GridStateFactory.isTurnbasedGame(game) ? "week) " : "month) ") +
 						"order by g.rating desc " +
 						"limit 0, 10");
 
