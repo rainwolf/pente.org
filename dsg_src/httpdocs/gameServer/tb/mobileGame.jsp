@@ -257,47 +257,50 @@ function selectMove(newMove)
 
  <table align="right" border=1  width="250px">
 <tr>
+<td></td>
    <td align="center" colspan="2">
    <font size="3">
-     <b>
+         <b>
   <%= GridStateFactory.getGameName(game.getGame()) %>
   </b>
    </font>
    </td>
 </tr>
 <tr>
+<td width="10%"></td>
    <td align="center">
- <b>   <%=p1.getName()%>
+ <b>   <%=p1.getName()%> </b>
    </td>
    <td align="center" bgcolor="#000000">
-<font color="white">   <%=p2.getName()%></font>
+ <b><font color="white">   <%=p2.getName()%></font>
 </b>
    </td>
 </tr>
 <% 
 String coordinateLetters[] = {"A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T"};
+int row = 0;
 for( int i = 0; i < game.getNumMoves(); i++ ) {
-    if (game.getGame() != 63 && i % 2 == 0) {
-    %> <tr> <%
+    if ((game.getGame() != 63) && (i % 2 == 0)) {
+    %> <tr> <td align="center"> <%= ++row %> </td> <%
     }
-    if (game.getGame() == 63 && (i % 4 == 3)) {
-    %> <tr> <%
+    if ((game.getGame() == 63) && ((i % 4 == 3) || (i == 0))) {
+    %> <tr> <td align="center"> <%= ++row %> </td> <%
     }
     %> 
-    <td onclick='selectMove(<%=i%>)' id='<%=i%>' width="50%" align="center">
-    <%=" " + coordinateLetters[(game.getMove(i) % 19)] + (game.getMove(i) / 19 + 1)%>
-    <% if (game.getGame() == 63 && i != 0) {
+    <td onclick='selectMove(<%=i%>)' id='<%=i%>' width="45%" align="center">
+    <%=" " + coordinateLetters[(game.getMove(i) % 19)] + (19 - (game.getMove(i) / 19))%>
+    <% if ((game.getGame() == 63) && (i != 0)) {
         ++i;
         %>
-        - <%="" + coordinateLetters[(game.getMove(i) % 19)] + (game.getMove(i) / 19 + 1)%>
+        - <%="" + coordinateLetters[(game.getMove(i) % 19)] + (19 - (game.getMove(i) / 19))%>
         <%
     } %>
     </td>
     <%
-    if (game.getGame() != 63 && i % 2 == 1) {
+    if ((game.getGame() != 63) && (i % 2 == 1)) {
     %> </tr> <%
     }
-    if (game.getGame() == 63 && (i % 4 == 2)) {
+    if ((game.getGame() == 63) && (i % 4 == 2)) {
     %> </tr> <%
     }
 }
@@ -430,35 +433,10 @@ window.google_analytics_uacct = "UA-20529582-2";
         var indentHeight = (boardCanvas.height - boardSize) / 2;
         var stepX = boardSize / 18;
         var stepY = boardSize / 18;
-        var penteColor = "#FDDEA3";
-        var keryPenteColor = "#BAFDA3";
-        var gomokuColor = "#A3FDEB";
-        var dPenteColor = "#A3CDFD";
-        var gPenteColor = "#AEA3FD";
-        var poofPenteColor = "#EDA3FD";
-        var connect6Color = "#EDA3FD";
-        var boatPenteColor = "#25BAFF";
         var boardColor;
-        var abstractBoard = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]];
-        var coordinateLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T'];
+        var radius = stepX * 95 / 200;
+
+
         var drawUntilMove;
         var playedMove;
         var whiteCaptures = 0;
@@ -574,10 +552,20 @@ window.google_analytics_uacct = "UA-20529582-2";
                 }
             }
             function drawGrid(boardContext, boardColor) {
+              boardContext.save();
                 boardContext.beginPath();
                 boardContext.rect(indentWidth / 2, indentHeight / 2, boardSize + indentWidth, boardSize + indentHeight);
+                boardContext.lineWidth=0.5;
                 boardContext.fillStyle=boardColor;
+                boardContext.shadowColor = 'Black';
+                boardContext.shadowBlur = 5;
+                boardContext.shadowOffsetX = radius/4;
+                boardContext.shadowOffsetY = radius/4;
                 boardContext.fill();     
+                // boardContext.closePath();
+                boardContext.restore();
+
+                // boardContext.beginPath();
                 boardContext.font = "10px sans-serif";
                 boardContext.fillStyle='black';
                 boardContext.lineWidth=0.5;
@@ -618,20 +606,39 @@ window.google_analytics_uacct = "UA-20529582-2";
                 boardContext.closePath();
             }
             function drawStone(i, j, color) {
+              boardContext.save();
                 var centerX = indentWidth + stepX*(i);
                 var centerY = indentHeight + stepY*(j);
                 boardContext.beginPath();
-                boardContext.arc(centerX, centerY, stepX * 95 / 200 , 0, Math.PI*2, true); 
+                boardContext.arc(centerX, centerY, radius , 0, Math.PI*2, true); 
                 if (color == true) {
                     boardContext.fillStyle = 'black';
                 } else {
                     boardContext.fillStyle = 'white';
                 }
+                centerX -= radius/8;
+                centerY -= radius/8;
+                boardContext.shadowColor = 'DimGray';
+                boardContext.shadowBlur = 1;
+                boardContext.shadowOffsetX = radius/8;
+                boardContext.shadowOffsetY = radius/8;
+                if (color) {
+                    var gradient = boardContext.createRadialGradient(centerX, centerY, radius / 8, centerX, centerY, radius);
+                    gradient.addColorStop(0, 'Grey');
+                    gradient.addColorStop(1, 'Black');
+                    boardContext.fillStyle = gradient; 
+                } else {
+                    var gradient = boardContext.createRadialGradient(centerX, centerY, 2*radius / 4, centerX, centerY, radius);
+                    gradient.addColorStop(0, 'White');
+                    gradient.addColorStop(1, 'Gainsboro');
+                    boardContext.fillStyle = gradient; 
+                }
                 boardContext.fill();
                 // boardContext.lineWidth = 5;
                 // boardContext.strokeStyle = '#003300';
-                boardContext.stroke();
+                // boardContext.stroke();
                 boardContext.closePath();
+              boardContext.restore();
             }
             function drawRedDot(i, j) {
                 var centerX = indentWidth + stepX*(i);
@@ -683,16 +690,6 @@ window.google_analytics_uacct = "UA-20529582-2";
                 }
             }
 
-            function drawGame() {
-                for (var i = 0; i < 19; i++) {
-                    for (var j = 0; j < 19; j++) {
-                        if (abstractBoard[i][j] > 0) {
-                            drawStone(i, j, (abstractBoard[i][j] == 2));
-                        } 
-                    }
-                }
-                drawCaptures();
-            }
             function drawCaptures () {
                 if (whiteCaptures > 0) {
                     for (var i = 0; i < whiteCaptures; i++) {

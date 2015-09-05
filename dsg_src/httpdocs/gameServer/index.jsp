@@ -92,7 +92,8 @@ for (TBSet s : waitingSets) {
         String myTurnGame = GridStateFactory.getGameName(g.getGame());
         if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
             nrGamesPlaying++;
-            if (nrGamesPlaying > 0) {
+              if (nrGamesPlaying > 1) {
+//                if (nrGamesPlaying > 0) {
                 alreadyPlaying = true;
                 break;
             }
@@ -104,7 +105,8 @@ for (TBSet s : waitingSets) {
             String myTurnGame = GridStateFactory.getGameName(g.getGame());
             if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
                 nrGamesPlaying++;
-                if (nrGamesPlaying > 0) {
+                if (nrGamesPlaying > 1) {
+//                if (nrGamesPlaying > 0) {
                     alreadyPlaying = true;
                     break;
                 }
@@ -112,8 +114,9 @@ for (TBSet s : waitingSets) {
         };
     }
     
-    if (alreadyPlaying)
+    if (alreadyPlaying && !"rainwolf".equals(nm)) {
         openTBgames--;
+    }
 
     List<DSGIgnoreData> ignoreData = dsgPlayerStorer.getIgnoreData(theirPID);
     for (Iterator<DSGIgnoreData> it = ignoreData.iterator(); it.hasNext();) {
@@ -127,9 +130,6 @@ for (TBSet s : waitingSets) {
     }
     if (iAmIgnored && !alreadyPlaying)
         openTBgames--;
-}
-if ("rainwolf".equals(nm)) {
-  openTBgames = waitingSets.size();
 }
 
 %>
@@ -230,10 +230,12 @@ window.google_analytics_uacct = "UA-20529582-2";
           Want a <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230250">crown</a>? Come and get it!
           </li>
 --%>
-          <li><a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230403">King of the Hill!</a> Every 3rd and Thirsty Thursday of the month from 6pm EST (3pm PST, 12am CET). Next one: August 20th.<br>
+          <li><a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230403">King of the Hill!</a> Every 3rd and Thirsty Thursday of the month from 6pm EST (3pm PST, 12am CET). Next one: September 17th.<br>
           Want a <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230250">crown</a> and subscriber goodies? Come and get it!
           </li>
           <li>Looking for <a href="http://www.pente.org/gameServer/forums/forum.jspa?forumID=34&start=0">resources</a> to get started?
+          </li>
+          <li>16th Anniversary World Champion <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=2&threadID=230560&tstart=0">tournament</a> - 2015 
           </li>
             <li>Want to play turn-based? Try posting an <a href="http://www.pente.org/gameServer/tb/new.jsp">open invitation</a><%= openTBgames > 0 ? " or try " + (openTBgames == 1 ? "" : "one of ") + "the <a href=\"http://www.pente.org/gameServer/tb/waiting.jsp\">" + openTBgames + " open turn-based invitation" + (openTBgames == 1 ? "" : "s") + "</a>" : ""%>.</li>
             </li>

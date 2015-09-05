@@ -32,7 +32,7 @@
 	   if (p2 != null) { p2g = p2.getPlayerGameData(game.getGame()); }
 	   DSGPlayerGameData dsgPlayerGameData = p1g; %>
        <tr>
-         <td><a href="/gameServer/tb/game?command=load&gid=<%= game.getGid() %>">
+         <td><a href="/gameServer/tb/game?command=load&mobile&gid=<%= game.getGid() %>">
              <%= GridStateFactory.getGameName(game.getGame()) %></a></td>
          <td><%= game.getState() %></td>
          <td><% if (p1 != null) { %><a href="player.jsp?pid=<%= game.getPlayer1Pid() %>"><%= p1.getName()%></a><% } %></td>

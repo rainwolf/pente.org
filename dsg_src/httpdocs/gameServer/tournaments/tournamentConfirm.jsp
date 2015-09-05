@@ -134,7 +134,7 @@ if (name != null) {
    Note: This tournament has VERY different rules/procedures from past tournaments at pente.org, <br>you <b>MUST <a href="/help/helpWindow.jsp?file=tourneySeventh-Heaven">read these new rules</a></b> and understand them prior to signing up.
     </div>
     <% } else { %>
-                     Read the <b><a href="/gameServer/help/helpWindow.jsp?file=tournaments">Official Rules</a></b> for the full
+                     Read the <b><a href="/help/helpWindow.jsp?file=tournaments">Official Rules</a></b> for the full
                      details of the tournament.<br>
 		     <% } %>
                      <% if (request.getAttribute("readRules") != null) { %>

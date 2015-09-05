@@ -36,7 +36,8 @@ for (TBSet s : waitingSets) {
         String myTurnGame = GridStateFactory.getGameName(g.getGame());
         if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
             nrGamesPlaying++;
-            if (nrGamesPlaying > 0) {
+            if (nrGamesPlaying > 1) {
+//            if (nrGamesPlaying > 0) {
                 alreadyPlaying = true;
                 break;
             }
@@ -48,7 +49,8 @@ for (TBSet s : waitingSets) {
             String myTurnGame = GridStateFactory.getGameName(g.getGame());
             if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
                 nrGamesPlaying++;
-                if (nrGamesPlaying > 0) {
+                if (nrGamesPlaying > 1) {
+//                if (nrGamesPlaying > 0) {
                     alreadyPlaying = true;
                     break;
                 }
@@ -56,8 +58,9 @@ for (TBSet s : waitingSets) {
         };
     }
 
-    if (alreadyPlaying)
+    if (alreadyPlaying && !"rainwolf".equals(name)) {
         openTBgames--;
+    }
 
 		List<DSGIgnoreData> ignoreData = dsgPlayerStorer.getIgnoreData(theirPID);
 		for (Iterator<DSGIgnoreData> it = ignoreData.iterator(); it.hasNext();) {
@@ -71,9 +74,6 @@ for (TBSet s : waitingSets) {
     }
     if (iAmIgnored && !alreadyPlaying)
         openTBgames--;
-}
-if ("rainwolf".equals(name)) {
-  openTBgames = waitingSets.size();
 }
 
 boolean limitExceeded;
@@ -169,7 +169,8 @@ below and do not specify a player to invite.<br>
                 String myTurnGame = GridStateFactory.getGameName(g.getGame());
                 if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
                     nrGamesPlaying++;
-                    if (nrGamesPlaying > 0) {
+                    if (nrGamesPlaying > 1) {
+    //                if (nrGamesPlaying > 0) {
                         alreadyPlaying = true;
                         break;
                     }
@@ -181,7 +182,8 @@ below and do not specify a player to invite.<br>
                     String myTurnGame = GridStateFactory.getGameName(g.getGame());
                     if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
                         nrGamesPlaying++;
-                        if (nrGamesPlaying > 0) {
+                      if (nrGamesPlaying > 1) {
+//                    if (nrGamesPlaying > 0) {
                             alreadyPlaying = true;
                             break;
                         }

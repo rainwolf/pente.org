@@ -541,7 +541,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 				}
 				
 				
-				winText += ".\n" + "You can view your game at http://pente.org/gameServer/viewLiveGame?g=" + game.getGid();
+				winText += ".\n" + "You can view your game at http://pente.org/gameServer/viewLiveGame?mobile&g=" + game.getGid();
 				if (set.isTwoGameSet()) {
 				    if (set.isCompleted()) {
 						 winText += "\n or invite " + loserData.getName() + 
@@ -549,7 +549,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 							game.getGame() + "&invitee=" + loserData.getName();
 					}
 				}
-				lossText += ".\n" + "You can view your game at http://pente.org/gameServer/viewLiveGame?g=" + game.getGid();
+				lossText += ".\n" + "You can view your game at http://pente.org/gameServer/viewLiveGame?mobile&g=" + game.getGid();
 				if (set.isTwoGameSet()) {
 				    if (set.isCompleted()) {
 				        lossText += "\n or invite " + winnerData.getName() + 
@@ -1259,7 +1259,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 							long newTimeout = Utilities.calculateNewTimeout(
 								g.getLastMoveDate().getTime(),
 								g.getDaysPerMove(),
-								weekend[0], weekend[1], vacationDays);
+								weekend[0], weekend[1], vacationDays, g.getPlayer1Pid() < g.getPlayer2Pid());
 							log4j.debug("update t/o to " + newTimeout + " for " + g.getGid());
 							
 							if (g.getTimeoutDate().getTime() != newTimeout) {

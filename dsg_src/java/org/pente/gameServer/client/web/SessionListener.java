@@ -18,7 +18,9 @@ public class SessionListener implements
     private List<HttpSession> activeSessions = 
     	Collections.synchronizedList(new ArrayList<HttpSession>());
     private Set<String> activePlayers =
-    	Collections.synchronizedSet(new HashSet<String>());
+        Collections.synchronizedSet(new HashSet<String>());
+    private Set<String> activeMobilePlayers =
+        Collections.synchronizedSet(new HashSet<String>());
     private Map<String, String> pages = new HashMap<String, String>();
     
     public void contextInitialized(ServletContextEvent servletContextEvent) {
@@ -45,10 +47,22 @@ public class SessionListener implements
     }
     
     public void visit(String name, String page) {
-    	synchronized (activePlayers) {
-    		activePlayers.add(name);
-    		pages.put(name, page);
-    	}
+        if (page.contains("gameServer/mobile/")) {
+            synchronized (activeMobilePlayers) {
+                activeMobilePlayers.add(name);
+                pages.put(name, page);
+            }
+        } else {
+            if (page.contains("gameServer/index.jsp")) {
+                synchronized (activeMobilePlayers) {
+                    activeMobilePlayers.remove(name);
+                }
+            }
+            synchronized (activePlayers) {
+                activePlayers.add(name);
+                pages.put(name, page);
+            }
+        }
     }
     public String getLastPage(String name) {
     	synchronized (activePlayers) {
@@ -56,7 +70,10 @@ public class SessionListener implements
     	}
     }
     public List<String> getActivePlayers() {
-    	return new ArrayList<String>(activePlayers);
+        return new ArrayList<String>(activePlayers);
+    }
+    public List<String> getActiveMobilePlayers() {
+        return new ArrayList<String>(activeMobilePlayers);
     }
     public boolean isActive(String name) {
     	synchronized (activePlayers) {
@@ -84,10 +101,14 @@ public class SessionListener implements
         try {
 	        String name = (String) session.getAttribute("name");
 	        if (name != null) {
-	        	synchronized (activePlayers) {
-	        		activePlayers.remove(name);
-	        		pages.remove(name);
-	        	}
+                synchronized (activePlayers) {
+                    activePlayers.remove(name);
+                    pages.remove(name);
+                }
+                synchronized (activeMobilePlayers) {
+                    activeMobilePlayers.remove(name);
+                    pages.remove(name);
+                }
 	        }
         } catch (IllegalStateException ignore) {}
     }

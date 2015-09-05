@@ -21,8 +21,8 @@ public class WhosOnline {
 			ActivityData d[] = activityLogger.getPlayers(); 
 	
 			//sort into sections by room name, pname (serverid)
-			Arrays.sort(d, new Comparator() {
-			    public int compare(Object o1, Object o2) {
+			Arrays.sort(d, new Comparator<ActivityData>() {
+			    public int compare(ActivityData o1, ActivityData o2) {
 			        ActivityData d1 = (ActivityData) o1;
 			        ActivityData d2 = (ActivityData) o2;
 			        if (d1.getServerId() != d2.getServerId()) {
@@ -61,10 +61,26 @@ public class WhosOnline {
 			rooms.add(room);
 			List<String> names = sessionListener.getActivePlayers();
 			Collections.sort(names);
+			List<String> mobileNames = sessionListener.getActiveMobilePlayers();
+			Collections.sort(mobileNames);
 			for (String name : names) {
-				if (seen.contains(name)) continue;
+				if (seen.contains(name) || mobileNames.contains(name)) {
+					continue;
+				}
 				room.getPlayers().add(dsgPlayerStorer.loadPlayer(name));
 			}
+			
+			if (!mobileNames.isEmpty()) {
+				room = new WhosOnlineRoom("Mobile", new ArrayList<DSGPlayerData>());
+				rooms.add(room);
+				for (String name : mobileNames) {
+					if (seen.contains(name)) {
+						continue;
+					}
+					room.getPlayers().add(dsgPlayerStorer.loadPlayer(name));
+				}
+			}
+			
 			
 		} catch (DSGPlayerStoreException d) {
 			d.printStackTrace();

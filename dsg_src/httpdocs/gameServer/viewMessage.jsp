@@ -127,7 +127,7 @@ messageDateFormat.setTimeZone(tz);
        <td width="1" bgcolor="<%= bgColor2 %>"><img src="/gameServer/images/dot2.gif"></td>
        <td valign="top" colspan="2">
           <br>
-          <%= filters.applyFilters(0, message.getBody()) %>
+          <%= filters.applyFilters(0, message.getBody()).replaceAll("#38;", "") %>
           <br><br>
        </td>
        <td width="1" bgcolor="<%= bgColor2 %>"><img src="/gameServer/images/dot2.gif"></td>
