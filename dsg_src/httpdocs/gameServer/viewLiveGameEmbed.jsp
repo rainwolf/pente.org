@@ -30,7 +30,12 @@ TBGame tbGame = (TBGame) request.getAttribute("tbGame");
 int gameId = GridStateFactory.getGameId(game.getGame()) + 50;//add 50 for tb
 
 
-// DSGPlayerData meData = dsgPlayerStorer.loadPlayer(request.getAttribute("name"));
+ServletContext ctxt = getServletContext();
+Resources resources = (Resources) ctxt.getAttribute(Resources.class.getName());
+DSGPlayerStorer dsgPlayerStorer1 = (DSGPlayerStorer) resources.getDsgPlayerStorer();
+DSGPlayerData meData = null;
+String nm = (String) request.getAttribute("name");
+meData = dsgPlayerStorer1.loadPlayer(nm);
 
 String moves="";
 for (int i = 0; i < game.getNumMoves(); i++) {
@@ -93,7 +98,7 @@ boolean showMessages = false;
 
 String color = request.getParameter("color");
 if (color == null) {
-    color = "#ffffff";
+    color = "#FFFFFF";
 }
 
 %>
@@ -152,7 +157,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
     %> <tr> <td width="10%" align="center"> <%= ++row %> </td> <%
     }
     %> 
-    <td onclick='selectMove(<%=i%>)' id='<%=i%>' width="45%" align="center">
+    <td onclick='selectMove(<%=i%>)' id='<%=i%>' width="40%" align="center">
     <%=" " + coordinateLetters[(game.getMove(i) % 19)] + (19 - (game.getMove(i) / 19))%>
     <% if ((gameId == 63) && (i != 0)) {
         ++i;
@@ -250,8 +255,13 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
     DateFormat profileDateFormat = null;
     TimeZone playerTimeZone = null;
     profileDateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm z");
-    TimeZone tz = TimeZone.getTimeZone(data.getTimezone());
-    profileDateFormat.setTimeZone(tz);
+    TimeZone tz = null;
+    if (meData != null) {
+      tz = TimeZone.getTimeZone(meData.getTimezone());
+    } 
+    if (tz != null) {
+      profileDateFormat.setTimeZone(tz);
+    }
 %>
     <%= profileDateFormat.format(game.getDate().getTime()) %>
    </td>
@@ -265,8 +275,6 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
    </td>
    <td>
     <%= setStatus + "<br>"%>
-        <script type="text/javascript" src="/gameServer/js/go.js"></script>
-         <a href="javascript:goWH('/gameServer/viewLiveGame?g=<%= otherGame %>&mobile');">other game in the set</a> 
 
    </td>
 </tr>
@@ -332,7 +340,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
             function selectMove(newMove) {
                                     // alert("cell " + newMove);
                var cell=document.getElementById(''+newMove);
-               cell.style.background='#FFF';
+               cell.style.background='Yellow';
                   resetAbstractBoard(abstractBoard);
                   drawUntilMove = newMove + 1;
                   if (game == 63 && drawUntilMove != 1) {
@@ -351,14 +359,14 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                   }
                if(currentMove!=-1) {
                    var cell=document.getElementById(''+currentMove);
-                   cell.style.background='#DEECDE';
+                   cell.style.background='<%=color%>';
                }
                currentMove=newMove;
             }
             function boardClick(e) {
                if(currentMove != -1) {
                    var cell=document.getElementById(''+currentMove);
-                   cell.style.background='#DEECDE';
+                   cell.style.background='<%=color%>';
                }
                currentMove = -1;
                 var rect = boardCanvas.getBoundingClientRect();

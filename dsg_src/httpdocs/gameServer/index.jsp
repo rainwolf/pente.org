@@ -235,10 +235,11 @@ window.google_analytics_uacct = "UA-20529582-2";
           </li>
           <li>Looking for <a href="http://www.pente.org/gameServer/forums/forum.jspa?forumID=34&start=0">resources</a> to get started?
           </li>
-          <li>16th Anniversary World Champion <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=2&threadID=230560&tstart=0">tournament</a> - 2015 
-          </li>
             <li>Want to play turn-based? Try posting an <a href="http://www.pente.org/gameServer/tb/new.jsp">open invitation</a><%= openTBgames > 0 ? " or try " + (openTBgames == 1 ? "" : "one of ") + "the <a href=\"http://www.pente.org/gameServer/tb/waiting.jsp\">" + openTBgames + " open turn-based invitation" + (openTBgames == 1 ? "" : "s") + "</a>" : ""%>.</li>
             </li>
+            <hr>
+          </li>
+          <li>16th Anniversary World Champion <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=2&threadID=230560&tstart=0">tournament</a> - 2015 
     <%--
     --%>
         </ul>
