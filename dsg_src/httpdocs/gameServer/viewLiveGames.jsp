@@ -10,6 +10,8 @@ private static final NumberFormat profileNF = NumberFormat.getPercentInstance();
 DSGPlayerData dsgPlayerData = (DSGPlayerData) request.getAttribute("dsgPlayerData");
 List<GameData> wins = (List<GameData>) request.getAttribute("wins");
 List<GameData> losses = (List<GameData>) request.getAttribute("losses");
+
+
 if (wins == null) {
   wins = new ArrayList<GameData>(0);
 }
@@ -20,25 +22,69 @@ int game = ((Integer) request.getAttribute("game")).intValue();
 String gameStr = GridStateFactory.getDisplayName(game);
 int totalGames = ((Integer) request.getAttribute("count")).intValue();
 int start = ((Integer) request.getAttribute("start")).intValue();
+int myWins = ((Integer) request.getAttribute("w")).intValue();
+int myTotal = ((Integer) request.getAttribute("t")).intValue();
 
 pageContext.setAttribute("title", "Player Profile - Completed games"); %>
 
 <%@ include file="begin.jsp" %>
 <%
 DateFormat gameDateFormat = null;
-{
 DSGPlayerData meData = dsgPlayerStorer.loadPlayer(me);
 TimeZone tz = TimeZone.getTimeZone(meData.getTimezone());
 gameDateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm z");
 gameDateFormat.setTimeZone(tz);
-}
 %>
 
 <script type="text/javascript" src="/gameServer/js/go.js"></script>
 
 <h3><%= dsgPlayerData.getName() %>'s Profile - Completed <%= gameStr %> Games</h3>
 
+<table>
+<tr>
+<td>
 <img src="/gameServer/rgraph?game=<%= game %>&pid=<%= dsgPlayerData.getPlayerID() %>">
+</td>
+<% if (dsgPlayerData.getPlayerID() != meData.getPlayerID()) { 
+%>
+<td  align="right" style="vertical-align: top;" width="300px">
+<table border="1" align="right">
+  <tr>
+  <td colspan="2"  width="200px" align="center">
+  <b>You vs. </b>
+<% DSGPlayerData d = dsgPlayerData; %><%@include file="playerLink.jspf" %>  
+  </td>
+  </tr>
+  <tr>
+  <td>
+  <b>Wins:</b>
+  </td>
+  <td align="center">
+  <%=myWins%>
+  </td>
+  </tr>
+  <tr>
+  <td>
+  <b>Losses:</b>
+  </td>
+  <td align="center">
+  <%=myTotal-myWins%>
+  </td>
+  </tr>
+  <tr>
+  <td>
+  <b>Win %:</b>
+  </td>
+  <td align="center">
+  <%=String.format("%.2f", 100.0f*myWins/myTotal) + "%"%>
+  </td>
+  </tr>
+</table>
+</td>
+<% } %>
+</tr>
+</table>
+
 
 <%
    String error = (String) request.getAttribute("error");
@@ -68,7 +114,7 @@ gameDateFormat.setTimeZone(tz);
 <%   if (totalGames > 100) { %> [ <% 
       for (int i=0;i<totalGames/100+1;i++) {
       if (i==startNum) { %><%= i+1 %><% }
-      else { %><a href="/gameServer/viewLiveGames?p=<%= dsgPlayerData.getName() %>&g=<%= game %>&s=<%= i*100 %>"><%= i+1 %></a> <% } %>
+      else { %><a href="/gameServer/viewLiveGames?p=<%= dsgPlayerData.getName() %>&g=<%= game %>&t=<%= myTotal %>&count=<%= totalGames %>&w=<%= myWins %>&s=<%= i*100 %>"><%= i+1 %></a> <% } %>
 <%     } %>
    ]</font>
 <%   }

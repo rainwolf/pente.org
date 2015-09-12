@@ -124,7 +124,13 @@ messageDateFormat.setTimeZone(tz);
             <img src="/gameServer/forums/images/<%= img %>" width="9" height="9" border="0">
           </td>
           <td class="jive-topic-name" width="96%">
-            <a href="mymessages?command=view&mid=<%= m.getMid() %>"><%= filters.applyFilters(0, m.getSubject()) %></a>
+          <%
+            String subject = filters.applyFilters(0, m.getSubject());
+            if ("".equals(subject)) {
+              subject = "(no subject)";
+            }
+          %>
+            <a href="mymessages?command=view&mid=<%= m.getMid() %>"><%= subject %></a>
           </td>
           <td class="jive-author" width="1%" nowrap>
             <a href="/gameServer/profile?viewName=<%= from.getName() %>"><%= from.getName() %></a>

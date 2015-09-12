@@ -169,19 +169,19 @@ public class Utilities {
 				//   set time to beginning of next date
 				if (first) {
 					now.set(Calendar.HOUR_OF_DAY, 0);
-					int gap = 0;
-					if (setGap) {
-						gap = 11;
-					}
-					now.set(Calendar.MINUTE, gap);
-					now.set(Calendar.SECOND, gap);
+					now.set(Calendar.MINUTE, 0);
+					now.set(Calendar.SECOND, 0);			}
 				}
-			}
 			else {
 				now.add(Calendar.DATE, 1);
 				daysLeft--;
 			}
 			first = false;
+		}
+
+		if (setGap) {
+			now.add(Calendar.MINUTE,3);
+			now.add(Calendar.SECOND,11);
 		}
 		
 		return now.getTimeInMillis();

@@ -116,7 +116,7 @@ and height in pixels by specifying additional parameters like this.
 <h4 style="clear:both;border-top:1px solid gray;padding-top:20px;">Post an applet that can display the sequence of moves in a game</h4>
 
 <div style="width:700px;margin-top:10px;padding:10px;padding-top:0px;padding-left:20px;"> 
-     <div style="float:left;width:300px;padding-right:50px;">
+     <div style="float:left;width:700px;padding-right:50px;">
 
        <p style="font-family:courier">
             [game]g=Pente m=K10,L11 wn=peter bn=dweebo w=480 h=260[/game]
@@ -133,8 +133,8 @@ and height in pixels by specifying additional parameters like this.
        correctly.
      </div>
      
-     <div style="float:left;width:300px;">
-        <iframe src="/gameServer/viewGameEmbed.jsp?g=Pente&m=K10,L11&bn=dweebo&wn=peter&w=480&h=260" width=480 height=270 frameborder=0 marginheight=0 marginwidth=0 scrolling=no></iframe>
+     <div style="float:left;width:770px;">
+        <iframe src="/gameServer/viewGameEmbed.jsp?g=Pente&m=K10,L11&bn=dweebo&wn=peter&w=700&h=260" width=770 height=600 frameborder=0 marginheight=0 marginwidth=0 scrolling=no></iframe>
      </div>
      <div style="clear:both"></div>
  </div>
@@ -145,8 +145,8 @@ the <a href="/gameServer/controller/search?quick_start=1">pente game database</a
 can just specify the unique game ID.
  </div>
  
-   <div style="width:700px;margin-top:10px;padding:10px;padding-left:20px;"> 
-     <div style="float:left;width:300px;padding-right:50px;">
+   <div style="width:770px;margin-top:10px;padding:10px;padding-left:20px;"> 
+     <div style="float:left;width:700px;padding-right:50px;">
        <p style="font-family:courier">
          [game]34194139852955[/game]
        </p>
@@ -165,11 +165,11 @@ can just specify the unique game ID.
        Not intuitive I realize but that works until something better is implemented.
        
      </div>
-     
-     <div style="float:left;width:300px;">
-        <iframe src="/gameServer/viewLiveGame?g=34194139852955&e=1&w=480&h=360" width=480 height=370 frameborder=0 marginheight=0 marginwidth=0 scrolling=no></iframe>
+   </div>
+   <div style="width:770px;margin-top:10px;padding:10px;padding-left:20px;"> 
+     <div style="float:left;width:770px;">
+        <iframe src="/gameServer/viewLiveGame?g=34194139852955&e=1&w=770&h=360" width=770 height=600 frameborder=0 marginheight=0 marginwidth=0 scrolling=no></iframe>
      </div>
-     <div style="clear:both"></div>
    </div>
 
 <div style="float:left;width:800px;clear:both;border-top:1px solid gray;margin-top:10px;padding-top:10px;padding-bottom:10px;">
