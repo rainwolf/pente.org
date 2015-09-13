@@ -132,6 +132,28 @@ if (giftee != null) {
     </form>
   </td>
 </tr>
+<tr>
+  <td align="left">
+      Vacation (days) deals:
+      <br> These vacation days do not roll over to <%=Calendar.getInstance().get(Calendar.YEAR) + 1%>.  
+  </td>
+  <td align="center" colspan="2">
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_ppptop">
+<input type="hidden" name="cmd" value="_s-xclick">
+<input type="hidden" name="hosted_button_id" value="D7DCU23JAW26Q">
+<input type="hidden" name="on0" value="Vacation Deals">
+ <input type="hidden" name="custom" value="<%=gifter + ";" + giftee%>"/>
+<select name="os0">
+  <option value="10 extra days">10 extra days €5,00 EUR</option>
+  <option value="30 extra days">30 extra days €10,00 EUR</option>
+  <option value="60 extra days">60 extra days €15,00 EUR</option>
+</select>
+<input type="hidden" name="currency_code" value="EUR">
+<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_buynow_SM.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+</form>
+  </td>
+</tr>
 <!-- <tr>
   <td colspan="3">
   For Mobile-only users. This applies to users of the iPhone app <u>only</u>, free account restrictions still apply on the website, but not in the app.<br> 

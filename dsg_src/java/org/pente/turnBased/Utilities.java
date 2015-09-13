@@ -108,7 +108,7 @@ public class Utilities {
 	public static long calculateNewTimeout(TBGame game, 
 		DSGPlayerStorer dsgPlayerStorer) {
 		int weekend[]=new int[] { 7, 1 }; //sat/sun default
-		List<Date> vacationDays = null;
+		// List<Date> vacationDays = null;
 		try {
 			// get wk1, wk2 for player whose turn it now is
 			List l = dsgPlayerStorer.loadPlayerPreferences(game.getCurrentPlayer());
@@ -118,7 +118,7 @@ public class Utilities {
 					weekend = (int[]) p.getValue();
 				}
 			}
-			vacationDays = dsgPlayerStorer.loadVacationDays(game.getCurrentPlayer());
+			// vacationDays = dsgPlayerStorer.loadVacationDays(game.getCurrentPlayer());
 			
 		} catch (DSGPlayerStoreException dpse) {
 			log4j.error("Error getting weekend for player " + 
@@ -128,17 +128,16 @@ public class Utilities {
 			", using weekend " + weekend[0] + "," + weekend[1]);
 		
 		long startTime = game.getLastMoveDate().getTime();
-		if (game.getPlayer1Pid() < game.getPlayer2Pid()) {
-		}
+
 		long newTimeout = Utilities.calculateNewTimeout(
 			startTime,
-			game.getDaysPerMove(), weekend[0], weekend[1], vacationDays, game.getPlayer1Pid() < game.getPlayer2Pid());
+			game.getDaysPerMove(), weekend[0], weekend[1], game.getPlayer1Pid() < game.getPlayer2Pid());
 		log4j.debug("new timeout="+ newTimeout);
 		return newTimeout;
 	}
 
 	public static long calculateNewTimeout(long startTime, int daysPerMove,
-		int wk1, int wk2, List<Date> vacationDays, boolean setGap) {
+		int wk1, int wk2, boolean setGap) {
 
 		Calendar now = Calendar.getInstance();
 		now.setTimeInMillis(startTime);
@@ -152,17 +151,18 @@ public class Utilities {
 			// int month = now.get(Calendar.MONTH);
 			// int year = now.get(Calendar.YEAR);
 			boolean iswk = (td == wk1 || td == wk2);
-			boolean isvc = false;
-    		Calendar vcCal = Calendar.getInstance();
-			for (Date vc : vacationDays) {
- 				 vcCal.setTime(vc);
-                 if (vcCal.get(Calendar.DAY_OF_MONTH) == now.get(Calendar.DAY_OF_MONTH) && vcCal.get(Calendar.MONTH) == now.get(Calendar.MONTH) && vcCal.get(Calendar.YEAR) == now.get(Calendar.YEAR)) {
-                 	// vc.getDate() == d && vc.getMonth() == month && vc.getYear() == (year - 1900)) {
-                	 isvc = true;
-                	 break;
-                 }
-            }
-			if (isvc || iswk) {
+			// boolean isvc = false;
+   //  		Calendar vcCal = Calendar.getInstance();
+			// for (Date vc : vacationDays) {
+ 		// 		 vcCal.setTime(vc);
+   //               if (vcCal.get(Calendar.DAY_OF_MONTH) == now.get(Calendar.DAY_OF_MONTH) && vcCal.get(Calendar.MONTH) == now.get(Calendar.MONTH) && vcCal.get(Calendar.YEAR) == now.get(Calendar.YEAR)) {
+   //               	// vc.getDate() == d && vc.getMonth() == month && vc.getYear() == (year - 1900)) {
+   //              	 isvc = true;
+   //              	 break;
+   //               }
+   //          }
+			// if (isvc || iswk) {
+			if (iswk) {
 				now.add(Calendar.DATE, 1);
 				
 				// if making move on a weekend day
@@ -170,9 +170,9 @@ public class Utilities {
 				if (first) {
 					now.set(Calendar.HOUR_OF_DAY, 0);
 					now.set(Calendar.MINUTE, 0);
-					now.set(Calendar.SECOND, 0);			}
+					now.set(Calendar.SECOND, 0);			
 				}
-			else {
+			} else {
 				now.add(Calendar.DATE, 1);
 				daysLeft--;
 			}

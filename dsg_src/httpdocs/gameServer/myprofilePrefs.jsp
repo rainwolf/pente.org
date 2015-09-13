@@ -8,7 +8,7 @@
 <%
 DSGPlayerData dsgPlayerData = (DSGPlayerData) request.getAttribute("dsgPlayerData");
 if (dsgPlayerData == null) {
-	throw new Exception("Illegal access attempted");
+  throw new Exception("Illegal access attempted");
 }
 List prefs = (List) request.getAttribute("prefs");
 List<Date> vacationDays = (List<Date>) request.getAttribute("vacationDays");
@@ -19,24 +19,24 @@ boolean emailSent = false;
 int weekend[]=new int[] { 7, 1 };
 int refresh = 5;
 if (prefs != null) {
-	for (Iterator it = prefs.iterator(); it.hasNext();) {
-		DSGPlayerPreference p = (DSGPlayerPreference) it.next();
-		if ("gameRoomSize".equals(p.getName())) {
-			grs = (String) p.getValue();
-		}
-		else if ("emailDsgMessages".equals(p.getName())) {
-			email = ((Boolean) p.getValue()).booleanValue();
-		}
-		else if ("emailSentDsgMessages".equals(p.getName())) {
-			emailSent = ((Boolean) p.getValue()).booleanValue();
-		}
-		else if ("weekend".equals(p.getName())) {
-			weekend = (int[]) p.getValue();
-		}
-		else if ("refresh".equals(p.getName())) {
-		    refresh = ((Integer) p.getValue());
-		}
-	}
+  for (Iterator it = prefs.iterator(); it.hasNext();) {
+    DSGPlayerPreference p = (DSGPlayerPreference) it.next();
+    if ("gameRoomSize".equals(p.getName())) {
+      grs = (String) p.getValue();
+    }
+    else if ("emailDsgMessages".equals(p.getName())) {
+      email = ((Boolean) p.getValue()).booleanValue();
+    }
+    else if ("emailSentDsgMessages".equals(p.getName())) {
+      emailSent = ((Boolean) p.getValue()).booleanValue();
+    }
+    else if ("weekend".equals(p.getName())) {
+      weekend = (int[]) p.getValue();
+    }
+    else if ("refresh".equals(p.getName())) {
+        refresh = ((Integer) p.getValue());
+    }
+  }
 }
 
 String changeProfileError = (String) request.getAttribute("changeProfileError");
@@ -148,15 +148,13 @@ pageContext.setAttribute("current", "My Profile");
 </tr>
 <tr>
 <%! private static final String days[] = new String[] {
-		"", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", 
-		"Saturday"
-	};
+    "", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", 
+    "Saturday"
+  };
 %>
   <td>
     <b>Vacation and Weekend Days</b><br>
     Vacation and weekend days protect your turn-based games from running out of time.
-    You can choose up to 10 days a year for vacation.  You have <%=(10 - (vacationDays == null ? 0 : vacationDays.size())) %>
-    vacation days left.
   </td>
 </tr>
 <tr>
@@ -181,8 +179,17 @@ pageContext.setAttribute("current", "My Profile");
 <tr>
    <td><br>
      <b>Vacation days:</b><br>
+<% int floatingHourDays = dsgPlayerStorer.loadFloatingVacationDays(dsgPlayerData.getPlayerID()); %>
+You get you get <%=MySQLDSGPlayerStorer.FLOATINGVACATIONDAYS%> floating vacation days each year, and you have <font color="red"> <%=floatingHourDays/24%> days and <%=floatingHourDays % 24%> hours</font> left for <b> <%=Calendar.getInstance().get(Calendar.YEAR)%></b>.
+(These vacation days do not roll over to <%=Calendar.getInstance().get(Calendar.YEAR) + 1%>.)
 
-     <%@ include file="calendar.jspf" %>
+    <br>
+    <br>
+    These vacation days are floating so you don't have to do anything, which is perfect for vacation. They are automatically used whenever a game is about to time out, when that happens, and you still have vacation days left, 1 hour is subtracted and timeout of the game that's about to expire is extended by that hour. If adding an hour from your vacation days tumbles you into a weekend day, then the timeout is extended to the end of that weekend day.
+    <br>
+    <br>
+    Do you want even more vacation days, then we offer <a href="/gameServer/subscriptions">amazing vacation deals!</a>.
+     <!-- <%@ include file="calendar.jspf" %> -->
    </td>
 </tr>
 <tr>

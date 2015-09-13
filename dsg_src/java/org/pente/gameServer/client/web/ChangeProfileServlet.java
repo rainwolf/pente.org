@@ -112,7 +112,7 @@ public class ChangeProfileServlet extends HttpServlet {
             if (command.equals("myInfo") || FileUploadBase.isMultipartContent(request)) {
     
                 // store request parameters in hash map for easy access
-                Map params = new HashMap();
+                Map<String,String> params = new HashMap<String,String>();
                 // store avatar for later processing
                 FileItem avatarFileItem = null;
             
@@ -364,7 +364,7 @@ public class ChangeProfileServlet extends HttpServlet {
 					if (weekend1.equals(weekend2)) {
 						changeProfileError = "Must select two different " +
 							"weekend days.";
-	        			List prefs = dsgPlayerStorer.loadPlayerPreferences(
+	        			List<DSGPlayerPreference> prefs = dsgPlayerStorer.loadPlayerPreferences(
 		        			dsgPlayerData.getPlayerID());
 	        			request.setAttribute("prefs", prefs);
 					}
@@ -396,18 +396,18 @@ public class ChangeProfileServlet extends HttpServlet {
                         dsgPlayerStorer.storePlayerPreference(
                             dsgPlayerData.getPlayerID(), p);
 
-            			List prefs = dsgPlayerStorer.loadPlayerPreferences(
+            			List<DSGPlayerPreference> prefs = dsgPlayerStorer.loadPlayerPreferences(
             				dsgPlayerData.getPlayerID());
-            			List<Date> vacationDays = dsgPlayerStorer.loadVacationDays(
-            				dsgPlayerData.getPlayerID());
+            			// List<Date> vacationDays = dsgPlayerStorer.loadVacationDays(
+            			// 	dsgPlayerData.getPlayerID());
             			
             			request.setAttribute("prefs", prefs);
-            			request.setAttribute("vacationDays", vacationDays);
+            			// request.setAttribute("vacationDays", vacationDays);
 	        			
-            			String monthYear = (String) params.get("monthYear");
-            			if (monthYear != null) {
-            				request.setAttribute("monthYear", monthYear);
-            			}
+            			// String monthYear = (String) params.get("monthYear");
+            			// if (monthYear != null) {
+            			// 	request.setAttribute("monthYear", monthYear);
+            			// }
             			
 						int weekend[] = new int[2];
 						weekend[0] = Integer.parseInt(weekend1);
@@ -441,60 +441,61 @@ public class ChangeProfileServlet extends HttpServlet {
 							prefs.add(p);
 						}
  
-						int vacationMonth = Integer.parseInt((String) params.get("vacationMonth"));
-						int vacationYear = Integer.parseInt((String) params.get("vacationYear"));
 						boolean vacationChanged = false;
-						// this loop adds any newly checked vacation days to the list
-						outer: for (int newVacationDay : newVacationDays) {
-							for (Date oldVacationDay : vacationDays) {
-								// skip already stored days
-								if (oldVacationDay.getYear() == (vacationYear - 1900) &&
-								    oldVacationDay.getMonth() == vacationMonth &&
-								    oldVacationDay.getDate() == newVacationDay) {
-							    	continue outer;
-							    }
-							}
-							// if get here then we know its a new date
-							vacationDays.add(new Date(vacationYear - 1900, vacationMonth, newVacationDay));
-							vacationChanged = true;
-						}
-						// this loop removes any newly unchecked vacation days from the list
-						outer: for (Iterator<Date> it = vacationDays.iterator(); it.hasNext();) {
-							Date oldVacationDay = it.next();
-							
-							// skip vacation days that have already been used
-							if (oldVacationDay.before(new Date())) {
-								continue;
-							}
-							
-							// check for stored vacation days that are in the
-							// month and year the user is viewing
-							if (oldVacationDay.getYear() == (vacationYear - 1900) &&
-							    oldVacationDay.getMonth() == vacationMonth) {
+      //       			if (monthYear != null) {
+						// 	int vacationMonth = Integer.parseInt((String) params.get("vacationMonth"));
+						// 	int vacationYear = Integer.parseInt((String) params.get("vacationYear"));
+						// 	// this loop adds any newly checked vacation days to the list
+						// 	outer: for (int newVacationDay : newVacationDays) {
+						// 		for (Date oldVacationDay : vacationDays) {
+						// 			// skip already stored days
+						// 			if (oldVacationDay.getYear() == (vacationYear - 1900) &&
+						// 			    oldVacationDay.getMonth() == vacationMonth &&
+						// 			    oldVacationDay.getDate() == newVacationDay) {
+						// 		    	continue outer;
+						// 		    }
+						// 		}
+						// 		// if get here then we know its a new date
+						// 		vacationDays.add(new Date(vacationYear - 1900, vacationMonth, newVacationDay));
+						// 		vacationChanged = true;
+						// 	}
+						// 	// this loop removes any newly unchecked vacation days from the list
+						// 	outer: for (Iterator<Date> it = vacationDays.iterator(); it.hasNext();) {
+						// 		Date oldVacationDay = it.next();
 								
-								// skip days that are still checked
-								for (int newVacationDay : newVacationDays) {
-									if (newVacationDay == oldVacationDay.getDate()) {
-										continue outer;
-									}
-								}
-								// if get here then we know the vacation day was removed
-								it.remove();
-								vacationChanged = true;
-						    }
-						}
-						if (vacationChanged) {
-							// if changed days, don't go to different month
-							request.setAttribute("monthYear", Integer.toString(vacationYear) + vacationMonth);
-						
-							dsgPlayerStorer.storeVacationDays(
-								dsgPlayerData.getPlayerID(), vacationDays);
-						}
+						// 		// skip vacation days that have already been used
+						// 		if (oldVacationDay.before(new Date())) {
+						// 			continue;
+						// 		}
+								
+						// 		// check for stored vacation days that are in the
+						// 		// month and year the user is viewing
+						// 		if (oldVacationDay.getYear() == (vacationYear - 1900) &&
+						// 		    oldVacationDay.getMonth() == vacationMonth) {
+									
+						// 			// skip days that are still checked
+						// 			for (int newVacationDay : newVacationDays) {
+						// 				if (newVacationDay == oldVacationDay.getDate()) {
+						// 					continue outer;
+						// 				}
+						// 			}
+						// 			// if get here then we know the vacation day was removed
+						// 			it.remove();
+						// 			vacationChanged = true;
+						// 	    }
+						// 	}
+						// 	if (vacationChanged) {
+						// 		// if changed days, don't go to different month
+						// 		request.setAttribute("monthYear", Integer.toString(vacationYear) + vacationMonth);
+							
+						// 		dsgPlayerStorer.storeVacationDays(
+						// 			dsgPlayerData.getPlayerID(), vacationDays);
+						// 	}
+						// }
 						
 						if (weekendChanged || vacationChanged) {
 							resources.getTbGameStorer().updateDaysOff(
-								dsgPlayerData.getPlayerID(), weekend,
-								vacationDays);
+								dsgPlayerData.getPlayerID(), weekend);
 						}
 						
 						boolean ignoreUpdated = false;
@@ -579,7 +580,7 @@ public class ChangeProfileServlet extends HttpServlet {
             // we are loading data to view
             else {
         		if (command.equals("prefs")) {
-        			List prefs = dsgPlayerStorer.loadPlayerPreferences(
+        			List<DSGPlayerPreference> prefs = dsgPlayerStorer.loadPlayerPreferences(
         				dsgPlayerData.getPlayerID());
         			List<Date> vacationDays = dsgPlayerStorer.loadVacationDays(
         				dsgPlayerData.getPlayerID());
@@ -595,7 +596,8 @@ public class ChangeProfileServlet extends HttpServlet {
         	changeProfileError = "Database error.";
 		    log4j.error("Change profile error.", e);
         } catch (FileUploadException f) {
-            changeProfileError = "Picture upload error, make sure image " +                "is smaller than 4mb.";
+            changeProfileError = "Picture upload error, make sure image " +
+                "is smaller than 4mb.";
             log4j.error("Change profile error.", f);
         } catch (IOException f) {
             changeProfileError = "Error: " + f.getMessage();
