@@ -204,7 +204,14 @@ function selectMove(newMove)
 <table>
 <tr>
 <td valign="top" width="70%">
-<canvas id="board" width="600" height="600"></canvas>
+
+
+      <div style="position: relative; top: 0; height: 600px; ">
+        <canvas id="stone" width="600" height="600" style="position: absolute; left: 0; top: 0; z-index: -1;  "></canvas>
+        <canvas id="board" width="600" height="600" style="position: absolute; left: 0; top: 0; z-index: 0;  "></canvas>
+        <canvas id="interactionLayer" width="600" height="600" style="position: absolute; left: 0; top: 0; z-index: 1;  "></canvas>
+      </div>  
+
 
     <br>
     <div id="messageBox" style="width:550px; height:auto; background: #cf9;"></div>
@@ -429,6 +436,10 @@ window.google_analytics_uacct = "UA-20529582-2";
         var boardSize = 500;
         var boardCanvas = document.getElementById("board");
         var boardContext = boardCanvas.getContext("2d");
+        var stoneCanvas = document.getElementById("stone");
+        var stoneContext = stone.getContext("2d");
+        var interactionCanvas = document.getElementById("interactionLayer");
+        var interactionContext = interactionCanvas.getContext("2d");
         var indentWidth = (boardCanvas.width - boardSize) / 2;
         var indentHeight = (boardCanvas.height - boardSize) / 2;
         var stepX = boardSize / 18;
@@ -451,6 +462,10 @@ window.google_analytics_uacct = "UA-20529582-2";
         var dPenteChoice = <%= game.getDPenteState() == 2 %>;
         var dPenteSwap = <%= game.didDPenteSwap()%>;
 
+        var stoneColor = true;
+        var trackingI = -1, trackingJ = -1;
+        var iRadius = 6*radius/4
+
 
 
             function init() {
@@ -466,12 +481,208 @@ window.google_analytics_uacct = "UA-20529582-2";
                     default: boardColor = penteColor; break;
                 }
                 boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
+                interactionContext.clearRect(0, 0, interactionCanvas.width, interactionCanvas.height);
                 drawGrid(boardContext, boardColor);
-                boardCanvas.addEventListener("click", boardClick, false);
+                interactionCanvas.addEventListener("click", boardClick, false);
+
+      interactionCanvas.addEventListener("touchstart", touchStart, false);
+      interactionCanvas.addEventListener("touchend", touchEnd, false);
+      interactionCanvas.addEventListener("touchcancel", touchCancel, false);
+      interactionCanvas.addEventListener("touchleave", touchEnd, false);
+      interactionCanvas.addEventListener("touchmove", touchMove, false);
+      interactionContext.scale(2, 2);
+
                 drawUntilMove = moves.length;
                 playedMove = -1;
                 lastMove = moves[drawUntilMove - 1];
             }
+
+function touchStart(evt) {
+  if ((drawUntilMove != moves.length)) {
+      var newMoves = moves.slice(0);
+      if (game == 63) {
+          if (c6Move1 > -1) {
+              newMoves.push(c6Move1);
+          }
+      }
+      if (game == 57 && moves.length == 1) {
+          if (dPenteMove1 == -1) {
+          } else if (dPenteMove2 == -1) {
+              newMoves.push(dPenteMove1);
+          } else {
+              newMoves.push(dPenteMove1);
+              newMoves.push(dPenteMove2);
+          }
+      } 
+      resetAbstractBoard(abstractBoard);
+      drawUntilMove = newMoves.length;
+      replayGame(abstractBoard, newMoves, drawUntilMove);
+      boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
+      boardContext.fill();     
+      drawGrid(boardContext, boardColor);
+      drawGame();
+      lastMove = moves[moves.length - 1];
+      drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+      if (game == 63 && moves.length > 1) {
+          lastMove = moves[moves.length - 2];
+          drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+      }
+      stoneColor = ((newMoves.length % 2) == 1);
+      if (game == 63 && moves.length > 1) {
+        stoneColor = (((moves.length - 1) % 4) == 0);
+      }
+  }
+
+  var rect = boardCanvas.getBoundingClientRect();
+  var offsetX = rect.left;
+  var offsetY = rect.top;
+  // evt.preventDefault();
+  var touch = evt.changedTouches[0];
+
+  var i = Math.floor((touch.clientX - indentWidth + stepX/2 - offsetX) / stepX);
+  var j = Math.floor((touch.clientY - indentHeight + stepY/2 - offsetY) / stepY);
+
+  var x = touch.clientX - offsetX;
+  var y = touch.clientY - offsetY;
+
+  // if (i >= 0 && i < 19 && j >= 0 && j < 19) {
+  //   evt.preventDefault();
+  //   interactionContext.drawImage(boardCanvas, -x/2 , -y/2);
+  // } else {
+  //   interactionContext.clearRect(0, 0, interactionCanvas.width, interactionCanvas.height);
+  // }
+
+
+
+
+
+  // document.getElementById("messageBox").innerHTML = "Started X = " + (touch.clientX - offsetX) + " Y = " + (touch.clientY - offsetY);
+
+}
+function touchMove(evt) {
+  var rect = boardCanvas.getBoundingClientRect();
+  var offsetX = rect.left;
+  var offsetY = rect.top;
+  if (evt.touches.length > 1) {
+    return;
+  }
+    evt.preventDefault();
+  var touch = evt.changedTouches[0];
+  var i = Math.floor((touch.clientX - indentWidth + stepX/2 - offsetX) / stepX);
+  var j = Math.floor((touch.clientY - indentHeight + stepY/2 - offsetY) / stepY);
+
+  var x = touch.clientX - offsetX;
+  var y = touch.clientY - offsetY;
+
+  if (i >= 0 && i < 19 && j >= 0 && j < 19) {
+    interactionContext.drawImage(boardCanvas, -x/2 , -y/2);
+    if (abstractBoard[i][j] == 0 && active == true) {
+      if ((trackingI != i) || (trackingJ != j)) {
+        drawInteractionStone(i, j, stoneColor);
+      }
+      interactionContext.drawImage(stoneCanvas, -x/2 , -y/2);
+    }
+  } else {
+    interactionContext.clearRect(0, 0, interactionCanvas.width, interactionCanvas.height);
+  }
+
+
+
+
+  // document.getElementById("messageBox").innerHTML = "Moving X = " + i + " Y = " + j;
+
+}
+function touchCancel(evt) {
+  interactionContext.clearRect(0, 0, interactionCanvas.width, interactionCanvas.height);
+  playedMove = -1;
+  c6Move2 = -1;
+  dPenteMove3 = -1;
+  if (game == 63 && moves.length > 1) {
+      selectMove(drawUntilMove - 2);
+  } else {
+      selectMove(drawUntilMove - 1);
+  }
+}
+function touchEnd(evt) {
+  interactionContext.clearRect(0, 0, interactionCanvas.width, interactionCanvas.height);
+  var rect = boardCanvas.getBoundingClientRect();
+  var offsetX = rect.left;
+  var offsetY = rect.top;
+  // evt.preventDefault();
+  var touch = evt.changedTouches[0];
+  var i = Math.floor((touch.clientX - indentWidth + stepX/2 - offsetX) / stepX);
+  var j = Math.floor((touch.clientY - indentHeight + stepY/2 - offsetY) / stepY);
+
+  var x = touch.clientX - offsetX;
+  var y = touch.clientY - offsetY;
+
+  if (i >= 0 && i < 19 && j >= 0 && j < 19) {
+    if (abstractBoard[i][j] == 0 && active == true) {
+        var newMoves = moves.slice(0);
+        playedMove = j*19+i;
+        if (game == 63) {
+            if (c6Move1 > -1) {
+                newMoves.push(c6Move1);
+                c6Move2 = playedMove;
+            } else {
+                c6Move1 = playedMove;
+            }
+        }
+        if (game == 57 && moves.length == 1) {
+            if (dPenteMove1 == -1) {
+                dPenteMove1 = playedMove;
+            } else if (dPenteMove2 == -1) {
+                newMoves.push(dPenteMove1);
+                dPenteMove2 = playedMove;
+            } else {
+                newMoves.push(dPenteMove1);
+                newMoves.push(dPenteMove2);
+                dPenteMove3 = playedMove;
+            }
+        } 
+        newMoves.push(playedMove);
+        resetAbstractBoard(abstractBoard);
+        drawUntilMove = newMoves.length;
+        replayGame(abstractBoard, newMoves, drawUntilMove);
+        boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
+        boardContext.fill();     
+        drawGrid(boardContext, boardColor);
+        drawGame();
+        lastMove = moves[moves.length - 1];
+        drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+        if (game == 63 && moves.length > 1) {
+            lastMove = moves[moves.length - 2];
+            drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+        }
+    } else {
+        playedMove = -1;
+        c6Move1 = -1;
+        c6Move2 = -1;
+        dPenteMove1 = -1;
+        dPenteMove2 = -1;
+        dPenteMove3 = -1;
+        if (game == 63 && moves.length > 1) {
+            selectMove(drawUntilMove - 2);
+        } else {
+            selectMove(drawUntilMove - 1);
+        }
+    }
+
+    // document.getElementById("messageBox").innerHTML = "Recorded X = " + i + " Y = " + j;
+  } else {
+    playedMove = -1;
+    c6Move2 = -1;
+    dPenteMove3 = -1;
+    if (game == 63 && moves.length > 1) {
+        selectMove(drawUntilMove - 2);
+    } else {
+        selectMove(drawUntilMove - 1);
+    }
+  }
+
+
+}
+
             function boardClick(e) {
                if(currentMove != -1) {
                    var cell=document.getElementById(''+currentMove);
@@ -546,7 +757,7 @@ window.google_analytics_uacct = "UA-20529582-2";
                         if (game == 63 && moves.length > 1) {
                             selectMove(drawUntilMove - 2);
                         } else {
-                          selectMove(drawUntilMove - 1);
+                            selectMove(drawUntilMove - 1);
                         }
                     }
                 }
@@ -639,6 +850,55 @@ window.google_analytics_uacct = "UA-20529582-2";
                 // boardContext.stroke();
                 boardContext.closePath();
               boardContext.restore();
+            }
+            function drawInteractionStone(i, j, color) {
+              trackingI = i;
+              trackingJ = j;
+                stoneContext.clearRect(0, 0, stoneCanvas.width, stoneCanvas.height);
+                var centerX = indentWidth + stepX*(i);
+                var centerY = indentHeight + stepY*(j);
+                stoneContext.save();
+                stoneContext.beginPath();
+                stoneContext.fillStyle='white';
+                stoneContext.strokeStyle = "#FFF";
+                stoneContext.lineWidth=2;
+                stoneContext.moveTo(0, centerY);
+                stoneContext.lineTo(stoneCanvas.width, centerY);
+                stoneContext.moveTo(centerX, 0);
+                stoneContext.lineTo(centerX, stoneCanvas.height);
+                stoneContext.stroke();
+                // stoneContext.fill();
+                stoneContext.closePath();
+                stoneContext.beginPath();
+                stoneContext.arc(centerX, centerY, iRadius , 0, Math.PI*2, true); 
+                if (color == true) {
+                    stoneContext.fillStyle = 'black';
+                } else {
+                    stoneContext.fillStyle = 'white';
+                }
+                centerX -= iRadius/8;
+                centerY -= iRadius/8;
+                stoneContext.shadowColor = 'DimGray';
+                stoneContext.shadowBlur = 1;
+                stoneContext.shadowOffsetX = iRadius/8;
+                stoneContext.shadowOffsetY = iRadius/8;
+                if (color) {
+                    var gradient = stoneContext.createRadialGradient(centerX, centerY, iRadius / 8, centerX, centerY, iRadius);
+                    gradient.addColorStop(0, 'Grey');
+                    gradient.addColorStop(1, 'Black');
+                    stoneContext.fillStyle = gradient; 
+                } else {
+                    var gradient = stoneContext.createRadialGradient(centerX, centerY, 2*iRadius / 4, centerX, centerY, iRadius);
+                    gradient.addColorStop(0, 'White');
+                    gradient.addColorStop(1, 'Gainsboro');
+                    stoneContext.fillStyle = gradient; 
+                }
+                stoneContext.fill();
+                // boardContext.lineWidth = 5;
+                // boardContext.strokeStyle = '#003300';
+                // boardContext.stroke();
+                stoneContext.closePath();
+              stoneContext.restore();
             }
             function drawRedDot(i, j) {
                 var centerX = indentWidth + stepX*(i);

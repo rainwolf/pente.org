@@ -134,8 +134,8 @@ if (giftee != null) {
 </tr>
 <tr>
   <td align="left">
-      Vacation (days) deals:
-      <br> These vacation days do not roll over to <%=Calendar.getInstance().get(Calendar.YEAR) + 1%>.  
+      Vacation (days) deals (no subscription required):
+      <br> These vacation days do <b><font color="red">not</font></b> roll over to <%=Calendar.getInstance().get(Calendar.YEAR) + 1%>.  
   </td>
   <td align="center" colspan="2">
 <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_ppptop">
