@@ -996,8 +996,7 @@ public class MySQLTBGameStorer implements TBGameStorer {
 	    }
 	}
 
-	public void updateDaysOff(long pid, int weekend[],
-		List<Date> vacationDays) throws TBStoreException{
+	public void updateDaysOff(long pid, int weekend[]) throws TBStoreException{
 		throw new UnsupportedOperationException("Not supported.");
 	}
 	public void destroy() {

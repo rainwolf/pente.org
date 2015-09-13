@@ -49,6 +49,8 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
     public static final int ONEMONTH = (1 << 16);
     public static final int ONEYEAR = (1 << 17);
 
+    public static final int FLOATINGVACATIONDAYS = 10;
+
     private static final Vector<String> PLAYER_TABLES = new Vector<String>();
     static {
         PLAYER_TABLES.addElement(PLAYER_TABLE);
@@ -1114,7 +1116,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
 		return numPlayers;    	
     }
 
-    public List loadPlayerPreferences(long playerID)
+    public List<DSGPlayerPreference> loadPlayerPreferences(long playerID)
         throws DSGPlayerStoreException {
         
         List<DSGPlayerPreference> prefs = new ArrayList<DSGPlayerPreference>(5);
@@ -1336,41 +1338,41 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
 
     public List<java.util.Date> loadVacationDays(long playerID) throws DSGPlayerStoreException {
         
-    	Connection con = null;
+        Connection con = null;
         PreparedStatement stmt = null;
         ResultSet result = null;
         List<java.util.Date> days = new ArrayList<java.util.Date>();
         
         try {
-        	try {
+            try {
 
-	            con = dbHandler.getConnection();
-	
-	            stmt = con.prepareStatement(
-	                "select date " +
-	                "from tb_vacation " +
-	                "where pid = ?");
-	            stmt.setLong(1, playerID);
-	            result = stmt.executeQuery();
-	            
-	            while (result.next()) {
-	            	days.add(new java.util.Date(result.getDate(1).getTime()));
-	            }
-        	} 
-        	finally {
-	            if (result != null) {
-	                result.close();
-	            }
-	            if (stmt != null) {
-	                stmt.close();
-	            }
-	            if (con != null) {
-	                dbHandler.freeConnection(con);
-	            }
-	        }
-	            
+                con = dbHandler.getConnection();
+    
+                stmt = con.prepareStatement(
+                    "select date " +
+                    "from tb_vacation " +
+                    "where pid = ?");
+                stmt.setLong(1, playerID);
+                result = stmt.executeQuery();
+                
+                while (result.next()) {
+                    days.add(new java.util.Date(result.getDate(1).getTime()));
+                }
+            } 
+            finally {
+                if (result != null) {
+                    result.close();
+                }
+                if (stmt != null) {
+                    stmt.close();
+                }
+                if (con != null) {
+                    dbHandler.freeConnection(con);
+                }
+            }
+                
         } catch (SQLException sq) {
-        	throw new DSGPlayerStoreException("Problem getting vacation days for " + playerID, sq);
+            throw new DSGPlayerStoreException("Problem getting vacation days for " + playerID, sq);
         }
         
         return days;
@@ -1378,48 +1380,235 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
     
     public void storeVacationDays(long pid, List<java.util.Date> vacationDays) throws DSGPlayerStoreException {
         
-    	Connection con = null;
+        Connection con = null;
         PreparedStatement stmt = null;
         ResultSet result = null;
 
         try {
-	        try {
-	
-	            con = dbHandler.getConnection();
-	
-	            stmt = con.prepareStatement(
-	            	"delete from tb_vacation where pid = ?");
-	            stmt.setLong(1, pid);
-	            stmt.executeUpdate();
-	            
-	            stmt.close();
-	            
-	            stmt = con.prepareStatement(
-	                "insert into tb_vacation " +
-	                "(pid, date) " +
-	                "values(?, ?)");
-	            stmt.setLong(1, pid);
-	            for (java.util.Date vc : vacationDays) {
-	            	stmt.setDate(2, new java.sql.Date(vc.getTime()));
-	            	stmt.executeUpdate();
-	            }
-	
-	        } finally {
-	            if (result != null) {
-	                result.close();
-	            }
-	            if (stmt != null) {
-	                stmt.close();
-	            }
-	            if (con != null) {
-	                dbHandler.freeConnection(con);
-	            }
-	        }
-	    } catch (SQLException sq) {
-	    	throw new DSGPlayerStoreException("Problem setting vacation days for " + pid, sq);
-	    }
+            try {
+    
+                con = dbHandler.getConnection();
+    
+                stmt = con.prepareStatement(
+                    "delete from tb_vacation where pid = ?");
+                stmt.setLong(1, pid);
+                stmt.executeUpdate();
+                
+                stmt.close();
+                
+                stmt = con.prepareStatement(
+                    "insert into tb_vacation " +
+                    "(pid, date) " +
+                    "values(?, ?)");
+                stmt.setLong(1, pid);
+                for (java.util.Date vc : vacationDays) {
+                    stmt.setDate(2, new java.sql.Date(vc.getTime()));
+                    stmt.executeUpdate();
+                }
+    
+            } finally {
+                if (result != null) {
+                    result.close();
+                }
+                if (stmt != null) {
+                    stmt.close();
+                }
+                if (con != null) {
+                    dbHandler.freeConnection(con);
+                }
+            }
+        } catch (SQLException sq) {
+            throw new DSGPlayerStoreException("Problem setting vacation days for " + pid, sq);
+        }
     }
     
+    public int loadFloatingVacationDays(long playerID) throws DSGPlayerStoreException {
+        
+        Connection con = null;
+        PreparedStatement stmt = null;
+        ResultSet result = null;
+        int days = 0;
+        
+        try {
+            try {
+
+                con = dbHandler.getConnection();
+    
+                stmt = con.prepareStatement(
+                    "select daysLeft, lastUpdateYear " +
+                    "from tb_vacation_floating " +
+                    "where pid = ?");
+                stmt.setLong(1, playerID);
+                result = stmt.executeQuery();
+                
+                if (result.next()) {
+                    Calendar now = Calendar.getInstance();
+                    int currentYear = now.get(Calendar.YEAR);
+                    int lastUpdate = result.getInt(2);
+                    if (lastUpdate < currentYear) {
+                        days = FLOATINGVACATIONDAYS*24;
+                    } else {
+                        days = result.getInt(1);
+                    }
+                } else {
+                    days = FLOATINGVACATIONDAYS*24;
+                }
+            } 
+            finally {
+                if (result != null) {
+                    result.close();
+                }
+                if (stmt != null) {
+                    stmt.close();
+                }
+                if (con != null) {
+                    dbHandler.freeConnection(con);
+                }
+            }
+                
+        } catch (SQLException sq) {
+            throw new DSGPlayerStoreException("Problem getting floating vacation days for " + playerID, sq);
+        }
+        
+        return days;
+    }
+    
+    public void pinchFloatingVacationDays(long pid) throws DSGPlayerStoreException {
+        
+        Connection con = null;
+        PreparedStatement stmt = null;
+        ResultSet result = null;
+
+        try {
+            try {
+                Calendar now = Calendar.getInstance();
+                int currentYear = now.get(Calendar.YEAR);
+                int days = 0;
+
+                con = dbHandler.getConnection();
+    
+                stmt = con.prepareStatement(
+                    "select daysLeft, lastUpdateYear " +
+                    "from tb_vacation_floating " +
+                    "where pid = ?");
+                stmt.setLong(1, pid);
+                result = stmt.executeQuery();
+                
+                if (result.next()) {
+                    int lastUpdate = result.getInt(2);
+                    if (lastUpdate < currentYear) {
+                        days = FLOATINGVACATIONDAYS*24;
+                    } else {
+                        days = result.getInt(1);
+                    }
+                } else {
+                    days = FLOATINGVACATIONDAYS*24;
+                }
+                stmt.close();
+
+                if (days > 0) {
+                    days -= 1;
+                }
+                
+                stmt = con.prepareStatement(
+                    "delete from tb_vacation_floating " +
+                    "where pid = ?");
+                stmt.setLong(1, pid);
+                stmt.executeUpdate();
+                stmt.close();
+    
+                stmt = con.prepareStatement(
+                    "insert into tb_vacation_floating " +
+                    "(pid, daysLeft, lastUpdateYear) " +
+                    "values(?, ?, ?)");
+                stmt.setLong(1, pid);
+                stmt.setInt(2, days);
+                stmt.setInt(3, currentYear);
+                stmt.executeUpdate();
+    
+            } finally {
+                if (result != null) {
+                    result.close();
+                }
+                if (stmt != null) {
+                    stmt.close();
+                }
+                if (con != null) {
+                    dbHandler.freeConnection(con);
+                }
+            }
+        } catch (SQLException sq) {
+            throw new DSGPlayerStoreException("Problem setting floating vacation days for " + pid, sq);
+        }
+    }
+
+    public void addFloatingVacationDays(long playerID, int extraDays) throws DSGPlayerStoreException {
+        
+        Connection con = null;
+        PreparedStatement stmt = null;
+        ResultSet result = null;
+
+        try {
+            try {
+                Calendar now = Calendar.getInstance();
+                int currentYear = now.get(Calendar.YEAR);
+                int days = 0;
+
+                con = dbHandler.getConnection();
+    
+                stmt = con.prepareStatement(
+                    "select daysLeft, lastUpdateYear " +
+                    "from tb_vacation_floating " +
+                    "where pid = ?");
+                stmt.setLong(1, playerID);
+                result = stmt.executeQuery();
+                
+                if (result.next()) {
+                    int lastUpdate = result.getInt(2);
+                    if (lastUpdate < currentYear) {
+                        days = FLOATINGVACATIONDAYS*24;
+                    } else {
+                        days = result.getInt(1);
+                    }
+                } else {
+                    days = FLOATINGVACATIONDAYS*24;
+                }
+                stmt.close();
+
+                days += (24*extraDays);
+                
+                stmt = con.prepareStatement(
+                    "delete from tb_vacation_floating " +
+                    "where pid = ?");
+                stmt.setLong(1, playerID);
+                stmt.executeUpdate();
+                stmt.close();
+    
+                stmt = con.prepareStatement(
+                    "insert into tb_vacation_floating " +
+                    "(pid, daysLeft, lastUpdateYear) " +
+                    "values(?, ?, ?)");
+                stmt.setLong(1, playerID);
+                stmt.setInt(2, days);
+                stmt.setInt(3, currentYear);
+                stmt.executeUpdate();
+    
+            } finally {
+                if (result != null) {
+                    result.close();
+                }
+                if (stmt != null) {
+                    stmt.close();
+                }
+                if (con != null) {
+                    dbHandler.freeConnection(con);
+                }
+            }
+        } catch (SQLException sq) {
+            throw new DSGPlayerStoreException("Problem setting floating vacation days for " + playerID, sq);
+        }
+    }
+
 	public void insertIgnore(DSGIgnoreData data) throws DSGPlayerStoreException {
 
         try {

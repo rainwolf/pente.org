@@ -66,197 +66,364 @@ public class PaypalIPNListenerServlet extends HttpServlet {
 
         if (isIpnVerified) {
             try {
-                String msg = "Hi there,\n\n Thank you for subscribing to pente.org. Your contribution will help us endure and flourish for years to come.\n\n";
-                String receiverEmail = ctx.getInitParameter("paypalEmail");
-                String logString = "PaypalIPNListenerServlet: ";
-                String indentString = "\n                          ";
-
-                String transactionID = map.get("txn_id");
-                logString = logString + indentString + "transactionID = " + transactionID;
-                String refundTXid = null;
-                if ("refund".equals(map.get("reason_code"))) {
-                    refundTXid = map.get("parent_txn_id");
-                    logString = logString + indentString + "refund for " + refundTXid;
-                }
-                logString = logString + indentString + " receiver_email = " + receiverEmail;
-                if (!map.get("receiver_email").equals(receiverEmail)) {
-                    log4j.error(logString + indentString + "Error: wrong recipient: " + map.get("receiver_email") + " and I am " + receiverEmail);
-                    return;
-                }
-
-                logString = logString + indentString + " currency = " + map.get("mc_currency");
-                // if (!"USD".equals(map.get("mc_currency"))) {
-                if (!"EUR".equals(map.get("mc_currency"))) {
-                    log4j.error(logString + indentString + "Error: wrong currency: " + map.get("mc_currency") + " and I expected EUR");
-                    return;
-                }
-
-                double grossAmount = Double.parseDouble(map.get("mc_gross"));
-                double feeAmount = Double.parseDouble(map.get("mc_fee"));
-                double amount = (grossAmount - feeAmount);
-                logString = logString + indentString + " nett amount = " + amount;
-
-                dbHandler = resources.getDbHandler();
-                con = dbHandler.getConnection();
-
-                stmt = con.prepareStatement("select * from dsg_subscribers where transactionid = ?");
-                stmt.setString(1, transactionID);
-                rs = stmt.executeQuery();
-                if (rs.next()) {
-                    log4j.error(logString + indentString + "Error: transaction already exists: " + transactionID);
-                    return;
-                }
-                String customString = map.get("custom");
-                logString = logString + indentString + " custom parameter = " + customString;
-                String[] customParts = customString.split(";");
-                if (customParts.length != 2) {
-                    log4j.error(logString + indentString + "Error: malformed custom parameter: I received " + customParts.length + " parts instead of 2");
-                    return;
-                }
-                stmt = con.prepareStatement("select pid from player where name = ?");
-                stmt.setString(1, customParts[1]);
-                rs = stmt.executeQuery();
-                logString = logString + indentString + " subscriber username = " + customParts[1];
-                long subscriberPid = 0;
-                if (rs.next()) {
-                    subscriberPid = rs.getLong("pid");
-                    logString = logString + indentString + " subscriber pid = " + subscriberPid;
-                } else {
-                    log4j.error(logString + indentString + "Error: subscriber username not recognized: " + customParts[1]);
-                    return;
-                }
-                long gifterPid = 0;
-                if ((customParts[0] != null)  && !"".equals(customParts[0]) && !"null".equals(customParts[0])) {
-                    stmt = con.prepareStatement("select pid from player where name = ?");
-                    stmt.setString(1, customParts[0]);
-                    rs = stmt.executeQuery();
-                    if (rs.next()) {
-                        gifterPid = rs.getLong("pid");
-                    } else {
-                        log4j.error(logString + indentString + "Error: gifter username not recognized: " + customParts[0]);
-                        return;
-                    }
-                } else {
-                    logString = logString + indentString + " no gifter username";
-                }
-
-                if ((customParts[1] == null)  || "".equals(customParts[1]) || "null".equals(customParts[1])) {
-                    log4j.error(logString + indentString + "Error: giftee username not recognized: " + customParts[1]);
-                    return;
-                }
-
                 String itemID = map.get("item_number");
                 int tries = 1;
                 while ((itemID == null) && tries < 5) {
                     itemID = map.get("item_number"+tries);
                     tries++;
                 }
-                logString = logString + indentString + " itemID = " + itemID;
 
-                msg = msg + " You have purchased ";
-                int subscriptionLvl = 0;
-                if (itemID != null) {
-                    if (itemID.contains("1MONTH")) {
-                        subscriptionLvl = (subscriptionLvl | org.pente.gameServer.core.MySQLDSGPlayerStorer.ONEMONTH);
-                        msg = msg + "1 month of :\n";
+                if (itemID.contains("VACATIONDAYS")) {
+
+                    String msg = null;
+                    String receiverEmail = ctx.getInitParameter("paypalEmail");
+                    String logString = "PaypalIPNListenerServlet: ";
+                    String indentString = "\n                          ";
+
+                    String transactionID = map.get("txn_id");
+                    logString = logString + indentString + "transactionID = " + transactionID;
+                    String refundTXid = null;
+                    if ("refund".equals(map.get("reason_code"))) {
+                        refundTXid = map.get("parent_txn_id");
+                        logString = logString + indentString + "refund for " + refundTXid;
                     }
-                     if (itemID.contains("1YR")) {
-                        subscriptionLvl = (subscriptionLvl | org.pente.gameServer.core.MySQLDSGPlayerStorer.ONEYEAR);
-                        msg = msg + "1 year of :\n";
+                    logString = logString + indentString + " receiver_email = " + receiverEmail;
+                    if (!map.get("receiver_email").equals(receiverEmail)) {
+                        log4j.error(logString + indentString + "Error: wrong recipient: " + map.get("receiver_email") + " and I am " + receiverEmail);
+                        return;
                     }
-                    if (itemID.contains("UNLIMITEDGAMES")) {
-                        subscriptionLvl = (subscriptionLvl | org.pente.gameServer.core.MySQLDSGPlayerStorer.UNLIMITEDTBGAMES);
-                        msg = msg + "- unlimited games\n";
+
+                    logString = logString + indentString + " currency = " + map.get("mc_currency");
+                    // if (!"USD".equals(map.get("mc_currency"))) {
+                    if (!"EUR".equals(map.get("mc_currency"))) {
+                        log4j.error(logString + indentString + "Error: wrong currency: " + map.get("mc_currency") + " and I expected EUR");
+                        return;
                     }
-                    if (itemID.contains("UNLIMITEDMOBILEGAMES")) {
-                        subscriptionLvl = (subscriptionLvl | org.pente.gameServer.core.MySQLDSGPlayerStorer.UNLIMITEDMOBILETBGAMES);
-                        msg = msg + "- unlimited mobile games\n";
+
+                    double grossAmount = Double.parseDouble(map.get("mc_gross"));
+                    double feeAmount = Double.parseDouble(map.get("mc_fee"));
+                    double amount = (grossAmount - feeAmount);
+                    logString = logString + indentString + " nett amount = " + amount;
+
+                    dbHandler = resources.getDbHandler();
+                    con = dbHandler.getConnection();
+
+                    stmt = con.prepareStatement("select * from dsg_subscribers where transactionid = ?");
+                    stmt.setString(1, transactionID);
+                    rs = stmt.executeQuery();
+                    if (rs.next()) {
+                        log4j.error(logString + indentString + "Error: transaction already exists: " + transactionID);
+                        return;
                     }
-                    if (itemID.contains("NOADS")) {
-                        subscriptionLvl = (subscriptionLvl | org.pente.gameServer.core.MySQLDSGPlayerStorer.NOADS);
-                        msg = msg + "- no advertisements\n";
+                    String customString = map.get("custom");
+                    logString = logString + indentString + " custom parameter = " + customString;
+                    String[] customParts = customString.split(";");
+                    if (customParts.length != 2) {
+                        log4j.error(logString + indentString + "Error: malformed custom parameter: I received " + customParts.length + " parts instead of 2");
+                        return;
                     }
-                    if (itemID.contains("DATABASE")) {
-                        subscriptionLvl = (subscriptionLvl | org.pente.gameServer.core.MySQLDSGPlayerStorer.DBACCESS);
-                        msg = msg + "- database access\n";
+                    stmt = con.prepareStatement("select pid from player where name = ?");
+                    stmt.setString(1, customParts[1]);
+                    rs = stmt.executeQuery();
+                    logString = logString + indentString + " subscriber username = " + customParts[1];
+                    long subscriberPid = 0;
+                    if (rs.next()) {
+                        subscriberPid = rs.getLong("pid");
+                        logString = logString + indentString + " subscriber pid = " + subscriberPid;
+                    } else {
+                        log4j.error(logString + indentString + "Error: subscriber username not recognized: " + customParts[1]);
+                        return;
                     }
-                }
-                if (subscriptionLvl == 0) {
-                    log4j.error(logString + indentString + "Error: itemID not recognized: " + itemID);
-                    return;
-                }
-                if (refundTXid != null) {
-                    subscriptionLvl = 0;
-                    stmt = con.prepareStatement("UPDATE dsg_subscribers SET level=0 WHERE transactionid = ?");
-                    stmt.setString(1, refundTXid);
-                    int worked = stmt.executeUpdate();
-                    if (worked < 1) {
-                        log4j.error(logString + indentString + "Error: updating after refund FAILED **");
+                    long gifterPid = 0;
+                    if ((customParts[0] != null)  && !"".equals(customParts[0]) && !"null".equals(customParts[0])) {
+                        stmt = con.prepareStatement("select pid from player where name = ?");
+                        stmt.setString(1, customParts[0]);
+                        rs = stmt.executeQuery();
+                        if (rs.next()) {
+                            gifterPid = rs.getLong("pid");
+                        } else {
+                            log4j.error(logString + indentString + "Error: gifter username not recognized: " + customParts[0]);
+                            return;
+                        }
+                    } else {
+                        logString = logString + indentString + " no gifter username";
+                    }
+
+                    if ((customParts[1] == null)  || "".equals(customParts[1]) || "null".equals(customParts[1])) {
+                        log4j.error(logString + indentString + "Error: giftee username not recognized: " + customParts[1]);
+                        return;
+                    }
+
+
+                    int vacationDays = 0;
+                    String itemSelected = map.get("option_selection");
+                    tries = 1;
+                    logString = logString + indentString + " option_selection = " + itemSelected;
+                    while ((itemSelected == null) && tries < 5) {
+                        itemSelected = map.get("option_selection"+tries);
+                        tries++;
+                    }
+                    if (itemSelected != null) {
+                        if (itemSelected.contains("10 extra days")) {
+                            vacationDays = 10;
+                        }
+                        if (itemSelected.contains("30 extra days")) {
+                            vacationDays = 30;
+                        }
+                        if (itemSelected.contains("60 extra days")) {
+                            vacationDays = 60;
+                        }
+                    }
+                    DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
+                    if (vacationDays == 0) {
+                        log4j.error(logString + indentString + "Error: vacation days option not recognized: " + itemSelected);
                         return;
                     } else {
-                        log4j.info(logString + indentString + "Refund successfully registered");
+                        dsgPlayerStorer.addFloatingVacationDays(subscriberPid, vacationDays);
                     }
-                }
-                stmt = con.prepareStatement("INSERT INTO dsg_subscribers (pid, level, paymentdate, transactionid, amount) VALUES (?, ?, NOW(), ?, ?)");
-                stmt.setLong(1, subscriberPid);
-                stmt.setInt(2, subscriptionLvl);
-                stmt.setString(3, transactionID);
-                stmt.setDouble(4, amount);
-                int worked = stmt.executeUpdate();
-                if (worked < 1) {
-                    log4j.error(logString + indentString + "Error: inserting purchase FAILED **");
-                    return;
-                } else {
-                    log4j.info(logString + indentString + "Purchase successfully registered");
-                }
-                DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
-                DSGPlayerData dsgPlayerData = dsgPlayerStorer.loadPlayer(subscriberPid);
-                if (dsgPlayerData.getNameColorRGB() == 0) {
-                    dsgPlayerData.setNameColorRGB(-16751616);
-                    dsgPlayerStorer.updatePlayer(dsgPlayerData);
-                }
-
-                if (refundTXid == null) {
-                    DSGMessageStorer dsgMessageStorer = resources.getDsgMessageStorer();
-                    DSGMessage message = new DSGMessage();
-                    message.setCreationDate(new java.util.Date());
-                    message.setFromPid(23000000016237L);
-                    message.setToPid(subscriberPid);
-                    message.setSubject("Subscription purchase successful");
-                    if (gifterPid != 0) {
-                        message.setBody(msg.replace("You have purchased ", customParts[0] + " has purchased for you ") + "\nnHave oodles of fun here at pente.org.\n\nPS: if you have any questions, feel free to reply to this message.");
+                    stmt = con.prepareStatement("INSERT INTO dsg_subscribers (pid, level, paymentdate, transactionid, amount) VALUES (?, ?, NOW(), ?, ?)");
+                    stmt.setLong(1, subscriberPid);
+                    stmt.setInt(2, 0);
+                    stmt.setString(3, transactionID);
+                    stmt.setDouble(4, amount);
+                    int worked = stmt.executeUpdate();
+                    if (worked < 1) {
+                        log4j.error(logString + indentString + "Error: inserting vacation purchase FAILED **");
+                        return;
                     } else {
-                        message.setBody(msg + "\nHave oodles of fun here at pente.org.\n\nPS: if you have any questions, feel free to reply to this message.");
+                        log4j.info(logString + indentString + "Vacation purchase successfully registered");
                     }
-                    dsgMessageStorer.createMessage(message);
-                    if (gifterPid != 0) {
-                        message = new DSGMessage();
+
+                    if (refundTXid == null) {
+                        DSGMessageStorer dsgMessageStorer = resources.getDsgMessageStorer();
+                        DSGMessage message = new DSGMessage();
                         message.setCreationDate(new java.util.Date());
                         message.setFromPid(23000000016237L);
-                        message.setToPid(gifterPid);
-                        message.setSubject("Subscription purchase successful");
-                        message.setBody(msg + " for " + customParts[1] + ".");
+                        message.setToPid(subscriberPid);
+                        message.setSubject("Extra vacation days purchase successful");
+                        vacationDays = dsgPlayerStorer.loadFloatingVacationDays(subscriberPid);
+                        if (gifterPid != 0) {
+                            message.setBody(customParts[0] + " has purchased " + itemSelected + " for you. You now have " + (vacationDays/24) + " days and " + (vacationDays%24) + " hours of vacation left for " + Calendar.getInstance().get(Calendar.YEAR) + "." + "\n\nPS: if you have any questions, feel free to reply to this message.");
+                        } else {
+                            message.setBody("You have sucessfully purchased " + itemSelected + ". You now have " + (vacationDays/24) + " days and " + (vacationDays%24) + " hours of vacation left for " + Calendar.getInstance().get(Calendar.YEAR) + "." + "\n\nPS: if you have any questions, feel free to reply to this message.");
+                        }
                         dsgMessageStorer.createMessage(message);
+                        if (gifterPid != 0) {
+                            message = new DSGMessage();
+                            message.setCreationDate(new java.util.Date());
+                            message.setFromPid(23000000016237L);
+                            message.setToPid(gifterPid);
+                            message.setSubject("Extra vacation days purchase successful");
+                            message.setBody("Your purchase of " + itemSelected + " for " + customParts[1] + " was successfully completed.");
+                            dsgMessageStorer.createMessage(message);
+                        }
                     }
+
+                    stmt = con.prepareStatement("SELECT SUM(amount) FROM dsg_subscribers");
+                    rs = stmt.executeQuery();
+                    double totalSum = 0;
+                    if (rs.next()) {
+                        totalSum = rs.getDouble(1);
+                    } 
+
+                    String penteLiveAPNSkey = ctx.getInitParameter("penteLiveAPNSkey");
+                    String penteLiveAPNSpwd = ctx.getInitParameter("penteLiveAPNSpassword");
+                    boolean productionFlag = ctx.getInitParameter("penteLiveAPNSproductionFlag").equals("true");
+                    Thread thread = new Thread(new SendNotification(0, 0, 23000000016237L, 23000000016237L, 
+                        customParts[1] + ((refundTXid == null)?" purchased vacation":" was refunded") + ((gifterPid != 0)?" by "+customParts[0]:"") + " for EUR " + amount + ", the total is now: " + totalSum, penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, dbHandler ) );
+                    thread.start();
+
+
+
+                    ///////// VACATIONDAYS
+
+                } else {
+                    String msg = "Hi there,\n\n Thank you for subscribing to pente.org. Your contribution will help us endure and flourish for years to come.\n\n";
+                    String receiverEmail = ctx.getInitParameter("paypalEmail");
+                    String logString = "PaypalIPNListenerServlet: ";
+                    String indentString = "\n                          ";
+
+                    String transactionID = map.get("txn_id");
+                    logString = logString + indentString + "transactionID = " + transactionID;
+                    String refundTXid = null;
+                    if ("refund".equals(map.get("reason_code"))) {
+                        refundTXid = map.get("parent_txn_id");
+                        logString = logString + indentString + "refund for " + refundTXid;
+                    }
+                    logString = logString + indentString + " receiver_email = " + receiverEmail;
+                    if (!map.get("receiver_email").equals(receiverEmail)) {
+                        log4j.error(logString + indentString + "Error: wrong recipient: " + map.get("receiver_email") + " and I am " + receiverEmail);
+                        return;
+                    }
+
+                    logString = logString + indentString + " currency = " + map.get("mc_currency");
+                    // if (!"USD".equals(map.get("mc_currency"))) {
+                    if (!"EUR".equals(map.get("mc_currency"))) {
+                        log4j.error(logString + indentString + "Error: wrong currency: " + map.get("mc_currency") + " and I expected EUR");
+                        return;
+                    }
+
+                    double grossAmount = Double.parseDouble(map.get("mc_gross"));
+                    double feeAmount = Double.parseDouble(map.get("mc_fee"));
+                    double amount = (grossAmount - feeAmount);
+                    logString = logString + indentString + " nett amount = " + amount;
+
+                    dbHandler = resources.getDbHandler();
+                    con = dbHandler.getConnection();
+
+                    stmt = con.prepareStatement("select * from dsg_subscribers where transactionid = ?");
+                    stmt.setString(1, transactionID);
+                    rs = stmt.executeQuery();
+                    if (rs.next()) {
+                        log4j.error(logString + indentString + "Error: transaction already exists: " + transactionID);
+                        return;
+                    }
+                    String customString = map.get("custom");
+                    logString = logString + indentString + " custom parameter = " + customString;
+                    String[] customParts = customString.split(";");
+                    if (customParts.length != 2) {
+                        log4j.error(logString + indentString + "Error: malformed custom parameter: I received " + customParts.length + " parts instead of 2");
+                        return;
+                    }
+                    stmt = con.prepareStatement("select pid from player where name = ?");
+                    stmt.setString(1, customParts[1]);
+                    rs = stmt.executeQuery();
+                    logString = logString + indentString + " subscriber username = " + customParts[1];
+                    long subscriberPid = 0;
+                    if (rs.next()) {
+                        subscriberPid = rs.getLong("pid");
+                        logString = logString + indentString + " subscriber pid = " + subscriberPid;
+                    } else {
+                        log4j.error(logString + indentString + "Error: subscriber username not recognized: " + customParts[1]);
+                        return;
+                    }
+                    long gifterPid = 0;
+                    if ((customParts[0] != null)  && !"".equals(customParts[0]) && !"null".equals(customParts[0])) {
+                        stmt = con.prepareStatement("select pid from player where name = ?");
+                        stmt.setString(1, customParts[0]);
+                        rs = stmt.executeQuery();
+                        if (rs.next()) {
+                            gifterPid = rs.getLong("pid");
+                        } else {
+                            log4j.error(logString + indentString + "Error: gifter username not recognized: " + customParts[0]);
+                            return;
+                        }
+                    } else {
+                        logString = logString + indentString + " no gifter username";
+                    }
+
+                    if ((customParts[1] == null)  || "".equals(customParts[1]) || "null".equals(customParts[1])) {
+                        log4j.error(logString + indentString + "Error: giftee username not recognized: " + customParts[1]);
+                        return;
+                    }
+
+                    logString = logString + indentString + " itemID = " + itemID;
+
+                    msg = msg + " You have purchased ";
+                    int subscriptionLvl = 0;
+                    if (itemID != null) {
+                        if (itemID.contains("1MONTH")) {
+                            subscriptionLvl = (subscriptionLvl | org.pente.gameServer.core.MySQLDSGPlayerStorer.ONEMONTH);
+                            msg = msg + "1 month of :\n";
+                        }
+                         if (itemID.contains("1YR")) {
+                            subscriptionLvl = (subscriptionLvl | org.pente.gameServer.core.MySQLDSGPlayerStorer.ONEYEAR);
+                            msg = msg + "1 year of :\n";
+                        }
+                        if (itemID.contains("UNLIMITEDGAMES")) {
+                            subscriptionLvl = (subscriptionLvl | org.pente.gameServer.core.MySQLDSGPlayerStorer.UNLIMITEDTBGAMES);
+                            msg = msg + "- unlimited games\n";
+                        }
+                        if (itemID.contains("UNLIMITEDMOBILEGAMES")) {
+                            subscriptionLvl = (subscriptionLvl | org.pente.gameServer.core.MySQLDSGPlayerStorer.UNLIMITEDMOBILETBGAMES);
+                            msg = msg + "- unlimited mobile games\n";
+                        }
+                        if (itemID.contains("NOADS")) {
+                            subscriptionLvl = (subscriptionLvl | org.pente.gameServer.core.MySQLDSGPlayerStorer.NOADS);
+                            msg = msg + "- no advertisements\n";
+                        }
+                        if (itemID.contains("DATABASE")) {
+                            subscriptionLvl = (subscriptionLvl | org.pente.gameServer.core.MySQLDSGPlayerStorer.DBACCESS);
+                            msg = msg + "- database access\n";
+                        }
+                    }
+                    if (subscriptionLvl == 0) {
+                        log4j.error(logString + indentString + "Error: itemID not recognized: " + itemID);
+                        return;
+                    }
+                    if (refundTXid != null) {
+                        subscriptionLvl = 0;
+                        stmt = con.prepareStatement("UPDATE dsg_subscribers SET level=0 WHERE transactionid = ?");
+                        stmt.setString(1, refundTXid);
+                        int worked = stmt.executeUpdate();
+                        if (worked < 1) {
+                            log4j.error(logString + indentString + "Error: updating after refund FAILED **");
+                            return;
+                        } else {
+                            log4j.info(logString + indentString + "Refund successfully registered");
+                        }
+                    }
+                    stmt = con.prepareStatement("INSERT INTO dsg_subscribers (pid, level, paymentdate, transactionid, amount) VALUES (?, ?, NOW(), ?, ?)");
+                    stmt.setLong(1, subscriberPid);
+                    stmt.setInt(2, subscriptionLvl);
+                    stmt.setString(3, transactionID);
+                    stmt.setDouble(4, amount);
+                    int worked = stmt.executeUpdate();
+                    if (worked < 1) {
+                        log4j.error(logString + indentString + "Error: inserting purchase FAILED **");
+                        return;
+                    } else {
+                        log4j.info(logString + indentString + "Purchase successfully registered");
+                    }
+                    DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
+                    DSGPlayerData dsgPlayerData = dsgPlayerStorer.loadPlayer(subscriberPid);
+                    if (dsgPlayerData.getNameColorRGB() == 0) {
+                        dsgPlayerData.setNameColorRGB(-16751616);
+                        dsgPlayerStorer.updatePlayer(dsgPlayerData);
+                    }
+
+                    if (refundTXid == null) {
+                        DSGMessageStorer dsgMessageStorer = resources.getDsgMessageStorer();
+                        DSGMessage message = new DSGMessage();
+                        message.setCreationDate(new java.util.Date());
+                        message.setFromPid(23000000016237L);
+                        message.setToPid(subscriberPid);
+                        message.setSubject("Subscription purchase successful");
+                        if (gifterPid != 0) {
+                            message.setBody(msg.replace("You have purchased ", customParts[0] + " has purchased for you ") + "\nnHave oodles of fun here at pente.org.\n\nPS: if you have any questions, feel free to reply to this message.");
+                        } else {
+                            message.setBody(msg + "\nHave oodles of fun here at pente.org.\n\nPS: if you have any questions, feel free to reply to this message.");
+                        }
+                        dsgMessageStorer.createMessage(message);
+                        if (gifterPid != 0) {
+                            message = new DSGMessage();
+                            message.setCreationDate(new java.util.Date());
+                            message.setFromPid(23000000016237L);
+                            message.setToPid(gifterPid);
+                            message.setSubject("Subscription purchase successful");
+                            message.setBody(msg + " for " + customParts[1] + ".");
+                            dsgMessageStorer.createMessage(message);
+                        }
+                    }
+
+                    CacheDSGPlayerStorer d = (CacheDSGPlayerStorer) resources.getDsgPlayerStorer();
+                    d.refreshPlayer(customParts[1]);
+
+                    stmt = con.prepareStatement("SELECT SUM(amount) FROM dsg_subscribers");
+                    rs = stmt.executeQuery();
+                    double totalSum = 0;
+                    if (rs.next()) {
+                        totalSum = rs.getDouble(1);
+                    } 
+
+                    String penteLiveAPNSkey = ctx.getInitParameter("penteLiveAPNSkey");
+                    String penteLiveAPNSpwd = ctx.getInitParameter("penteLiveAPNSpassword");
+                    boolean productionFlag = ctx.getInitParameter("penteLiveAPNSproductionFlag").equals("true");
+                    Thread thread = new Thread(new SendNotification(0, 0, 23000000016237L, 23000000016237L, 
+                        customParts[1] + ((refundTXid == null)?" subscribed":" was refunded") + ((gifterPid != 0)?" by "+customParts[0]:"") + " for EUR " + amount + ", the total is now: " + totalSum, penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, dbHandler ) );
+                    thread.start();
+
                 }
-
-                CacheDSGPlayerStorer d = (CacheDSGPlayerStorer) resources.getDsgPlayerStorer();
-                d.refreshPlayer(customParts[1]);
-
-                stmt = con.prepareStatement("SELECT SUM(amount) FROM dsg_subscribers");
-                rs = stmt.executeQuery();
-                double totalSum = 0;
-                if (rs.next()) {
-                    totalSum = rs.getDouble(1);
-                } 
-
-                String penteLiveAPNSkey = ctx.getInitParameter("penteLiveAPNSkey");
-                String penteLiveAPNSpwd = ctx.getInitParameter("penteLiveAPNSpassword");
-                boolean productionFlag = ctx.getInitParameter("penteLiveAPNSproductionFlag").equals("true");
-                Thread thread = new Thread(new SendNotification(0, 0, 23000000016237L, 23000000016237L, 
-                    customParts[1] + ((refundTXid == null)?" subscribed":" was refunded") + ((gifterPid != 0)?" by "+customParts[0]:"") + " for EUR " + amount + ", the total is now: " + totalSum, penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, dbHandler ) );
-                thread.start();
-
             } catch (SQLException e) {
                 log4j.error("PaypalIPNListenerServlet SQLException " + e);
             } catch (DSGMessageStoreException e) {

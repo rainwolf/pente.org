@@ -309,8 +309,51 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 					t.getTimeoutDate() != null &&
 				    t.getTimeoutDate().getTime() < now) {
 					log4j.debug("game t/o, " + t.getGid());
-					t.timeout();
 					long cp = t.getCurrentPlayer();
+					try {
+						log4j.debug("game t/o, " + t.getGid() + " check floating vacationDays for " + cp);
+						int floatingVacationDays = dsgPlayerStorer.loadFloatingVacationDays(cp);
+						if (floatingVacationDays > 0) {
+							int weekend[]=new int[] { 7, 1 }; //sat/sun default
+							try {
+								// get wk1, wk2 for player whose turn it now is
+								List l = dsgPlayerStorer.loadPlayerPreferences(cp);
+								for (Iterator it = l.iterator(); it.hasNext();) {
+									DSGPlayerPreference p = (DSGPlayerPreference) it.next();
+									if (p.getName().equals("weekend")) {
+										weekend = (int[]) p.getValue();
+									}
+								}
+							} catch (DSGPlayerStoreException dpse) {
+								log4j.error("TimeoutCheckRunnable: Error getting weekend for player " + 
+									cp + ", game=" + t.getGid(), dpse);
+							}
+							dsgPlayerStorer.pinchFloatingVacationDays(cp);
+		                    Calendar newTimeout = Calendar.getInstance();
+		                    newTimeout.add(Calendar.HOUR, 1);
+		                    if ((newTimeout.get(Calendar.DAY_OF_WEEK) == weekend[0]) || (newTimeout.get(Calendar.DAY_OF_WEEK) == weekend[1])) {
+								newTimeout.add(Calendar.DATE, 1);
+								newTimeout.set(Calendar.HOUR_OF_DAY, 0);
+								newTimeout.set(Calendar.MINUTE, 0);
+								newTimeout.set(Calendar.SECOND, 0);
+		                    }
+		                    if ((newTimeout.get(Calendar.DAY_OF_WEEK) == weekend[0]) || (newTimeout.get(Calendar.DAY_OF_WEEK) == weekend[1])) {
+								newTimeout.add(Calendar.DATE, 1);
+								newTimeout.set(Calendar.HOUR_OF_DAY, 0);
+								newTimeout.set(Calendar.MINUTE, 0);
+								newTimeout.set(Calendar.SECOND, 0);
+		                    }
+							t.setTimeoutDate(newTimeout.getTime());
+							updateGameAfterMove(t);
+							continue;
+						}
+					} catch (DSGPlayerStoreException e) {
+						log4j.debug("TimeoutCheckRunnable, DSGPlayerStoreException " + e);
+					} catch (TBStoreException e) {
+						log4j.debug("TimeoutCheckRunnable, TBStoreException " + e);
+					}
+
+					t.timeout();
 					int seat = t.getPlayerSeat(cp);
 					t.setWinner(3 - seat);
 
@@ -1076,7 +1119,8 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 	public void updateGameAfterMove(TBGame game) throws TBStoreException {
 		baseStorer.updateGameAfterMove(game);
 	}
-	
+
+
 	public void acceptInvite(TBSet s, long pid)
 		throws TBStoreException {
 
@@ -1235,8 +1279,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 	}
 	
 
-	public void updateDaysOff(long pid, int weekend[],
-		List<Date> vacationDays) throws TBStoreException {
+	public void updateDaysOff(long pid, int weekend[]) throws TBStoreException {
 		log4j.debug("updateWeekend(" + pid + ", " + weekend[0] + "," + 
 			weekend[1] + ")");
 
@@ -1259,7 +1302,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 							long newTimeout = Utilities.calculateNewTimeout(
 								g.getLastMoveDate().getTime(),
 								g.getDaysPerMove(),
-								weekend[0], weekend[1], vacationDays, g.getPlayer1Pid() < g.getPlayer2Pid());
+								weekend[0], weekend[1], g.getPlayer1Pid() < g.getPlayer2Pid());
 							log4j.debug("update t/o to " + newTimeout + " for " + g.getGid());
 							
 							if (g.getTimeoutDate().getTime() != newTimeout) {

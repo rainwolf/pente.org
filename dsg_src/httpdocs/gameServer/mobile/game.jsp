@@ -64,10 +64,10 @@ if (!tbGame.isCompleted()) {
     for (TBMessage m : tbGame.getMessages()) {
         // bug in URLConverter
         if (m.getMessage().length() == 1) {
-            messages += "\"" + m.getMessage() + "\",";
+            messages += m.getMessage() + ",";
         } else {
-            messages += "\"" + MessageEncoder.encodeMessage(
-                filters.applyFilters(0, m.getMessage())) + "\",";
+            messages += MessageEncoder.encodeMessage(
+                filters.applyFilters(0, m.getMessage())) + ",";
         }
         seqNums += m.getSeqNbr() + ",";
         moveNums += m.getMoveNum() + ",";

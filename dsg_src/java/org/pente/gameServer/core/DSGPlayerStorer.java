@@ -48,7 +48,7 @@ public interface DSGPlayerStorer {
     // load the set data and the games too?
     public LiveSet loadLiveSet(long sid) throws DSGPlayerStoreException;
     
-    public List loadPlayerPreferences(long playerID) throws DSGPlayerStoreException;
+    public List<DSGPlayerPreference>  loadPlayerPreferences(long playerID) throws DSGPlayerStoreException;
     public void storePlayerPreference(long playerID, DSGPlayerPreference pref)
         throws DSGPlayerStoreException;
     
@@ -60,6 +60,9 @@ public interface DSGPlayerStorer {
     
     public List<java.util.Date> loadVacationDays(long playerID) throws DSGPlayerStoreException;
     public void storeVacationDays(long playerID, List<Date> vacationDays) throws DSGPlayerStoreException;
+    public int loadFloatingVacationDays(long playerID) throws DSGPlayerStoreException;
+    public void pinchFloatingVacationDays(long playerID) throws DSGPlayerStoreException;
+    public void addFloatingVacationDays(long playerID, int extraDays) throws DSGPlayerStoreException;
     
     public Vector search(
         int game, int sortField, 
