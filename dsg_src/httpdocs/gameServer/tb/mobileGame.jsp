@@ -154,6 +154,8 @@ String cancelRequested="false";
           </li>
           <li>Report any bugs <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=5&threadID=230510&tstart=0">here</a>.
           </li>
+          <li>For an optimal experience, start moving your finger as soon as you touch the board.
+          </li>
 </ul>
 <!-- <center> -->
 
@@ -498,6 +500,11 @@ window.google_analytics_uacct = "UA-20529582-2";
             }
 
 function touchStart(evt) {
+  if (game == 63) {
+    stoneColor = (((moves.length - 1) % 4) == 0);
+  } else {
+    stoneColor = ((moves.length % 2) == 1);
+  }
   if ((drawUntilMove != moves.length)) {
       var newMoves = moves.slice(0);
       if (game == 63) {
@@ -514,6 +521,11 @@ function touchStart(evt) {
               newMoves.push(dPenteMove2);
           }
       } 
+      if (game == 63) {
+        stoneColor = (((moves.length - 1) % 4) == 0);
+      } else {
+        stoneColor = ((newMoves.length % 2) == 1);
+      }
       resetAbstractBoard(abstractBoard);
       drawUntilMove = newMoves.length;
       replayGame(abstractBoard, newMoves, drawUntilMove);
@@ -526,10 +538,6 @@ function touchStart(evt) {
       if (game == 63 && moves.length > 1) {
           lastMove = moves[moves.length - 2];
           drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-      }
-      stoneColor = ((newMoves.length % 2) == 1);
-      if (game == 63 && moves.length > 1) {
-        stoneColor = (((moves.length - 1) % 4) == 0);
       }
   }
 
@@ -661,6 +669,20 @@ function touchEnd(evt) {
         dPenteMove1 = -1;
         dPenteMove2 = -1;
         dPenteMove3 = -1;
+
+        resetAbstractBoard(abstractBoard);
+        drawUntilMove = moves.length;
+        replayGame(abstractBoard, moves, drawUntilMove);
+        boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
+        boardContext.fill();     
+        drawGrid(boardContext, boardColor);
+        drawGame();
+        lastMove = moves[moves.length - 1];
+        drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+        if (game == 63 && moves.length > 1) {
+            lastMove = moves[moves.length - 2];
+            drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+        }
         if (game == 63 && moves.length > 1) {
             selectMove(drawUntilMove - 2);
         } else {

@@ -178,7 +178,7 @@ window.google_analytics_uacct = "UA-20529582-2";
     <h2 style="margin:0;padding:0;">Dashboard - Hi <%= (dsgPlayerData.hasPlayerDonated() ? "<span style='color:#" + Integer.toHexString(dsgPlayerData.getNameColorRGB()).substring(2) + "'>" : "<span>") %><%= dsgPlayerData.getName() %></span>!</h2>
     <a href="/gameServer/myprofile">Edit Profile</a> | <a href="/gameServer/mymessages">My Messages <%= numMessages > 0 ? "("+numMessages+" unread)" : "" %></a>
     <% if ("rainwolf".equals(dsgPlayerData.getName())) { %>
- | <a href="/gameServer/admin">adminLink</a>
+ | <a href="/gameServer/admin">adminLink</a> | <a href="/gameServer/who.jsp">who</a>
   <%}%>
     <br>
     
@@ -230,7 +230,7 @@ window.google_analytics_uacct = "UA-20529582-2";
           Want a <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230250">crown</a>? Come and get it!
           </li>
 --%>
-          <li><a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230403">King of the Hill!</a> Every 3rd and Thirsty Thursday of the month from 6pm EST (3pm PST, 12am CET). Next one: September 17th.<br>
+          <li><a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230403">King of the Hill!</a> Every 3rd and Thirsty Thursday of the month from 6pm EST (3pm PST, 12am CET). Next one: October 15th.<br>
           Want a <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230250">crown</a> and subscriber goodies? Come and get it!
           </li>
           <li>Looking for <a href="http://www.pente.org/gameServer/forums/forum.jspa?forumID=34&start=0">resources</a> to get started?

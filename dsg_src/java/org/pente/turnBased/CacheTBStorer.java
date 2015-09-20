@@ -343,6 +343,11 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 								newTimeout.set(Calendar.MINUTE, 0);
 								newTimeout.set(Calendar.SECOND, 0);
 		                    }
+							if (t.getPlayer1Pid() < t.getPlayer2Pid()) {
+								newTimeout.add(Calendar.MINUTE,3);
+								newTimeout.add(Calendar.SECOND,11);
+							}
+
 							t.setTimeoutDate(newTimeout.getTime());
 							updateGameAfterMove(t);
 							continue;
