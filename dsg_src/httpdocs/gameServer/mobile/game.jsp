@@ -33,7 +33,7 @@ com.jivesoftware.base.FilterChain filters =
 
 private=<%=(set.isPrivateGame()?"":"non-")+"private"%>
 
-rated=<%=(tbGame.isRated()?"":"not ")+"rated"%>
+rated=<%=(tbGame.isRated()?"":"not ")+"Rated"%>
 <%    
 
 
