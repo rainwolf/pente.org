@@ -345,7 +345,7 @@ if (dsgPlayerData != null) {
       </td>
     </tr>    
 
-<% if ("rainwolf".equals(name) && dsgPlayerData.hasPlayerDonated()) { %>
+<% if ("rainwolf".equals(name)) { %>
 <tr>
   <td colspan="2">
     <div style="font-family:Verdana, Arial, Helvetica, sans-serif;
@@ -354,10 +354,12 @@ if (dsgPlayerData != null) {
      padding:5px;
      font-weight:bold;
      width:90%;">
+<% if (dsgPlayerData.hasPlayerDonated()) { %> 
 <%=dsgPlayerData.getName()%> has unlimited <%=(dsgPlayerData.unlimitedMobileTBGames() && (!dsgPlayerData.unlimitedTBGames()))?"(mobile-only) ":""%>turn-based games<%=dsgPlayerData.databaseAccess()?", database access":""%><%=dsgPlayerData.showAds()?" but will see advertisements":", and will not see advertisements"%>.<br>
 This subscription ends on <%=dsgPlayerData.hasPlayerDonated()?""+profileDateFormat.format(dsgPlayerData.getSubscriptionExpiration()):""%>.
 <br>
 <br>
+<%}%>
 <% int floatingHourDays = dsgPlayerStorer.loadFloatingVacationDays(dsgPlayerData.getPlayerID()); %>
 <%=dsgPlayerData.getName()%>  has <font color="red"> <%=floatingHourDays/24%> days and <%=floatingHourDays % 24%> hours</font> left for <b> <%=Calendar.getInstance().get(Calendar.YEAR)%></b>.
     </div>
