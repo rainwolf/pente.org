@@ -83,8 +83,8 @@ String changeProfileSuccess = (String) request.getAttribute("changeProfileSucces
     - You can upload a picture for your account,<br>
     - You can specify a note with your profile for other people to see,<br>
     - You get to play unlimited turn-based games, <br>
-    and optionally, <br>
     - Get acccess to the database, and/or, <br>
+    and optionally, <br>
     - Not see any ads<br>
     <br>
     <b><a href="/gameServer/subscriptions">
@@ -98,9 +98,11 @@ if (dsgPlayerData != null) {
   profileDateFormat.setTimeZone(tz);
 }
 %>
-You have unlimited <%=(dsgPlayerData.unlimitedMobileTBGames() && (!dsgPlayerData.unlimitedTBGames()))?"(mobile-only) ":""%>turn-based games<%=dsgPlayerData.databaseAccess()?", database access":""%><%=dsgPlayerData.showAds()?" but you will get advertisements":", and you will not see advertisements"%>.<br>
+You have unlimited turn-based games<%=dsgPlayerData.databaseAccess()?", database access":""%><%=dsgPlayerData.showAds()?" but you will get advertisements":", and you will not see advertisements"%>.<br>
 Your subscription ends on <%=dsgPlayerData.hasPlayerDonated()?""+profileDateFormat.format(dsgPlayerData.getSubscriptionExpiration()):""%>.
-
+<!-- You have unlimited <%=(dsgPlayerData.unlimitedMobileTBGames() && (!dsgPlayerData.unlimitedTBGames()))?"(mobile-only) ":""%>turn-based games<%=dsgPlayerData.databaseAccess()?", database access":""%><%=dsgPlayerData.showAds()?" but you will get advertisements":", and you will not see advertisements"%>.<br>
+Your subscription ends on <%=dsgPlayerData.hasPlayerDonated()?""+profileDateFormat.format(dsgPlayerData.getSubscriptionExpiration()):""%>.
+ -->
 <% } %>
     </div>
    </td>

@@ -189,6 +189,13 @@ function selectMove(newMove)
    currentMove=newMove;
 }
 
+function changeCycle() {
+  if (document.getElementById('cycleCheck').checked) {
+    cycleStr = "&cycle";
+  } else {
+    cycleStr = "";
+  }
+}
 // function IsSelected()
 // {
 //    return currentRow==-1?false:true;
@@ -222,9 +229,12 @@ function selectMove(newMove)
     Message:  <input type="text" id="message" size="256" style="width:500px;">
     <br>
     <br>
+<label><input id="cycleCheck" name="cycleCheck" type="checkbox" onclick="changeCycle()" /> check this to cycle to the next game after submitting</label>
+<br>
 <%
 }
 %>
+
 
     <div class="buttonwrapper" style="margin-top:5px; width:550px;">
 <% if (!"false".equals(myTurn) && (game.getDPenteState() != 2)) { %>
@@ -277,7 +287,7 @@ function selectMove(newMove)
 </tr>
 <tr>
 <td width="10%"></td>
-   <td align="center">
+   <td width="45%" align="center">
  <b>   <%=p1.getName()%> </b>
    </td>
    <td align="center" bgcolor="#000000">
@@ -285,15 +295,24 @@ function selectMove(newMove)
 </b>
    </td>
 </tr>
+
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<div style="height:300px;overflow:auto;">
+<table align="right" border=1  width="250px">
+
 <% 
 String coordinateLetters[] = {"A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T"};
 int row = 0;
 for( int i = 0; i < game.getNumMoves(); i++ ) {
     if ((game.getGame() != 63) && (i % 2 == 0)) {
-    %> <tr> <td align="center"> <%= ++row %> </td> <%
+    %> <tr> <td width="10%" align="center"> <%= ++row %> </td> <%
     }
     if ((game.getGame() == 63) && ((i % 4 == 3) || (i == 0))) {
-    %> <tr> <td align="center"> <%= ++row %> </td> <%
+    %> <tr> <td width="10%" align="center"> <%= ++row %> </td> <%
     }
     %> 
     <td onclick='selectMove(<%=i%>)' id='<%=i%>' width="45%" align="center">
@@ -306,6 +325,9 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
     } %>
     </td>
     <%
+    if (game.getNumMoves() == 1) {
+    %> <td></td></tr> <%
+    }
     if ((game.getGame() != 63) && (i % 2 == 1)) {
     %> </tr> <%
     }
@@ -315,7 +337,12 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
 }
 %>
 </table>
+</div>
+</td>
+</tr>
 <% if (game.getDPenteState() != 2) { %>
+<tr>
+<td>
 <table align="right" border=1  width="250px">
 <tr>
    <td width="50%" onclick="goBack()" align="center">
@@ -332,9 +359,14 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
    </td>
 </tr>
 </table>
+</td>
+</tr>
+
 <%
 }
 %>
+<tr>
+<td>
 <table align="right" border=1 width="250px">
 <tr>
    <td width="30%">Player 1
@@ -466,7 +498,9 @@ window.google_analytics_uacct = "UA-20529582-2";
 
         var stoneColor = true;
         var trackingI = -1, trackingJ = -1;
-        var iRadius = 6*radius/4
+        var iRadius = 6*radius/4;
+        var cycleCheck = <%=((request.getParameter("cycle") != null)?"true":"false")%>;
+        var cycleStr = <%=((request.getParameter("cycle") != null)?"\"&cycle\"":"\"\"")%>;
 
 
 
@@ -487,16 +521,20 @@ window.google_analytics_uacct = "UA-20529582-2";
                 drawGrid(boardContext, boardColor);
                 interactionCanvas.addEventListener("click", boardClick, false);
 
-      interactionCanvas.addEventListener("touchstart", touchStart, false);
-      interactionCanvas.addEventListener("touchend", touchEnd, false);
-      interactionCanvas.addEventListener("touchcancel", touchCancel, false);
-      interactionCanvas.addEventListener("touchleave", touchEnd, false);
-      interactionCanvas.addEventListener("touchmove", touchMove, false);
-      interactionContext.scale(2, 2);
+                interactionCanvas.addEventListener("touchstart", touchStart, false);
+                interactionCanvas.addEventListener("touchend", touchEnd, false);
+                interactionCanvas.addEventListener("touchcancel", touchCancel, false);
+                interactionCanvas.addEventListener("touchleave", touchEnd, false);
+                interactionCanvas.addEventListener("touchmove", touchMove, false);
+                interactionContext.scale(2, 2);
 
                 drawUntilMove = moves.length;
                 playedMove = -1;
                 lastMove = moves[drawUntilMove - 1];
+
+                if (cycleCheck) {
+                  document.getElementById("cycleCheck").checked = cycleCheck;
+                }
             }
 
 function touchStart(evt) {
@@ -1086,28 +1124,29 @@ function touchEnd(evt) {
             }
 
             function submit () {
+
                 if (playedMove == -1) {
                     alert("No move played yet");
                 } else if (game == 63 && c6Move2 < 0) {
                     alert("You have to place 2 stones for Connect6");
                 } else if (game == 63 && c6Move2 > -1) {
                     // window.open("http://development.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+"&moves="+c6Move1 + "," + c6Move2 +"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
-                    window.open("http://www.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+"&moves="+c6Move1 + "," + c6Move2 +"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
+                    window.open("http://www.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+"&moves="+c6Move1 + "," + c6Move2 +"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
                 } else if (game == 57 && moves.length == 1 && (dPenteMove1 == -1 || dPenteMove2 == -1 || dPenteMove3 == -1)) {
                     alert("You have to place 3 stones for D-Pente");
                 } else if (game == 57 && moves.length == 1) {
-                    window.open("http://www.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+"&moves="+dPenteMove1 + "," + dPenteMove2 + "," + dPenteMove3 +"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
+                    window.open("http://www.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+"&moves="+dPenteMove1 + "," + dPenteMove2 + "," + dPenteMove3 +"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
                     // window.open("http://development.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+"&moves="+dPenteMove1 + "," + dPenteMove2 + "," + dPenteMove3 +"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
                 } else {
-                    // window.open("http://development.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+"&moves="+playedMove+"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
-                    window.open("http://www.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+"&moves="+playedMove+"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
+                    // window.open("http://development.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+"&moves="+playedMove+"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
+                    window.open("http://www.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+"&moves="+playedMove+"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
                 }
             }
             function dPentePlayAsP1() {
                 if (playedMove == -1) {
                     alert("You have to place a stone if you choose to play as P1.");
                 } else {
-                    window.open("http://www.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+"&moves=1,"+playedMove+"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
+                    window.open("http://www.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+"&moves=1,"+playedMove+"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
                     // window.open("http://development.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+"&moves=1,"+playedMove+"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
                 }
             }
@@ -1115,7 +1154,7 @@ function touchEnd(evt) {
                 if (playedMove > -1) {
                     alert("You placed a stone. Remove it first if you choose to play as P2.");
                 } else {
-                    window.open("http://www.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+"&moves=0&message="+encodeURIComponent(document.getElementById('message').value),"_self");
+                    window.open("http://www.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+"&moves=0&message="+encodeURIComponent(document.getElementById('message').value),"_self");
                     // window.open("http://development.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+"&moves=0&message="+encodeURIComponent(document.getElementById('message').value),"_self");
                 }
             }

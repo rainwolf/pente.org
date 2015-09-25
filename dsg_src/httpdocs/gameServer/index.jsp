@@ -755,9 +755,9 @@ int tourneyWinner = 0; %>
 </div>
 <% } %>
 <%@ include file="whobox.jsp" %>
-<%@ include file="donorsbox.jsp" %>
-<%@ include file="mobile.jsp" %>
 <%@ include file="social.jsp" %>
+<%@ include file="mobile.jsp" %>
+<%@ include file="donorsbox.jsp" %>
 <%@ include file="statbox.jsp" %>
 
 <%@ include file="end.jsp" %>

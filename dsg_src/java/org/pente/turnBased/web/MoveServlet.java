@@ -333,10 +333,40 @@ public class MoveServlet extends HttpServlet {
 				}
 
 
+
 				//redirect to somewhere
 				String isMobile = (String) request.getParameter("mobile");
 				if (isMobile == null) {
-			        response.sendRedirect(moveRedirectPage);
+					long gameId = 0;
+					String cycle = (String) request.getParameter("cycle");
+					if (cycle != null) {
+						long myPid = playerData.getPlayerID();
+						List<TBSet> sets = tbGameStorer.loadSets(myPid);
+						for (TBSet s : sets) {
+							if (s.getState() == TBGame.STATE_ACTIVE) {
+								if (s.getGame1().getState() == TBGame.STATE_ACTIVE &&
+									(s.getGame1().getCurrentPlayer() == myPid ||
+				                     (s.getCancelPid() != 0 && s.getCancelPid() != myPid))) {
+									gameId = s.getGame1().getGid();
+									break;
+								} else if (s.getGame2() != null && 
+									s.getGame2().getState() == TBGame.STATE_ACTIVE &&
+									(s.getGame2().getCurrentPlayer() == myPid ||
+				                     (s.getCancelPid() != 0 && s.getCancelPid() != myPid))) {
+									gameId = s.getGame2().getGid();
+									break;
+								}
+							}
+						}
+					}
+
+					if (gameId != 0) {
+						String redirectPage = "/gameServer/tb/game?gid=" + gameId + "&command=load&mobile&cycle";
+				        response.sendRedirect(redirectPage);
+					} else {
+				        response.sendRedirect(moveRedirectPage);
+					}
+
 				} else {
 			        response.sendRedirect(mobileRedirectPage);
 				}
