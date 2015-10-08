@@ -72,6 +72,136 @@ Collections.sort(messages, new Comparator<DSGMessage>() {
     }
 });
 
+int openTBgames = 0;
+DSGPlayerData meData = dsgPlayerData;
+for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
+    TBSet s = iterator.next();
+
+     if (s.getPlayer1Pid() != meData.getPlayerID() && s.getPlayer2Pid() != meData.getPlayerID()) { 
+         openTBgames++;
+     } else {
+          iterator.remove();
+          continue;
+     }
+
+    int nrGamesPlaying = 0;
+    String setGame = GridStateFactory.getGameName(s.getGame1().getGame());
+    boolean alreadyPlaying = false, iAmIgnored = false;
+    long theirPID = (myPID == s.getPlayer1Pid()) ? s.getPlayer2Pid() : s.getPlayer1Pid();
+    for (TBGame g : myTurn) {
+        long oppPid = myPID == g.getPlayer1Pid() ? g.getPlayer2Pid() : g.getPlayer1Pid();
+        String myTurnGame = GridStateFactory.getGameName(g.getGame());
+        if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
+            nrGamesPlaying++;
+            if (nrGamesPlaying > 1) {
+//            if (nrGamesPlaying > 0) {
+                alreadyPlaying = true;
+                break;
+            }
+        };
+    };
+    if (!alreadyPlaying) {
+        for (TBGame g : oppTurn) {
+            long oppPid = myPID == g.getPlayer1Pid() ? g.getPlayer2Pid() : g.getPlayer1Pid();
+            String myTurnGame = GridStateFactory.getGameName(g.getGame());
+            if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
+                nrGamesPlaying++;
+                if (nrGamesPlaying > 1) {
+//                if (nrGamesPlaying > 0) {
+                    alreadyPlaying = true;
+                    break;
+                }
+            };
+        };
+    }
+
+    if (alreadyPlaying && !"rainwolf".equals(name)) {
+        openTBgames--;
+        iterator.remove();
+        continue;
+    }
+
+        List<DSGIgnoreData> ignoreData = dsgPlayerStorer.getIgnoreData(theirPID);
+        for (Iterator<DSGIgnoreData> it = ignoreData.iterator(); it.hasNext();) {
+        DSGIgnoreData i = it.next();
+        if (i.getIgnorePid() == myPID) {
+            if (i.getIgnoreInvite()) {
+                iAmIgnored = true;
+                break;
+            }   
+        }   
+    }
+    if (iAmIgnored && !alreadyPlaying) {
+        openTBgames--;
+        iterator.remove();
+        continue;
+    }
+
+    if (s.getInvitationRestriction() == TBSet.ANY_RATING) {
+        continue;
+    }
+    DSGPlayerGameData myGameData = meData.getPlayerGameData(s.getGame1().getGame());
+    int myRating = 1600;
+    if (myGameData != null && myGameData.getTotalGames() > 0) {
+        myRating = (int) Math.round(myGameData.getRating());
+    }
+    DSGPlayerData oppData = dsgPlayerStorer.loadPlayer(theirPID);
+    DSGPlayerGameData oppGameData = oppData.getPlayerGameData(s.getGame1().getGame());
+    int oppRating = 1600;
+    if (oppGameData != null && oppGameData.getTotalGames() > 0) {
+        oppRating = (int) Math.round(oppGameData.getRating());
+    }
+    if (s.getInvitationRestriction() == TBSet.LOWER_RATING) {
+        if (myRating > oppRating) {
+            openTBgames--;
+            iterator.remove();
+        }
+        continue;
+    }
+    if (s.getInvitationRestriction() == TBSet.HIGHER_RATING) {
+        if (myRating < oppRating) {
+            openTBgames--;
+            iterator.remove();
+        }
+        continue;
+    }
+    int delta = 75;
+    if (s.getInvitationRestriction() == TBSet.SIMILAR_RATING) {
+        if ((myRating + delta < oppRating) || (myRating - delta > oppRating)) {
+            openTBgames--;
+            iterator.remove();
+        }
+        continue;
+    }
+    if (s.getInvitationRestriction() == TBSet.CLASS_RATING) {
+        if (1900 <= myRating && 1900 > oppRating) {
+            openTBgames--;
+            iterator.remove();
+            continue;
+        }
+        if (1700 <= myRating && (oppRating < 1700 || oppRating >= 1900)) {
+            openTBgames--;
+            iterator.remove();
+            continue;
+        }
+        if (1400 <= myRating && (oppRating < 1400 || oppRating >= 1700)) {
+            openTBgames--;
+            iterator.remove();
+            continue;
+        }
+        if (1000 <= myRating && (oppRating < 1000 || oppRating >= 1400)) {
+            openTBgames--;
+            iterator.remove();
+            continue;
+        }
+        if (1000 > myRating && oppRating >= 1000) {
+            openTBgames--;
+            iterator.remove();
+            continue;
+        }
+    }
+}
+
 
 if (dsgPlayerData.unlimitedTBGames() || dsgPlayerData.unlimitedMobileTBGames() ) { %>
 Unlimited Games
@@ -119,11 +249,44 @@ Invitations sent<%
                  long pid = s.getInviteePid();
                  DSGPlayerGameData dsgPlayerGameData = null;
                  DSGPlayerData d = null;
+                 String anyoneString = "Anyone";
                  if (pid != 0) {
                      d = dsgPlayerStorer.loadPlayer(pid);
                      dsgPlayerGameData = d.getPlayerGameData(s.getGame1().getGame());
-                 } %>
-<%=s.getSetId() + ";" + GridStateFactory.getGameName(s.getGame1().getGame()) + ";" + ((pid == 0) ? "Anyone":d.getName()) + ";" + ((dsgPlayerGameData != null)?(int) Math.round(dsgPlayerGameData.getRating()):"1600") + ";" +  color + ";" + s.getGame1().getDaysPerMove() + " days;" + (s.getGame1().isRated() ? "Rated" : "Not Rated") + ";" + ((pid == 0)?"0":(d.hasPlayerDonated()?d.getNameColorRGB():0))%><%} 
+                 } else {
+                      DSGPlayerGameData myGameData = null;
+                      int myRating = 1600;
+                      if (s.getInvitationRestriction() != TBSet.ANY_RATING) {
+                          myGameData = dsgPlayerData.getPlayerGameData(s.getGame1().getGame());
+                          if (myGameData != null && myGameData.getTotalGames() > 0) {
+                              myRating = (int) Math.round(myGameData.getRating());
+                          }
+                      }
+                      if (s.getInvitationRestriction() == TBSet.LOWER_RATING) {
+                          anyoneString += " under " + myRating;
+                      }
+                      if (s.getInvitationRestriction() == TBSet.HIGHER_RATING) {
+                          anyoneString += " over " + myRating;
+                      }
+                      if (s.getInvitationRestriction() == TBSet.SIMILAR_RATING) {
+                          anyoneString += " similar";
+                      }
+                      if (s.getInvitationRestriction() == TBSet.CLASS_RATING) {
+                        if (myRating >= 1900) {
+                          anyoneString += " red";
+                        } else if (myRating >= 1700) {
+                          anyoneString += " yellow";
+                        } else if (myRating >= 1400) {
+                          anyoneString += " blue";
+                        } else if (myRating >= 1000) {
+                          anyoneString += " green";
+                        } else {
+                          anyoneString += " gray";
+                        }
+                      }
+                 }
+                 %>
+<%=s.getSetId() + ";" + GridStateFactory.getGameName(s.getGame1().getGame()) + ";" + ((pid == 0) ? anyoneString:d.getName()) + ";" + ((dsgPlayerGameData != null)?(int) Math.round(dsgPlayerGameData.getRating()):"1600") + ";" +  color + ";" + s.getGame1().getDaysPerMove() + " days;" + (s.getGame1().isRated() ? "Rated" : "Not Rated") + ";" + ((pid == 0)?"0":(d.hasPlayerDonated()?d.getNameColorRGB():0))%><%} 
 
      
 
@@ -160,58 +323,6 @@ Active Games - Opponents Turn<%
 %>
 Open Invitation Games<%
         for (TBSet s : waitingSets) {
-                if (s.getPlayer1Pid() == myPID || s.getPlayer2Pid() == myPID) {
-                    continue;
-                }
-                boolean alreadyPlaying = false, iAmIgnored = false;
-                long theirPID = (myPID == s.getPlayer1Pid()) ? s.getPlayer2Pid() : s.getPlayer1Pid();
-
-                if (!"rainwolf".equals(name)) {
-                    int nrGamesPlaying = 0;
-                    String setGame = GridStateFactory.getGameName(s.getGame1().getGame());
-                    for (TBGame g : myTurn) {
-                        long oppPid = myPID == g.getPlayer1Pid() ? g.getPlayer2Pid() : g.getPlayer1Pid();
-                        String myTurnGame = GridStateFactory.getGameName(g.getGame());
-                        if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
-                            nrGamesPlaying++;
-                            if (nrGamesPlaying > 0) {
-                                alreadyPlaying = true;
-                                break;
-                            }
-                        };
-                    };
-                    if (!alreadyPlaying) {
-                        for (TBGame g : oppTurn) {
-                            long oppPid = myPID == g.getPlayer1Pid() ? g.getPlayer2Pid() : g.getPlayer1Pid();
-                            String myTurnGame = GridStateFactory.getGameName(g.getGame());
-                            if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
-                                nrGamesPlaying++;
-                                if (nrGamesPlaying > 0) {
-                                    alreadyPlaying = true;
-                                    break;
-                                }
-                            };
-                        };
-                    }
-                    if (alreadyPlaying) {
-                        continue;
-                    }
-                }
-
-                List<DSGIgnoreData> ignoreData = dsgPlayerStorer.getIgnoreData(theirPID);
-                for (Iterator<DSGIgnoreData> it = ignoreData.iterator(); it.hasNext();) {
-                    DSGIgnoreData i = it.next();
-                    if (i.getIgnorePid() == myPID) {
-                        if (i.getIgnoreInvite()) {
-                            iAmIgnored = true;
-                            break;
-                        }   
-                    }   
-                }
-                if (iAmIgnored && !alreadyPlaying) {
-                    continue;
-                }
-            
                  String color = null;
                  if (s.isTwoGameSet()) {
                      color = "whiteblack";

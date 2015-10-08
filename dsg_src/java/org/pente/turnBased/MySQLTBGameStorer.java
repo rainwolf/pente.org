@@ -79,8 +79,8 @@ public class MySQLTBGameStorer implements TBGameStorer {
 	            stmt = con.prepareStatement(
 					"insert into tb_set " +
 	                "(gid1, gid2, p1_pid, p2_pid, state, creation_date, " +
-	                "inviter_pid, cancel_pid, private) " +
-					"values(?, ?, ?, ?, ?, ?, ?, 0, ?)", 
+	                "inviter_pid, cancel_pid, private, invitation_restriction) " +
+					"values(?, ?, ?, ?, ?, ?, ?, 0, ?, ?)", 
 					Statement.RETURN_GENERATED_KEYS);
 
 				long gid2 = tbSet.getGames()[1] != null ? 
@@ -98,6 +98,7 @@ public class MySQLTBGameStorer implements TBGameStorer {
 				stmt.setTimestamp(6, new Timestamp(tbSet.getCreationDate().getTime()));
 				stmt.setLong(7, tbSet.getInviterPid());
 				stmt.setString(8, tbSet.isPrivateGame() ? "Y" : "N");
+				stmt.setString(9, "" + tbSet.getInvitationRestriction());
 	            stmt.executeUpdate();
 				result = stmt.getGeneratedKeys();
 	
@@ -297,7 +298,7 @@ public class MySQLTBGameStorer implements TBGameStorer {
 	private static final String TB_SET_COLUMNS = 
 		"s.sid, s.p1_pid, s.p2_pid, s.state, s.creation_date, " +
 		"s.completion_date, s.inviter_pid, s.cancel_pid, s.cancel_msg, " +
-		"s.private, " +
+		"s.private, s.invitation_restriction, " +
 		"g.gid, g.state, g.p1_pid, g.p2_pid, g.creation_date, " +
 		"g.start_date, g.last_move_date, g.timeout_date, g.completion_date, " +
 		"g.game, g.event_id, g.round, g.section, g.days_per_move, g.rated, " +
@@ -655,10 +656,11 @@ public class MySQLTBGameStorer implements TBGameStorer {
                     currentSet.setCancelPid(results.getLong(8));
                     currentSet.setCancelMsg(results.getString(9));
                     currentSet.setPrivateGame(results.getString(10).equals("Y"));
+	        		currentSet.setInvitationRestriction(results.getString(11).charAt(0));
 	            	sets.add(currentSet);
 	        	}
 	        	TBGame game = new TBGame();
-				loadGame(con, results, game, 11);
+				loadGame(con, results, game, 12);
 	        	currentSet.addGame(game);	
 	        }
 
