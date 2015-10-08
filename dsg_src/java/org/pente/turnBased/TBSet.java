@@ -27,6 +27,13 @@ public class TBSet implements java.io.Serializable {
     
     private boolean privateGame;
     
+	public static final char ANY_RATING = 'A';
+	public static final char LOWER_RATING = 'L';
+	public static final char HIGHER_RATING = 'H';
+	public static final char SIMILAR_RATING = 'S';
+	public static final char CLASS_RATING = 'C';
+	private char invitationRestriction;
+
 	public TBSet(long setId) {
 		this.setId = setId;
 	}
@@ -113,6 +120,12 @@ public class TBSet implements java.io.Serializable {
 	}
 	public void setState(char state) {
 		this.state = state;
+	}
+	public char getInvitationRestriction() {
+		return invitationRestriction;
+	}
+	public void setInvitationRestriction(char restriction) {
+		this.invitationRestriction = restriction;
 	}
 	public long getPlayer1Pid() {
 		return player1Pid;

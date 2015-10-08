@@ -6,8 +6,8 @@
 <%
 int hoursDiff = 0;
 if (me != null) { 
-	DSGPlayerData meData = dsgPlayerStorer.loadPlayer(me);
-	TimeZone tz = TimeZone.getTimeZone(meData.getTimezone());
+	DSGPlayerData meData1 = dsgPlayerStorer.loadPlayer(me);
+	TimeZone tz = TimeZone.getTimeZone(meData1.getTimezone());
 	hoursDiff = (dsgTz.getRawOffset() - tz.getRawOffset()) / (1000 * 60 * 60);
 }
 %>

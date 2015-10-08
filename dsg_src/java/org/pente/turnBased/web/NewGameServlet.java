@@ -71,6 +71,9 @@ public class NewGameServlet extends HttpServlet {
 		boolean rated = false;
 		String privateStr = request.getParameter("privateGame");
 		boolean privateGame = false;
+
+		char invitationRestriction = TBSet.ANY_RATING;
+
 		
 		String inviterMessage = request.getParameter("inviterMessage");
 		if (inviterMessage != null && inviterMessage.equals("")) {
@@ -160,6 +163,11 @@ public class NewGameServlet extends HttpServlet {
 		    	log4j.error("NewGameServlet: ", tbe);
 		    	error = "Database error, please try again later.";
 			}
+		} else if (error == null) {
+			String invitationRestrictionString = request.getParameter("invitationRestriction");
+			if (invitationRestrictionString != null && invitationRestrictionString.length() > 0) {
+				invitationRestriction = invitationRestrictionString.charAt(0);
+			}
 		}
 
 
@@ -238,6 +246,7 @@ public class NewGameServlet extends HttpServlet {
 				tbs.setPlayer2Pid(pid2);
 				tbs.setInviterPid(invitePlayerData.getPlayerID());
 				tbs.setPrivateGame(privateGame);
+				tbs.setInvitationRestriction(invitationRestriction);
 				tbGameStorer.createSet(tbs);
 
 				if (inviteePlayerData != null) {

@@ -253,9 +253,9 @@ function changeCycle() {
 %>
 <% if (!"false".equals(myTurn)) { %>
       <a class="boldbuttons" href="javascript:resign();" 
-         style="margin-right:5px;"><span>Resign</span></a>
+         style="margin-left:235px;"><span>Resign</span></a>
       <a class="boldbuttons" href="javascript:requestCancel();" 
-         style="margin-right:5px;"><span>Request Set Cancellation</span></a>
+         style="margin-left:5px;"><span>Request Set Cancellation</span></a>
 <%
 }
 %>
@@ -1164,7 +1164,7 @@ function touchEnd(evt) {
             }
             function requestCancel () {
                 // window.open("http://development.pente.org/gameServer/tb/cancel?command=request&sid="+<%= set.getSetId() %>+"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
-                window.open("http://www.pente.org/gameServer/tb/cancel?command=request&sid="+<%= set.getSetId() %>+"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
+                window.open("http://www.pente.org/gameServer/tb/cancel?command=confirm&sid="+<%= set.getSetId() %>+"&gid="+<%=game.getGid()%>+"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
                 // window.open("http://www.pente.org/gameServer/tb/resign?command=resign&gid="+<%=game.getGid()%>+"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
             }
         init();

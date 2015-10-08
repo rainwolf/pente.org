@@ -167,7 +167,7 @@ if (limitExceeded) {%>
    <table border="0"  cellspacing="0" cellpadding="1"   bordercolor="black">
 
      <tr width="400">
-      <td width="150">
+      <td width="200">
        <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
         Player to invite:
        </font>
@@ -219,11 +219,29 @@ if (!limitExceeded) {%>
       <td>
        <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
         <select name="daysPerMove" size="1">
-        <% for (int i = 1; i < 31; i++) { %>
-          <option <% if (i == 7) { %>selected <% } %>value="<%= i %>"><%= i %> Days</option>
+        <% for (int i = 1; i < 31; i++) { %>         
+         <option <% if (i == 7) { %>selected <% } %>value="<%= i %>"><%= i %> Days</option>
         <% } %>
         </select>
        </font>
+      </td>
+     </tr>
+     <tr>
+      <td>
+       <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
+        Open to players of ...
+       </font>
+      </td>
+      <td>
+       <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
+        <select name="invitationRestriction" size="1">
+          <option selected value="A">Any rating</option>
+          <option value="L">Lower rating</option>
+          <option value="H">Higher rating</option>
+          <option value="S">Similar rating (&plusmn 75)</option>
+          <option value="C">Same rating class</option>
+        </select>
+       </font> (This only affects open invitations)
       </td>
      </tr>
      <tr>

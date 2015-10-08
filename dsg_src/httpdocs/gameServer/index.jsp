@@ -18,6 +18,7 @@ Resources resources = (Resources) application.getAttribute(
    Resources.class.getName());
 
 String nm = (String) request.getAttribute("name");
+String name = nm;
 DSGPlayerData dsgPlayerData = dsgPlayerStorer.loadPlayer(nm);
 
 int refresh = 5;
@@ -78,11 +79,18 @@ if (dsgPlayerData.unlimitedTBGames()) {
 
 List<TBSet> waitingSets = tbGameStorer.loadWaitingSets();
 int openTBgames = 0;
-long myPID = dsgPlayerData.getPlayerID();
-for (TBSet s : waitingSets) {
-     if (s.getPlayer1Pid() != myPID && s.getPlayer2Pid() != myPID) 
-        openTBgames++;
-        
+DSGPlayerData meData = dsgPlayerData;
+long myPID = meData.getPlayerID();
+for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
+    TBSet s = iterator.next();
+
+     if (s.getPlayer1Pid() != meData.getPlayerID() && s.getPlayer2Pid() != meData.getPlayerID()) { 
+         openTBgames++;
+     } else {
+          iterator.remove();
+          continue;
+     }
+
     int nrGamesPlaying = 0;
     String setGame = GridStateFactory.getGameName(s.getGame1().getGame());
     boolean alreadyPlaying = false, iAmIgnored = false;
@@ -92,8 +100,8 @@ for (TBSet s : waitingSets) {
         String myTurnGame = GridStateFactory.getGameName(g.getGame());
         if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
             nrGamesPlaying++;
-              if (nrGamesPlaying > 1) {
-//                if (nrGamesPlaying > 0) {
+            if (nrGamesPlaying > 1) {
+//            if (nrGamesPlaying > 0) {
                 alreadyPlaying = true;
                 break;
             }
@@ -113,9 +121,11 @@ for (TBSet s : waitingSets) {
             };
         };
     }
-    
-    if (alreadyPlaying && !"rainwolf".equals(nm)) {
+
+    if (alreadyPlaying && !"rainwolf".equals(name)) {
         openTBgames--;
+        iterator.remove();
+        continue;
     }
 
     List<DSGIgnoreData> ignoreData = dsgPlayerStorer.getIgnoreData(theirPID);
@@ -128,8 +138,75 @@ for (TBSet s : waitingSets) {
             } 
         } 
     }
-    if (iAmIgnored && !alreadyPlaying)
+    if (iAmIgnored && !alreadyPlaying) {
         openTBgames--;
+        iterator.remove();
+        continue;
+    }
+
+    if (s.getInvitationRestriction() == TBSet.ANY_RATING) {
+        continue;
+    }
+    DSGPlayerGameData myGameData = meData.getPlayerGameData(s.getGame1().getGame());
+    int myRating = 1600;
+    if (myGameData != null && myGameData.getTotalGames() > 0) {
+        myRating = (int) Math.round(myGameData.getRating());
+    }
+    DSGPlayerData oppData = dsgPlayerStorer.loadPlayer(theirPID);
+    DSGPlayerGameData oppGameData = oppData.getPlayerGameData(s.getGame1().getGame());
+    int oppRating = 1600;
+    if (oppGameData != null && oppGameData.getTotalGames() > 0) {
+        oppRating = (int) Math.round(oppGameData.getRating());
+    }
+    if (s.getInvitationRestriction() == TBSet.LOWER_RATING) {
+        if (myRating > oppRating) {
+            openTBgames--;
+            iterator.remove();
+        }
+        continue;
+    }
+    if (s.getInvitationRestriction() == TBSet.HIGHER_RATING) {
+        if (myRating < oppRating) {
+            openTBgames--;
+            iterator.remove();
+        }
+        continue;
+    }
+    int delta = 75;
+    if (s.getInvitationRestriction() == TBSet.SIMILAR_RATING) {
+        if ((myRating + delta < oppRating) || (myRating - delta > oppRating)) {
+            openTBgames--;
+            iterator.remove();
+        }
+        continue;
+    }
+    if (s.getInvitationRestriction() == TBSet.CLASS_RATING) {
+        if (1900 <= myRating && 1900 > oppRating) {
+            openTBgames--;
+            iterator.remove();
+            continue;
+        }
+        if (1700 <= myRating && (oppRating < 1700 || oppRating >= 1900)) {
+            openTBgames--;
+            iterator.remove();
+            continue;
+        }
+        if (1400 <= myRating && (oppRating < 1400 || oppRating >= 1700)) {
+            openTBgames--;
+            iterator.remove();
+            continue;
+        }
+        if (1000 <= myRating && (oppRating < 1000 || oppRating >= 1400)) {
+            openTBgames--;
+            iterator.remove();
+            continue;
+        }
+        if (1000 > myRating && oppRating >= 1000) {
+            openTBgames--;
+            iterator.remove();
+            continue;
+        }
+    }
 }
 
 %>
@@ -616,14 +693,38 @@ if (inLiveGameRoom) {
          long pid = s.getInviteePid();
          DSGPlayerGameData dsgPlayerGameData = null;
          DSGPlayerData d = null;
+         String anyoneString = "Anyone";
          if (pid != 0) {
              d = dsgPlayerStorer.loadPlayer(pid);
              dsgPlayerGameData = d.getPlayerGameData(s.getGame1().getGame());
-         } %>
+         } else {
+              DSGPlayerGameData myGameData = null;
+              int myRating = 1600;
+              if (s.getInvitationRestriction() != TBSet.ANY_RATING) {
+                  myGameData = dsgPlayerData.getPlayerGameData(s.getGame1().getGame());
+                  if (myGameData != null && myGameData.getTotalGames() > 0) {
+                      myRating = (int) Math.round(myGameData.getRating());
+                  }
+              }
+              if (s.getInvitationRestriction() == TBSet.LOWER_RATING) {
+                  anyoneString += " under " + myRating;
+              }
+              if (s.getInvitationRestriction() == TBSet.HIGHER_RATING) {
+                  anyoneString += " over " + myRating;
+              }
+              if (s.getInvitationRestriction() == TBSet.SIMILAR_RATING) {
+                  anyoneString += " similar";
+              }
+              if (s.getInvitationRestriction() == TBSet.CLASS_RATING) {
+                  SimpleDSGPlayerGameData tmpData = new SimpleDSGPlayerGameData();
+                  anyoneString += " <img src=\"/gameServer/images/" + tmpData.getRatingsGifRatingOnly(myRating) + "\">";
+              }
+         }
+         %>
          <tr>
            <td><a href="/gameServer/tb/cancelInvitation?command=load&sid=<%= s.getSetId() %>">
                <%= GridStateFactory.getGameName(s.getGame1().getGame()) %></a></td>
-           <td><% if (pid == 0) { %>Anyone<% } else {%><%@include file="playerLink.jspf" %><% } %><% if (dsgPlayerGameData != null) { %><%@ include file="ratings.jspf" %><% } %></td>
+           <td><% if (pid == 0) { %> <%=anyoneString%> <% } else {%><%@include file="playerLink.jspf" %><% } %><% if (dsgPlayerGameData != null) { %><%@ include file="ratings.jspf" %><% } %></td>
            <td><%= color %></td>
            <td><%= s.getGame1().getDaysPerMove() %> days</td>
            <td><%= s.getGame1().isRated() ? "Rated" : "Not Rated" %></td>

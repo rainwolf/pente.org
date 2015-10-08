@@ -159,7 +159,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
     %> 
     <td onclick='selectMove(<%=i%>)' id='<%=i%>' width="40%" align="center">
     <%=" " + coordinateLetters[(game.getMove(i) % 19)] + (19 - (game.getMove(i) / 19))%>
-    <% if ((gameId == 63) && (i != 0)) {
+    <% if ((gameId == 63) && (i != 0) && (i + 1 < game.getNumMoves())) {
         ++i;
         %>
         - <%="" + coordinateLetters[(game.getMove(i) % 19)] + (19 - (game.getMove(i) / 19))%>
