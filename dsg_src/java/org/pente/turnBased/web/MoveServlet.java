@@ -290,6 +290,11 @@ public class MoveServlet extends HttpServlet {
 						handleError(request, response, "Invalid move.");
 						return;
 					}
+					if (moves[0] == moves[1]) {
+						log4j.error("MoveServlet, Identical Connect6 moves received");
+						handleError(request, response, "Invalid move.");
+						return;
+					}
 					tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(),
 						moves[0]);
 					// this will not add the 2nd move if the player

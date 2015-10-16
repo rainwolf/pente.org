@@ -317,7 +317,9 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
     %> 
     <td onclick='selectMove(<%=i%>)' id='<%=i%>' width="45%" align="center">
     <%=" " + coordinateLetters[(game.getMove(i) % 19)] + (19 - (game.getMove(i) / 19))%>
-    <% if ((game.getGame() == 63) && (i != 0)) {
+    <% 
+//      if ((game.getGame() == 63) && (i != 0) && (i + 1 < game.getNumMoves())) {
+      if ((game.getGame() == 63) && (i != 0)) {
         ++i;
         %>
         - <%="" + coordinateLetters[(game.getMove(i) % 19)] + (19 - (game.getMove(i) / 19))%>
@@ -1131,12 +1133,21 @@ function touchEnd(evt) {
                     alert("You have to place 2 stones for Connect6");
                 } else if (game == 63 && c6Move2 > -1) {
                     // window.open("http://development.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+"&moves="+c6Move1 + "," + c6Move2 +"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
-                    window.open("http://www.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+"&moves="+c6Move1 + "," + c6Move2 +"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
+                    if ((c6Move1 > -1) && (c6Move1 < 361) && (c6Move2 > -1) && (c6Move2 < 361) && (moves.indexOf(c6Move1) == -1) && (moves.indexOf(c6Move2) == -1) && (c6Move1 != c6Move2)) {
+                      window.open("http://www.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+"&moves="+c6Move1 + "," + c6Move2 +"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
+                    } else {
+                        alert("Invalid Connect6 moves detected, please (reload and) try again");
+                    }
                 } else if (game == 57 && moves.length == 1 && (dPenteMove1 == -1 || dPenteMove2 == -1 || dPenteMove3 == -1)) {
                     alert("You have to place 3 stones for D-Pente");
                 } else if (game == 57 && moves.length == 1) {
+                  if ((dPenteMove1 != dPenteMove2) && (dPenteMove2 != dPenteMove3) && (dPenteMove3 != dPenteMove1)) {
                     window.open("http://www.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+"&moves="+dPenteMove1 + "," + dPenteMove2 + "," + dPenteMove3 +"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
                     // window.open("http://development.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+"&moves="+dPenteMove1 + "," + dPenteMove2 + "," + dPenteMove3 +"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
+
+                  } else {
+                        alert("Invalid D-Pente moves detected, please (reload and) try again");
+                  }
                 } else {
                     // window.open("http://development.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+"&moves="+playedMove+"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
                     window.open("http://www.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+"&moves="+playedMove+"&message="+encodeURIComponent(document.getElementById('message').value),"_self");

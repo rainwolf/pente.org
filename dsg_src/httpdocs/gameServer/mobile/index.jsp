@@ -141,13 +141,13 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
         continue;
     }
     DSGPlayerGameData myGameData = meData.getPlayerGameData(s.getGame1().getGame());
-    int myRating = 1600;
+    int myRating = 1200;
     if (myGameData != null && myGameData.getTotalGames() > 0) {
         myRating = (int) Math.round(myGameData.getRating());
     }
     DSGPlayerData oppData = dsgPlayerStorer.loadPlayer(theirPID);
     DSGPlayerGameData oppGameData = oppData.getPlayerGameData(s.getGame1().getGame());
-    int oppRating = 1600;
+    int oppRating = 1200;
     if (oppGameData != null && oppGameData.getTotalGames() > 0) {
         oppRating = (int) Math.round(oppGameData.getRating());
     }
