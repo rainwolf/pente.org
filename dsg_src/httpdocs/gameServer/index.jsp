@@ -148,13 +148,13 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
         continue;
     }
     DSGPlayerGameData myGameData = meData.getPlayerGameData(s.getGame1().getGame());
-    int myRating = 1600;
+    int myRating = 1200;
     if (myGameData != null && myGameData.getTotalGames() > 0) {
         myRating = (int) Math.round(myGameData.getRating());
     }
     DSGPlayerData oppData = dsgPlayerStorer.loadPlayer(theirPID);
     DSGPlayerGameData oppGameData = oppData.getPlayerGameData(s.getGame1().getGame());
-    int oppRating = 1600;
+    int oppRating = 1200;
     if (oppGameData != null && oppGameData.getTotalGames() > 0) {
         oppRating = (int) Math.round(oppGameData.getRating());
     }
@@ -307,7 +307,7 @@ window.google_analytics_uacct = "UA-20529582-2";
           Want a <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230250">crown</a>? Come and get it!
           </li>
 --%>
-          <li><a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230403">King of the Hill!</a> Every 3rd and Thirsty Thursday of the month from 6pm EST (3pm PST, 12am CET). Next one: October 15th.<br>
+          <li><a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230403">King of the Hill!</a> Every 3rd and Thirsty Thursday of the month from 6pm EST (3pm PST, 12am CET). Next one: November 19th.<br>
           Want a <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230250">crown</a> and subscriber goodies? Come and get it!
           </li>
           <li>Looking for <a href="http://www.pente.org/gameServer/forums/forum.jspa?forumID=34&start=0">resources</a> to get started?
@@ -316,7 +316,8 @@ window.google_analytics_uacct = "UA-20529582-2";
             </li>
             <hr>
           </li>
-          <li>16th Anniversary World Champion <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=2&threadID=230560&tstart=0">tournament</a> - 2015 
+          <li>16th Anniversary World Champion <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=2&threadID=230560&tstart=0">tournament</a> - 2015 <br>
+          Signup ends on <font color="red">October 18th, 2015</font>!
     <%--
     --%>
         </ul>

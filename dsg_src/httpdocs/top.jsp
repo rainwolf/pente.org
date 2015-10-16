@@ -65,6 +65,16 @@ function addLoadEvent(func) {
 <link href="/res/<%= style %>" media="all" rel="Stylesheet" type="text/css">
 <link href="/res/hack.css" media="all" rel="Stylesheet" type="text/css">
 
+
+<!-- Begin Cookie Consent plugin by Silktide - http://silktide.com/cookieconsent -->
+<script type="text/javascript">
+    window.cookieconsent_options = {"message":"This website uses cookies to deliver ads from the Google Adsense Network","dismiss":"Got it!","learnMore":"More info","link":null,"theme":"dark-bottom"};
+</script>
+
+<script type="text/javascript" src="//s3.amazonaws.com/cc.silktide.com/cookieconsent.latest.min.js"></script>
+<!-- End Cookie Consent plugin -->
+
+
 </head>
 <body>
 <div id="wrapper">
