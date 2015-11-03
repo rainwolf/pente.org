@@ -79,6 +79,7 @@ if (dsgPlayerData.unlimitedTBGames()) {
 
 List<TBSet> waitingSets = tbGameStorer.loadWaitingSets();
 int openTBgames = 0;
+int concurrentPlayLimit = 2;
 DSGPlayerData meData = dsgPlayerData;
 long myPID = meData.getPlayerID();
 for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
@@ -100,8 +101,7 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
         String myTurnGame = GridStateFactory.getGameName(g.getGame());
         if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
             nrGamesPlaying++;
-            if (nrGamesPlaying > 1) {
-//            if (nrGamesPlaying > 0) {
+            if (nrGamesPlaying > concurrentPlayLimit) {
                 alreadyPlaying = true;
                 break;
             }
@@ -113,8 +113,7 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
             String myTurnGame = GridStateFactory.getGameName(g.getGame());
             if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
                 nrGamesPlaying++;
-                if (nrGamesPlaying > 1) {
-//                if (nrGamesPlaying > 0) {
+                if (nrGamesPlaying > concurrentPlayLimit) {
                     alreadyPlaying = true;
                     break;
                 }
@@ -252,7 +251,7 @@ window.google_analytics_uacct = "UA-20529582-2";
  <div style="font-family:Verdana, Arial, Helvetica, sans-serif;
  float:left;width:70%">
  
-    <h2 style="margin:0;padding:0;">Dashboard - Hi <%= (dsgPlayerData.hasPlayerDonated() ? "<span style='color:#" + Integer.toHexString(dsgPlayerData.getNameColorRGB()).substring(2) + "'>" : "<span>") %><%= dsgPlayerData.getName() %></span>!</h2>
+    <h2 style="margin:0;padding:0;">Dashboard - Hi <%= ((dsgPlayerData.hasPlayerDonated() && (dsgPlayerData.getNameColorRGB() != 0)) ? "<span style='color:#" + Integer.toHexString(dsgPlayerData.getNameColorRGB()).substring(2) + "'>" : "<span>") %><%= dsgPlayerData.getName() %></span>!</h2>
     <a href="/gameServer/myprofile">Edit Profile</a> | <a href="/gameServer/mymessages">My Messages <%= numMessages > 0 ? "("+numMessages+" unread)" : "" %></a>
     <% if ("rainwolf".equals(dsgPlayerData.getName())) { %>
  | <a href="/gameServer/admin">adminLink</a> | <a href="/gameServer/who.jsp">who</a>
@@ -317,7 +316,7 @@ window.google_analytics_uacct = "UA-20529582-2";
             <hr>
           </li>
           <li>16th Anniversary World Champion <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=2&threadID=230560&tstart=0">tournament</a> - 2015 <br>
-          Signup ends on <font color="red">October 18th, 2015</font>!
+          (registration is closed. The database is now <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=2&threadID=230560&messageID=253192#253192">open</a> to all competitors.)
     <%--
     --%>
         </ul>

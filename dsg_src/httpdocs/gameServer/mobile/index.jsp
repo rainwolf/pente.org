@@ -73,6 +73,7 @@ Collections.sort(messages, new Comparator<DSGMessage>() {
 });
 
 int openTBgames = 0;
+int concurrentPlayLimit = 2;
 DSGPlayerData meData = dsgPlayerData;
 for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
     TBSet s = iterator.next();
@@ -93,8 +94,7 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
         String myTurnGame = GridStateFactory.getGameName(g.getGame());
         if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
             nrGamesPlaying++;
-            if (nrGamesPlaying > 1) {
-//            if (nrGamesPlaying > 0) {
+            if (nrGamesPlaying > concurrentPlayLimit) {
                 alreadyPlaying = true;
                 break;
             }
@@ -106,8 +106,7 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
             String myTurnGame = GridStateFactory.getGameName(g.getGame());
             if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
                 nrGamesPlaying++;
-                if (nrGamesPlaying > 1) {
-//                if (nrGamesPlaying > 0) {
+                if (nrGamesPlaying > concurrentPlayLimit) {
                     alreadyPlaying = true;
                     break;
                 }
@@ -137,6 +136,10 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
         continue;
     }
 
+    if ("rainwolf".equals(name)) {
+//        continue;
+    }
+
     if (s.getInvitationRestriction() == TBSet.ANY_RATING) {
         continue;
     }
@@ -152,14 +155,14 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
         oppRating = (int) Math.round(oppGameData.getRating());
     }
     if (s.getInvitationRestriction() == TBSet.LOWER_RATING) {
-        if (myRating > oppRating) {
+        if (myRating >= oppRating) {
             openTBgames--;
             iterator.remove();
         }
         continue;
     }
     if (s.getInvitationRestriction() == TBSet.HIGHER_RATING) {
-        if (myRating < oppRating) {
+        if (myRating <= oppRating) {
             openTBgames--;
             iterator.remove();
         }
@@ -206,7 +209,8 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
 if (dsgPlayerData.unlimitedTBGames() || dsgPlayerData.unlimitedMobileTBGames() ) { %>
 Unlimited Games
 <%} else { %>
-tbGamesLimit;<%=ctx.getInitParameter("TBGamesLimit")%>;tbGamesLimit
+Unlimited Games
+tb GamesLimit;<%=ctx.getInitParameter("TBGamesLimit")%>;tb GamesLimit
 <%}
 if (!dsgPlayerData.showAds()) { %>
 No Ads

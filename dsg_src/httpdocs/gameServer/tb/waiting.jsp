@@ -32,6 +32,7 @@ Utilities.organizeGames(meData.getPlayerID(), currentSets,
 // int myBoatPenteRating = 0;
 
 int openTBgames = 0;
+int concurrentPlayLimit = 2;
 long myPID = meData.getPlayerID();
 for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
     TBSet s = iterator.next();
@@ -52,8 +53,7 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
         String myTurnGame = GridStateFactory.getGameName(g.getGame());
         if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
             nrGamesPlaying++;
-            if (nrGamesPlaying > 1) {
-//            if (nrGamesPlaying > 0) {
+            if (nrGamesPlaying > concurrentPlayLimit) {
                 alreadyPlaying = true;
                 break;
             }
@@ -65,8 +65,7 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
             String myTurnGame = GridStateFactory.getGameName(g.getGame());
             if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
                 nrGamesPlaying++;
-                if (nrGamesPlaying > 1) {
-//                if (nrGamesPlaying > 0) {
+                if (nrGamesPlaying > concurrentPlayLimit) {
                     alreadyPlaying = true;
                     break;
                 }
@@ -96,6 +95,10 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
         continue;
     }
 
+    if ("rainwolf".equals(name)) {
+        continue;
+    }
+
     if (s.getInvitationRestriction() == TBSet.ANY_RATING) {
         continue;
     }
@@ -111,14 +114,14 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
         oppRating = (int) Math.round(oppGameData.getRating());
     }
     if (s.getInvitationRestriction() == TBSet.LOWER_RATING) {
-        if (myRating > oppRating) {
+        if (myRating >= oppRating) {
             openTBgames--;
             iterator.remove();
         }
         continue;
     }
     if (s.getInvitationRestriction() == TBSet.HIGHER_RATING) {
-        if (myRating < oppRating) {
+        if (myRating <= oppRating) {
             openTBgames--;
             iterator.remove();
         }
@@ -215,6 +218,8 @@ below and do not specify a player to invite.<br>
         <br>
         Be kind. Don't gobble all the open invitations to yourself, and post some in return.
         <br>
+        The "Open to" column is strictly informative, you can accept any invitation listed below.
+        <br>
         <br>
 
 <% if (limitExceeded) { %> 
@@ -223,9 +228,9 @@ below and do not specify a player to invite.<br>
         <br>
         <br>
 <%}%>
-	 <table border="0"  cellspacing="0" cellpadding="0" width="600">
+	 <table border="0"  cellspacing="0" cellpadding="0" width="700">
 	 	<tr bgcolor="<%= textColor2 %>">
-	     <td colspan="5">
+	     <td colspan="6">
 	       <font color="white">
 	         <b>Open Invitation Games (<%= openTBgames %>)
 	       </font>
@@ -236,7 +241,8 @@ below and do not specify a player to invite.<br>
 	     <td><b>Player</b></td>
          <td><b>Play as</b></td>
 	     <td><b>Time/Move</b></td>
-	     <td><b>Rated</b></td>
+       <td><b>Rated</b></td>
+       <td><b>Open to</b></td>
 	   </tr>
      
      <% 
@@ -269,6 +275,35 @@ below and do not specify a player to invite.<br>
            <td><%= color %></td>
            <td><%= s.getGame1().getDaysPerMove() %> days</td>
            <td><%= s.getGame1().isRated() ? "Rated" : "Not Rated" %></td>
+           <td>
+           <%
+              String anyoneString = "Anyone";
+              DSGPlayerGameData oppGameData = null;
+              int oppRating = 1200;
+              if (s.getInvitationRestriction() != TBSet.ANY_RATING) {
+                  oppGameData = opp.getPlayerGameData(s.getGame1().getGame());
+                  if (oppGameData != null && oppGameData.getTotalGames() > 0) {
+                      oppRating = (int) Math.round(oppGameData.getRating());
+                  }
+              }
+              if (s.getInvitationRestriction() == TBSet.LOWER_RATING) {
+                  anyoneString += " under " + oppRating;
+              }
+              if (s.getInvitationRestriction() == TBSet.HIGHER_RATING) {
+                  anyoneString += " over " + oppRating;
+              }
+              if (s.getInvitationRestriction() == TBSet.SIMILAR_RATING) {
+                  anyoneString += " " + oppRating + " &plusmn 75";
+              }
+              if (s.getInvitationRestriction() == TBSet.CLASS_RATING) {
+                  SimpleDSGPlayerGameData tmpData = new SimpleDSGPlayerGameData();
+                  anyoneString += " <img src=\"/gameServer/images/" + tmpData.getRatingsGifRatingOnly(oppRating) + "\">";
+              }
+            %>
+  
+           <%=anyoneString%>
+
+           </td>
          </tr>
      <% } %>
      </table>
