@@ -117,7 +117,7 @@ p1Data = player1.getPlayerGameData(tbGame.getGame());
 
 if (set.getCancelPid() != 0) {
 
-player1 = dsgPlayerStorer.loadPlayer(tbGame.getPlayer2Pid());
+player1 = dsgPlayerStorer.loadPlayer(set.getCancelPid());
 
 %>cancel=<%=player1.getName() + "," + set.getCancelMsg().replace("\\2","'")%>
 
