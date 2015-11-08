@@ -304,10 +304,33 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 			// only look at games in sorted order until you find one that
 			// is inactive or has NOT timed out
 			long now = System.currentTimeMillis();
+
+			Collections.sort(gs,  new Comparator<TBGame>() {
+			    public int compare(TBGame o1, TBGame o2) {
+		            return (int) (o1.getGid() - o2.getGid());
+			    }
+			});
+
 			for (TBGame t : gs) {
+	
 				if (t.getState() == TBGame.STATE_ACTIVE &&
 					t.getTimeoutDate() != null &&
 				    t.getTimeoutDate().getTime() < now) {
+					try {
+						TBSet tSet = baseStorer.loadSetByGid(t.getGid());
+						if (tSet.isTwoGameSet()) {
+							TBGame otherGame = tSet.getOtherGame(t.getGid());
+							if (otherGame != null) {
+								if (gs.contains(otherGame) && (otherGame.getState() == TBGame.STATE_ACTIVE && otherGame.getTimeoutDate() != null && otherGame.getTimeoutDate().getTime() < now)) {
+									if (t.getGid() < otherGame.getGid()) {
+										continue;
+									}
+								}
+							}
+						}
+					} catch (TBStoreException dpse) {
+						log4j.error("TimeoutCheckRunnable: Error getting other game for " + t.getGid(), dpse);
+					}
 					log4j.debug("game t/o, " + t.getGid());
 					long cp = t.getCurrentPlayer();
 					try {
@@ -343,10 +366,10 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 								newTimeout.set(Calendar.MINUTE, 0);
 								newTimeout.set(Calendar.SECOND, 0);
 		                    }
-							if (t.getPlayer1Pid() < t.getPlayer2Pid()) {
-								newTimeout.add(Calendar.MINUTE,3);
-								newTimeout.add(Calendar.SECOND,11);
-							}
+							// if (t.getPlayer1Pid() < t.getPlayer2Pid()) {
+							// 	newTimeout.add(Calendar.MINUTE,3);
+							// 	newTimeout.add(Calendar.SECOND,11);
+							// }
 
 							t.setTimeoutDate(newTimeout.getTime());
 							updateGameAfterMove(t);
