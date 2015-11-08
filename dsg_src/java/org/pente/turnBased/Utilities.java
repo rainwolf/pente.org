@@ -168,6 +168,7 @@ public class Utilities {
 				// if making move on a weekend day
 				//   set time to beginning of next date
 				if (first) {
+					first = false;
 					now.set(Calendar.HOUR_OF_DAY, 0);
 					now.set(Calendar.MINUTE, 0);
 					now.set(Calendar.SECOND, 0);			
@@ -179,10 +180,29 @@ public class Utilities {
 			first = false;
 		}
 
-		if (setGap) {
-			now.add(Calendar.MINUTE,3);
-			now.add(Calendar.SECOND,11);
+		int td = now.get(Calendar.DAY_OF_WEEK);
+		boolean iswk = (td == wk1 || td == wk2);
+		if (iswk) {
+			now.add(Calendar.DATE, 1);
+			
+			// if making move on a weekend day
+			//   set time to beginning of next date
+			if (first) {
+				now.set(Calendar.HOUR_OF_DAY, 0);
+				now.set(Calendar.MINUTE, 0);
+				now.set(Calendar.SECOND, 0);			
+			}
+			td = now.get(Calendar.DAY_OF_WEEK);
+			iswk = (td == wk1 || td == wk2);
+			if (iswk) {
+				now.add(Calendar.DATE, 1);
+			}
 		}
+
+		// if (setGap) {
+		// 	now.add(Calendar.MINUTE,3);
+		// 	now.add(Calendar.SECOND,11);
+		// }
 		
 		return now.getTimeInMillis();
 	}

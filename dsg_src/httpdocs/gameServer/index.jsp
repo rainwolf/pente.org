@@ -95,7 +95,7 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
     int nrGamesPlaying = 0;
     String setGame = GridStateFactory.getGameName(s.getGame1().getGame());
     boolean alreadyPlaying = false, iAmIgnored = false;
-    long theirPID = (myPID == s.getPlayer1Pid()) ? s.getPlayer2Pid() : s.getPlayer1Pid();
+    long theirPID = (0 == s.getPlayer1Pid()) ? s.getPlayer2Pid() : s.getPlayer1Pid();
     for (TBGame g : myTurn) {
         long oppPid = myPID == g.getPlayer1Pid() ? g.getPlayer2Pid() : g.getPlayer1Pid();
         String myTurnGame = GridStateFactory.getGameName(g.getGame());
@@ -151,8 +151,12 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
     if (myGameData != null && myGameData.getTotalGames() > 0) {
         myRating = (int) Math.round(myGameData.getRating());
     }
-    DSGPlayerData oppData = dsgPlayerStorer.loadPlayer(theirPID);
-    DSGPlayerGameData oppGameData = oppData.getPlayerGameData(s.getGame1().getGame());
+    DSGPlayerData oppData = null;
+    oppData = dsgPlayerStorer.loadPlayer(theirPID);
+    DSGPlayerGameData oppGameData = null;
+    if (oppData != null) {
+        oppGameData = oppData.getPlayerGameData(s.getGame1().getGame());
+    }
     int oppRating = 1200;
     if (oppGameData != null && oppGameData.getTotalGames() > 0) {
         oppRating = (int) Math.round(oppGameData.getRating());
@@ -537,6 +541,7 @@ if (inLiveGameRoom) {
         <a class="boldbuttons" href="/gameServer/forums/post!default.jspa?forumID=1"><span>Post a Message</span></a>
       <br>
       </div>
+
   </div>
   <div style="width:55%;float:right;border:1px solid #ffd0a7;;height:100%;">
   <h2 style="color:white;background:#ff8105"><span style="padding-left:5px;">Strategy Center</span></h2>
@@ -855,10 +860,12 @@ int tourneyWinner = 0; %>
 <%@ include file="dash200ad.jsp" %>
 </div>
 <% } %>
+<%--
+--%>
+
 <%@ include file="whobox.jsp" %>
 <%@ include file="social.jsp" %>
 <%@ include file="mobile.jsp" %>
 <%@ include file="donorsbox.jsp" %>
 <%@ include file="statbox.jsp" %>
-
 <%@ include file="end.jsp" %>

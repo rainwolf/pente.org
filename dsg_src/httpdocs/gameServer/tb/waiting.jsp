@@ -37,7 +37,7 @@ long myPID = meData.getPlayerID();
 for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
     TBSet s = iterator.next();
 
-     if (s.getPlayer1Pid() != meData.getPlayerID() && s.getPlayer2Pid() != meData.getPlayerID()) { 
+     if (s.getPlayer1Pid() != myPID && s.getPlayer2Pid() != myPID) { 
          openTBgames++;
      } else {
           iterator.remove();
@@ -47,7 +47,7 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
     int nrGamesPlaying = 0;
     String setGame = GridStateFactory.getGameName(s.getGame1().getGame());
     boolean alreadyPlaying = false, iAmIgnored = false;
-    long theirPID = (myPID == s.getPlayer1Pid()) ? s.getPlayer2Pid() : s.getPlayer1Pid();
+    long theirPID = (0 == s.getPlayer1Pid()) ? s.getPlayer2Pid() : s.getPlayer1Pid();
     for (TBGame g : myTurn) {
         long oppPid = myPID == g.getPlayer1Pid() ? g.getPlayer2Pid() : g.getPlayer1Pid();
         String myTurnGame = GridStateFactory.getGameName(g.getGame());
@@ -107,8 +107,12 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
     if (myGameData != null && myGameData.getTotalGames() > 0) {
         myRating = (int) Math.round(myGameData.getRating());
     }
-    DSGPlayerData oppData = dsgPlayerStorer.loadPlayer(theirPID);
-    DSGPlayerGameData oppGameData = oppData.getPlayerGameData(s.getGame1().getGame());
+    DSGPlayerData oppData = null;
+    oppData = dsgPlayerStorer.loadPlayer(theirPID);
+    DSGPlayerGameData oppGameData = null;
+    if (oppData != null) {
+        oppGameData = oppData.getPlayerGameData(s.getGame1().getGame());
+    }
     int oppRating = 1200;
     if (oppGameData != null && oppGameData.getTotalGames() > 0) {
         oppRating = (int) Math.round(oppGameData.getRating());
