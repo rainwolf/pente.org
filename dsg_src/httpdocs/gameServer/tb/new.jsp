@@ -236,6 +236,7 @@ if (!limitExceeded) {%>
        <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
         <select name="invitationRestriction" size="1">
           <option selected value="A">Any rating</option>
+          <option value="N">Not already playing</option>
           <option value="L">Lower rating</option>
           <option value="H">Higher rating</option>
           <option value="S">Similar rating (&plusmn 75)</option>

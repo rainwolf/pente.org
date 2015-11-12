@@ -79,7 +79,7 @@ if (dsgPlayerData.unlimitedTBGames()) {
 
 List<TBSet> waitingSets = tbGameStorer.loadWaitingSets();
 int openTBgames = 0;
-int concurrentPlayLimit = 2;
+// int concurrentPlayLimit = 2;
 DSGPlayerData meData = dsgPlayerData;
 long myPID = meData.getPlayerID();
 for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
@@ -93,39 +93,42 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
      }
 
     int nrGamesPlaying = 0;
-    String setGame = GridStateFactory.getGameName(s.getGame1().getGame());
     boolean alreadyPlaying = false, iAmIgnored = false;
     long theirPID = (0 == s.getPlayer1Pid()) ? s.getPlayer2Pid() : s.getPlayer1Pid();
-    for (TBGame g : myTurn) {
-        long oppPid = myPID == g.getPlayer1Pid() ? g.getPlayer2Pid() : g.getPlayer1Pid();
-        String myTurnGame = GridStateFactory.getGameName(g.getGame());
-        if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
-            nrGamesPlaying++;
-            if (nrGamesPlaying > concurrentPlayLimit) {
-                alreadyPlaying = true;
-                break;
-            }
-        };
-    };
-    if (!alreadyPlaying) {
-        for (TBGame g : oppTurn) {
+    if (s.getInvitationRestriction() == TBSet.ANYONE_NOTPLAYING) {
+        String setGame = GridStateFactory.getGameName(s.getGame1().getGame());
+        for (TBGame g : myTurn) {
             long oppPid = myPID == g.getPlayer1Pid() ? g.getPlayer2Pid() : g.getPlayer1Pid();
             String myTurnGame = GridStateFactory.getGameName(g.getGame());
             if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
-                nrGamesPlaying++;
-                if (nrGamesPlaying > concurrentPlayLimit) {
+//                nrGamesPlaying++;
+//                if (nrGamesPlaying > concurrentPlayLimit) {
                     alreadyPlaying = true;
                     break;
+//                }
+            }
+        }
+        if (!alreadyPlaying) {
+            for (TBGame g : oppTurn) {
+                long oppPid = myPID == g.getPlayer1Pid() ? g.getPlayer2Pid() : g.getPlayer1Pid();
+                String myTurnGame = GridStateFactory.getGameName(g.getGame());
+                if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
+//                    nrGamesPlaying++;
+//                    if (nrGamesPlaying > concurrentPlayLimit) {
+                        alreadyPlaying = true;
+                        break;
+//                    }
                 }
-            };
-        };
-    }
+            }
+        }
 
-    if (alreadyPlaying && !"rainwolf".equals(name)) {
-        openTBgames--;
-        iterator.remove();
-        continue;
+        if (alreadyPlaying && !"rainwolf".equals(name)) {
+            openTBgames--;
+            iterator.remove();
+            continue;
+        }
     }
+    
 
     List<DSGIgnoreData> ignoreData = dsgPlayerStorer.getIgnoreData(theirPID);
     for (Iterator<DSGIgnoreData> it = ignoreData.iterator(); it.hasNext();) {
@@ -710,6 +713,9 @@ if (inLiveGameRoom) {
                   if (myGameData != null && myGameData.getTotalGames() > 0) {
                       myRating = (int) Math.round(myGameData.getRating());
                   }
+              }
+              if (s.getInvitationRestriction() == TBSet.ANYONE_NOTPLAYING) {
+                  anyoneString += " (new opponents)";
               }
               if (s.getInvitationRestriction() == TBSet.LOWER_RATING) {
                   anyoneString += " under " + myRating;

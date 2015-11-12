@@ -28,6 +28,7 @@ public class TBSet implements java.io.Serializable {
     private boolean privateGame;
     
 	public static final char ANY_RATING = 'A';
+	public static final char ANYONE_NOTPLAYING = 'N';
 	public static final char LOWER_RATING = 'L';
 	public static final char HIGHER_RATING = 'H';
 	public static final char SIMILAR_RATING = 'S';
