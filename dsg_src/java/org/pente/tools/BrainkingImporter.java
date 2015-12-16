@@ -34,7 +34,8 @@ public class BrainkingImporter {
         importer.gameStorer = p;
 
         importer.gameDir = new File(args[4]);
-        importer.gameFormat = new PGNGameFormat("\r\n", "yyyy.MM.dd");
+        importer.gameFormat = new PGNGameFormat("\n", "yyyy.MM.dd");
+        // importer.gameFormat = new DSG2_12GameFormat("\r\n");
         
         importer.loadGames();
 
@@ -96,8 +97,9 @@ public class BrainkingImporter {
                 
                 gameData.setSite("BrainKing");
                 
-                long gid = new Long(file.substring(0, file.length()-9)).longValue();
+                long gid = new Long(file.substring(0, file.length()-4)).longValue();
                 gameData.setGameID(BASE_GID + gid);
+                    System.out.println("gid " + gid);
                 
                 PlayerStorer playerStorer = (PlayerStorer) gameStorer;
                 if (playerStorer.playerAlreadyStored(gameData.getPlayer1Data().getUserIDName(), "BrainKing")) {

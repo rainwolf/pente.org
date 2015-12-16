@@ -301,8 +301,9 @@ function changeCycle() {
 </tr>
 <tr>
 <td>
-<div style="height:300px;overflow:auto;">
-<table align="right" border=1  width="250px">
+<div style="height:300px;position: relative; overflow:hidden;">
+<div id="movesTable" style="height:300px; width: 270px; right: -20px; position: absolute; align: right; overflow:auto;">
+<table align="left" border=1  width="250px">
 
 <% 
 String coordinateLetters[] = {"A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T"};
@@ -339,6 +340,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
 }
 %>
 </table>
+</div>
 </div>
 </td>
 </tr>
@@ -454,8 +456,7 @@ window.google_analytics_uacct = "UA-20529582-2";
 </script>
 
 
-    <script src="http://www.pente.org/gameServer/tb/gameScript.js"></script>
-    <script src="http://pente.org/gameServer/tb/gameScript.js"></script>
+    <script src="/gameServer/tb/gameScript.js"></script>
 
     <script type="text/javascript">
         var moves = [<%=moves.substring(0, moves.length() - 1)%>];
@@ -771,6 +772,7 @@ function touchEnd(evt) {
                             lastMove = moves[moves.length - 2];
                             drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
                         }
+                        document.getElementById("movesTable").scrollTop = document.getElementById("movesTable").scrollHeight;
                     }
                     if (abstractBoard[i][j] == 0 && active == true) {
                         var newMoves = moves.slice(0);
@@ -1134,7 +1136,7 @@ function touchEnd(evt) {
                 } else if (game == 63 && c6Move2 > -1) {
                     // window.open("http://development.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+"&moves="+c6Move1 + "," + c6Move2 +"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
                     if ((c6Move1 > -1) && (c6Move1 < 361) && (c6Move2 > -1) && (c6Move2 < 361) && (moves.indexOf(c6Move1) == -1) && (moves.indexOf(c6Move2) == -1) && (c6Move1 != c6Move2)) {
-                      window.open("http://www.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+"&moves="+c6Move1 + "," + c6Move2 +"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
+                      window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+"&moves="+c6Move1 + "," + c6Move2 +"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
                     } else {
                         alert("Invalid Connect6 moves detected, please (reload and) try again");
                     }
@@ -1142,7 +1144,7 @@ function touchEnd(evt) {
                     alert("You have to place 3 stones for D-Pente");
                 } else if (game == 57 && moves.length == 1) {
                   if ((dPenteMove1 != dPenteMove2) && (dPenteMove2 != dPenteMove3) && (dPenteMove3 != dPenteMove1)) {
-                    window.open("http://www.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+"&moves="+dPenteMove1 + "," + dPenteMove2 + "," + dPenteMove3 +"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
+                    window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+"&moves="+dPenteMove1 + "," + dPenteMove2 + "," + dPenteMove3 +"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
                     // window.open("http://development.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+"&moves="+dPenteMove1 + "," + dPenteMove2 + "," + dPenteMove3 +"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
 
                   } else {
@@ -1150,14 +1152,14 @@ function touchEnd(evt) {
                   }
                 } else {
                     // window.open("http://development.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+"&moves="+playedMove+"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
-                    window.open("http://www.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+"&moves="+playedMove+"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
+                    window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+"&moves="+playedMove+"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
                 }
             }
             function dPentePlayAsP1() {
                 if (playedMove == -1) {
                     alert("You have to place a stone if you choose to play as P1.");
                 } else {
-                    window.open("http://www.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+"&moves=1,"+playedMove+"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
+                    window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+"&moves=1,"+playedMove+"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
                     // window.open("http://development.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+"&moves=1,"+playedMove+"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
                 }
             }
@@ -1165,18 +1167,18 @@ function touchEnd(evt) {
                 if (playedMove > -1) {
                     alert("You placed a stone. Remove it first if you choose to play as P2.");
                 } else {
-                    window.open("http://www.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+"&moves=0&message="+encodeURIComponent(document.getElementById('message').value),"_self");
+                    window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+"&moves=0&message="+encodeURIComponent(document.getElementById('message').value),"_self");
                     // window.open("http://development.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+"&moves=0&message="+encodeURIComponent(document.getElementById('message').value),"_self");
                 }
             }
             function resign () {
                 // window.open("http://development.pente.org/gameServer/tb/resign?command=resign&gid="+<%=game.getGid()%>,"_self");
-                window.open("http://www.pente.org/gameServer/tb/resign?command=resign&gid="+<%=game.getGid()%>,"_self");
+                window.open("/gameServer/tb/resign?command=resign&gid="+<%=game.getGid()%>,"_self");
             }
             function requestCancel () {
                 // window.open("http://development.pente.org/gameServer/tb/cancel?command=request&sid="+<%= set.getSetId() %>+"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
-                window.open("http://www.pente.org/gameServer/tb/cancel?command=confirm&sid="+<%= set.getSetId() %>+"&gid="+<%=game.getGid()%>+"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
-                // window.open("http://www.pente.org/gameServer/tb/resign?command=resign&gid="+<%=game.getGid()%>+"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
+                window.open("/gameServer/tb/cancel?command=confirm&sid="+<%= set.getSetId() %>+"&gid="+<%=game.getGid()%>+"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
+                // window.open("/gameServer/tb/resign?command=resign&gid="+<%=game.getGid()%>+"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
             }
         init();
         replayGame(abstractBoard, moves, moves.length);
@@ -1190,6 +1192,7 @@ function touchEnd(evt) {
         } else {
           selectMove(drawUntilMove - 1);
         }
+        document.getElementById("movesTable").scrollTop = document.getElementById("movesTable").scrollHeight;
     </script>
 
 

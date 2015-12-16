@@ -97,9 +97,9 @@ public class PGNGameFormat implements GameFormat {
     public PGNGameFormat() {
         this("\r\n");
     }
-	public PGNGameFormat(String lineSeparator, String dateFormatStr) {
+	public PGNGameFormat(String lineSeparator, String dateFormatString) {
 		this.lineSeparator = lineSeparator;
-		this.dateFormatStr = dateFormatStr;
+		this.dateFormatStr = dateFormatString;
 	}
 
     /** Specify the line seperator used to format games
@@ -278,7 +278,7 @@ public class PGNGameFormat implements GameFormat {
             String bufferString = buffer.toString().trim();
 
             // parse out headers
-            Hashtable headers = new Hashtable();
+            Hashtable<String,String> headers = new Hashtable<String,String>();
             int beginLineIndex = 0;
             boolean parsingHeaders = true;
             boolean moreLines = true;
@@ -355,7 +355,7 @@ public class PGNGameFormat implements GameFormat {
             parseResult((String) headers.get(HEADER_RESULT), data);
 
         } catch(Exception ex) {
-            //ex.printStackTrace();
+            ex.printStackTrace();
             throw new ParseException("Parse Exception", 0);
         }
 
@@ -855,7 +855,7 @@ public class PGNGameFormat implements GameFormat {
      *  @param headers The hashtable to put the parsed header into
      *  @exception ParseException If the header cannot be parsed
      */
-    protected void parseHeader(String header, Hashtable headers) throws ParseException {
+    protected void parseHeader(String header, Hashtable<String,String> headers) throws ParseException {
 
         if (header == null || header.length() == 0) {
             throw new ParseException("Invalid header, empty", 0);

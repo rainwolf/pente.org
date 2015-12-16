@@ -250,10 +250,12 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
 									d2.eventData.getName());
 							}
 							else {
-								if (d1.round == null) {
-									if (d2.round == null) return 1;
-									else return 0;
-								}
+                                if (d1.round == null) {
+                                    if (d2.round == null) return 1;
+                                    else return 0;
+                                } else if (d2.round == null) {
+                                    return 1;
+                                }
 								else if (!d1.round.equals(d2.round)) {
 									return d1.round.compareTo(d2.round);
 								}
@@ -279,13 +281,15 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
             stmt = con.prepareStatement(
                 "select distinct game_event.game, game_site.sid, " +
                 "game_site.name, game_site.short_name, game_site.URL, " +
-                "game_event.eid, game_event.name, pente_game.round, " +                "pente_game.section " +
+                "game_event.eid, game_event.name, pente_game.round, " +
+                "pente_game.section " +
                 "from game_site, game_event, pente_game " +
                 "where game_site.sid = pente_game.site_id " +
                 "and game_site.sid = game_event.site_id " +
                 "and game_event.eid = pente_game.event_id " +
                 "and game_event.game = pente_game.game " +
-                "order by game_event.game, game_site.name, game_event.name, " +                "pente_game.round, pente_game.section");
+                "order by game_event.game, game_site.name, game_event.name, " +
+                "pente_game.round, pente_game.section");
 
 
             result = stmt.executeQuery();

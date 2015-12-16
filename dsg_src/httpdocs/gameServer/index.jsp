@@ -178,7 +178,7 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
         }
         continue;
     }
-    int delta = 75;
+    int delta = 100;
     if (s.getInvitationRestriction() == TBSet.SIMILAR_RATING) {
         if ((myRating + delta < oppRating) || (myRating - delta > oppRating)) {
             openTBgames--;
@@ -187,31 +187,23 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
         continue;
     }
     if (s.getInvitationRestriction() == TBSet.CLASS_RATING) {
-        if (1900 <= myRating && 1900 > oppRating) {
-            openTBgames--;
-            iterator.remove();
+        if (1900 <= myRating && 1900 <= oppRating) {
             continue;
         }
-        if (1700 <= myRating && (oppRating < 1700 || oppRating >= 1900)) {
-            openTBgames--;
-            iterator.remove();
+        if ((myRating >= 1700 && myRating < 1900) && (oppRating >= 1700 && oppRating < 1900)) {
             continue;
         }
-        if (1400 <= myRating && (oppRating < 1400 || oppRating >= 1700)) {
-            openTBgames--;
-            iterator.remove();
+        if ((myRating >= 1400 && myRating < 1700) && (oppRating >= 1400 && oppRating < 1700)) {
             continue;
         }
-        if (1000 <= myRating && (oppRating < 1000 || oppRating >= 1400)) {
-            openTBgames--;
-            iterator.remove();
+        if ((myRating >= 1000 && myRating < 1400) && (oppRating >= 1000 && oppRating < 1400)) {
             continue;
         }
-        if (1000 > myRating && oppRating >= 1000) {
-            openTBgames--;
-            iterator.remove();
+        if (1000 > myRating && oppRating < 1000) {
             continue;
         }
+        openTBgames--;
+        iterator.remove();
     }
 }
 
@@ -313,19 +305,23 @@ window.google_analytics_uacct = "UA-20529582-2";
           Want a <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230250">crown</a>? Come and get it!
           </li>
 --%>
-          <li><a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230403">King of the Hill!</a> Every 3rd and Thirsty Thursday of the month from 6pm EST (3pm PST, 12am CET). Next one: November 19th.<br>
-          Want a <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230250">crown</a> and subscriber goodies? Come and get it!
+          <li><a href="/gameServer/forums/thread.jspa?forumID=1&threadID=230403">King of the Hill!</a> Every 3rd and Thirsty Thursday of the month from 6pm EST (3pm PST, 12am CET). Next one: December 17th.<br>
+          Want a <a href="/gameServer/forums/thread.jspa?forumID=1&threadID=230250">crown</a> and subscriber goodies? Come and get it!
           </li>
-          <li>Looking for <a href="http://www.pente.org/gameServer/forums/forum.jspa?forumID=34&start=0">resources</a> to get started?
+          <li>Looking for <a href="/gameServer/forums/forum.jspa?forumID=34&start=0">resources</a> to get started?
           </li>
-            <li>Want to play turn-based? Try posting an <a href="http://www.pente.org/gameServer/tb/new.jsp">open invitation</a><%= openTBgames > 0 ? " or try " + (openTBgames == 1 ? "" : "one of ") + "the <a href=\"http://www.pente.org/gameServer/tb/waiting.jsp\">" + openTBgames + " open turn-based invitation" + (openTBgames == 1 ? "" : "s") + "</a>" : ""%>.</li>
+            <li>Want to play turn-based? Try posting an <a href="/gameServer/tb/new.jsp">open invitation</a><%= openTBgames > 0 ? " or try " + (openTBgames == 1 ? "" : "one of ") + "the <a href=\"/gameServer/tb/waiting.jsp\">" + openTBgames + " open turn-based invitation" + (openTBgames == 1 ? "" : "s") + "</a>" : ""%>.</li>
             </li>
             <hr>
+
+          <li>Pente.org is now serving also over <a href="https://www.pente.org/gameServer/forums/thread.jspa?forumID=5&threadID=230730&tstart=0">https</a>!
           </li>
-          <li>16th Anniversary World Champion <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=2&threadID=230560&tstart=0">tournament</a> - 2015 <br>
-          (registration is closed. The database is now <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=2&threadID=230560&messageID=253192#253192">open</a> to all competitors.)
-    <%--
-    --%>
+            <hr>
+          <li>16th Anniversary World Champion <a href="/gameServer/tournaments/statusRound.jsp?eid=1184&round=1">tournament</a> - 2015. Round 1 has started! 
+          The <a href="/gameServer/forums/forum.jspa?forumID=35&start=0">tournament forum</a> is now opened. (<a href="/gameServer/forums/thread.jspa?forumID=35&threadID=230731&tstart=0">schedule</a>)
+
+<%--
+--%>
         </ul>
 </div>
 <% } %>

@@ -48,7 +48,7 @@ public class ImageCanvas extends Canvas {
         if (!donor) return;
         
         try {
-            URL imageUrl = new URL("http", host, "/gameServer/avatar?name=" + playerName);
+            URL imageUrl = new URL("https", host, "/gameServer/avatar?name=" + playerName);
             
             image = Toolkit.getDefaultToolkit().getImage(imageUrl);
             //image = Toolkit.getDefaultToolkit().createImage(imageBytes);

@@ -43,13 +43,13 @@ public class MainRoomPanel extends Panel implements ActionListener,
 
     private static final int componentSpacing = 5;
 
-    private Vector invitations = new Vector();
+    private Vector<InviteResponseFrame> invitations = new Vector<InviteResponseFrame>();
     
     private boolean displayPlayerMessages = false;
     private DSGPlayerData me;
     private ServerData serverData;
 
-    private Vector activeServers;
+    private Vector<ServerData> activeServers;
     private Choice loginRoom;
     
     private PreferenceHandler preferenceHandler;
@@ -95,7 +95,7 @@ public class MainRoomPanel extends Panel implements ActionListener,
         int chatHeight = 10;
         timeDiff = System.currentTimeMillis() - dsgTime;
         
-        activeServers = new Vector(servers.size() - 1);
+        activeServers = new Vector<ServerData>(servers.size() - 1);
         // remove the server we're in from list
         for (int i = 0; i < servers.size(); i++) {
             ServerData d = (ServerData) servers.elementAt(i);

@@ -374,8 +374,9 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
 
 
 
-    <script src="http://www.pente.org/gameServer/tb/gameScript.js"></script>
-    <script src="http://pente.org/gameServer/tb/gameScript.js"></script>
+    <script src="/gameServer/tb/gameScript.js"></script>
+
+
 
     <script type="text/javascript">
         var moves = [<%=moves.substring(0, moves.length() - 1)%>];

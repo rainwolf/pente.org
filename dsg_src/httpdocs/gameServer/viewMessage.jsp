@@ -91,7 +91,7 @@ messageDateFormat.setTimeZone(tz);
       </td>
       <td colspan="2" width="100%">
        <font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="white">
-        <b><%= filters.applyFilters(0, message.getSubject()) %></b>
+        <b><%= filters.applyFilters(0, message.getSubject()).replaceAll("http://","") %></b>
        </font>
       </td>
      </tr>
