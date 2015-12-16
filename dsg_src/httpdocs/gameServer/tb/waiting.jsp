@@ -122,7 +122,7 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
         oppRating = (int) Math.round(oppGameData.getRating());
     }
     if (s.getInvitationRestriction() == TBSet.LOWER_RATING) {
-        if (myRating >= oppRating) {
+        if (myRating > oppRating) {
             openTBgames--;
             iterator.remove();
         }
@@ -135,7 +135,7 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
         }
         continue;
     }
-    int delta = 75;
+    int delta = 100;
     if (s.getInvitationRestriction() == TBSet.SIMILAR_RATING) {
         if ((myRating + delta < oppRating) || (myRating - delta > oppRating)) {
             openTBgames--;
@@ -144,31 +144,23 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
         continue;
     }
     if (s.getInvitationRestriction() == TBSet.CLASS_RATING) {
-        if (1900 <= myRating && 1900 > oppRating) {
-            openTBgames--;
-            iterator.remove();
+        if (1900 <= myRating && 1900 <= oppRating) {
             continue;
         }
-        if (1700 <= myRating && (oppRating < 1700 || oppRating >= 1900)) {
-            openTBgames--;
-            iterator.remove();
+        if ((myRating >= 1700 && myRating < 1900) && (oppRating >= 1700 && oppRating < 1900)) {
             continue;
         }
-        if (1400 <= myRating && (oppRating < 1400 || oppRating >= 1700)) {
-            openTBgames--;
-            iterator.remove();
+        if ((myRating >= 1400 && myRating < 1700) && (oppRating >= 1400 && oppRating < 1700)) {
             continue;
         }
-        if (1000 <= myRating && (oppRating < 1000 || oppRating >= 1400)) {
-            openTBgames--;
-            iterator.remove();
+        if ((myRating >= 1000 && myRating < 1400) && (oppRating >= 1000 && oppRating < 1400)) {
             continue;
         }
-        if (1000 > myRating && oppRating >= 1000) {
-            openTBgames--;
-            iterator.remove();
+        if (1000 > myRating && oppRating < 1000) {
             continue;
         }
+        openTBgames--;
+        iterator.remove();
     }
 }
 
@@ -304,7 +296,7 @@ below and do not specify a player to invite.<br>
                   anyoneString += " over " + oppRating;
               }
               if (s.getInvitationRestriction() == TBSet.SIMILAR_RATING) {
-                  anyoneString += " " + oppRating + " &plusmn 75";
+                  anyoneString += " " + oppRating + " &plusmn 100";
               }
               if (s.getInvitationRestriction() == TBSet.CLASS_RATING) {
                   SimpleDSGPlayerGameData tmpData = new SimpleDSGPlayerGameData();

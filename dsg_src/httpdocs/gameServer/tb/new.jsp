@@ -239,7 +239,7 @@ if (!limitExceeded) {%>
           <option value="N">Not already playing</option>
           <option value="L">Lower rating</option>
           <option value="H">Higher rating</option>
-          <option value="S">Similar rating (&plusmn 75)</option>
+          <option value="S">Similar rating (&plusmn 100)</option>
           <option value="C">Same rating class</option>
         </select>
        </font> (This only affects open invitations)

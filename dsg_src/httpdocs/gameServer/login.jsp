@@ -55,10 +55,16 @@
  
    <%
        String action = (String) request.getAttribute("loginAction");
+       String mobile = (String) request.getParameter("mobile");
+
        if (action == null || action.endsWith("login.jsp")) {
            // make sure index.jsp is specified because double logins
            // were occurring when specifying just /gameServer/
-    	   action = request.getContextPath() + "/gameServer/index.jsp";
+          if (mobile == null) {
+            action = request.getContextPath() + "/gameServer/index.jsp";
+          } else {
+            action = request.getContextPath() + "/gameServer/mobile/empty.jsp";
+          }
        }
    %>
 

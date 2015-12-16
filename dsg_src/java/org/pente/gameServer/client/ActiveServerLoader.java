@@ -14,10 +14,10 @@ public class ActiveServerLoader {
     public static Vector getActiveServers(String host) throws IOException,
         MalformedURLException {
 
-        URL url = new URL("http", host, "/gameServer/activeServers");
+        URL url = new URL("https", host, "/gameServer/activeServers");
         BufferedReader in = new BufferedReader(new InputStreamReader(
             (InputStream) url.getContent()));
-        Vector servers = new Vector();
+        Vector<ServerData> servers = new Vector<ServerData>();
         String s = null;
         while ((s = in.readLine()) != null) {
             ServerData d = new ServerData();

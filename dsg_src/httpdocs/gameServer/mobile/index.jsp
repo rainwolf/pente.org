@@ -123,8 +123,8 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
 
     }
 
-        List<DSGIgnoreData> ignoreData = dsgPlayerStorer.getIgnoreData(theirPID);
-        for (Iterator<DSGIgnoreData> it = ignoreData.iterator(); it.hasNext();) {
+    List<DSGIgnoreData> ignoreData = dsgPlayerStorer.getIgnoreData(theirPID);
+    for (Iterator<DSGIgnoreData> it = ignoreData.iterator(); it.hasNext();) {
         DSGIgnoreData i = it.next();
         if (i.getIgnorePid() == myPID) {
             if (i.getIgnoreInvite()) {
@@ -162,7 +162,7 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
         oppRating = (int) Math.round(oppGameData.getRating());
     }
     if (s.getInvitationRestriction() == TBSet.LOWER_RATING) {
-        if (myRating >= oppRating) {
+        if (myRating > oppRating) {
             openTBgames--;
             iterator.remove();
         }
@@ -175,7 +175,7 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
         }
         continue;
     }
-    int delta = 75;
+    int delta = 100;
     if (s.getInvitationRestriction() == TBSet.SIMILAR_RATING) {
         if ((myRating + delta < oppRating) || (myRating - delta > oppRating)) {
             openTBgames--;
@@ -184,40 +184,77 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
         continue;
     }
     if (s.getInvitationRestriction() == TBSet.CLASS_RATING) {
-        if (1900 <= myRating && 1900 > oppRating) {
-            openTBgames--;
-            iterator.remove();
+        if (1900 <= myRating && 1900 <= oppRating) {
             continue;
         }
-        if (1700 <= myRating && (oppRating < 1700 || oppRating >= 1900)) {
-            openTBgames--;
-            iterator.remove();
+        if ((myRating >= 1700 && myRating < 1900) && (oppRating >= 1700 && oppRating < 1900)) {
             continue;
         }
-        if (1400 <= myRating && (oppRating < 1400 || oppRating >= 1700)) {
-            openTBgames--;
-            iterator.remove();
+        if ((myRating >= 1400 && myRating < 1700) && (oppRating >= 1400 && oppRating < 1700)) {
             continue;
         }
-        if (1000 <= myRating && (oppRating < 1000 || oppRating >= 1400)) {
-            openTBgames--;
-            iterator.remove();
+        if ((myRating >= 1000 && myRating < 1400) && (oppRating >= 1000 && oppRating < 1400)) {
             continue;
         }
-        if (1000 > myRating && oppRating >= 1000) {
-            openTBgames--;
-            iterator.remove();
+        if (1000 > myRating && oppRating < 1000) {
             continue;
         }
+        openTBgames--;
+        iterator.remove();
     }
 }
 
 
-if (dsgPlayerData.unlimitedTBGames() || dsgPlayerData.unlimitedMobileTBGames() ) { %>
+int gamesLimit = 0;
+DSGPlayerGameData playerGameData = dsgPlayerData.getPlayerGameData(GridStateFactory.TB_PENTE);
+if (playerGameData != null) {
+    gamesLimit += playerGameData.getTotalGames();
+}
+playerGameData = dsgPlayerData.getPlayerGameData(GridStateFactory.TB_PENTE);
+if (playerGameData != null) {
+    gamesLimit += playerGameData.getTotalGames();
+}
+playerGameData = dsgPlayerData.getPlayerGameData(GridStateFactory.TB_KERYO);
+if (playerGameData != null) {
+    gamesLimit += playerGameData.getTotalGames();
+}
+playerGameData = dsgPlayerData.getPlayerGameData(GridStateFactory.TB_GOMOKU);
+if (playerGameData != null) {
+    gamesLimit += playerGameData.getTotalGames();
+}
+playerGameData = dsgPlayerData.getPlayerGameData(GridStateFactory.TB_DPENTE);
+if (playerGameData != null) {
+    gamesLimit += playerGameData.getTotalGames();
+}
+playerGameData = dsgPlayerData.getPlayerGameData(GridStateFactory.TB_GPENTE);
+if (playerGameData != null) {
+    gamesLimit += playerGameData.getTotalGames();
+}
+playerGameData = dsgPlayerData.getPlayerGameData(GridStateFactory.TB_POOF_PENTE);
+if (playerGameData != null) {
+    gamesLimit += playerGameData.getTotalGames();
+}
+playerGameData = dsgPlayerData.getPlayerGameData(GridStateFactory.TB_CONNECT6);
+if (playerGameData != null) {
+    gamesLimit += playerGameData.getTotalGames();
+}
+playerGameData = dsgPlayerData.getPlayerGameData(GridStateFactory.TB_BOAT_PENTE);
+if (playerGameData != null) {
+    gamesLimit += playerGameData.getTotalGames();
+}
+if (gamesLimit < 2) {
+    gamesLimit = 4;
+} else if (gamesLimit > 20) {
+    gamesLimit = 2000;    
+}
+
+if (name.equals("rainwolf")) {
+gamesLimit = 5; %>
+tbGamesLimit;<%=""+gamesLimit%>;tbGamesLimit
+<%} else if (dsgPlayerData.unlimitedTBGames() || dsgPlayerData.unlimitedMobileTBGames() ) { %>
 Unlimited Games
 <%} else { %>
-Unlimited Games
-tb GamesLimit;<%=ctx.getInitParameter("TBGamesLimit")%>;tb GamesLimit
+tbGamesLimit;<%=""+gamesLimit%>;tbGamesLimit
 <%}
 if (!dsgPlayerData.showAds()) { %>
 No Ads

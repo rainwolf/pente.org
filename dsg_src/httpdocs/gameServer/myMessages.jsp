@@ -125,7 +125,7 @@ messageDateFormat.setTimeZone(tz);
           </td>
           <td class="jive-topic-name" width="96%">
           <%
-            String subject = filters.applyFilters(0, m.getSubject());
+            String subject = filters.applyFilters(0, m.getSubject()).replaceAll("http://","");
             if ("".equals(subject)) {
               subject = "(no subject)";
             }
