@@ -242,14 +242,14 @@ playerGameData = dsgPlayerData.getPlayerGameData(GridStateFactory.TB_BOAT_PENTE)
 if (playerGameData != null) {
     gamesLimit += playerGameData.getTotalGames();
 }
-if (gamesLimit < 2) {
+if (gamesLimit < 4) {
     gamesLimit = 4;
 } else if (gamesLimit > 20) {
     gamesLimit = 2000;    
 }
 
 if (name.equals("rainwolf")) {
-gamesLimit = 5; %>
+gamesLimit = 31; %>
 tbGamesLimit;<%=""+gamesLimit%>;tbGamesLimit
 <%} else if (dsgPlayerData.unlimitedTBGames() || dsgPlayerData.unlimitedMobileTBGames() ) { %>
 Unlimited Games

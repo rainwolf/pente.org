@@ -194,6 +194,7 @@ public class LoginFilter implements Filter {
                         
                         // create new session
                         session = httpRequest.getSession(true);
+                        // session.setMaxInactiveInterval(10);
                         session.setAttribute("name", name);
                         session.setAttribute("password", password);
                         session.setAttribute("ip", request.getRemoteAddr());

@@ -701,6 +701,9 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                         drawGameWinSetText += "\n\n" + setMsg;
                         drawGameLoseSetText += "\n\n" + setMsg;
 					}
+				} else {
+					winText += " \n \n ";
+					lossText += "\n \n ";
 				}
 				
                 String winSubj = game.isDraw() ? "It's a Draw" : "Congratulations, you won!";
