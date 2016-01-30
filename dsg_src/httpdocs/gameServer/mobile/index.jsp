@@ -254,7 +254,8 @@ tbGamesLimit;<%=""+gamesLimit%>;tbGamesLimit
 <%} else if (dsgPlayerData.unlimitedTBGames() || dsgPlayerData.unlimitedMobileTBGames() ) { %>
 Unlimited Games
 <%} else { %>
-tbGamesLimit;<%=""+gamesLimit%>;tbGamesLimit
+Unlimited Games
+tb GamesLimit;<%=""+gamesLimit%>;tb GamesLimit
 <%}
 if (!dsgPlayerData.showAds()) { %>
 No Ads
@@ -276,7 +277,7 @@ Invitations received<%
                  }
                  DSGPlayerData d = dsgPlayerStorer.loadPlayer(s.getInviterPid());
                  DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(s.getGame1().getGame());%>
-<%=s.getSetId() + ";" + GridStateFactory.getGameName(s.getGame1().getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + s.getGame1().getDaysPerMove() + " days;" + (s.getGame1().isRated() ? "Rated" : "Not Rated") + ";" + (d.hasPlayerDonated()?d.getNameColorRGB():0)%><%} 
+<%=s.getSetId() + ";" + GridStateFactory.getGameName(s.getGame1().getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + s.getGame1().getDaysPerMove() + " days;" + (s.getGame1().isRated() ? "Rated" : "Not Rated") + ";" + (d.hasPlayerDonated()?d.getNameColorRGB():0) + ";" + d.getTourneyWinner() %><%} 
      
 
 
@@ -337,7 +338,7 @@ Invitations sent<%
                       }
                  }
                  %>
-<%=s.getSetId() + ";" + GridStateFactory.getGameName(s.getGame1().getGame()) + ";" + ((pid == 0) ? anyoneString:d.getName()) + ";" + ((dsgPlayerGameData != null)?(int) Math.round(dsgPlayerGameData.getRating()):"1600") + ";" +  color + ";" + s.getGame1().getDaysPerMove() + " days;" + (s.getGame1().isRated() ? "Rated" : "Not Rated") + ";" + ((pid == 0)?"0":(d.hasPlayerDonated()?d.getNameColorRGB():0))%><%} 
+<%=s.getSetId() + ";" + GridStateFactory.getGameName(s.getGame1().getGame()) + ";" + ((pid == 0) ? anyoneString:d.getName()) + ";" + ((dsgPlayerGameData != null)?(int) Math.round(dsgPlayerGameData.getRating()):"1600") + ";" +  color + ";" + s.getGame1().getDaysPerMove() + " days;" + (s.getGame1().isRated() ? "Rated" : "Not Rated") + ";" + ((pid == 0)?"0":(d.hasPlayerDonated()?d.getNameColorRGB():0)) + ";" + ((pid == 0)?"0":d.getTourneyWinner()) %><%} 
 
      
 
@@ -351,7 +352,7 @@ Active Games - My Turn<%
                  g.getPlayer2Pid() : g.getPlayer1Pid();
                 DSGPlayerData d = dsgPlayerStorer.loadPlayer(oppPid);
                 DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(g.getGame());%>
-<%=g.getGid() + ";" + GridStateFactory.getGameName(g.getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + g.getNumMoves() + 1 + ";" + Utilities.getTimeLeft(g.getTimeoutDate().getTime()) +";" + (g.isRated() ? "Rated" : "Not Rated") + ";" + (d.hasPlayerDonated()?d.getNameColorRGB():0)%><%}
+<%=g.getGid() + ";" + GridStateFactory.getGameName(g.getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + g.getNumMoves() + 1 + ";" + Utilities.getTimeLeft(g.getTimeoutDate().getTime()) +";" + (g.isRated() ? "Rated" : "Not Rated") + ";" + (d.hasPlayerDonated()?d.getNameColorRGB():0) + ";" + d.getTourneyWinner() %><%}
      
 
 
@@ -365,7 +366,7 @@ Active Games - Opponents Turn<%
                  g.getPlayer2Pid() : g.getPlayer1Pid();
                 DSGPlayerData d = dsgPlayerStorer.loadPlayer(oppPid);
                 DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(g.getGame());%>
-<%=g.getGid() + ";" + GridStateFactory.getGameName(g.getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + g.getNumMoves() + 1 + ";" + Utilities.getTimeLeft(g.getTimeoutDate().getTime()) +";" + (g.isRated() ? "Rated" : "Not Rated") + ";" + (d.hasPlayerDonated()?d.getNameColorRGB():0)%><%} 
+<%=g.getGid() + ";" + GridStateFactory.getGameName(g.getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + g.getNumMoves() + 1 + ";" + Utilities.getTimeLeft(g.getTimeoutDate().getTime()) +";" + (g.isRated() ? "Rated" : "Not Rated") + ";" + (d.hasPlayerDonated()?d.getNameColorRGB():0) + ";" + d.getTourneyWinner() %><%} 
      
 
 
@@ -386,7 +387,7 @@ Open Invitation Games<%
                  }
                  DSGPlayerData d = dsgPlayerStorer.loadPlayer(s.getInviterPid());
                  DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(s.getGame1().getGame());%>
-<%=s.getSetId() + ";" + GridStateFactory.getGameName(s.getGame1().getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + s.getGame1().getDaysPerMove() + " days;" + (s.getGame1().isRated() ? "Rated" : "Not Rated") + ";" + (d.hasPlayerDonated()?d.getNameColorRGB():0)%><%}
+<%=s.getSetId() + ";" + GridStateFactory.getGameName(s.getGame1().getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + s.getGame1().getDaysPerMove() + " days;" + (s.getGame1().isRated() ? "Rated" : "Not Rated") + ";" + (d.hasPlayerDonated()?d.getNameColorRGB():0) + ";" + d.getTourneyWinner() %><%}
 
 
 
@@ -395,7 +396,7 @@ Open Invitation Games<%
 Messages<%
    for (DSGMessage m : messages) {
        DSGPlayerData from = dsgPlayerStorer.loadPlayer(m.getFromPid()); %>
-<%=m.getMid() + ";" +(m.isRead() ? "read" : "unread") + ";" + m.getSubject() + ";" + from.getName() + ";" + messageDateFormat.format(m.getCreationDate()) + ";" + (from.hasPlayerDonated()?from.getNameColorRGB():0)%><%}%>
+<%=m.getMid() + ";" +(m.isRead() ? "read" : "unread") + ";" + m.getSubject() + ";" + from.getName() + ";" + messageDateFormat.format(m.getCreationDate()) + ";" + (from.hasPlayerDonated()?from.getNameColorRGB():0) + ";" + from.getTourneyWinner() %><%}%>
 
 
 

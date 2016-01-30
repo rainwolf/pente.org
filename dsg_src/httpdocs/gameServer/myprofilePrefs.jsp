@@ -180,7 +180,7 @@ pageContext.setAttribute("current", "My Profile");
    <td><br>
      <b>Vacation days:</b><br>
 <% int floatingHourDays = dsgPlayerStorer.loadFloatingVacationDays(dsgPlayerData.getPlayerID()); %>
-You get you get <%=MySQLDSGPlayerStorer.FLOATINGVACATIONDAYS%> floating vacation days each year, and you have <font color="red"> <%=floatingHourDays/24%> days and <%=floatingHourDays % 24%> hours</font> left for <b> <%=Calendar.getInstance().get(Calendar.YEAR)%></b>.
+You get <%=MySQLDSGPlayerStorer.FLOATINGVACATIONDAYS%> floating vacation days each year, and you have <font color="red"> <%=floatingHourDays/24%> days and <%=floatingHourDays % 24%> hours</font> left for <b> <%=Calendar.getInstance().get(Calendar.YEAR)%></b>.
 (These vacation days do not roll over to <%=Calendar.getInstance().get(Calendar.YEAR) + 1%>.)
 
     <br>

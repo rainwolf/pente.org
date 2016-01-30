@@ -242,7 +242,9 @@ below and do not specify a player to invite.<br>
          <td><b>Play as</b></td>
 	     <td><b>Time/Move</b></td>
        <td><b>Rated</b></td>
+<%     if ("rainwolf".equals(name)) { %>
        <td><b>Open to</b></td>
+ <% } %>
 	   </tr>
      
      <% 
@@ -275,6 +277,7 @@ below and do not specify a player to invite.<br>
            <td><%= color %></td>
            <td><%= s.getGame1().getDaysPerMove() %> days</td>
            <td><%= s.getGame1().isRated() ? "Rated" : "Not Rated" %></td>
+<%     if ("rainwolf".equals(name)) { %>
            <td>
            <%
               String anyoneString = "Anyone";
@@ -307,6 +310,7 @@ below and do not specify a player to invite.<br>
            <%=anyoneString%>
 
            </td>
+<% } %>
          </tr>
      <% } %>
      </table>
