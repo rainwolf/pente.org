@@ -366,7 +366,7 @@ public class TBGamePanel extends JPanel implements OrderedPieceCollection {
 			infoPanel.add(p1Label, gbc3);
 			gbc3.gridx++;
 			p1RatingLabel = label("<html><body>" +
-					"<img src=http://" + host + "/gameServer/images/" +
+					"<img src=https://" + host + "/gameServer/images/" +
 					player1RatingGif +
 					">&nbsp;&nbsp;" + player1Rating + "</body></html>");
 			infoPanel.add(p1RatingLabel, gbc3);
@@ -390,7 +390,7 @@ public class TBGamePanel extends JPanel implements OrderedPieceCollection {
 			infoPanel.add(p2Label, gbc3);
 			gbc3.gridx++;
 			p2RatingLabel = label("<html><body>" +
-					"<img src=http://" + host + "/gameServer/images/" +
+					"<img src=https://" + host + "/gameServer/images/" +
 					player2RatingGif +
 					">&nbsp;&nbsp;" + player2Rating + "</body></html>");
 			infoPanel.add(p2RatingLabel, gbc3);

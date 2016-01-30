@@ -210,6 +210,14 @@ if (color == null) {
 </b>
    </td>
 </tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<div style="height:250px;position: relative; overflow:hidden;">
+<div id="movesTable" style="height:250px; width: 270px; right: -20px; position: absolute; align: right; overflow:auto;">
+<table align="left" border=1  width="250px">
 <% 
 String coordinateLetters[] = {"A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T"};
 int row = 0;
@@ -240,6 +248,8 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
 }
 %>
 </table>
+</div>
+</div>
 
  <table align="right" border=1  width="250px">
 <tr>
@@ -452,6 +462,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                         lastMove = moves[moves.length - 2];
                         drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
                     }
+                    document.getElementById("movesTable").scrollTop = document.getElementById("movesTable").scrollHeight;
                 }
                 if (game == 63 && moves.length > 1) {
                     selectMove(drawUntilMove - 2);
@@ -742,6 +753,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
         } else {
           selectMove(drawUntilMove - 1);
         }
+        document.getElementById("movesTable").scrollTop = document.getElementById("movesTable").scrollHeight;
     </script>
 
  </td>

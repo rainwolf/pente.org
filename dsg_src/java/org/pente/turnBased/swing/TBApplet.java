@@ -65,7 +65,7 @@ public class TBApplet extends JApplet implements TBActionHandler {
 		String player2RatingGif = getParameter("player2RatingGif");
 		
 		String movesStr = getParameter("moves");
-		java.util.List movesList = new ArrayList();
+		java.util.List<Integer> movesList = new ArrayList<Integer>();
 		if (movesStr != null) {
 			StringTokenizer st = new StringTokenizer(movesStr, ",");
 			while (st.hasMoreTokens()) {
@@ -90,7 +90,7 @@ public class TBApplet extends JApplet implements TBActionHandler {
 		String seqNumsStr = getParameter("seqNums");
 		String datesStr = getParameter("dates");
 		String playersStr = getParameter("players");
-		java.util.List messages = new ArrayList();
+		java.util.List<TBMessage> messages = new ArrayList<TBMessage>();
 		//TODO escape ,'s with other char
 		if (messagesStr != null) {
 			StringTokenizer st = new StringTokenizer(messagesStr, ",");
@@ -189,8 +189,8 @@ public class TBApplet extends JApplet implements TBActionHandler {
 	        	System.getProperty("os.version") + "]";
 
             URL url = new URL(
-                "http://" + getCodeBase().getHost() + 
-                "/gameServer/tb/log?message=" + URLEncoder.encode(all));
+                "https://" + getCodeBase().getHost() + 
+                "/gameServer/tb/log?message=" + URLEncoder.encode(all, "UTF-8"));
 	        url.getContent();
 
 	    } catch (IOException ex) {
@@ -207,13 +207,15 @@ public class TBApplet extends JApplet implements TBActionHandler {
 
         try {
             URL url = new URL(
-                "http://" + getCodeBase().getHost() + 
+                "https://" + getCodeBase().getHost() + 
                 "/gameServer/tb/game?command=move&gid=" + gid + 
                 "&moves=" + moves +
-                "&message=" + URLEncoder.encode(message));
+                "&message=" + URLEncoder.encode(message, "UTF-8"));
             getAppletContext().showDocument(url, "_self");
 
         } catch (MalformedURLException ex) {
+            ex.printStackTrace();
+        } catch (UnsupportedEncodingException ex) {
             ex.printStackTrace();
         }
 	}
@@ -221,12 +223,14 @@ public class TBApplet extends JApplet implements TBActionHandler {
 
         try {
             URL url = new URL(
-                "http://" + getCodeBase().getHost() + 
+                "https://" + getCodeBase().getHost() + 
                 "/gameServer/tb/resign?command=confirm&gid=" + gid + 
-                "&message=" + URLEncoder.encode(message));
+                "&message=" + URLEncoder.encode(message, "UTF-8"));
             getAppletContext().showDocument(url, "_self");
 
         } catch (MalformedURLException ex) {
+            ex.printStackTrace();
+        } catch (UnsupportedEncodingException ex) {
             ex.printStackTrace();
         }
 	}
@@ -234,13 +238,15 @@ public class TBApplet extends JApplet implements TBActionHandler {
 
         try {
             URL url = new URL(
-                "http://" + getCodeBase().getHost() + 
+                "https://" + getCodeBase().getHost() + 
                 "/gameServer/tb/cancel?command=confirm&sid=" + sid + 
                 "&gid=" + gid +
-                "&message=" + URLEncoder.encode(message));
+                "&message=" + URLEncoder.encode(message, "UTF-8"));
             getAppletContext().showDocument(url, "_self");
 
         } catch (MalformedURLException ex) {
+            ex.printStackTrace();
+        } catch (UnsupportedEncodingException ex) {
             ex.printStackTrace();
         }
     }
@@ -248,7 +254,7 @@ public class TBApplet extends JApplet implements TBActionHandler {
 
         try {
             URL url = new URL(
-                "http://" + getCodeBase().getHost() + 
+                "https://" + getCodeBase().getHost() + 
                 "/gameServer/profile?viewName=" + name);
             getAppletContext().showDocument(url, "_self");
 
@@ -260,7 +266,7 @@ public class TBApplet extends JApplet implements TBActionHandler {
 
         try {
             URL url = new URL(
-                "http://" + getCodeBase().getHost() + 
+                "https://" + getCodeBase().getHost() + 
                 "/gameServer/tb/game?command=load&gid=" + game);
             getAppletContext().showDocument(url, "_self");
 
