@@ -155,7 +155,7 @@ if (color == null) {
    }
 %>
 <br>
-<ul>
+<!-- <ul>
           <li>Tap anywhere on the board and the game will reset to its final state.
           </li>
           <li>The cells in the table of moves are clickable.
@@ -163,7 +163,7 @@ if (color == null) {
           <li>Report any bugs <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=5&threadID=230550">here</a>.
           </li>
 </ul>
-
+ -->
 <tr>
  <td>
  <table>
@@ -385,7 +385,10 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
 
 
     <script src="/gameServer/tb/gameScript.js"></script>
-
+    <script type="text/javascript" src="/gameServer/js/LZWEncoder.js"></script>
+    <script type="text/javascript" src="/gameServer/js/NeuQuant.js"></script>
+    <script type="text/javascript" src="/gameServer/js/GIFEncoder.js"></script>
+    <script type="text/javascript" src="/gameServer/js/b64.js"></script>
 
 
     <script type="text/javascript">
@@ -754,6 +757,60 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
           selectMove(drawUntilMove - 1);
         }
         document.getElementById("movesTable").scrollTop = document.getElementById("movesTable").scrollHeight;
+
+
+        function drawBoardUntilMove(move) {
+            resetAbstractBoard(abstractBoard);
+            drawUntilMove = move + 1;
+            if (game == 63 && drawUntilMove != 1) {
+                drawUntilMove += 1;
+            }
+            replayGame(abstractBoard, moves, drawUntilMove);
+            boardContext.rect(0, 0, boardCanvas.width, boardCanvas.height);
+            boardContext.fillStyle='white';
+            boardContext.fill();     
+            drawGrid(boardContext, boardColor);
+            drawGame();
+            lastMove = moves[drawUntilMove - 1];
+            drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+            if (game == 63 && moves.length > 1) {
+                lastMove = moves[drawUntilMove - 2];
+                drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+            }
+        }
+
+        function gifer() {
+            var encoder = new GIFEncoder();
+            encoder.setRepeat(1);
+            encoder.setDelay(1000);
+            encoder.start();
+            if (game == 63 && moves.length > 1) {
+              drawBoardUntilMove(0);
+              encoder.addFrame(boardContext);
+              for ( var i = 1; i < moves.length/2; i++ ) {
+                drawBoardUntilMove(2*i - 1);
+                encoder.addFrame(boardContext);
+              }
+              if (moves.length%2 == 0) {
+                drawBoardUntilMove(moves.length - 1);
+                encoder.addFrame(boardContext);
+              }
+            } else {
+              for ( var i = 0; i < moves.length; i++ ) {
+                drawBoardUntilMove(i);
+                encoder.addFrame(boardContext);
+              }
+            }
+            encoder.finish();
+
+            var image = new Image();
+            var binary_gif = encoder.stream().getData() //notice this is different from the as3gif package!
+            image.src = "data:image/gif;base64," + encode64(binary_gif);
+
+            var w = window.open("");
+            w.document.write(image.outerHTML);
+        }
+
     </script>
 
  </td>
@@ -766,6 +823,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
 
     <a class="button" href="/gameServer/pgn.jsp?g=<%= game.getGameID() %>"><span style="color:white">Text version</span></a>
     <% if (!game.isPrivateGame()) { %><a class="button" style="clear:right;" href="/gameServer/forums/post!default.jspa?forumID=27&body=[game]<%= game.getGameID() %>[/game]<%= URLEncoder.encode("\n\nEnter your comments here") %>&subject=<%= URLEncoder.encode("Game: " + game.getPlayer1Data().getUserIDName() + " vs. " + game.getPlayer2Data().getUserIDName() + " " + dateFormat.format(game.getDate().getTime())) %>"><span style="color:white">Discuss this game</span></a><% } %>
+    <a class="button" href="javascript:gifer();" ><span style="color:white">Animated GIF</span></a>
     <br>
     <br>
  </td>

@@ -305,7 +305,7 @@ window.google_analytics_uacct = "UA-20529582-2";
           Want a <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230250">crown</a>? Come and get it!
           </li>
 --%>
-          <li><a href="/gameServer/forums/thread.jspa?forumID=1&threadID=230403">King of the Hill!</a> Every 3rd and Thirsty Thursday of the month from 6pm EST (3pm PST, 12am CET). Next one: February 18th.<br>
+          <li><a href="/gameServer/forums/thread.jspa?forumID=1&threadID=230403">King of the Hill!</a> Every 3rd and Thirsty Thursday of the month from 6pm EST (3pm PST, 12am CET). Next one: May 19th.<br>
           Want a <a href="/gameServer/forums/thread.jspa?forumID=1&threadID=230250">crown</a> and subscriber goodies? Come and get it!
           </li>
           <li>Looking for <a href="/gameServer/forums/forum.jspa?forumID=34&start=0">resources</a> to get started?
@@ -314,8 +314,11 @@ window.google_analytics_uacct = "UA-20529582-2";
             </li>
             <hr>
 
-          <li>16th Anniversary World Champion <a href="/gameServer/tournaments/statusRound.jsp?eid=1184&round=2">tournament</a> - 2015. Round 2 has started! 
+          <li>16th Anniversary World Champion <a href="/gameServer/tournaments/statusRound.jsp?eid=1184&round=3">tournament</a> - 2015. Round 3 has started! 
           The <a href="/gameServer/forums/forum.jspa?forumID=35&start=0">tournament forum</a> is now opened. 
+            <hr>
+
+          <li>The <a href="https://play.google.com/store/apps/details?id=be.submanifold.pentelive">Android Turn-Based Pente app</a> is finally here. Get your copy today!
 <%--
           (<a href="/gameServer/forums/thread.jspa?forumID=35&threadID=230731&tstart=0">schedule</a>)
 --%>
@@ -450,10 +453,10 @@ addLoadEvent(goJws);
 
 </form>
 
-<%--
 <div style="margin-top:5px;">
      or <a href="/gameServer/index.jsp?jws=1"><span>install</span></a> the game room on your desktop
 </div>
+<%--
 --%>
    </td>
       
@@ -496,12 +499,7 @@ if (inLiveGameRoom) {
       <a class="boldbuttons" href="bootMe.jsp?name=<%= nm %>&pidHash=<%= checkHash %>" 
          style="margin-right:5px;"><span>Boot me NOW!!!</span></a>
     </div>
-<!--       <form method="post" action="bootMe.jsp">
-          <input type="hidden" name="name" value="<%= nm %>" >
-          <input type="hidden" name="pidHash" value="<%= checkHash %>" >
-          <input type="image" src="images/bootButton.png" alt="Submit" title="boot me NOW!!!" align="center" width="50" height="50">
-      </form> 
- -->    </td>
+</td>
 <%
 }
 %>
@@ -769,8 +767,11 @@ if (inLiveGameRoom) {
          <tr>
            <td>
          <!-- <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><img src="/gameServer/images/mobile.png" title="Without Java" height="12" width="12"></a> -  -->
-         <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><%= GridStateFactory.getGameName(g.getGame()) %></a> - 
+         <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><%= GridStateFactory.getGameName(g.getGame()) %></a>
+<!--
+          - 
            (<a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load');"><img src="/gameServer/images/java.png" title="With Java" height="14" width="14"></a>)
+-->           
              </td>
            <td><%@ include file="playerLink.jspf" %>&nbsp;<% if (dsgPlayerGameData != null) { %><%@ include file="ratings.jspf" %><% } %></td>
            <td><%= color %></td>
@@ -813,8 +814,11 @@ if (inLiveGameRoom) {
          <tr>
            <td>
          <!-- <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><img src="/gameServer/images/mobile.png" title="Without Java" height="12" width="12"></a> -  -->
-         <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><%= GridStateFactory.getGameName(g.getGame()) %></a> - 
+         <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><%= GridStateFactory.getGameName(g.getGame()) %></a> 
+<!--
+- 
            (<a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load');"><img src="/gameServer/images/java.png" title="With Java" height="14" width="14"></a>)
+-->
              </td>
            <td><%@ include file="playerLink.jspf" %></a>&nbsp;<% if (dsgPlayerGameData != null) { %><%@ include file="ratings.jspf" %><% } %></td>
            <td><%= color %></td>

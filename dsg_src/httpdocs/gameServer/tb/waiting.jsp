@@ -277,7 +277,7 @@ below and do not specify a player to invite.<br>
            <td><%= color %></td>
            <td><%= s.getGame1().getDaysPerMove() %> days</td>
            <td><%= s.getGame1().isRated() ? "Rated" : "Not Rated" %></td>
-<%     if ("rainwolf".equals(name)) { %>
+<%     if (true || "rainwolf".equals(name)) { %>
            <td>
            <%
               String anyoneString = "Anyone";

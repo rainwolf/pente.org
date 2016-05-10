@@ -78,7 +78,8 @@ public class BackgroundMailer extends BackgroundWorker {
 	        String body = m.getBody() + "\n\n" +
 	        	"This message was sent through http://pente.org.\n" +
 	        	"DO NOT REPLY VIA EMAIL, instead view and reply at " +
-	        	"http://pente.org/gameServer/mymessages?command=view&mid=" + m.getMid();
+	        	"https://pente.org/gameServer/mymessages?command=view&mid=" + m.getMid() + 
+	        	"\n \n Email settings can be changed at https://pente.org/gameServer/myprofile/prefs";
 		    message.setText(body);
 
 	        Transport transport = session.getTransport("smtp");
