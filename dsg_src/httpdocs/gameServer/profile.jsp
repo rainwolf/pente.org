@@ -327,6 +327,19 @@ if (dsgPlayerData != null) {
         </font>
       </td>
      </tr>
+     <tr>
+      <td>
+       <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
+        <b>Remaining vacation (<%=Calendar.getInstance().get(Calendar.YEAR)%>):&nbsp;</b>
+       </font>
+      </td>
+      <td>
+        <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
+        <% int floatingHourDays = dsgPlayerStorer.loadFloatingVacationDays(dsgPlayerData.getPlayerID()); %>
+        <%=floatingHourDays/24%> days and <%=floatingHourDays % 24%> hours
+        </font>
+      </td>
+     </tr>
      
   <tr>
     <td colspan="5">
@@ -358,10 +371,7 @@ if (dsgPlayerData != null) {
 <%=dsgPlayerData.getName()%> has unlimited <%=(dsgPlayerData.unlimitedMobileTBGames() && (!dsgPlayerData.unlimitedTBGames()))?"(mobile-only) ":""%>turn-based games<%=dsgPlayerData.databaseAccess()?", database access":""%><%=dsgPlayerData.showAds()?" but will see advertisements":", and will not see advertisements"%>.<br>
 This subscription ends on <%=dsgPlayerData.hasPlayerDonated()?""+profileDateFormat.format(dsgPlayerData.getSubscriptionExpiration()):""%>.
 <br>
-<br>
 <%}%>
-<% int floatingHourDays = dsgPlayerStorer.loadFloatingVacationDays(dsgPlayerData.getPlayerID()); %>
-<%=dsgPlayerData.getName()%>  has <font color="red"> <%=floatingHourDays/24%> days and <%=floatingHourDays % 24%> hours</font> left for <b> <%=Calendar.getInstance().get(Calendar.YEAR)%></b>.
     </div>
    </td>
 </tr>

@@ -145,7 +145,10 @@ gameDateFormat.setTimeZone(tz);
          <tr>
            <td>
            <a href="javascript:goWH('/gameServer/viewLiveGame?mobile&g=<%= g.getGameID() %>');">
-             <%= gameStr %></a> - (<a href="javascript:goWH('/gameServer/viewLiveGame?g=<%= g.getGameID() %>');"><img src="/gameServer/images/java.png" title="With Java" height="14" width="14"></a>)
+             <%= gameStr %></a>
+<!--
+              - (<a href="javascript:goWH('/gameServer/viewLiveGame?g=<%= g.getGameID() %>');"><img src="/gameServer/images/java.png" title="With Java" height="14" width="14"></a>)
+-->
              </td>
            <td><% PlayerData d = g.getPlayer1Data(); %><%@include file="vgplayerLink.jspf" %></td>
            <td><%= g.getPlayer1Data().getRating() %> 
@@ -191,7 +194,10 @@ gameDateFormat.setTimeZone(tz);
          <tr>
            <td>
            <a href="javascript:goWH('/gameServer/viewLiveGame?mobile&g=<%= g.getGameID() %>');">
-             <%= gameStr %></a> - (<a href="javascript:goWH('/gameServer/viewLiveGame?g=<%= g.getGameID() %>');"><img src="/gameServer/images/java.png" title="With Java" height="14" width="14"></a>)
+             <%= gameStr %></a>
+<!--
+              - (<a href="javascript:goWH('/gameServer/viewLiveGame?g=<%= g.getGameID() %>');"><img src="/gameServer/images/java.png" title="With Java" height="14" width="14"></a>)
+-->
              </td>
          <td><% PlayerData d = g.getPlayer1Data(); %><%@include file="vgplayerLink.jspf" %></td>
          <td><%= g.getPlayer1Data().getRating() %> 

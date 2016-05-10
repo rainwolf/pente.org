@@ -144,6 +144,7 @@ String cancelRequested="false";
  <td>
  
 
+<!--
 
 <br>
 <br>
@@ -157,7 +158,7 @@ String cancelRequested="false";
           <li>For an optimal experience, start moving your finger as soon as you touch the board.
           </li>
 </ul>
-<!-- <center> -->
+ <center> -->
 
 <script type='text/javascript'>
 var currentMove = -1;
@@ -236,7 +237,7 @@ function changeCycle() {
 %>
 
 
-    <div class="buttonwrapper" style="margin-top:5px; width:550px;">
+    <div class="buttonwrapper" style="margin-top:5px; width:580px;">
 <% if (!"false".equals(myTurn) && (game.getDPenteState() != 2)) { %>
       <a class="boldbuttons" href="javascript:submit();" 
          style="margin-right:5px;"><span>Submit</span></a>
@@ -248,10 +249,12 @@ function changeCycle() {
          style="margin-right:5px;"><span>Play as P1 (white)</span></a>
       <a class="boldbuttons" href="javascript:dPentePlayAsP2();" 
          style="margin-right:5px;"><span>Play as P2 (black)</span></a>
+      <a class="boldbuttons" href="javascript:resign();" 
+         style="margin-left:50px;"><span>Resign</span></a>
+      <a class="boldbuttons" href="javascript:requestCancel();" 
+         style="margin-left:5px;"><span>Request Set Cancellation</span></a>
 <%
-}
-%>
-<% if (!"false".equals(myTurn)) { %>
+} else if (!"false".equals(myTurn)) { %>
       <a class="boldbuttons" href="javascript:resign();" 
          style="margin-left:235px;"><span>Resign</span></a>
       <a class="boldbuttons" href="javascript:requestCancel();" 

@@ -250,7 +250,9 @@ if (gamesLimit < 4) {
 
 if (name.equals("rainwolf")) {
 gamesLimit = 31; %>
-tbGamesLimit;<%=""+gamesLimit%>;tbGamesLimit
+No Ads
+Unlimited Games
+tb GamesLimit;<%=""+gamesLimit%>;tb GamesLimit
 <%} else if (dsgPlayerData.unlimitedTBGames() || dsgPlayerData.unlimitedMobileTBGames() ) { %>
 Unlimited Games
 <%} else { %>
