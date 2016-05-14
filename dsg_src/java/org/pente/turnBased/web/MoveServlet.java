@@ -329,11 +329,12 @@ public class MoveServlet extends HttpServlet {
 
 				if (!game.isCompleted()) {
 					ServletContext ctx = getServletContext();
+					String penteLiveGCMkey = ctx.getInitParameter("penteLiveGCMkey");
 					String penteLiveAPNSkey = ctx.getInitParameter("penteLiveAPNSkey");
 					String penteLiveAPNSpwd = ctx.getInitParameter("penteLiveAPNSpassword");
 					boolean productionFlag = ctx.getInitParameter("penteLiveAPNSproductionFlag").equals("true");
 					Thread thread = new Thread(new SendNotification(1, game.getGid(), (game.getCurrentPlayer() == game.getPlayer1Pid())?game.getPlayer2Pid():game.getPlayer1Pid(), game.getCurrentPlayer(), 
-						GridStateFactory.getGameName(game.getGame()), penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, resources.getDbHandler() ) );
+						GridStateFactory.getGameName(game.getGame()), penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, resources.getDbHandler(), penteLiveGCMkey));
 					thread.start();
 				}
 

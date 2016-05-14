@@ -11,6 +11,14 @@ import org.pente.database.*;
 
 import org.apache.log4j.*;
 
+import org.apache.commons.io.IOUtils;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 
 public class SendNotification implements Runnable {
@@ -104,7 +112,7 @@ public class SendNotification implements Runnable {
                         String device = rs.getString("token");
                         List<PushedNotification> notifications = Push.payload(payload, this.penteLiveAPNSkey, this.penteLiveAPNSpwd, this.productionFlag, device);
 
-                        String logString = "Notification from pid " + this.opponentPID + " to my pid " + this.myPID + " of type " + this.notificationType;
+                        String logString = "iOS Notification from pid " + this.opponentPID + " to my pid " + this.myPID + " of type " + this.notificationType;
                         for (PushedNotification notification : notifications) {
                                 if (notification.isSuccessful()) {
                                     logString += " was successful";
@@ -137,6 +145,103 @@ public class SendNotification implements Runnable {
                     }
                 }
             }
+
+
+
+
+
+            stmt = con.prepareStatement("select token, lastping from notifications_android where pid = ?");
+            stmt.setLong(1, this.myPID);
+            rs = stmt.executeQuery();
+
+            if (rs.isBeforeFirst() && name.equals("")) {
+                    PreparedStatement stmt1 = con.prepareStatement("select name from player where pid=?");
+                    stmt1.setLong(1, this.opponentPID);
+                    ResultSet rs1 = stmt1.executeQuery();
+                    if (rs1.next()) {
+                        name = rs1.getString("name");
+                    }
+                    stmt1.close();
+            }
+            while (rs.next()) {
+                Timestamp lastPing = rs.getTimestamp("lastping");
+                java.util.Date date = new java.util.Date();
+                Timestamp lastWeekTimestamp = new Timestamp(date.getTime());
+                long lastWeek = lastWeekTimestamp.getTime() - (7*1000*3600*24);
+                lastWeekTimestamp.setTime(lastWeek);
+                if (lastWeekTimestamp.before(lastPing)) {
+
+
+                    try{
+
+                        // Prepare JSON containing the GCM message content. What to send and where to send.
+                        JSONObject jGcmData = new JSONObject();
+                        JSONObject jData = new JSONObject();
+                        String device = rs.getString("token");
+                        String message = "";
+                        if (notificationType == 1) {
+                            message = "It's your move in a game of " + gameName + " against " + name;
+                            jData.put("gameID", "" + this.gsmID);
+                        } else if (notificationType == 2) {
+                            message = "" + name + " has invited you to a game of " + gameName;
+                            jData.put("setID", "" + this.gsmID);
+                        }  else if (notificationType == 3) {
+                            message = "" + name + " sent you a new message! \n\"" + gameName + "\"";
+                            jData.put("msgID", "" + this.gsmID);
+                        } else if (notificationType == 0) {
+                            message = gameName;
+                        }
+                        jData.put("message", message);
+                        jGcmData.put("to", device);
+                        jGcmData.put("data", jData);
+
+                        try {
+
+                            // Create connection to send GCM Message request.
+                            URL url = new URL("https://android.googleapis.com/gcm/send");
+                            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                            conn.setRequestProperty("Authorization", "key=" + "AIzaSyDwhDVhvk7p8ZEKhPdascJxLOjP_87nX8M");
+                            conn.setRequestProperty("Content-Type", "application/json");
+                            conn.setRequestMethod("POST");
+                            conn.setDoOutput(true);
+
+                            // Send GCM message content.
+                            OutputStream outputStream = conn.getOutputStream();
+                            outputStream.write(jGcmData.toString().getBytes());
+
+                            // Read GCM response.
+                            InputStream inputStream = conn.getInputStream();
+                            String resp = IOUtils.toString(inputStream);
+                            System.out.println(resp);
+                            System.out.println("Check your device/emulator for notification or logcat for " +
+                                    "confirmation of the receipt of the GCM message.");
+
+                            String logString = "Android Notification from pid " + this.opponentPID + " to my pid " + this.myPID + " of type " + this.notificationType;
+                            if (resp.indexOf("InvalidRegistration") > -1 || resp.indexOf("NotRegistered") > -1 ) {
+                                PreparedStatement stmt1 = con.prepareStatement("DELETE from notifications_android where token=?");
+                                stmt1.setString(1, device);
+                                stmt1.executeUpdate();
+                                stmt1.close();
+                            } else {
+                                logString += " was successful";
+                            }
+                            log4j.debug(logString);
+
+                        } catch (IOException e) {
+                            System.out.println("Unable to send GCM message.");
+                            System.out.println("Please ensure that API_KEY has been replaced by the server " +
+                                    "API key, and that the device's registration token is correct (if specified).");
+                            e.printStackTrace();
+                        }
+
+
+
+                    } catch(Exception e){
+                        return;            // Always must return something
+                    }
+                }
+            }
+
             stmt.close();
 
 

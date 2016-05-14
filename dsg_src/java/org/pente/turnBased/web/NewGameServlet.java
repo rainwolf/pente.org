@@ -251,11 +251,12 @@ public class NewGameServlet extends HttpServlet {
 
 				if (inviteePlayerData != null) {
 					ServletContext ctx = getServletContext();
+					String penteLiveGCMkey = ctx.getInitParameter("penteLiveGCMkey");
 					String penteLiveAPNSkey = ctx.getInitParameter("penteLiveAPNSkey");
 					String penteLiveAPNSpwd = ctx.getInitParameter("penteLiveAPNSpassword");
 					boolean productionFlag = ctx.getInitParameter("penteLiveAPNSproductionFlag").equals("true");
 					Thread thread = new Thread(new SendNotification(2, tbs.getSetId(), invitePlayerData.getPlayerID(), inviteePlayerData.getPlayerID(), 
-						GridStateFactory.getGameName(game), penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, resources.getDbHandler() ) );
+						GridStateFactory.getGameName(game), penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, resources.getDbHandler(), penteLiveGCMkey));
 					thread.start();
 				}
 
