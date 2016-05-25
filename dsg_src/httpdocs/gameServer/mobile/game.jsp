@@ -6,6 +6,7 @@
                  com.jivesoftware.base.filter.*,
                  java.text.*,
                  java.util.*" %>
+<%@ page contentType="text/html; charset=UTF-8" %>
 
 <%
 String loggedInStr = (String) request.getAttribute("name");

@@ -12,7 +12,10 @@
                  java.util.List,
                  java.util.*,
                  org.apache.log4j.*" 
-%> <%! private static Category log4j = 
+%>
+<%@ page contentType="text/html; charset=UTF-8" %>
+
+ <%! private static Category log4j = 
         Category.getInstance("org.pente.gameServer.web.client.jsp"); %> <%
     String loginname = request.getParameter("name");
     String name = null;
@@ -265,6 +268,21 @@ No Ads
 
 EndOfSettingsParameters
 
+Rating Stats<%
+
+        DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+        Game games[] = GridStateFactory.getDisplayGames();
+        for (int i = 0; i < games.length; i++) {
+            if (games[i].getId() < 51) {
+                continue;
+            }
+            DSGPlayerGameData dsgPlayerGameData =
+                dsgPlayerData.getPlayerGameData(games[i].getId());
+            if (dsgPlayerGameData == null ||
+                dsgPlayerGameData.getTotalGames() == 0) {
+                continue;
+            } %>
+<%= GridStateFactory.getGameName(games[i].getId()) %>;<%= (int) Math.round(dsgPlayerGameData.getRating()) %>;<%= dsgPlayerGameData.getTotalGames() %>;<%=dsgPlayerGameData.getTourneyWinner() %>;<%= dateFormat.format(dsgPlayerGameData.getLastGameDate()) %><%}%>
 Invitations received<%
         for (TBSet s : invitesTo) {
                  String color = null;
