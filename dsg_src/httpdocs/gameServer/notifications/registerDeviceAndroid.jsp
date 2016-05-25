@@ -7,7 +7,14 @@
                  java.util.Date,
                  java.util.Calendar,
                  java.util.List,
-                 org.apache.log4j.*" %>
+                 org.apache.log4j.*,
+                    org.apache.commons.io.IOUtils,
+                    org.json.JSONObject,
+                    java.io.IOException,
+                    java.io.InputStream,
+                    java.io.OutputStream,
+                    java.net.HttpURLConnection,
+                    java.net.URL" %>
 
 <%! private static Category log4j = 
         Category.getInstance("org.pente.gameServer.web.client.jsp"); %>
@@ -20,9 +27,7 @@
     String password = request.getParameter("password");
     String token = request.getParameter("token");
     ServletContext ctx = getServletContext();
-    String penteLiveAPNSkey = ctx.getInitParameter("penteLiveAPNSkey");
-    String penteLiveAPNSpwd = ctx.getInitParameter("penteLiveAPNSpassword");
-    boolean productionFlag = ctx.getInitParameter("penteLiveAPNSproductionFlag").equals("true");
+    String penteLiveGCMkey = ctx.getInitParameter("penteLiveGCMkey");
 
     DBHandler dbHandler = (DBHandler) application.getAttribute(DBHandler.class.getName());
     LoginHandler loginHandler;
@@ -66,10 +71,10 @@
                 if (rs.next()) {
                     stmt = con.prepareStatement("update notifications_android set lastping=NOW() where pid=? and token=?");
                     firstTime = false;
-                    log4j.info("Notification: updating for " + name + ", " + pid + " with token " + token);
+                    log4j.info("Android Notification: updating for " + name + ", " + pid + " with token " + token);
                 } else {
                     stmt = con.prepareStatement("INSERT INTO notifications_android (pid, token, lastping) VALUES (?, ?, NOW())");
-                    log4j.info("Notification: registering for " + name + ", " + pid + " with token " + token);
+                    log4j.info("Android Notification: registering for " + name + ", " + pid + " with token " + token);
                 }
                 stmt.setLong(1, pid);
                 stmt.setString(2, token);
@@ -83,7 +88,52 @@
 
                     if (firstTime == true) {
                         try{
-                            Push.alert("Your device has been registered for notifications", penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, token);
+
+
+
+                            JSONObject jGcmData = new JSONObject();
+                            JSONObject jData = new JSONObject();
+                            String message = "Your device has been registered for push notifications";
+                            jData.put("message", message);
+                            jGcmData.put("to", token);
+                            jGcmData.put("data", jData);
+
+                            try {
+
+                                // Create connection to send GCM Message request.
+                                URL url = new URL("https://android.googleapis.com/gcm/send");
+                                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                                conn.setRequestProperty("Authorization", "key=" + penteLiveGCMkey);
+                                conn.setRequestProperty("Content-Type", "application/json");
+                                conn.setRequestMethod("POST");
+                                conn.setDoOutput(true);
+
+                                // Send GCM message content.
+                                OutputStream outputStream = conn.getOutputStream();
+                                outputStream.write(jGcmData.toString().getBytes());
+
+                                // Read GCM response.
+                                InputStream inputStream = conn.getInputStream();
+                                String resp = IOUtils.toString(inputStream);
+                                System.out.println("Android registration notification: " + resp);
+
+                                if (resp.indexOf("InvalidRegistration") > -1 || resp.indexOf("NotRegistered") > -1 ) {
+                                    PreparedStatement stmt1 = con.prepareStatement("DELETE from notifications_android where token=?");
+                                    stmt1.setString(1, token);
+                                    stmt1.executeUpdate();
+                                    stmt1.close();
+                                }
+                            } catch (IOException e) {
+                                System.out.println("Unable to send GCM message.");
+                                System.out.println("Please ensure that API_KEY has been replaced by the server " +
+                                        "API key, and that the device's registration token is correct (if specified).");
+                                e.printStackTrace();
+                            }
+
+
+
+
+
                         } catch(Exception e){
                             return;            // Always must return something
                         }

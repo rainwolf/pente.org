@@ -5,6 +5,8 @@
                  java.text.*,
                  java.util.*" %>
 
+<%@ page contentType="text/html; charset=UTF-8" %>
+
 <%  
 com.jivesoftware.base.FilterChain filters = 
     new com.jivesoftware.base.FilterChain(

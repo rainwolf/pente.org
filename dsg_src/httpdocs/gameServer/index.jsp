@@ -304,10 +304,10 @@ window.google_analytics_uacct = "UA-20529582-2";
           <li><a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230251">King of the Hill!</a> Every Tuesday from 6pm EST (3pm PST, 12am CET).<br>
           Want a <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230250">crown</a>? Come and get it!
           </li>
---%>
-          <li><a href="/gameServer/forums/thread.jspa?forumID=1&threadID=230403">King of the Hill!</a> Every 3rd and Thirsty Thursday of the month from 6pm EST (3pm PST, 12am CET). Next one: May 19th.<br>
-          Want a <a href="/gameServer/forums/thread.jspa?forumID=1&threadID=230250">crown</a> and subscriber goodies? Come and get it!
+          <li><a href="/gameServer/forums/thread.jspa?forumID=1&threadID=230403">King of the Hill!</a> Every 3rd Thursday monthly from 6pm EST (3pm PST, 12am CET). Next: May 19th. 
+          Prize: a <a href="/gameServer/forums/thread.jspa?forumID=1&threadID=230250">crown</a> and subscriber goodies!
           </li>
+--%>
           <li>Looking for <a href="/gameServer/forums/forum.jspa?forumID=34&start=0">resources</a> to get started?
           </li>
             <li>Want to play turn-based? Try posting an <a href="/gameServer/tb/new.jsp">open invitation</a><%= openTBgames > 0 ? " or try " + (openTBgames == 1 ? "" : "one of ") + "the <a href=\"/gameServer/tb/waiting.jsp\">" + openTBgames + " open turn-based invitation" + (openTBgames == 1 ? "" : "s") + "</a>" : ""%>.</li>
@@ -316,10 +316,10 @@ window.google_analytics_uacct = "UA-20529582-2";
 
           <li>16th Anniversary World Champion <a href="/gameServer/tournaments/statusRound.jsp?eid=1184&round=3">tournament</a> - 2015. Round 3 has started! 
           The <a href="/gameServer/forums/forum.jspa?forumID=35&start=0">tournament forum</a> is now opened. 
-            <hr>
 
-          <li>The <a href="https://play.google.com/store/apps/details?id=be.submanifold.pentelive">Android Turn-Based Pente app</a> is finally here. Get your copy today!
 <%--
+            <hr>
+          <li>The <a href="https://play.google.com/store/apps/details?id=be.submanifold.pentelive">Android Turn-Based Pente app</a> is finally here. Get your copy today!
           (<a href="/gameServer/forums/thread.jspa?forumID=35&threadID=230731&tstart=0">schedule</a>)
 --%>
         </ul>

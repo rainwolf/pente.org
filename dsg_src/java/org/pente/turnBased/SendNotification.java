@@ -29,6 +29,7 @@ public class SendNotification implements Runnable {
     private long myPID;
     private String gameName;
     private String penteLiveAPNSkey;
+    private String penteLiveGCMkey;
     private String penteLiveAPNSpwd;
     private boolean productionFlag;
     private DBHandler dbHandler;
@@ -36,17 +37,19 @@ public class SendNotification implements Runnable {
     private Category log4j = Category.getInstance(
         SendNotification.class.getName());
 
-    public SendNotification(int notificationType, long gsmID, long opponentPID, long myPID, String gameName, String penteLiveAPNSkey, String penteLiveAPNSpwd, boolean productionFlag, DBHandler dbHandler) {
+    public SendNotification(int notificationType, long gsmID, long opponentPID, long myPID, String gameName, String penteLiveAPNSkey, String penteLiveAPNSpwd, boolean productionFlag, DBHandler dbHandler, String penteLiveGCMkey) {
         // , String penteLiveAPNSkey, String penteLiveAPNSpwd, boolean productionFlag
         this.notificationType = notificationType;
         this.gsmID = gsmID;
         this.opponentPID = opponentPID;
         this.myPID = myPID;
         this.gameName = gameName;
+        this.penteLiveGCMkey = penteLiveGCMkey;
         this.penteLiveAPNSkey = penteLiveAPNSkey;
         this.penteLiveAPNSpwd = penteLiveAPNSpwd;
         this.productionFlag = productionFlag;
         this.dbHandler = dbHandler;
+        this.penteLiveGCMkey = penteLiveGCMkey;
     }
 
     public void run() {
@@ -198,9 +201,9 @@ public class SendNotification implements Runnable {
                         try {
 
                             // Create connection to send GCM Message request.
-                            URL url = new URL("https://android.googleapis.com/gcm/send");
+                            URL url = new URL("https://fcm.googleapis.com/fcm/send");
                             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                            conn.setRequestProperty("Authorization", "key=" + "AIzaSyDwhDVhvk7p8ZEKhPdascJxLOjP_87nX8M");
+                            conn.setRequestProperty("Authorization", "key=" + penteLiveGCMkey);
                             conn.setRequestProperty("Content-Type", "application/json");
                             conn.setRequestMethod("POST");
                             conn.setDoOutput(true);
