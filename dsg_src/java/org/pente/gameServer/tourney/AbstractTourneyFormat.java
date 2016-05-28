@@ -9,7 +9,7 @@ import java.util.List;
 
 public abstract class AbstractTourneyFormat implements TourneyFormat {
 
-    abstract TourneyRound createRound(List players, Tourney tourney, int round);
+    abstract TourneyRound createRound(List<TourneyPlayerData> players, Tourney tourney, int round);
     
     /** Creates the next round of play
      *  for a tournament based on last round results
@@ -18,7 +18,7 @@ public abstract class AbstractTourneyFormat implements TourneyFormat {
         
         int round = tourney.getNumRounds() + 1;
         TourneyRound lastRound = tourney.getLastRound();
-        List players = new ArrayList();
+        List<TourneyPlayerData> players = new ArrayList<TourneyPlayerData>();
         
         // add all winners to next round
         for (Iterator it = lastRound.getSections().iterator(); it.hasNext();) {
@@ -26,8 +26,8 @@ public abstract class AbstractTourneyFormat implements TourneyFormat {
             players.addAll(s.getWinners());
         }
         // now sort those winners by seeds for placement in sections
-        Collections.sort(players, new Comparator() {
-            public int compare(Object o1, Object o2) {
+        Collections.sort(players, new Comparator<TourneyPlayerData>() {
+            public int compare(TourneyPlayerData o1, TourneyPlayerData o2) {
                 TourneyPlayerData p1 = (TourneyPlayerData) o1;
                 TourneyPlayerData p2 = (TourneyPlayerData) o2;
                 return p1.getSeed() - p2.getSeed();
@@ -37,9 +37,9 @@ public abstract class AbstractTourneyFormat implements TourneyFormat {
         // run standard round creation code
         return createRound(players, tourney, round);
     }
-	
+    
 
-	public boolean isTourneyComplete(Tourney tourney) {
+    public boolean isTourneyComplete(Tourney tourney) {
         if (tourney.getEndDate() != null) return true;
         
         if (tourney.getNumRounds() == 0) return false;
@@ -49,5 +49,5 @@ public abstract class AbstractTourneyFormat implements TourneyFormat {
         }
         
         return tourney.getLastRound().getWinners().size() == 1;
-	}
+    }
 }

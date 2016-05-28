@@ -204,13 +204,14 @@ public class SendNotification implements Runnable {
                             URL url = new URL("https://fcm.googleapis.com/fcm/send");
                             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                             conn.setRequestProperty("Authorization", "key=" + penteLiveGCMkey);
-                            conn.setRequestProperty("Content-Type", "application/json");
+                            // conn.setRequestProperty("accept-charset", "UTF-8");
+                            conn.setRequestProperty("Content-Type", "application/json; charset=utf-8");
                             conn.setRequestMethod("POST");
                             conn.setDoOutput(true);
 
                             // Send GCM message content.
                             OutputStream outputStream = conn.getOutputStream();
-                            outputStream.write(jGcmData.toString().getBytes());
+                            outputStream.write(jGcmData.toString().getBytes("UTF-8"));
 
                             // Read GCM response.
                             InputStream inputStream = conn.getInputStream();

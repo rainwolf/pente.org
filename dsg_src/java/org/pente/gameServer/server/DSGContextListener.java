@@ -186,6 +186,8 @@ public class DSGContextListener implements ServletContextListener {
             CacheTBStorer tbGameStorer = new CacheTBStorer(
                 new MySQLTBGameStorer(dbHandler), dsgPlayerStorer, gameStorer,
                 dsgMessageStorer);
+            tbGameStorer.setServletContext(ctx);
+            tbGameStorer.setDBHandler(dbHandler);
             resources.setTbGameStorer(tbGameStorer);
             log4j.info("contextInitialized(), created TBGameStorer");
             
@@ -195,6 +197,8 @@ public class DSGContextListener implements ServletContextListener {
                 new MySQLTourneyStorer(dbHandler, gameVenueStorer));
             resources.setTourneyStorer(tourneyStorer);
             tourneyStorer.addTourneyListener(tbGameStorer);
+            ((CacheTourneyStorer) tourneyStorer).setTBStorer(tbGameStorer);
+            tbGameStorer.setTourneyStorer(tourneyStorer);
             log4j.info("contextInitialized(), created TourneyStorer");
 
             FastMySQLDSGGameLookup lookup = new FastMySQLDSGGameLookup(

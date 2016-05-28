@@ -55,7 +55,7 @@ public class DoubleEliminationFormat extends SingleEliminationFormat {
         }
     }
     private class PotentialSection {
-        public List matches = new ArrayList(10);
+        public List<PotentialMatch> matches = new ArrayList<PotentialMatch>(10);
         public int numRepeats;
         public int distFromOpt;
         public PotentialSection() {}//empty section
@@ -79,8 +79,8 @@ public class DoubleEliminationFormat extends SingleEliminationFormat {
         
         public TourneySection createRealSection(int eid, int round, int section) {
             TourneySection s = new SingleEliminationSection(section);
-            Collections.sort(matches, new Comparator() {
-                public int compare(Object o1, Object o2) {
+            Collections.sort(matches, new Comparator<PotentialMatch>() {
+                public int compare(PotentialMatch o1, PotentialMatch o2) {
                     PotentialMatch m1 = (PotentialMatch) o1;
                     PotentialMatch m2 = (PotentialMatch) o2;
                     return m1.p1.getSeed() - m2.p1.getSeed();
@@ -96,7 +96,7 @@ public class DoubleEliminationFormat extends SingleEliminationFormat {
     
     
     public int getSectionCount;
-    private PotentialSection getSection(List players, int alreadyPlayed[][]) {
+    private PotentialSection getSection(List<TourneyPlayerData> players, int alreadyPlayed[][]) {
         getSectionCount++;
         if (players.size() == 0) { // can occur after dropping players from bracket 2
             return new PotentialSection();
@@ -104,8 +104,8 @@ public class DoubleEliminationFormat extends SingleEliminationFormat {
         if (players.size() == 2) {
             TourneyPlayerData p1 = (TourneyPlayerData) players.get(0);
             TourneyPlayerData p2 = (TourneyPlayerData) players.get(1);
+            log4j.info("getSection(), size=" + players.size() + ", " + p1.getName() + "-" + p2.getName());
             int repeat = alreadyPlayed[p1.getSeed()][p2.getSeed()];
-            //log4j.debug("getSection(), size=" + players.size() + ", " + p1.getName() + "-" +
             //p2.getName() + " r=" + repeat);
             return new PotentialSection(new PotentialMatch(p1, p2, 0), repeat);
         }
@@ -117,7 +117,7 @@ public class DoubleEliminationFormat extends SingleEliminationFormat {
             int repeat = alreadyPlayed[p1.getSeed()][p2.getSeed()];
             //log4j.debug("getSection(), size=" + players.size() + ", " + p1.getName() + "-" +
             //p2.getName() + " r=" + repeat);
-            List copy = new ArrayList(players);
+            List<TourneyPlayerData> copy = new ArrayList<TourneyPlayerData>(players);
             copy.remove(p1);
             copy.remove(p2);
             PotentialSection sub = getSection(copy, alreadyPlayed);
@@ -130,31 +130,31 @@ public class DoubleEliminationFormat extends SingleEliminationFormat {
         return ps;
     }
 
-	@Override
-	/** overridden because tourney can't tell by looking at just last round
-	 *  and looking at winner count for sections.  have to look at who has
-	 *  less than 2 losses
-	 */
+    @Override
+    /** overridden because tourney can't tell by looking at just last round
+     *  and looking at winner count for sections.  have to look at who has
+     *  less than 2 losses
+     */
     public boolean isTourneyComplete(Tourney tourney) {
-    	if (tourney.getNumRounds() == 0) return false;
-		updatePlayerData(tourney);
-		
-		int livePlayers = 0;
+        if (tourney.getNumRounds() == 0) return false;
+        updatePlayerData(tourney);
+        
+        int livePlayers = 0;
         for (Iterator it = tourney.getLastRound().getSections().iterator(); it.hasNext();) {
             TourneySection s = (TourneySection) it.next();
             for (Iterator it2 = s.getPlayers().iterator(); it2.hasNext();) {
                 TourneyPlayerData p = (TourneyPlayerData) it2.next();
-				if (p.getMatchLosses() < 2) {
-					livePlayers++;
-				}
+                if (p.getMatchLosses() < 2) {
+                    livePlayers++;
+                }
             }
         }
-		return livePlayers == 1;
+        return livePlayers == 1;
     }
-	
+    
     /** updates data such as number of byes in whole tourney, number of match losses */
     void updatePlayerData(Tourney tourney) {
-		if (tourney.getNumRounds() == 0) return;
+        if (tourney.getNumRounds() == 0) return;
         for (Iterator it = tourney.getRound(1).getPlayers().iterator(); it.hasNext();) {
             TourneyPlayerData p = (TourneyPlayerData) it.next();
             p.reset();
@@ -169,7 +169,7 @@ public class DoubleEliminationFormat extends SingleEliminationFormat {
                     if (m.isBye()) {
                         m.getPlayer1().incrementByes();
                         if (m.isForfeit()) { // not sure why this would happen but...
-                        	m.getPlayer1().incrementMatchLosses();
+                            m.getPlayer1().incrementMatchLosses();
                         }
                     }
                     else if (m.getResult() == TourneyMatch.RESULT_DBL_FORFEIT) {
@@ -193,9 +193,8 @@ public class DoubleEliminationFormat extends SingleEliminationFormat {
         TourneyRound round = new TourneyRound(rnd);
         TourneyRound lastRound = tourney.getLastRound();
 
-        List bracketPlayers[] = new List[2];
-        bracketPlayers[0] = new ArrayList();
-        bracketPlayers[1] = new ArrayList();
+        List<TourneyPlayerData> bracketPlayers0 = new ArrayList<TourneyPlayerData>();
+        List<TourneyPlayerData> bracketPlayers1 = new ArrayList<TourneyPlayerData>();
         TourneySection brackets[] = new SingleEliminationSection[2];
 
         updatePlayerData(tourney);
@@ -208,66 +207,96 @@ public class DoubleEliminationFormat extends SingleEliminationFormat {
 
                 // don't include players who drop out
                 if (s.dropoutPlayers.contains(p.getPlayerID())) {
-                	continue;
+                    continue;
                 }
                 
                 if (p.getMatchLosses() == 0) {
-                    bracketPlayers[0].add(p);
+                    bracketPlayers0.add(p);
                 }
                 else if (p.getMatchLosses() == 1) {
-                    bracketPlayers[1].add(p);
+                    bracketPlayers1.add(p);
                 }
             }
 
         }
         // we've reached point where we're back down to 1 bracket
-        if (bracketPlayers[0].size() < 2) {
-            bracketPlayers[0].addAll(bracketPlayers[1]);
-            bracketPlayers[1].clear();
+        if (bracketPlayers0.size() < 2) {
+            bracketPlayers0.addAll(bracketPlayers1);
+            bracketPlayers1.clear();
         }
             
-        Comparator seedComparator = new Comparator() {
-            public int compare(Object o1, Object o2) {
+        Comparator<TourneyPlayerData> seedComparator = new Comparator<TourneyPlayerData>() {
+            public int compare(TourneyPlayerData o1, TourneyPlayerData o2) {
                 TourneyPlayerData p1 = (TourneyPlayerData) o1;
                 TourneyPlayerData p2 = (TourneyPlayerData) o2;
                 return p1.getSeed() - p2.getSeed();
             }
         };
 
-        for (int i = 0; i < 2; i++) {
             TourneyMatch byeMatch = null;
-            if (bracketPlayers[i].isEmpty()) break; // no bracket 2
+            if (!bracketPlayers0.isEmpty()) {
+                // sort players in both brackets by seeds
+                Collections.sort(bracketPlayers0, seedComparator);
 
-	        // sort players in both brackets by seeds
-            Collections.sort(bracketPlayers[i], seedComparator);
+                // uneven players, highest seed without a bye yet gets it
+                if (bracketPlayers0.size() % 2 == 1) {
+                    
+                    List<TourneyPlayerData> byePlayers = new ArrayList<TourneyPlayerData>(bracketPlayers0);
+                    Collections.sort(byePlayers, byeComparator);
 
-            // uneven players, highest seed without a bye yet gets it
-            if (bracketPlayers[i].size() % 2 == 1) {
+                    byeMatch = new TourneyMatch();
+                    byeMatch.setEvent(tourney.getEventID());
+                    byeMatch.setRound(rnd);
+                    byeMatch.setSection(1);
+                    TourneyPlayerData byePlayer = (TourneyPlayerData) 
+                        byePlayers.get(0);
+                    byeMatch.setPlayer1(byePlayer);
+                    bracketPlayers0.remove(byePlayer);
+                    //log4j.debug("bye player=" + byePlayer.getName());
+                }
                 
-                List byePlayers = new ArrayList(bracketPlayers[i]);
-                Collections.sort(byePlayers, byeComparator);
+                PotentialSection ps = getSection(bracketPlayers0, tourney.getAlreadyPlayed());
+                TourneySection rs = ps.createRealSection(tourney.getEventID(), 
+                    round.getRound(), 1);
+                if (byeMatch != null) {
+                    rs.addMatch(byeMatch);
+                }
 
-                byeMatch = new TourneyMatch();
-                byeMatch.setEvent(tourney.getEventID());
-                byeMatch.setRound(rnd);
-                byeMatch.setSection(i + 1);
-                TourneyPlayerData byePlayer = (TourneyPlayerData) 
-                    byePlayers.get(0);
-                byeMatch.setPlayer1(byePlayer);
-                bracketPlayers[i].remove(byePlayer);
-                //log4j.debug("bye player=" + byePlayer.getName());
-            }
-            
-            PotentialSection ps = getSection(bracketPlayers[i], tourney.getAlreadyPlayed());
-            TourneySection rs = ps.createRealSection(tourney.getEventID(), 
-                round.getRound(), i + 1);
-            if (byeMatch != null) {
-                rs.addMatch(byeMatch);
-            }
+                rs.init();
+                round.addSection(rs);
+            } // no bracket 2
+            if (!bracketPlayers1.isEmpty()) {
+                // sort players in both brackets by seeds
+                Collections.sort(bracketPlayers1, seedComparator);
 
-            rs.init();
-            round.addSection(rs);
-        }
+                // uneven players, highest seed without a bye yet gets it
+                if (bracketPlayers1.size() % 2 == 1) {
+                    
+                    List<TourneyPlayerData> byePlayers = new ArrayList<TourneyPlayerData>(bracketPlayers1);
+                    Collections.sort(byePlayers, byeComparator);
+
+                    byeMatch = new TourneyMatch();
+                    byeMatch.setEvent(tourney.getEventID());
+                    byeMatch.setRound(rnd);
+                    byeMatch.setSection(2);
+                    TourneyPlayerData byePlayer = (TourneyPlayerData) 
+                        byePlayers.get(0);
+                    byeMatch.setPlayer1(byePlayer);
+                    bracketPlayers0.remove(byePlayer);
+                    //log4j.debug("bye player=" + byePlayer.getName());
+                }
+                
+                PotentialSection ps = getSection(bracketPlayers1, tourney.getAlreadyPlayed());
+                TourneySection rs = ps.createRealSection(tourney.getEventID(), 
+                    round.getRound(), 2);
+                if (byeMatch != null) {
+                    rs.addMatch(byeMatch);
+                }
+
+                rs.init();
+                round.addSection(rs);
+            } // no bracket 2
+
         
         return round;
     }

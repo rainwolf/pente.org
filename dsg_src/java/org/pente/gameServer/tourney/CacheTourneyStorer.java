@@ -8,6 +8,8 @@ import org.pente.game.*;
 import org.pente.turnBased.TBGame;
 import org.pente.turnBased.TBSet;
 import org.pente.turnBased.Utilities;
+import org.pente.turnBased.CacheTBStorer;
+import org.pente.gameServer.core.*;
 
 public class CacheTourneyStorer implements TourneyStorer {
 
@@ -15,9 +17,15 @@ public class CacheTourneyStorer implements TourneyStorer {
         CacheTourneyStorer.class.getName());
     
     private TourneyStorer backingStorer;
-    private Map tournies = new HashMap();
+    private Map<Integer, Tourney> tournies = new HashMap<Integer, Tourney>();
     
-    private List listeners = new ArrayList();
+    private List<TourneyListener> listeners = new ArrayList<TourneyListener>();
+
+    private CacheTBStorer tbStorer;
+
+    public void setTBStorer(CacheTBStorer tbStorer) {
+        this.tbStorer = tbStorer;
+    }
 
     public CacheTourneyStorer(TourneyStorer backingStorer) {
         this.backingStorer = backingStorer;
@@ -178,6 +186,11 @@ public class CacheTourneyStorer implements TourneyStorer {
     public synchronized void insertMatch(TourneyMatch tourneyMatch) throws Throwable {
         log4j.debug("insertMatch(" + tourneyMatch.getMatchID() + ")");
         backingStorer.insertMatch(tourneyMatch);
+        Tourney t = getTourney(tourneyMatch.getEvent());
+        if (t.getGame() > 50 && tourneyMatch.getPlayer1().getPlayerID() != 0 && tourneyMatch.getPlayer2().getPlayerID() != 0 && tourneyMatch.getPlayer1().getPlayerID() < tourneyMatch.getPlayer2().getPlayerID()) {
+            this.tbStorer.createTournamentSet(t.getGame(), tourneyMatch.getPlayer1().getPlayerID(), tourneyMatch.getPlayer2().getPlayerID(), 
+                                                t.getInitialTime(), t.getEventID());
+        }        
     }
 
 

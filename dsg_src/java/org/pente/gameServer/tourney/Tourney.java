@@ -29,7 +29,7 @@ public class Tourney {
     private List<TourneyRound> rounds = new ArrayList<TourneyRound>(3);
     
     /** list of directors, pids */
-    private List directors = new ArrayList(1);
+    private List<Long> directors = new ArrayList<Long>(1);
 
     /** a matrix of all players containing counts of the number of times
      *  the players have played in a round (one match = 1, # of games in match
@@ -67,7 +67,7 @@ public class Tourney {
         return game;
     }
     public String getGameName() {
-        return GridStateFactory.getGameName(game);
+        return GridStateFactory.getDisplayName(game);
     }
     public void setGame(int game) {
         this.game = game;
@@ -89,6 +89,9 @@ public class Tourney {
     }
     public void setRoundLengthDays(int roundLengthDays) {
         this.roundLengthDays = roundLengthDays;
+    }
+    public boolean isTurnBased() {
+        return this.game > 50;
     }
     public boolean isSpeed() {
         return speed;
@@ -151,7 +154,7 @@ public class Tourney {
         this.eventID = eventID;
     }
     
-    public TourneyRound createFirstRound(List players) {
+    public TourneyRound createFirstRound(List<TourneyPlayerData> players) {
         TourneyRound r = format.createFirstRound(players, this);
         addRound(r);
         return r;
@@ -163,13 +166,13 @@ public class Tourney {
     }
 
     public void init() {
-    	for (TourneyRound round : rounds) {
-    		round.init();
+        for (TourneyRound round : rounds) {
+            round.init();
             if (round.getRound() == 1) {
                 alreadyPlayed = new int[round.getNumPlayers() + 1][round.getNumPlayers() + 1];
             }
-    		round.updateAlreadyPlayed(alreadyPlayed);
-    	}
+            round.updateAlreadyPlayed(alreadyPlayed);
+        }
     }
     public void addRound(TourneyRound round) {
         rounds.add(round);
@@ -217,6 +220,9 @@ public class Tourney {
     }
     
     public int[][] getAlreadyPlayed() {
+        if (alreadyPlayed == null) {
+            init();            
+        }
         return alreadyPlayed;
     }
 }
