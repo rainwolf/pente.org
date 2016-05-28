@@ -18,7 +18,7 @@ public class SingleEliminationFormat extends AbstractTourneyFormat {
      *  impossible to match up players again in later rounds since is single
      *  elimination
      */
-    public TourneyRound createFirstRound(List players, Tourney tourney) {
+    public TourneyRound createFirstRound(List<TourneyPlayerData> players, Tourney tourney) {
         return createRound(players, tourney, 1);
     }
     // createNextRound implements in AbstractTourneyFormat
@@ -44,8 +44,8 @@ public class SingleEliminationFormat extends AbstractTourneyFormat {
         }
     }
 
-    Comparator byeComparator = new Comparator() {
-        public int compare(Object o1, Object o2) {
+    Comparator<TourneyPlayerData> byeComparator = new Comparator<TourneyPlayerData>() {
+        public int compare(TourneyPlayerData o1, TourneyPlayerData o2) {
             TourneyPlayerData p1 = (TourneyPlayerData) o1;
             TourneyPlayerData p2 = (TourneyPlayerData) o2;
             if (p1.getNumByes() > p2.getNumByes()) return 1;
@@ -54,7 +54,7 @@ public class SingleEliminationFormat extends AbstractTourneyFormat {
         }
     };
     
-    TourneyRound createRound(List players, Tourney tourney, int rnd) {
+    TourneyRound createRound(List<TourneyPlayerData> players, Tourney tourney, int rnd) {
 
         TourneyRound round = new TourneyRound(rnd);
         TourneySection section = new SingleEliminationSection(1); //everyone always in section 1
@@ -70,7 +70,7 @@ public class SingleEliminationFormat extends AbstractTourneyFormat {
         // uneven players, highest seed without a bye yet gets it
         if (players.size() % 2 == 1) {
             // first round we know seed1 gets the bye
-            List byePlayers = new ArrayList(players);
+            List<TourneyPlayerData> byePlayers = new ArrayList<TourneyPlayerData>(players);
             if (rnd > 1) {
                 // sort players by byes ascending
                 // then seed ascending, player who gets the bye is 1st in list
@@ -111,43 +111,43 @@ public class SingleEliminationFormat extends AbstractTourneyFormat {
             m.setSeq(1);
             section.addMatch(m);
             
-            if (GridStateFactory.isTurnbasedGame(tourney.getGame())) {
+            // if (GridStateFactory.isTurnbasedGame(tourney.getGame())) {
                 
-                TBGame g1 = new TBGame();
-                g1.setGame(tourney.getGame());
-                g1.setEventId(tourney.getEventID());
-                g1.setDaysPerMove(tourney.getIncrementalTime());
-                g1.setRated(true);
-                g1.setRound(rnd);
-                g1.setSection(1);
-                g1.setPlayer1Pid(p1.getPlayerID());
-                g1.setPlayer2Pid(p2.getPlayerID());
-                g1.setStartDate(new Date());
-                g1.setState(TBGame.STATE_ACTIVE);
-                g1.addMove(180);
+            //     TBGame g1 = new TBGame();
+            //     g1.setGame(tourney.getGame());
+            //     g1.setEventId(tourney.getEventID());
+            //     g1.setDaysPerMove(tourney.getIncrementalTime());
+            //     g1.setRated(true);
+            //     g1.setRound(rnd);
+            //     g1.setSection(1);
+            //     g1.setPlayer1Pid(p1.getPlayerID());
+            //     g1.setPlayer2Pid(p2.getPlayerID());
+            //     g1.setStartDate(new Date());
+            //     g1.setState(TBGame.STATE_ACTIVE);
+            //     g1.addMove(180);
 
-                TBGame g2 = new TBGame();
-                g2.setGame(tourney.getGame());
-                g2.setEventId(tourney.getEventID());
-                g2.setDaysPerMove(tourney.getIncrementalTime());
-                g2.setRated(true);
-                g2.setRound(rnd);
-                g2.setSection(1);
-                g2.setPlayer1Pid(p2.getPlayerID());
-                g2.setPlayer2Pid(p1.getPlayerID());
-                g2.setStartDate(new Date());
-                g2.setState(TBGame.STATE_ACTIVE);
-                g2.addMove(180);
+            //     TBGame g2 = new TBGame();
+            //     g2.setGame(tourney.getGame());
+            //     g2.setEventId(tourney.getEventID());
+            //     g2.setDaysPerMove(tourney.getIncrementalTime());
+            //     g2.setRated(true);
+            //     g2.setRound(rnd);
+            //     g2.setSection(1);
+            //     g2.setPlayer1Pid(p2.getPlayerID());
+            //     g2.setPlayer2Pid(p1.getPlayerID());
+            //     g2.setStartDate(new Date());
+            //     g2.setState(TBGame.STATE_ACTIVE);
+            //     g2.addMove(180);
 
 
-                TBSet set = new TBSet(g1, g2);
-                set.setCreationDate(new Date());
-                set.setState(TBSet.STATE_ACTIVE);
-                set.setPlayer1Pid(g1.getPlayer1Pid());
-                set.setPlayer2Pid(g2.getPlayer2Pid());
+            //     TBSet set = new TBSet(g1, g2);
+            //     set.setCreationDate(new Date());
+            //     set.setState(TBSet.STATE_ACTIVE);
+            //     set.setPlayer1Pid(g1.getPlayer1Pid());
+            //     set.setPlayer2Pid(g2.getPlayer2Pid());
 
-                section.addSet(set);
-            }
+            //     section.addSet(set);
+            // }
         }
         
         section.init();

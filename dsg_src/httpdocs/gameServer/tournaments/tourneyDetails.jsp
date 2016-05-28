@@ -36,8 +36,12 @@ DateFormat dateTimeFormat = new SimpleDateFormat("EEE, MMM dd, yyyy hh:mm:ss aa 
   </tr>
   <tr>
     <td>Game timers:</td>
-    <td><%= tourney.getInitialTime() %> minutes initial / 
-    <%= tourney.getIncrementalTime() %> seconds incremental</td>
+    <% if (tourney.isTurnBased()) { %>
+        <td><%= tourney.getInitialTime() %> days per move</td>
+    <% } else { %>
+      <td><%= tourney.getInitialTime() %> minutes initial / 
+      <%= tourney.getIncrementalTime() %> seconds incremental</td>
+    <% } %>
   </tr>
   <tr>
     <td valign="top">Restrictions:</td>

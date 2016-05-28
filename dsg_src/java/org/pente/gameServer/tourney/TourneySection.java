@@ -12,7 +12,7 @@ public abstract class TourneySection {
         TourneyMatch.class.getName());
     
     private int section;
-	List<Long> dropoutPlayers = new ArrayList<Long>();
+    List<Long> dropoutPlayers = new ArrayList<Long>();
     TourneyRound round;
     
     public TourneySection(int section) {
@@ -20,7 +20,7 @@ public abstract class TourneySection {
     }
 
     public void setTourneyRound(TourneyRound round) {
-    	this.round = round;
+        this.round = round;
     }
     
     public int getSection() {
@@ -87,11 +87,11 @@ public abstract class TourneySection {
 
     public abstract void init();
 
-    public abstract List getWinners();
+    public abstract List<TourneyPlayerData> getWinners();
     
     /** return list of affected matches */
     public List forfeitPlayers(long pids[], boolean dropout[]) {
-        List updateMatches = new ArrayList();
+        List<TourneyMatch> updateMatches = new ArrayList<TourneyMatch>();
         for (Iterator it = getMatches().iterator(); it.hasNext();) {
             TourneyMatch m = (TourneyMatch) it.next();
             // don't update already completed matches
@@ -122,13 +122,13 @@ public abstract class TourneySection {
             }
         }
 
-		// save list of players who will dropout
-		for (int i = 0; i < pids.length; i++) {
-			if (dropout[i]) {
-				dropoutPlayers.add(pids[i]);
-			}
-		}
-		
+        // save list of players who will dropout
+        for (int i = 0; i < pids.length; i++) {
+            if (dropout[i]) {
+                dropoutPlayers.add(pids[i]);
+            }
+        }
+        
         // init will be called later
         return updateMatches;
     }

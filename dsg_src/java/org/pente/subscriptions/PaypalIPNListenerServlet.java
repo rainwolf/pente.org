@@ -226,11 +226,12 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                         totalSum = rs.getDouble(1);
                     } 
 
+                    String penteLiveGCMkey = ctx.getInitParameter("penteLiveGCMkey");
                     String penteLiveAPNSkey = ctx.getInitParameter("penteLiveAPNSkey");
                     String penteLiveAPNSpwd = ctx.getInitParameter("penteLiveAPNSpassword");
                     boolean productionFlag = ctx.getInitParameter("penteLiveAPNSproductionFlag").equals("true");
                     Thread thread = new Thread(new SendNotification(0, 0, 23000000016237L, 23000000016237L, 
-                        customParts[1] + ((refundTXid == null)?" purchased vacation":" was refunded") + ((gifterPid != 0)?" by "+customParts[0]:"") + " for EUR " + amount + ", the total is now: " + totalSum, penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, dbHandler ) );
+                        customParts[1] + ((refundTXid == null)?" purchased vacation":" was refunded") + ((gifterPid != 0)?" by "+customParts[0]:"") + " for EUR " + amount + ", the total is now: " + totalSum, penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, dbHandler, penteLiveGCMkey) );
                     thread.start();
 
 
@@ -363,11 +364,21 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                             log4j.info(logString + indentString + "Refund successfully registered");
                         }
                     }
-                    stmt = con.prepareStatement("INSERT INTO dsg_subscribers (pid, level, paymentdate, transactionid, amount) VALUES (?, ?, NOW(), ?, ?)");
+                    // stmt = con.prepareStatement("INSERT INTO dsg_subscribers (pid, level, paymentdate, transactionid, amount) VALUES (?, ?, NOW(), ?, ?)");
+
+                    DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
+                    DSGPlayerData dsgPlayerData = dsgPlayerStorer.loadPlayer(subscriberPid);
+                    java.util.Date nowDate = new java.util.Date();
+                    stmt = con.prepareStatement("INSERT INTO dsg_subscribers (pid, level, paymentdate, transactionid, amount) VALUES (?, ?, ?, ?, ?)");
                     stmt.setLong(1, subscriberPid);
                     stmt.setInt(2, subscriptionLvl);
-                    stmt.setString(3, transactionID);
-                    stmt.setDouble(4, amount);
+                    if (nowDate.before(dsgPlayerData.getSubscriptionExpiration())) {
+                        stmt.setTimestamp(3, new Timestamp(nowDate.getTime()));
+                    } else {
+                        stmt.setTimestamp(3, new Timestamp(dsgPlayerData.getSubscriptionExpiration().getTime()));
+                    }
+                    stmt.setString(4, transactionID);
+                    stmt.setDouble(5, amount);
                     int worked = stmt.executeUpdate();
                     if (worked < 1) {
                         log4j.error(logString + indentString + "Error: inserting purchase FAILED **");
@@ -375,8 +386,8 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                     } else {
                         log4j.info(logString + indentString + "Purchase successfully registered");
                     }
-                    DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
-                    DSGPlayerData dsgPlayerData = dsgPlayerStorer.loadPlayer(subscriberPid);
+                    // DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
+                    // DSGPlayerData dsgPlayerData = dsgPlayerStorer.loadPlayer(subscriberPid);
                     if (dsgPlayerData.getNameColorRGB() == 0) {
                         dsgPlayerData.setNameColorRGB(-16751616);
                         dsgPlayerStorer.updatePlayer(dsgPlayerData);
@@ -416,11 +427,12 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                         totalSum = rs.getDouble(1);
                     } 
 
+                    String penteLiveGCMkey = ctx.getInitParameter("penteLiveGCMkey");
                     String penteLiveAPNSkey = ctx.getInitParameter("penteLiveAPNSkey");
                     String penteLiveAPNSpwd = ctx.getInitParameter("penteLiveAPNSpassword");
                     boolean productionFlag = ctx.getInitParameter("penteLiveAPNSproductionFlag").equals("true");
                     Thread thread = new Thread(new SendNotification(0, 0, 23000000016237L, 23000000016237L, 
-                        customParts[1] + ((refundTXid == null)?" subscribed":" was refunded") + ((gifterPid != 0)?" by "+customParts[0]:"") + " for EUR " + amount + ", the total is now: " + totalSum, penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, dbHandler ) );
+                        customParts[1] + ((refundTXid == null)?" subscribed":" was refunded") + ((gifterPid != 0)?" by "+customParts[0]:"") + " for EUR " + amount + ", the total is now: " + totalSum, penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, dbHandler, penteLiveGCMkey) );
                     thread.start();
 
                 }

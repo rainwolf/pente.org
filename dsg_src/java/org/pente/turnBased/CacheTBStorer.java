@@ -6,10 +6,15 @@ import java.text.*;
 import org.pente.game.*;
 import org.pente.gameServer.core.*;
 import org.pente.message.*;
+import org.pente.database.*;
 
 import org.pente.gameServer.tourney.*;
 
 import org.apache.log4j.*;
+
+import javax.servlet.*;
+
+import org.pente.turnBased.SendNotification;
 
 public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
@@ -22,6 +27,8 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 	private GameStorer gameStorer;
 	private DSGMessageStorer dsgMessageStorer;
 	private TourneyStorer tourneyStorer;
+	private ServletContext ctx;
+	private DBHandler dbHandler;
     
 	/** used to cache event ids for tb-games */
 	private Map<Integer, Integer> eidMap = new HashMap<Integer, Integer>();
@@ -726,6 +733,13 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 				loseMessage.setBody(aLossText);
 				loseMessage.setCreationDate(new java.util.Date());
 				dsgMessageStorer.createMessage(loseMessage, false);
+
+				if (game.getEventId() != getEventId(game.getGame())) {
+					TourneyMatch tourneyMatch = tourneyStorer.getUnplayedMatch(game.getPlayer1Pid(),game.getPlayer2Pid(),game.getEventId());
+					tourneyMatch.setGid(game.getGid());
+					tourneyMatch.setResult(game.getWinner());
+					tourneyStorer.updateMatch(tourneyMatch);
+				}
 				
 				
 			} catch (Throwable t) {
@@ -844,29 +858,19 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 		
 		set.setCreationDate(new Date());
 		
-        // tourney games are started automatically
-        if (set.getState() == TBSet.STATE_ACTIVE) {
-            long newTimeout = Utilities.calculateNewTimeout(
-                set.getGame1(), dsgPlayerStorer);
-
-            for (int i = 0; i < 2; i++) {
-                TBGame game = set.getGames()[i];
-                if (game == null) break;
-                game.setTimeoutDate(new Date(newTimeout));
-                baseStorer.storeNewMove(game.getGid(), 0, 180);
-            }
-        }
         
-		createGame(set.getGames()[0]);
-		
-		if (set.getGame2() != null) {
-			createGame(set.getGame2());
-		}
+        for (int i = 0; i < 2; i++) {
+            TBGame game = set.getGames()[i];
+            if (game == null) break;
+            if (game.getState() == TBGame.STATE_ACTIVE) {
+            	game.setLastMoveDate(new Date());
+            	game.setTimeoutDate(new Date());
+            }
+			createGame(game);
+        }
         
 		baseStorer.createSet(set);
 		
-
-        
 		loadWaitingSets(); // make sure loaded
 		
 		// update waiting games
@@ -881,6 +885,15 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 		// if players involved in set already have cached sets, update caches
 		cacheSetForPlayer(set, set.getPlayer1Pid(), false);
 		cacheSetForPlayer(set, set.getPlayer2Pid(), false);
+
+        // tourney games are started automatically
+        if (set.getState() == TBSet.STATE_ACTIVE) {
+            for (int i = 0; i < 2; i++) {
+                TBGame game = set.getGames()[i];
+                if (game == null) break;
+                storeNewMove(game.getGid(), 0, 180);
+            }
+        }
 	}
 
 	public TBSet loadSetByGid(long gid) throws TBStoreException {
@@ -1382,5 +1395,87 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
             log4j.error("Problem creating tb sets for tournament", t);
         }
         */
+    }
+
+    public void setServletContext(ServletContext ctx) {
+    	this.ctx = ctx;
+    }
+    public void setDBHandler(DBHandler dbHandler) {
+    	this.dbHandler = dbHandler;
+    }
+
+
+    public void createTournamentSet(int game, long player1PID, long player2PID, int daysPerMove, int eventID) {
+        try {
+	        TBGame tbg1 = new TBGame();
+	        tbg1.setGame(game);
+	        tbg1.setDaysPerMove(daysPerMove);
+	        tbg1.setRated(true);
+	        tbg1.setPlayer1Pid(player1PID);
+	        tbg1.setPlayer2Pid(player2PID);
+	        tbg1.setEventId(eventID);
+	        tbg1.setState(TBGame.STATE_ACTIVE);
+	        tbg1.setLastMoveDate(new Date());
+	        tbg1.setStartDate(new Date());
+	        TBGame tbg2 = new TBGame();
+	        tbg2.setGame(game);
+	        tbg2.setDaysPerMove(daysPerMove);
+	        tbg2.setRated(true);
+	        tbg2.setPlayer2Pid(player1PID);
+	        tbg2.setPlayer1Pid(player2PID);
+	        tbg2.setEventId(eventID);
+	        tbg2.setState(TBGame.STATE_ACTIVE);
+	        tbg2.setLastMoveDate(new Date());
+	        tbg2.setStartDate(new Date());
+	        TBSet tbs = new TBSet(tbg1, tbg2);
+	        tbs.setPlayer1Pid(player1PID);
+	        tbs.setPlayer2Pid(player2PID);
+	        tbs.setPrivateGame(false);
+	        tbs.setState(TBSet.STATE_ACTIVE);
+	        tbs.setInvitationRestriction(TBSet.ANY_RATING);
+	        createSet(tbs);
+
+			String penteLiveGCMkey = ctx.getInitParameter("penteLiveGCMkey");
+			String penteLiveAPNSkey = ctx.getInitParameter("penteLiveAPNSkey");
+			String penteLiveAPNSpwd = ctx.getInitParameter("penteLiveAPNSpassword");
+			boolean productionFlag = ctx.getInitParameter("penteLiveAPNSproductionFlag").equals("true");
+
+	        Tourney tourney = tourneyStorer.getTourney(eventID);
+			DSGPlayerData toPlayer = dsgPlayerStorer.loadPlayer(player2PID);
+
+            DSGMessage message = new DSGMessage();
+			message.setFromPid(23000000016237L);
+			message.setToPid(player1PID);
+			message.setSubject("New Tournament " + GridStateFactory.getGameName(game) + " Set started against " + toPlayer.getName());
+			message.setBody("The gameServer has started a new "  + GridStateFactory.getGameName(game) + " set for you against " + toPlayer.getName() +
+								" in round " + tourney.getNumRounds() + " of the " + tourney.getName() + "." + 
+								"\nYou have " + daysPerMove + " days per move. \n \nTournament details can be found at https://pente.org/gameServer/tournaments/statusRound.jsp?eid="
+								+ eventID + "&round=" + tourney.getNumRounds() + "  \n \n ");
+			message.setCreationDate(new java.util.Date());
+			dsgMessageStorer.createMessage(message, false);
+			Thread thread = new Thread(new SendNotification(3, message.getMid(), message.getFromPid(), message.getToPid(), 
+				message.getSubject(), penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, dbHandler, penteLiveGCMkey));
+			thread.start();
+
+			toPlayer = dsgPlayerStorer.loadPlayer(player1PID);
+
+            message = new DSGMessage();
+			message.setFromPid(23000000016237L);
+			message.setToPid(player2PID);
+			message.setSubject("New Tournament " + GridStateFactory.getGameName(game) + " Set started against " + toPlayer.getName());
+			message.setBody("The gameServer has started a new "  + GridStateFactory.getGameName(game) + " set for you against " + toPlayer.getName() + 
+								" in round " + tourney.getNumRounds() + " of the " + tourney.getName() + "." + 
+								"\nYou have " + daysPerMove + " days per move. \n \nTournament details can be found at https://pente.org/gameServer/tournaments/statusRound.jsp?eid="
+								+ eventID + "&round=" + tourney.getNumRounds() + "  \n \n ");
+			message.setCreationDate(new java.util.Date());
+			dsgMessageStorer.createMessage(message, false);
+			thread = new Thread(new SendNotification(3, message.getMid(), message.getFromPid(), message.getToPid(), 
+				message.getSubject(), penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, dbHandler, penteLiveGCMkey));
+			thread.start();
+				
+
+        } catch (Throwable t) {
+            log4j.error("Problem creating tb sets for tournament", t);
+        }
     }
 }

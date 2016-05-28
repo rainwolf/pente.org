@@ -1,0 +1,29 @@
+<Context path="" docBase="ROOT.war" debug="7"
+         privileged="false" crossContext="false" reloadable="true">
+
+  <Valve className="org.apache.catalina.valves.AccessLogValve"
+         directory="/var/log/dsg"  prefix="access." suffix=".log"
+         pattern="combined" />
+  
+  <Resource name="jdbc/dsg"
+            auth="Container"
+            type="javax.sql.DataSource"
+            maxActive="100" maxIdle="30" maxWait="10000"
+            testWhileIdle="true" testOnBorrow="true" 
+            validationQueryTimeout="45" validationQuery="SELECT 1"
+            removeAbandoned="true" removeAbandonedTimeout="45"
+            username="dsg_rw" password="bizza880" 
+            driverClassName="com.mysql.jdbc.Driver"
+            url="jdbc:mysql://localhost/dsg?useEncoding=true&amp;zeroDateTimeBehavior=convertToNull&amp;useServerPrepStmts=true" />
+            
+  <Resource name="jdbc/dsg_ro"
+            auth="Container"
+            type="javax.sql.DataSource"
+            maxActive="100" maxIdle="30" maxWait="10000"
+            testWhileIdle="true" testOnBorrow="true" 
+            validationQueryTimeout="45" validationQuery="SELECT 1"
+            removeAbandoned="true" removeAbandonedTimeout="45"
+            username="dsg_rw" password="bizza880"
+            driverClassName="com.mysql.jdbc.Driver"
+            url="jdbc:mysql://localhost/dsg?useEncoding=true&amp;zeroDateTimeBehavior=convertToNull&amp;useServerPrepStmts=true" />
+</Context>

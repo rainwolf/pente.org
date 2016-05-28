@@ -38,42 +38,42 @@
            tourney.setStartDate(tourney.getSignupEndDate());
        }
        else {
-	       tourney.setStartDate(dateFormat.parse(start));
-	   }
-	   int format = Integer.parseInt(request.getParameter("format"));
-	   if (format == 1) {
-	       tourney.setFormat(new RoundRobinFormat());
-	   }
-	   else if (format == 2) {
-	       tourney.setFormat(new SingleEliminationFormat());
-	   }
-	   else if (format == 3) {
-	       tourney.setFormat(new DoubleEliminationFormat());
-	   }
-	   else if (format == 4) {
-	       tourney.setFormat(new SwissFormat());
-	   }
-	   String admins = request.getParameter("admins");
-	   StringTokenizer st = new StringTokenizer(admins, ",");
-	   while (st.hasMoreTokens()) {
-	       DSGPlayerData d = resources.getDsgPlayerStorer().loadPlayer(st.nextToken());
-	       tourney.addDirector(d.getPlayerID());
-	   }
-	   
-	   String rrTypeStr = request.getParameter("rrType");
-	   String rrValueStr = request.getParameter("rr");
-	   if (rrTypeStr != null && rrValueStr != null) {
-		   try {
-		      int rrType = Integer.parseInt(rrTypeStr);
-		      int rrValue = Integer.parseInt(rrValueStr);
-		      if (rrType != 0) {
-		        Restriction r = new Restriction(rrType, rrValue);
-		        tourney.addRestriction(r);
-		      }
-		   } catch (NumberFormatException nfe) {
-		       nfe.printStackTrace();
-		   }
-	   }
+         tourney.setStartDate(dateFormat.parse(start));
+     }
+     int format = Integer.parseInt(request.getParameter("format"));
+     if (format == 1) {
+         tourney.setFormat(new RoundRobinFormat());
+     }
+     else if (format == 2) {
+         tourney.setFormat(new SingleEliminationFormat());
+     }
+     else if (format == 3) {
+         tourney.setFormat(new DoubleEliminationFormat());
+     }
+     else if (format == 4) {
+         tourney.setFormat(new SwissFormat());
+     }
+     String admins = request.getParameter("admins");
+     StringTokenizer st = new StringTokenizer(admins, ",");
+     while (st.hasMoreTokens()) {
+         DSGPlayerData d = resources.getDsgPlayerStorer().loadPlayer(st.nextToken());
+         tourney.addDirector(d.getPlayerID());
+     }
+     
+     String rrTypeStr = request.getParameter("rrType");
+     String rrValueStr = request.getParameter("rr");
+     if (rrTypeStr != null && rrValueStr != null) {
+       try {
+          int rrType = Integer.parseInt(rrTypeStr);
+          int rrValue = Integer.parseInt(rrValueStr);
+          if (rrType != 0) {
+            Restriction r = new Restriction(rrType, rrValue);
+            tourney.addRestriction(r);
+          }
+       } catch (NumberFormatException nfe) {
+           nfe.printStackTrace();
+       }
+     }
 
        String erType = request.getParameter("erType");
        if (erType != null && erType.equals("1")) {
@@ -110,14 +110,14 @@
           <select name="game">
           <% Game games[] = GridStateFactory.getAllGames();
              for (int i = 1; i < games.length; i++) { %>
-               <option <% if (i == 1) { %>selected <% } %>value="<%= games[i].getId() %>"><%= games[i].getName() %></option>
+               <option <% if (i == 1) { %>selected <% } %>value="<%= games[i].getId() %>"><%= GridStateFactory.getDisplayName(games[i].getId()) %></option>
           <% } %>
         </td>
     </tr>
-    <tr><td valign="top"><b>Initial time:</b></td>
+    <tr><td valign="top"><b>Initial time: (Minutes for live, days for TB) </b></td>
         <td><input type="text" maxLength="3" size="3" name="initial"></td>
     </tr>
-    <tr><td valign="top"><b>Incremental time:</b></td>
+    <tr><td valign="top"><b>Incremental time: (Enter any value for TB, will be ignored)</b></td>
         <td><input type="text" maxLength="3" size="3"  name="incremental"></td>
     </tr>
     <tr><td valign="top"><b>Rating restriction:</b></td>
