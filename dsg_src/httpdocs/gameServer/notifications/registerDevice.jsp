@@ -102,6 +102,34 @@
             }
         }
 
+        stmt = con.prepareStatement("select lastping from notifications where token='1111'");
+        rs = stmt.executeQuery();  
+        if (rs.next()) {
+            Timestamp lastPing = rs.getTimestamp("lastping");
+            java.util.Date date = new java.util.Date();
+            Timestamp lastWeekTimestamp = new Timestamp(date.getTime());
+            long lastWeek = lastWeekTimestamp.getTime() - (14*1000*3600*24);
+            lastWeekTimestamp.setTime(lastWeek);
+            if (lastWeekTimestamp.after(lastPing)) {
+                log4j.info("iOS Notifications: it has been more than 2 weeks since I last checked the stale iOS tokens.");
+                stmt = con.prepareStatement("update notifications set lastping=NOW() where token='1111'");
+                stmt.executeUpdate();
+                stmt = con.prepareStatement("DELETE from notifications where lastping < ?");
+                stmt.setTimestamp(1, lastWeekTimestamp);
+                int deletedDevices = stmt.executeUpdate();
+                    log4j.info("iOS Notifications: I deleted " + deletedDevices + " stale iOS tokens.");
+                stmt.close();
+
+                %><%=deletedDevices %> iOS device tokens deleted.</b><br><br> <%
+            }
+        } else {
+            stmt.close();
+            stmt = con.prepareStatement("INSERT INTO notifications (pid, token, lastping) VALUES (0, ?, NOW())");
+            stmt.setString(1,"1111");
+            stmt.executeUpdate();
+        }
+        stmt.close();
+
 
         stmt = con.prepareStatement("select lastping from notifications where token='0000'");
         rs = stmt.executeQuery();  

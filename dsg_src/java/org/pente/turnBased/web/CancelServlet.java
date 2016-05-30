@@ -107,7 +107,13 @@ public class CancelServlet extends HttpServlet {
 			}
 
 			request.setAttribute("set", set);
-			
+
+			TBGame tbg = set.getGame1();
+			if (tbg.getEventId() != tbGameStorer.getEventId(tbg.getGame())) {
+				log4j.error("CancelServlet: trying to cancel a tournament set " + sid);
+				handleError(request, response, "Tournament sets cannot be cancelled.");
+				return;
+			}
             // from applet
 			if (command.equals("confirm")) {
 				if (msg == null || msg.trim().equals("")) msg = "";
