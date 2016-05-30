@@ -153,6 +153,39 @@
         }
 
 
+
+
+
+        stmt = con.prepareStatement("select lastping from notifications_android where token='1111'");
+        rs = stmt.executeQuery();  
+        if (rs.next()) {
+            Timestamp lastPing = rs.getTimestamp("lastping");
+            java.util.Date date = new java.util.Date();
+            Timestamp lastWeekTimestamp = new Timestamp(date.getTime());
+            long lastWeek = lastWeekTimestamp.getTime() - (14*1000*3600*24);
+            lastWeekTimestamp.setTime(lastWeek);
+            if (lastWeekTimestamp.after(lastPing)) {
+                stmt = con.prepareStatement("update notifications_android set lastping=NOW() where token='1111'");
+                stmt.executeUpdate();
+                log4j.info("Android Notifications: it has been more than 2 weeks since I last checked the stale Android tokens.");
+                stmt = con.prepareStatement("DELETE from notifications_android where lastping < ?");
+                stmt.setTimestamp(1, lastWeekTimestamp);
+                int deletedDevices = stmt.executeUpdate();
+                    log4j.info("Android Notifications: I deleted " + deletedDevices + " stale Android tokens.");
+                stmt.close();
+
+                %><%=deletedDevices %> Android device tokens deleted.</b><br><br> <%
+            }
+        } else {
+            stmt.close();
+            stmt = con.prepareStatement("INSERT INTO notifications_android (pid, token, lastping) VALUES (0, ?, NOW())");
+            stmt.setString(1,"1111");
+            stmt.executeUpdate();
+        }
+        stmt.close();
+
+
+
         if (con != null) {
             dbHandler.freeConnection(con);
         }

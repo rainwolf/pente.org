@@ -17,13 +17,11 @@ public class SetCharacterEncodingFilter implements Filter {
         this.filterConfig = filterConfig;  
         this.encoding = filterConfig.getInitParameter("encoding");  
     }  
-    public void doFilter(ServletRequest request,  
-    ServletResponse response,  
-    FilterChain chain) throws IOException, ServletException {  
-     request.setCharacterEncoding(this.encoding);  
-     chain.doFilter(request, response);  
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {  
+        request.setCharacterEncoding(this.encoding);  
+        chain.doFilter(request, response);  
     }  
     public void destroy() {
-     this.filterConfig = null;
+        this.filterConfig = null;
     }
 }

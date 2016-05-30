@@ -2,8 +2,9 @@
 <h2>Tournaments</h2>
 
 Tournaments are held from time to time, lately dweebo has been trying to
-hold more regular tournaments.  There are two types of tournaments played.<br>
+hold more regular tournaments.  There are <b>Turn-Based</b> and <b>Live</b> tournaments played.<br>
 <br>
+Live tournaments come in two flavors. 
 There are <b>Speed tournaments</b>
 which consist of speed games (generally less than 5
 minutes).  These tournaments are held live and complete in a few hours.<br>
