@@ -104,6 +104,10 @@ public class CancelServlet extends HttpServlet {
 				log4j.error("CancelServlet, not active " + sid);
 				handleError(request, response, "Set not active.");
 				return;
+			} else if (set.getPlayer1Pid() == 23000000020606L || set.getPlayer2Pid() == 23000000020606L) {
+				log4j.error("CancelServlet, trying to cancel against AI player");
+				handleError(request, response, "Sets against the AI player cannot be cancelled.");
+				return;
 			}
 
 			request.setAttribute("set", set);

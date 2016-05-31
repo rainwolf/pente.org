@@ -494,6 +494,42 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
 			TBGame game = data.game;
 			try {
+
+				if (game.getPlayer1Pid() == 23000000020606L || game.getPlayer2Pid() == 23000000020606L) {
+					long pid = 0;
+					if (game.getPlayer1Pid() == 23000000020606L) {
+						pid = game.getPlayer2Pid();
+					} else {
+						pid = game.getPlayer1Pid();
+					}
+
+					String subject = "", body = "";
+					if (game.getWinner() == 1) {
+						if (pid == game.getPlayer2Pid()) {
+							subject = "You lost";
+						} else {
+							subject = "You won";
+						}
+					} else {
+						if (pid == game.getPlayer2Pid()) {
+							subject = "You won";
+						} else {
+							subject = "You lost";
+						}
+					}
+					body = subject + " your game of " + GridStateFactory.getGameName(game.getGame()) + " against computer";
+
+					DSGMessage message = new DSGMessage();
+					message.setFromPid(23000000020606L);
+					message.setToPid(pid);
+					message.setSubject(subject);
+					message.setBody(body);
+					message.setCreationDate(new java.util.Date());
+					dsgMessageStorer.createMessage(message, false);
+
+					return;
+				}				
+
 				GameData gameData = new DefaultGameData();
 				gameData.setGameID(game.getGid());
 		        gameData.setDate(game.getCompletionDate());
@@ -1126,7 +1162,11 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 		}
 
 		// do this in background thread for performance?
-		baseStorer.storeNewMove(gid, moveNum, move);
+		if (game.getPlayer1Pid() == 23000000020606L || game.getPlayer2Pid() == 23000000020606L) {
+			((MySQLTBGameStorer) baseStorer).storeNewAIMove(gid, moveNum, move);
+		} else {
+			baseStorer.storeNewMove(gid, moveNum, move);
+		}
 
 		baseStorer.updateGameAfterMove(game);
 	}
@@ -1472,6 +1512,48 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 			thread = new Thread(new SendNotification(3, message.getMid(), message.getFromPid(), message.getToPid(), 
 				message.getSubject(), penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, dbHandler, penteLiveGCMkey));
 			thread.start();
+				
+
+        } catch (Throwable t) {
+            log4j.error("Problem creating tb sets for tournament", t);
+        }
+    }
+
+    public void createAISet(int game, long player1PID, long player2PID, int daysPerMove, boolean set, int difficulty) {
+        try {
+	        TBGame tbg1 = new TBGame();
+	        tbg1.setGame(game);
+	        tbg1.setDaysPerMove(daysPerMove);
+	        tbg1.setRated(set);
+	        tbg1.setRound(difficulty);
+	        tbg1.setPlayer1Pid(player1PID);
+	        tbg1.setPlayer2Pid(player2PID);
+	        tbg1.setEventId(getEventId(game));
+	        tbg1.setState(TBGame.STATE_ACTIVE);
+	        tbg1.setLastMoveDate(new Date());
+	        tbg1.setStartDate(new Date());
+	        TBGame tbg2 = null;
+	        if (set) {
+		        tbg2 = new TBGame();
+		        tbg2.setGame(game);
+		        tbg2.setDaysPerMove(daysPerMove);
+		        tbg2.setRated(set);
+		        tbg2.setRound(difficulty);
+		        tbg2.setPlayer2Pid(player1PID);
+		        tbg2.setPlayer1Pid(player2PID);
+		        tbg2.setEventId(getEventId(game));
+		        tbg2.setState(TBGame.STATE_ACTIVE);
+		        tbg2.setLastMoveDate(new Date());
+		        tbg2.setStartDate(new Date());
+	        }
+	        TBSet tbs = new TBSet(tbg1, tbg2);
+	        tbs.setPlayer1Pid(player1PID);
+	        tbs.setPlayer2Pid(player2PID);
+	        tbs.setPrivateGame(false);
+	        tbs.setState(TBSet.STATE_ACTIVE);
+	        tbs.setInvitationRestriction(TBSet.ANY_RATING);
+	        createSet(tbs);
+
 				
 
         } catch (Throwable t) {
