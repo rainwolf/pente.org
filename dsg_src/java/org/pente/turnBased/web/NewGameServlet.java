@@ -119,51 +119,62 @@ public class NewGameServlet extends HttpServlet {
 				" to start turn-based game.", e);
 		    error = "Database error, please try again later.";
 		}
-		
-		if (inviteePlayer != null && !inviteePlayer.equals("") && (error == null)) {
 
-	        try {
-				String isMobile = (String) request.getParameter("mobile");
-		        ServletContext ctx = getServletContext();
-				List<TBSet> currentSets = tbGameStorer.loadSets(invitePlayerData.getPlayerID());
-				List<TBSet> invitesTo = new ArrayList<TBSet>();
-				List<TBSet> invitesFrom = new ArrayList<TBSet>();
-				List<TBGame> myTurn = new ArrayList<TBGame>();
-				List<TBGame> oppTurn = new ArrayList<TBGame>();
-				Utilities.organizeGames(invitePlayerData.getPlayerID(), currentSets,
-				    invitesTo, invitesFrom, myTurn, oppTurn);
-				boolean limitExceeded;
-				int gamesLimit = Integer.parseInt(ctx.getInitParameter("TBGamesLimit"));
-				if (invitePlayerData.unlimitedMobileTBGames() && (isMobile != null)) {
-					limitExceeded = false;
-				} else if (invitePlayerData.unlimitedTBGames()) {
-				  	limitExceeded = false;
-				} else {
-					int currentCount = myTurn.size() + oppTurn.size();
-					if (!invitesFrom.isEmpty()) {
-						for (TBSet s : invitesFrom) {
-							if (s.isTwoGameSet()) {
-								currentCount += 2;
-							} else {
-								currentCount++;
-							}
-						}
-					}
-					if (currentCount > gamesLimit) {
-						limitExceeded = true;
-					} else {
-						limitExceeded = false;
-					}
-				}
-
-				if (limitExceeded) {
-					error = "Free account games limit exceeded.";
-				} 
-			} catch (TBStoreException tbe) {
-		    	log4j.error("NewGameServlet: ", tbe);
-		    	error = "Database error, please try again later.";
+		if (gameStr != null) {
+			try {
+				game = Integer.parseInt(gameStr);
+			} catch (NumberFormatException nef) {
+		    	log4j.error("Problem with the game to start turn-based game.", nef);
+			    error = "Error, parsing the game.";
 			}
-		} else if (error == null) {
+		}
+
+		
+		// if (inviteePlayer != null && !inviteePlayer.equals("") && (error == null)) {
+
+	 //        try {
+		// 		String isMobile = (String) request.getParameter("mobile");
+		//         ServletContext ctx = getServletContext();
+		// 		List<TBSet> currentSets = tbGameStorer.loadSets(invitePlayerData.getPlayerID());
+		// 		List<TBSet> invitesTo = new ArrayList<TBSet>();
+		// 		List<TBSet> invitesFrom = new ArrayList<TBSet>();
+		// 		List<TBGame> myTurn = new ArrayList<TBGame>();
+		// 		List<TBGame> oppTurn = new ArrayList<TBGame>();
+		// 		Utilities.organizeGames(invitePlayerData.getPlayerID(), currentSets,
+		// 		    invitesTo, invitesFrom, myTurn, oppTurn);
+		// 		boolean limitExceeded;
+		// 		int gamesLimit = Integer.parseInt(ctx.getInitParameter("TBGamesLimit"));
+		// 		if (invitePlayerData.unlimitedMobileTBGames() && (isMobile != null)) {
+		// 			limitExceeded = false;
+		// 		} else if (invitePlayerData.unlimitedTBGames()) {
+		// 		  	limitExceeded = false;
+		// 		} else {
+		// 			int currentCount = myTurn.size() + oppTurn.size();
+		// 			if (!invitesFrom.isEmpty()) {
+		// 				for (TBSet s : invitesFrom) {
+		// 					if (s.isTwoGameSet()) {
+		// 						currentCount += 2;
+		// 					} else {
+		// 						currentCount++;
+		// 					}
+		// 				}
+		// 			}
+		// 			if (currentCount > gamesLimit) {
+		// 				limitExceeded = true;
+		// 			} else {
+		// 				limitExceeded = false;
+		// 			}
+		// 		}
+
+		// 		if (limitExceeded) {
+		// 			error = "Free account games limit exceeded.";
+		// 		} 
+		// 	} catch (TBStoreException tbe) {
+		//     	log4j.error("NewGameServlet: ", tbe);
+		//     	error = "Database error, please try again later.";
+		// 	}
+		// } else 
+		if (error == null) {
 			String invitationRestrictionString = request.getParameter("invitationRestriction");
 			if (invitationRestrictionString != null && invitationRestrictionString.length() > 0) {
 				invitationRestriction = invitationRestrictionString.charAt(0);
@@ -172,11 +183,6 @@ public class NewGameServlet extends HttpServlet {
 
 
 		
-		if (gameStr != null) {
-			try {
-				game = Integer.parseInt(gameStr);
-			} catch (NumberFormatException nef) {}
-		}
 		if (game == -1 || game > GridStateFactory.getMaxGameId()) {
 			log4j.error("NewGameServlet, invalid game " + gameStr);
 			error = "You must select a game to play.";
@@ -202,8 +208,70 @@ public class NewGameServlet extends HttpServlet {
 		if (privateStr != null && privateStr.equals("Y")) {
 			privateGame = true;
 		}
-		
-		if (error == null) {
+
+
+		if (error == null && inviteePlayer != null && inviteePlayer.equals("computer")) {
+	        ServletContext ctx = getServletContext();
+	        try {
+				List<TBSet> currentSets = tbGameStorer.loadSets(invitePlayerData.getPlayerID());
+				List<TBSet> invitesTo = new ArrayList<TBSet>();
+				List<TBSet> invitesFrom = new ArrayList<TBSet>();
+				List<TBGame> myTurn = new ArrayList<TBGame>();
+				List<TBGame> oppTurn = new ArrayList<TBGame>();
+				Utilities.organizeGames(invitePlayerData.getPlayerID(), currentSets,
+				    invitesTo, invitesFrom, myTurn, oppTurn);
+	            for (TBGame g : myTurn) {
+	                if (g.getPlayer1Pid() == 23000000020606L || g.getPlayer2Pid() == 23000000020606L) {
+	                	if (g.getGame() == game) {
+							log4j.error("NewGameServlet, already playing computer game");
+							error = "You are already playing a game of " + GridStateFactory.getGameName(game) + " against the AI player. You can start a new one after finishing the current one.";
+							break;
+	                	}
+	                }
+	            }
+	            if (error == null) {
+		            for (TBGame g : oppTurn) {
+		                if (g.getPlayer1Pid() == 23000000020606L || g.getPlayer2Pid() == 23000000020606L) {
+		                	if (g.getGame() == game) {
+								log4j.error("NewGameServlet, already playing computer game");
+								error = "You are already playing a game of " + GridStateFactory.getGameName(game) + " against the AI player. You can start a new one after finishing the current one.";
+								break;
+		                	}
+		                }
+		            }
+	            }
+			} catch (TBStoreException tbe) {
+		    	log4j.error("NewGameServlet: ", tbe);
+		    	error = "Database error, please try again later.";
+			}
+
+            if (error == null) {
+				String difficultyStr = request.getParameter("difficulty");
+				int difficulty = 0;
+		        try {
+		            difficulty = Integer.parseInt(difficultyStr);
+		    	} catch (NumberFormatException nfe) {
+			    	log4j.error("Problem with the difficulty to start turn-based game.", nfe);
+				    error = "Error parsing the difficulty.";
+		    	}
+		    	if (game > 55) {
+			    	log4j.error("NewGameServlet: game not supported by the AI");
+				    error = "The AI only supports Gomoku, Pente, and Keryo-Pente";
+		    	}
+
+	    		if (error == null) {
+					long pid1 = 0, pid2 = 0;
+					if (!rated && playAs == 1) {
+						pid1 = invitePlayerData.getPlayerID();
+						pid2 = 23000000020606L;
+					} else {
+						pid2 = invitePlayerData.getPlayerID();
+						pid1 = 23000000020606L;
+					}
+			    	((CacheTBStorer) tbGameStorer).createAISet(game, pid1, pid2, daysPerMove, rated, difficulty);
+	    		}
+    		}
+		} else if (error == null) {
 			try {
 				
 				TBGame tbg = null;

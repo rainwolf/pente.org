@@ -76,8 +76,14 @@ public class MySQLTBGameStorer implements TBGameStorer {
 		try {
 	        try {
 				con = dbHandler.getConnection();
+
+				String tbTable = " tb_set ";
+				if (tbSet.getPlayer1Pid() == 23000000020606L || tbSet.getPlayer2Pid() == 23000000020606L) {
+					tbTable = " tb_set_ai ";
+				}
+
 	            stmt = con.prepareStatement(
-					"insert into tb_set " +
+					"insert into" + tbTable +
 	                "(gid1, gid2, p1_pid, p2_pid, state, creation_date, " +
 	                "inviter_pid, cancel_pid, private, invitation_restriction) " +
 					"values(?, ?, ?, ?, ?, ?, ?, 0, ?, ?)", 
@@ -134,8 +140,13 @@ public class MySQLTBGameStorer implements TBGameStorer {
 	        try {
 				con = dbHandler.getConnection();
 	
+				String tbTable = " tb_game ";
+				if (game.getPlayer1Pid() == 23000000020606L || game.getPlayer2Pid() == 23000000020606L) {
+					tbTable = " tb_game_ai ";
+				}
+
 	            stmt = con.prepareStatement(
-					"insert into tb_game " +
+					"insert into" + tbTable +
 	                "(state, p1_pid, p2_pid, creation_date, game, " +
 	                " event_id, round, section, days_per_move, rated, " +
 	                " dpente_state, start_date, last_move_date, timeout_date) " +
@@ -229,6 +240,32 @@ public class MySQLTBGameStorer implements TBGameStorer {
                     set.setCancelPid(result.getLong(9));
                     set.setCancelMsg(result.getString(10));
                     set.setPrivateGame(result.getString(11).equals("Y"));
+	            } else {
+		            stmt = con.prepareStatement(
+						"select gid1, gid2, p1_pid, p2_pid, state, " +
+						"creation_date, completion_date, inviter_pid, cancel_pid, " +
+						"cancel_msg, private " +
+						"from tb_set_ai " +
+						"where sid = ?"); 
+					
+					stmt.setLong(1, setId);
+					
+					result = stmt.executeQuery();
+		
+		            if (result.next()) {
+		            	TBGame g1 = loadGame(result.getLong(1));
+		            	TBGame g2 = loadGame(result.getLong(2));
+						set = new TBSet(setId, g1, g2);
+						set.setPlayer1Pid(result.getLong(3));
+						set.setPlayer2Pid(result.getLong(4));
+						set.setState(result.getString(5).charAt(0));
+						set.setCreationDate(getDate(result, 6));
+						set.setCompletionDate(getDate(result, 7));
+						set.setInviterPid(result.getLong(8));
+	                    set.setCancelPid(result.getLong(9));
+	                    set.setCancelMsg(result.getString(10));
+	                    set.setPrivateGame(result.getString(11).equals("Y"));
+		            }
 	            }
 
 	        } finally {
@@ -274,6 +311,21 @@ public class MySQLTBGameStorer implements TBGameStorer {
 	            if (result.next()) {
 	            	long sid = result.getLong(1);
 	            	set = loadSet(sid);
+	            } else {
+		            stmt = con.prepareStatement(
+						"select sid " +
+						"from tb_set_ai " +
+						"where gid1 = ? or gid2 = ?"); 
+					
+					stmt.setLong(1, gid);
+					stmt.setLong(2, gid);
+					
+					result = stmt.executeQuery();
+		
+		            if (result.next()) {
+		            	long sid = result.getLong(1);
+		            	set = loadSet(sid);
+		            }
 	            }
 
 	        } finally {
@@ -334,6 +386,20 @@ public class MySQLTBGameStorer implements TBGameStorer {
 	            if (result.next()) {
 					game = new TBGame();
 					loadGame(con, result, game, 1);
+	            } else {
+		            stmt = con.prepareStatement(
+						"select " + TB_COLUMNS + " " +
+						"from tb_game_ai " +
+						"where gid = ?"); 
+					
+					stmt.setLong(1, gid);
+					
+					result = stmt.executeQuery();
+		
+		            if (result.next()) {
+						game = new TBGame();
+						loadGame(con, result, game, 1);
+		            }
 	            }
 
 	        } finally {
@@ -359,9 +425,13 @@ public class MySQLTBGameStorer implements TBGameStorer {
 		ResultSet result = null;
 		
 		try {
+			String tbTable = " tb_move ";
+			if (game.getPlayer1Pid() == 23000000020606L || game.getPlayer2Pid() == 23000000020606L) {
+				tbTable = " tb_move_ai ";
+			}
 			stmt = con.prepareStatement(
 				"select move " +
-				"from tb_move " +
+				"from " + tbTable +
 				"where gid = ? " +
 				"order by move_num asc");
 			stmt.setLong(1, game.getGid());
@@ -501,11 +571,17 @@ public class MySQLTBGameStorer implements TBGameStorer {
 			con = dbHandler.getConnection();
 
             stmt = con.prepareStatement(
-				"select gid " +
+				"(select gid " +
 				"from tb_game " +
-				"where timeout_date < ? and state = ?"); 
+				"where timeout_date < ? and state = ? )" +
+				" union " +
+				"(select gid " +
+				"from tb_game_ai " +
+				"where timeout_date < ? and state = ? )");
 			stmt.setTimestamp(1, new Timestamp(date.getTime()));
 			stmt.setString(2, Character.toString(TBGame.STATE_ACTIVE));
+			stmt.setTimestamp(3, new Timestamp(date.getTime()));
+			stmt.setString(4, Character.toString(TBGame.STATE_ACTIVE));
 			result = stmt.executeQuery();
 			
 			List<Long> gids = new ArrayList<Long>();
@@ -585,16 +661,26 @@ public class MySQLTBGameStorer implements TBGameStorer {
 			con = dbHandler.getConnection();
 
             stmt = con.prepareStatement(
-    			"select " + TB_SET_COLUMNS + " " +
+    			"(select " + TB_SET_COLUMNS + " " +
 				"from tb_set s, tb_game g " +
 				"where s.state != '" + TBSet.STATE_CANCEL + "' " +
 				"and s.state != '" + TBSet.STATE_COMPLETED + "' " +
 				"and s.state != '" + TBSet.STATE_TIMEOUT + "' " +
 				"and (s.p1_pid = ? or s.p2_pid = ?) " +
-				"and (s.gid1 = g.gid or s.gid2 = g.gid)");
+				"and (s.gid1 = g.gid or s.gid2 = g.gid) )" +
+				" UNION " + 
+    			"(select " + TB_SET_COLUMNS + " " +
+				"from tb_set_ai s, tb_game_ai g " +
+				"where s.state != '" + TBSet.STATE_CANCEL + "' " +
+				"and s.state != '" + TBSet.STATE_COMPLETED + "' " +
+				"and s.state != '" + TBSet.STATE_TIMEOUT + "' " +
+				"and (s.p1_pid = ? or s.p2_pid = ?) " +
+				"and (s.gid1 = g.gid or s.gid2 = g.gid) )");
 
 			stmt.setLong(1, pid);
 			stmt.setLong(2, pid);
+			stmt.setLong(3, pid);
+			stmt.setLong(4, pid);
 
             sets = loadSets(con, stmt);
 				
@@ -684,8 +770,42 @@ public class MySQLTBGameStorer implements TBGameStorer {
 
 		try {
 			con = dbHandler.getConnection();
+
 	        stmt = con.prepareStatement(
 				"insert into tb_move " +
+				"(gid, move_num, move) " +
+				"values(?, ?, ?)");
+			stmt.setLong(1, gid);
+			stmt.setInt(2, moveNum);
+			stmt.setInt(3, move);
+	
+			stmt.executeUpdate();
+			
+	    } catch (SQLException se) {
+			throw new TBStoreException(se);
+	    } finally {
+			if (stmt != null) {
+				try { stmt.close(); } catch (SQLException se) {}
+			}
+			if (con != null) {
+				try { dbHandler.freeConnection(con); } catch (SQLException se) {}
+			}
+	    }
+	}
+	public void storeNewAIMove(long gid, int moveNum, int move)
+		throws TBStoreException {
+		
+		log4j.debug("MySQLGameTbStorer.storeNewMove(" + gid + ", " + moveNum + ", " +
+			move + ")");
+		
+		Connection con = null;
+		PreparedStatement stmt = null;
+
+		try {
+			con = dbHandler.getConnection();
+
+	        stmt = con.prepareStatement(
+				"insert into tb_move_ai " +
 				"(gid, move_num, move) " +
 				"values(?, ?, ?)");
 			stmt.setLong(1, gid);
@@ -713,8 +833,14 @@ public class MySQLTBGameStorer implements TBGameStorer {
 
 		try {
 			con = dbHandler.getConnection();
+
+			String tbTable = " tb_game ";
+			if (game.getPlayer1Pid() == 23000000020606L || game.getPlayer2Pid() == 23000000020606L) {
+				tbTable = " tb_game_ai ";
+			}
+
 			stmt = con.prepareStatement(
-				"update tb_game " +
+				"update" + tbTable +
 				"set last_move_date = ?, " +
 				"timeout_date = ? " +
 				"where gid = ?");
@@ -864,8 +990,12 @@ public class MySQLTBGameStorer implements TBGameStorer {
 		try {
 			con = dbHandler.getConnection();
 
+			String tbTable = " tb_set ";
+			if (set.getPlayer1Pid() == 23000000020606L || set.getPlayer2Pid() == 23000000020606L) {
+				tbTable = " tb_set_ai ";
+			}
             stmt = con.prepareStatement(
-				"update tb_set " +
+				"update" + tbTable +
 				"set state = ?, " +
 				"completion_date = ? " +
 				"where tb_set.sid = ?");
@@ -903,8 +1033,13 @@ public class MySQLTBGameStorer implements TBGameStorer {
 		try {
 			con = dbHandler.getConnection();
 
+			String tbTable = " tb_game ";
+			if (game.getPlayer1Pid() == 23000000020606L || game.getPlayer2Pid() == 23000000020606L) {
+				tbTable = " tb_game_ai ";
+			}
+
             stmt = con.prepareStatement(
-				"update tb_game " +
+				"update" + tbTable +
 				"set state = ?, " +
 				"completion_date = ?, " +
 				"winner = ? " +
