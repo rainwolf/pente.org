@@ -68,6 +68,16 @@ if (name != null) {
 		        <br>
 		        
 		        <% boolean pass = true;
+            if (dsgPlayerGameData.getTotalGames() == 0) {
+            } else {%>
+                         
+              <font color="red">
+                Before you can sign up for this tournament, you have to play at least 1 rated set of <%= GridStateFactory.getDisplayName(tourney.getGame()) %>.
+              </font>
+              
+                  <%
+
+
 		           for (Iterator it = tourney.getRestrictions().iterator(); it.hasNext();) {
                      Restriction r = (Restriction) it.next();
                      if (r.getType() == Restriction.RATING_RESTRICTION_BELOW &&
@@ -103,7 +113,7 @@ if (name != null) {
 	            </font>
 	            
                   <% }
-                   } %>
+                   } } %>
 
 	         <% if (pass) { %>
 

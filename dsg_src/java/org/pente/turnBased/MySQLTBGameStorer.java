@@ -990,15 +990,15 @@ public class MySQLTBGameStorer implements TBGameStorer {
 		try {
 			con = dbHandler.getConnection();
 
-			String tbTable = " tb_set ";
+			String tbTable = " tb_set";
 			if (set.getPlayer1Pid() == 23000000020606L || set.getPlayer2Pid() == 23000000020606L) {
-				tbTable = " tb_set_ai ";
+				tbTable = " tb_set_ai";
 			}
             stmt = con.prepareStatement(
 				"update" + tbTable +
-				"set state = ?, " +
+				" set state = ?, " +
 				"completion_date = ? " +
-				"where tb_set.sid = ?");
+				"where " + tbTable + ".sid = ?");
 			
 			stmt.setString(1, Character.toString(set.getState()));
 			stmt.setTimestamp(2, new Timestamp(set.getCompletionDate().getTime()));
@@ -1033,17 +1033,17 @@ public class MySQLTBGameStorer implements TBGameStorer {
 		try {
 			con = dbHandler.getConnection();
 
-			String tbTable = " tb_game ";
+			String tbTable = " tb_game";
 			if (game.getPlayer1Pid() == 23000000020606L || game.getPlayer2Pid() == 23000000020606L) {
-				tbTable = " tb_game_ai ";
+				tbTable = " tb_game_ai";
 			}
 
             stmt = con.prepareStatement(
 				"update" + tbTable +
-				"set state = ?, " +
+				" set state = ?, " +
 				"completion_date = ?, " +
 				"winner = ? " +
-				"where tb_game.gid = ?");
+				"where " + tbTable + ".gid = ?");
 			
 			stmt.setString(1, Character.toString(game.getState()));
 			stmt.setTimestamp(2, new Timestamp(game.getCompletionDate().getTime()));

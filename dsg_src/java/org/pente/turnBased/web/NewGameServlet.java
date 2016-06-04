@@ -23,6 +23,7 @@ public class NewGameServlet extends HttpServlet {
 
 	private static final String redirectPage = "/gameServer/index.jsp";
 	private static final String errorRedirectPage = "/gameServer/tb/new.jsp";
+	private static final String aiErrorRedirectPage = "/gameServer/tb/newAIgame.jsp";
 	private static final String mobileRedirectPage = "/gameServer/mobile/empty.jsp";
 	
 	private Resources resources;
@@ -211,7 +212,6 @@ public class NewGameServlet extends HttpServlet {
 
 
 		if (error == null && inviteePlayer != null && inviteePlayer.equals("computer")) {
-	        ServletContext ctx = getServletContext();
 	        try {
 				List<TBSet> currentSets = tbGameStorer.loadSets(invitePlayerData.getPlayerID());
 				List<TBSet> invitesTo = new ArrayList<TBSet>();
@@ -247,16 +247,16 @@ public class NewGameServlet extends HttpServlet {
 
             if (error == null) {
 				String difficultyStr = request.getParameter("difficulty");
-				int difficulty = 0;
+				int difficulty = 1;
 		        try {
 		            difficulty = Integer.parseInt(difficultyStr);
 		    	} catch (NumberFormatException nfe) {
 			    	log4j.error("Problem with the difficulty to start turn-based game.", nfe);
 				    error = "Error parsing the difficulty.";
 		    	}
-		    	if (game > 55) {
+		    	if (game != 51 && game != 55) {
 			    	log4j.error("NewGameServlet: game not supported by the AI");
-				    error = "The AI only supports Gomoku, Pente, and Keryo-Pente";
+				    error = "The AI only supports Gomoku and Pente";
 		    	}
 
 	    		if (error == null) {
@@ -351,8 +351,13 @@ public class NewGameServlet extends HttpServlet {
 		
 		if (error != null) {
     		request.setAttribute("error", error);
-	       	getServletContext().getRequestDispatcher(errorRedirectPage).forward(
-                request, response);
+    		if (request.getParameter("difficulty") == null) {
+		       	getServletContext().getRequestDispatcher(errorRedirectPage).forward(
+	                request, response);
+    		} else {
+		       	getServletContext().getRequestDispatcher(aiErrorRedirectPage).forward(
+	                request, response);
+    		}
 		} else {
 			String isMobile = (String) request.getParameter("mobile");
 			if (isMobile == null) {
