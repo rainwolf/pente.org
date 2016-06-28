@@ -318,7 +318,7 @@ public class MoveServlet extends HttpServlet {
 					}
 					tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(),
 						moves[0]);
-					if (message != null) {
+					if (message != null && !(game.getPlayer1Pid() == 23000000020606L || game.getPlayer2Pid() == 23000000020606L)) {
 						tbGameStorer.storeNewMessage(game.getGid(), message);
 					}
 				}
@@ -327,7 +327,7 @@ public class MoveServlet extends HttpServlet {
 // log4j.debug("************current player pid " + game.getCurrentPlayer());
 
 
-				if (!game.isCompleted()) {
+				if (!game.isCompleted() || game.getPlayer1Pid() == 23000000020606L || game.getPlayer2Pid() == 23000000020606L) {
 					ServletContext ctx = getServletContext();
 					String penteLiveGCMkey = ctx.getInitParameter("penteLiveGCMkey");
 					String penteLiveAPNSkey = ctx.getInitParameter("penteLiveAPNSkey");

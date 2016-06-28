@@ -82,7 +82,7 @@ function addLoadEvent(func) {
 
 	<h1><a href="/index.jsp">Pente.org</a></h1>
 
-	<form method="get" action="http://www.google.com/custom" target="_top" id="search">
+	<form method="get" action="https://www.google.com/custom" target="_top" id="search">
 		<input type="hidden" name="domains" value="pente.org"></input>
 		<input type="hidden" name="sitesearch" value="pente.org"></input>
 		<input type="hidden" name="client" value="pub-3840122611088382"></input>

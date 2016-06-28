@@ -78,6 +78,10 @@ String changeProfileSuccess = (String) request.getAttribute("changeProfileSucces
      font-weight:bold;
      width:90%;">
 <% if (!dsgPlayerData.hasPlayerDonated()) { %>
+    You are currently not subscribed to Pente.org.
+    <br>
+    <br>
+
     If you support pente.org by subscribing you can customize your account:<br>
     - You can change the color of your name in the live game room,<br>
     - You can upload a picture for your account,<br>

@@ -32,6 +32,8 @@ import org.pente.turnBased.TBGame;
 import org.pente.turnBased.TBSet;
 import org.pente.turnBased.TBStoreException;
 
+import org.pente.kingOfTheHill.*;
+
 public class ServerTable {
 
     private static Category log4j = Category.getInstance(ServerTable.class.getName());
@@ -152,6 +154,8 @@ public class ServerTable {
 	private EndGameRunnable gameOverRunnable;
     
 	private String creator;
+
+    private CacheKOTHStorer kothStorer;
 	
 	public ServerTable(final Server server,
                        final Resources resources,
@@ -168,7 +172,8 @@ public class ServerTable {
                        final MySQLDSGReturnEmailStorer returnEmailStorer,
                        final Collection namesInMainRoom,
                        final ActivityLogger activityLogger,
-                       DSGJoinTableEvent joinEvent) throws Throwable {
+                       DSGJoinTableEvent joinEvent, 
+                       final CacheKOTHStorer kothStorer) throws Throwable {
 
         this.server = server;
         this.serverData = server.getServerData();
@@ -187,6 +192,8 @@ public class ServerTable {
         this.returnEmailStorer = returnEmailStorer;
         this.activityLogger = activityLogger;
         this.creator = joinEvent.getPlayer();
+
+        this.kothStorer = kothStorer;
 
         this.playersInMainRoom = new Vector();
         for (Iterator it = namesInMainRoom.iterator(); it.hasNext();) {
@@ -2959,6 +2966,26 @@ public class ServerTable {
 	                broadcastTable(new DSGSystemMessageTableEvent(
 	                    tableNum, loserString));
                 }
+
+                if ("King of the Hill".equals(serverData.getName())) {
+                    long winnerPid = winnerPlayerData.getPlayerID();
+                    long loserPid = loserPlayerData.getPlayerID();
+                    int stepsBetween = kothStorer.stepsBetween(game, winnerPid, loserPid);
+                    if (stepsBetween*stepsBetween < 5) {
+                        kothStorer.addPlayer(game, winnerPid);
+                        kothStorer.addPlayer(game, loserPid);
+                        kothStorer.movePlayersUpDown(game, winnerPid, loserPid);
+                        broadcastTable(new DSGSystemMessageTableEvent(
+                            tableNum,
+                            "stairs have been updated"));
+                    } else {
+                        broadcastTable(new DSGSystemMessageTableEvent(
+                            tableNum,
+                            "stairs have not been updated, players are too far apart"));
+                    }
+                }
+                        
+
             }
             // we're playing against a computer (or 2 computers against each other)
             // in this case we always get the "computer" copy of the stats
@@ -2986,7 +3013,7 @@ public class ServerTable {
 				}
             }
         }
-        
+
         if (serverData.isTournament()) {
 
             try {

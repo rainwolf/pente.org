@@ -144,7 +144,7 @@ public class SendNotification implements Runnable {
                         log4j.debug(logString);
 
                     } catch(Exception e){
-                        return;            // Always must return something
+                        // return;            // Always must return something
                     }
                 }
             }
@@ -241,7 +241,7 @@ public class SendNotification implements Runnable {
 
 
                     } catch(Exception e){
-                        return;            // Always must return something
+                        // return;            // Always must return something
                     }
                 }
             }

@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="EclipseModuleManager">
+    <libelement value="jar://$MODULE_DIR$/lib/activation.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/ant.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/commons-collections.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/commons-dbcp-1.1.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/commons-fileupload-1.0.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/commons-pool-1.1.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/crimson.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/cryptix-jce-provider.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/jaxp.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/jdbc2_0-stdext.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/jnlp-servlet.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/jsse.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/junit-3.7.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/mail.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/pop3.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/servlet.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/cglib-2.0-rc2.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/commons-collections-2.1.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/commons-logging-1.0.3.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/dom4j-1.4.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/ehcache-0.6.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/hibernate2.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/jta.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/log4j-1.2.8.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/metadata-extractor-2.2.2.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/odmg-3.0.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/jivebase.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/jiveforums.jar!/" />
+    <libelement value="file://lib/mysql-connector-java-3.1-nightly-20050818-bin.jar" />
+    <libelement value="jar://$MODULE_DIR$/lib/jogl.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/jcommon-1.0.5.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/jfreechart-1.0.2.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/gluegen-rt.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/hsqldb.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/derby.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/swingx-0.9.1.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/commons-codec-1.3.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/mydoggy-api-1.4.1.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/mydoggy-plaf-1.4.1.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/mydoggy-res-1.4.1.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/TableLayout-20050920.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/commons-httpclient-3.0.1.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/jdom.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/rome-1.0RC1.jar!/" />
+    <src_description expected_position="0">
+      <src_folder value="file://$MODULE_DIR$/java" expected_position="0" />
+    </src_description>
+  </component>
+  <component name="NewModuleRootManager" inherit-compiler-output="false">
+    <output url="file://$MODULE_DIR$/bin" />
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/java" isTestSource="false" />
+    </content>
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="module-library">
+      <library name="activation.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/activation.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="ant.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/ant.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="commons-collections.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/commons-collections.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="commons-dbcp-1.1.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/commons-dbcp-1.1.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="commons-fileupload-1.0.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/commons-fileupload-1.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="commons-pool-1.1.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/commons-pool-1.1.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="crimson.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/crimson.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="cryptix-jce-provider.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/cryptix-jce-provider.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="jaxp.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/jaxp.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="jdbc2_0-stdext.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/jdbc2_0-stdext.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="jnlp-servlet.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/jnlp-servlet.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="jsse.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/jsse.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="junit-3.7.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/junit-3.7.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="mail.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/mail.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="pop3.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/pop3.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="servlet.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/servlet.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="cglib-2.0-rc2.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/cglib-2.0-rc2.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="commons-collections-2.1.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/commons-collections-2.1.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="commons-logging-1.0.3.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/commons-logging-1.0.3.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="dom4j-1.4.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/dom4j-1.4.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="ehcache-0.6.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/ehcache-0.6.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="hibernate2.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/hibernate2.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="jta.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/jta.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="log4j-1.2.8.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/log4j-1.2.8.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="metadata-extractor-2.2.2.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/metadata-extractor-2.2.2.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="odmg-3.0.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/odmg-3.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="jivebase.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/jivebase.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="jiveforums.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/jiveforums.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="mysql-connector-java-3.1-nightly-20050818-bin.jar">
+        <CLASSES>
+          <root url="file://lib/mysql-connector-java-3.1-nightly-20050818-bin.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="jogl.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/jogl.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="jcommon-1.0.5.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/jcommon-1.0.5.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="jfreechart-1.0.2.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/jfreechart-1.0.2.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="gluegen-rt.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/gluegen-rt.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="hsqldb.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/hsqldb.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="derby.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/derby.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="swingx-0.9.1.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/swingx-0.9.1.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="commons-codec-1.3.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/commons-codec-1.3.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="mydoggy-api-1.4.1.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/mydoggy-api-1.4.1.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="mydoggy-plaf-1.4.1.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/mydoggy-plaf-1.4.1.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="mydoggy-res-1.4.1.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/mydoggy-res-1.4.1.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="TableLayout-20050920.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/TableLayout-20050920.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="commons-httpclient-3.0.1.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/commons-httpclient-3.0.1.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="jdom.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/jdom.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="rome-1.0RC1.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/rome-1.0RC1.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+  </component>
+</module>

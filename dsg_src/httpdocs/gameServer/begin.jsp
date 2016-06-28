@@ -70,9 +70,10 @@ String me = (String) request.getAttribute("name");
  { "/gameServer/index.jsp", "Dashboard" },
  { "/gameServer/myprofile", "My Profile" },
  { "/gameServer/forums", "Forums" },
+ { "/gameServer/stairs.jsp", "KotH" },
  { "/gameServer/tournaments", "Tournaments" },
  { "/help/helpWindow.jsp?file=gettingStarted", "Help" },
- { "/help/helpWindow.jsp?file=faq", "FAQ" },
+ // { "/help/helpWindow.jsp?file=faq", "FAQ" },
  { "/gameServer/logout", "Logout" }
 }; %>
 

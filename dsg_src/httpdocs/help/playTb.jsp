@@ -30,6 +30,17 @@ games must be played in a "set" of 2 games, one game you play as player 1, and o
 play as player 2.  In order for you to "win" you must win both games.  If you and your
 opponent each win one game the set is a draw and no rating change is made.<br>
 
+<h2>Timeouts and vacation</h2>
+
+Turn-based timeouts per move are set to a number of days and take into account weekends and vacation days. 
+Weekends are set to Saturday and Sunday by default but this can be changed in your profile.<br><br>
+Each player also gets 10 vacation days each year and can, optionally, purchase more. Vacation 
+days are floating, this means that when a game is set to timeout, and the player has vacation days 
+left, 1 hour is deducted from those vacation days and the timeout is extended by 1 hour. This continues until 
+the player runs out of vacation days.
+<br><br>
+On January 1st of each year, every player's vacation time is reset to 10 days. <br>
+
 <br>
 <b><a href="helpWindow.jsp?file=playGameTable">&lt;&lt; Game Table</a>&nbsp;&nbsp;&nbsp;
 <b><a href="helpWindow.jsp?file=playGameRules">&gt;&gt; Game Rules</a>
