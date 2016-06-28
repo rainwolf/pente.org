@@ -105,7 +105,7 @@
 
   <context-param>
     <param-name>penteLiveGCMkey</param-name>
-    <param-value>AIzaSyAL721NaSCAEVVZrRS2u_D3l5Y0oMeME3k</param-value>
+    <param-value>AIzaSyDwhDVhvk7p8ZEKhPdascJxLOjP_87nX8M</param-value>
   </context-param>
 
   <context-param>

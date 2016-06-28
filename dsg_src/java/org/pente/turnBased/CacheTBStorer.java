@@ -771,10 +771,14 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 				dsgMessageStorer.createMessage(loseMessage, false);
 
 				if (game.getEventId() != getEventId(game.getGame())) {
+					
 					TourneyMatch tourneyMatch = tourneyStorer.getUnplayedMatch(game.getPlayer1Pid(),game.getPlayer2Pid(),game.getEventId());
-					tourneyMatch.setGid(game.getGid());
-					tourneyMatch.setResult(game.getWinner());
-					tourneyStorer.updateMatch(tourneyMatch);
+					if (tourneyMatch != null) {
+						tourneyMatch.setGid(game.getGid());
+						tourneyMatch.setResult(game.getWinner());
+						tourneyStorer.updateMatch(tourneyMatch);
+						return;
+					}
 				}
 				
 				
@@ -882,7 +886,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 		Integer e = eidMap.get(game);
 		if (e == null) {
 			int eid = baseStorer.getEventId(game);
-			eidMap.put(game, e);
+			eidMap.put(game, eid);
 			return eid;
 		}
 		return e.intValue();

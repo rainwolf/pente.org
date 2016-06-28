@@ -35,17 +35,20 @@ import org.pente.gameServer.tourney.*;
 import org.pente.turnBased.*;
 import org.pente.message.*;
 
+import org.pente.kingOfTheHill.*;
+
+
 public class DSGContextListener implements ServletContextListener {
-	
-	private static final Category log4j = 
+    
+    private static final Category log4j = 
         Category.getInstance(DSGContextListener.class.getName());
 
-	private DBHandler dbHandler;
-	private GameVenueStorer gameVenueStorer;
-	private CacheDSGPlayerStorer dsgPlayerStorer;
-	private GameStats gameStats;
+    private DBHandler dbHandler;
+    private GameVenueStorer gameVenueStorer;
+    private CacheDSGPlayerStorer dsgPlayerStorer;
+    private GameStats gameStats;
     
-	public void contextInitialized(ServletContextEvent servletContextEvent) {
+    public void contextInitialized(ServletContextEvent servletContextEvent) {
         try {
 
             ServletContext ctx = servletContextEvent.getServletContext();
@@ -61,8 +64,8 @@ public class DSGContextListener implements ServletContextListener {
             ctx.setAttribute(DBHandler.class.getName(), dbHandler);
             log4j.info("contextInitialized(), created DBHandler[dsg]");
             
-			DBHandler dbHandlerRo = new MySQLDBHandler(true, "dsg_ro");
-			resources.setDbHandlerRo(dbHandlerRo);
+            DBHandler dbHandlerRo = new MySQLDBHandler(true, "dsg_ro");
+            resources.setDbHandlerRo(dbHandlerRo);
             log4j.info("contextInitialized(), created DBHandler[dsg_ro]");
             
             gameVenueStorer = new MySQLGameVenueStorer(dbHandler);
@@ -70,12 +73,12 @@ public class DSGContextListener implements ServletContextListener {
             ctx.setAttribute(GameVenueStorer.class.getName(), gameVenueStorer);
             log4j.info("contextInitialized(), created GameVenueStorer");
 
-			dsgPlayerStorer = new CacheDSGPlayerStorer(new MySQLDSGPlayerStorer(dbHandler, gameVenueStorer));
+            dsgPlayerStorer = new CacheDSGPlayerStorer(new MySQLDSGPlayerStorer(dbHandler, gameVenueStorer));
             resources.setDsgPlayerStorer(dsgPlayerStorer);
-			ctx.setAttribute(DSGPlayerStorer.class.getName(), dsgPlayerStorer);
-			log4j.info("contextInitialized(), created DSGPlayerStorer");
+            ctx.setAttribute(DSGPlayerStorer.class.getName(), dsgPlayerStorer);
+            log4j.info("contextInitialized(), created DSGPlayerStorer");
             
-			System.setProperty("mail.smtp.host", ctx.getInitParameter("mail.smtp.host"));
+            System.setProperty("mail.smtp.host", ctx.getInitParameter("mail.smtp.host"));
             System.setProperty("mail.smtp.user", ctx.getInitParameter("mail.smtp.user"));
             System.setProperty("mail.smtp.password", ctx.getInitParameter("mail.smtp.password"));         
             System.setProperty("mail.imap.host", ctx.getInitParameter("mail.imap.host"));
@@ -90,16 +93,16 @@ public class DSGContextListener implements ServletContextListener {
 
             // setup storers
             GameStorer gameStorer = new MySQLPenteGameStorer(dbHandler, 
-				gameVenueStorer);
+                gameVenueStorer);
             PlayerStorer playerStorer = (PlayerStorer) gameStorer;
-			GameStorer gameStorerRo = new MySQLPenteGameStorer(dbHandlerRo,
-				gameVenueStorer);
+            GameStorer gameStorerRo = new MySQLPenteGameStorer(dbHandlerRo,
+                gameVenueStorer);
             GameStorerSearcher gameStorerSearcher = new MySQLGameStorerSearcher(
-				dbHandlerRo, gameStorerRo, gameVenueStorer);
+                dbHandlerRo, gameStorerRo, gameVenueStorer);
 
 
             resources.setGameStorer(gameStorer);
-			resources.setGameStorerRo(gameStorerRo);
+            resources.setGameStorerRo(gameStorerRo);
             ctx.setAttribute(GameStorer.class.getName(), gameStorer);
             log4j.info("contextInitialized(), created GameStorer");
 
@@ -117,15 +120,15 @@ public class DSGContextListener implements ServletContextListener {
             log4j.info("contextInitialized(), created MySQLDSGReturnEmailStorer");
 
             ServerStatsHandler serverStatsHandler = new ServerStatsHandler();
-			resources.setServerStatsHandler(serverStatsHandler);
+            resources.setServerStatsHandler(serverStatsHandler);
             ctx.setAttribute(ServerStatsHandler.class.getName(),
-				serverStatsHandler);
+                serverStatsHandler);
             gameStats = new SimpleMySQLGameStats(dbHandlerRo, 60 * 60 * 1000);
             // TODO add game stats to resources
             ctx.setAttribute(GameStats.class.getName(), gameStats);
             
             SiteStatsData siteStatsData = new SiteStatsData(
-            	serverStatsHandler, gameStats);
+                serverStatsHandler, gameStats);
             resources.setSiteStatsData(siteStatsData);
             ctx.setAttribute(SiteStatsData.class.getName(), siteStatsData);
             log4j.info("contextInitialized(), created SiteStatsData");
@@ -191,7 +194,10 @@ public class DSGContextListener implements ServletContextListener {
             resources.setTbGameStorer(tbGameStorer);
             log4j.info("contextInitialized(), created TBGameStorer");
             
-            
+            CacheKOTHStorer kothStorer = new CacheKOTHStorer(
+                new MySQLKOTHStorer(dbHandler), dsgPlayerStorer);
+            resources.setKOTHStorer(kothStorer);
+            log4j.info("contextInitialized(), created CacheKOTHStorer");
             
             TourneyStorer tourneyStorer = new CacheTourneyStorer(
                 new MySQLTourneyStorer(dbHandler, gameVenueStorer));
@@ -202,9 +208,9 @@ public class DSGContextListener implements ServletContextListener {
             log4j.info("contextInitialized(), created TourneyStorer");
 
             FastMySQLDSGGameLookup lookup = new FastMySQLDSGGameLookup(
-            	dbHandlerRo, gameVenueStorer);
-			resources.setDsgGameLookup(lookup);
-			
+                dbHandlerRo, gameVenueStorer);
+            resources.setDsgGameLookup(lookup);
+            
             ctx.setAttribute(Resources.class.getName(), resources);
             
             LeaderBoard lb = new LeaderBoard(dbHandler, dsgPlayerStorer);
@@ -232,18 +238,18 @@ public class DSGContextListener implements ServletContextListener {
         }
     }
 
-	public void contextDestroyed(ServletContextEvent servletContextEvent) {
-	    if (gameStats != null) {
-	        gameStats.destroy();
-	    }
+    public void contextDestroyed(ServletContextEvent servletContextEvent) {
+        if (gameStats != null) {
+            gameStats.destroy();
+        }
 
         // stop servers
         ServletContext ctx = servletContextEvent.getServletContext();
         Resources resources = (Resources) 
             ctx.getAttribute(Resources.class.getName());
-		
-		resources.getTbGameStorer().destroy();
-		
+        
+        resources.getTbGameStorer().destroy();
+        
         for (Iterator it = resources.getServers().iterator(); it.hasNext();) {
             Server s = (Server) it.next();
             log4j.info("Destroying server " + s.getServerData() + ".");

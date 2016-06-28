@@ -40,6 +40,8 @@ if (giftee != null) {
           <br>
           <u><b>Note:</b></u> The upgrade of your account should happen "near"-instantaneous after payment, if that does not happen within a few minutes, then <a href="http://www.pente.org/gameServer/newMessage.jsp?to=rainwolf">message</a> me and I will look into it asap.
           <br>
+          <b>Update:</b> Lately Paypal's servers have been a bit slower than usual, resulting in your profile being automatically upgraded between 10 minutes to 8 hours after payment. If this happens, let me know and I will manually fix your account.
+          <br>
           <br>
 
 <table align="center" border="1" cellpadding="10" cellspacing="0" width="100%">

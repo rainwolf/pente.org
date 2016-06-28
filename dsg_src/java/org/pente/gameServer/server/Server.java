@@ -28,6 +28,9 @@ import org.pente.gameServer.core.*;
 import org.pente.gameServer.event.*;
 import org.pente.gameServer.tourney.*;
 
+import org.pente.kingOfTheHill.*;
+
+
 /** A simple class to contain the necessary components that make up the server
  */
 public class Server {
@@ -69,6 +72,8 @@ public class Server {
     private ActivityLogger activityLogger;
 
     private GameEventData gameEvent;
+
+    private CacheKOTHStorer kothStorer;
     
     public Server(Resources resources,
                   ServerData serverData) throws Throwable {
@@ -85,6 +90,7 @@ public class Server {
         this.serverData = serverData;
         this.name = serverData.getName();
         this.port = serverData.getPort();
+        this.kothStorer = resources.getKOTHStorer();
         
         try {
             gameServerSocket = new ServerSocket(port);
@@ -302,7 +308,7 @@ public class Server {
                 aiController, newTableNum, dsgEventToPlayerRouter, dsgPlayerStorer,
                 pingManager, fileGameStorer, gameStorer, playerStorer,
                 serverStatsHandler, returnEmailStorer, mainRoomPlayers,
-                activityLogger, joinEvent);
+                activityLogger, joinEvent, kothStorer);
 
             if (newTableNum == tables.size()) {
                 tables.add(newT);

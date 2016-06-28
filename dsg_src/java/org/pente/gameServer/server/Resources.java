@@ -11,6 +11,8 @@ import org.pente.gameServer.tourney.*;
 import org.pente.turnBased.*;
 import org.pente.message.*;
 
+import org.pente.kingOfTheHill.*;
+
 /** Holder of server side resources that are reused
  *  Created to avoid repeating a bunch of code that gets/sets things
  *  in the servlet context area (one Resources object will instead)
@@ -36,12 +38,15 @@ public class Resources {
     private ActivityLogger activityLogger;
     private String aiConfigFile;
     private TourneyStorer tourneyStorer;
-	private TBGameStorer tbGameStorer;
-	private DSGMessageStorer dsgMessageStorer;
+    private TBGameStorer tbGameStorer;
+    private DSGMessageStorer dsgMessageStorer;
     private FastMySQLDSGGameLookup dsgGameLookup;
+    private CacheKOTHStorer kothStorer;
+
+
     
-    private List serverData = new ArrayList();
-    private List servers = new ArrayList();
+    private List<ServerData> serverData = new ArrayList<>();
+    private List<Server> servers = new ArrayList<>();
 
     public void addServer(Server s) {
         servers.add(s);
@@ -102,12 +107,12 @@ public class Resources {
         this.dbHandler = dbHandler;
     }
     public DBHandler getDbHandlerRo() {
-		return dbHandlerRo;
-	}
-	public void setDbHandlerRo(DBHandler dbHandlerRo) {
-		this.dbHandlerRo = dbHandlerRo;
-	}
-	public CacheDSGPlayerStorer getDsgPlayerStorer() {
+        return dbHandlerRo;
+    }
+    public void setDbHandlerRo(DBHandler dbHandlerRo) {
+        this.dbHandlerRo = dbHandlerRo;
+    }
+    public CacheDSGPlayerStorer getDsgPlayerStorer() {
         return dsgPlayerStorer;
     }
     public void setDsgPlayerStorer(CacheDSGPlayerStorer dsgPlayerStorer) {
@@ -126,12 +131,12 @@ public class Resources {
         this.gameStorer = gameStorer;
     }
     public GameStorer getGameStorerRo() {
-		return gameStorerRo;
-	}
-	public void setGameStorerRo(GameStorer gameStorerRo) {
-		this.gameStorerRo = gameStorerRo;
-	}
-	public GameStorerSearcher getGameStorerSearcher() {
+        return gameStorerRo;
+    }
+    public void setGameStorerRo(GameStorer gameStorerRo) {
+        this.gameStorerRo = gameStorerRo;
+    }
+    public GameStorerSearcher getGameStorerSearcher() {
         return gameStorerSearcher;
     }
     public void setGameStorerSearcher(GameStorerSearcher gameStorerSearcher) {
@@ -191,22 +196,30 @@ public class Resources {
     public void setTourneyStorer(TourneyStorer tourneyStorer) {
         this.tourneyStorer = tourneyStorer;
     }
-	public TBGameStorer getTbGameStorer() {
-		return tbGameStorer;
-	}
-	public void setTbGameStorer(TBGameStorer tbGameStorer) {
-		this.tbGameStorer = tbGameStorer;
-	}
-	public DSGMessageStorer getDsgMessageStorer() {
-		return dsgMessageStorer;
-	}
-	public void setDsgMessageStorer(DSGMessageStorer dsgMessageStorer) {
-		this.dsgMessageStorer = dsgMessageStorer;
-	}
-	public FastMySQLDSGGameLookup getDsgGameLookup() {
-		return dsgGameLookup;
-	}
-	public void setDsgGameLookup(FastMySQLDSGGameLookup dsgGameLookup) {
-		this.dsgGameLookup = dsgGameLookup;
-	}
+    public TBGameStorer getTbGameStorer() {
+        return tbGameStorer;
+    }
+    public void setTbGameStorer(TBGameStorer tbGameStorer) {
+        this.tbGameStorer = tbGameStorer;
+    }
+    public DSGMessageStorer getDsgMessageStorer() {
+        return dsgMessageStorer;
+    }
+    public void setDsgMessageStorer(DSGMessageStorer dsgMessageStorer) {
+        this.dsgMessageStorer = dsgMessageStorer;
+    }
+    public FastMySQLDSGGameLookup getDsgGameLookup() {
+        return dsgGameLookup;
+    }
+    public void setDsgGameLookup(FastMySQLDSGGameLookup dsgGameLookup) {
+        this.dsgGameLookup = dsgGameLookup;
+    }
+
+    public CacheKOTHStorer getKOTHStorer() {
+        return this.kothStorer;
+    }
+
+    public void setKOTHStorer(CacheKOTHStorer kothStorer) {
+        this.kothStorer = kothStorer;
+    }
 }

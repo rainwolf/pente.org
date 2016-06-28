@@ -79,8 +79,14 @@ function submitnewgameform()
 
 <tr>
  <td>
-  <h3>Start a new turn-based game against Bruce Cropley's AI player</h3> 
+  <h3>Start a new turn-based game against <a href="/gameServer/profile?viewName=cropleyb">
+            Bruce Cropley</a>'s AI player.</h3> 
      
+     Follow the links for more <a href="http://submanifold.be/Bruce%20Cropley%20-%20PentAI.html" target="info">information</a> and <a href="https://github.com/cropleyb/pentai" target="source">source code</a>.
+     <br>
+     You can also play this AI on your <a href="http://submanifold.be/Bruce%20Cropley%20-%20PentAI_files/pentai.zip" target="ms">Windows computer</a> or <a href="http://submanifold.be/Bruce%20Cropley%20-%20PentAI_files/PentAI.dmg" target="mac">mac</a>.
+     <br>
+     <br>
      <br>
 
  </td>
@@ -135,7 +141,7 @@ function submitnewgameform()
          <select size="1" id="game" name="game">
          <% Game games[] = GridStateFactory.getTbGames();
             for (int i = 0; i < games.length; i++) {
-            if (games[i].getId() != 51 && games[i].getId() != 55) continue; %>
+            if (games[i].getId() != 51) continue; %>
                <option value="<%= games[i].getId() %>"><%= games[i].getName() %></option>
 <%--
                <option <% if (i == 0) { %>selected <% } %>value="<%= games[i].getId() %>"><%= games[i].getName() %></option>

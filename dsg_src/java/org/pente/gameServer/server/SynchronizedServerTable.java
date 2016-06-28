@@ -26,6 +26,9 @@ import org.pente.game.*;
 import org.pente.gameServer.event.*;
 import org.pente.gameServer.core.*;
 
+import org.pente.kingOfTheHill.*;
+
+
 public class SynchronizedServerTable implements DSGEventListener {
 
     private static Category log4j =
@@ -53,14 +56,15 @@ public class SynchronizedServerTable implements DSGEventListener {
         MySQLDSGReturnEmailStorer returnEmailStorer,
         Collection playersInMainRoom,
         ActivityLogger activityLogger,
-        DSGJoinTableEvent joinEvent) throws Throwable {
+        DSGJoinTableEvent joinEvent,
+        final CacheKOTHStorer kothStorer) throws Throwable {
 
         sid = server.getServerData().getServerId();
 		serverTable = new ServerTable(
             server, resources, aiController, table, dsgEventRouter, this, dsgPlayerStorer,
             pingManager, gameFileStorer, gameDbStorer, playerDbStorer,
             serverStatsHandler, returnEmailStorer, playersInMainRoom,
-            activityLogger, joinEvent);
+            activityLogger, joinEvent, kothStorer);
 		
 		synchronizedQueue = new SynchronizedQueue();
 		
