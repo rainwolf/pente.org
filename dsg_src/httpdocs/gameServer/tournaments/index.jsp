@@ -41,7 +41,7 @@ List completed = resources.getTourneyStorer().getCompletedTournies();
              for (Iterator it = currentT.iterator(); it.hasNext();) {
                Tourney d = (Tourney) it.next();
                Tourney t = resources.getTourneyStorer().getTourney(d.getEventID());
-               boolean live = t.getGame() < 51;
+               boolean live = !t.isTurnBased();
                if (t.getNumRounds() > 0) { %>
                    <b><a href="statusRound.jsp?eid=<%= t.getEventID() %>&round=<%= t.getNumRounds() %>">
                     <%= t.getName() %></a> (<%=(live?"Live":"Turn-Based")%> tournament)</b><br>
@@ -66,8 +66,9 @@ List completed = resources.getTourneyStorer().getCompletedTournies();
       <% }
          else {
              for (Iterator it = signup.iterator(); it.hasNext();) {
-               Tourney t = (Tourney) it.next(); 
-                boolean live = t.getGame() < 51;%>
+               Tourney d = (Tourney) it.next();
+               Tourney t = resources.getTourneyStorer().getTourney(d.getEventID());
+                boolean live = !t.isTurnBased();%>
                <b><a href="tournamentConfirm.jsp?eid=<%= t.getEventID() %>">
                     <%= t.getName() %></a> (<%=(live?"Live":"Turn-Based")%> tournament)</b><br>
           <% }

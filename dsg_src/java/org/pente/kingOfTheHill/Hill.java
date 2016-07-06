@@ -37,10 +37,15 @@ public class Hill {
             Step step = new Step();
             step.addPlayer(playerID);
             steps.add(step);
+        } else if (steps.size() == 0) {
+            Step step = new Step();
+            step.addPlayer(playerID);
+            steps.add(step);
         } else {
             boolean alreadyAdded = false;
             for (Step step : steps) {
-                for (long pid : step.getPlayers()) {
+                for (Player player : step.getPlayers()) {
+                    long pid = player.getPid();
                     if (pid == playerID) {
                         alreadyAdded = true;
                         break;
@@ -59,7 +64,7 @@ public class Hill {
         if (steps != null) {
             for (Iterator<Step> iterator = steps.iterator(); iterator.hasNext();) {
                 Step step = iterator.next();
-                if (step.getPlayers().remove(playerID)) {
+                if (step.removePlayer(playerID)) {
                     if (step.getPlayers().size() == 0) {
                         iterator.remove();
                     }
@@ -72,8 +77,8 @@ public class Hill {
 
     public boolean hasPlayer(long pid) {
         for (Step step : steps) {
-            for (long playerID : step.getPlayers()) {
-                if (playerID == pid) {
+            for (Player player : step.getPlayers()) {
+                if (player.getPid() == pid) {
                     return true;
                 }
             }
@@ -119,7 +124,8 @@ public class Hill {
         int step1 = 0, step2 = 0, idx = 0;
         boolean found1 = false, found2 = false;
         for (Step step : steps) {
-            for (long pid : step.getPlayers()) {
+            for (Player player : step.getPlayers()) {
+                long pid = player.getPid();
                 if (pid == pid1) {
                     step1 = idx;
                     found1 = true;
@@ -150,12 +156,28 @@ public class Hill {
         this.hillID = hillID;
     }
 
-    public List<Long> getMembers() {
-        List<Long> members = new ArrayList<>();
+    public List<Player> getMembers() {
+        List<Player> members = new ArrayList<>();
         for (Step step : steps) {
             members.addAll(step.getPlayers());
         }
         return members;
+    }
+
+    public int getNumPlayers() {
+        int nr = 0;
+        for (Step step : steps) {
+            nr += step.getNumPlayers();
+        }
+        return nr;
+    }
+
+    public long getKing() {
+        long king = 0;
+        if (getSteps().size() > 0 && getSteps().get(getSteps().size() - 1).getPlayers().size() == 1) {
+            king = getSteps().get(getSteps().size() - 1).getPlayers().get(0).getPid();
+        }
+        return king;
     }
 
 }

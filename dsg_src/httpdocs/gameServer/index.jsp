@@ -3,7 +3,8 @@
                  org.apache.commons.codec.binary.Hex,
                  org.pente.gameServer.client.web.*,
                  org.pente.gameServer.server.*,
-                 org.pente.gameServer.core.*"
+                 org.pente.gameServer.core.*,
+                 org.pente.kingOfTheHill.*"
          errorPage="../five00.jsp" %>
 <%!
 private static final NumberFormat profileNF = NumberFormat.getPercentInstance();
@@ -16,6 +17,7 @@ private static final NumberFormat profileNF = NumberFormat.getPercentInstance();
 
 Resources resources = (Resources) application.getAttribute(
    Resources.class.getName());
+CacheKOTHStorer kothStorer = resources.getKOTHStorer();
 
 String nm = (String) request.getAttribute("name");
 String name = nm;
@@ -652,7 +654,7 @@ if (inLiveGameRoom) {
              <%= GridStateFactory.getGameName(s.getGame1().getGame()) %></a>
           <%}%>
  -->           <a href="/gameServer/tb/replyInvitation?command=load&sid=<%= s.getSetId() %>">
-             <%= GridStateFactory.getGameName(s.getGame1().getGame()) %></a>
+             <%= GridStateFactory.getGameName(s.getGame1().getGame()) + (s.getGame1().getEventId()==kothStorer.getEventId(s.getGame1().getGame())?" (KotH)":"")%></a>
           </td>
            <td><%@include file="playerLink.jspf" %><%@ include file="ratings.jspf" %></td>
            <td><%= color %></td>
@@ -725,7 +727,7 @@ if (inLiveGameRoom) {
          %>
          <tr>
            <td><a href="/gameServer/tb/cancelInvitation?command=load&sid=<%= s.getSetId() %>">
-               <%= GridStateFactory.getGameName(s.getGame1().getGame()) %></a></td>
+               <%= GridStateFactory.getGameName(s.getGame1().getGame()) + (s.getGame1().getEventId()==kothStorer.getEventId(s.getGame1().getGame())?" (KotH)":"")%></a></td>
            <td><% if (pid == 0) { %> <%=anyoneString%> <% } else {%><%@include file="playerLink.jspf" %><% } %><% if (dsgPlayerGameData != null) { %><%@ include file="ratings.jspf" %><% } %></td>
            <td><%= color %></td>
            <td><%= s.getGame1().getDaysPerMove() %> days</td>
@@ -767,7 +769,7 @@ if (inLiveGameRoom) {
          <tr>
            <td>
          <!-- <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><img src="/gameServer/images/mobile.png" title="Without Java" height="12" width="12"></a> -  -->
-         <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><%= GridStateFactory.getGameName(g.getGame()) %></a>
+         <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><%= GridStateFactory.getGameName(g.getGame()) + (g.getEventId()==kothStorer.getEventId(g.getGame())?" (KotH)":"")%></a>
 <!--
           - 
            (<a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load');"><img src="/gameServer/images/java.png" title="With Java" height="14" width="14"></a>)
@@ -814,7 +816,7 @@ if (inLiveGameRoom) {
          <tr>
            <td>
          <!-- <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><img src="/gameServer/images/mobile.png" title="Without Java" height="12" width="12"></a> -  -->
-         <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><%= GridStateFactory.getGameName(g.getGame()) %></a> 
+         <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><%= GridStateFactory.getGameName(g.getGame()) + (g.getEventId()==kothStorer.getEventId(g.getGame())?" (KotH)":"")%></a> 
 <!--
 - 
            (<a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load');"><img src="/gameServer/images/java.png" title="With Java" height="14" width="14"></a>)

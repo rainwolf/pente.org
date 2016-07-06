@@ -10,6 +10,8 @@ import org.pente.database.*;
 
 import org.pente.gameServer.tourney.*;
 
+import org.pente.kingOfTheHill.*;
+
 import org.apache.log4j.*;
 
 import javax.servlet.*;
@@ -27,6 +29,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 	private GameStorer gameStorer;
 	private DSGMessageStorer dsgMessageStorer;
 	private TourneyStorer tourneyStorer;
+	private CacheKOTHStorer kothStorer;
 	private ServletContext ctx;
 	private DBHandler dbHandler;
     
@@ -171,11 +174,12 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
 	public CacheTBStorer(TBGameStorer baseStorer, 
 		DSGPlayerStorer dsgPlayerStorer, GameStorer gameStorer,
-		DSGMessageStorer dsgMessageStorer) {
+		DSGMessageStorer dsgMessageStorer, CacheKOTHStorer kothStorer) {
 		this.baseStorer = baseStorer;
 		this.dsgPlayerStorer = dsgPlayerStorer;
 		this.gameStorer = gameStorer;
 		this.dsgMessageStorer = dsgMessageStorer;
+		this.kothStorer = kothStorer;
 		
 		startTasks();
 	}
@@ -770,14 +774,19 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 				loseMessage.setCreationDate(new java.util.Date());
 				dsgMessageStorer.createMessage(loseMessage, false);
 
-				if (game.getEventId() != getEventId(game.getGame())) {
-					
+				if (game.getEventId() == kothStorer.getEventId(game.getGame())) {
+					if (set.isCompleted() && game.isRated() && !set.isDraw()) {
+						kothStorer.movePlayersUpDown(game.getGame(), winnerData.getPlayerID(), loserData.getPlayerID());
+					}
+					kothStorer.updatePlayerLastGameDate(game.getGame(), winnerData.getPlayerID());
+					kothStorer.updatePlayerLastGameDate(game.getGame(), loserData.getPlayerID());
+				} else if (game.getEventId() != getEventId(game.getGame())) {
 					TourneyMatch tourneyMatch = tourneyStorer.getUnplayedMatch(game.getPlayer1Pid(),game.getPlayer2Pid(),game.getEventId());
 					if (tourneyMatch != null) {
 						tourneyMatch.setGid(game.getGid());
 						tourneyMatch.setResult(game.getWinner());
 						tourneyStorer.updateMatch(tourneyMatch);
-						return;
+						// return;
 					}
 				}
 				

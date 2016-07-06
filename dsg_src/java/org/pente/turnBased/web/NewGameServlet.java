@@ -16,6 +16,8 @@ import org.apache.log4j.*;
 
 import org.pente.turnBased.SendNotification;
 
+import org.pente.kingOfTheHill.*;
+
 public class NewGameServlet extends HttpServlet {
 	
 	private static final Category log4j = Category.getInstance(
@@ -24,6 +26,7 @@ public class NewGameServlet extends HttpServlet {
 	private static final String redirectPage = "/gameServer/index.jsp";
 	private static final String errorRedirectPage = "/gameServer/tb/new.jsp";
 	private static final String aiErrorRedirectPage = "/gameServer/tb/newAIgame.jsp";
+	private static final String kothErrorRedirectPage = "/gameServer/stairs.jsp";
 	private static final String mobileRedirectPage = "/gameServer/mobile/empty.jsp";
 	
 	private Resources resources;
@@ -50,6 +53,7 @@ public class NewGameServlet extends HttpServlet {
 		
 		DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
 		TBGameStorer tbGameStorer = resources.getTbGameStorer();
+		CacheKOTHStorer kothStorer = resources.getKOTHStorer();
 
         String invitePlayer = (String) request.getAttribute("name");
 		DSGPlayerData invitePlayerData = null;
@@ -72,6 +76,7 @@ public class NewGameServlet extends HttpServlet {
 		boolean rated = false;
 		String privateStr = request.getParameter("privateGame");
 		boolean privateGame = false;
+		boolean koth = request.getParameter("koth") != null;
 
 		char invitationRestriction = TBSet.ANY_RATING;
 
@@ -209,7 +214,33 @@ public class NewGameServlet extends HttpServlet {
 		if (privateStr != null && privateStr.equals("Y")) {
 			privateGame = true;
 		}
+		if (koth) {
+			if (!rated) {
+				error = "King of the Hill games must be rated sets";
+			}
+			if (inviteePlayerData == null) {
+				error = "King of the Hill invitations cannot be open invitations";				
+			}
 
+			Hill hill = kothStorer.getHill(game);
+			if (hill != null) {
+				long pid1 = invitePlayerData.getPlayerID(), pid2 = inviteePlayerData.getPlayerID();
+				int stepsBetween = hill.stepsBetween(pid1, pid2);
+				if (!hill.hasPlayer(pid1)) {
+					error = "You haven't joined the King of the Hill for turn-based " + GridStateFactory.getGameName(game) + " yet.";
+				} else if (!hill.hasPlayer(pid2)) {
+					error = inviteePlayerData.getName() + " hasn't joined the King of the Hill for turn-based " + GridStateFactory.getGameName(game) + " yet.";
+				} else if (stepsBetween < 0) {
+					stepsBetween *= -1;
+				} else if (stepsBetween*stepsBetween > 2) {
+					error = inviteePlayerData.getName() + " is " + stepsBetween + " apart from you, it should be 2 or less.";
+				} else if (!kothStorer.canPlayerBeChallenged(game, pid1)) {
+					error = "You are already playing 2 or more King of the Hill games for turn-based " + GridStateFactory.getGameName(game) + ", subscribers don't have this limit.";
+				} else if (!kothStorer.canPlayerBeChallenged(game, pid2)) {
+					error = inviteePlayerData.getName() + " is already playing 2 or more King of the Hill games for turn-based " + GridStateFactory.getGameName(game) + ", they cannot accept more at this time.";
+				}
+			}
+		}
 
 		if (error == null && inviteePlayer != null && inviteePlayer.equals("computer")) {
 	        try {
@@ -278,6 +309,7 @@ public class NewGameServlet extends HttpServlet {
 				TBGame tbg2 = null;
 				TBSet tbs = null;
 				long pid1 = 0, pid2 = 0;
+
 				if (rated) {
 					tbg = createGame(1, invitePlayerData, inviteePlayerData,
 						game, daysPerMove, rated);
@@ -307,6 +339,12 @@ public class NewGameServlet extends HttpServlet {
 						}
 					}
 						
+				}
+
+				if (koth) {
+					int koth_event = kothStorer.getEventId(game);
+					tbg.setEventId(koth_event);
+					tbg2.setEventId(koth_event);
 				}
 				
 				tbs = new TBSet(tbg, tbg2);
@@ -353,6 +391,9 @@ public class NewGameServlet extends HttpServlet {
     		request.setAttribute("error", error);
     		if (request.getParameter("difficulty") == null) {
 		       	getServletContext().getRequestDispatcher(errorRedirectPage).forward(
+	                request, response);
+    		} else if (koth) {
+		       	getServletContext().getRequestDispatcher(kothErrorRedirectPage).forward(
 	                request, response);
     		} else {
 		       	getServletContext().getRequestDispatcher(aiErrorRedirectPage).forward(

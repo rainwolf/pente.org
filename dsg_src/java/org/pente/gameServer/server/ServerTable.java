@@ -2965,25 +2965,33 @@ public class ServerTable {
 	                    tableNum, winnerString));
 	                broadcastTable(new DSGSystemMessageTableEvent(
 	                    tableNum, loserString));
-                }
+    
 
+                    if ("King of the Hill".equals(serverData.getName())) {
+                        long winnerPid = winnerPlayerData.getPlayerID();
+                        long loserPid = loserPlayerData.getPlayerID();
+                        int stepsBetween = kothStorer.stepsBetween(game, winnerPid, loserPid);
+                        if (stepsBetween*stepsBetween < 5) {
+                            kothStorer.addPlayer(game, winnerPid);
+                            kothStorer.addPlayer(game, loserPid);
+                            kothStorer.movePlayersUpDown(game, winnerPid, loserPid);
+                            broadcastTable(new DSGSystemMessageTableEvent(
+                                tableNum,
+                                "stairs have been updated"));
+                        } else {
+                            broadcastTable(new DSGSystemMessageTableEvent(
+                                tableNum,
+                                "stairs have not been updated, players are too far apart"));
+                        }
+                    }
+                }
                 if ("King of the Hill".equals(serverData.getName())) {
                     long winnerPid = winnerPlayerData.getPlayerID();
                     long loserPid = loserPlayerData.getPlayerID();
-                    int stepsBetween = kothStorer.stepsBetween(game, winnerPid, loserPid);
-                    if (stepsBetween*stepsBetween < 5) {
-                        kothStorer.addPlayer(game, winnerPid);
-                        kothStorer.addPlayer(game, loserPid);
-                        kothStorer.movePlayersUpDown(game, winnerPid, loserPid);
-                        broadcastTable(new DSGSystemMessageTableEvent(
-                            tableNum,
-                            "stairs have been updated"));
-                    } else {
-                        broadcastTable(new DSGSystemMessageTableEvent(
-                            tableNum,
-                            "stairs have not been updated, players are too far apart"));
-                    }
+                    kothStorer.updatePlayerLastGameDate(game, winnerPid);
+                    kothStorer.updatePlayerLastGameDate(game, loserPid);
                 }
+
                         
 
             }

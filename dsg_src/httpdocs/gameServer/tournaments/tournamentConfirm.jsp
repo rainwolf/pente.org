@@ -68,12 +68,15 @@ if (name != null) {
 		        <br>
 		        
 		        <% boolean pass = true;
-            if (dsgPlayerGameData.getTotalGames() == 0) {
-            } else {%>
-                         
+            if (game.getTotalGames() == 0) {
+            %>
               <font color="red">
                 Before you can sign up for this tournament, you have to play at least 1 rated set of <%= GridStateFactory.getDisplayName(tourney.getGame()) %>.
               </font>
+
+            <%
+            } else {%>
+                         
               
                   <%
 
