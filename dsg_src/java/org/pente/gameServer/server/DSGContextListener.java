@@ -186,18 +186,20 @@ public class DSGContextListener implements ServletContextListener {
             log4j.info("contextInitialized(), created DSGMessageStorer");
             
             
+            CacheKOTHStorer kothStorer = new CacheKOTHStorer(
+                new MySQLKOTHStorer(dbHandler), dsgPlayerStorer);
+            log4j.info("contextInitialized(), created CacheKOTHStorer");
+            
             CacheTBStorer tbGameStorer = new CacheTBStorer(
                 new MySQLTBGameStorer(dbHandler), dsgPlayerStorer, gameStorer,
-                dsgMessageStorer);
+                dsgMessageStorer, kothStorer);
             tbGameStorer.setServletContext(ctx);
             tbGameStorer.setDBHandler(dbHandler);
             resources.setTbGameStorer(tbGameStorer);
             log4j.info("contextInitialized(), created TBGameStorer");
-            
-            CacheKOTHStorer kothStorer = new CacheKOTHStorer(
-                new MySQLKOTHStorer(dbHandler), dsgPlayerStorer);
+
+            kothStorer.setTbStorer(tbGameStorer);
             resources.setKOTHStorer(kothStorer);
-            log4j.info("contextInitialized(), created CacheKOTHStorer");
             
             TourneyStorer tourneyStorer = new CacheTourneyStorer(
                 new MySQLTourneyStorer(dbHandler, gameVenueStorer));

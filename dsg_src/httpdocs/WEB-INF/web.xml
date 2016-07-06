@@ -267,6 +267,11 @@
     <servlet-class>org.pente.turnBased.web.CancelServlet</servlet-class>
   </servlet>
  
+  <servlet>
+    <servlet-name>KotHServlet</servlet-name>
+    <servlet-class>org.pente.kingOfTheHill.web.KotHServlet</servlet-class>
+  </servlet>
+
   
   <servlet>
     <servlet-name>DSGMessageServlet</servlet-name>
@@ -575,6 +580,11 @@
   <servlet-mapping>
     <servlet-name>CancelServlet</servlet-name>
     <url-pattern>/gameServer/tb/cancel</url-pattern>
+  </servlet-mapping>
+  
+  <servlet-mapping>
+    <servlet-name>KotHServlet</servlet-name>
+    <url-pattern>/gameServer/koth</url-pattern>
   </servlet-mapping>
   
   <servlet-mapping>

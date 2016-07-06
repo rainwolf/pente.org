@@ -4,10 +4,8 @@ import org.apache.log4j.Category;
 import org.pente.database.DBHandler;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.Date;
 
 /**
  * Created by waliedothman on 26/06/16.
@@ -82,16 +80,17 @@ public class MySQLKOTHStorer implements KOTHStorer {
                 int i = 0;
                 long hill_id = hill.getHillID();
                 stmt = con.prepareStatement(
-                        "insert into koth(step, koth_id, pid) " +
-                                " VALUES(?, ?, ?) " +
+                        "insert into koth(step, koth_id, pid, last_game) " +
+                                " VALUES(?, ?, ?, ?) " +
                                 " ON DUPLICATE KEY UPDATE " +
-                                " step = VALUES(step)");
+                                " step = VALUES(step), last_game = VALUES(last_game)");
 
                 for (Step step : hill.getSteps()) {
-                    for (long pid : step.getPlayers()) {
+                    for (Player player : step.getPlayers()) {
                         stmt.setInt(1, i);
                         stmt.setLong(2, hill_id);
-                        stmt.setLong(3, pid);
+                        stmt.setLong(3, player.getPid());
+                        stmt.setTimestamp(4, new Timestamp(player.getLastGame().getTime()));
                         stmt.addBatch();
                     }
                     i += 1;
@@ -135,7 +134,7 @@ public class MySQLKOTHStorer implements KOTHStorer {
         try {
             try {
                 con = dbHandler.getConnection();
-                stmt = con.prepareStatement("select koth_id, pid, step from koth order by koth_id, step asc");
+                stmt = con.prepareStatement("select koth_id, pid, step, last_game from koth order by koth_id, step asc");
                 result = stmt.executeQuery();
                 Hill hill = null;
 
@@ -143,34 +142,20 @@ public class MySQLKOTHStorer implements KOTHStorer {
                     int hill_id = result.getInt(1);
                     long pid  = result.getLong(2);
                     int step_idx = result.getInt(3);
+                    java.util.Date lastGameDate = new Date(result.getTimestamp(4).getTime());
                     if (hill == null || hill.getHillID() != hill_id) {
                         hill = new Hill();
                         hill.setHillID(hill_id);
-                        hills.put(new Integer(hill_id), hill);
+                        hills.put(hill_id, hill);
                     }
                     if (hill.getSteps() == null) {
                         hill.setSteps(new ArrayList<>());
                     }
-                    if (step_idx + 1 >= hill.getSteps().size()) {
+                    if (step_idx + 1 > hill.getSteps().size()) {
                         hill.getSteps().add(new Step());
                     }
-                    hill.getSteps().get(step_idx).addPlayer(pid);
+                    hill.getSteps().get(step_idx).addPlayer(new Player(pid, lastGameDate));
                 }
-
-
-//                int i = 0;
-//                long hill_id = hill.getHillID();
-//                for (Step step : hill.getSteps()) {
-//                    for (long pid : step.getPlayers()) {
-//
-//                        stmt.setInt(1, i);
-//                        stmt.setLong(2, hill_id);
-//                        stmt.setLong(3, pid);
-//                        stmt.addBatch();
-//                    }
-//                    i += 1;
-//                }
-
 
             } finally {
                 if (result != null) {
@@ -268,8 +253,99 @@ public class MySQLKOTHStorer implements KOTHStorer {
         return pid;
     }
 
+    public java.util.Date getLastGameDate(int hill_id, long pid) {
+        Connection con = null;
+        PreparedStatement stmt = null;
+        ResultSet result = null;
+
+        java.util.Date last_Date = null;
+
+        try {
+            try {
+                con = dbHandler.getConnection();
+                stmt = con.prepareStatement("select last_game from koth where koth_id = ? and pid = ?");
+                stmt.setInt(1, hill_id);
+                stmt.setLong(2, pid);
+                result = stmt.executeQuery();
+
+                if (result.next()) {
+                    last_Date = new java.util.Date(result.getTimestamp(1).getTime());
+                }
+
+            } finally {
+                if (result != null) {
+                    result.close();
+                }
+                if (stmt != null) {
+                    stmt.close();
+                }
+                if (con != null) {
+                    dbHandler.freeConnection(con);
+                }
+            }
+        } catch (SQLException se) {
+            log4j.error("MySQLKOTHStorer.getLastGameDate(" + hill_id + ", " + pid + ")");
+        }
+
+        return last_Date;
+    }
+
+    public void updatePlayerLastGameDate(int hill_id, long pid) {
+        Connection con = null;
+        PreparedStatement stmt = null;
+//        ResultSet result = null;
+
+        java.util.Date last_Date = null;
+
+        try {
+            try {
+                con = dbHandler.getConnection();
+                stmt = con.prepareStatement("update koth set last_game = NOW() where koth_id = ? and pid = ?");
+                stmt.setInt(1, hill_id);
+                stmt.setLong(2, pid);
+                stmt.executeUpdate();
+
+            } finally {
+//                if (result != null) {
+//                    result.close();
+//                }
+                if (stmt != null) {
+                    stmt.close();
+                }
+                if (con != null) {
+                    dbHandler.freeConnection(con);
+                }
+            }
+        } catch (SQLException se) {
+            log4j.error("MySQLKOTHStorer.updatePlayerLastGameDate(" + hill_id + ", " + pid + ")");
+        }
+    }
 
 
+    public void removePlayerFromHill(int hill_id, long pid) {
+        Connection con = null;
+        PreparedStatement stmt = null;
+
+        try {
+            try {
+                con = dbHandler.getConnection();
+                stmt = con.prepareStatement("delete from koth where koth_id = ? and pid = ?");
+                stmt.setInt(1, hill_id);
+                stmt.setLong(2, pid);
+                stmt.executeUpdate();
+
+            } finally {
+                if (stmt != null) {
+                    stmt.close();
+                }
+                if (con != null) {
+                    dbHandler.freeConnection(con);
+                }
+            }
+        } catch (SQLException se) {
+            log4j.error("MySQLKOTHStorer.removePlayerFromHill(" + hill_id + ", " + pid + ")");
+        }
+    }
 }
 
 

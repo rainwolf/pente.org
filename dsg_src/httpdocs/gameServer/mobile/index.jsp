@@ -2,8 +2,10 @@
                  org.pente.game.*,
                  org.pente.turnBased.*, 
                  org.pente.gameServer.core.*, 
+                 org.pente.gameServer.tourney.*, 
                  org.pente.gameServer.server.*,
                  org.pente.message.*,
+                 org.pente.kingOfTheHill.*,
                  java.text.*,
                  java.sql.*, 
                  javapns.Push,
@@ -55,6 +57,8 @@ DSGPlayerData dsgPlayerData = dsgPlayerStorer.loadPlayer(name);
 long myPID = dsgPlayerData.getPlayerID();
 Resources resources = (Resources) application.getAttribute(
    Resources.class.getName());
+TourneyStorer tourneyStorer = resources.getTourneyStorer();
+CacheKOTHStorer  kothStorer = resources.getKOTHStorer();
 TBGameStorer tbGameStorer = resources.getTbGameStorer();
 List<TBSet> waitingSets = tbGameStorer.loadWaitingSets();
 List<TBSet> currentSets = tbGameStorer.loadSets(myPID);
@@ -268,6 +272,45 @@ No Ads
 
 EndOfSettingsParameters
 
+King of the Hill<%
+Hill hill;
+int game = GridStateFactory.TB_PENTE;
+hill = kothStorer.getHill(game);
+long kingPid = 0;
+if (hill != null) {kingPid = hill.getKing();} else {kingPid = 0;}%>
+<%=GridStateFactory.getGameName(game) + ";" + (hill != null?hill.getNumPlayers():0) + ";" + (hill != null && hill.hasPlayer(myPID)?1:0) + ";" + (kingPid == myPID?1:0) + ";" + (kingPid != 0?dsgPlayerStorer.loadPlayer(kingPid).getName():"")%><%
+game = GridStateFactory.TB_KERYO;
+// game = GridStateFactory.SPEED_PENTE;
+// game = GridStateFactory.PENTE;
+hill = kothStorer.getHill(game);
+if (hill != null) {kingPid = hill.getKing();} else {kingPid = 0;}%>
+<%=GridStateFactory.getGameName(game) + ";" + (hill != null?hill.getNumPlayers():0) + ";" + (hill != null && hill.hasPlayer(myPID)?1:0) + ";" + (kingPid == myPID?1:0) + ";" + (kingPid != 0?dsgPlayerStorer.loadPlayer(kingPid).getName():"")%><%
+game = GridStateFactory.TB_GOMOKU;
+hill = kothStorer.getHill(game);
+if (hill != null) {kingPid = hill.getKing();} else {kingPid = 0;}%>
+<%=GridStateFactory.getGameName(game) + ";" + (hill != null?hill.getNumPlayers():0) + ";" + (hill != null && hill.hasPlayer(myPID)?1:0) + ";" + (kingPid == myPID?1:0) + ";" + (kingPid != 0?dsgPlayerStorer.loadPlayer(kingPid).getName():"")%><%
+game = GridStateFactory.TB_DPENTE;
+hill = kothStorer.getHill(game);
+if (hill != null) {kingPid = hill.getKing();} else {kingPid = 0;}%>
+<%=GridStateFactory.getGameName(game) + ";" + (hill != null?hill.getNumPlayers():0) + ";" + (hill != null && hill.hasPlayer(myPID)?1:0) + ";" + (kingPid == myPID?1:0) + ";" + (kingPid != 0?dsgPlayerStorer.loadPlayer(kingPid).getName():"")%><%
+game = GridStateFactory.TB_GPENTE;
+hill = kothStorer.getHill(game);
+if (hill != null) {kingPid = hill.getKing();} else {kingPid = 0;}%>
+<%=GridStateFactory.getGameName(game) + ";" + (hill != null?hill.getNumPlayers():0) + ";" + (hill != null && hill.hasPlayer(myPID)?1:0) + ";" + (kingPid == myPID?1:0) + ";" + (kingPid != 0?dsgPlayerStorer.loadPlayer(kingPid).getName():"")%><%
+game = GridStateFactory.TB_POOF_PENTE;
+hill = kothStorer.getHill(game);
+if (hill != null) {kingPid = hill.getKing();} else {kingPid = 0;}%>
+<%=GridStateFactory.getGameName(game) + ";" + (hill != null?hill.getNumPlayers():0) + ";" + (hill != null && hill.hasPlayer(myPID)?1:0) + ";" + (kingPid == myPID?1:0) + ";" + (kingPid != 0?dsgPlayerStorer.loadPlayer(kingPid).getName():"")%><%
+game = GridStateFactory.TB_CONNECT6;
+hill = kothStorer.getHill(game);
+if (hill != null) {kingPid = hill.getKing();} else {kingPid = 0;}%>
+<%=GridStateFactory.getGameName(game) + ";" + (hill != null?hill.getNumPlayers():0) + ";" + (hill != null && hill.hasPlayer(myPID)?1:0) + ";" + (kingPid == myPID?1:0) + ";" + (kingPid != 0?dsgPlayerStorer.loadPlayer(kingPid).getName():"")%><%
+game = GridStateFactory.TB_BOAT_PENTE;
+hill = kothStorer.getHill(game);
+if (hill != null) {kingPid = hill.getKing();} else {kingPid = 0;}%>
+<%=GridStateFactory.getGameName(game) + ";" + (hill != null?hill.getNumPlayers():0) + ";" + (hill != null && hill.hasPlayer(myPID)?1:0) + ";" + (kingPid == myPID?1:0) + ";" + (kingPid != 0?dsgPlayerStorer.loadPlayer(kingPid).getName():"")%><%
+
+%>
 Rating Stats<%
 
         DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
@@ -286,6 +329,8 @@ Rating Stats<%
 Invitations received<%
         for (TBSet s : invitesTo) {
                  String color = null;
+                 TBGame g = s.getGame1();
+                 boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
                  if (s.isTwoGameSet()) {
                      color = "whiteblack";
                  }
@@ -297,7 +342,7 @@ Invitations received<%
                  }
                  DSGPlayerData d = dsgPlayerStorer.loadPlayer(s.getInviterPid());
                  DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(s.getGame1().getGame());%>
-<%=s.getSetId() + ";" + GridStateFactory.getGameName(s.getGame1().getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + s.getGame1().getDaysPerMove() + " days;" + (s.getGame1().isRated() ? "Rated" : "Not Rated") + ";" + (d.hasPlayerDonated()?d.getNameColorRGB():0) + ";" + d.getTourneyWinner() %><%} 
+<%=s.getSetId() + ";" + GridStateFactory.getGameName(s.getGame1().getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + s.getGame1().getDaysPerMove() + " days;" + (s.getGame1().isRated() ? "Rated" : "Not Rated") + (koth?" - KotH":"") + ";" + (d.hasPlayerDonated()?d.getNameColorRGB():0) + ";" + d.getTourneyWinner() %><%} 
      
 
 
@@ -319,6 +364,8 @@ Invitations sent<%
                  DSGPlayerGameData dsgPlayerGameData = null;
                  DSGPlayerData d = null;
                  String anyoneString = "Anyone";
+                 TBGame g = s.getGame1();
+                 boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
                  if (pid != 0) {
                      d = dsgPlayerStorer.loadPlayer(pid);
                      dsgPlayerGameData = d.getPlayerGameData(s.getGame1().getGame());
@@ -358,7 +405,7 @@ Invitations sent<%
                       }
                  }
                  %>
-<%=s.getSetId() + ";" + GridStateFactory.getGameName(s.getGame1().getGame()) + ";" + ((pid == 0) ? anyoneString:d.getName()) + ";" + ((dsgPlayerGameData != null)?(int) Math.round(dsgPlayerGameData.getRating()):"1600") + ";" +  color + ";" + s.getGame1().getDaysPerMove() + " days;" + (s.getGame1().isRated() ? "Rated" : "Not Rated") + ";" + ((pid == 0)?"0":(d.hasPlayerDonated()?d.getNameColorRGB():0)) + ";" + ((pid == 0)?"0":d.getTourneyWinner()) %><%} 
+<%=s.getSetId() + ";" + GridStateFactory.getGameName(s.getGame1().getGame()) + ";" + ((pid == 0) ? anyoneString:d.getName()) + ";" + ((dsgPlayerGameData != null)?(int) Math.round(dsgPlayerGameData.getRating()):"1600") + ";" +  color + ";" + s.getGame1().getDaysPerMove() + " days;" + (s.getGame1().isRated() ? "Rated" : "Not Rated") + (koth?" - KotH":"") + ";" + ((pid == 0)?"0":(d.hasPlayerDonated()?d.getNameColorRGB():0)) + ";" + ((pid == 0)?"0":d.getTourneyWinner()) %><%} 
 
      
 
@@ -416,9 +463,27 @@ Open Invitation Games<%
 Messages<%
    for (DSGMessage m : messages) {
        DSGPlayerData from = dsgPlayerStorer.loadPlayer(m.getFromPid()); %>
-<%=m.getMid() + ";" +(m.isRead() ? "read" : "unread") + ";" + m.getSubject() + ";" + from.getName() + ";" + messageDateFormat.format(m.getCreationDate()) + ";" + (from.hasPlayerDonated()?from.getNameColorRGB():0) + ";" + from.getTourneyWinner() %><%}%>
+<%=m.getMid() + ";" +(m.isRead() ? "read" : "unread") + ";" + m.getSubject() + ";" + from.getName() + ";" + messageDateFormat.format(m.getCreationDate()) + ";" + (from.hasPlayerDonated()?from.getNameColorRGB():0) + ";" + from.getTourneyWinner() %><%}
 
 
+%>
+
+Tournaments<%
+for (Tourney tmpTourney :  (List<Tourney>) tourneyStorer.getUpcomingTournies()) {
+    Tourney tourney = tourneyStorer.getTourney(tmpTourney.getEventID());
+    if (!tourney.isTurnBased()) {
+        continue;
+    }
+    %>
+<%=tourney.getName() + ";" + tourney.getEventID() + ";" + tourney.getNumRounds() + ";" + GridStateFactory.getGameName(tourney.getGame()) + ";1;" + dateFormat.format(tourney.getSignupEndDate()) %><%}
+for (Tourney tmpTourney :  (List<Tourney>) tourneyStorer.getCurrentTournies()) {
+    Tourney tourney = tourneyStorer.getTourney(tmpTourney.getEventID());
+    if (!tourney.isTurnBased()) {
+        continue;
+    }
+    %>
+<%=tourney.getName() + ";" + tourney.getEventID() + ";" + tourney.getNumRounds() + ";" + GridStateFactory.getGameName(tourney.getGame()) + ";" + (tourney.getNumRounds()==0?"2":"3") + ";" + dateFormat.format(tourney.getStartDate()) %><%}
+%>
 
 
  <%
