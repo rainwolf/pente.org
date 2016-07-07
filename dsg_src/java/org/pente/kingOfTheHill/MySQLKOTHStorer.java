@@ -41,8 +41,13 @@ public class MySQLKOTHStorer implements KOTHStorer {
 
                 stmt.setInt(1, game);
                 stmt.setInt(2, 2);
+                // if (game > 50) {
+                //     stmt.setString(3, "Turn-based King of the Hill");
+                // } else {
+                //     stmt.setString(3, "King of the Hill");
+                // }
                 stmt.setString(3, "King of the Hill");
-
+    
                 result = stmt.executeQuery();
 
                 if (result.next()) {

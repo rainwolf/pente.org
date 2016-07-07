@@ -3,6 +3,31 @@
 
 <% pageContext.setAttribute("title", "King of the Hill"); %>
 <%@ include file="begin.jsp" %>
+<% 
+String nm = (String) request.getAttribute("name");
+DSGPlayerData dsgPlayerData = dsgPlayerStorer.loadPlayer(nm);
+String gameStr = (String) request.getParameter("game");
+if (gameStr == null) {
+	gameStr = (String) request.getAttribute("game");
+}
+int game = 0;
+
+if (gameStr != null) {
+	game = Integer.parseInt(gameStr);
+}
+%>
+<center>
+<% if (dsgPlayerData.showAds()) { %>
+    <div id = "senseReplace" style="width:728px;height:90px;" top="50%"> </div>
+    <%@ include file="728x90adKotH.jsp" %>
+    <br style="clear:both">
+<% } %>
+<% if (dsgPlayerData.showAds()) { %>
+    <script type="text/javascript">
+        sensePage();
+    </script>
+<% } %>
+</center>
 
 
 <h2> King of the Hill (beta)</h2>
@@ -34,9 +59,10 @@ Turn-based King of the Hill have a few more rules to consider:
 	<li>non-subscribers can only join one hill and can only play 2 sets at any given time, this includes active sets, sent invitations, and invitations you haven't responded to yet, </li>
 	<li><a href="https://pente.org/gameServer/subscriptions">subscribers</a> can play unlimited KotH games,</li>
 	<li>if your opponent leaves the hill before the set is over, the result still counts towards your hill position,</li>
+	<li>joining or leaving a hill has to be done from this page,</li>
 	<li>other players from the hill have to be challenged from this page or from your device.</li>
 </ul>
-
+The challenge button appears when you can challenge a player, and they're also marked with a green background. This button takes you to a page where you can decide on the timeout and post an invitation from there.
 <br>
 <br>
 
@@ -53,45 +79,30 @@ Turn-based King of the Hill have a few more rules to consider:
    }
 %>
 
-<% 
-String nm = (String) request.getAttribute("name");
-String gameStr = (String) request.getParameter("game");
-if (gameStr == null) {
-	gameStr = (String) request.getAttribute("game");
-}
-int game = 0;
-
-if (gameStr != null) {
-	game = Integer.parseInt(gameStr);
-}
-%>
 
 <table width="400">
 	<tr>
 	<td>
  <form name="mainPlayForm" method="post" action="" style="margin:0;padding:0;">
-<div class="buttonwrapper">
 
     
       <select name="game">
-      <% for (int i = 0; i < CacheKOTHStorer.liveGames.length; i++ ) {
-         %>
-             <option <%=(CacheKOTHStorer.liveGames[i]==game?"selected":"")%> value="<%= CacheKOTHStorer.liveGames[i] %>"><%= GridStateFactory.getGameName(CacheKOTHStorer.liveGames[i]) %></option>
-      <% } %>
       <% for (int i = 0; i < CacheKOTHStorer.tbGames.length; i++ ) {
          %>
              <option <%=(CacheKOTHStorer.tbGames[i]==game?"selected":"")%> value="<%= CacheKOTHStorer.tbGames[i] %>"><%= "Turn-based " + GridStateFactory.getGameName(CacheKOTHStorer.tbGames[i]) %></option>
       <% } %>
+      <% for (int i = 0; i < CacheKOTHStorer.liveGames.length; i++ ) {
+         %>
+             <option <%=(CacheKOTHStorer.liveGames[i]==game?"selected":"")%> value="<%= CacheKOTHStorer.liveGames[i] %>"><%= GridStateFactory.getGameName(CacheKOTHStorer.liveGames[i]) %></option>
+      <% } %>
     </select>
 
   <input type="submit" value="load hill">
-</div>
 </form>
 </td>
 
 <%
 if (game > 0) {
-	DSGPlayerData dsgPlayerData = dsgPlayerStorer.loadPlayer(nm);
 	Resources resources = (Resources) application.getAttribute(Resources.class.getName());
 	CacheKOTHStorer kothStorer = resources.getKOTHStorer();
 	Hill hill = kothStorer.getHill(game);
