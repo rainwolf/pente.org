@@ -539,6 +539,11 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 		        gameData.setDate(game.getCompletionDate());
 		        gameData.setGame(GridStateFactory.getGameName(game.getGame()));
 				gameData.setSite("Pente.org");
+				// if (game.getEventId() == kothStorer.getEventId(game.getGame())) {
+			 //        gameData.setEvent("Turn-based King of the Hill");
+				// }else {
+			 //        gameData.setEvent("Turn-based Game");
+				// }
 		        gameData.setEvent("Turn-based Game");
 		        
 				gameData.setInitialTime(game.getDaysPerMove());
