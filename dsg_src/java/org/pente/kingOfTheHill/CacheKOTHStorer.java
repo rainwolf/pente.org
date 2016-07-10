@@ -113,13 +113,21 @@ public class CacheKOTHStorer implements KOTHStorer {
             try {
                 if (!dsgPlayerStorer.loadPlayer(pid).hasPlayerDonated()) {
                     for (Hill hill : hills.values()) {
-                        if (hill_id == hill.getHillID()) {
-                            continue;
-                        }
                         if (hill.removePlayer(pid)) {
-                            baseStorer.removePlayerFromHill(hill_id, pid);
-//                            storeHill(hill_id);
-                            adjustCrown(game);
+                            baseStorer.removePlayerFromHill(hill.getHillID(), pid);
+                            storeHill(hill.getHillID());
+                            for (int i = 0; i < liveGames.length; i++ ) {
+                                if (hill.getHillID() == getEventId(liveGames[i])) {
+                                    adjustCrown(liveGames[i]);
+                                    break;
+                                }
+                            }
+                            for (int i = 0; i < tbGames.length; i++ ) {
+                                if (hill.getHillID() == getEventId(tbGames[i])) {
+                                    adjustCrown(tbGames[i]);
+                                    break;
+                                }
+                            }
                         }
                     }
                 }
@@ -148,9 +156,9 @@ public class CacheKOTHStorer implements KOTHStorer {
             if (hill != null) {
                 if (hill.removePlayer(pid)) {
                     baseStorer.removePlayerFromHill(hill_id, pid);
+                    storeHill(hill_id);
+                    adjustCrown(game);
                 }
-//                storeHill(hill_id);
-                adjustCrown(game);
             }
         }
     }
@@ -236,7 +244,7 @@ public class CacheKOTHStorer implements KOTHStorer {
                     }
                     if (altered) {
                         altered = false;
-//                        storeHill(hill.getHillID());
+                        storeHill(hill.getHillID());
                         adjustCrown(liveGames[i]);
                     }
                 }
@@ -257,7 +265,7 @@ public class CacheKOTHStorer implements KOTHStorer {
                     }
                     if (altered) {
                         altered = false;
-//                        storeHill(hill.getHillID());
+                        storeHill(hill.getHillID());
                         adjustCrown(tbGames[i]);
                     }
                 }
