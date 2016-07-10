@@ -1,5 +1,5 @@
 <%@ page import="org.pente.kingOfTheHill.*,
-                org.pente.gane.*" %>
+                org.pente.game.*" %>
 
 <% pageContext.setAttribute("title", "King of the Hill"); %>
 <%@ include file="begin.jsp" %>
@@ -60,6 +60,7 @@ Turn-based King of the Hill have a few more rules to consider:
 	<li><a href="https://pente.org/gameServer/subscriptions">subscribers</a> can play unlimited KotH games,</li>
 	<li>if your opponent leaves the hill before the set is over, the result still counts towards your hill position,</li>
 	<li>joining or leaving a hill has to be done from this page,</li>
+	<li>declining an invitation does not affect your position,</li>
 	<li>other players from the hill have to be challenged from this page or from your device.</li>
 </ul>
 The challenge button appears when you can challenge a player, and they're also marked with a green background. This button takes you to a page where you can decide on the timeout and post an invitation from there.
@@ -83,7 +84,7 @@ The challenge button appears when you can challenge a player, and they're also m
 <table width="400">
 	<tr>
 	<td>
- <form name="mainPlayForm" method="post" action="" style="margin:0;padding:0;">
+ <form name="mainPlayForm" method="post" action="/gameServer/stairs.jsp" style="margin:0;padding:0;">
 
     
       <select name="game">
@@ -148,7 +149,7 @@ if (game > 0) {
 <table border="1" width="400">
 	<tr>
 		<td colspan="3" align="center">
-			<h1><%=(game > 50?"Turn-based ":"") + GridStateFactory.getGameName(game)%></h1>
+			<h1><%=(game > 50?"Turn-based ":"") + GridStateFactory.getGameName(game) + " (" + (hill != null?hill.getNumPlayers():0)  + ")"%></h1>
 			
 		</td>
 	</tr>

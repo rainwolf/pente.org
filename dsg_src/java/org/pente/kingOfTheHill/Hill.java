@@ -180,4 +180,11 @@ public class Hill {
         return king;
     }
 
+    public Player getKingPlayer() {
+        if (getSteps().size() > 0 && getSteps().get(getSteps().size() - 1).getPlayers().size() == 1) {
+            return getSteps().get(getSteps().size() - 1).getPlayers().get(0);
+        }
+        return null;
+    }
+
 }

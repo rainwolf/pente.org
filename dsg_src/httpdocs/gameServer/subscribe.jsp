@@ -53,12 +53,12 @@ if (giftee != null) {
      Price 
   </td>
 </tr>
-<tr>
+<!-- <tr>
   <td colspan="3">
-  Without ads. For desktop users <u>and</u> mobile players (iOS only currently).
+  Without ads. For desktop users <u>and</u> mobile players.
   </td>
 </tr>
-<tr>
+ --><tr>
   <td align="left">
       <u> 1 Month</u> of unlimited turn-based games and no advertisements, database access included: 
   </td>

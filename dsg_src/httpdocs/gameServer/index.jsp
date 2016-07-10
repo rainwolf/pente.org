@@ -859,6 +859,7 @@ int tourneyWinner = 0; %>
 </td>
 <td valign="top" align="right" >
 <%@ include file="leaderboard.jsp" %>
+<%@ include file="kothBox.jsp" %>
 
 <% if (dsgPlayerData.showAds()) { %>
 <div class="box" style="background-color:white; border: 1px solid white;">
