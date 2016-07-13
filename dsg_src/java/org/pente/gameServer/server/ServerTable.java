@@ -2968,6 +2968,8 @@ public class ServerTable {
     
 
                     if ("King of the Hill".equals(serverData.getName())) {
+						Hill hill = kothStorer.getHill(game);
+						long oldKingPid = hill.getKing();
                         long winnerPid = winnerPlayerData.getPlayerID();
                         long loserPid = loserPlayerData.getPlayerID();
                         int stepsBetween = kothStorer.stepsBetween(game, winnerPid, loserPid);
@@ -2975,9 +2977,20 @@ public class ServerTable {
                             kothStorer.addPlayer(game, winnerPid);
                             kothStorer.addPlayer(game, loserPid);
                             kothStorer.movePlayersUpDown(game, winnerPid, loserPid);
-                            broadcastTable(new DSGSystemMessageTableEvent(
-                                tableNum,
-                                "stairs have been updated"));
+							long kingPid = hill.getKing();
+							if (kingPid != oldKingPid && kingPid != 0) {
+								try {
+									broadcastTable(new DSGSystemMessageTableEvent(
+											tableNum,
+											"stairs have been updated, all hail King " + dsgPlayerStorer.loadPlayer(kingPid).getName()));
+								} catch (DSGPlayerStoreException e) {
+									log4j.error("ServerTable: error getting King: " + e);
+								}
+							} else {
+								broadcastTable(new DSGSystemMessageTableEvent(
+										tableNum,
+										"stairs have been updated"));
+							}
                         } else {
                             broadcastTable(new DSGSystemMessageTableEvent(
                                 tableNum,

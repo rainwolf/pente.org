@@ -316,7 +316,7 @@ window.google_analytics_uacct = "UA-20529582-2";
             </li>
             <hr>
 
-          <li>16th Anniversary World Champion <a href="/gameServer/tournaments/statusRound.jsp?eid=1184&round=3">tournament</a> - 2015. Round 3 has started! 
+          <li>16th Anniversary World Champion <a href="/gameServer/tournaments/statusRound.jsp?eid=1184&round=4">tournament</a> - 2015. Round 4 has started! 
           The <a href="/gameServer/forums/forum.jspa?forumID=35&start=0">tournament forum</a> is now opened. 
 
 <%--

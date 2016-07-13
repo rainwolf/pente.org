@@ -265,6 +265,7 @@ public class DoubleEliminationFormat extends SingleEliminationFormat {
                 rs.init();
                 round.addSection(rs);
             } // no bracket 2
+            byeMatch = null;
             if (!bracketPlayers1.isEmpty()) {
                 // sort players in both brackets by seeds
                 Collections.sort(bracketPlayers1, seedComparator);
