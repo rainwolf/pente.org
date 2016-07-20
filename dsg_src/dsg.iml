@@ -453,5 +453,6 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="paypal-core-1.6.9" level="project" />
   </component>
 </module>
