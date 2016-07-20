@@ -43,7 +43,15 @@ public class PaypalIPNListenerServlet extends HttpServlet {
             HttpServletResponse response) throws ServletException, IOException {
 
         ServletContext ctx = getServletContext();
+        String penteLiveGCMkey = ctx.getInitParameter("penteLiveGCMkey");
+        String penteLiveAPNSkey = ctx.getInitParameter("penteLiveAPNSkey");
+        String penteLiveAPNSpwd = ctx.getInitParameter("penteLiveAPNSpassword");
+        boolean productionFlag = ctx.getInitParameter("penteLiveAPNSproductionFlag").equals("true");
         String paypalMode = ctx.getInitParameter("paypalMode");
+        resources = (Resources) ctx.getAttribute(Resources.class.getName());
+        Connection con = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
 
         // For a full list of configuration parameters refer in wiki page. 
         // (https://github.com/paypal/sdk-core-java/wiki/SDK-Configuration-Parameters)
@@ -59,12 +67,7 @@ public class PaypalIPNListenerServlet extends HttpServlet {
 
         log4j.info("******* IPN (name:value) pair : "+ map + "  " + "######### TransactionType : "+transactionType+"  ======== IPN verified : "+ isIpnVerified);
 
-        resources = (Resources) ctx.getAttribute(Resources.class.getName());
-        Connection con = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
 
-        if (isIpnVerified) {
             try {
                 String itemID = map.get("item_number");
                 int tries = 1;
@@ -113,6 +116,14 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                     rs = stmt.executeQuery();
                     if (rs.next()) {
                         log4j.info(logString + indentString + "Error: transaction already exists: " + transactionID);
+                        if (isIpnVerified) {
+                            stmt = con.prepareStatement("UPDATE dsg_subscribers set verified = 1 where transactionid = ? ");
+                            stmt.setString(1, transactionID);
+                            stmt.executeUpdate();
+                            Thread thread = new Thread(new SendNotification(0, 0, 23000000016237L, 23000000016237L,
+                                    "Payment verified", penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, dbHandler, penteLiveGCMkey) );
+                            thread.start();
+                        }
                         return;
                     }
                     String customString = map.get("custom");
@@ -181,11 +192,12 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                     } else {
                         dsgPlayerStorer.addFloatingVacationDays(subscriberPid, vacationDays);
                     }
-                    stmt = con.prepareStatement("INSERT INTO dsg_subscribers (pid, level, paymentdate, transactionid, amount) VALUES (?, ?, NOW(), ?, ?)");
+                    stmt = con.prepareStatement("INSERT INTO dsg_subscribers (pid, level, paymentdate, transactionid, amount, verified) VALUES (?, ?, NOW(), ?, ?, ?)");
                     stmt.setLong(1, subscriberPid);
                     stmt.setInt(2, 0);
                     stmt.setString(3, transactionID);
                     stmt.setDouble(4, amount);
+                    stmt.setInt(5, (isIpnVerified?1:0));
                     int worked = stmt.executeUpdate();
                     if (worked < 1) {
                         log4j.info(logString + indentString + "Error: inserting vacation purchase FAILED **");
@@ -226,11 +238,7 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                         totalSum = rs.getDouble(1);
                     } 
 
-                    String penteLiveGCMkey = ctx.getInitParameter("penteLiveGCMkey");
-                    String penteLiveAPNSkey = ctx.getInitParameter("penteLiveAPNSkey");
-                    String penteLiveAPNSpwd = ctx.getInitParameter("penteLiveAPNSpassword");
-                    boolean productionFlag = ctx.getInitParameter("penteLiveAPNSproductionFlag").equals("true");
-                    Thread thread = new Thread(new SendNotification(0, 0, 23000000016237L, 23000000016237L, 
+                    Thread thread = new Thread(new SendNotification(0, 0, 23000000016237L, 23000000016237L,
                         customParts[1] + ((refundTXid == null)?" purchased vacation":" was refunded") + ((gifterPid != 0)?" by "+customParts[0]:"") + " for EUR " + amount + ", the total is now: " + totalSum, penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, dbHandler, penteLiveGCMkey) );
                     thread.start();
 
@@ -277,6 +285,14 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                     rs = stmt.executeQuery();
                     if (rs.next()) {
                         log4j.info(logString + indentString + "Error: transaction already exists: " + transactionID);
+                        if (isIpnVerified) {
+                            stmt = con.prepareStatement("UPDATE dsg_subscribers set verified = 1 where transactionid = ? ");
+                            stmt.setString(1, transactionID);
+                            stmt.executeUpdate();
+                            Thread thread = new Thread(new SendNotification(0, 0, 23000000016237L, 23000000016237L,
+                                    "Payment verified", penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, dbHandler, penteLiveGCMkey) );
+                            thread.start();
+                        }
                         return;
                     }
                     String customString = map.get("custom");
@@ -369,7 +385,7 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                     DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
                     DSGPlayerData dsgPlayerData = dsgPlayerStorer.loadPlayer(subscriberPid);
                     java.util.Date nowDate = new java.util.Date();
-                    stmt = con.prepareStatement("INSERT INTO dsg_subscribers (pid, level, paymentdate, transactionid, amount) VALUES (?, ?, ?, ?, ?)");
+                    stmt = con.prepareStatement("INSERT INTO dsg_subscribers (pid, level, paymentdate, transactionid, amount, verified) VALUES (?, ?, ?, ?, ?, ?) ");
                     stmt.setLong(1, subscriberPid);
                     stmt.setInt(2, subscriptionLvl);
                     if (refundTXid == null && nowDate.before(dsgPlayerData.getSubscriptionExpiration())) {
@@ -379,6 +395,7 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                     }
                     stmt.setString(4, transactionID);
                     stmt.setDouble(5, amount);
+                    stmt.setInt(6, (isIpnVerified?1:0));
                     int worked = stmt.executeUpdate();
                     if (worked < 1) {
                         log4j.info(logString + indentString + "Error: inserting purchase FAILED **");
@@ -427,11 +444,7 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                         totalSum = rs.getDouble(1);
                     } 
 
-                    String penteLiveGCMkey = ctx.getInitParameter("penteLiveGCMkey");
-                    String penteLiveAPNSkey = ctx.getInitParameter("penteLiveAPNSkey");
-                    String penteLiveAPNSpwd = ctx.getInitParameter("penteLiveAPNSpassword");
-                    boolean productionFlag = ctx.getInitParameter("penteLiveAPNSproductionFlag").equals("true");
-                    Thread thread = new Thread(new SendNotification(0, 0, 23000000016237L, 23000000016237L, 
+                    Thread thread = new Thread(new SendNotification(0, 0, 23000000016237L, 23000000016237L,
                         customParts[1] + ((refundTXid == null)?" subscribed":" was refunded") + ((gifterPid != 0)?" by "+customParts[0]:"") + " for EUR " + amount + ", the total is now: " + totalSum, penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, dbHandler, penteLiveGCMkey) );
                     thread.start();
 
@@ -460,6 +473,4 @@ public class PaypalIPNListenerServlet extends HttpServlet {
             }
         }
 
-
-    }
 }
