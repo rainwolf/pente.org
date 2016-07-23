@@ -58,8 +58,9 @@ Turn-based King of the Hill have a few more rules to consider:
 <ul>
 	<li>non-subscribers can only join one hill and can only play 2 sets at any given time, this includes active sets, sent invitations, and invitations you haven't responded to yet, </li>
 	<li><a href="https://pente.org/gameServer/subscriptions">subscribers</a> can play unlimited KotH games,</li>
+	<li>when <a href="https://pente.org/gameServer/subscriptions">subscribers</a> have 5 or more ongoing KotH sets, including waiting invitations, they cannot be challenged anymore, but can still send out challenges,</li>
 	<li>if your opponent leaves the hill before the set is over, the result still counts towards your hill position,</li>
-	<li>joining or leaving a hill has to be done from this page,</li>
+	<li>joining or leaving a hill has to be done from this page or your mobile device,</li>
 	<li>declining an invitation does not affect your position,</li>
 	<li>other players from the hill have to be challenged from this page or from your device.</li>
 </ul>

@@ -271,6 +271,14 @@
     <servlet-name>KotHServlet</servlet-name>
     <servlet-class>org.pente.kingOfTheHill.web.KotHServlet</servlet-class>
   </servlet>
+  <servlet>
+    <servlet-name>ChangeColorServlet</servlet-name>
+    <servlet-class>org.pente.gameServer.client.web.ChangeColorServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>ChangeAvatarServlet</servlet-name>
+    <servlet-class>org.pente.gameServer.client.web.ChangeAvatarServlet</servlet-class>
+  </servlet>
 
   
   <servlet>
@@ -585,6 +593,15 @@
   <servlet-mapping>
     <servlet-name>KotHServlet</servlet-name>
     <url-pattern>/gameServer/koth</url-pattern>
+  </servlet-mapping>
+  
+  <servlet-mapping>
+    <servlet-name>ChangeColorServlet</servlet-name>
+    <url-pattern>/gameServer/changeColor</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>ChangeAvatarServlet</servlet-name>
+    <url-pattern>/gameServer/changeAvatar</url-pattern>
   </servlet-mapping>
   
   <servlet-mapping>

@@ -234,7 +234,7 @@ public class NewGameServlet extends HttpServlet {
 					stepsBetween *= -1;
 				} else if (stepsBetween*stepsBetween > 4) {
 					error = inviteePlayerData.getName() + " is " + stepsBetween + " apart from you, it should be 2 or less.";
-				} else if (!kothStorer.canPlayerBeChallenged(game, pid1)) {
+				} else if (!invitePlayerData.hasPlayerDonated() && !kothStorer.canPlayerBeChallenged(game, pid1)) {
 					error = "You are already playing 2 or more King of the Hill games for turn-based " + GridStateFactory.getGameName(game) + ", subscribers don't have this limit.";
 				} else if (!kothStorer.canPlayerBeChallenged(game, pid2)) {
 					error = inviteePlayerData.getName() + " is already playing 2 or more King of the Hill games for turn-based " + GridStateFactory.getGameName(game) + ", they cannot accept more at this time.";

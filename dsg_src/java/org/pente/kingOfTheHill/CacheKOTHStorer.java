@@ -298,8 +298,13 @@ public class CacheKOTHStorer implements KOTHStorer {
             return false;
         }
         try {
-            if (dsgPlayerStorer.loadPlayer(pid).hasPlayerDonated()) {
-                return true;
+            int limit = 1;
+            DSGPlayerData playerData = dsgPlayerStorer.loadPlayer(pid);
+            if (playerData == null) {
+                return false;
+            }
+            if (playerData.hasPlayerDonated()) {
+                limit = 4;
             }
             int ongoingGames = 0;
             List<TBSet> setsPlaying = tbStorer.loadSets(pid);
@@ -307,11 +312,11 @@ public class CacheKOTHStorer implements KOTHStorer {
                 if (set.getGame1().getEventId() == hill_id && (set.getState() == TBSet.STATE_ACTIVE || set.getState() == TBSet.STATE_NOT_STARTED)) {
                     ongoingGames += 1;
                 }
-                if (ongoingGames > 1) {
+                if (ongoingGames > limit) {
                     break;
                 }
             }
-            if (ongoingGames > 1) {
+            if (ongoingGames > limit) {
                 return false;
             } else {
                 return true;

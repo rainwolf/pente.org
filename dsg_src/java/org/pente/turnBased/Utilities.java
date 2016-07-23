@@ -109,6 +109,7 @@ public class Utilities {
 		DSGPlayerStorer dsgPlayerStorer) {
 		int weekend[]=new int[] { 7, 1 }; //sat/sun default
 		// List<Date> vacationDays = null;
+		TimeZone tz = null;
 		try {
 			// get wk1, wk2 for player whose turn it now is
 			List l = dsgPlayerStorer.loadPlayerPreferences(game.getCurrentPlayer());
@@ -118,6 +119,8 @@ public class Utilities {
 					weekend = (int[]) p.getValue();
 				}
 			}
+
+			tz = TimeZone.getTimeZone(dsgPlayerStorer.loadPlayer(game.getCurrentPlayer()).getTimezone());
 			// vacationDays = dsgPlayerStorer.loadVacationDays(game.getCurrentPlayer());
 			
 		} catch (DSGPlayerStoreException dpse) {
@@ -126,18 +129,92 @@ public class Utilities {
 		}
 		log4j.debug("calculateNewTimeout("+game.getGid()+" for " + game.getCurrentPlayer() +
 			", using weekend " + weekend[0] + "," + weekend[1]);
-		
-		long startTime = game.getLastMoveDate().getTime();
 
-		long newTimeout = Utilities.calculateNewTimeout(
-			startTime,
-			game.getDaysPerMove(), weekend[0], weekend[1], game.getPlayer1Pid() < game.getPlayer2Pid());
+		Calendar startTimeCal = Calendar.getInstance();
+		long startTime = game.getLastMoveDate().getTime();
+		startTimeCal.setTimeInMillis(startTime);
+		if (tz != null) {
+			startTimeCal.setTimeZone(tz);
+		}
+//		long newTimeout = Utilities.calculateNewTimeout(
+//			startTime,
+//			game.getDaysPerMove(), weekend[0], weekend[1], game.getPlayer1Pid() < game.getPlayer2Pid());
+        long newTimeout = Utilities.calculateNewTimeout(
+                startTimeCal,
+                game.getDaysPerMove(), weekend[0], weekend[1]);
 		log4j.debug("new timeout="+ newTimeout);
 		return newTimeout;
 	}
 
+	public static long calculateNewTimeout(Calendar now, int daysPerMove,
+										   int wk1, int wk2) {
+
+		int daysLeft = daysPerMove;
+		boolean first = true;
+
+		while (daysLeft > 0) {
+			int td = now.get(Calendar.DAY_OF_WEEK);
+			// int d = now.get(Calendar.DAY_OF_MONTH);
+			// int month = now.get(Calendar.MONTH);
+			// int year = now.get(Calendar.YEAR);
+			boolean iswk = (td == wk1 || td == wk2);
+			// boolean isvc = false;
+			//  		Calendar vcCal = Calendar.getInstance();
+			// for (Date vc : vacationDays) {
+			// 		 vcCal.setTime(vc);
+			//               if (vcCal.get(Calendar.DAY_OF_MONTH) == now.get(Calendar.DAY_OF_MONTH) && vcCal.get(Calendar.MONTH) == now.get(Calendar.MONTH) && vcCal.get(Calendar.YEAR) == now.get(Calendar.YEAR)) {
+			//               	// vc.getDate() == d && vc.getMonth() == month && vc.getYear() == (year - 1900)) {
+			//              	 isvc = true;
+			//              	 break;
+			//               }
+			//          }
+			// if (isvc || iswk) {
+			if (iswk) {
+				now.add(Calendar.DATE, 1);
+
+				// if making move on a weekend day
+				//   set time to beginning of next date
+				if (first) {
+					first = false;
+					now.set(Calendar.HOUR_OF_DAY, 0);
+					now.set(Calendar.MINUTE, 0);
+					now.set(Calendar.SECOND, 0);
+				}
+			} else {
+				now.add(Calendar.DATE, 1);
+				daysLeft--;
+			}
+			first = false;
+		}
+
+		int td = now.get(Calendar.DAY_OF_WEEK);
+		boolean iswk = (td == wk1 || td == wk2);
+		if (iswk) {
+			now.add(Calendar.DATE, 1);
+
+			// if making move on a weekend day
+			//   set time to beginning of next date
+			if (first) {
+				now.set(Calendar.HOUR_OF_DAY, 0);
+				now.set(Calendar.MINUTE, 0);
+				now.set(Calendar.SECOND, 0);
+			}
+			td = now.get(Calendar.DAY_OF_WEEK);
+			iswk = (td == wk1 || td == wk2);
+			if (iswk) {
+				now.add(Calendar.DATE, 1);
+			}
+		}
+
+		// if (setGap) {
+		// 	now.add(Calendar.MINUTE,3);
+		// 	now.add(Calendar.SECOND,11);
+		// }
+
+		return now.getTimeInMillis();
+	}
 	public static long calculateNewTimeout(long startTime, int daysPerMove,
-		int wk1, int wk2, boolean setGap) {
+										   int wk1, int wk2, boolean setGap) {
 
 		Calendar now = Calendar.getInstance();
 		now.setTimeInMillis(startTime);
@@ -152,26 +229,26 @@ public class Utilities {
 			// int year = now.get(Calendar.YEAR);
 			boolean iswk = (td == wk1 || td == wk2);
 			// boolean isvc = false;
-   //  		Calendar vcCal = Calendar.getInstance();
+			//  		Calendar vcCal = Calendar.getInstance();
 			// for (Date vc : vacationDays) {
- 		// 		 vcCal.setTime(vc);
-   //               if (vcCal.get(Calendar.DAY_OF_MONTH) == now.get(Calendar.DAY_OF_MONTH) && vcCal.get(Calendar.MONTH) == now.get(Calendar.MONTH) && vcCal.get(Calendar.YEAR) == now.get(Calendar.YEAR)) {
-   //               	// vc.getDate() == d && vc.getMonth() == month && vc.getYear() == (year - 1900)) {
-   //              	 isvc = true;
-   //              	 break;
-   //               }
-   //          }
+			// 		 vcCal.setTime(vc);
+			//               if (vcCal.get(Calendar.DAY_OF_MONTH) == now.get(Calendar.DAY_OF_MONTH) && vcCal.get(Calendar.MONTH) == now.get(Calendar.MONTH) && vcCal.get(Calendar.YEAR) == now.get(Calendar.YEAR)) {
+			//               	// vc.getDate() == d && vc.getMonth() == month && vc.getYear() == (year - 1900)) {
+			//              	 isvc = true;
+			//              	 break;
+			//               }
+			//          }
 			// if (isvc || iswk) {
 			if (iswk) {
 				now.add(Calendar.DATE, 1);
-				
+
 				// if making move on a weekend day
 				//   set time to beginning of next date
 				if (first) {
 					first = false;
 					now.set(Calendar.HOUR_OF_DAY, 0);
 					now.set(Calendar.MINUTE, 0);
-					now.set(Calendar.SECOND, 0);			
+					now.set(Calendar.SECOND, 0);
 				}
 			} else {
 				now.add(Calendar.DATE, 1);
@@ -184,13 +261,13 @@ public class Utilities {
 		boolean iswk = (td == wk1 || td == wk2);
 		if (iswk) {
 			now.add(Calendar.DATE, 1);
-			
+
 			// if making move on a weekend day
 			//   set time to beginning of next date
 			if (first) {
 				now.set(Calendar.HOUR_OF_DAY, 0);
 				now.set(Calendar.MINUTE, 0);
-				now.set(Calendar.SECOND, 0);			
+				now.set(Calendar.SECOND, 0);
 			}
 			td = now.get(Calendar.DAY_OF_WEEK);
 			iswk = (td == wk1 || td == wk2);
@@ -203,7 +280,7 @@ public class Utilities {
 		// 	now.add(Calendar.MINUTE,3);
 		// 	now.add(Calendar.SECOND,11);
 		// }
-		
+
 		return now.getTimeInMillis();
 	}
 }

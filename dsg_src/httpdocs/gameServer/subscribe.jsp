@@ -101,7 +101,7 @@ if (giftee != null) {
       <u> 1 Year</u> of unlimited turn-based games and no advertisements, including database access: 
   </td>
   <td align="center">
-     15 EUR 
+     12 EUR 
   </td>
   <td align="center">
     <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
@@ -120,7 +120,7 @@ if (giftee != null) {
       <u> 1 Year</u> of unlimited turn-based games, including database access, but <b>with</b> advertisements: 
   </td>
   <td align="center">
-     8 EUR 
+     6 EUR 
   </td>
   <td align="center">
     <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
