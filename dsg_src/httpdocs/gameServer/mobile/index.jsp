@@ -259,7 +259,7 @@ if (name.equals("rainwolf")) {
 gamesLimit = 31; %>
 No Ads
 Unlimited Games
-tb GamesLimit;<%=""+gamesLimit%>;tb GamesLimit
+tbGamesLimit;<%=""+gamesLimit%>;tbGamesLimit
 <%} else if (dsgPlayerData.unlimitedTBGames() || dsgPlayerData.unlimitedMobileTBGames() ) { %>
 Unlimited Games
 <%} else { %>
@@ -271,6 +271,8 @@ No Ads
 <%}%>
 
 EndOfSettingsParameters
+<%boolean subscriber = dsgPlayerData.hasPlayerDonated(); %>
+<%=dsgPlayerData.getName() + ";" + (subscriber?dsgPlayerData.getNameColorRGB():0) + ";" %>
 
 King of the Hill<%
 Hill hill;
@@ -415,11 +417,12 @@ Active Games - My Turn<%
         for (TBGame g : myTurn) {
                 String color =  myPID == g.getPlayer1Pid() ?
                  "white (p1)" : "black (p2)";
+                boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
                 long oppPid = myPID == g.getPlayer1Pid() ?
                  g.getPlayer2Pid() : g.getPlayer1Pid();
                 DSGPlayerData d = dsgPlayerStorer.loadPlayer(oppPid);
                 DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(g.getGame());%>
-<%=g.getGid() + ";" + GridStateFactory.getGameName(g.getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + g.getNumMoves() + 1 + ";" + Utilities.getTimeLeft(g.getTimeoutDate().getTime()) +";" + (g.isRated() ? "Rated" : "Not Rated") + ";" + (d.hasPlayerDonated()?d.getNameColorRGB():0) + ";" + d.getTourneyWinner() %><%}
+<%=g.getGid() + ";" + GridStateFactory.getGameName(g.getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + g.getNumMoves() + 1 + ";" + Utilities.getTimeLeft(g.getTimeoutDate().getTime()) +";" + (g.isRated() ? "Rated" : "Not Rated") + (koth?" - KotH":"") + ";" + (d.hasPlayerDonated()?d.getNameColorRGB():0) + ";" + d.getTourneyWinner() %><%}
      
 
 
@@ -429,11 +432,12 @@ Active Games - Opponents Turn<%
         for (TBGame g : oppTurn) {
                 String color =  myPID == g.getPlayer1Pid() ?
                  "white (p1)" : "black (p2)";
+                boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
                 long oppPid = myPID == g.getPlayer1Pid() ?
                  g.getPlayer2Pid() : g.getPlayer1Pid();
                 DSGPlayerData d = dsgPlayerStorer.loadPlayer(oppPid);
                 DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(g.getGame());%>
-<%=g.getGid() + ";" + GridStateFactory.getGameName(g.getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + g.getNumMoves() + 1 + ";" + Utilities.getTimeLeft(g.getTimeoutDate().getTime()) +";" + (g.isRated() ? "Rated" : "Not Rated") + ";" + (d.hasPlayerDonated()?d.getNameColorRGB():0) + ";" + d.getTourneyWinner() %><%} 
+<%=g.getGid() + ";" + GridStateFactory.getGameName(g.getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + g.getNumMoves() + 1 + ";" + Utilities.getTimeLeft(g.getTimeoutDate().getTime()) +";" + (g.isRated() ? "Rated" : "Not Rated") + (koth?" - KotH":"") + ";" + (d.hasPlayerDonated()?d.getNameColorRGB():0) + ";" + d.getTourneyWinner() %><%} 
      
 
 

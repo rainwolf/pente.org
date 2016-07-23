@@ -23,6 +23,10 @@ String nm = (String) request.getAttribute("name");
 String name = nm;
 DSGPlayerData dsgPlayerData = dsgPlayerStorer.loadPlayer(nm);
 
+  TimeZone myTz = TimeZone.getTimeZone(dsgPlayerData.getTimezone());
+  SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+  dateFormat.setTimeZone(myTz);
+
 int refresh = 5;
 String grs = "800";
 List prefs = dsgPlayerStorer.loadPlayerPreferences(

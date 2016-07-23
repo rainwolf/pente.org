@@ -369,6 +369,10 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 							}
 							dsgPlayerStorer.pinchFloatingVacationDays(cp);
 		                    Calendar newTimeout = Calendar.getInstance();
+							TimeZone tz = TimeZone.getTimeZone(playerData.getTimezone());
+                            if (tz != null) {
+                                newTimeout.setTimeZone(tz);
+                            }
 		                    newTimeout.add(Calendar.HOUR, 1);
 		                    if ((newTimeout.get(Calendar.DAY_OF_WEEK) == weekend[0]) || (newTimeout.get(Calendar.DAY_OF_WEEK) == weekend[1])) {
 								newTimeout.add(Calendar.DATE, 1);
@@ -1257,17 +1261,20 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 				game.addMove(180);
 			}
 		}
-		
 
-		TBGame game = set.getGame1();
-		long newTimeout = Utilities.calculateNewTimeout(
-			game, dsgPlayerStorer);
+
+//		TBGame game = set.getGame1();
+		TBGame game;
 
 		synchronized (cacheTbLock) {
 
 			for (int i = 0; i < 2; i++) {
-				game = set.getGames()[i];
-				if (game == null) break;
+                game = set.getGames()[i];
+                long newTimeout = Utilities.calculateNewTimeout(
+                        game, dsgPlayerStorer);
+				if (game == null) {
+				    break;
+                }
 				game.setTimeoutDate(new Date(newTimeout));
 			}
 		}
@@ -1403,13 +1410,26 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 					if (g != null &&
 						g.getState() == TBGame.STATE_ACTIVE &&
 						g.getCurrentPlayer() == pid) {
-						
-						boolean update = false;
+
+                        TimeZone tz = null;
+                        try {
+                            tz = TimeZone.getTimeZone(dsgPlayerStorer.loadPlayer(g.getCurrentPlayer()).getTimezone());
+                        } catch (DSGPlayerStoreException e) {
+                            log4j.error("CacheTBStorer updateDaysOff " + e);
+                            e.printStackTrace();
+                        }
+                        Calendar startTimeCal = Calendar.getInstance();
+                        startTimeCal.setTimeInMillis(g.getLastMoveDate().getTime());
+                        if (tz != null) {
+                            startTimeCal.setTimeZone(tz);
+                        }
+
+                        boolean update = false;
 						synchronized (cacheTbLock) {
 							long newTimeout = Utilities.calculateNewTimeout(
-								g.getLastMoveDate().getTime(),
+								startTimeCal,
 								g.getDaysPerMove(),
-								weekend[0], weekend[1], g.getPlayer1Pid() < g.getPlayer2Pid());
+								weekend[0], weekend[1]);
 							log4j.debug("update t/o to " + newTimeout + " for " + g.getGid());
 							
 							if (g.getTimeoutDate().getTime() != newTimeout) {

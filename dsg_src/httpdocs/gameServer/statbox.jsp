@@ -2,7 +2,7 @@
 
 <%! private static final DateFormat dsgDateDf = new SimpleDateFormat("MM/dd/yyyy"); %>
 <%! private static final DateFormat dsgTimeDf = new SimpleDateFormat("HH:mm z"); %>
-<%! private static final TimeZone dsgTz = TimeZone.getTimeZone("America/New_York"); %>
+<%! private static final TimeZone dsgTz = TimeZone.getTimeZone("CEST"); %>
 <%
 int hoursDiff = 0;
 if (me != null) { 
