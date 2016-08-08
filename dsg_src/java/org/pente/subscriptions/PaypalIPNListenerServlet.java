@@ -49,13 +49,21 @@ public class PaypalIPNListenerServlet extends HttpServlet {
         boolean productionFlag = ctx.getInitParameter("penteLiveAPNSproductionFlag").equals("true");
         String paypalMode = ctx.getInitParameter("paypalMode");
         resources = (Resources) ctx.getAttribute(Resources.class.getName());
+        CacheDSGPlayerStorer dsgPlayerStorer = (CacheDSGPlayerStorer) resources.getDsgPlayerStorer();
         Connection con = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
 
+        DSGPlayerData subscriberData = null, gifterData = null;
         // For a full list of configuration parameters refer in wiki page. 
         // (https://github.com/paypal/sdk-core-java/wiki/SDK-Configuration-Parameters)
         Map<String,String> configurationMap = new HashMap<String,String>();
+
+        String receiverEmail = ctx.getInitParameter("paypalEmail");
+        if ("rainwolf-facilitator@submanifold.be".equals(request.getParameter("receiver_email"))) {
+            paypalMode = "sandbox";
+            receiverEmail = "rainwolf-facilitator@submanifold.be";
+        }
         configurationMap.put("mode", paypalMode);
         IPNMessage  ipnlistener = new IPNMessage(request,configurationMap);
         boolean isIpnVerified = ipnlistener.validate();
@@ -69,6 +77,7 @@ public class PaypalIPNListenerServlet extends HttpServlet {
 
 
             try {
+                log4j.info("PaypalIPNListenerServlet: inside try");
                 String itemID = map.get("item_number");
                 int tries = 1;
                 while ((itemID == null) && tries < 5) {
@@ -79,7 +88,6 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                 if (itemID.contains("VACATIONDAYS")) {
 
                     String msg = null;
-                    String receiverEmail = ctx.getInitParameter("paypalEmail");
                     String logString = "PaypalIPNListenerServlet: ";
                     String indentString = "\n                          ";
 
@@ -120,12 +128,14 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                             stmt = con.prepareStatement("UPDATE dsg_subscribers set verified = 1 where transactionid = ? ");
                             stmt.setString(1, transactionID);
                             stmt.executeUpdate();
+                            stmt.close();
                             Thread thread = new Thread(new SendNotification(0, 0, 23000000016237L, 23000000016237L,
                                     "Payment verified", penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, dbHandler, penteLiveGCMkey) );
                             thread.start();
                         }
                         return;
                     }
+                    stmt.close();
                     String customString = map.get("custom");
                     logString = logString + indentString + " custom parameter = " + customString;
                     String[] customParts = customString.split(";");
@@ -133,13 +143,11 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                         log4j.info(logString + indentString + "Error: malformed custom parameter: I received " + customParts.length + " parts instead of 2");
                         return;
                     }
-                    stmt = con.prepareStatement("select pid from player where name = ?");
-                    stmt.setString(1, customParts[1]);
-                    rs = stmt.executeQuery();
+                    subscriberData = dsgPlayerStorer.loadPlayer(customParts[1]);
                     logString = logString + indentString + " subscriber username = " + customParts[1];
                     long subscriberPid = 0;
-                    if (rs.next()) {
-                        subscriberPid = rs.getLong("pid");
+                    if (subscriberData != null) {
+                        subscriberPid = subscriberData.getPlayerID();
                         logString = logString + indentString + " subscriber pid = " + subscriberPid;
                     } else {
                         log4j.info(logString + indentString + "Error: subscriber username not recognized: " + customParts[1]);
@@ -147,11 +155,9 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                     }
                     long gifterPid = 0;
                     if ((customParts[0] != null)  && !"".equals(customParts[0]) && !"null".equals(customParts[0])) {
-                        stmt = con.prepareStatement("select pid from player where name = ?");
-                        stmt.setString(1, customParts[0]);
-                        rs = stmt.executeQuery();
-                        if (rs.next()) {
-                            gifterPid = rs.getLong("pid");
+                        gifterData = dsgPlayerStorer.loadPlayer(customParts[0]);
+                        if (gifterData != null) {
+                            gifterPid = gifterData.getPlayerID();
                         } else {
                             log4j.info(logString + indentString + "Error: gifter username not recognized: " + customParts[0]);
                             return;
@@ -185,7 +191,6 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                             vacationDays = 60;
                         }
                     }
-                    DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
                     if (vacationDays == 0) {
                         log4j.info(logString + indentString + "Error: vacation days option not recognized: " + itemSelected);
                         return;
@@ -199,6 +204,7 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                     stmt.setDouble(4, amount);
                     stmt.setInt(5, (isIpnVerified?1:0));
                     int worked = stmt.executeUpdate();
+                    stmt.close();
                     if (worked < 1) {
                         log4j.info(logString + indentString + "Error: inserting vacation purchase FAILED **");
                         return;
@@ -236,7 +242,8 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                     double totalSum = 0;
                     if (rs.next()) {
                         totalSum = rs.getDouble(1);
-                    } 
+                    }
+                    stmt.close();
 
                     Thread thread = new Thread(new SendNotification(0, 0, 23000000016237L, 23000000016237L,
                         customParts[1] + ((refundTXid == null)?" purchased vacation":" was refunded") + ((gifterPid != 0)?" by "+customParts[0]:"") + " for EUR " + amount + ", the total is now: " + totalSum, penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, dbHandler, penteLiveGCMkey) );
@@ -247,8 +254,8 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                     ///////// VACATIONDAYS
 
                 } else {
+                    log4j.info("PaypalIPNListenerServlet: } else {");
                     String msg = "Hi there,\n\n Thank you for subscribing to pente.org. Your contribution will help us endure and flourish for years to come.\n\n";
-                    String receiverEmail = ctx.getInitParameter("paypalEmail");
                     String logString = "PaypalIPNListenerServlet: ";
                     String indentString = "\n                          ";
 
@@ -277,24 +284,28 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                     double amount = (grossAmount - feeAmount);
                     logString = logString + indentString + " nett amount = " + amount;
 
+                    log4j.info("PaypalIPNListenerServlet: dbHandler");
                     dbHandler = resources.getDbHandler();
                     con = dbHandler.getConnection();
 
                     stmt = con.prepareStatement("select * from dsg_subscribers where transactionid = ?");
                     stmt.setString(1, transactionID);
                     rs = stmt.executeQuery();
+                    log4j.info("PaypalIPNListenerServlet: check transaction ID");
                     if (rs.next()) {
                         log4j.info(logString + indentString + "Error: transaction already exists: " + transactionID);
                         if (isIpnVerified) {
                             stmt = con.prepareStatement("UPDATE dsg_subscribers set verified = 1 where transactionid = ? ");
                             stmt.setString(1, transactionID);
                             stmt.executeUpdate();
+                            stmt.close();
                             Thread thread = new Thread(new SendNotification(0, 0, 23000000016237L, 23000000016237L,
                                     "Payment verified", penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, dbHandler, penteLiveGCMkey) );
                             thread.start();
                         }
                         return;
                     }
+                    stmt.close();
                     String customString = map.get("custom");
                     logString = logString + indentString + " custom parameter = " + customString;
                     String[] customParts = customString.split(";");
@@ -302,13 +313,12 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                         log4j.info(logString + indentString + "Error: malformed custom parameter: I received " + customParts.length + " parts instead of 2");
                         return;
                     }
-                    stmt = con.prepareStatement("select pid from player where name = ?");
-                    stmt.setString(1, customParts[1]);
-                    rs = stmt.executeQuery();
+                    log4j.info("PaypalIPNListenerServlet: load subscriber data");
+                    subscriberData = dsgPlayerStorer.loadPlayer(customParts[1]);
                     logString = logString + indentString + " subscriber username = " + customParts[1];
                     long subscriberPid = 0;
-                    if (rs.next()) {
-                        subscriberPid = rs.getLong("pid");
+                    if (subscriberData != null) {
+                        subscriberPid = subscriberData.getPlayerID();
                         logString = logString + indentString + " subscriber pid = " + subscriberPid;
                     } else {
                         log4j.info(logString + indentString + "Error: subscriber username not recognized: " + customParts[1]);
@@ -316,11 +326,9 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                     }
                     long gifterPid = 0;
                     if ((customParts[0] != null)  && !"".equals(customParts[0]) && !"null".equals(customParts[0])) {
-                        stmt = con.prepareStatement("select pid from player where name = ?");
-                        stmt.setString(1, customParts[0]);
-                        rs = stmt.executeQuery();
-                        if (rs.next()) {
-                            gifterPid = rs.getLong("pid");
+                        gifterData = dsgPlayerStorer.loadPlayer(customParts[0]);
+                        if (gifterData != null) {
+                            gifterPid = gifterData.getPlayerID();
                         } else {
                             log4j.info(logString + indentString + "Error: gifter username not recognized: " + customParts[0]);
                             return;
@@ -328,6 +336,7 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                     } else {
                         logString = logString + indentString + " no gifter username";
                     }
+
 
                     if ((customParts[1] == null)  || "".equals(customParts[1]) || "null".equals(customParts[1])) {
                         log4j.info(logString + indentString + "Error: giftee username not recognized: " + customParts[1]);
@@ -373,6 +382,7 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                         stmt = con.prepareStatement("UPDATE dsg_subscribers SET level=0 WHERE transactionid = ?");
                         stmt.setString(1, refundTXid);
                         int worked = stmt.executeUpdate();
+                        stmt.close();
                         if (worked < 1) {
                             log4j.info(logString + indentString + "Error: updating after refund FAILED **");
                             return;
@@ -382,13 +392,13 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                     }
                     // stmt = con.prepareStatement("INSERT INTO dsg_subscribers (pid, level, paymentdate, transactionid, amount) VALUES (?, ?, NOW(), ?, ?)");
 
-                    DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
-                    DSGPlayerData dsgPlayerData = dsgPlayerStorer.loadPlayer(subscriberPid);
+                    log4j.info("PaypalIPNListenerServlet: Before insert");
+                    DSGPlayerData dsgPlayerData = subscriberData;
                     java.util.Date nowDate = new java.util.Date();
                     stmt = con.prepareStatement("INSERT INTO dsg_subscribers (pid, level, paymentdate, transactionid, amount, verified) VALUES (?, ?, ?, ?, ?, ?) ");
                     stmt.setLong(1, subscriberPid);
                     stmt.setInt(2, subscriptionLvl);
-                    if (refundTXid == null && nowDate.before(dsgPlayerData.getSubscriptionExpiration())) {
+                    if (refundTXid == null && dsgPlayerData.getSubscriberLevel() == subscriptionLvl && nowDate.before(dsgPlayerData.getSubscriptionExpiration())) {
                         stmt.setTimestamp(3, new Timestamp(dsgPlayerData.getSubscriptionExpiration().getTime()));
                     } else {
                         stmt.setTimestamp(3, new Timestamp(nowDate.getTime()));
@@ -396,8 +406,10 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                     stmt.setString(4, transactionID);
                     stmt.setDouble(5, amount);
                     stmt.setInt(6, (isIpnVerified?1:0));
+                    log4j.info("PaypalIPNListenerServlet: before executeUpdate of insert");
                     int worked = stmt.executeUpdate();
-                    if (worked < 1) {
+                    stmt.close();
+                if (worked < 1) {
                         log4j.info(logString + indentString + "Error: inserting purchase FAILED **");
                         return;
                     } else {
@@ -434,8 +446,7 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                         }
                     }
 
-                    CacheDSGPlayerStorer d = (CacheDSGPlayerStorer) resources.getDsgPlayerStorer();
-                    d.refreshPlayer(customParts[1]);
+                    dsgPlayerStorer.refreshPlayer(customParts[1]);
 
                     stmt = con.prepareStatement("SELECT SUM(amount) FROM dsg_subscribers");
                     rs = stmt.executeQuery();
