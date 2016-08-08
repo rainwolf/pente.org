@@ -1,6 +1,7 @@
 package org.pente.turnBased;
 
 import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import javax.servlet.http.*;
@@ -184,7 +185,6 @@ public class Utilities {
 				now.add(Calendar.DATE, 1);
 				daysLeft--;
 			}
-			first = false;
 		}
 
 		int td = now.get(Calendar.DAY_OF_WEEK);

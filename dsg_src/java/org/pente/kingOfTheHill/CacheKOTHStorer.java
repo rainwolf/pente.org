@@ -38,7 +38,7 @@ public class CacheKOTHStorer implements KOTHStorer {
 
         removeStalePlayersTimer = new Timer();
         removeStalePlayersTimer.scheduleAtFixedRate(
-                new RemoveStalePlayersRunnable(), 10000, 3600 * 1000);
+                new RemoveStalePlayersRunnable(), 10000, 24L * 3600 * 1000);
     }
     public void setTbStorer(CacheTBStorer tbStorer) {
         this.tbStorer = tbStorer;
@@ -229,11 +229,47 @@ public class CacheKOTHStorer implements KOTHStorer {
             Date lastMonth = new Date();
             lastMonth.setTime(lastMonth.getTime() - (31L*3600*24*1000));
             boolean altered = false;
+            for ( int i = 0; i < tbGames.length; i++ ) {
+                Hill hill = getHill(tbGames[i]);
+                if (hill != null) {
+                    List<Player> players = hill.getMembers();
+                    for (Player player : players) {
+                        try {
+                            if (dsgPlayerStorer.loadPlayer(player.getPid()).hasPlayerDonated()) {
+                                continue;
+                            }
+                        } catch (DSGPlayerStoreException | NullPointerException e) {
+                            e.printStackTrace();
+                        }
+                        Date lastDate = player.getLastGame();
+                        if (lastDate != null && lastDate.before(lastMonth)) {
+                            baseStorer.removePlayerFromHill(hill.getHillID(), player.getPid());
+                            hill.removePlayer(player.getPid());
+                            altered = true;
+                        }
+                    }
+                    if (altered) {
+                        altered = false;
+                        storeHill(hill.getHillID());
+                        adjustCrown(tbGames[i]);
+                    }
+                }
+            }
+
+            lastMonth.setTime(lastMonth.getTime() - (31L*3600*24*1000));
+            altered = false;
             for ( int i = 0; i < liveGames.length; i++ ) {
                 Hill hill = getHill(liveGames[i]);
                 if (hill != null) {
                     List<Player> players = hill.getMembers();
                     for (Player player : players) {
+                        try {
+                            if (dsgPlayerStorer.loadPlayer(player.getPid()).hasPlayerDonated()) {
+                                continue;
+                            }
+                        } catch (DSGPlayerStoreException | NullPointerException e) {
+                            e.printStackTrace();
+                        }
                         Date lastDate = player.getLastGame();
 //                        Date lastDate = baseStorer.getLastGameDate(hill.getHillID(), pid);
                         if (lastDate != null && lastDate.before(lastMonth)) {
@@ -250,26 +286,6 @@ public class CacheKOTHStorer implements KOTHStorer {
                 }
             }
 
-            altered = false;
-            for ( int i = 0; i < tbGames.length; i++ ) {
-                Hill hill = getHill(tbGames[i]);
-                if (hill != null) {
-                    List<Player> players = hill.getMembers();
-                    for (Player player : players) {
-                        Date lastDate = player.getLastGame();
-                        if (lastDate != null && lastDate.before(lastMonth)) {
-                            baseStorer.removePlayerFromHill(hill.getHillID(), player.getPid());
-                            hill.removePlayer(player.getPid());
-                            altered = true;
-                        }
-                    }
-                    if (altered) {
-                        altered = false;
-                        storeHill(hill.getHillID());
-                        adjustCrown(tbGames[i]);
-                    }
-                }
-            }
 
         }
     }

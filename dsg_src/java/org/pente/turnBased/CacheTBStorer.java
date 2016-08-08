@@ -919,7 +919,9 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         
         for (int i = 0; i < 2; i++) {
             TBGame game = set.getGames()[i];
-            if (game == null) break;
+			if (game == null) {
+				continue;
+			}
             if (game.getState() == TBGame.STATE_ACTIVE) {
             	game.setLastMoveDate(new Date());
             	game.setTimeoutDate(new Date());
@@ -948,7 +950,9 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         if (set.getState() == TBSet.STATE_ACTIVE) {
             for (int i = 0; i < 2; i++) {
                 TBGame game = set.getGames()[i];
-                if (game == null) break;
+				if (game == null) {
+					continue;
+				}
                 storeNewMove(game.getGid(), 0, 180);
             }
         }
@@ -1256,7 +1260,9 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 			set.acceptInvite(pid);
 			for (int i = 0; i < 2; i++) {
 				TBGame game = set.getGames()[i];
-				if (game == null) break;
+				if (game == null) {
+					continue;
+				}
 				game.acceptInvite(pid, set.getInviterPid());
 				game.addMove(180);
 			}
@@ -1270,11 +1276,11 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
 			for (int i = 0; i < 2; i++) {
                 game = set.getGames()[i];
+				if (game == null) {
+					continue;
+				}
                 long newTimeout = Utilities.calculateNewTimeout(
                         game, dsgPlayerStorer);
-				if (game == null) {
-				    break;
-                }
 				game.setTimeoutDate(new Date(newTimeout));
 			}
 		}
@@ -1284,7 +1290,9 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
 		for (int i = 0; i < 2; i++) {
 			game = set.getGames()[i];
-			if (game == null) break;
+			if (game == null) {
+				continue;
+			}
 			baseStorer.storeNewMove(game.getGid(), 0, 180);
 		}
 	}
