@@ -113,6 +113,9 @@ public class CacheKOTHStorer implements KOTHStorer {
             try {
                 if (!dsgPlayerStorer.loadPlayer(pid).hasPlayerDonated()) {
                     for (Hill hill : hills.values()) {
+                        if (hill.getHillID() == hill_id) {
+                            continue;
+                        }
                         if (hill.removePlayer(pid)) {
                             baseStorer.removePlayerFromHill(hill.getHillID(), pid);
                             storeHill(hill.getHillID());
