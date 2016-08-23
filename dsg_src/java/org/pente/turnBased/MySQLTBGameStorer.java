@@ -86,7 +86,7 @@ public class MySQLTBGameStorer implements TBGameStorer {
 					"insert into" + tbTable +
 	                "(gid1, gid2, p1_pid, p2_pid, state, creation_date, " +
 	                "inviter_pid, cancel_pid, private, invitation_restriction) " +
-					"values(?, ?, ?, ?, ?, ?, ?, 0, ?, ?)", 
+					"values(?, ?, ?, ?, ?, ?, ?, 0, ?, ?)",
 					Statement.RETURN_GENERATED_KEYS);
 
 				long gid2 = tbSet.getGames()[1] != null ? 
@@ -827,7 +827,7 @@ public class MySQLTBGameStorer implements TBGameStorer {
 	}
 	public void updateGameAfterMove(TBGame game) throws TBStoreException {
 		log4j.debug("MySQLGameTbStorer.updateGameAfterMove(" + game.getGid() + ")");
-			
+
 		Connection con = null;
 		PreparedStatement stmt = null;
 
@@ -840,25 +840,54 @@ public class MySQLTBGameStorer implements TBGameStorer {
 			}
 
 			stmt = con.prepareStatement(
-				"update" + tbTable +
-				"set last_move_date = ?, " +
-				"timeout_date = ? " +
-				"where gid = ?");
+					"update" + tbTable +
+							"set last_move_date = ?, " +
+							"timeout_date = ? " +
+							"where gid = ?");
 			stmt.setTimestamp(1, new Timestamp(game.getLastMoveDate().getTime()));
 			stmt.setTimestamp(2, new Timestamp(game.getTimeoutDate().getTime()));
 			stmt.setLong(3, game.getGid());
 			stmt.executeUpdate();
-			
-	    } catch (SQLException se) {
+
+		} catch (SQLException se) {
 			throw new TBStoreException(se);
-	    } finally {
+		} finally {
 			if (stmt != null) {
 				try { stmt.close(); } catch (SQLException se) {}
 			}
 			if (con != null) {
 				try { dbHandler.freeConnection(con); } catch (SQLException se) {}
 			}
-	    }
+		}
+	}
+
+	public void setGameEventId(long gameId, long eventId) throws TBStoreException {
+		log4j.debug("MySQLGameTbStorer.updateGameEventId(" + gameId + ", " + eventId + ")");
+
+		Connection con = null;
+		PreparedStatement stmt = null;
+
+		try {
+			con = dbHandler.getConnection();
+
+			stmt = con.prepareStatement(
+					"update tb_game " +
+							" set event_id = ? " +
+							" where gid = ?");
+			stmt.setLong(1, eventId);
+			stmt.setLong(2, gameId);
+			stmt.executeUpdate();
+
+		} catch (SQLException se) {
+			throw new TBStoreException(se);
+		} finally {
+			if (stmt != null) {
+				try { stmt.close(); } catch (SQLException se) {}
+			}
+			if (con != null) {
+				try { dbHandler.freeConnection(con); } catch (SQLException se) {}
+			}
+		}
 	}
 
 	public void acceptInvite(TBSet set, long pid)

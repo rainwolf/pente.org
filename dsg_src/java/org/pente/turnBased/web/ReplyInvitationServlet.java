@@ -7,6 +7,10 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 
 import org.pente.game.*;
+import org.pente.kingOfTheHill.CacheKOTHStorer;
+import org.pente.kingOfTheHill.Hill;
+import org.pente.kingOfTheHill.KOTHException;
+import org.pente.kingOfTheHill.KOTHStorer;
 import org.pente.turnBased.*;
 import org.pente.gameServer.core.*;
 import org.pente.gameServer.server.*;
@@ -164,41 +168,78 @@ public class ReplyInvitationServlet extends HttpServlet {
 					if (command.equals("Accept")) {
 
 						String isMobile = (String) request.getParameter("mobile");
-				        ServletContext ctx = getServletContext();
-						List<TBSet> currentSets = tbGameStorer.loadSets(invitee.getPlayerID());
-						List<TBSet> invitesTo = new ArrayList<TBSet>();
-						List<TBSet> invitesFrom = new ArrayList<TBSet>();
-						List<TBGame> myTurn = new ArrayList<TBGame>();
-						List<TBGame> oppTurn = new ArrayList<TBGame>();
-						Utilities.organizeGames(invitee.getPlayerID(), currentSets,
-						    invitesTo, invitesFrom, myTurn, oppTurn);
-						boolean limitExceeded;
-						int gamesLimit = Integer.parseInt(ctx.getInitParameter("TBGamesLimit"));
-						if (invitee.unlimitedMobileTBGames() && (isMobile != null)) {
-							limitExceeded = false;
-						} else if (invitee.unlimitedTBGames()) {
-						  	limitExceeded = false;
-						} else {
-							int currentCount = myTurn.size() + oppTurn.size();
-							if (!invitesFrom.isEmpty()) {
-								for (TBSet s : invitesFrom) {
-									if (s.isTwoGameSet()) {
-										currentCount += 2;
-									} else {
-										currentCount++;
-									}
-								}
-							}
-							if (currentCount > gamesLimit) {
-								limitExceeded = true;
-							} else {
-								limitExceeded = false;
-							}
-						}
+//				        ServletContext ctx = getServletContext();
+//						List<TBSet> currentSets = tbGameStorer.loadSets(invitee.getPlayerID());
+//						List<TBSet> invitesTo = new ArrayList<TBSet>();
+//						List<TBSet> invitesFrom = new ArrayList<TBSet>();
+//						List<TBGame> myTurn = new ArrayList<TBGame>();
+//						List<TBGame> oppTurn = new ArrayList<TBGame>();
+//						Utilities.organizeGames(invitee.getPlayerID(), currentSets,
+//						    invitesTo, invitesFrom, myTurn, oppTurn);
+//						boolean limitExceeded;
+//						int gamesLimit = Integer.parseInt(ctx.getInitParameter("TBGamesLimit"));
+//						if (invitee.unlimitedMobileTBGames() && (isMobile != null)) {
+//							limitExceeded = false;
+//						} else if (invitee.unlimitedTBGames()) {
+//						  	limitExceeded = false;
+//						} else {
+//							int currentCount = myTurn.size() + oppTurn.size();
+//							if (!invitesFrom.isEmpty()) {
+//								for (TBSet s : invitesFrom) {
+//									if (s.isTwoGameSet()) {
+//										currentCount += 2;
+//									} else {
+//										currentCount++;
+//									}
+//								}
+//							}
+//							if (currentCount > gamesLimit) {
+//								limitExceeded = true;
+//							} else {
+//								limitExceeded = false;
+//							}
+//						}
+//
+//						if (limitExceeded) {
+//							error = "Free account games limit exceeded.";
+//						} else {
 
-						if (limitExceeded) {
-							error = "Free account games limit exceeded.";
-						} else {
+                        if (set.isTwoGameSet()) {
+                            CacheKOTHStorer kothStorer = (CacheKOTHStorer) resources.getKOTHStorer();
+                            int game = set.getGame1().getGame();
+                            if (kothStorer.getEventId(game) == set.getGame1().getEventId()) {
+                                Hill hill = kothStorer.getHill(game);
+                                if (hill != null) {
+                                    long pid1 = set.getInviterPid(), pid2 = invitee.getPlayerID();
+                                    int stepsBetween = hill.stepsBetween(pid1, pid2);
+                                    if (stepsBetween < 0) {
+                                        stepsBetween *= -1;
+                                    }
+                                    if (!hill.hasPlayer(pid1)) {
+                                        error = "The inviter hasn't joined the King of the Hill for turn-based " + GridStateFactory.getGameName(game);
+										for (int i = 0; i < 2; i++) {
+											TBGame g = set.getGames()[i];
+											if (g == null) {
+												continue;
+											}
+											int eventID = tbGameStorer.getEventId(game);
+											g.setEventId(eventID);
+											tbGameStorer.setGameEventId(g.getGid(), eventID);
+										}
+                                    } else if (!hill.hasPlayer(pid2)) {
+                                        error = "You haven't joined the King of the Hill for turn-based " + GridStateFactory.getGameName(game) + " yet.";
+                                    } else if (stepsBetween*stepsBetween > 4) {
+                                        error = "The inviter is " + stepsBetween + " apart from you, it should be 2 or less.";
+                                    } else if (!invitee.hasPlayerDonated() && !kothStorer.canPlayerBeChallenged(game, pid2)) {
+                                        error = "You are already playing 2 or more King of the Hill games for turn-based " + GridStateFactory.getGameName(game) + ", subscribers don't have this limit.";
+                                    } else if (!kothStorer.canPlayerBeChallenged(game, pid1)) {
+                                        error = "You are already playing 2 or more King of the Hill games for turn-based " + GridStateFactory.getGameName(game) + ", they cannot accept more at this time.";
+                                    }
+                                }
+                            }
+                        }
+
+                        if (error == null) {
 							log4j.debug("ReplyInvitationServlet, accept");
 							tbGameStorer.acceptInvite(set, invitee.getPlayerID());
 							if (inviteeMessage != null) {
@@ -210,7 +251,7 @@ public class ReplyInvitationServlet extends HttpServlet {
 								m.setPid(invitee.getPlayerID());
 								for (int i = 0; i < 2; i++) {
 									TBGame game = set.getGames()[i];
-									if (game == null) break;
+									if (game == null) continue;
 									tbGameStorer.storeNewMessage(game.getGid(), m);
 								}
 							}
@@ -221,7 +262,8 @@ public class ReplyInvitationServlet extends HttpServlet {
 						        response.sendRedirect(mobileRedirectPage);
 							}
 					        return;
-						}
+                        }
+//						}
 					}
 					else if (command.equals("Decline")) {
 

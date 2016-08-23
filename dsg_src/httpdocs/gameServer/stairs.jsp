@@ -11,10 +11,16 @@ if (gameStr == null) {
 	gameStr = (String) request.getAttribute("game");
 }
 int game = 0;
+DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
 
 if (gameStr != null) {
 	game = Integer.parseInt(gameStr);
 }
+
+	Resources resources = (Resources) application.getAttribute(Resources.class.getName());
+	CacheKOTHStorer kothStorer = resources.getKOTHStorer();
+	Hill hill = kothStorer.getHill(game);
+	long myPid = dsgPlayerData.getPlayerID();
 %>
 <center>
 <% if (dsgPlayerData.showAds()) { %>
@@ -41,7 +47,7 @@ they appear, if there are only 2 players on 2 steps, and the higher placed playe
 A few more rules
 <ul>
 	<li>The player on the top step is king of the hill and gets a white crown if they occupy the top step alone,</li>
-	<li>players who don't play any King of the Hill games for 31 days are removed from the hill,</li>
+	<li>non-subscribers who don't play any King of the Hill games for 62 days are removed from the hill,</li>
 	<li>non-subscribers can only participate in one hill, when they play a game from another hill, they are removed from the previous hill,</li>
 	<li><a href="https://pente.org/gameServer/subscriptions">subscribers</a> can participate in all hills,</li>
 	<li>each speed game has their own hill,</li>
@@ -57,6 +63,7 @@ This is new code so there may still be bugs here and there, that's why this is a
 Turn-based King of the Hill have a few more rules to consider:
 <ul>
 	<li>non-subscribers can only join one hill and can only play 2 sets at any given time, this includes active sets, sent invitations, and invitations you haven't responded to yet, </li>
+	<li>non-subscribers who don't play any King of the Hill games for 31 days are removed from the hill,</li>
 	<li><a href="https://pente.org/gameServer/subscriptions">subscribers</a> can play unlimited KotH games,</li>
 	<li>when <a href="https://pente.org/gameServer/subscriptions">subscribers</a> have 5 or more ongoing KotH sets, including waiting invitations, they cannot be challenged anymore, but can still send out challenges,</li>
 	<li>if your opponent leaves the hill before the set is over, the result still counts towards your hill position,</li>
@@ -83,7 +90,7 @@ The challenge button appears when you can challenge a player, and they're also m
 
 
 <table width="400">
-	<tr>
+	<tr align="top">
 	<td>
  <form name="mainPlayForm" method="post" action="/gameServer/stairs.jsp" style="margin:0;padding:0;">
 
@@ -105,10 +112,6 @@ The challenge button appears when you can challenge a player, and they're also m
 
 <%
 if (game > 0) {
-	Resources resources = (Resources) application.getAttribute(Resources.class.getName());
-	CacheKOTHStorer kothStorer = resources.getKOTHStorer();
-	Hill hill = kothStorer.getHill(game);
-	long myPid = dsgPlayerData.getPlayerID();
 	if (game > 50) {
 %>
 <td>
@@ -136,20 +139,38 @@ if (game > 0) {
 			<%
 	}
 %>
+
 </td>
 <%
 	}	
 %>
 
 </tr>
+<%
+if (hill != null && hill.hasPlayer(myPid) && (dsgPlayerData.hasPlayerDonated() || kothStorer.canPlayerBeChallenged(game, myPid))) {
+%>
+	<tr align="top">
+	<td>
+	<form name="new_game_form" method="post" action="<%= request.getContextPath() %>/gameServer/tb/newKotH.jsp">
+	<input type="hidden" name="invitee" value="">
+	<input type="hidden" name="game" value="<%=game%>">
+	<input type="submit" name="send open hill invitation" value="send open hill invitation">
+	</form>
+	</td>	
+	</tr>
+
+<%	
+}
+%>
+
 </table>
 
 <br>
 <br>
 
-<table border="1" width="400">
+<table border="1" width="450">
 	<tr>
-		<td colspan="3" align="center">
+		<td colspan="4" align="center">
 			<h1><%=(game > 50?"Turn-based ":"") + GridStateFactory.getGameName(game) + " (" + (hill != null?hill.getNumPlayers():0)  + ")"%></h1>
 			
 		</td>
@@ -159,7 +180,10 @@ if (game > 0) {
 	if (hill != null && hill.getSteps().size() > 0) {
 		boolean canIchallenge = true;
 		if (game > 50) {
-			canIchallenge = hill.hasPlayer(myPid) && kothStorer.canPlayerBeChallenged(game, myPid);
+			canIchallenge = hill.hasPlayer(myPid);
+            if (!dsgPlayerData.hasPlayerDonated()) {
+                canIchallenge = canIchallenge && kothStorer.canPlayerBeChallenged(game, myPid);
+            }
 		} 
 		int myStep = -1;
 		if (canIchallenge) {
@@ -169,7 +193,7 @@ if (game > 0) {
 		for (int i = steps.size() - 1; i >= 0; i-- ) {
 		%>
 	<tr>
-		<td colspan="3"  align="center"><b><%=(i==steps.size()-1)?"top of the hill":"Step " + (i+1)%></b></td>
+		<td colspan="4"  align="center"><b><%=(i==steps.size()-1)?"top of the hill":"Step " + (i+1)%></b></td>
 	</tr>
 		<%
 
@@ -212,18 +236,27 @@ if (game > 0) {
             <%=(myPid == pid)?"</h3>":""%>
 			</td>
             <%
-            if (game > 50 && canIchallenge && myPid != pid && (myStep - i)*(myStep - i)<5 && canChallengeThem) {
-            	%>
+            if (game > 50) {
+            %>
             	<td align="center">
-            	   <form name="new_game_form" method="post" action="<%= request.getContextPath() %>/gameServer/tb/newKotH.jsp">
-            	   <input type="hidden" name="invitee" value="<%=d.getName()%>">
-            	   <input type="hidden" name="game" value="<%=game%>">
-            	   <input type="submit" name="challenge" value="challenge">
-         			</form>
-         			</td>
             	<%
+	            if (game > 50 && canIchallenge && myPid != pid && (myStep - i)*(myStep - i)<5 && canChallengeThem) {
+	            	%>
+	            	   <form name="new_game_form" method="post" action="<%= request.getContextPath() %>/gameServer/tb/newKotH.jsp">
+	            	   <input type="hidden" name="invitee" value="<%=d.getName()%>">
+	            	   <input type="hidden" name="game" value="<%=game%>">
+	            	   <input type="submit" name="challenge" value="challenge">
+	         			</form>
+	            	<%
+	            }
+            	%>
+     			</td>
+ 			<%	
             }
             %>
+            <td align="center">
+            <%=dateFormat.format(player.getLastGame())%>
+			</td>
 	</tr>
 
 				<%
