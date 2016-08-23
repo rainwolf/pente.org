@@ -1,4 +1,4 @@
-<%@ page import="org.pente.game.*, org.pente.turnBased.*" %>
+<%@ page import="org.pente.game.*, org.pente.turnBased.*, org.pente.kingOfTheHill.*" %>
 
 <% pageContext.setAttribute("title", "Play Turn-Based"); %>
 
@@ -20,7 +20,7 @@ List<TBGame> myTurn = new ArrayList<TBGame>();
 List<TBGame> oppTurn = new ArrayList<TBGame>();
 Utilities.organizeGames(meData.getPlayerID(), currentSets,
     invitesTo, invitesFrom, myTurn, oppTurn);
-
+CacheKOTHStorer kothStorer = resources.getKOTHStorer();
 
 // int myPenteRating = 0;
 // int myKeryoPenteRating = 0;
@@ -80,23 +80,53 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
             continue;
         }
     }
-		
+    
 
 
     List<DSGIgnoreData> ignoreData = dsgPlayerStorer.getIgnoreData(theirPID);
-		for (Iterator<DSGIgnoreData> it = ignoreData.iterator(); it.hasNext();) {
+    for (Iterator<DSGIgnoreData> it = ignoreData.iterator(); it.hasNext();) {
         DSGIgnoreData i = it.next();
         if (i.getIgnorePid() == myPID) {
             if (i.getIgnoreInvite()) {
                 iAmIgnored = true;
                 break;
-            }	
-        }	
+            } 
+        } 
     }
     if (iAmIgnored && !alreadyPlaying) {
         openTBgames--;
         iterator.remove();
         continue;
+    }
+
+    if (s.isTwoGameSet()) {
+        int game = s.getGame1().getGame();
+        if (kothStorer.getEventId(game) == s.getGame1().getEventId()) {
+            Hill hill = kothStorer.getHill(game);
+            if (!hill.hasPlayer(myPID)) {
+                openTBgames--;
+                iterator.remove();
+                continue;
+            } else {
+                if (!meData.hasPlayerDonated() && !kothStorer.canPlayerBeChallenged(game, myPID)) {
+                    openTBgames--;
+                    iterator.remove();
+                    continue;
+                } else {
+                    int stepsBetween = hill.stepsBetween(myPID, s.getInviterPid());
+                    if (stepsBetween < 0) {
+                        stepsBetween *= -1;
+                    }
+                    if (stepsBetween > 2) {
+                        openTBgames--;
+                        iterator.remove();
+                        continue;
+                    }
+                }
+
+            }
+
+        }
     }
 
     if ("rainwolf".equals(name)) {
@@ -228,37 +258,42 @@ below and do not specify a player to invite.<br>
         <br>
         <br>
 <%}%>
-	 <table border="0"  cellspacing="0" cellpadding="0" width="700">
-	 	<tr bgcolor="<%= textColor2 %>">
-	     <td colspan="6">
-	       <font color="white">
-	         <b>Open Invitation Games (<%= openTBgames %>)
-	       </font>
-	     </td>
-	   </tr>
-	   <tr>
-	     <td><b>Game</b></td>
-	     <td><b>Player</b></td>
+   <table border="0"  cellspacing="0" cellpadding="0" width="700">
+    <tr bgcolor="<%= textColor2 %>">
+       <td colspan="6">
+         <font color="white">
+           <b>Open Invitation Games (<%= openTBgames %>)
+         </font>
+       </td>
+     </tr>
+     <tr>
+       <td><b>Game</b></td>
+       <td><b>Player</b></td>
          <td><b>Play as</b></td>
-	     <td><b>Time/Move</b></td>
+       <td><b>Time/Move</b></td>
        <td><b>Rated</b></td>
 <%     if ("rainwolf".equals(name)) { %>
        <td><b>Open to</b></td>
  <% } %>
-	   </tr>
+     </tr>
      
      <% 
      for (TBSet s : waitingSets) {
              
          String color = null;
+         boolean koth = false;
          if (s.isTwoGameSet()) {
-        	 color = "white, black (2 game set)";
+            color = "white, black (2 game set)";
+            int game = s.getGame1().getGame();
+            if (kothStorer.getEventId(game) == s.getGame1().getEventId()) {
+                koth = true;
+            }
          }
          else if (s.getPlayer1Pid() == 0) {
-        	 color = "white";
+           color = "white";
          }
          else {
-        	 color = "black";
+           color = "black";
          }
         DSGPlayerData opp = dsgPlayerStorer.loadPlayer(s.getInviterPid());
         DSGPlayerData d = opp;
@@ -271,7 +306,7 @@ below and do not specify a player to invite.<br>
            <%= GridStateFactory.getGameName(s.getGame1().getGame()) %>
           <%} else {%>
            <a href="/gameServer/tb/replyInvitation?command=load&sid=<%= s.getSetId() %>">
-             <%= GridStateFactory.getGameName(s.getGame1().getGame()) %></a>
+             <%= GridStateFactory.getGameName(s.getGame1().getGame()) + (koth?" (KotH)":"")%></a>
           <%}%></td>
            <td><%@include file="../playerLink.jspf" %><%@ include file="../ratings.jspf" %></td>
            <td><%= color %></td>

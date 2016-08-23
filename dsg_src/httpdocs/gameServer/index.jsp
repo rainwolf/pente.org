@@ -152,6 +152,34 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
         continue;
     }
 
+    if (s.isTwoGameSet()) {
+        int game = s.getGame1().getGame();
+        if (kothStorer.getEventId(game) == s.getGame1().getEventId()) {
+            Hill hill = kothStorer.getHill(game);
+            if (!hill.hasPlayer(myPID)) {
+                openTBgames--;
+                iterator.remove();
+                continue;
+            } else {
+                if (!meData.hasPlayerDonated() && !kothStorer.canPlayerBeChallenged(game, myPID)) {
+                    openTBgames--;
+                    iterator.remove();
+                    continue;
+                } else {
+                    int stepsBetween = hill.stepsBetween(myPID, s.getInviterPid());
+                    if (stepsBetween < 0) {
+                        stepsBetween *= -1;
+                    }
+                    if (stepsBetween > 2) {
+                        openTBgames--;
+                        iterator.remove();
+                        continue;
+                    }
+                }
+            }
+        }
+    }
+
     if (s.getInvitationRestriction() == TBSet.ANY_RATING) {
         continue;
     }

@@ -54,7 +54,10 @@ long kingPid = 0;
     if (hill != null && hill.getSteps().size() > 0) {
         boolean canIchallenge = true;
         if (game > 50) {
-            canIchallenge = hill.hasPlayer(myPid) && kothStorer.canPlayerBeChallenged(game, myPid);
+            canIchallenge = hill.hasPlayer(myPid);
+            if (!dsgPlayerData.hasPlayerDonated()) {
+                canIchallenge = canIchallenge && kothStorer.canPlayerBeChallenged(game, myPid);
+            }
         } 
         int myStep = -1;
         if (canIchallenge) {

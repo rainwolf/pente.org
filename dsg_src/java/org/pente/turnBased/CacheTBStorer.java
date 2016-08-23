@@ -1235,9 +1235,12 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 		baseStorer.updateGameAfterMove(game);
 	}
 
+	public void setGameEventId(long gameId, long eventId) throws TBStoreException {
+		baseStorer.setGameEventId(gameId, eventId);
+	}
 
-	public void acceptInvite(TBSet s, long pid)
-		throws TBStoreException {
+
+	public void acceptInvite(TBSet s, long pid)	throws TBStoreException {
 
 		log4j.debug("CacheTBStorer.acceptInvite(" + s.getSetId() + ", " +
 			pid + ")");

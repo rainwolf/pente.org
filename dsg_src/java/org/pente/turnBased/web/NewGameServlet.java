@@ -214,29 +214,33 @@ public class NewGameServlet extends HttpServlet {
 		if (privateStr != null && privateStr.equals("Y")) {
 			privateGame = true;
 		}
-		if (koth) {
+		if (koth && error == null) {
 			if (!rated) {
 				error = "King of the Hill games must be rated sets";
 			}
-			if (inviteePlayerData == null) {
-				error = "King of the Hill invitations cannot be open invitations";				
-			}
 
 			Hill hill = kothStorer.getHill(game);
-			if (hill != null) {
-				long pid1 = invitePlayerData.getPlayerID(), pid2 = inviteePlayerData.getPlayerID();
-				int stepsBetween = hill.stepsBetween(pid1, pid2);
+			if (hill != null && error == null) {
+				long pid1 = invitePlayerData.getPlayerID(), pid2 = 0;
+                if (inviteePlayerData != null){
+                    pid2 = inviteePlayerData.getPlayerID();
+                }
+				int stepsBetween = 0;
+                if (pid2 != 0) {
+                    stepsBetween = hill.stepsBetween(pid1, pid2);
+                }
+				if (stepsBetween < 0) {
+					stepsBetween *= -1;
+				}
 				if (!hill.hasPlayer(pid1)) {
 					error = "You haven't joined the King of the Hill for turn-based " + GridStateFactory.getGameName(game) + " yet.";
-				} else if (!hill.hasPlayer(pid2)) {
+				} else if (pid2 != 0 && !hill.hasPlayer(pid2)) {
 					error = inviteePlayerData.getName() + " hasn't joined the King of the Hill for turn-based " + GridStateFactory.getGameName(game) + " yet.";
-				} else if (stepsBetween < 0) {
-					stepsBetween *= -1;
 				} else if (stepsBetween*stepsBetween > 4) {
 					error = inviteePlayerData.getName() + " is " + stepsBetween + " apart from you, it should be 2 or less.";
 				} else if (!invitePlayerData.hasPlayerDonated() && !kothStorer.canPlayerBeChallenged(game, pid1)) {
 					error = "You are already playing 2 or more King of the Hill games for turn-based " + GridStateFactory.getGameName(game) + ", subscribers don't have this limit.";
-				} else if (!kothStorer.canPlayerBeChallenged(game, pid2)) {
+				} else if (pid2 != 0 && !kothStorer.canPlayerBeChallenged(game, pid2)) {
 					error = inviteePlayerData.getName() + " is already playing 2 or more King of the Hill games for turn-based " + GridStateFactory.getGameName(game) + ", they cannot accept more at this time.";
 				}
 			}

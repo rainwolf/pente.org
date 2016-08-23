@@ -1,8 +1,10 @@
 package org.pente.kingOfTheHill;
 
 import org.apache.log4j.*;
+import org.pente.game.GridStateFactory;
 import org.pente.gameServer.core.*;
 import org.pente.turnBased.CacheTBStorer;
+import org.pente.turnBased.TBGame;
 import org.pente.turnBased.TBSet;
 import org.pente.turnBased.TBStoreException;
 
@@ -161,6 +163,9 @@ public class CacheKOTHStorer implements KOTHStorer {
                     baseStorer.removePlayerFromHill(hill_id, pid);
                     storeHill(hill_id);
                     adjustCrown(game);
+                    if (game > 50) {
+                        fixTBinvitations(game, pid);
+                    }
                 }
             }
         }
@@ -248,6 +253,7 @@ public class CacheKOTHStorer implements KOTHStorer {
                         if (lastDate != null && lastDate.before(lastMonth)) {
                             baseStorer.removePlayerFromHill(hill.getHillID(), player.getPid());
                             hill.removePlayer(player.getPid());
+                            fixTBinvitations(tbGames[i], player.getPid());
                             altered = true;
                         }
                     }
@@ -348,7 +354,28 @@ public class CacheKOTHStorer implements KOTHStorer {
         return false;
     }
 
-
+    private void fixTBinvitations(int game, long pid) {
+        try {
+            List<TBSet> sets = tbStorer.loadSets(pid);
+            int kothEventId = getEventId(game);
+            for (TBSet set : sets) {
+                if (set.isTwoGameSet() && set.getState() == TBSet.STATE_NOT_STARTED && set.getGame1().getGame() == game && set.getGame1().getEventId() == kothEventId) {
+                    TBSet loadedSet = tbStorer.loadSet(set.getSetId());
+                    for (int i = 0; i < 2; i++) {
+                        TBGame g = loadedSet.getGames()[i];
+                        if (g == null) {
+                            continue;
+                        }
+                        int eventID = tbStorer.getEventId(game);
+                        g.setEventId(eventID);
+                        tbStorer.setGameEventId(g.getGid(), eventID);
+                    }
+                }
+            }
+        } catch (TBStoreException e) {
+            e.printStackTrace();
+        }
+    }
 
 
 }

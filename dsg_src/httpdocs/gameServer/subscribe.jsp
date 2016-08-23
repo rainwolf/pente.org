@@ -27,9 +27,11 @@ if (giftee != null) {
 <br>
 
           <font color="<%= textColor2 %>"><b>All subscriptions will get you the following extra features:<br>
-            - Change the color of your name in the game room!<br>
+            - Change the color of your name!<br>
             - Upload a picture of yourself to your profile!<br>
             - Add a note to your profile!<br>
+            - Get access to the database!<br>
+            - Participate in more than 1 (King of the) Hill at a time!<br>
             And optionally, <br>
             - No more ads!<br>
           </b></font>

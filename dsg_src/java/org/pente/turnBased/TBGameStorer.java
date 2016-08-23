@@ -21,9 +21,9 @@ public interface TBGameStorer {
 	public void storeNewMessage(long gid, TBMessage message) 
 		throws TBStoreException;
 	public void updateGameAfterMove(TBGame game) throws TBStoreException;
-	
-	public void acceptInvite(TBSet set, long pid)
-		throws TBStoreException;
+
+	public void setGameEventId(long gameId, long eventId) throws TBStoreException;
+	public void acceptInvite(TBSet set, long pid) throws TBStoreException;
 	public void cancelSet(TBSet set) throws TBStoreException;
 	public void resignGame(TBGame game) throws TBStoreException;
 	public void endSet(TBSet set) throws TBStoreException;
