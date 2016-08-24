@@ -65,6 +65,12 @@ long kingPid = 0;
         }
         List<Step> steps = hill.getSteps();
         for (int i = 0; i < steps.size(); i++ ) {
+            Collections.sort(steps.get(i).getPlayers(), new Comparator<Player>() {
+                @Override
+                public int compare(Player o1, Player o2) {
+                    return o2.getLastGame().compareTo(o1.getLastGame());
+                }
+            });
 
             for( Player player : steps.get(i).getPlayers()) {
                 long pid = player.getPid();

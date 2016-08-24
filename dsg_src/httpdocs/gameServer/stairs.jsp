@@ -191,12 +191,18 @@ if (hill != null && hill.hasPlayer(myPid) && (dsgPlayerData.hasPlayerDonated() |
 		}
 		List<Step> steps = hill.getSteps();
 		for (int i = steps.size() - 1; i >= 0; i-- ) {
+//			steps.get(i).getPlayers().sort((o1, o2) -> o1.getLastGame().compareTo(o2.getLastGame()));
+			Collections.sort(steps.get(i).getPlayers(), new Comparator<Player>() {
+			    @Override
+			    public int compare(Player o1, Player o2) {
+			        return o2.getLastGame().compareTo(o1.getLastGame());
+			    }
+			});
 		%>
 	<tr>
 		<td colspan="4"  align="center"><b><%=(i==steps.size()-1)?"top of the hill":"Step " + (i+1)%></b></td>
 	</tr>
 		<%
-
 			for( Player player : steps.get(i).getPlayers()) {
 				long pid = player.getPid();
 				DSGPlayerData d = dsgPlayerStorer.loadPlayer(pid);

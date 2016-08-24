@@ -211,10 +211,10 @@ public class ReplyInvitationServlet extends HttpServlet {
                                 Hill hill = kothStorer.getHill(game);
                                 if (hill != null) {
                                     long pid1 = set.getInviterPid(), pid2 = invitee.getPlayerID();
-                                    int stepsBetween = hill.stepsBetween(pid1, pid2);
-                                    if (stepsBetween < 0) {
-                                        stepsBetween *= -1;
-                                    }
+//                                    int stepsBetween = hill.stepsBetween(pid1, pid2);
+//                                    if (stepsBetween < 0) {
+//                                        stepsBetween *= -1;
+//                                    }
                                     if (!hill.hasPlayer(pid1)) {
                                         error = "The inviter hasn't joined the King of the Hill for turn-based " + GridStateFactory.getGameName(game);
 										for (int i = 0; i < 2; i++) {
@@ -228,12 +228,12 @@ public class ReplyInvitationServlet extends HttpServlet {
 										}
                                     } else if (!hill.hasPlayer(pid2)) {
                                         error = "You haven't joined the King of the Hill for turn-based " + GridStateFactory.getGameName(game) + " yet.";
-                                    } else if (stepsBetween*stepsBetween > 4) {
-                                        error = "The inviter is " + stepsBetween + " apart from you, it should be 2 or less.";
-                                    } else if (!invitee.hasPlayerDonated() && !kothStorer.canPlayerBeChallenged(game, pid2)) {
-                                        error = "You are already playing 2 or more King of the Hill games for turn-based " + GridStateFactory.getGameName(game) + ", subscribers don't have this limit.";
-                                    } else if (!kothStorer.canPlayerBeChallenged(game, pid1)) {
-                                        error = "You are already playing 2 or more King of the Hill games for turn-based " + GridStateFactory.getGameName(game) + ", they cannot accept more at this time.";
+//                                    } else if (stepsBetween*stepsBetween > 4) {
+//                                        error = "The inviter is " + stepsBetween + " apart from you, it should be 2 or less.";
+//                                    } else if (!invitee.hasPlayerDonated() && !kothStorer.canPlayerBeChallenged(game, pid2)) {
+//                                        error = "You are already playing 2 or more King of the Hill games for turn-based " + GridStateFactory.getGameName(game) + ", subscribers don't have this limit.";
+//                                    } else if (!kothStorer.canPlayerBeChallenged(game, pid1)) {
+//                                        error = "You are already playing 2 or more King of the Hill games for turn-based " + GridStateFactory.getGameName(game) + ", they cannot accept more at this time.";
                                     }
                                 }
                             }
