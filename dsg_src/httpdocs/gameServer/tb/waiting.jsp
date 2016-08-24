@@ -34,6 +34,7 @@ CacheKOTHStorer kothStorer = resources.getKOTHStorer();
 int openTBgames = 0;
 //int concurrentPlayLimit = 2;
 long myPID = meData.getPlayerID();
+
 for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
     TBSet s = iterator.next();
 
@@ -193,6 +194,13 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
         iterator.remove();
     }
 }
+
+      Collections.sort(waitingSets, new Comparator<TBSet>() {
+          @Override
+          public int compare(TBSet o1, TBSet o2) {
+              return o2.getCreationDate().compareTo(o1.getCreationDate());
+          }
+      });
 
 boolean limitExceeded;
 ServletContext ctx = getServletContext();

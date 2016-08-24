@@ -240,6 +240,14 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
     }
 }
 
+Collections.sort(waitingSets, new Comparator<TBSet>() {
+  @Override
+  public int compare(TBSet o1, TBSet o2) {
+      return o2.getCreationDate().compareTo(o1.getCreationDate());
+  }
+});
+
+
 
 int gamesLimit = 0;
 DSGPlayerGameData playerGameData = dsgPlayerData.getPlayerGameData(GridStateFactory.TB_PENTE);
