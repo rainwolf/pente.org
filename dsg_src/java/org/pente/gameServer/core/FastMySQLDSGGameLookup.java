@@ -56,28 +56,28 @@ public class FastMySQLDSGGameLookup {
             GameEventData e = gameVenueStorer.getGameEventData(actualGame, 
                 "Turn-based Game", "Pente.org");
             int tbEventId = (e == null) ? 0 : e.getEventID();
-            String tb = GridStateFactory.isTurnbasedGame(game) ? "=" : "!=";
+            boolean tb = GridStateFactory.isTurnbasedGame(game);
             String qryString = 
                 "select count(*) " +
                 "from pente_game " +
                 "where game = ? " +
                 "and player1_pid = ? " +
-                "and event_id " + tb + " ? " +
+                "and gid " + (tb?">=":"<") + " 50000000000000 " +
                 "union all " +
                 "select count(*) " +
                 "from pente_game " +
                 "where game = ? " +
                 "and player2_pid = ? " +
-                "and event_id " + tb + " ?"; 
+                "and gid " + (tb?">=":"<") + " 50000000000000 ";
             log4j.debug(qryString);
 
             stmt = con.prepareStatement(qryString);
             stmt.setInt(1, actualGame);
             stmt.setLong(2, pid);
-            stmt.setInt(3, tbEventId);
-            stmt.setInt(4, actualGame);
-            stmt.setLong(5, pid);
-            stmt.setInt(6, tbEventId);
+//            stmt.setInt(3, tbEventId);
+            stmt.setInt(3, actualGame);
+            stmt.setLong(4, pid);
+//            stmt.setInt(6, tbEventId);
             
             results = stmt.executeQuery();
             while (results.next()) {
@@ -105,32 +105,32 @@ public class FastMySQLDSGGameLookup {
             GameEventData e = gameVenueStorer.getGameEventData(actualGame, 
                 "Turn-based Game", "Pente.org");
             int tbEventId = (e == null) ? 0 : e.getEventID();
-            String tb = GridStateFactory.isTurnbasedGame(game) ? "=" : "!=";
+            boolean tb = GridStateFactory.isTurnbasedGame(game);
             String qryString = 
                 "select count(*) " +
                 "from pente_game " +
                 "where game = ? " +
                 "and player1_pid = ? " +
                 "and player2_pid = ? " +
-                "and event_id " + tb + " ? " +
+                "and gid " + (tb?">=":"<") + " 50000000000000 " +
                 "union all " +
                 "select count(*) " +
                 "from pente_game " +
                 "where game = ? " +
                 "and player2_pid = ? " +
                 "and player1_pid = ? " +
-                "and event_id " + tb + " ?"; 
+                "and gid " + (tb?">=":"<") + " 50000000000000 ";
             log4j.debug(qryString);
 
             stmt = con.prepareStatement(qryString);
             stmt.setInt(1, actualGame);
             stmt.setLong(2, pid);
             stmt.setLong(3, myPid);
-            stmt.setInt(4, tbEventId);
-            stmt.setInt(5, actualGame);
-            stmt.setLong(6, pid);
-            stmt.setLong(7, myPid);
-            stmt.setInt(8, tbEventId);
+//            stmt.setInt(4, tbEventId);
+            stmt.setInt(4, actualGame);
+            stmt.setLong(5, pid);
+            stmt.setLong(6, myPid);
+//            stmt.setInt(8, tbEventId);
             
             results = stmt.executeQuery();
             while (results.next()) {
@@ -158,7 +158,7 @@ public class FastMySQLDSGGameLookup {
             GameEventData e = gameVenueStorer.getGameEventData(actualGame, 
                 "Turn-based Game", "Pente.org");
             int tbEventId = (e == null) ? 0 : e.getEventID();
-            String tb = GridStateFactory.isTurnbasedGame(game) ? "=" : "!=";
+            boolean tb = GridStateFactory.isTurnbasedGame(game);
             String qryString = 
                 "select count(*) " +
                 "from pente_game " +
@@ -166,7 +166,7 @@ public class FastMySQLDSGGameLookup {
                 "and player1_pid = ? " +
                 "and player2_pid = ? " +
                 "and winner = 2 " +
-                "and event_id " + tb + " ? " +
+                "and gid " + (tb?">=":"<") + " 50000000000000 " +
                 "union all " +
                 "select count(*) " +
                 "from pente_game " +
@@ -174,18 +174,18 @@ public class FastMySQLDSGGameLookup {
                 "and player2_pid = ? " +
                 "and player1_pid = ? " +
                 "and winner = 1 " +
-                "and event_id " + tb + " ?"; 
+                "and gid " + (tb?">=":"<") + " 50000000000000 ";
             log4j.debug(qryString);
 
             stmt = con.prepareStatement(qryString);
             stmt.setInt(1, actualGame);
             stmt.setLong(2, pid);
             stmt.setLong(3, myPid);
-            stmt.setInt(4, tbEventId);
-            stmt.setInt(5, actualGame);
-            stmt.setLong(6, pid);
-            stmt.setLong(7, myPid);
-            stmt.setInt(8, tbEventId);
+//            stmt.setInt(4, tbEventId);
+            stmt.setInt(4, actualGame);
+            stmt.setLong(5, pid);
+            stmt.setLong(6, myPid);
+//            stmt.setInt(8, tbEventId);
             
             results = stmt.executeQuery();
             while (results.next()) {
@@ -218,7 +218,7 @@ public class FastMySQLDSGGameLookup {
             GameEventData e = gameVenueStorer.getGameEventData(actualGame, 
                 "Turn-based Game", "Pente.org");
             int tbEventId = (e == null) ? 0 : e.getEventID();
-            String tb = GridStateFactory.isTurnbasedGame(game) ? "=" : "!=";
+            boolean tb = GridStateFactory.isTurnbasedGame(game);
             
             String qryString = 
                 "select g.gid, g.event_id, g.round, g.section, g.play_date, " +
@@ -229,7 +229,7 @@ public class FastMySQLDSGGameLookup {
                 "and g.player1_pid = ? " +
                 "and g.player2_pid = p.pid " +
                 "and g.player2_pid = dp.pid " +
-                "and g.event_id " + tb + " ? " +
+                "and gid " + (tb?">=":"<") + " 50000000000000 " +
                 "and (g.private = 'N' or " +
                 "     g.player1_pid = ? or g.player2_pid = ?) " +
                 "union " +
@@ -241,7 +241,7 @@ public class FastMySQLDSGGameLookup {
                 "and g.player2_pid = ? " +
                 "and g.player1_pid = p.pid " +
                 "and g.player1_pid = dp.pid " +
-                "and g.event_id " + tb + " ? " +
+                "and gid " + (tb?">=":"<") + " 50000000000000 " +
                 "and (g.private = 'N' or " +
                 "     g.player1_pid = ? or g.player2_pid = ?) " +
                 "order by play_date desc " +
@@ -251,14 +251,14 @@ public class FastMySQLDSGGameLookup {
             stmt = con.prepareStatement(qryString);
             stmt.setInt(1, actualGame);
             stmt.setLong(2, lookupPid);
-            stmt.setInt(3, tbEventId);
+//            stmt.setInt(3, tbEventId);
+            stmt.setLong(3, requestorPid);
             stmt.setLong(4, requestorPid);
-            stmt.setLong(5, requestorPid);
-            stmt.setInt(6, actualGame);
-            stmt.setLong(7, lookupPid);
-            stmt.setInt(8, tbEventId);
-            stmt.setLong(9, requestorPid);
-            stmt.setLong(10, requestorPid);
+            stmt.setInt(5, actualGame);
+            stmt.setLong(6, lookupPid);
+//            stmt.setInt(8, tbEventId);
+            stmt.setLong(7, requestorPid);
+            stmt.setLong(8, requestorPid);
             
 
             //log4j.debug("start getting game data");

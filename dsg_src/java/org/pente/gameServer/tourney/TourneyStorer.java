@@ -4,9 +4,9 @@ import java.util.List;
 
 public interface TourneyStorer {
 
-    public List getUpcomingTournies() throws Throwable;
-    public List getCurrentTournies() throws Throwable;
-    public List getCompletedTournies() throws Throwable;
+    public List<Tourney> getUpcomingTournies() throws Throwable;
+    public List<Tourney> getCurrentTournies() throws Throwable;
+    public List<Tourney> getCompletedTournies() throws Throwable;
 
     public void insertTourney(Tourney tourney) throws Throwable;
     public Tourney getTourney(int eid) throws Throwable;

@@ -56,17 +56,17 @@ public class CacheTourneyStorer implements TourneyStorer {
         tournies.put(new Integer(tourney.getEventID()), tourney);
     }
 
-    public List getUpcomingTournies() throws Throwable {
+    public List<Tourney> getUpcomingTournies() throws Throwable {
         // more complicated to cache, not that important anyways
         return backingStorer.getUpcomingTournies();
     }
 
 
-    public List getCurrentTournies() throws Throwable {
+    public List<Tourney> getCurrentTournies() throws Throwable {
         // more complicated to cache, not that important anyways
         return backingStorer.getCurrentTournies();
     }
-    public List getCompletedTournies() throws Throwable {
+    public List<Tourney> getCompletedTournies() throws Throwable {
         // more complicated to cache, not that important anyways
         return backingStorer.getCompletedTournies();
     }
