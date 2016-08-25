@@ -543,13 +543,23 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 		        gameData.setDate(game.getCompletionDate());
 		        gameData.setGame(GridStateFactory.getGameName(game.getGame()));
 				gameData.setSite("Pente.org");
-				// if (game.getEventId() == kothStorer.getEventId(game.getGame())) {
-			 //        gameData.setEvent("Turn-based King of the Hill");
-				// }else {
-			 //        gameData.setEvent("Turn-based Game");
-				// }
-		        gameData.setEvent("Turn-based Game");
-		        
+                gameData.setEvent("Turn-based Game");
+				if (game.getEventId() != getEventId(game.getGame())) {
+                    if (game.getEventId() != kothStorer.getEventId(game.getGame())) {
+                        for (Tourney t: tourneyStorer.getCurrentTournies()) {
+                            if (t.getEventID() == game.getEventId()) {
+                                Tourney tourney = tourneyStorer.getTourney(t.getEventID());
+                                gameData.setEvent(tourney.getName());
+                                TourneyMatch tourneyMatch = tourneyStorer.getUnplayedMatch(game.getPlayer1Pid(),game.getPlayer2Pid(),game.getEventId());
+                                if (tourneyMatch != null) {
+                                    gameData.setRound(tourneyMatch.getRound()+"");
+                                    gameData.setSection(tourneyMatch.getSection()+"");
+                                }
+                                break;
+                            }
+                        }
+                    }
+				}
 				gameData.setInitialTime(game.getDaysPerMove());
 				gameData.setRated(game.isRated());
 				gameData.setTimed(true);
