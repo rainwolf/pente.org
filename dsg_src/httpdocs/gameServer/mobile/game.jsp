@@ -60,8 +60,11 @@ if (!"".equals(moves)) {
 
 %>moves=<%=moves%>
 <%
+DSGPlayerStorer dsgPlayerStorer = (DSGPlayerStorer) ctx.getAttribute(DSGPlayerStorer.class.getName());
+DSGPlayerData player1 = dsgPlayerStorer.loadPlayer(tbGame.getPlayer1Pid()), player2 = dsgPlayerStorer.loadPlayer(tbGame.getPlayer2Pid());
+DSGPlayerGameData p1Data = player1.getPlayerGameData(tbGame.getGame());
 
-if (!tbGame.isCompleted()) {
+if (loggedInStr.equals(player1.getName()) || loggedInStr.equals(player2.getName())) {
     for (TBMessage m : tbGame.getMessages()) {
         // bug in URLConverter
         if (m.getMessage().length() == 1) {
@@ -102,17 +105,13 @@ gameName=<%=GridStateFactory.getGameName(tbGame.getGame())%>
 
 
 
-DSGPlayerStorer dsgPlayerStorer = (DSGPlayerStorer) ctx.getAttribute(DSGPlayerStorer.class.getName());
-DSGPlayerData player1 = dsgPlayerStorer.loadPlayer(tbGame.getPlayer1Pid());
-DSGPlayerGameData p1Data = player1.getPlayerGameData(tbGame.getGame());
 
 %>player1=<%=player1.getName() + "," + ((int) p1Data.getRating()) %>
 <%
 
-player1 = dsgPlayerStorer.loadPlayer(tbGame.getPlayer2Pid());
-p1Data = player1.getPlayerGameData(tbGame.getGame());
+p1Data = player2.getPlayerGameData(tbGame.getGame());
 
-%>player2=<%=player1.getName() + "," + ((int) p1Data.getRating()) %>
+%>player2=<%=player2.getName() + "," + ((int) p1Data.getRating()) %>
 <%
 
 
@@ -125,6 +124,7 @@ player1 = dsgPlayerStorer.loadPlayer(set.getCancelPid());
 <%
     
 }
+%><%="state="+(tbGame.getState()==TBGame.STATE_ACTIVE?"active":"blub")%><%
 
 if (!tbGame.isCompleted() && (tbGame.getGame() == GridStateFactory.TB_DPENTE)) {
 
