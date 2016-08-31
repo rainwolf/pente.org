@@ -248,7 +248,11 @@ if (giftee != null) {
 <br>
 <br>
           You can make your donations using 
-          <b><a href="javascript:document.paypal_form.submit()">paypal</a></b>, make sure to communicate your <font color="red">username</font> when you donate.<br><br>
+          <b><a href="javascript:document.paypal_form.submit()">paypal</a></b>, make sure to communicate your <font color="red">username</font> when you donate.<br>
+          <b><font color="red">Note: </font></b> This donation will make your name show up in the list of donors below, but it is <b>not</b> a subscription fee. To become a subscriber and get  
+          the subscriber benefits, use the buttons above.
+          <br>
+          <br>
              <a href="javascript:document.paypal_form.submit()"><img src="<%= request.getContextPath() %>/gameServer/images/paypal.gif" border="0"></a>
           <form action="https://www.paypal.com/cgi-bin/webscr" name="paypal_form" method="post">
             <input type="hidden" name="cmd" value="_xclick">

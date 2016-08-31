@@ -100,6 +100,10 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
         continue;
     }
 
+    if ("rainwolf".equals(name)) {
+        continue;
+    }
+
     if (s.isTwoGameSet()) {
         int game = s.getGame1().getGame();
         if (kothStorer.getEventId(game) == s.getGame1().getEventId()) {
@@ -130,9 +134,6 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
         }
     }
 
-    if ("rainwolf".equals(name)) {
-        continue;
-    }
 
     if (s.getInvitationRestriction() == TBSet.ANY_RATING) {
         continue;

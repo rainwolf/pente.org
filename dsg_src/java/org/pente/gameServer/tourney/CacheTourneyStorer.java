@@ -18,7 +18,9 @@ public class CacheTourneyStorer implements TourneyStorer {
     
     private TourneyStorer backingStorer;
     private Map<Integer, Tourney> tournies = new HashMap<Integer, Tourney>();
-    
+    private List<Tourney> upcomingTournies = null;
+    private List<Tourney> currentTournies = null;
+
     private List<TourneyListener> listeners = new ArrayList<TourneyListener>();
 
     private CacheTBStorer tbStorer;
@@ -58,13 +60,38 @@ public class CacheTourneyStorer implements TourneyStorer {
 
     public List<Tourney> getUpcomingTournies() throws Throwable {
         // more complicated to cache, not that important anyways
-        return backingStorer.getUpcomingTournies();
+        if (upcomingTournies == null) {
+            upcomingTournies = backingStorer.getUpcomingTournies();
+        } else {
+            Date today = new Date();
+            for (Iterator<Tourney> iterator = upcomingTournies.iterator(); iterator.hasNext();) {
+                Tourney t = iterator.next();
+                Tourney fullTourney = getTourney(t.getEventID());
+                if (fullTourney.getSignupEndDate().before(today)) {
+                    currentTournies.add(t);
+                    iterator.remove();
+                }
+            }
+        }
+        return upcomingTournies;
     }
 
 
     public List<Tourney> getCurrentTournies() throws Throwable {
         // more complicated to cache, not that important anyways
-        return backingStorer.getCurrentTournies();
+        if (currentTournies == null) {
+            currentTournies = backingStorer.getCurrentTournies();
+        } else {
+            Date today = new Date();
+            for (Iterator<Tourney> iterator = currentTournies.iterator(); iterator.hasNext();) {
+                Tourney t = iterator.next();
+                Tourney fullTourney = getTourney(t.getEventID());
+                if (fullTourney.getEndDate() != null && fullTourney.getEndDate().before(today)) {
+                    iterator.remove();
+                }
+            }
+        }
+        return currentTournies;
     }
     public List<Tourney> getCompletedTournies() throws Throwable {
         // more complicated to cache, not that important anyways

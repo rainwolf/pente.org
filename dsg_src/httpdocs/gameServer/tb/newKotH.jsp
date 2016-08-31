@@ -184,6 +184,27 @@ function submitnewgameform()
         <input type="hidden" name="rated" value="Y">
       </td>
      </tr>
+     <% if (invitee.equals("")) { %>
+     <tr>
+      <td>
+       <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
+        Open to players
+       </font>
+      </td>
+      <td>
+       <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
+        <select name="invitationRestriction" size="1">
+          <option selected value="A">of any rating</option>
+          <option value="N">not already playing</option>
+          <option value="L">of lower rating</option>
+          <option value="H">of higher rating</option>
+          <option value="S">of similar rating (&plusmn 100)</option>
+          <option value="C">of same rating class</option>
+        </select>
+       </font>
+      </td>
+     </tr>
+     <%}%>
      <tr>
        <td colspan="2">
          <div id="unrated" visibility="hide" style="visibility:hidden">
