@@ -20,6 +20,7 @@ public class CacheTourneyStorer implements TourneyStorer {
     private Map<Integer, Tourney> tournies = new HashMap<Integer, Tourney>();
     private List<Tourney> upcomingTournies = null;
     private List<Tourney> currentTournies = null;
+    private List<Tourney> completedTournies = null;
 
     private List<TourneyListener> listeners = new ArrayList<TourneyListener>();
 
@@ -56,6 +57,7 @@ public class CacheTourneyStorer implements TourneyStorer {
         
         log4j.debug("insertTourney(" + tourney.getEventID() + "), cached");
         tournies.put(new Integer(tourney.getEventID()), tourney);
+        upcomingTournies = null;
     }
 
     public List<Tourney> getUpcomingTournies() throws Throwable {
@@ -95,7 +97,10 @@ public class CacheTourneyStorer implements TourneyStorer {
     }
     public List<Tourney> getCompletedTournies() throws Throwable {
         // more complicated to cache, not that important anyways
-        return backingStorer.getCompletedTournies();
+        if (completedTournies == null) {
+            completedTournies = backingStorer.getCompletedTournies();
+        }
+        return completedTournies;
     }
     
     public void completeTourney(Tourney tourney) throws Throwable { 
@@ -108,6 +113,7 @@ public class CacheTourneyStorer implements TourneyStorer {
         // used for speed-tournies to notify main room
         notifyListeners(new TourneyEvent(tourney.getEventID(),
             TourneyEvent.COMPLETE));
+        completedTournies = null;
     }
 
 
@@ -214,7 +220,9 @@ public class CacheTourneyStorer implements TourneyStorer {
         log4j.debug("insertMatch(" + tourneyMatch.getMatchID() + ")");
         backingStorer.insertMatch(tourneyMatch);
         Tourney t = getTourney(tourneyMatch.getEvent());
-        if (t.getGame() > 50 && tourneyMatch.getPlayer1().getPlayerID() != 0 && tourneyMatch.getPlayer2().getPlayerID() != 0 && tourneyMatch.getPlayer1().getPlayerID() < tourneyMatch.getPlayer2().getPlayerID()) {
+        if (t.getGame() > 50 && tourneyMatch.getPlayer1().getPlayerID() != 0 &&
+                tourneyMatch.getPlayer2().getPlayerID() != 0 &&
+                tourneyMatch.getPlayer1().getPlayerID() < tourneyMatch.getPlayer2().getPlayerID()) {
             this.tbStorer.createTournamentSet(t.getGame(), tourneyMatch.getPlayer1().getPlayerID(), tourneyMatch.getPlayer2().getPlayerID(), 
                                                 t.getInitialTime(), t.getEventID());
         }        
