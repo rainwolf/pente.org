@@ -130,6 +130,7 @@ public class CacheKOTHStorer implements KOTHStorer {
                             for (int i = 0; i < tbGames.length; i++ ) {
                                 if (hill.getHillID() == getEventId(tbGames[i])) {
                                     adjustCrown(tbGames[i]);
+                                    fixTBinvitations(tbGames[i], pid);
                                     break;
                                 }
                             }
