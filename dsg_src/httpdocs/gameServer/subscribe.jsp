@@ -148,9 +148,9 @@ if (giftee != null) {
 <input type="hidden" name="on0" value="Vacation Deals">
  <input type="hidden" name="custom" value="<%=gifter + ";" + giftee%>"/>
 <select name="os0">
-  <option value="10 extra days">10 extra days €5,00 EUR</option>
-  <option value="30 extra days">30 extra days €10,00 EUR</option>
-  <option value="60 extra days">60 extra days €15,00 EUR</option>
+  <option value="10 extra days">10 extra days 3,00 EUR</option>
+  <option value="30 extra days">30 extra days 6,00 EUR</option>
+  <option value="60 extra days">60 extra days 9,00 EUR</option>
 </select>
 <input type="hidden" name="currency_code" value="EUR">
 <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_buynow_SM.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">

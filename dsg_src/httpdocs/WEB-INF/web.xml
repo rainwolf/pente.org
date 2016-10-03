@@ -415,6 +415,14 @@
       org.pente.subscriptions.PaypalIPNListenerServlet
     </servlet-class>
   </servlet>
+  <servlet>
+    <servlet-name>
+      IOSReceiptServlet
+    </servlet-name>
+    <servlet-class>
+      org.pente.subscriptions.IOSReceiptServlet
+    </servlet-class>
+  </servlet>
 
 
   <servlet>
@@ -607,6 +615,10 @@
   <servlet-mapping>
     <servlet-name>PaypalIPNListenerServlet</servlet-name>
     <url-pattern>/gameServer/paypaLstnr</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>IOSReceiptServlet</servlet-name>
+    <url-pattern>/gameServer/iOSReceiptValidation</url-pattern>
   </servlet-mapping>
   
 
