@@ -71,7 +71,7 @@ Utilities.organizeGames(myPID, currentSets,
 List<DSGMessage> messages = resources.getDsgMessageStorer().getMessages(myPID);
 DateFormat messageDateFormat = null;
 TimeZone tz = TimeZone.getTimeZone(dsgPlayerData.getTimezone());
-messageDateFormat = new SimpleDateFormat("MMM dd, yyyy hh:mm aa z");
+messageDateFormat = new SimpleDateFormat("MM/dd/yy");
 messageDateFormat.setTimeZone(tz);
 Collections.sort(messages, new Comparator<DSGMessage>() {
     public int compare(DSGMessage m1, DSGMessage m2) {
@@ -523,7 +523,12 @@ Open Invitation Games<%
 
 %>
 Messages<%
+    int i = 0;
    for (DSGMessage m : messages) {
+        i += 1;
+        if (i > 50) {
+            break;
+        }
        DSGPlayerData from = dsgPlayerStorer.loadPlayer(m.getFromPid()); %>
 <%=m.getMid() + ";" +(m.isRead() ? "read" : "unread") + ";" + m.getSubject() + ";" + from.getName() + ";" + messageDateFormat.format(m.getCreationDate()) + ";" + (from.hasPlayerDonated()?from.getNameColorRGB():0) + ";" + from.getTourneyWinner() %><%}
 

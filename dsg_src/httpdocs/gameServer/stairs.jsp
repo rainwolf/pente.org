@@ -147,7 +147,7 @@ if (game > 0) {
 
 </tr>
 <%
-if (hill != null && hill.hasPlayer(myPid) && (dsgPlayerData.hasPlayerDonated() || kothStorer.canPlayerBeChallenged(game, myPid))) {
+if (hill != null && hill.hasPlayer(myPid) && game > 50 && (dsgPlayerData.hasPlayerDonated() || kothStorer.canPlayerBeChallenged(game, myPid))) {
 %>
 	<tr align="top">
 	<td>
