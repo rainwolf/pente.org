@@ -31,6 +31,8 @@ public class CacheKOTHStorer implements KOTHStorer {
 
     private Timer removeStalePlayersTimer;
 
+    private Object cacheKotHLock = new Object();
+
 
     public CacheKOTHStorer(MySQLKOTHStorer baseStorer, CacheDSGPlayerStorer dsgPlayerStorer) {
         this.baseStorer = baseStorer;
@@ -98,7 +100,7 @@ public class CacheKOTHStorer implements KOTHStorer {
 
     public void loadHills() {
         try {
-            synchronized (this) {
+            synchronized (cacheKotHLock) {
                 hills = baseStorer.loadHills();
             }
         } catch (KOTHException e) {
@@ -111,7 +113,7 @@ public class CacheKOTHStorer implements KOTHStorer {
         if (hill_id == 0) {
             return;
         }
-        synchronized (this) {
+        synchronized (cacheKotHLock) {
             try {
                 if (!dsgPlayerStorer.loadPlayer(pid).hasPlayerDonated()) {
                     for (Hill hill : hills.values()) {
@@ -157,7 +159,7 @@ public class CacheKOTHStorer implements KOTHStorer {
         if (hill_id == 0) {
             return;
         }
-        synchronized (this) {
+        synchronized (cacheKotHLock) {
             Hill hill = hills.get(hill_id);
             if (hill != null) {
                 if (hill.removePlayer(pid)) {
@@ -177,7 +179,7 @@ public class CacheKOTHStorer implements KOTHStorer {
         if (hill_id == 0) {
             return;
         }
-        synchronized (this) {
+        synchronized (cacheKotHLock) {
             Hill hill = hills.get(hill_id);
             if (hill != null) {
                 hill.movePlayersUpDown(winner, loser);
@@ -238,65 +240,65 @@ public class CacheKOTHStorer implements KOTHStorer {
             Date lastMonth = new Date();
             lastMonth.setTime(lastMonth.getTime() - (31L*3600*24*1000));
             boolean altered = false;
-            for ( int i = 0; i < tbGames.length; i++ ) {
-                Hill hill = getHill(tbGames[i]);
-                if (hill != null) {
-                    List<Player> players = hill.getMembers();
-                    for (Player player : players) {
-                        try {
-                            if (dsgPlayerStorer.loadPlayer(player.getPid()).hasPlayerDonated()) {
-                                continue;
+            synchronized (cacheKotHLock) {
+                for (int i = 0; i < tbGames.length; i++) {
+                    Hill hill = getHill(tbGames[i]);
+                    if (hill != null) {
+                        List<Player> players = hill.getMembers();
+                        for (Player player : players) {
+                            try {
+                                if (dsgPlayerStorer.loadPlayer(player.getPid()).hasPlayerDonated()) {
+                                    continue;
+                                }
+                            } catch (DSGPlayerStoreException | NullPointerException e) {
+                                e.printStackTrace();
                             }
-                        } catch (DSGPlayerStoreException | NullPointerException e) {
-                            e.printStackTrace();
+                            Date lastDate = player.getLastGame();
+                            if (lastDate != null && lastDate.before(lastMonth)) {
+                                baseStorer.removePlayerFromHill(hill.getHillID(), player.getPid());
+                                hill.removePlayer(player.getPid());
+                                fixTBinvitations(tbGames[i], player.getPid());
+                                altered = true;
+                            }
                         }
-                        Date lastDate = player.getLastGame();
-                        if (lastDate != null && lastDate.before(lastMonth)) {
-                            baseStorer.removePlayerFromHill(hill.getHillID(), player.getPid());
-                            hill.removePlayer(player.getPid());
-                            fixTBinvitations(tbGames[i], player.getPid());
-                            altered = true;
+                        if (altered) {
+                            altered = false;
+                            storeHill(hill.getHillID());
+                            adjustCrown(tbGames[i]);
                         }
                     }
-                    if (altered) {
-                        altered = false;
-                        storeHill(hill.getHillID());
-                        adjustCrown(tbGames[i]);
+                }
+
+                lastMonth.setTime(lastMonth.getTime() - (31L * 3600 * 24 * 1000));
+                altered = false;
+                for (int i = 0; i < liveGames.length; i++) {
+                    Hill hill = getHill(liveGames[i]);
+                    if (hill != null) {
+                        List<Player> players = hill.getMembers();
+                        for (Player player : players) {
+                            try {
+                                if (dsgPlayerStorer.loadPlayer(player.getPid()).hasPlayerDonated()) {
+                                    continue;
+                                }
+                            } catch (DSGPlayerStoreException | NullPointerException e) {
+                                e.printStackTrace();
+                            }
+                            Date lastDate = player.getLastGame();
+                            //                        Date lastDate = baseStorer.getLastGameDate(hill.getHillID(), pid);
+                            if (lastDate != null && lastDate.before(lastMonth)) {
+                                baseStorer.removePlayerFromHill(hill.getHillID(), player.getPid());
+                                hill.removePlayer(player.getPid());
+                                altered = true;
+                            }
+                        }
+                        if (altered) {
+                            altered = false;
+                            storeHill(hill.getHillID());
+                            adjustCrown(liveGames[i]);
+                        }
                     }
                 }
             }
-
-            lastMonth.setTime(lastMonth.getTime() - (31L*3600*24*1000));
-            altered = false;
-            for ( int i = 0; i < liveGames.length; i++ ) {
-                Hill hill = getHill(liveGames[i]);
-                if (hill != null) {
-                    List<Player> players = hill.getMembers();
-                    for (Player player : players) {
-                        try {
-                            if (dsgPlayerStorer.loadPlayer(player.getPid()).hasPlayerDonated()) {
-                                continue;
-                            }
-                        } catch (DSGPlayerStoreException | NullPointerException e) {
-                            e.printStackTrace();
-                        }
-                        Date lastDate = player.getLastGame();
-//                        Date lastDate = baseStorer.getLastGameDate(hill.getHillID(), pid);
-                        if (lastDate != null && lastDate.before(lastMonth)) {
-                            baseStorer.removePlayerFromHill(hill.getHillID(), player.getPid());
-                            hill.removePlayer(player.getPid());
-                            altered = true;
-                        }
-                    }
-                    if (altered) {
-                        altered = false;
-                        storeHill(hill.getHillID());
-                        adjustCrown(liveGames[i]);
-                    }
-                }
-            }
-
-
         }
     }
 
@@ -306,12 +308,14 @@ public class CacheKOTHStorer implements KOTHStorer {
             return;
         }
         Hill hill = getHill(game);
-        for (Step step : hill.getSteps()) {
-            for (Player player : step.getPlayers()) {
-                if (player.getPid() == pid) {
-                    player.setLastGame(new Date());
-                    baseStorer.updatePlayerLastGameDate(hill_id, pid);
-                    return;
+        synchronized (cacheKotHLock) {
+            for (Step step : hill.getSteps()) {
+                for (Player player : step.getPlayers()) {
+                    if (player.getPid() == pid) {
+                        player.setLastGame(new Date());
+                        baseStorer.updatePlayerLastGameDate(hill_id, pid);
+                        return;
+                    }
                 }
             }
         }

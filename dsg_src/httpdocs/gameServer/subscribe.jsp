@@ -32,6 +32,7 @@ if (giftee != null) {
             - Add a note to your profile!<br>
             - Get access to the database!<br>
             - Participate in more than 1 (King of the) Hill at a time!<br>
+            - Play King of the Hill without limits!<br>
             And optionally, <br>
             - No more ads!<br>
           </b></font>
@@ -65,7 +66,7 @@ if (giftee != null) {
       <u> 1 Month</u> of unlimited turn-based games and no advertisements, database access included: 
   </td>
   <td align="center">
-     3 EUR 
+     1,99 EUR 
   </td>
   <td align="center">
     <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
@@ -103,7 +104,7 @@ if (giftee != null) {
       <u> 1 Year</u> of unlimited turn-based games and no advertisements, including database access: 
   </td>
   <td align="center">
-     12 EUR 
+     7,99 EUR 
   </td>
   <td align="center">
     <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
@@ -122,7 +123,7 @@ if (giftee != null) {
       <u> 1 Year</u> of unlimited turn-based games, including database access, but <b>with</b> advertisements: 
   </td>
   <td align="center">
-     6 EUR 
+     4,99 EUR 
   </td>
   <td align="center">
     <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
