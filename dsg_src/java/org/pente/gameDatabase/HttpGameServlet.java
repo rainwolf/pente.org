@@ -19,6 +19,7 @@ package org.pente.gameDatabase;
 
 import java.io.*;
 import java.net.*;
+import java.text.ParseException;
 import java.util.*;
 import java.util.zip.*;
 
@@ -226,8 +227,13 @@ public class HttpGameServlet extends HttpServlet {
                     }
 
                     cat.debug("search params = " + paramsBuf.toString());
-                    requestData = (GameStorerSearchRequestData)
-                        httpObjectFormat.parse(null, paramsBuf);
+                    try {
+                        requestData = (GameStorerSearchRequestData)
+                                httpObjectFormat.parse(null, paramsBuf);
+                    } catch (NullPointerException e) {
+                        response.sendRedirect("/gameServer/index.jsp");
+                        return;
+                    }
 
                     // create this just to get hashcode of position for 
                     // activity logger

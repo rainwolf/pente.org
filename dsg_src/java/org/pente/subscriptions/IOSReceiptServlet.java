@@ -64,7 +64,7 @@ public class IOSReceiptServlet extends HttpServlet {
 //        }
 
         final String receiptDataStr = request.getParameter("receipt");
-        log4j.info("IOSReceiptServlet: receipt data received: " + receiptDataStr);
+//        log4j.info("IOSReceiptServlet: receipt data received: " + receiptDataStr);
         if (receiptDataStr == null) {
             log4j.info("IOSReceiptServlet: error: no receipt data");
             return;
@@ -136,6 +136,8 @@ public class IOSReceiptServlet extends HttpServlet {
                 response.setContentType("text/html");
                 PrintWriter out = response.getWriter();
                 out.println("success");
+
+                log4j.info("IOSReceiptServlet: iOS subscription purchase successful for " + subscriberData.getName());
 
             } catch (SQLException e) {
                 log4j.info("IOSReceiptServlet SQLException " + e);
