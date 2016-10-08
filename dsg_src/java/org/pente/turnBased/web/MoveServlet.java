@@ -218,7 +218,7 @@ public class MoveServlet extends HttpServlet {
 				TBMessage message = null;
 				if (msg != null && !msg.trim().equals("")) {
 					message = new TBMessage();
-					message.setMessage(msg);
+					message.setMessage(msg.substring(0, Math.min(msg.length(), 255)));
 					message.setDate(new java.util.Date());
 					message.setMoveNum(game.getNumMoves() + 1);
 					// default seq nbr = 1
