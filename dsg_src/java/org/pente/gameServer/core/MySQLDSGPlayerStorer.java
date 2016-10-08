@@ -696,7 +696,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                 while (result.next()) {
                 	donations.add(fillDSGDonationData(result));
                 }
-                
+
             } finally {
             	if (result != null) {
             		result.close();
@@ -734,7 +734,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
 
         	Connection con = null;
         	PreparedStatement stmt = null;
-        	
+
             try {
 
                 con = dbHandler.getConnection();
@@ -770,7 +770,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
     public void updateGame(DSGPlayerGameData dsgPlayerGameData) throws DSGPlayerStoreException {
 
         try {
-        	      	
+
  	        Connection con = null;
 	        PreparedStatement stmt = null;
 
@@ -828,7 +828,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
 
                 con = dbHandler.getConnection();
 
-                stmt = con.prepareStatement("select pid, game, wins, losses, draws," + 
+                stmt = con.prepareStatement("select pid, game, wins, losses, draws," +
                                             "rating, streak, last_game_date, " +
                                             "computer, tourney_winner " +
                                             "from " + DSG_PLAYER_GAME_TABLE + " " +
@@ -838,7 +838,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                 stmt.setLong(1, playerID);
                 stmt.setInt(2, game);
                 stmt.setString(3, "" + (computer ? DSGPlayerGameData.YES : DSGPlayerGameData.NO));
-                
+
                 result = stmt.executeQuery();
                 if (result.next()) {
 					dsgPlayerGameData = fillDSGPlayerGameData(result);
@@ -858,7 +858,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
         } catch (Throwable t) {
             throw new DSGPlayerStoreException("Load game problem", t);
         }
-        
+
         return dsgPlayerGameData;
     }
 
@@ -875,13 +875,13 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
 
                 con = dbHandler.getConnection();
 
-                stmt = con.prepareStatement("select pid, game, wins, losses, draws," + 
+                stmt = con.prepareStatement("select pid, game, wins, losses, draws," +
                                             "rating, streak, last_game_date, " +
                                             "computer, tourney_winner " +
                                             "from " + DSG_PLAYER_GAME_TABLE + " " +
                                             "where pid = ?");
                 stmt.setLong(1, playerID);
-                
+
                 result = stmt.executeQuery();
                 while (result.next()) {
                 	allGames.addElement(fillDSGPlayerGameData(result));
@@ -901,7 +901,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
         } catch (Throwable t) {
             throw new DSGPlayerStoreException("Load all games problem", t);
         }
-        
+
         return allGames;
     }
    	private DSGPlayerGameData fillDSGPlayerGameData(ResultSet result) throws java.sql.SQLException {
@@ -921,31 +921,31 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
 
 		return dsgPlayerGameData;
 	}
-	
+
     private static final String dsgPlayerHuman = "dsg_player.player_type = '" + DSGPlayerData.HUMAN + "'";
     private static final String dsgPlayerDataHuman = "dsg_player_game.computer = '" + DSGPlayerGameData.NO + "'";
     private static final String dsgPlayerComputer = "dsg_player.player_type = '" + DSGPlayerData.COMPUTER + "'";
 
-    
-	private static final String sortFields[] = new String[] { "dsg_player_game.wins", 
-															  "dsg_player_game.losses", 
-															  "dsg_player_game.rating", 
+
+	private static final String sortFields[] = new String[] { "dsg_player_game.wins",
+															  "dsg_player_game.losses",
+															  "dsg_player_game.rating",
 															  "dsg_player_game.streak",
 															  "player.name",
 															  "(dsg_player_game.wins + dsg_player_game.losses)",
 															  "((dsg_player_game.wins + 1) / (dsg_player_game.wins + dsg_player_game.losses + 1))",
 															  "dsg_player_game.draws",
 															  "dsg_player_game.last_game_date"};
-	
+
     public Vector search(
-        int game, int sortField, 
-        int startNum, int length, 
+        int game, int sortField,
+        int startNum, int length,
         boolean showProvisional, boolean showInactive,
         int playerType) throws DSGPlayerStoreException {
-    
+
     	Vector<DSGPlayerData> searchResults = new Vector<DSGPlayerData>();
-    	
-		String searchString = 
+
+		String searchString =
             "select player.name, dsg_player_game.wins, " +
             "dsg_player_game.losses, dsg_player_game.draws, dsg_player_game.rating, " +
             "dsg_player_game.streak, dsg_player.player_type, dsg_player_game.tourney_winner, dsg_player_game.last_game_date, dsg_player.name_color " +
@@ -969,7 +969,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
         if (!showProvisional) {
 			searchString +=	  "and (dsg_player_game.wins + dsg_player_game.losses) >= 20 ";
 		}
-		
+
         Calendar inactiveCutoff = null;
         if (!showInactive) {
 			inactiveCutoff = Calendar.getInstance();
@@ -980,7 +980,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
 		String orderOrder = (sortField == 4) ? "" : "desc";
 		searchString +=		  "order by " + sortFields[sortField] + " " + orderOrder + " " +
 							  "limit " + startNum + ", " + length;
-		
+
 
 		try {
 			Connection con = null;
@@ -994,17 +994,17 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                 //MySQLDBHandler.lockTables(PLAYER_TABLES, con);
 
                 stmt = con.prepareStatement(searchString);
-                
+
                 stmt.setInt(1, game);
                 if (!showInactive) {
                 	stmt.setTimestamp(2, new Timestamp(inactiveCutoff.getTime().getTime()));
                 }
-                
+
                 result = stmt.executeQuery();
                 while (result.next()) {
                 	DSGPlayerData dsgPlayerData = new SimpleDSGPlayerData();
                 	dsgPlayerData.setName(result.getString(1));
-                	
+
                 	DSGPlayerGameData dsgPlayerGameData = new SimpleDSGPlayerGameData();
                 	dsgPlayerGameData.setGame(game);
                 	dsgPlayerGameData.setWins(result.getInt(2));
@@ -1039,7 +1039,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
 			throw new DSGPlayerStoreException("Search problem", t);
 		}
 
-    	return searchResults;					 	
+    	return searchResults;
     }
 
     public int getNumPlayers(
@@ -1050,21 +1050,21 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
         throws DSGPlayerStoreException {
 
 		int numPlayers = 0;
-		
+
 		try {
 			Connection con = null;
 			PreparedStatement stmt = null;
 			ResultSet result = null;
-			
+
 			try {
 
                 con = dbHandler.getConnection();
-				
+
 				String searchString = "select count(*) " +
 									  "from dsg_player, dsg_player_game " +
 									  "where dsg_player_game.game = ? " +
                                       "and dsg_player.pid = dsg_player_game.pid ";
-                                      
+
                 if (playerType == StatsData.HUMAN) {
                     searchString += "and " + dsgPlayerHuman + " and " + dsgPlayerDataHuman + " ";
                 }
@@ -1084,19 +1084,19 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
 					inactiveCutoff.add(Calendar.MONTH, -1);
 					searchString += "and last_game_date > ? ";
 				}
-				
+
 				stmt = con.prepareStatement(searchString);
 				stmt.setInt(1, game);
-				
+
 				if (!showInactive) {
                 	stmt.setTimestamp(2, new Timestamp(inactiveCutoff.getTime().getTime()));
 				}
-				
+
 				result = stmt.executeQuery();
 				if (result.next()) {
 					numPlayers = result.getInt(1);
 				}
-				
+
 			} finally {
 				if (result != null) {
 					result.close();
@@ -1112,13 +1112,13 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
 		} catch (Throwable t) {
 			throw new DSGPlayerStoreException("Get num players", t);
 		}
-		
-		return numPlayers;    	
+
+		return numPlayers;
     }
 
     public List<DSGPlayerPreference> loadPlayerPreferences(long playerID)
         throws DSGPlayerStoreException {
-        
+
         List<DSGPlayerPreference> prefs = new ArrayList<DSGPlayerPreference>(5);
 
         try {
@@ -1143,7 +1143,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                         blob.getBinaryStream());
                     Object value = in.readObject();
                     in.close();
-                    
+
                     DSGPlayerPreference p = new DSGPlayerPreference(
                         name, value);
                     prefs.add(p);
@@ -1166,7 +1166,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
 
         return prefs;
     }
-    
+
     public void storePlayerPreference(long playerID, DSGPlayerPreference pref)
         throws DSGPlayerStoreException {
 
@@ -1183,7 +1183,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
             throw new DSGPlayerStoreException("Store prefs problem", t);
         }
     }
-    
+
     private boolean isPreferenceStored(long playerID, String prefName)
         throws Throwable {
 
@@ -1202,9 +1202,9 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
             stmt.setLong(1, playerID);
             stmt.setString(2, prefName);
             result = stmt.executeQuery();
-            
+
             return (result.next());
-            
+
         } finally {
             if (result != null) {
                 result.close();
@@ -1234,7 +1234,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                 "values(?, ?, ?, sysdate())");
             stmt.setLong(1, playerID);
             stmt.setString(2, pref.getName());
-            
+
        // System.out.println("pref name " + pref.getName());
 
             Blob blob = con.createBlob();
@@ -1274,7 +1274,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                 blob.setBytes(1, new BigInteger("", 16).toByteArray());
             }
             stmt.setBlob(3, blob);
-            
+
             stmt.executeUpdate();
 
         } finally {
@@ -1291,7 +1291,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
     }
     private void updatePreference(long playerID, DSGPlayerPreference pref)
         throws Throwable {
-        
+
         Connection con = null;
         PreparedStatement stmt = null;
         ResultSet result = null;
@@ -1309,7 +1309,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                 ResultSet.CONCUR_UPDATABLE);
             stmt.setLong(1, playerID);
             stmt.setString(2, pref.getName());
-            
+
             result = stmt.executeQuery();
             if (result.next()) {
                 Blob blob = result.getBlob(3);
@@ -1337,28 +1337,28 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
     }
 
     public List<java.util.Date> loadVacationDays(long playerID) throws DSGPlayerStoreException {
-        
+
         Connection con = null;
         PreparedStatement stmt = null;
         ResultSet result = null;
         List<java.util.Date> days = new ArrayList<java.util.Date>();
-        
+
         try {
             try {
 
                 con = dbHandler.getConnection();
-    
+
                 stmt = con.prepareStatement(
                     "select date " +
                     "from tb_vacation " +
                     "where pid = ?");
                 stmt.setLong(1, playerID);
                 result = stmt.executeQuery();
-                
+
                 while (result.next()) {
                     days.add(new java.util.Date(result.getDate(1).getTime()));
                 }
-            } 
+            }
             finally {
                 if (result != null) {
                     result.close();
@@ -1370,32 +1370,32 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                     dbHandler.freeConnection(con);
                 }
             }
-                
+
         } catch (SQLException sq) {
             throw new DSGPlayerStoreException("Problem getting vacation days for " + playerID, sq);
         }
-        
+
         return days;
     }
-    
+
     public void storeVacationDays(long pid, List<java.util.Date> vacationDays) throws DSGPlayerStoreException {
-        
+
         Connection con = null;
         PreparedStatement stmt = null;
         ResultSet result = null;
 
         try {
             try {
-    
+
                 con = dbHandler.getConnection();
-    
+
                 stmt = con.prepareStatement(
                     "delete from tb_vacation where pid = ?");
                 stmt.setLong(1, pid);
                 stmt.executeUpdate();
-                
+
                 stmt.close();
-                
+
                 stmt = con.prepareStatement(
                     "insert into tb_vacation " +
                     "(pid, date) " +
@@ -1405,7 +1405,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                     stmt.setDate(2, new java.sql.Date(vc.getTime()));
                     stmt.executeUpdate();
                 }
-    
+
             } finally {
                 if (result != null) {
                     result.close();
@@ -1421,26 +1421,26 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
             throw new DSGPlayerStoreException("Problem setting vacation days for " + pid, sq);
         }
     }
-    
+
     public int loadFloatingVacationDays(long playerID) throws DSGPlayerStoreException {
-        
+
         Connection con = null;
         PreparedStatement stmt = null;
         ResultSet result = null;
         int days = 0;
-        
+
         try {
             try {
 
                 con = dbHandler.getConnection();
-    
+
                 stmt = con.prepareStatement(
                     "select daysLeft, lastUpdateYear " +
                     "from tb_vacation_floating " +
                     "where pid = ?");
                 stmt.setLong(1, playerID);
                 result = stmt.executeQuery();
-                
+
                 if (result.next()) {
                     Calendar now = Calendar.getInstance();
                     int currentYear = now.get(Calendar.YEAR);
@@ -1453,7 +1453,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                 } else {
                     days = FLOATINGVACATIONDAYS*24;
                 }
-            } 
+            }
             finally {
                 if (result != null) {
                     result.close();
@@ -1465,16 +1465,16 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                     dbHandler.freeConnection(con);
                 }
             }
-                
+
         } catch (SQLException sq) {
             throw new DSGPlayerStoreException("Problem getting floating vacation days for " + playerID, sq);
         }
-        
+
         return days;
     }
-    
+
     public void pinchFloatingVacationDays(long pid) throws DSGPlayerStoreException {
-        
+
         Connection con = null;
         PreparedStatement stmt = null;
         ResultSet result = null;
@@ -1486,14 +1486,14 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                 int days = 0;
 
                 con = dbHandler.getConnection();
-    
+
                 stmt = con.prepareStatement(
                     "select daysLeft, lastUpdateYear " +
                     "from tb_vacation_floating " +
                     "where pid = ?");
                 stmt.setLong(1, pid);
                 result = stmt.executeQuery();
-                
+
                 if (result.next()) {
                     int lastUpdate = result.getInt(2);
                     if (lastUpdate < currentYear) {
@@ -1509,14 +1509,14 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                 if (days > 0) {
                     days -= 1;
                 }
-                
+
                 stmt = con.prepareStatement(
                     "delete from tb_vacation_floating " +
                     "where pid = ?");
                 stmt.setLong(1, pid);
                 stmt.executeUpdate();
                 stmt.close();
-    
+
                 stmt = con.prepareStatement(
                     "insert into tb_vacation_floating " +
                     "(pid, daysLeft, lastUpdateYear) " +
@@ -1525,7 +1525,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                 stmt.setInt(2, days);
                 stmt.setInt(3, currentYear);
                 stmt.executeUpdate();
-    
+
             } finally {
                 if (result != null) {
                     result.close();
@@ -1543,7 +1543,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
     }
 
     public void addFloatingVacationDays(long playerID, int extraDays) throws DSGPlayerStoreException {
-        
+
         Connection con = null;
         PreparedStatement stmt = null;
         ResultSet result = null;
@@ -1555,14 +1555,14 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                 int days = 0;
 
                 con = dbHandler.getConnection();
-    
+
                 stmt = con.prepareStatement(
                     "select daysLeft, lastUpdateYear " +
                     "from tb_vacation_floating " +
                     "where pid = ?");
                 stmt.setLong(1, playerID);
                 result = stmt.executeQuery();
-                
+
                 if (result.next()) {
                     int lastUpdate = result.getInt(2);
                     if (lastUpdate < currentYear) {
@@ -1576,14 +1576,14 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                 stmt.close();
 
                 days += (24*extraDays);
-                
+
                 stmt = con.prepareStatement(
                     "delete from tb_vacation_floating " +
                     "where pid = ?");
                 stmt.setLong(1, playerID);
                 stmt.executeUpdate();
                 stmt.close();
-    
+
                 stmt = con.prepareStatement(
                     "insert into tb_vacation_floating " +
                     "(pid, daysLeft, lastUpdateYear) " +
@@ -1592,7 +1592,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                 stmt.setInt(2, days);
                 stmt.setInt(3, currentYear);
                 stmt.executeUpdate();
-    
+
             } finally {
                 if (result != null) {
                     result.close();
@@ -1623,7 +1623,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                 stmt = con.prepareStatement("insert into dsg_player_ignore " +
                                             "(pid, ignore_pid, ignore_invite, " +
                                             " ignore_chat, last_update_date) " +
-                                            "values(?, ?, ?, ?, sysdate())", 
+                                            "values(?, ?, ?, ?, sysdate())",
                         					Statement.RETURN_GENERATED_KEYS);
                 stmt.setLong(1, data.getPid());
                 stmt.setLong(2, data.getIgnorePid());
@@ -1632,7 +1632,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
 
 	            stmt.executeUpdate();
 				result = stmt.getGeneratedKeys();
-	
+
 	            if (result.next()) {
 	                long id = result.getLong(1);
 					data.setIgnoreId(id);
@@ -1688,7 +1688,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
             throw new DSGPlayerStoreException("Update ignore problem", t);
         }
 	}
-	
+
 	public void deleteIgnore(DSGIgnoreData data) throws DSGPlayerStoreException {
         Connection con = null;
         PreparedStatement stmt = null;
@@ -1696,13 +1696,13 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
         try {
             try {
                 con = dbHandler.getConnection();
-    
+
                 stmt = con.prepareStatement(
                     "delete from dsg_player_ignore " +
                     "where ignore_id = ?");
                 stmt.setLong(1, data.getIgnoreId());
                 stmt.execute();
-                    
+
             } finally {
                 if (stmt != null) {
                     stmt.close();
@@ -1715,25 +1715,25 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
             throw new DSGPlayerStoreException("Delete ignore problem", t);
         }
 	}
-	
+
 	public List<DSGIgnoreData> getIgnoreData(long pid) throws DSGPlayerStoreException {
     	Connection con = null;
         PreparedStatement stmt = null;
         ResultSet result = null;
         List<DSGIgnoreData> data = new ArrayList<DSGIgnoreData>();
-        
+
         try {
         	try {
 
 	            con = dbHandler.getConnection();
-	
+
 	            stmt = con.prepareStatement(
 	                "select ignore_id, ignore_pid, ignore_invite, ignore_chat " +
 	                "from dsg_player_ignore " +
 	                "where pid = ?");
 	            stmt.setLong(1, pid);
 	            result = stmt.executeQuery();
-	            
+
 	            while (result.next()) {
 	            	DSGIgnoreData d = new DSGIgnoreData();
 	            	d.setIgnoreId(result.getLong(1));
@@ -1743,7 +1743,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
 	            	d.setPid(pid);
 	            	data.add(d);
 	            }
-        	} 
+        	}
         	finally {
 	            if (result != null) {
 	                result.close();
@@ -1755,11 +1755,11 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
 	                dbHandler.freeConnection(con);
 	            }
 	        }
-	            
+
         } catch (SQLException sq) {
         	throw new DSGPlayerStoreException("Problem getting ignore data for " + pid, sq);
         }
-        
+
         return data;
 	}
 	public DSGIgnoreData getIgnoreData(long pid, long ignorePid) throws DSGPlayerStoreException {
@@ -1767,21 +1767,21 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
 	    PreparedStatement stmt = null;
 	    ResultSet result = null;
 	    DSGIgnoreData data = null;
-	    
+
 	    try {
 	    	try {
-	
+
 	            con = dbHandler.getConnection();
-	
+
 	            stmt = con.prepareStatement(
 	                "select ignore_id, ignore_pid, ignore_invite, ignore_chat " +
 	                "from dsg_player_ignore " +
-	                "where pid = ? " + 
+	                "where pid = ? " +
 	                "and ignore_pid = ?");
 	            stmt.setLong(1, pid);
 	            stmt.setLong(2, ignorePid);
 	            result = stmt.executeQuery();
-	            
+
 	            if (result.next()) {
 	            	data = new DSGIgnoreData();
 	            	data.setIgnoreId(result.getLong(1));
@@ -1790,7 +1790,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
 	            	data.setIgnoreChat(result.getString(4).equals("Y"));
 	            	data.setPid(pid);
 	            }
-	    	} 
+	    	}
 	    	finally {
 	            if (result != null) {
 	                result.close();
@@ -1802,14 +1802,14 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
 	                dbHandler.freeConnection(con);
 	            }
 	        }
-	            
+
 	    } catch (SQLException sq) {
 	    	throw new DSGPlayerStoreException("Problem getting ignore data for " + pid, sq);
 	    }
-	    
+
 	    return data;
 	}
-	
+
 
     public void insertLiveSet(LiveSet set) throws DSGPlayerStoreException {
     	try {
@@ -1828,10 +1828,10 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
             		Statement.RETURN_GENERATED_KEYS);
                 stmt.setLong(1, set.getP1Pid());
                 stmt.setLong(2, set.getP2Pid());
-                
+
                 stmt.executeUpdate();
 				result = stmt.getGeneratedKeys();
-	
+
 	            if (result.next()) {
 	                long sid = result.getLong(1);
 	                set.setSid(sid);
@@ -1881,8 +1881,8 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                 		set.getCompletionDate().getTime()));
                 }
                 stmt.setLong(6, set.getSid());
-                
-                stmt.executeUpdate();	
+
+                stmt.executeUpdate();
 
             } finally {
             	if (stmt != null) {
