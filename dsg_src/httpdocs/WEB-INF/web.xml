@@ -138,6 +138,11 @@
     <param-value>200</param-value>
   </context-param>
  
+  <context-param>
+    <param-name>iOSSharedSecret</param-name>
+    <param-value>1ff8dccb271448f19137e1bb621da561</param-value>
+  </context-param>
+ 
   <filter>
     <filter-name>LoginFilter</filter-name>
     <filter-class>org.pente.gameServer.client.web.LoginFilter</filter-class>
