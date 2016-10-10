@@ -58,6 +58,7 @@ long myPID = dsgPlayerData.getPlayerID();
 Resources resources = (Resources) application.getAttribute(
    Resources.class.getName());
 TourneyStorer tourneyStorer = resources.getTourneyStorer();
+List<Tourney> currentTournies = (List<Tourney>) tourneyStorer.getCurrentTournies();
 CacheKOTHStorer  kothStorer = resources.getKOTHStorer();
 TBGameStorer tbGameStorer = resources.getTbGameStorer();
 List<TBSet> waitingSets = tbGameStorer.loadWaitingSets();
@@ -396,9 +397,15 @@ Invitations received<%
                  else {
                      color = "black (p2)";
                  }
+                 String ratedStr = "Not Rated";
+                 if (koth) {
+                    ratedStr = "KotH";
+                 } else if (s.isTwoGameSet()) {
+                    ratedStr = "Rated";
+                 }
                  DSGPlayerData d = dsgPlayerStorer.loadPlayer(s.getInviterPid());
                  DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(s.getGame1().getGame());%>
-<%=s.getSetId() + ";" + GridStateFactory.getGameName(s.getGame1().getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + s.getGame1().getDaysPerMove() + " days;" + (s.getGame1().isRated() ? "Rated" : "Not Rated") + (koth?" - KotH":"") + ";" + (d.hasPlayerDonated()?d.getNameColorRGB():0) + ";" + d.getTourneyWinner() %><%} 
+<%=s.getSetId() + ";" + GridStateFactory.getGameName(s.getGame1().getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + s.getGame1().getDaysPerMove() + " days;" + ratedStr + ";" + (d.hasPlayerDonated()?d.getNameColorRGB():0) + ";" + d.getTourneyWinner() %><%} 
      
 
 
@@ -422,6 +429,12 @@ Invitations sent<%
                  String anyoneString = "Anyone";
                  TBGame g = s.getGame1();
                  boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
+                 String ratedStr = "Not Rated";
+                 if (koth) {
+                    ratedStr = "KotH";
+                 } else if (s.isTwoGameSet()) {
+                    ratedStr = "Rated";
+                 }
                  if (pid != 0) {
                      d = dsgPlayerStorer.loadPlayer(pid);
                      dsgPlayerGameData = d.getPlayerGameData(s.getGame1().getGame());
@@ -461,7 +474,7 @@ Invitations sent<%
                       }
                  }
                  %>
-<%=s.getSetId() + ";" + GridStateFactory.getGameName(s.getGame1().getGame()) + ";" + ((pid == 0) ? anyoneString:d.getName()) + ";" + ((dsgPlayerGameData != null)?(int) Math.round(dsgPlayerGameData.getRating()):"1600") + ";" +  color + ";" + s.getGame1().getDaysPerMove() + " days;" + (s.getGame1().isRated() ? "Rated" : "Not Rated") + (koth?" - KotH":"") + ";" + ((pid == 0)?"0":(d.hasPlayerDonated()?d.getNameColorRGB():0)) + ";" + ((pid == 0)?"0":d.getTourneyWinner()) %><%} 
+<%=s.getSetId() + ";" + GridStateFactory.getGameName(s.getGame1().getGame()) + ";" + ((pid == 0) ? anyoneString:d.getName()) + ";" + ((dsgPlayerGameData != null)?(int) Math.round(dsgPlayerGameData.getRating()):"1600") + ";" +  color + ";" + s.getGame1().getDaysPerMove() + " days;" + ratedStr + ";" + ((pid == 0)?"0":(d.hasPlayerDonated()?d.getNameColorRGB():0)) + ";" + ((pid == 0)?"0":d.getTourneyWinner()) %><%} 
 
      
 
@@ -472,6 +485,23 @@ Active Games - My Turn<%
                 String color =  myPID == g.getPlayer1Pid() ?
                  "white (p1)" : "black (p2)";
                 boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
+                boolean tourney = false;
+                if (!koth) {
+                    for (Tourney tmpTourney : currentTournies) {
+                        if (tmpTourney.getEventID() == g.getEventId()) {
+                            tourney = true;
+                            break;
+                        }
+                    }
+                }
+                String ratedStr = "Not Rated";
+                if (koth) {
+                    ratedStr = "KotH";
+                } else if (tourney) {
+                    ratedStr = "Tournament";
+                } else if (g.isRated()) {
+                    ratedStr = "Rated";
+                }
                 long oppPid = myPID == g.getPlayer1Pid() ?
                  g.getPlayer2Pid() : g.getPlayer1Pid();
                 DSGPlayerData d = dsgPlayerStorer.loadPlayer(oppPid);
@@ -487,11 +517,28 @@ Active Games - Opponents Turn<%
                 String color =  myPID == g.getPlayer1Pid() ?
                  "white (p1)" : "black (p2)";
                 boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
+                boolean tourney = false;
+                if (!koth) {
+                    for (Tourney tmpTourney : currentTournies) {
+                        if (tmpTourney.getEventID() == g.getEventId()) {
+                            tourney = true;
+                            break;
+                        }
+                    }
+                }
+                String ratedStr = "Not Rated";
+                if (koth) {
+                    ratedStr = "KotH";
+                } else if (tourney) {
+                    ratedStr = "Tournament";
+                } else if (g.isRated()) {
+                    ratedStr = "Rated";
+                }
                 long oppPid = myPID == g.getPlayer1Pid() ?
                  g.getPlayer2Pid() : g.getPlayer1Pid();
                 DSGPlayerData d = dsgPlayerStorer.loadPlayer(oppPid);
                 DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(g.getGame());%>
-<%=g.getGid() + ";" + GridStateFactory.getGameName(g.getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + g.getNumMoves() + 1 + ";" + Utilities.getTimeLeft(g.getTimeoutDate().getTime()) +";" + (g.isRated() ? "Rated" : "Not Rated") + (koth?" - KotH":"") + ";" + (d.hasPlayerDonated()?d.getNameColorRGB():0) + ";" + d.getTourneyWinner() %><%} 
+<%=g.getGid() + ";" + GridStateFactory.getGameName(g.getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + g.getNumMoves() + 1 + ";" + Utilities.getTimeLeft(g.getTimeoutDate().getTime()) +";" + ratedStr + ";" + (d.hasPlayerDonated()?d.getNameColorRGB():0) + ";" + d.getTourneyWinner() %><%} 
      
 
 
@@ -516,7 +563,7 @@ Open Invitation Games<%
                  }
                  DSGPlayerData d = dsgPlayerStorer.loadPlayer(s.getInviterPid());
                  DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(s.getGame1().getGame());%>
-<%=s.getSetId() + ";" + GridStateFactory.getGameName(s.getGame1().getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + s.getGame1().getDaysPerMove() + " days;" + (s.getGame1().isRated() ? "Rated" : "Not Rated") + (koth?" (KotH)":"") + ";" + (d.hasPlayerDonated()?d.getNameColorRGB():0) + ";" + d.getTourneyWinner() %><%}
+<%=s.getSetId() + ";" + GridStateFactory.getGameName(s.getGame1().getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + s.getGame1().getDaysPerMove() + " days;" + (s.getGame1().isRated() ? "Rated" : "Not Rated") + (koth?" - KotH":"") + ";" + (d.hasPlayerDonated()?d.getNameColorRGB():0) + ";" + d.getTourneyWinner() %><%}
 
 
 
@@ -543,7 +590,7 @@ for (Tourney tmpTourney :  (List<Tourney>) tourneyStorer.getUpcomingTournies()) 
     }
     %>
 <%=tourney.getName() + ";" + tourney.getEventID() + ";" + tourney.getNumRounds() + ";" + GridStateFactory.getGameName(tourney.getGame()) + ";1;" + dateFormat.format(tourney.getSignupEndDate()) %><%}
-for (Tourney tmpTourney :  (List<Tourney>) tourneyStorer.getCurrentTournies()) {
+for (Tourney tmpTourney : currentTournies) {
     Tourney tourney = tourneyStorer.getTourney(tmpTourney.getEventID());
     if (!tourney.isTurnBased()) {
         continue;

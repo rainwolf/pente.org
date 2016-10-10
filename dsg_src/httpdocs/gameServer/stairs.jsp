@@ -88,6 +88,20 @@ The challenge button appears when you can challenge a player, and they're also m
    }
 %>
 
+<script type="text/javascript">
+function submitMainPlayForm()
+{
+  document.mainPlayForm.submit();
+}
+function submitJoinLeaveForm()
+{
+  document.joinLeaveForm.submit();
+}
+function submitNewGameForm()
+{
+  document.new_game_form.submit();
+}
+</script>
 
 <table width="400">
 	<tr align="top">
@@ -106,7 +120,8 @@ The challenge button appears when you can challenge a player, and they're also m
       <% } %>
     </select>
 
-  <input type="submit" value="load hill">
+        <a class="boldbuttons" href="javascript: submitMainPlayForm()" style="margin-right:6px; margin-left: 6px"><span>Load Hill</span></a>
+  <!-- <input type="submit" value="load hill"> -->
 </form>
 </td>
 
@@ -119,22 +134,20 @@ if (game > 0) {
 		if (hill != null && hill.hasPlayer(myPid)) {
 			%>
 			<form name="joinLeaveForm" method="post" action="/gameServer/koth" style="margin:0;padding:0;">
-			<div class="buttonwrapper">
 			<input type="hidden" name="leave">
 			<input type="hidden" name="game" value="<%=game%>">
 
-			<input type="submit" value="leave hill">
-			</div>
+			<!-- <input type="submit" value="leave hill"> -->
+        <a class="boldbuttons" href="javascript: submitJoinLeaveForm()" style="margin-right:6px; margin-left: 6px"><span>Leave</span></a>
 			</form>
 			<%
 		} else {
 			%>
 			<form name="joinLeaveForm" method="post" action="/gameServer/koth" style="margin:0;padding:0;">
-			<div class="buttonwrapper">
 			<input type="hidden" name="join">
 			<input type="hidden" name="game" value="<%=game%>">
-			<input type="submit" value="join hill">
-			</div>
+			<!-- <input type="submit" value="join hill"> -->
+        <a class="boldbuttons" href="javascript: submitJoinLeaveForm()" style="margin-right:6px; margin-left: 6px"><span>Join</span></a>
 			</form>
 			<%
 	}
@@ -154,7 +167,8 @@ if (hill != null && hill.hasPlayer(myPid) && game > 50 && (dsgPlayerData.hasPlay
 	<form name="new_game_form" method="post" action="<%= request.getContextPath() %>/gameServer/tb/newKotH.jsp">
 	<input type="hidden" name="invitee" value="">
 	<input type="hidden" name="game" value="<%=game%>">
-	<input type="submit" name="send open hill invitation" value="send open hill invitation">
+	<!-- <input type="submit" name="send open hill invitation" value="send open hill invitation"> -->
+        <a class="boldbuttons" href="javascript: submitNewGameForm()" style="margin-right:6px; margin-left: 6px"><span>Send Open Hill Invitation</span></a>
 	</form>
 	</td>	
 	</tr>
@@ -248,7 +262,7 @@ if (hill != null && hill.hasPlayer(myPid) && game > 50 && (dsgPlayerData.hasPlay
             	<%
 	            if (game > 50 && canIchallenge && myPid != pid && (myStep - i)*(myStep - i)<5 && canChallengeThem) {
 	            	%>
-	            	   <form name="new_game_form" method="post" action="<%= request.getContextPath() %>/gameServer/tb/newKotH.jsp">
+	            	   <form name="new_game_form_individual" method="post" action="<%= request.getContextPath() %>/gameServer/tb/newKotH.jsp">
 	            	   <input type="hidden" name="invitee" value="<%=d.getName()%>">
 	            	   <input type="hidden" name="game" value="<%=game%>">
 	            	   <input type="submit" name="challenge" value="challenge">

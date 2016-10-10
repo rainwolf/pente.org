@@ -18,9 +18,28 @@
 
 package org.pente.gameServer.core;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.*;
+import java.util.List;
+import java.util.Map;
 
+import net.sf.hibernate.collection.*;
 import org.apache.log4j.*;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.pente.database.DBHandler;
+import org.pente.message.DSGMessage;
+import org.pente.message.DSGMessageStorer;
+import org.pente.turnBased.SendNotification;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.servlet.ServletContext;
 
 public class CacheDSGPlayerStorer implements DSGPlayerStorer {
 
@@ -36,14 +55,28 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
     private List<PlayerDataChangeListener> listeners;
     private List<IgnoreDataChangeListener> ignoreListeners;
     private List<DSGDonationData> donors;
-    
-    public CacheDSGPlayerStorer(DSGPlayerStorer basePlayerStorer) throws Exception {
+
+    private Timer checkiOSSubscribersTimer;
+    private Timer checkSubscribersTimer;
+
+    private ServletContext ctx;
+    private DBHandler dbHandler;
+
+    public CacheDSGPlayerStorer(DSGPlayerStorer basePlayerStorer, ServletContext ctx, DBHandler dbHandler) throws Exception {
         this.basePlayerStorer = basePlayerStorer;
         cacheByID = new Hashtable<Long, DSGPlayerData>(250);
         cacheByName = new Hashtable<String, DSGPlayerData>(250);
         listeners = new ArrayList<PlayerDataChangeListener>();
         ignoreData = new HashMap<Long, List<DSGIgnoreData>>();
         ignoreListeners = new ArrayList<IgnoreDataChangeListener>();
+        this.dbHandler = dbHandler;
+        this.ctx = ctx;
+        checkiOSSubscribersTimer = new Timer();
+        checkiOSSubscribersTimer.scheduleAtFixedRate(
+                new CheckiOSSubscribersRunnable(), 10000, 24L * 3600 * 1000);
+        checkSubscribersTimer = new Timer();
+        checkSubscribersTimer.scheduleAtFixedRate(
+                new CheckSubscriptionsRunnable(), 10000, 24L * 3600 * 1000);
     }
 
     public synchronized void addPlayerDataChangeListener(
@@ -414,4 +447,186 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
     public void updateLiveSet(LiveSet set) throws DSGPlayerStoreException {
         basePlayerStorer.updateLiveSet(set);
     }
+
+    private class CheckiOSSubscribersRunnable extends TimerTask {
+
+        private static final int DELAY = 60;
+
+        public String getName() {
+            return "CheckiOSSubscribersRunnable";
+        }
+
+        private String transactionId;
+        private Date startDate;
+        private String iOSSharedSecret = ctx.getInitParameter("iOSSharedSecret");
+
+        public void run() {
+            try {
+                Map<Long, String> expiringSubscriptions = ((MySQLDSGPlayerStorer) basePlayerStorer).getExpiringiOSSubscribers();
+                for (Map.Entry<Long, String> entry: expiringSubscriptions.entrySet()) {
+                    if (checkReceipt(entry.getValue(), iOSSharedSecret, true)) {
+                        if (!((MySQLDSGPlayerStorer) basePlayerStorer).hasiOSTransactionId(transactionId)) {
+                            ((MySQLDSGPlayerStorer) basePlayerStorer).insertiOSTransactionId(entry.getKey().longValue(), transactionId, startDate);
+                            ((MySQLDSGPlayerStorer) basePlayerStorer).updateiOSPaymentDate(entry.getKey().longValue(), startDate);
+                            DSGPlayerData subscriberData = loadPlayer(entry.getKey().longValue());
+                            refreshPlayer(subscriberData.getName());
+
+                            String penteLiveGCMkey = ctx.getInitParameter("penteLiveGCMkey");
+                            String penteLiveAPNSkey = ctx.getInitParameter("penteLiveAPNSkey");
+                            String penteLiveAPNSpwd = ctx.getInitParameter("penteLiveAPNSpassword");
+                            boolean productionFlag = ctx.getInitParameter("penteLiveAPNSproductionFlag").equals("true");
+                            Thread thread = new Thread(new SendNotification(0, 0, 23000000016237L, 23000000016237L,
+                                    subscriberData.getName() + " extended iOS subscription", penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, dbHandler, penteLiveGCMkey) );
+                            thread.start();
+
+                            log4j.info("CheckiOSSubscribersRunnable: iOS subscription extension successful for " + subscriberData.getName());
+                        }
+                    }
+                }
+            } catch (DSGPlayerStoreException e) {
+                log4j.info("CheckiOSSubscribersRunnable: Something went wrong: " + e);
+            }
+        }
+        private boolean checkReceipt(String receiptDataStr, String sharedSecret, boolean production) {
+            // sandbox URL
+            try {
+                String SANDBOX_URL = "https://sandbox.itunes.apple.com/verifyReceipt";
+                // production URL
+                String PRODUCTION_URL = "https://buy.itunes.apple.com/verifyReceipt";
+                JSONObject obj = new JSONObject();
+                obj.put("receipt-data", receiptDataStr);
+                obj.put("password", sharedSecret);
+
+                final URL url = new URL(production?PRODUCTION_URL:SANDBOX_URL);
+                final HttpURLConnection conn = (HttpsURLConnection)url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setDoOutput(true);
+                conn.setRequestProperty("Content-Type", "application/json");
+                conn.setRequestProperty("Accept", "application/json");
+                final OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
+                wr.write(obj.toString());
+                wr.flush();
+
+                // obtain the response
+                final BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                String lines = "";
+                String line;
+                while ((line = rd.readLine()) != null) {
+                    lines += line + "\n";
+                }
+                wr.close();
+                rd.close();
+//                log4j.info("IOSReceiptServlet: received response: " + lines);
+
+                JSONObject json =  new JSONObject(lines);
+
+                // verify the response: something like {"status":21004} etc...
+                int status = json.getInt("status");
+                switch (status) {
+                    case 0: getStartDate(json); return true;
+                    case 21000: log4j.info("CheckiOSSubscribersRunnable: " + status + ": App store could not read"); return false;
+                    case 21002: log4j.info("CheckiOSSubscribersRunnable: " + status + ": Data was malformed"); return false;
+                    case 21003: log4j.info("CheckiOSSubscribersRunnable: " + status + ": Receipt not authenticated"); return false;
+                    case 21004: log4j.info("CheckiOSSubscribersRunnable: " + status + ": Shared secret does not match"); return false;
+                    case 21005: log4j.info("CheckiOSSubscribersRunnable: " + status + ": Receipt server unavailable"); return false;
+                    case 21006: log4j.info("CheckiOSSubscribersRunnable: " + status + ": Receipt valid but sub expired"); return false;
+                    case 21007: log4j.info("CheckiOSSubscribersRunnable: " + status + ": Sandbox receipt sent to Production environment"); return false;
+                    case 21008: log4j.info("CheckiOSSubscribersRunnable: " + status + ": Production receipt sent to Sandbox environment"); return false;
+                    default:
+                        // unknown error code (nevertheless a problem)
+                        log4j.info("CheckiOSSubscribersRunnable: " + "Unknown error: status code = " + status);
+                        return false;
+                }
+            } catch (IOException e) {
+                // I/O-error: let's assume bad news...
+                log4j.info("CheckiOSSubscribersRunnable: I/O error during verification: " + e);
+                e.printStackTrace();
+                return false;
+            } catch (JSONException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+
+        private void getStartDate(JSONObject json) {
+            try {
+                long start_ms = 0;
+
+                JSONObject tmpJSON = json.getJSONObject("receipt");
+                JSONArray jsonArray = tmpJSON.getJSONArray("in_app");
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    JSONObject jsn = jsonArray.getJSONObject(i);
+                    if ("1YRNOADSORLIMITS".equals(jsn.getString("product_id"))) {
+                        transactionId = jsn.getString("original_transaction_id");
+                        break;
+                    }
+                }
+                start_ms = tmpJSON.getLong("original_purchase_date_ms");
+                startDate = new Date();
+                startDate.setTime(start_ms);
+
+                if (json.has("latest_receipt_info")) {
+                    jsonArray = json.getJSONArray("latest_receipt_info");
+                } else if (json.has("latest_expired_receipt_info")) {
+                    jsonArray = json.getJSONArray("latest_expired_receipt_info");
+                } else {
+                    return;
+                }
+
+
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    JSONObject jsn = jsonArray.getJSONObject(i);
+                    if ("1YRNOADSORLIMITS".equals(jsn.getString("product_id"))) {
+                        if (jsn.getLong("expires_date_ms") - (364L*24*3600*1000) > start_ms) {
+                            transactionId = jsn.getString("transaction_id");
+                            start_ms = jsn.getLong("expires_date_ms") - (364L*24*3600*1000);
+                        }
+                    }
+                }
+                startDate.setTime(start_ms);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+        }
+    }
+
+    private class CheckSubscriptionsRunnable extends TimerTask {
+
+        private static final int DELAY = 60;
+
+        public String getName() {
+            return "CheckSubscriptionsRunnable";
+        }
+
+
+        public void run() {
+            try {
+                List<String> cachedSubscribers = new ArrayList<String>();
+                Date now = new Date();
+                for (DSGPlayerData playerData : cacheByID.values()) {
+                    Date checkDate = playerData.getSubscriptionExpiration();
+                    if (checkDate != null && checkDate.before(now)) {
+                        cachedSubscribers.add(playerData.getName());
+                    }
+                }
+                for (String playerName: cachedSubscribers) {
+                    refreshPlayer(playerName);
+                }
+            } catch (DSGPlayerStoreException e) {
+                log4j.info("CheckSubscriptionsRunnable: Something went wrong: " + e);
+            }
+        }
+    }
+
 }
+
+
+
+
+
+
+
+
+
+

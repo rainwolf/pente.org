@@ -125,11 +125,12 @@ public class CacheTourneyStorer implements TourneyStorer {
         
         if (t != null) {
             log4j.debug("return cached copy");
-        }
-        else {
-            log4j.debug("not cached, caching");
-            t = backingStorer.getTourney(eid);
-            tournies.put(new Integer(eid), t);
+        } else {
+            if (!tournies.containsKey(new Integer(eid))) {
+                log4j.debug("not cached, caching");
+                t = backingStorer.getTourney(eid);
+                tournies.put(new Integer(eid), t);
+            }
         }
         
         return t;

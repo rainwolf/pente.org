@@ -237,8 +237,18 @@ public class IOSReceiptServlet extends HttpServlet {
                     }
                 }
                 start_ms = tmpJSON.getLong("original_purchase_date_ms");
+                startDate = new Date();
+                startDate.setTime(start_ms);
+                
+                if (json.has("latest_receipt_info")) {
+                    jsonArray = json.getJSONArray("latest_receipt_info");
+                } else if (json.has("latest_expired_receipt_info")) {
+                    jsonArray = json.getJSONArray("latest_expired_receipt_info");
+                } else {
+                    return;
+                }
 
-                jsonArray = json.getJSONArray("latest_receipt_info");
+
                 for (int i = 0; i < jsonArray.length(); i++) {
                     JSONObject jsn = jsonArray.getJSONObject(i);
                     if ("1YRNOADSORLIMITS".equals(jsn.getString("product_id"))) {
@@ -248,7 +258,6 @@ public class IOSReceiptServlet extends HttpServlet {
                         }
                     }
                 }
-                startDate = new Date();
                 startDate.setTime(start_ms);
             } catch (JSONException e) {
                 e.printStackTrace();
