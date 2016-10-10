@@ -73,7 +73,7 @@ public class DSGContextListener implements ServletContextListener {
             ctx.setAttribute(GameVenueStorer.class.getName(), gameVenueStorer);
             log4j.info("contextInitialized(), created GameVenueStorer");
 
-            dsgPlayerStorer = new CacheDSGPlayerStorer(new MySQLDSGPlayerStorer(dbHandler, gameVenueStorer));
+            dsgPlayerStorer = new CacheDSGPlayerStorer(new MySQLDSGPlayerStorer(dbHandler, gameVenueStorer), ctx, dbHandler);
             resources.setDsgPlayerStorer(dsgPlayerStorer);
             ctx.setAttribute(DSGPlayerStorer.class.getName(), dsgPlayerStorer);
             log4j.info("contextInitialized(), created DSGPlayerStorer");

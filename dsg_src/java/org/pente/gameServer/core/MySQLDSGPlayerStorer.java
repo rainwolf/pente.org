@@ -23,6 +23,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.sql.*;
 import java.math.*;
+import java.util.Date;
 
 import org.apache.log4j.*;
 
@@ -1900,5 +1901,156 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
     // load the set data and the games too?
     public LiveSet loadLiveSet(long sid) throws DSGPlayerStoreException {
     	return null;
+    }
+
+    public Map<Long, String> getExpiringiOSSubscribers() throws DSGPlayerStoreException {
+        Connection con = null;
+        PreparedStatement stmt = null;
+        ResultSet result = null;
+        Map<Long, String> resultMap = new HashMap<Long, String>();
+
+        Date lastYearMinus5 = new Date();
+        long timeMillis = lastYearMinus5.getTime();
+        lastYearMinus5.setTime(timeMillis - 1000L*3600*24*368);
+        Date lastYearPlus5 = new Date();
+        lastYearPlus5.setTime(timeMillis - 1000L*3600*24*363);
+
+        try {
+            try {
+                con = dbHandler.getConnection();
+
+                stmt = con.prepareStatement(
+                        "select pid, receipt " +
+                                "from dsg_subscribers_ios " +
+                                "where payment_date between ? and ?");
+                stmt.setTimestamp(1, new Timestamp(lastYearMinus5.getTime()));
+                stmt.setTimestamp(2, new Timestamp(lastYearPlus5.getTime()));
+                result = stmt.executeQuery();
+
+                while (result.next()) {
+                    resultMap.put(new Long(result.getLong(1)), result.getString(2));
+                }
+            }
+            finally {
+                if (result != null) {
+                    result.close();
+                }
+                if (stmt != null) {
+                    stmt.close();
+                }
+                if (con != null) {
+                    dbHandler.freeConnection(con);
+                }
+            }
+
+        } catch (SQLException sq) {
+            throw new DSGPlayerStoreException("Problem getting getExpiringiOSSubscribers", sq);
+        }
+        
+        return resultMap;
+    }
+    public boolean hasiOSTransactionId(String transactionId) throws DSGPlayerStoreException {
+        Connection con = null;
+        PreparedStatement stmt = null;
+        ResultSet result = null;
+        
+        boolean haveIdOrNot = false;
+
+        try {
+            try {
+                con = dbHandler.getConnection();
+
+                stmt = con.prepareStatement(
+                        "select * " +
+                                "from dsg_subscribers " +
+                                "where transaction_id = ?");
+                stmt.setString(1, transactionId);
+                result = stmt.executeQuery();
+
+                if (result.next()) {
+                    haveIdOrNot = true;
+                }
+            } finally {
+                if (result != null) {
+                    result.close();
+                }
+                if (stmt != null) {
+                    stmt.close();
+                }
+                if (con != null) {
+                    dbHandler.freeConnection(con);
+                }
+            }
+
+        } catch (SQLException sq) {
+            throw new DSGPlayerStoreException("Problem hasiOSTransactionId: " + transactionId, sq);
+        }
+
+        return haveIdOrNot;
+    }
+    public void insertiOSTransactionId(long pid, String transactionId, Date startDate) throws DSGPlayerStoreException {
+        Connection con = null;
+        PreparedStatement stmt = null;
+
+        int subscriptionLvl = 0;
+        subscriptionLvl = (subscriptionLvl | ONEYEAR);
+        subscriptionLvl = (subscriptionLvl | UNLIMITEDTBGAMES);
+        subscriptionLvl = (subscriptionLvl | NOADS);
+        subscriptionLvl = (subscriptionLvl | DBACCESS);
+
+        try {
+            try {
+                con = dbHandler.getConnection();
+
+                stmt = con.prepareStatement("INSERT INTO dsg_subscribers (pid, level, paymentdate, transactionid, amount, verified) " +
+                        " VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE paymentdate=VALUES(paymentdate)");
+                stmt.setLong(1, pid);
+                stmt.setInt(2, subscriptionLvl);
+                stmt.setTimestamp(3, new Timestamp(startDate.getTime()));
+                stmt.setString(4, transactionId);
+                stmt.setDouble(5, 0);
+                stmt.setInt(6, 1);
+                stmt.executeUpdate();
+
+            } finally {
+                if (stmt != null) {
+                    stmt.close();
+                }
+                if (con != null) {
+                    dbHandler.freeConnection(con);
+                }
+            }
+
+        } catch (SQLException sq) {
+            throw new DSGPlayerStoreException("Problem insertiOSTransactionId pid: " + pid +
+                    " transactionID: " + transactionId, sq);
+        }
+    }
+    public void updateiOSPaymentDate(long pid, Date startDate) throws DSGPlayerStoreException {
+        Connection con = null;
+        PreparedStatement stmt = null;
+
+        try {
+            try {
+                con = dbHandler.getConnection();
+
+                stmt = con.prepareStatement("UPDATE dsg_subscribers_ios SET paymentdate=? " +
+                        " WHERE pid=? ");
+                stmt.setTimestamp(1, new Timestamp(startDate.getTime()));
+                stmt.setLong(2, pid);
+                stmt.executeUpdate();
+
+            } finally {
+                if (stmt != null) {
+                    stmt.close();
+                }
+                if (con != null) {
+                    dbHandler.freeConnection(con);
+                }
+            }
+
+        } catch (SQLException sq) {
+            throw new DSGPlayerStoreException("Problem updateiOSPaymentDate pid: " + pid, sq);
+        }
     }
 }

@@ -103,15 +103,15 @@ if (dsgPlayerData != null) {
      <% if (name.equals("invictus") || name.equals("rainwolf") || name.equals("katysmom")) { %>
 	  <td colspan="2">
        <font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="<%= textColor2 %>"><b>
-            <form method="GET" action="setKOTHcrown.jsp">
+<!--             <form method="GET" action="setKOTHcrown.jsp">
             <input type="hidden" name="kothname" value="<%= dsgPlayerData.getName() %>" />
             <input type="hidden" name="name" value="<%= name %>" />
-         <%= dsgPlayerData.getName() %>
+ -->         <%= dsgPlayerData.getName() %>
          <% if (dsgPlayerData.isAdmin()) { %> (admin) <% } %>
          <%@ include file="tournaments/crown.jspf" %>
-                <input type="submit" value="make KoTH winner">
+<!--                 <input type="submit" value="make KoTH winner">
             </form>
-       </b></font>
+ -->       </b></font>
       </td>
      <% } else { %>
       <td>
