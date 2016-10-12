@@ -17,8 +17,8 @@
    Tourney tourney = null;
    if (action != null && action.equals("add")) {
        
-       int game = Integer.parseInt(request.getParameter("game"));
        System.out.print("------------ here kitty " + request.getParameter("game"));
+       int game = Integer.parseInt(request.getParameter("game"));
        String name = request.getParameter("name");
 
        tourney = new Tourney();
@@ -112,12 +112,13 @@
              for (int i = 1; i < games.length; i++) { %>
                <option <% if (i == 1) { %>selected <% } %>value="<%= games[i].getId() %>"><%= GridStateFactory.getDisplayName(games[i].getId()) %></option>
           <% } %>
+          </select>
         </td>
     </tr>
     <tr><td valign="top"><b>Initial time: (Minutes for live, days for TB) </b></td>
         <td><input type="text" maxLength="3" size="3" name="initial"></td>
     </tr>
-    <tr><td valign="top"><b>Incremental time: (Enter any value for TB, will be ignored)</b></td>
+    <tr><td valign="top"><b>Incremental time: (any value for TB, will be ignored)</b></td>
         <td><input type="text" maxLength="3" size="3"  name="incremental"></td>
     </tr>
     <tr><td valign="top"><b>Rating restriction:</b></td>
