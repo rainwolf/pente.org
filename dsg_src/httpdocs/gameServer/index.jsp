@@ -342,14 +342,20 @@ window.google_analytics_uacct = "UA-20529582-2";
           Prize: a <a href="/gameServer/forums/thread.jspa?forumID=1&threadID=230250">crown</a> and subscriber goodies!
           </li>
 --%>
+<% if (dsgPlayerData.getTotalGames() < 200) { %>
           <li>Looking for <a href="/gameServer/forums/forum.jspa?forumID=34&start=0">resources</a> to get started?
           </li>
             <li>Want to play turn-based? Try posting an <a href="/gameServer/tb/new.jsp">open invitation</a><%= openTBgames > 0 ? " or try " + (openTBgames == 1 ? "" : "one of ") + "the <a href=\"/gameServer/tb/waiting.jsp\">" + openTBgames + " open turn-based invitation" + (openTBgames == 1 ? "" : "s") + "</a>" : ""%>.</li>
             </li>
             <hr>
+<%  
+}
+%>
 
           <li>16th Anniversary World Champion <a href="/gameServer/tournaments/statusRound.jsp?eid=1184&round=4">tournament</a> - 2015. Round 4 has started! 
-          The <a href="/gameServer/forums/forum.jspa?forumID=35&start=0">tournament forum</a> is now opened. 
+          The <a href="/gameServer/forums/forum.jspa?forumID=35&start=0">tournament forum</a> is now opened. </li>
+          <li>Our very first turn-based tournament: <a href="/gameServer/tournaments/tournamentConfirm.jsp?eid=1271">Remember, remember, the 5th of November</a> - Registration is open! </li>
+
 
 <%--
             <hr>

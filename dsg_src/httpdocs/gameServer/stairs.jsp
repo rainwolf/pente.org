@@ -35,7 +35,10 @@ if (gameStr != null) {
 <% } %>
 </center>
 
-
+<table>
+	<tr>
+		<td>
+			
 <h2> King of the Hill (beta)</h2>
 
 Pente.org now has a fully automated King of the Hill. The format is similar to ladders or stairs that may be familiar from other sites. 
@@ -299,6 +302,43 @@ if (hill != null && hill.hasPlayer(myPid) && game > 50 && (dsgPlayerData.hasPlay
 %>
 
 </center>      
+
+		</td>
+		<td width="20%" valign="top">
+		<br>
+		<br>
+		<table align="right">
+		<tr>
+		<td>
+		<h2>stairs</h2>
+		</td>
+		</tr>
+      <% for (int i = 0; i < CacheKOTHStorer.tbGames.length; i++ ) {
+			hill = kothStorer.getHill(CacheKOTHStorer.tbGames[i]);
+			if (hill != null) { %>
+			<tr>
+            <td>
+            <a href="/gameServer/stairs.jsp?game=<%=CacheKOTHStorer.tbGames[i]%>"><b><%="TB-" + GridStateFactory.getGameName(CacheKOTHStorer.tbGames[i])%></b></a>
+            </td>
+            </tr>
+      <% }} %>
+      <% for (int i = 0; i < CacheKOTHStorer.liveGames.length; i++ ) {
+			hill = kothStorer.getHill(CacheKOTHStorer.liveGames[i]);
+			if (hill != null) { %>
+			<tr>
+            <td>
+            <a href="/gameServer/stairs.jsp?game=<%=CacheKOTHStorer.liveGames[i]%>"><b><%=GridStateFactory.getGameName(CacheKOTHStorer.liveGames[i])%></b></a>
+            </td>
+            </tr>
+      <% }} %>
+		</table>
+
+
+
+		</td>
+	</tr>
+</table>
+
 
 
 <br>
