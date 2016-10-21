@@ -108,7 +108,7 @@ function submitNewGameForm()
 
 <table width="400">
 	<tr align="top">
-	<td>
+<!-- 	<td>
  <form name="mainPlayForm" method="post" action="/gameServer/stairs.jsp" style="margin:0;padding:0;">
 
     
@@ -124,10 +124,9 @@ function submitNewGameForm()
     </select>
 
         <a class="boldbuttons" href="javascript: submitMainPlayForm()" style="margin-right:6px; margin-left: 6px"><span>Load Hill</span></a>
-  <!-- <input type="submit" value="load hill"> -->
 </form>
 </td>
-
+ -->
 <%
 if (game > 0) {
 	if (game > 50) {
@@ -141,7 +140,7 @@ if (game > 0) {
 			<input type="hidden" name="game" value="<%=game%>">
 
 			<!-- <input type="submit" value="leave hill"> -->
-        <a class="boldbuttons" href="javascript: submitJoinLeaveForm()" style="margin-right:6px; margin-left: 6px"><span>Leave</span></a>
+        <a class="boldbuttons" href="javascript: submitJoinLeaveForm()" style="margin-right:6px; margin-left: 6px"><span>Leave this hill</span></a>
 			</form>
 			<%
 		} else {
@@ -150,7 +149,7 @@ if (game > 0) {
 			<input type="hidden" name="join">
 			<input type="hidden" name="game" value="<%=game%>">
 			<!-- <input type="submit" value="join hill"> -->
-        <a class="boldbuttons" href="javascript: submitJoinLeaveForm()" style="margin-right:6px; margin-left: 6px"><span>Join</span></a>
+        <a class="boldbuttons" href="javascript: submitJoinLeaveForm()" style="margin-right:6px; margin-left: 6px"><span>Join this hill</span></a>
 			</form>
 			<%
 	}
@@ -161,11 +160,11 @@ if (game > 0) {
 	}	
 %>
 
-</tr>
+<!-- </tr> -->
 <%
 if (hill != null && hill.hasPlayer(myPid) && game > 50 && (dsgPlayerData.hasPlayerDonated() || kothStorer.canPlayerBeChallenged(game, myPid))) {
 %>
-	<tr align="top">
+	<!-- <tr align="top"> -->
 	<td>
 	<form name="new_game_form" method="post" action="<%= request.getContextPath() %>/gameServer/tb/newKotH.jsp">
 	<input type="hidden" name="invitee" value="">
@@ -256,7 +255,7 @@ if (hill != null && hill.hasPlayer(myPid) && game > 50 && (dsgPlayerData.hasPlay
             <td align="center">
             <%=(myPid == pid)?"<h2>":""%>
 			<%@ include file="ratings.jspf" %>&nbsp;
-            <%=(myPid == pid)?"</h3>":""%>
+            <%=(myPid == pid)?"</h2>":""%>
 			</td>
             <%
             if (game > 50) {
@@ -278,7 +277,9 @@ if (hill != null && hill.hasPlayer(myPid) && game > 50 && (dsgPlayerData.hasPlay
             }
             %>
             <td align="center">
+            <%=(myPid == pid)?"<h2>":""%>
             <%=dateFormat.format(player.getLastGame())%>
+            <%=(myPid == pid)?"</h2>":""%>
 			</td>
 	</tr>
 
@@ -304,21 +305,21 @@ if (hill != null && hill.hasPlayer(myPid) && game > 50 && (dsgPlayerData.hasPlay
 </center>      
 
 		</td>
-		<td width="20%" valign="top">
+		<td width="22%" valign="top">
 		<br>
 		<br>
 		<table align="right">
 		<tr>
-		<td>
-		<h2>stairs</h2>
+		<td align="center">
+		<h1>stairs</h1>
 		</td>
 		</tr>
       <% for (int i = 0; i < CacheKOTHStorer.tbGames.length; i++ ) {
 			hill = kothStorer.getHill(CacheKOTHStorer.tbGames[i]);
 			if (hill != null) { %>
 			<tr>
-            <td>
-            <a href="/gameServer/stairs.jsp?game=<%=CacheKOTHStorer.tbGames[i]%>"><b><%="TB-" + GridStateFactory.getGameName(CacheKOTHStorer.tbGames[i])%></b></a>
+            <td align="right">
+            <a href="/gameServer/stairs.jsp?game=<%=CacheKOTHStorer.tbGames[i]%>"><b><h2><%="TB-" + GridStateFactory.getGameName(CacheKOTHStorer.tbGames[i])%></h2></b></a>
             </td>
             </tr>
       <% }} %>
@@ -326,8 +327,8 @@ if (hill != null && hill.hasPlayer(myPid) && game > 50 && (dsgPlayerData.hasPlay
 			hill = kothStorer.getHill(CacheKOTHStorer.liveGames[i]);
 			if (hill != null) { %>
 			<tr>
-            <td>
-            <a href="/gameServer/stairs.jsp?game=<%=CacheKOTHStorer.liveGames[i]%>"><b><%=GridStateFactory.getGameName(CacheKOTHStorer.liveGames[i])%></b></a>
+            <td align="right">
+            <a href="/gameServer/stairs.jsp?game=<%=CacheKOTHStorer.liveGames[i]%>"><b><h2><%=GridStateFactory.getGameName(CacheKOTHStorer.liveGames[i])%></h2></b></a>
             </td>
             </tr>
       <% }} %>
