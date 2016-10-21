@@ -335,6 +335,15 @@
     </servlet-class>
   </servlet>
 
+  <servlet>
+    <servlet-name>
+      MobileGameServlet
+    </servlet-name>
+    <servlet-class>
+      org.pente.gameDatabase.MobileGameServlet
+    </servlet-class>
+  </servlet>
+
 
   <servlet>
     <servlet-name>
@@ -478,6 +487,11 @@
   <servlet-mapping>
     <servlet-name>HttpGameServlet</servlet-name>
     <url-pattern>/gameServer/controller/*</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>MobileGameServlet</servlet-name>
+    <url-pattern>/gameServer/mobileController/*</url-pattern>
   </servlet-mapping>
 
   <servlet-mapping>

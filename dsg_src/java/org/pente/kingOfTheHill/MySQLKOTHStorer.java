@@ -82,6 +82,8 @@ public class MySQLKOTHStorer implements KOTHStorer {
         try {
             try {
                 con = dbHandler.getConnection();
+                con.setAutoCommit(false);
+                
                 int i = 0;
                 long hill_id = hill.getHillID();
                 stmt = con.prepareStatement(
@@ -102,6 +104,10 @@ public class MySQLKOTHStorer implements KOTHStorer {
                 }
 
                 stmt.executeBatch();
+                
+                con.commit();
+                con.setAutoCommit(true);
+                
 //                int [] numUpdates=prepStmt.executeBatch();
 //                for (int i=0; i < numUpdates.length; i++) {
 //                    if (numUpdates[i] == -2)
@@ -156,7 +162,7 @@ public class MySQLKOTHStorer implements KOTHStorer {
                     if (hill.getSteps() == null) {
                         hill.setSteps(new ArrayList<>());
                     }
-                    if (step_idx + 1 > hill.getSteps().size()) {
+                    while (step_idx + 1 > hill.getSteps().size()) {
                         hill.getSteps().add(new Step());
                     }
                     hill.getSteps().get(step_idx).addPlayer(new Player(pid, lastGameDate));

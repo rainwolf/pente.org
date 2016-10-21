@@ -191,11 +191,12 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
     public synchronized DSGPlayerData loadPlayer(String name) throws DSGPlayerStoreException {
 
         log4j.debug("loadPlayer(" + name + ")");
+        String nameLower = name.toLowerCase();
         DSGPlayerData dsgPlayerData = null;
-        dsgPlayerData = (DSGPlayerData) cacheByName.get(name);
+        dsgPlayerData = (DSGPlayerData) cacheByName.get(nameLower);
         if (dsgPlayerData == null) {
             log4j.debug("not cached");
-            dsgPlayerData = basePlayerStorer.loadPlayer(name);
+            dsgPlayerData = basePlayerStorer.loadPlayer(nameLower);
             if (dsgPlayerData != null) {
                 log4j.debug("caching");
                 cacheByID.put(new Long(dsgPlayerData.getPlayerID()), dsgPlayerData);
