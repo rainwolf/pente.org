@@ -37,7 +37,7 @@ var viewingSearchResults = 1;
 
 var statisticsShowing = 1;
 
-alphas = new Array("A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T");
+coordinateAlphas = new Array("A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T");
 
 var ns4 = (document.layers) ? true : false;
 var ie4 = (document.all) ? true : false;
@@ -411,8 +411,8 @@ function getIntMove(move) {
     var x = 0;
     var y = 0;
 
-    for (var i = 0; i < alphas.length; i++) {
-        if (alpha == alphas[i]) {
+    for (var i = 0; i < coordinateAlphas.length; i++) {
+        if (alpha == coordinateAlphas[i]) {
             x = i;
             break;
         }
@@ -428,7 +428,7 @@ function getStrMove(move) {
     var x = move % 19;
     var y = 19 - parseInt(move / 19);
 
-    return alphas[x] + y;
+    return coordinateAlphas[x] + y;
 }
 
 function backMove() {
@@ -662,6 +662,15 @@ function search() {
 
     submitForm();
 }
+function search2() {
+    var filter_data = getFilterData();
+
+
+    filter_data.startGameNum.value = 0;
+    filter_data.endGameNum = 100;
+
+    submitForm2();
+}
 
 function sortResults(sortOrder) {
 
@@ -706,6 +715,49 @@ function changeDownloads(num) {
 
     document.data_form.zippedPartNumParam.value = num;
     submitForm();
+}
+
+function submitForm2() {
+
+    var filter_data = getFilterData();
+
+    currentMove = drawUntilMove;
+    var moves = "moves=" + escape(getCurrentMoveStr());
+    var response = "response_format=" + escape(document.data_form.response_format.value);
+    var sortOrder = "results_order=" + escape(document.data_form.results_order.value);
+    var responseParams = "zippedPartNumParam=" + escape(document.data_form.zippedPartNumParam.value);
+    responseParams = "response_params=" + escape(responseParams);
+
+    var startGameNum = "start_game_num=" + filter_data.startGameNum.value;
+    var endGameNum = 100;
+    endGameNum += parseInt(filter_data.startGameNum.value);
+    endGameNum = "end_game_num=" + endGameNum;
+
+    var game = "game=" + escape(gameStr);
+    var site = "site=" + escape("All Sites");
+    var event = "event=" + escape("All Events");
+    var round = "round=" + escape("All Rounds");
+    var section = "section=" + escape("All Sections");
+
+    var player1Name = "player_1_name=" + escape(document.filter_options_data.player_1_name.value);
+    var player2Name = "player_2_name=" + escape(document.filter_options_data.player_2_name.value);
+
+    var select = document.filter_options_data.selectWinner;
+    var winner = "winner=0";
+
+    var filterData = startGameNum + "&" + endGameNum + "&" + player1Name + "&" + player2Name + "&" +
+                     game + "&" + site + "&" + event + "&" + round + "&" + section + "&" + winner;
+
+
+    filterData = "filter_data=" + escape(filterData);
+
+    document.submit_form.format_data.value = moves + "&" + 
+                                             response + "&" + 
+                                             responseParams + "&" + 
+                                             sortOrder + "&" + 
+                                             filterData;
+
+    document.submit_form.submit();
 }
 
 function submitForm() {

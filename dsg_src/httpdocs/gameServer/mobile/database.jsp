@@ -23,7 +23,7 @@ private static final DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
     if (nm != null) {
         pdata = dsgPlayerStorer.loadPlayer(nm);
     }
-    if (pdata == null || pdata.databaseAccess()) { 
+    if (pdata != null && pdata.databaseAccess()) { 
 
      boolean showGames = true;
    if (request.getAttribute("blocked") != null) {
@@ -99,6 +99,9 @@ GameStorerSearchResponseData data = (GameStorerSearchResponseData)
                 moveData = (GameStorerSearchResponseMoveData) searchResults.elementAt(i);
                 total += moveData.getGames();
             }
+        }
+        if (total == 0) {
+            total = 100;
         }
 %><%="occurrence="%><%
         if (searchResults.size()>0) {

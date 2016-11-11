@@ -544,7 +544,7 @@ if (gameData.getShortSite().equals("Pente.org")) {
 <td><a href="<%= p1Link %>"><font color="<%= gameData.getWinner() == GameData.PLAYER1 ? "#8b0000" : "black" %>"><%= gameData.getPlayer1Data().getUserIDName() %></font></a></td>
 <td><a href="<%= p2Link %>"><font color="<%= gameData.getWinner() == GameData.PLAYER2 ? "#8b0000" : "black" %>"><%= gameData.getPlayer2Data().getUserIDName() %></font></a></td>
 <td><a href="<%= gameData.getSiteURL() %>"><%= gameData.getShortSite() %></a></td>
-<td><%= gameData.getEvent() %></font></td>
+<td><a href="/gameServer/viewLiveGame?mobile&g=<%= gameData.getGameID() %>"><%= gameData.getEvent() %></a></font></td>
 <td><%= gameData.getRound() == null ? "&nbsp;-" : gameData.getRound() %></td>
 <td><%= gameData.getSection() == null ? "&nbsp;-" : gameData.getSection() %></td>
 <td><%= dateFormat.format(gameData.getDate()) %></td>

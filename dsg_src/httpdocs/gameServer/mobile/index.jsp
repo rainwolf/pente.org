@@ -310,7 +310,8 @@ No Ads
 
 EndOfSettingsParameters
 <%boolean subscriber = dsgPlayerData.hasPlayerDonated(); %>
-<%=dsgPlayerData.getName() + ";" + (subscriber?dsgPlayerData.getNameColorRGB():0) + ";" %>
+<%=dsgPlayerData.getName() + ";" + (subscriber?dsgPlayerData.getNameColorRGB():0) + ";"%>
+<%=dsgPlayerData.getName() + ";" + (subscriber?dsgPlayerData.getNameColorRGB():0) + ";" + (dsgPlayerData.showAds()?"ShowAds":"NoAds") + ";"%>
 
 King of the Hill<%
 Hill hill;
@@ -506,7 +507,7 @@ Active Games - My Turn<%
                  g.getPlayer2Pid() : g.getPlayer1Pid();
                 DSGPlayerData d = dsgPlayerStorer.loadPlayer(oppPid);
                 DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(g.getGame());%>
-<%=g.getGid() + ";" + GridStateFactory.getGameName(g.getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + g.getNumMoves() + 1 + ";" + Utilities.getTimeLeft(g.getTimeoutDate().getTime()) +";" + (g.isRated() ? "Rated" : "Not Rated") + (koth?" - KotH":"") + ";" + (d.hasPlayerDonated()?d.getNameColorRGB():0) + ";" + d.getTourneyWinner() %><%}
+<%=g.getGid() + ";" + GridStateFactory.getGameName(g.getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + g.getNumMoves() + 1 + ";" + Utilities.getTimeLeft(g.getTimeoutDate().getTime()) +";" + ratedStr + ";" + (d.hasPlayerDonated()?d.getNameColorRGB():0) + ";" + d.getTourneyWinner() %><%}
      
 
 

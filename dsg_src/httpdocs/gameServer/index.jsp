@@ -42,7 +42,10 @@ for (Iterator it = prefs.iterator(); it.hasNext();) {
 }
 if (refresh != 0) {
     response.setHeader("Refresh", refresh * 60 + "; URL=index.jsp?refresh=1");
-}   
+}
+TourneyStorer tourneyStorer = resources.getTourneyStorer();
+List<Tourney> currentTournies = (List<Tourney>) tourneyStorer.getCurrentTournies();
+
 TBGameStorer tbGameStorer = resources.getTbGameStorer();
 List<TBSet> currentSets = tbGameStorer.loadSets(dsgPlayerData.getPlayerID());
 List<TBSet> invitesTo = new ArrayList<TBSet>();
@@ -354,7 +357,7 @@ window.google_analytics_uacct = "UA-20529582-2";
 
           <li>16th Anniversary World Champion <a href="/gameServer/tournaments/statusRound.jsp?eid=1184&round=4">tournament</a> - 2015. Round 4 has started! 
           The <a href="/gameServer/forums/forum.jspa?forumID=35&start=0">tournament forum</a> is now opened. </li>
-          <li>Our very first turn-based tournament: <a href="/gameServer/tournaments/tournamentConfirm.jsp?eid=1271">Remember, remember, the 5th of November</a> - Registration is open! </li>
+          <li>Our very first turn-based tournament: <a href="/gameServer/tournaments/statusRound.jsp?eid=1267&round=1">Remember, remember, the 5th of November</a> - Round 1 has started! </li>
 
 
 <%--
@@ -800,6 +803,23 @@ if (inLiveGameRoom) {
              "white (p1)" : "black (p2)";
          long oppPid = dsgPlayerData.getPlayerID() == g.getPlayer1Pid() ?
              g.getPlayer2Pid() : g.getPlayer1Pid();
+        boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
+        boolean tourney = false;
+        if (!koth) {
+            for (Tourney tmpTourney : currentTournies) {
+                if (tmpTourney.getEventID() == g.getEventId()) {
+                    tourney = true;
+                    break;
+                }
+            }
+        }
+        String ratedStr = "Not Rated";
+        if (koth) {
+            ratedStr = "KotH";
+        } else if (tourney) {
+            ratedStr = "Tournament";
+        }
+
          DSGPlayerData d = dsgPlayerStorer.loadPlayer(oppPid);
          DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(g.getGame());
      %>
@@ -807,7 +827,7 @@ if (inLiveGameRoom) {
          <tr>
            <td>
          <!-- <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><img src="/gameServer/images/mobile.png" title="Without Java" height="12" width="12"></a> -  -->
-         <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><%= GridStateFactory.getGameName(g.getGame()) + (g.getEventId()==kothStorer.getEventId(g.getGame())?" (KotH)":"")%></a>
+         <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><%= GridStateFactory.getGameName(g.getGame()) + (koth || tourney?" ("+ratedStr+")":"")%></a>
 <!--
           - 
            (<a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load');"><img src="/gameServer/images/java.png" title="With Java" height="14" width="14"></a>)
@@ -847,6 +867,22 @@ if (inLiveGameRoom) {
              "white (p1)" : "black (p2)";
          long oppPid = dsgPlayerData.getPlayerID() == g.getPlayer1Pid() ?
              g.getPlayer2Pid() : g.getPlayer1Pid();
+        boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
+        boolean tourney = false;
+        if (!koth) {
+            for (Tourney tmpTourney : currentTournies) {
+                if (tmpTourney.getEventID() == g.getEventId()) {
+                    tourney = true;
+                    break;
+                }
+            }
+        }
+        String ratedStr = "Not Rated";
+        if (koth) {
+            ratedStr = "KotH";
+        } else if (tourney) {
+            ratedStr = "Tournament";
+        }
          DSGPlayerData d = dsgPlayerStorer.loadPlayer(oppPid);
          DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(g.getGame());
       %>
@@ -854,7 +890,7 @@ if (inLiveGameRoom) {
          <tr>
            <td>
          <!-- <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><img src="/gameServer/images/mobile.png" title="Without Java" height="12" width="12"></a> -  -->
-         <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><%= GridStateFactory.getGameName(g.getGame()) + (g.getEventId()==kothStorer.getEventId(g.getGame())?" (KotH)":"")%></a> 
+         <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><%= GridStateFactory.getGameName(g.getGame()) + (koth || tourney?" ("+ratedStr+")":"")%></a> 
 <!--
 - 
            (<a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load');"><img src="/gameServer/images/java.png" title="With Java" height="14" width="14"></a>)
