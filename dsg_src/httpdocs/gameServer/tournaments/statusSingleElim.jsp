@@ -27,7 +27,12 @@ for (Iterator it = matches.iterator(); it.hasNext();) {
       </td>
       <%-- result column --%>
       <td align="center">
-         <%= m.getResultStr() %>
+      <% String resultStr = m.getResultStr();
+          if (m.getPlayer1Wins() == m.getPlayer2Wins() && m.getPlayer1Wins() + m.getPlayer2Wins() > 0) {
+              resultStr = "tied with";
+          }
+      %>
+         <%= resultStr %>
       </td>
       <%-- p2 column --%>
       <% if (m.isBye()) { %>
