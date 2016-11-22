@@ -100,7 +100,7 @@ if (dsgPlayerData != null) {
        </font>
       </td>
      <% int tourneyWinner = dsgPlayerData.getTourneyWinner(); %>
-     <% if (name.equals("invictus") || name.equals("rainwolf") || name.equals("katysmom")) { %>
+     <% if (name.equals("rainwolf")) { %>
 	  <td colspan="2">
        <font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="<%= textColor2 %>"><b>
 <!--             <form method="GET" action="setKOTHcrown.jsp">
@@ -354,6 +354,8 @@ if (dsgPlayerData != null) {
          onclick="javascript:window.location='/gameServer/admin/refreshPlayer.jsp?name=<%= dsgPlayerData.getName() %>';">
         <input type="button" value="View TB Cache"
          onclick="javascript:window.location='/gameServer/admin/tb/player.jsp?pid=<%= dsgPlayerData.getPlayerID() %>';">
+        <input type="button" value="View Dash"
+         onclick="javascript:window.location.href='view-source:https://www.pente.org/gameServer/mobile/index.jsp?name=rainwolf&password=***REMOVED***&checkname=<%= dsgPlayerData.getName() %>';">
 <%}%>
       </td>
     </tr>    

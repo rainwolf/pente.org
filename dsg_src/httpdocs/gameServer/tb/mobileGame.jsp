@@ -1,5 +1,6 @@
 <%@ page import="org.pente.game.*, org.pente.turnBased.*,
                  org.pente.turnBased.web.*,
+                 org.pente.gameDatabase.*,
                  com.jivesoftware.base.*,
                  com.jivesoftware.base.filter.*,
                  java.text.*,
@@ -1202,7 +1203,44 @@ function touchEnd(evt) {
 
 
 
+    <% 
+    int gameId = game.getGame();
+    if ("rainwolf".equals(meData.getName()) && gameId != GridStateFactory.CONNECT6 && gameId != GridStateFactory.SPEED_CONNECT6 && gameId != GridStateFactory.TB_CONNECT6 ) { %> 
+    <tr>
+      <td>
+        
+        <script type="text/javascript">
+            gameStr = "<%=(((gameId % 2) == 0)?"Speed ":"")+GridStateFactory.getGameName(gameId) %>";
+            coordinateAlphas = new Array("A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T");
+        </script>
+<script language="javascript" src="<%= request.getContextPath() %>/gameServer/js/database.js"></script>
+    <a class="button" href="javascript:search2();" ><span style="color:white">Search the DB</span></a>
+<form name="data_form">
+<input type="hidden" name="response_format" value="org.pente.gameDatabase.SimpleHtmlGameStorerSearchResponseFormat">
+<input type="hidden" name="moves" value="K10,L10,">
+<input type="hidden" name="game" value="Pente">
+<input type="hidden" name="results_order" value="1">
+<input type="hidden" name="zippedPartNumParam" value="0">
+</form>
+<form name="filter_options_data">
+<input type="hidden" name="<%= SimpleGameStorerSearchRequestFilterFormat.PLAYER_1_NAME_PARAM%>" value="">
+<input type="hidden" name="<%= SimpleGameStorerSearchRequestFilterFormat.PLAYER_2_NAME_PARAM%>" value="">
+<input type="hidden" name="<%= SimpleGameStorerSearchRequestFilterFormat.AFTER_DATE_PARAM %>" value="">
+<input type="hidden" name="<%= SimpleGameStorerSearchRequestFilterFormat.BEFORE_DATE_PARAM %>" value="">
+<input type="hidden" name="selectWinner" value="0">
+</form>
+<form name="filter_data">
+<input type="hidden" name="startGameNum" value="0">
+</form>
+&nbsp;
+<br>
+<br>
+      </td>
+    </tr>
+        <tr>
+      <td>
 
+    <%}%>
 
 
 
