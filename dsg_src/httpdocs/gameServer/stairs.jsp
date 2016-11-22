@@ -71,7 +71,7 @@ Turn-based King of the Hill have a few more rules to consider:
 	<li>when <a href="https://pente.org/gameServer/subscriptions">subscribers</a> have 5 or more ongoing KotH sets, including waiting invitations, they cannot be challenged anymore, but can still send out challenges,</li>
 	<li>if your opponent leaves the hill before the set is over, the result still counts towards your hill position,</li>
 	<li>joining or leaving a hill has to be done from this page or your mobile device,</li>
-	<li>declining an invitation does not affect your position,</li>
+	<li>declining an invitation affects your position if the timeout is 5 days or more, and, you are king of the hill or your rating is higher than that of the challenger,</li>
 	<li>other players from the hill have to be challenged from this page or from your device.</li>
 </ul>
 The challenge button appears when you can challenge a player, and they're also marked with a green background. This button takes you to a page where you can decide on the timeout and post an invitation from there.

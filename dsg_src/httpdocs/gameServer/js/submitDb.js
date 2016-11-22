@@ -18,7 +18,7 @@ function submitToDatabase(game, site, event, round, section) {
     responseParams = "response_params=" + escape(responseParams);
 
     var startGameNum = "start_game_num=0";
-    var endGameNum = "end_game_num=25";
+    var endGameNum = "end_game_num=100";
 
     var game = "game=" + escape(game);
     var site = "site=" + escape(site);

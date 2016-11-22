@@ -129,10 +129,13 @@ Your subscription ends on <%=dsgPlayerData.hasPlayerDonated()?""+profileDateForm
           if (c != null) {
               String r = Integer.toHexString(c.getRed());
               if (r.equals("0")) r = "00";
+//              if (r.length() < 2) r = "0"+r;
               String g = Integer.toHexString(c.getGreen());
               if (g.equals("0")) g = "00";
+//              if (g.length() < 2) g = "0"+g;
               String b = Integer.toHexString(c.getBlue());
               if (b.equals("0")) b = "00";
+//              if (b.length() < 2) b = "0"+b;
               
               nameColor = (r + g + b).toUpperCase();
           }

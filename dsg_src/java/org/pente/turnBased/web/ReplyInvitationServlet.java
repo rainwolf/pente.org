@@ -285,17 +285,75 @@ public class ReplyInvitationServlet extends HttpServlet {
 							message.setBody(msg);
 							dsgMessageStorer.createMessage(message);
 
-						} catch (DSGMessageStoreException dmse) {
+                            if (set.isTwoGameSet()) {
+                                CacheKOTHStorer kothStorer = (CacheKOTHStorer) resources.getKOTHStorer();
+                                int game = set.getGame1().getGame();
+                                if (kothStorer.getEventId(game) == set.getGame1().getEventId() && set.getGame1().getDaysPerMove() >= 5) {
+                                    Hill hill = kothStorer.getHill(game);
+                                    if (hill != null) {
+                                        long pid1 = set.getInviterPid(), pid2 = invitee.getPlayerID(), kingPid = hill.getKing();
+                                        try {
+                                            inviter = dsgPlayerStorer.loadPlayer(set.getInviterPid());
+                                        } catch (DSGPlayerStoreException e) {
+                                            log4j.error("Problem loading inviter " + set.getInviterPid() +
+                                                    " to decline turn-based koth set.", e);
+                                            error = "Database error, please try again later.";
+                                        }
+                                        if (pid2 == kingPid) {
+                                            kothStorer.movePlayersUpDown(game, 0L, pid2);
+                                            message = new DSGMessage();
+                                            message.setCreationDate(new Date());
+                                            message.setFromPid(23000000016237L);
+                                            message.setToPid(pid2);
+                                            message.setSubject("Hill invitation declined");
+                                            msg = "You declined a KotH (" + GridStateFactory.getGameName(set.getGame1().getGame()) + 
+                                                    ") invitation from " + inviter.getName() + 
+                                                    ".\n When you are king of that hill and the timeout is 5 days per move or more, " +
+                                                    "declining an invitation results in losing the top step.\n\n";
+                                            message.setBody(msg);
+                                            dsgMessageStorer.createMessage(message);
+                                        } else {
+                                            DSGPlayerGameData inviteeGameData = invitee.getPlayerGameData(game), inviterGameData = inviter.getPlayerGameData(game);
+                                            Double inviteeRating = 1600.0, inviterRating = 1600.0;
+                                            if (inviteeGameData != null) {
+                                                inviteeRating = inviteeGameData.getRating();
+                                            }
+                                            if (inviterGameData != null) {
+                                                inviterRating = inviterGameData.getRating();
+                                            }
+                                            if (inviteeRating > inviterRating) {
+                                                kothStorer.movePlayersUpDown(game, 0L, pid2);
+                                                message = new DSGMessage();
+                                                message.setCreationDate(new Date());
+                                                message.setFromPid(23000000016237L);
+                                                message.setToPid(pid2);
+                                                message.setSubject("Hill invitation declined");
+                                                msg = "You declined a KotH (" + GridStateFactory.getGameName(set.getGame1().getGame()) +
+                                                        ") invitation from " + inviter.getName() +
+                                                        ".\n When the challenger's rating is lower than yours " + 
+                                                        "and the timeout is 5 days per move or more, " +
+                                                        "declining an invitation results in moving down a step.\n\n";
+                                                message.setBody(msg);
+                                                dsgMessageStorer.createMessage(message);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                        } catch (DSGMessageStoreException dmse) {
 							log4j.error("Problem sending message for decline.", dmse);
 						}
-
-						String isMobile = (String) request.getParameter("mobile");
-						if (isMobile == null) {
-					        response.sendRedirect(request.getContextPath() + successPage);
-						} else {
-					        response.sendRedirect(mobileRedirectPage);
-						}
-						return;
+                        
+						if (error == null) {
+                            String isMobile = (String) request.getParameter("mobile");
+                            if (isMobile == null) {
+                                response.sendRedirect(request.getContextPath() + successPage);
+                            } else {
+                                response.sendRedirect(mobileRedirectPage);
+                            }
+                            return;
+                        }
 					}
 				}
 				
