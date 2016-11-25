@@ -55,7 +55,7 @@
     
     
             try {
-                stmt = con.prepareStatement("select pid from player where name_lower = ?");
+                stmt = con.prepareStatement("select pid from player where name_lower = ? and site_id = 2");
                 stmt.setString(1, name);
                 rs = stmt.executeQuery();
                 long pid = 0;

@@ -39,7 +39,7 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
     protected static final String MOVE_TABLE = "pente_move";
 
     /** The names of all tables, used to lock them at one time */
-    protected static final Vector ALL_TABLES = new Vector();
+    protected static final Vector<String> ALL_TABLES = new Vector<String>();
 
     static {
         ALL_TABLES.addElement(GAME_TABLE);
@@ -598,7 +598,11 @@ log4j.debug("select data complete");
 				log4j.debug("get event data");
                 GameEventData eventData = gameVenueStorer.getGameEventData(
                     game, eventID, siteData.getName());
-                gameData.setEvent(eventData.getName());
+                if (eventData != null) {
+                    gameData.setEvent(eventData.getName());
+                } else {
+                    gameData.setEvent("");
+                }
 				log4j.debug("done get event data");
 
                 gameData.setRound(gameResult.getString(3));
