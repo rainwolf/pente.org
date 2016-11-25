@@ -106,6 +106,9 @@ function submitNewGameForm()
 }
 </script>
 
+<%
+if (game > 0) {
+%>
 <table width="400">
 	<tr align="top">
 <!-- 	<td>
@@ -127,8 +130,7 @@ function submitNewGameForm()
 </form>
 </td>
  -->
-<%
-if (game > 0) {
+ <%
 	if (game > 50) {
 %>
 <td>
@@ -173,12 +175,12 @@ if (hill != null && hill.hasPlayer(myPid) && game > 50 && (dsgPlayerData.hasPlay
         <a class="boldbuttons" href="javascript: submitNewGameForm()" style="margin-right:6px; margin-left: 6px"><span>Send Open Hill Invitation</span></a>
 	</form>
 	</td>	
-	</tr>
 
 <%	
 }
 %>
 
+	</tr>
 </table>
 
 <br>
