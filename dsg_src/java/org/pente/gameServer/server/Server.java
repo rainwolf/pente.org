@@ -30,6 +30,9 @@ import org.pente.gameServer.tourney.*;
 
 import org.pente.kingOfTheHill.*;
 
+import javax.net.ServerSocketFactory;
+import javax.net.ssl.SSLServerSocketFactory;
+
 
 /** A simple class to contain the necessary components that make up the server
  */
@@ -91,9 +94,12 @@ public class Server {
         this.name = serverData.getName();
         this.port = serverData.getPort();
         this.kothStorer = resources.getKOTHStorer();
-        
+
+        System.setProperty("javax.net.ssl.keyStore", "/var/lib/tomcat7/webapps/MyDSKeyStore.jks");
+        System.setProperty("javax.net.ssl.keyStorePassword", "nuria8a13b");
         try {
-            gameServerSocket = new ServerSocket(port);
+            ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
+            gameServerSocket = ssf.createServerSocket(port);
         } catch (Throwable t) {
             log4j.error("Server [" + name + "], could not listen on port: " + 
                 port + ".", t);

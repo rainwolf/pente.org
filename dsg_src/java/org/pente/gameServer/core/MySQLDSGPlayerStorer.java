@@ -1922,7 +1922,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                 stmt = con.prepareStatement(
                         "select pid, receipt " +
                                 "from dsg_subscribers_ios " +
-                                "where payment_date between ? and ?");
+                                "where paymentdate between ? and ?");
                 stmt.setTimestamp(1, new Timestamp(lastYearMinus5.getTime()));
                 stmt.setTimestamp(2, new Timestamp(lastYearPlus5.getTime()));
                 result = stmt.executeQuery();
