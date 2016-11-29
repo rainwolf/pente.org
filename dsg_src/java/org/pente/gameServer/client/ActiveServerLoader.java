@@ -16,7 +16,7 @@ public class ActiveServerLoader {
 
         URL url = new URL("https", host, "/gameServer/activeServers");
         BufferedReader in = new BufferedReader(new InputStreamReader(
-            (InputStream) url.getContent()));
+            (InputStream) url.openConnection().getInputStream()));
         Vector<ServerData> servers = new Vector<ServerData>();
         String s = null;
         while ((s = in.readLine()) != null) {
