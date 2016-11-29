@@ -353,6 +353,24 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 							floatingVacationDays = 0;
 						}
 						if (floatingVacationDays > 0) {
+							if (floatingVacationDays == 24) {
+								String penteLiveGCMkey = ctx.getInitParameter("penteLiveGCMkey");
+								String penteLiveAPNSkey = ctx.getInitParameter("penteLiveAPNSkey");
+								String penteLiveAPNSpwd = ctx.getInitParameter("penteLiveAPNSpassword");
+								boolean productionFlag = ctx.getInitParameter("penteLiveAPNSproductionFlag").equals("true");
+								DSGMessage message = new DSGMessage();
+								message.setFromPid(23000000016237L);
+								message.setToPid(cp);
+								message.setSubject("24 hours of vacation left");
+								message.setBody("The gameServer informs you that it has detected that you only have 24 hours of vacation time left for this year." +
+								   " Once these are depleted, timeouts for turn-based games become hard deadlines.\n \n " +
+									"You can purchase additional vacation days at https://www.pente.org/gameServer/subscriptions \n\n");
+								message.setCreationDate(new java.util.Date());
+								dsgMessageStorer.createMessage(message, false);
+								Thread thread = new Thread(new SendNotification(3, message.getMid(), message.getFromPid(), message.getToPid(),
+										message.getSubject(), penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, dbHandler, penteLiveGCMkey));
+								thread.start();
+							}
 							int weekend[]=new int[] { 7, 1 }; //sat/sun default
 							try {
 								// get wk1, wk2 for player whose turn it now is
@@ -399,6 +417,8 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 						log4j.debug("TimeoutCheckRunnable, DSGPlayerStoreException " + e);
 					} catch (TBStoreException e) {
 						log4j.debug("TimeoutCheckRunnable, TBStoreException " + e);
+					} catch (DSGMessageStoreException e) {
+						log4j.debug("TimeoutCheckRunnable, DSGMessageStoreException " + e);
 					}
 
 					t.timeout();
@@ -683,7 +703,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 				}
 				
 				
-				winText += ".\n" + "You can view your game at http://pente.org/gameServer/viewLiveGame?mobile&g=" + game.getGid();
+				winText += ".\n" + "You can view your game at http://www.pente.org/gameServer/viewLiveGame?mobile&g=" + game.getGid();
 				if (set.isTwoGameSet()) {
 				    if (set.isCompleted()) {
 						 winText += "\n or invite " + loserData.getName() + 
@@ -691,7 +711,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 							game.getGame() + "&invitee=" + loserData.getName();
 					}
 				}
-				lossText += ".\n" + "You can view your game at http://pente.org/gameServer/viewLiveGame?mobile&g=" + game.getGid();
+				lossText += ".\n" + "You can view your game at http://www.pente.org/gameServer/viewLiveGame?mobile&g=" + game.getGid();
 				if (set.isTwoGameSet()) {
 				    if (set.isCompleted()) {
 				        lossText += "\n or invite " + winnerData.getName() + 
@@ -699,7 +719,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 								game.getGame() + "&invitee=" + winnerData.getName();
 					}
 				}
-		        drawGameWinSetText += ".\n" + "You can view your game at http://pente.org/gameServer/viewLiveGame?g=" + game.getGid();
+		        drawGameWinSetText += ".\n" + "You can view your game at http://www.pente.org/gameServer/viewLiveGame?g=" + game.getGid();
 		        if (set.isTwoGameSet()) {
 		            if (set.isCompleted()) {
 		        				 drawGameWinSetText += "\n or invite " + loserData.getName() + 
@@ -707,7 +727,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 		        					game.getGame() + "&invitee=" + loserData.getName();
 					}
 				}
-		        drawGameLoseSetText += ".\n" + "You can view your game at http://pente.org/gameServer/viewLiveGame?g=" + game.getGid();
+		        drawGameLoseSetText += ".\n" + "You can view your game at http://www.pente.org/gameServer/viewLiveGame?g=" + game.getGid();
 		        if (set.isTwoGameSet()) {
 		            if (set.isCompleted()) {
 		                drawGameLoseSetText += "\n or invite " + winnerData.getName() + 
@@ -1548,7 +1568,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 			message.setSubject("New Tournament " + GridStateFactory.getGameName(game) + " Set started against " + toPlayer.getName());
 			message.setBody("The gameServer has started a new "  + GridStateFactory.getGameName(game) + " set for you against " + toPlayer.getName() +
 								" in round " + tourney.getNumRounds() + " of the " + tourney.getName() + "." + 
-								"\nYou have " + daysPerMove + " days per move. \n \nTournament details can be found at https://pente.org/gameServer/tournaments/statusRound.jsp?eid="
+								"\nYou have " + daysPerMove + " days per move. \n \nTournament details can be found at https://www.pente.org/gameServer/tournaments/statusRound.jsp?eid="
 								+ eventID + "&round=" + tourney.getNumRounds() + "  \n \n ");
 			message.setCreationDate(new java.util.Date());
 			dsgMessageStorer.createMessage(message, false);
@@ -1564,7 +1584,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 			message.setSubject("New Tournament " + GridStateFactory.getGameName(game) + " Set started against " + toPlayer.getName());
 			message.setBody("The gameServer has started a new "  + GridStateFactory.getGameName(game) + " set for you against " + toPlayer.getName() + 
 								" in round " + tourney.getNumRounds() + " of the " + tourney.getName() + "." + 
-								"\nYou have " + daysPerMove + " days per move. \n \nTournament details can be found at https://pente.org/gameServer/tournaments/statusRound.jsp?eid="
+								"\nYou have " + daysPerMove + " days per move. \n \nTournament details can be found at https://www.pente.org/gameServer/tournaments/statusRound.jsp?eid="
 								+ eventID + "&round=" + tourney.getNumRounds() + "  \n \n ");
 			message.setCreationDate(new java.util.Date());
 			dsgMessageStorer.createMessage(message, false);
