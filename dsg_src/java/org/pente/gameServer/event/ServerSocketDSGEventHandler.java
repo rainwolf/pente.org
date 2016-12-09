@@ -27,56 +27,62 @@ import org.apache.log4j.*;
 public class ServerSocketDSGEventHandler extends SocketDSGEventHandler {
 
     private static Category log4j = Category.getInstance(
-        ServerSocketDSGEventHandler.class.getName());
+            ServerSocketDSGEventHandler.class.getName());
 
     private String playerName;
     private boolean handledError;
-    
-	public ServerSocketDSGEventHandler(Socket s) {
 
-		this.socket = s;
+    public ServerSocketDSGEventHandler(Socket s) {
+
+        this.socket = s;
         this.handledError = false;
-		
-		try {
-			in = new ObjectInputStream(socket.getInputStream());
-			out = new ObjectOutputStream(socket.getOutputStream());
-		} catch (Throwable t) {
-			log4j.error("Error creating socket object streams", t);
-			// this kills the connection before it gets created
-			return;
-		}
-		
+
+        try {
+            // in = new ObjectInputStream(socket.getInputStream());
+            // out = new ObjectOutputStream(socket.getOutputStream());
+            inStream = new BufferedInputStream(socket.getInputStream());
+            outStream = new BufferedOutputStream(socket.getOutputStream());
+            // outStream.flush();
+            // outStream = new DataOutputStream(socket.getOutputStream());
+            // outStream.flush();
+            // inStream = new DataInputStream(socket.getInputStream());
+        } catch (Throwable t) {
+            log4j.error("Error creating socket object streams", t);
+            // this kills the connection before it gets created
+            return;
+        }
+
         super.go();
-	}
+    }
 
     public void setPlayerName(String playerName) {
         this.playerName = playerName;
     }
 
-	void handleError(Throwable t) {
+    void handleError(Throwable t) {
 
         if (handledError) {
             log4j.info(playerName + " - handleError - already handled, returning.");
             return;
         }
         handledError = true;
-        
-		if (t == null) {
-            log4j.info(playerName + " - handleError obj == null || obj != DSGEvent");
-		}
-		else {
-            log4j.info(playerName + " - handleError", t);
-		}
 
-		super.handleError(t);
-	}
-    
+        if (t == null) {
+            log4j.info(playerName + " - handleError obj == null || obj != DSGEvent");
+        }
+        else {
+            log4j.info(playerName + " - handleError", t);
+        }
+
+        super.handleError(t);
+    }
+
     public String getHostAddress() {
         return socket.getInetAddress().getHostAddress();
     }
-    
+
     public synchronized void eventOccurred(DSGEvent dsgEvent) {
-    	dsgEvent.setCurrentTime();
-    	super.eventOccurred(dsgEvent);
+        dsgEvent.setCurrentTime();
+        super.eventOccurred(dsgEvent);
     }
 }

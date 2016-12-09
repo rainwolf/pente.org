@@ -95,7 +95,7 @@
        -DappletVersion=...  Ant build replaces the text @appletVersion -->
   <context-param>
     <param-name>appletVersion</param-name>
-    <param-value>4.3.0.11</param-value>
+    <param-value>4.3.0.13</param-value>
   </context-param>
 
   <context-param>

@@ -27,7 +27,7 @@ import org.pente.gameServer.core.DSGPlayerData;
 import org.pente.gameServer.core.DSGPlayerGameData;
 
 public class PlayerListPanel extends Panel
-    implements PlayerListComponent {
+        implements PlayerListComponent {
 
     private Vector              listeners = new Vector();
 
@@ -42,21 +42,21 @@ public class PlayerListPanel extends Panel
 
     private Color               selectedColor;
 
-    private static final Font   tableNameFont = 
-        new Font("Arial", Font.BOLD, 14);
-    private static final Font   playerFont = 
-        new Font("Dialog", Font.PLAIN, 12);
-    private static final Font   boldPlayerFont = 
-        new Font("Dialog", Font.BOLD, 12);
-    private static final Font   adminPlayerFont = 
-        new Font("Dialog", Font.BOLD | Font.ITALIC, 12);
+    private static final Font   tableNameFont =
+            new Font("Arial", Font.BOLD, 14);
+    private static final Font   playerFont =
+            new Font("Dialog", Font.PLAIN, 12);
+    private static final Font   boldPlayerFont =
+            new Font("Dialog", Font.BOLD, 12);
+    private static final Font   adminPlayerFont =
+            new Font("Dialog", Font.BOLD | Font.ITALIC, 12);
     private static final Color  GREEN_RATINGS_COLOR =
-        new Color(11, 203, 11);
+            new Color(11, 203, 11);
     private static final Color  BLUE_RATINGS_COLOR =
-        new Color(1, 85, 255);
+            new Color(1, 85, 255);
     private static final Color  YELLOW_RATINGS_COLOR =
-        new Color(243, 235, 23);
-    
+            new Color(243, 235, 23);
+
     private Dimension           minSize;
     private Dimension           currentSize;
     private int                 minPlayers = 3;
@@ -68,7 +68,7 @@ public class PlayerListPanel extends Panel
     private int                 startRow;
     private int                 visibleRows;
     private int                 oneCharWidth;
-    
+
     private int                 ratingsColumnWidth;
     private static final int    PLAYER_COLUMN = 1;
     private static final int    RATINGS_COLUMN = 2;
@@ -77,19 +77,19 @@ public class PlayerListPanel extends Panel
     private static final int    DESCENDING = -1;
     private int                 sortDir = DESCENDING;
     private int                 sortColumnPressed = 0;
-    
+
     private int                 game = 1;
     private boolean             showNumPlayers;
 
     public PlayerListPanel(PlayerListPanel toCopy) {
         this(toCopy.selectedColor);
-        
+
         setTableName(toCopy.tableName);
         for (int i = 0; i < toCopy.players.size(); i++) {
             DSGPlayerData d = (DSGPlayerData) toCopy.players.elementAt(i);
             addPlayer(d);
         }
-        
+
     }
     public PlayerListPanel(Color selectedColor) {
 
@@ -126,7 +126,7 @@ public class PlayerListPanel extends Panel
                 int y = e.getY() - headerHeight - rowHeight;
                 if (y < 0) {
                     selectedPlayer = null;
-                    
+
                     // pressed a header, just update button background
                     // action taken on release
                     if (y + rowHeight > 0) {
@@ -137,7 +137,7 @@ public class PlayerListPanel extends Panel
                         else if (x > 0 && x < getRealWidth() - ratingsColumnWidth) {
                             sortColumnPressed = PLAYER_COLUMN;
                         }
-                        
+
                         repaint();
                     }
                 }
@@ -149,7 +149,7 @@ public class PlayerListPanel extends Panel
                         }
                         else {
                             selectedPlayer = ((DSGPlayerData)
-                                players.elementAt(selectedNum)).getName();
+                                    players.elementAt(selectedNum)).getName();
                         }
                     }
                     repaint();
@@ -162,7 +162,7 @@ public class PlayerListPanel extends Panel
                 if (y < 0 && y + rowHeight > 0) { //released in a header
                     int x = e.getX();
                     if (sortColumnPressed == RATINGS_COLUMN &&
-                        x > getRealWidth() - ratingsColumnWidth) {
+                            x > getRealWidth() - ratingsColumnWidth) {
                         p = true;
                         // change dir of ratings
                         if (sortColumn == RATINGS_COLUMN) {
@@ -181,7 +181,7 @@ public class PlayerListPanel extends Panel
                         sort();
                     }
                     else if (sortColumnPressed == PLAYER_COLUMN &&
-                             x > 0 && x < getRealWidth() - ratingsColumnWidth) {
+                            x > 0 && x < getRealWidth() - ratingsColumnWidth) {
 
                         p = true;
                         // change dir of names
@@ -201,13 +201,13 @@ public class PlayerListPanel extends Panel
                         sort();
                     }
                 }
-                
+
                 // return button to normal state
                 if (sortColumnPressed != 0) {
                     p = true;
                 }
                 sortColumnPressed = 0;
-                
+
                 if (p) {
                     repaint();
                 }
@@ -228,9 +228,9 @@ public class PlayerListPanel extends Panel
                                 return;
                             }
                             selectedPlayer = ((DSGPlayerData) players.elementAt(
-                                selectedNum)).getName();
+                                    selectedNum)).getName();
                         }
-                        
+
                         for (int i = 0; i < listeners.size(); i++) {
                             PlayerActionListener l = (PlayerActionListener) listeners.elementAt(i);
                             l.actionRequested(selectedPlayer);
@@ -250,7 +250,7 @@ public class PlayerListPanel extends Panel
                 sort();
             }
         }
-        
+
         repaint();
     }
 
@@ -265,7 +265,7 @@ public class PlayerListPanel extends Panel
         this.tableName = tableName;
     }
     public void setOwner(String player) {
-        
+
         synchronized (players) {
 
             this.ownerPlayer = player;
@@ -281,7 +281,7 @@ public class PlayerListPanel extends Panel
                 }
             }
         }
-        
+
         repaint();
     }
 
@@ -326,13 +326,13 @@ public class PlayerListPanel extends Panel
         }
         repaint();
     }
-    
+
     private void insertPlayerSorted(DSGPlayerData playerData) {
         int i = 0;
         for (; i < players.size(); i++) {
 
             DSGPlayerData existingPlayer = ((DSGPlayerData)
-                players.elementAt(i));
+                    players.elementAt(i));
             // don't insert a name twice, sanity check
             if (existingPlayer.getName().equals(playerData.getName())) {
                 return;
@@ -368,13 +368,13 @@ public class PlayerListPanel extends Panel
             }
         }
 
-        players.insertElementAt(playerData, i); 
+        players.insertElementAt(playerData, i);
     }
     private int comp(DSGPlayerData existingPlayer, DSGPlayerData playerData) {
         int comp = 0;
         if (sortColumn == PLAYER_COLUMN) {
             comp = playerData.getName().compareTo(
-                existingPlayer.getName());
+                    existingPlayer.getName());
             if (comp > 0) comp = -1;
             else if (comp < 0) comp = 1;
         }
@@ -392,7 +392,7 @@ public class PlayerListPanel extends Panel
 
         return comp;
     }
-    
+
     // player list order
     // 1. owner
     // 2. admins according to sort order
@@ -405,7 +405,7 @@ public class PlayerListPanel extends Panel
             return;
         }
 
-		boolean addScrollbar = false;
+        boolean addScrollbar = false;
 
         synchronized (players) {
 
@@ -415,27 +415,27 @@ public class PlayerListPanel extends Panel
             // add scrollbar if needed
             if (!scrollbarVisible && players.size() > visibleRows) {
                 scrollbarVisible = true;
-				addScrollbar = true;
+                addScrollbar = true;
             }
         }
 
-		// had to move the validate call outside synchronized block
-		if (addScrollbar) {
+        // had to move the validate call outside synchronized block
+        if (addScrollbar) {
             add(scrollbar, "East");
             validate();
-		}
+        }
 
         repaint();
     }
-    
+
     public void removePlayer(String playerName) {
 
         if (playerName == null) {
             return;
         }
 
-		boolean removeScrollbar = false;
-		
+        boolean removeScrollbar = false;
+
         synchronized (players) {
 
             for (int i = 0; i < players.size(); i++) {
@@ -466,20 +466,20 @@ public class PlayerListPanel extends Panel
             // remove scrollbar if not needed
             if (scrollbarVisible && players.size() <= visibleRows) {
                 scrollbarVisible = false;
-				removeScrollbar = true;
+                removeScrollbar = true;
             }
         }
 
-		if (removeScrollbar) {
+        if (removeScrollbar) {
             remove(scrollbar);
             validate();
-		}
+        }
 
         repaint();
     }
 
     public void playerChanged(DSGPlayerData newData) {
-    
+
         synchronized (players) {
 
             for (int i = 0; i < players.size(); i++) {
@@ -491,7 +491,7 @@ public class PlayerListPanel extends Panel
                 }
             }
         }
-        
+
         repaint();
     }
 
@@ -519,7 +519,7 @@ public class PlayerListPanel extends Panel
         int rows = 0;
         // causing deadlock
         //synchronized (players) {
-            rows = players.size();
+        rows = players.size();
         //}
 
         if (rows < minPlayers) {
@@ -572,13 +572,13 @@ public class PlayerListPanel extends Panel
         scrollbar.setValue(startRow);
 
         if (playersImage != null &&
-            x != 0 && y != 0) {
+                x != 0 && y != 0) {
 
             // need a bigger image
             Rectangle rec = playersGraphics.getClipBounds();
             if (rec != null &&
-                (rec.width < x ||
-                 rec.height < y)) {
+                    (rec.width < x ||
+                            rec.height < y)) {
                 destroy();
                 playersImage = createImage(x, y);
                 playersGraphics = playersImage.getGraphics();
@@ -612,19 +612,19 @@ public class PlayerListPanel extends Panel
 
         FontMetrics fontMetrics = getFontMetrics(tableNameFont);
         headerHeight = fontMetrics.getMaxAscent() +
-                       fontMetrics.getMaxDescent() +
-                       fontMetrics.getLeading();
+                fontMetrics.getMaxDescent() +
+                fontMetrics.getLeading();
         int width = fontMetrics.stringWidth("Main Room") + 20;
 
 
         fontMetrics = getFontMetrics(playerFont);
         rowHeight = fontMetrics.getMaxAscent() +
-                    fontMetrics.getMaxDescent() +
-                    fontMetrics.getLeading();
+                fontMetrics.getMaxDescent() +
+                fontMetrics.getLeading();
         oneCharWidth = fontMetrics.stringWidth("1");
         ratingsColumnWidth = fontMetrics.stringWidth("Rating") + 30;
         width += ratingsColumnWidth;
-        
+
         int height = headerHeight + rowHeight * minPlayers + 5;
         minSize = new Dimension(width, height);
     }
@@ -642,7 +642,7 @@ public class PlayerListPanel extends Panel
             try {
                 Dimension size = getSize();
                 if (size.width != currentSize.width ||
-                    size.height != currentSize.height) {
+                        size.height != currentSize.height) {
                     sizeChanged(size.width, size.height);
                     currentSize = size;
                 }
@@ -651,7 +651,7 @@ public class PlayerListPanel extends Panel
                 g.drawImage(playersImage, 0, 0, this);
 
             } catch(Throwable t) {
-            	t.printStackTrace();
+                t.printStackTrace();
             }
         }
     }
@@ -701,7 +701,7 @@ public class PlayerListPanel extends Panel
         g.setColor(Color.white);
         g.drawLine(0, height - 1, totalWidth - 1, height - 1);
         g.drawLine(totalWidth - 1, height - 1, totalWidth - 1, 0);
- 
+
         g.setColor(new Color(223, 223, 223));
         g.drawLine(1, height - 2, totalWidth - 2, height - 2);
         g.drawLine(totalWidth - 2, height - 2, totalWidth - 2, 1);
@@ -712,20 +712,20 @@ public class PlayerListPanel extends Panel
         // draw headers
         g.setColor(new Color(188, 188, 188));
         g.fillRect(2, y, width - 4, rowHeight);
-        
+
         // draw header buttons
-        drawButton(2, y, width - ratingsColumnWidth, y + rowHeight, g, 
-            sortColumnPressed == PLAYER_COLUMN);
+        drawButton(2, y, width - ratingsColumnWidth, y + rowHeight, g,
+                sortColumnPressed == PLAYER_COLUMN);
         drawButton(width - ratingsColumnWidth + 1, y, width - 2, y + rowHeight,
                 g, sortColumnPressed == RATINGS_COLUMN);
-        
+
         g.setColor(Color.black);
         g.setFont(playerFont);
         y += rowHeight;
         g.drawLine(2, y, width - 3, y);
         g.drawString("Name", 10, y - 3);
         g.drawString("Rating", width - ratingsColumnWidth + 5, y - 3);
-        
+
         // draw sort indicator
         int sortX = 0;
         int sortY = y - 4;
@@ -746,7 +746,7 @@ public class PlayerListPanel extends Panel
             sortY1 = sortY;
             sortY2 = sortY - pLen;
         }
-        
+
         // fill
         Polygon p = new Polygon();
         // upper right point
@@ -755,10 +755,10 @@ public class PlayerListPanel extends Panel
         p.addPoint(sortX - pLen, sortY1);
         // bottom point
         p.addPoint(sortX - pLen / 2, sortY2);
-        
+
         g.setColor(Color.red);
         g.fillPolygon(p);
-        
+
         // border
         p = new Polygon();
         // upper right point
@@ -767,83 +767,86 @@ public class PlayerListPanel extends Panel
         p.addPoint(sortX - pLen, sortY1);
         // bottom point
         p.addPoint(sortX - pLen / 2, sortY2);
-        
+
         g.setColor(Color.black);
-        g.drawPolygon(p);            
-        
-        
-        
+        g.drawPolygon(p);
+
+
+
         // gridline down center
         g.setColor(new Color(230, 230, 230));
         g.drawLine(width - ratingsColumnWidth, headerHeight + 2,
-                   width - ratingsColumnWidth, height - 3);
+                width - ratingsColumnWidth, height - 3);
 
         y += rowHeight;
 
         boolean anAdmin = false;
         boolean showingAdmins = true;
-		synchronized (players) {
-	        int endRowTemp = getEndRow();
-	        int startRowTemp = startRow;
-	
-	        for (int i = startRowTemp; i < endRowTemp; i++) {
-	
+        synchronized (players) {
+            int endRowTemp = getEndRow();
+            int startRowTemp = startRow;
+
+            for (int i = startRowTemp; i < endRowTemp; i++) {
+
                 DSGPlayerData d = (DSGPlayerData) players.elementAt(i);
+                // if (d == null) {
+                //     continue;
+                // }
                 if (showingAdmins &&
-                        (d.isAdmin() || d.getName().equals(ownerPlayer))) {
+                        (d.isAdmin() || ownerPlayer.equals(d.getName()))) {
                     anAdmin = true;
                 }
                 else if (showingAdmins && !d.isAdmin()) {
                     showingAdmins = false;
                     if (anAdmin) {
                         g.setColor(new Color(230, 230, 230));
-                        g.drawLine(2, y - rowHeight + 1, 
-                           width - 3, y - rowHeight + 1);
+                        g.drawLine(2, y - rowHeight + 1,
+                                width - 3, y - rowHeight + 1);
                     }
                 }
                 DSGPlayerGameData gameData = d.getPlayerGameData(game);
-	            String player = d.getName();
+                String player = d.getName();
                 Color playerColor = d.getNameColor();
-	
-				if (d.hasPlayerDonated()) {
+
+                if (d.hasPlayerDonated()) {
                     g.setFont(boldPlayerFont);
                     g.setColor(playerColor);
-				}
-				else {
+                }
+                else {
                     g.setFont(playerFont);
                     g.setColor(Color.black);
-				}
+                }
                 if (d.isAdmin()) {
                     g.setFont(adminPlayerFont);
                 }
-	
-	            if (player.equals(selectedPlayer)) {
-	
-	                g.setColor(selectedColor);
-	                g.fillRect(2, y - rowHeight + 1, width - ratingsColumnWidth - 3, rowHeight + 1);
-	                g.setColor(Color.black);
-	                g.drawRect(2, y - rowHeight + 1, width - ratingsColumnWidth - 3, rowHeight + 1);
-	                g.setColor(Color.white);
-	            }
-	
+
+                if (player.equals(selectedPlayer)) {
+
+                    g.setColor(selectedColor);
+                    g.fillRect(2, y - rowHeight + 1, width - ratingsColumnWidth - 3, rowHeight + 1);
+                    g.setColor(Color.black);
+                    g.drawRect(2, y - rowHeight + 1, width - ratingsColumnWidth - 3, rowHeight + 1);
+                    g.setColor(Color.white);
+                }
+
                 if (player.equals(ownerPlayer)) {
-                    
+
                     Color currentColor = g.getColor();
                     g.setColor(Color.red);
                     g.fillRect(3, y - 6, 5, 5);
                     g.setColor(currentColor);
                 }
 
-	            g.drawString(player, 10, y);
+                g.drawString(player, 10, y);
 
                 if (d.getTourneyWinner() > DSGPlayerGameData.TOURNEY_WINNER_NONE) {
                     FontMetrics fontMetrics = getFontMetrics(playerFont);
                     drawCrown(g, fontMetrics.stringWidth(player) + 15, y,
-                         d.getTourneyWinner());
+                            d.getTourneyWinner());
                 }
-                
+
                 if (gameData != null && gameData.getTotalGames() > 0) {
-                	int r = (int) Math.round(gameData.getRating());
+                    int r = (int) Math.round(gameData.getRating());
                     Color ratingsColor = null;
                     // determine color-code for rating
                     if (!gameData.isProvisional()) {
@@ -863,47 +866,47 @@ public class PlayerListPanel extends Panel
                             ratingsColor = Color.gray;
                         }
                     }
-                    
+
                     // draw colored box
                     if (ratingsColor != null) {
-                        g.setColor(ratingsColor); 
+                        g.setColor(ratingsColor);
                         g.fillRect(width - ratingsColumnWidth + 5, y - 8, 7, 7);
                     }
                     g.setColor(Color.black);
                     g.drawRect(width - ratingsColumnWidth + 4, y - 9, 8, 8);
-                    
+
                     // draw rating
                     g.setFont(playerFont);
                     g.setColor(Color.black);
                     int ratingsX = width - ratingsColumnWidth + 15;
                     if (r < 1000) ratingsX += oneCharWidth;
                     g.drawString(Integer.toString(r), ratingsX, y);
-                    
+
                 }
-                
-	            y += rowHeight;
-	        }
-		}
+
+                y += rowHeight;
+            }
+        }
     }
 
     private static final Color CROWN_COLORS[] = new Color[] {
-        null, 
-        new Color(255, 203, 79),
-        new Color(192, 192, 192),
-        new Color(180, 97, 0),
-        new Color(255, 255, 255) };
+            null,
+            new Color(255, 203, 79),
+            new Color(192, 192, 192),
+            new Color(180, 97, 0),
+            new Color(255, 255, 255) };
 
     /** @param x - Where to start drawing to the right of
      *  @param y - Where to start drawing up from
      *  draws inside a 12x10 pixel space
      */
     private void drawCrown(Graphics g, int x, int y, int type) {
-        
+
         int x1 = 3;
         int x2 = 6;
         int x3 = 9;
         int x4 = 12;
-        
+
         Polygon p = new Polygon();
         p.addPoint(x, y);
         p.addPoint(x, y - 10);
@@ -912,19 +915,19 @@ public class PlayerListPanel extends Panel
         p.addPoint(x + x3, y - 7);
         p.addPoint(x + x4, y - 10);
         p.addPoint(x + x4, y);
-      
+
         g.setColor(CROWN_COLORS[type]);
         g.fillPolygon(p);
 
         g.setColor(Color.black);
         g.drawPolygon(p);
-        
+
         // draw little dots on crown
         g.drawLine(x + x1, y - 4, x + x1, y - 4);
         g.drawLine(x + x2, y - 4, x + x2, y - 4);
         g.drawLine(x + x3, y - 4, x + x3, y - 4);
     }
-    
+
     // convenience methods
     private int getEndRow() {
 
@@ -951,11 +954,11 @@ public class PlayerListPanel extends Panel
 
         int max = players.size() - visibleRows + 1;
         if (max < 0) {
-           max = 0;
+            max = 0;
         }
         scrollbar.setMaximum(max);
     }
-    
+
     private void drawButton(int x, int y, int x2, int y2, Graphics g, boolean pressed) {
 
         Color c1 = pressed ? new Color(113, 111, 100) : Color.white;
@@ -965,15 +968,15 @@ public class PlayerListPanel extends Panel
         g.setColor(c1);
         g.drawLine(x, y, x2 - 1, y);
         g.drawLine(x, y + 1, x, y2 - 1);
-        
+
         g.setColor(c2);
         g.drawLine(x + 1, y + 1, x2 - 2, y + 1);
         g.drawLine(x + 1, y + 1, x + 1, y2 - 2);
-        
+
         g.setColor(c3);
         g.drawLine(x, y2 - 1, x2 - 1, y2 - 1);
         g.drawLine(x2 - 1, y, x2 - 1, y2);
-        
+
         g.setColor(c4);
         g.drawLine(x + 1, y2 - 2, x2 - 2, y2 - 2);
         g.drawLine(x2 - 2, y + 1, x2 - 2, y2 - 2);
