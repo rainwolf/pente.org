@@ -23,14 +23,19 @@ import java.io.*;
 
 public class ClientSocketDSGEventHandler extends SocketDSGEventHandler {
 
-    private boolean handledError = false;
+	private boolean handledError = false;
 	public ClientSocketDSGEventHandler(Socket s) {
 		this.socket = s;
-		
-		try {
-			out = new ObjectOutputStream(socket.getOutputStream());
-			in = new ObjectInputStream(socket.getInputStream());
 
+		try {
+			// out = new ObjectOutputStream(socket.getOutputStream());
+			// in = new ObjectInputStream(socket.getInputStream());
+			outStream = new BufferedOutputStream(socket.getOutputStream());
+			inStream = new BufferedInputStream(socket.getInputStream());
+			// outStream.flush();
+			// outStream = new DataOutputStream(socket.getOutputStream());
+			// outStream.flush();
+			// inStream = new DataInputStream(socket.getInputStream());
 		} catch (Throwable t) {
 
 			System.err.println("Error creating socket object streams");
@@ -38,22 +43,22 @@ public class ClientSocketDSGEventHandler extends SocketDSGEventHandler {
 			// this kills the connection before it gets created
 			return;
 		}
-		
+
 		super.go();
 	}
 
 
-    void handleError(Throwable t) {
-        // provent duplicated handling
-        synchronized (this) {
-            if (handledError) return;
-            handledError = true;
-        }
+	void handleError(Throwable t) {
+		// provent duplicated handling
+		synchronized (this) {
+			if (handledError) return;
+			handledError = true;
+		}
 		System.err.println("SocketHandler Unhandled exception, disconnecting.");
 		t.printStackTrace();
-        //if (!(t instanceof IOException)) {
-        //    eventOccurred(new DSGClientErrorEvent(t));
-        //}
-        super.handleError(t);
-    }
+		//if (!(t instanceof IOException)) {
+		//    eventOccurred(new DSGClientErrorEvent(t));
+		//}
+		super.handleError(t);
+	}
 }

@@ -31,7 +31,7 @@ public class ActiveServersServlet extends HttpServlet {
         for (Iterator it = resources.getServerData().iterator(); it.hasNext();) {
             ServerData data = (ServerData) it.next();
             log4j.info(data.getPort() + " " + data.getName());
-            out.write(data.getPort() + " " + data.getName());
+            out.write(data.getPort() + " " + data.getName() + " (" + data.getPlayers().size()+")");
             out.write("\n");
         }
         out.flush();
