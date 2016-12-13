@@ -68,6 +68,7 @@ public class ViewGamesServlet extends HttpServlet {
                     "Player not found, please try again.");
                 return;
             }
+            name = name.toLowerCase();
             DSGPlayerData playerData = null;
             DSGPlayerData meData = null;
             try {

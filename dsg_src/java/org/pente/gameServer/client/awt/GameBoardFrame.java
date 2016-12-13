@@ -447,15 +447,29 @@ public class GameBoardFrame extends Frame implements TableComponent,
         chatPanel.add("Center", (Panel) chatArea);
 
         // setup game options
-        gameOptions = (GameOptions) preferenceHandler.getPref("gameOptions");
-        if (gameOptions == null) {
+        if (preferenceHandler.getPref("gameOptions") == null) {
             gameOptions = new SimpleGameOptions(2);
             gameOptions.setPlayerColor(GameOptions.WHITE, 1);
             gameOptions.setPlayerColor(GameOptions.BLACK, 2);
             gameOptions.setDraw3DPieces(true);
             gameOptions.setPlaySound(true);
             gameOptions.setShowLastMove(true);
+        } else if (preferenceHandler.getPref("gameOptions") instanceof com.google.gson.internal.LinkedTreeMap) {
+            com.google.gson.internal.LinkedTreeMap pref = (com.google.gson.internal.LinkedTreeMap) preferenceHandler.getPref("gameOptions");
+            gameOptions = new SimpleGameOptions(2);
+            ArrayList colors = (ArrayList) pref.get("colors");
+            for ( int i = 0; i < 3; i++ ) {
+                gameOptions.setPlayerColor(((Double) colors.get(i)).intValue(), i);
+            }
+            gameOptions.setDraw3DPieces((boolean) pref.get("draw3DPieces"));
+            gameOptions.setPlaySound((boolean) pref.get("playSound"));
+            gameOptions.setShowLastMove((boolean) pref.get("showLastMove"));
+//            gameOptions.setDrawDepth((boolean) pref.get("depth"));
+        } else {
+            gameOptions = (GameOptions) preferenceHandler.getPref("gameOptions");
         }
+
+//        ObjectWriter: {"dsgPreferenceEvent":{"pref":{"name":"gameOptions","value":{"colors":[0,0,1,0,0],"draw3DPieces":false,"showLastMove":true,"playSound":true,"depth":false}},"time":0}}
         // end setup game options
 
         // setup coordinates list
