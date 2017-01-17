@@ -198,7 +198,7 @@ public class IOSReceiptServlet extends HttpServlet {
                 // verify the response: something like {"status":21004} etc...
                 int status = json.getInt("status");
                 switch (status) {
-                    case 0: getStartDate(json); return true;
+                    case 0: return getStartDate(json);
                     case 21000: log4j.info("IOSReceiptServlet: " + status + ": App store could not read"); return false;
                     case 21002: log4j.info("IOSReceiptServlet: " + status + ": Data was malformed"); return false;
                     case 21003: log4j.info("IOSReceiptServlet: " + status + ": Receipt not authenticated"); return false;
@@ -223,7 +223,7 @@ public class IOSReceiptServlet extends HttpServlet {
             }
         }
 
-        private void getStartDate(JSONObject json) {
+        private boolean getStartDate(JSONObject json) {
             try {
                 long start_ms = 0;
 
@@ -245,7 +245,7 @@ public class IOSReceiptServlet extends HttpServlet {
                 } else if (json.has("latest_expired_receipt_info")) {
                     jsonArray = json.getJSONArray("latest_expired_receipt_info");
                 } else {
-                    return;
+                    return false;
                 }
 
 
@@ -259,9 +259,14 @@ public class IOSReceiptServlet extends HttpServlet {
                     }
                 }
                 startDate.setTime(start_ms);
+                if (transactionId != null) {
+                    return true;
+                } else {
+                    return false;
+                }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-
+            return false;
         }
 }
