@@ -247,11 +247,15 @@ public class CacheKOTHStorer implements KOTHStorer {
                         List<Player> players = hill.getMembers();
                         for (Player player : players) {
                             try {
-                                if (dsgPlayerStorer.loadPlayer(player.getPid()).hasPlayerDonated()) {
+                                DSGPlayerData playerData = dsgPlayerStorer.loadPlayer(player.getPid());
+                                if (playerData.hasPlayerDonated() && playerData.getStatus() == DSGPlayerData.ACTIVE) {
                                     continue;
                                 }
                             } catch (DSGPlayerStoreException | NullPointerException e) {
                                 e.printStackTrace();
+                            }
+                            if (hasOngoingKotHTBgames(tbGame, player.getPid())) {
+                                continue;
                             }
                             Date lastDate = player.getLastGame();
                             if (lastDate != null && lastDate.before(lastMonth)) {
@@ -308,6 +312,9 @@ public class CacheKOTHStorer implements KOTHStorer {
             return;
         }
         Hill hill = getHill(game);
+        if (hill == null) {
+            return;
+        }
         synchronized (cacheKotHLock) {
             for (Step step : hill.getSteps()) {
                 for (Player player : step.getPlayers()) {
@@ -380,6 +387,21 @@ public class CacheKOTHStorer implements KOTHStorer {
         } catch (TBStoreException e) {
             e.printStackTrace();
         }
+    }
+
+    private boolean hasOngoingKotHTBgames(int game, long pid) {
+        try {
+            List<TBSet> sets = tbStorer.loadSets(pid);
+            int kothEventId = getEventId(game);
+            for (TBSet set : sets) {
+                if (set.isTwoGameSet() && set.getState() == TBSet.STATE_ACTIVE && set.getGame1().getGame() == game && set.getGame1().getEventId() == kothEventId) {
+                    return true;
+                }
+            }
+        } catch (TBStoreException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
 

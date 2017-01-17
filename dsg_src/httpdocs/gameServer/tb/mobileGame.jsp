@@ -7,7 +7,11 @@
                  java.util.*" %>
 
 <%@ page contentType="text/html; charset=UTF-8" %>
-
+<%
+String loggedInStr = (String) request.getAttribute("name");
+ if (loggedInStr == null) {
+    response.sendRedirect("../index.jsp");
+   } %>
 <%  
 com.jivesoftware.base.FilterChain filters = 
     new com.jivesoftware.base.FilterChain(
@@ -54,23 +58,26 @@ String players = ""; //indicates which seat made message
 for (int i = 0; i < game.getNumMoves(); i++) {
     moves += game.getMove(i) + ",";
 }
-for (TBMessage m : game.getMessages()) {
-    // bug in URLConverter
-    if (m.getMessage().length() == 1) {
-        messages += "\"" + m.getMessage() + "\",";
-    } else {
-        messages += "\"" + MessageEncoder.encodeMessage(
-            filters.applyFilters(0, m.getMessage())) + "\",";
-    }
-    seqNums += m.getSeqNbr() + ",";
-    moveNums += m.getMoveNum() + ",";
-    dates += m.getDate().getTime() + ",";
-    if (p1.getPlayerID() == m.getPid()) {
-        players += "1,";
-    }
-    else {
-        players += "2,";
-    }
+// if (loggedInStr.equals("rainwolf") || loggedInStr.equals(p1.getName()) || loggedInStr.equals(p2.getName())) {
+if (loggedInStr.equals(p1.getName()) || loggedInStr.equals(p2.getName())) {
+  for (TBMessage m : game.getMessages()) {
+      // bug in URLConverter
+      if (m.getMessage().length() == 1) {
+          messages += "\"" + m.getMessage() + "\",";
+      } else {
+          messages += "\"" + MessageEncoder.encodeMessage(
+              filters.applyFilters(0, m.getMessage())) + "\",";
+      }
+      seqNums += m.getSeqNbr() + ",";
+      moveNums += m.getMoveNum() + ",";
+      dates += m.getDate().getTime() + ",";
+      if (p1.getPlayerID() == m.getPid()) {
+          players += "1,";
+      }
+      else {
+          players += "2,";
+      }
+  }
 }
 String tmpMsgs = "";
 if (!"".equals(messages)) {
