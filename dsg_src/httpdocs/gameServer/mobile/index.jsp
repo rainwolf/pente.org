@@ -315,75 +315,48 @@ EndOfSettingsParameters
 
 King of the Hill<%
 Hill hill;
-int game = GridStateFactory.TB_PENTE;
+int game;
 boolean canSendOpenKotH = false, amImember = false;
-hill = kothStorer.getHill(game);
+//hill = kothStorer.getHill(game);
 long kingPid = 0;
-if (hill != null) {kingPid = hill.getKing();} else {kingPid = 0;}
-if (!subscriber) {canSendOpenKotH = kothStorer.canPlayerBeChallenged(game, myPID);} 
+for (int gameInt: CacheKOTHStorer.tbGames) {
+hill = kothStorer.getHill(gameInt);
+if (hill == null) {
+    continue;
+}
+kingPid = hill.getKing();
+if (!subscriber) {canSendOpenKotH = kothStorer.canPlayerBeChallenged(gameInt, myPID);} 
 amImember = hill.hasPlayer(myPID); %>
-<%=GridStateFactory.getGameName(game) + ";" + ((hill != null)?hill.getNumPlayers():0) + ";" + ((hill != null && amImember)?1:0) + ";" + ((kingPid == myPID)?1:0) + ";" + ((kingPid != 0)?dsgPlayerStorer.loadPlayer(kingPid).getName():"") + ";" + ((amImember && (subscriber || canSendOpenKotH))?"1":"0")%><%
-game = GridStateFactory.TB_KERYO;
-// game = GridStateFactory.SPEED_PENTE;
-// game = GridStateFactory.PENTE;
-hill = kothStorer.getHill(game);
-if (hill != null) {kingPid = hill.getKing();} else {kingPid = 0;}
-if (!subscriber) {canSendOpenKotH = kothStorer.canPlayerBeChallenged(game, myPID);} 
+<%=GridStateFactory.getGameName(gameInt) + ";" + ((hill != null)?hill.getNumPlayers():0) + ";" + ((hill != null && amImember)?1:0) + ";" + ((kingPid == myPID)?1:0) + ";" + ((kingPid != 0)?dsgPlayerStorer.loadPlayer(kingPid).getName():"") + ";" + ((amImember && (subscriber || canSendOpenKotH))?"1":"0") + ";" + gameInt%><%
+}
+if ("rainwolf".equals(name)) {
+for (int gameInt: CacheKOTHStorer.liveGames) {
+hill = kothStorer.getHill(gameInt);
+if (hill == null) {
+    continue;
+}
+kingPid = hill.getKing();
+if (!subscriber) {canSendOpenKotH = kothStorer.canPlayerBeChallenged(gameInt, myPID);} 
 amImember = hill.hasPlayer(myPID); %>
-<%=GridStateFactory.getGameName(game) + ";" + ((hill != null)?hill.getNumPlayers():0) + ";" + ((hill != null && amImember)?1:0) + ";" + ((kingPid == myPID)?1:0) + ";" + ((kingPid != 0)?dsgPlayerStorer.loadPlayer(kingPid).getName():"") + ";" + ((amImember && (subscriber || canSendOpenKotH))?"1":"0")%><%
-game = GridStateFactory.TB_GOMOKU;
-hill = kothStorer.getHill(game);
-if (hill != null) {kingPid = hill.getKing();} else {kingPid = 0;}
-if (!subscriber) {canSendOpenKotH = kothStorer.canPlayerBeChallenged(game, myPID);} 
-amImember = hill.hasPlayer(myPID); %>
-<%=GridStateFactory.getGameName(game) + ";" + ((hill != null)?hill.getNumPlayers():0) + ";" + ((hill != null && amImember)?1:0) + ";" + ((kingPid == myPID)?1:0) + ";" + ((kingPid != 0)?dsgPlayerStorer.loadPlayer(kingPid).getName():"") + ";" + ((amImember && (subscriber || canSendOpenKotH))?"1":"0")%><%
-game = GridStateFactory.TB_DPENTE;
-hill = kothStorer.getHill(game);
-if (hill != null) {kingPid = hill.getKing();} else {kingPid = 0;}
-if (!subscriber) {canSendOpenKotH = kothStorer.canPlayerBeChallenged(game, myPID);} 
-amImember = hill.hasPlayer(myPID); %>
-<%=GridStateFactory.getGameName(game) + ";" + ((hill != null)?hill.getNumPlayers():0) + ";" + ((hill != null && amImember)?1:0) + ";" + ((kingPid == myPID)?1:0) + ";" + ((kingPid != 0)?dsgPlayerStorer.loadPlayer(kingPid).getName():"") + ";" + ((amImember && (subscriber || canSendOpenKotH))?"1":"0")%><%
-game = GridStateFactory.TB_GPENTE;
-hill = kothStorer.getHill(game);
-if (hill != null) {kingPid = hill.getKing();} else {kingPid = 0;}
-if (!subscriber) {canSendOpenKotH = kothStorer.canPlayerBeChallenged(game, myPID);} 
-amImember = hill.hasPlayer(myPID); %>
-<%=GridStateFactory.getGameName(game) + ";" + ((hill != null)?hill.getNumPlayers():0) + ";" + ((hill != null && amImember)?1:0) + ";" + ((kingPid == myPID)?1:0) + ";" + ((kingPid != 0)?dsgPlayerStorer.loadPlayer(kingPid).getName():"") + ";" + ((amImember && (subscriber || canSendOpenKotH))?"1":"0")%><%
-game = GridStateFactory.TB_POOF_PENTE;
-hill = kothStorer.getHill(game);
-if (hill != null) {kingPid = hill.getKing();} else {kingPid = 0;}
-if (!subscriber) {canSendOpenKotH = kothStorer.canPlayerBeChallenged(game, myPID);} 
-amImember = hill.hasPlayer(myPID); %>
-<%=GridStateFactory.getGameName(game) + ";" + ((hill != null)?hill.getNumPlayers():0) + ";" + ((hill != null && amImember)?1:0) + ";" + ((kingPid == myPID)?1:0) + ";" + ((kingPid != 0)?dsgPlayerStorer.loadPlayer(kingPid).getName():"") + ";" + ((amImember && (subscriber || canSendOpenKotH))?"1":"0")%><%
-game = GridStateFactory.TB_CONNECT6;
-hill = kothStorer.getHill(game);
-if (hill != null) {kingPid = hill.getKing();} else {kingPid = 0;}
-if (!subscriber) {canSendOpenKotH = kothStorer.canPlayerBeChallenged(game, myPID);} 
-amImember = hill.hasPlayer(myPID); %>
-<%=GridStateFactory.getGameName(game) + ";" + ((hill != null)?hill.getNumPlayers():0) + ";" + ((hill != null && amImember)?1:0) + ";" + ((kingPid == myPID)?1:0) + ";" + ((kingPid != 0)?dsgPlayerStorer.loadPlayer(kingPid).getName():"") + ";" + ((amImember && (subscriber || canSendOpenKotH))?"1":"0")%><%
-game = GridStateFactory.TB_BOAT_PENTE;
-hill = kothStorer.getHill(game);
-if (hill != null) {kingPid = hill.getKing();} else {kingPid = 0;}
-if (!subscriber) {canSendOpenKotH = kothStorer.canPlayerBeChallenged(game, myPID);} 
-amImember = hill.hasPlayer(myPID); %>
-<%=GridStateFactory.getGameName(game) + ";" + ((hill != null)?hill.getNumPlayers():0) + ";" + ((hill != null && amImember)?1:0) + ";" + ((kingPid == myPID)?1:0) + ";" + ((kingPid != 0)?dsgPlayerStorer.loadPlayer(kingPid).getName():"") + ";" + ((amImember && (subscriber || canSendOpenKotH))?"1":"0")%><%
-
+<%=GridStateFactory.getGameName(gameInt) + ";" + ((hill != null)?hill.getNumPlayers():0) + ";" + ((hill != null && amImember)?1:0) + ";" + ((kingPid == myPID)?1:0) + ";" + ((kingPid != 0)?dsgPlayerStorer.loadPlayer(kingPid).getName():"") + ";" + ((amImember && (subscriber || canSendOpenKotH))?"1":"0") + ";" + gameInt%><%
+}
+}
 %>
 Rating Stats<%
 
         DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
         Game games[] = GridStateFactory.getDisplayGames();
         for (int i = 0; i < games.length; i++) {
-            if (games[i].getId() < 51) {
-                continue;
-            }
+//            if (games[i].getId() < 51) {
+//                continue;
+//            }
             DSGPlayerGameData dsgPlayerGameData =
                 dsgPlayerData.getPlayerGameData(games[i].getId());
             if (dsgPlayerGameData == null ||
                 dsgPlayerGameData.getTotalGames() == 0) {
                 continue;
             } %>
-<%= GridStateFactory.getGameName(games[i].getId()) %>;<%= (int) Math.round(dsgPlayerGameData.getRating()) %>;<%= dsgPlayerGameData.getTotalGames() %>;<%=dsgPlayerGameData.getTourneyWinner() %>;<%= dateFormat.format(dsgPlayerGameData.getLastGameDate()) %><%}%>
+<%= (games[i].getId()>50?"tb-":"") + GridStateFactory.getGameName(games[i].getId()).replace("Speed ", "Speed-") %>;<%= (int) Math.round(dsgPlayerGameData.getRating()) %>;<%= dsgPlayerGameData.getTotalGames() %>;<%=dsgPlayerGameData.getTourneyWinner() %>;<%= dateFormat.format(dsgPlayerGameData.getLastGameDate()) %>;<%= games[i].getId() %><%}%>
 Invitations received<%
         for (TBSet s : invitesTo) {
                  String color = null;

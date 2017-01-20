@@ -6,7 +6,7 @@
     <center>
     <p class="socialmedia">	
                     </p>  
-        <p><b>Turn-based play </b> <br><br>
+        <p><b>Turn-based, live, and AI </b> <br><br>
         <a href="https://itunes.apple.com/us/app/pente-live/id595426592?ls=1&mt=8" target="mobileApp"><img src="images/app_store.png"></a></p>
         <p>
         <a href="https://play.google.com/store/apps/details?id=be.submanifold.pentelive" target="mobileApp"><img src="images/google_play.png"></a></p>

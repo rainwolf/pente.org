@@ -37,7 +37,7 @@ if (gameStr != null) {
 
 <table>
 	<tr>
-		<td>
+		<td valign="top">
 			
 <h2> King of the Hill (beta)</h2>
 
@@ -316,21 +316,51 @@ if (hill != null && hill.hasPlayer(myPid) && game > 50 && (dsgPlayerData.hasPlay
 		<h1>stairs</h1>
 		</td>
 		</tr>
-      <% for (int i = 0; i < CacheKOTHStorer.tbGames.length; i++ ) {
+      <% 
+      int color = 0;
+      for (int i = 0; i < CacheKOTHStorer.tbGames.length; i++ ) {
 			hill = kothStorer.getHill(CacheKOTHStorer.tbGames[i]);
-			if (hill != null) { %>
-			<tr>
+			if (hill != null) { 
+			color += 1;
+			%>
+			<tr <%=(color%2 == 0)?"bgcolor=\"#deecde\"":""%>>
             <td align="right">
             <a href="/gameServer/stairs.jsp?game=<%=CacheKOTHStorer.tbGames[i]%>"><b><h2><%="TB-" + GridStateFactory.getGameName(CacheKOTHStorer.tbGames[i])%></h2></b></a>
+            <%
+            long kingPid = hill.getKing();
+            if (kingPid != 0) {
+				DSGPlayerData d = dsgPlayerStorer.loadPlayer(kingPid);
+				DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(CacheKOTHStorer.tbGames[i]);
+				%>
+			<%@ include file="playerLink.jspf" %>&nbsp;
+			<br>
+			<br>
+				<%
+            }
+            %>
             </td>
             </tr>
       <% }} %>
       <% for (int i = 0; i < CacheKOTHStorer.liveGames.length; i++ ) {
 			hill = kothStorer.getHill(CacheKOTHStorer.liveGames[i]);
-			if (hill != null) { %>
-			<tr>
+			if (hill != null) { 
+			color += 1;
+			%>
+			<tr <%=(color%2 == 0)?"bgcolor=\"#deecde\"":""%>>
             <td align="right">
             <a href="/gameServer/stairs.jsp?game=<%=CacheKOTHStorer.liveGames[i]%>"><b><h2><%=GridStateFactory.getGameName(CacheKOTHStorer.liveGames[i])%></h2></b></a>
+            <%
+            long kingPid = hill.getKing();
+            if (kingPid != 0) {
+				DSGPlayerData d = dsgPlayerStorer.loadPlayer(kingPid);
+				DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(CacheKOTHStorer.liveGames[i]);
+				%>
+			<%@ include file="playerLink.jspf" %>&nbsp;
+			<br>
+			<br>
+				<%
+            }
+            %>
             </td>
             </tr>
       <% }} %>

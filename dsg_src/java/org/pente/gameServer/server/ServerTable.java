@@ -2982,19 +2982,19 @@ public class ServerTable {
 								try {
 									broadcastTable(new DSGSystemMessageTableEvent(
 											tableNum,
-											"stairs have been updated, all hail King " + dsgPlayerStorer.loadPlayer(kingPid).getName()));
+											"KotH has been updated, all hail King " + dsgPlayerStorer.loadPlayer(kingPid).getName()));
 								} catch (DSGPlayerStoreException e) {
 									log4j.error("ServerTable: error getting King: " + e);
 								}
 							} else {
 								broadcastTable(new DSGSystemMessageTableEvent(
 										tableNum,
-										"stairs have been updated"));
+										"KotH has been updated"));
 							}
                         } else {
                             broadcastTable(new DSGSystemMessageTableEvent(
                                 tableNum,
-                                "stairs have not been updated, players are too far apart"));
+                                "KotH has not been updated, players are too far apart"));
                         }
                     }
                 }

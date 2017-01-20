@@ -89,6 +89,9 @@ public class ViewGamesServlet extends HttpServlet {
                 } catch (NumberFormatException nfe) {}
             }
             if (game == -1) {
+                if (gameStr == null) {
+                    gameStr = "(null)";
+                }
                 log4j.error("ViewGamesServlet, Invalid game: " + gameStr);
                 handleError(request, response,
                     "Invalid game " + gameStr);
