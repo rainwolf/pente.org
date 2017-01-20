@@ -18,12 +18,27 @@ if (wins == null) {
 if (losses == null) {
   losses = new ArrayList<GameData>(0);
 }
-int game = ((Integer) request.getAttribute("game")).intValue();
+int game = 0;
+if (request.getAttribute("game") != null) {
+  game = ((Integer) request.getAttribute("game")).intValue();
+}
 String gameStr = GridStateFactory.getDisplayName(game);
-int totalGames = ((Integer) request.getAttribute("count")).intValue();
-int start = ((Integer) request.getAttribute("start")).intValue();
-int myWins = ((Integer) request.getAttribute("w")).intValue();
-int myTotal = ((Integer) request.getAttribute("t")).intValue();
+int totalGames = 0;
+if (request.getAttribute("count") != null) {
+  totalGames = ((Integer) request.getAttribute("count")).intValue();
+}
+int start = 0;
+if (request.getAttribute("start") != null) {
+  start = ((Integer) request.getAttribute("start")).intValue();
+}
+int myWins = 0;
+if (request.getAttribute("w") != null) {
+  myWins = ((Integer) request.getAttribute("w")).intValue();
+}
+int myTotal = 0;
+if (request.getAttribute("t") != null) {
+  myTotal = ((Integer) request.getAttribute("t")).intValue();
+}
 
 pageContext.setAttribute("title", "Player Profile - Completed games"); %>
 
@@ -43,7 +58,13 @@ gameDateFormat.setTimeZone(tz);
 <table>
 <tr>
 <td>
+<% 
+if (game > 0) {
+%>
 <img src="/gameServer/rgraph?game=<%= game %>&pid=<%= dsgPlayerData.getPlayerID() %>">
+<%  
+}
+%>
 </td>
 <% if (dsgPlayerData.getPlayerID() != meData.getPlayerID()) { 
 %>
