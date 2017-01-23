@@ -313,7 +313,7 @@ if (hill != null && hill.hasPlayer(myPid) && game > 50 && (dsgPlayerData.hasPlay
 		<table align="right">
 		<tr>
 		<td align="center">
-		<h1>stairs</h1>
+		<h1>Hills</h1>
 		</td>
 		</tr>
       <% 

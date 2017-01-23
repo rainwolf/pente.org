@@ -137,8 +137,11 @@ public class MainRoomPanel extends Panel implements ActionListener,
             "Tournament" : "Main Room");
         playerList.showNumPlayers(true);
         if (serverData.isTournament()) {
-            GameEventData ged = (GameEventData) serverData.getGameEvents().elementAt(0);
-            playerList.setGame(ged.getGame());
+            com.google.gson.internal.LinkedTreeMap gedLTM = (com.google.gson.internal.LinkedTreeMap) serverData.getGameEvents().elementAt(0);
+//            GameEventData ged = (GameEventData) serverData.getGameEvents().elementAt(0);
+//            System.out.println(gedLTM.toString());
+            int game = ((Double) gedLTM.get("game")).intValue();
+            playerList.setGame(game);
         }
         else {
             playerList.setGame(1);
@@ -505,8 +508,12 @@ public class MainRoomPanel extends Panel implements ActionListener,
             applet.reconnect(port);
         }
         else if (e.getActionCommand().equals("Tournament Standings")) {
-            int eid = ((GameEventData) 
-                serverData.getGameEvents().elementAt(0)).getEventID();
+            com.google.gson.internal.LinkedTreeMap gedLTM = (com.google.gson.internal.LinkedTreeMap) serverData.getGameEvents().elementAt(0);
+//            GameEventData ged = (GameEventData) serverData.getGameEvents().elementAt(0);
+//            System.out.println(gedLTM.toString());
+            int eid = ((Double) gedLTM.get("id")).intValue();
+//            int eid = ((GameEventData) 
+//                serverData.getGameEvents().elementAt(0)).getEventID();
             openWebPage("/gameServer/tournaments/status.jsp?eid=" + eid);
         }
         else if (e.getActionCommand().equals("Boot")) {
