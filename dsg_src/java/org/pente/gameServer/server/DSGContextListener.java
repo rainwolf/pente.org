@@ -213,6 +213,9 @@ public class DSGContextListener implements ServletContextListener {
                 dbHandlerRo, gameVenueStorer);
             resources.setDsgGameLookup(lookup);
             
+            DSGFollowerStorer followerStorer = new CacheDSGFollowerStorer(new MySQLDSGFollowerStorer(dbHandler));
+            resources.setFollowerStorer(followerStorer);
+            
             ctx.setAttribute(Resources.class.getName(), resources);
             
             LeaderBoard lb = new LeaderBoard(dbHandler, dsgPlayerStorer);

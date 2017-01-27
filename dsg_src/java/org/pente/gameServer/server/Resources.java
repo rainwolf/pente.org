@@ -42,9 +42,8 @@ public class Resources {
     private DSGMessageStorer dsgMessageStorer;
     private FastMySQLDSGGameLookup dsgGameLookup;
     private CacheKOTHStorer kothStorer;
+    private DSGFollowerStorer followerStorer;
 
-
-    
     private List<ServerData> serverData = new ArrayList<>();
     private List<Server> servers = new ArrayList<>();
 
@@ -218,8 +217,11 @@ public class Resources {
     public CacheKOTHStorer getKOTHStorer() {
         return this.kothStorer;
     }
-
     public void setKOTHStorer(CacheKOTHStorer kothStorer) {
         this.kothStorer = kothStorer;
     }
+
+    public DSGFollowerStorer getFollowerStorer() { return followerStorer; }
+    public void setFollowerStorer(DSGFollowerStorer followerStorer) { this.followerStorer = followerStorer; }
+
 }

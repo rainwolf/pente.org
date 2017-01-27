@@ -343,11 +343,24 @@ if (dsgPlayerData != null) {
      
   <tr>
     <td colspan="5">
-	<% if (!dsgPlayerData.getName().equals(name)) { %>
+  <% if (!dsgPlayerData.getName().equals(name)) { 
+  Resources resources = (Resources) application.getAttribute(
+   Resources.class.getName());
+  DSGFollowerStorer followerStorer = resources.getFollowerStorer();
+  DSGPlayerData meData = dsgPlayerStorer.loadPlayer(name);
+%>
         <input type="button" value="Send Message"
          onclick="javascript:window.location='/gameServer/newMessage.jsp?to=<%= dsgPlayerData.getName() %>';">
         <input type="button" value="Invite to Turn-based Game"
          onclick="javascript:window.location='/gameServer/tb/new.jsp?invitee=<%= dsgPlayerData.getName() %>';">
+         <% if (!followerStorer.isFollower(dsgPlayerData.getPlayerID(), meData.getPlayerID())) { %>
+        <input type="button" value="follow"
+         onclick="javascript:window.location='/gameServer/social?follow=<%= dsgPlayerData.getName() %>';">
+         <%} else {%>
+        <input type="button" value="unfollow"
+         onclick="javascript:window.location='/gameServer/social?unfollow=<%= dsgPlayerData.getName() %>';">
+         <%}%>
+
     <% } %>
 <% if ("rainwolf".equals(name)) { %>
         <input type="button" value="Refresh Player Cache"
