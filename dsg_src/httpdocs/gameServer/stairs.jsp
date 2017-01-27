@@ -330,7 +330,7 @@ if (hill != null && hill.hasPlayer(myPid) && game > 50 && (dsgPlayerData.hasPlay
             long kingPid = hill.getKing();
             if (kingPid != 0) {
 				DSGPlayerData d = dsgPlayerStorer.loadPlayer(kingPid);
-				DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(CacheKOTHStorer.tbGames[i]);
+//				DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(CacheKOTHStorer.tbGames[i]);
 				%>
 			<%@ include file="playerLink.jspf" %>&nbsp;
 			<br>
@@ -353,7 +353,7 @@ if (hill != null && hill.hasPlayer(myPid) && game > 50 && (dsgPlayerData.hasPlay
             long kingPid = hill.getKing();
             if (kingPid != 0) {
 				DSGPlayerData d = dsgPlayerStorer.loadPlayer(kingPid);
-				DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(CacheKOTHStorer.liveGames[i]);
+//				DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(CacheKOTHStorer.liveGames[i]);
 				%>
 			<%@ include file="playerLink.jspf" %>&nbsp;
 			<br>

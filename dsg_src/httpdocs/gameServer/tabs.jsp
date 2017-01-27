@@ -26,6 +26,7 @@
 <%  tabs = new String[][] {
         {"My Info", "/gameServer/myprofile"},
         {"Preferences", "/gameServer/myprofile/prefs"},
+        {"Social", "/gameServer/social?social"},
         {"Subscriber Settings", "/gameServer/myprofile/donor"},
         {"Forum Settings", "/gameServer/forums/settings!tab.jspa"},
         {"Forum Watches", "/gameServer/forums/editwatches!default.jspa"}
@@ -41,6 +42,8 @@
                         {"Email", "#email"}, 
                         {"Turn-based", "#turnBased" },
                         {"Ignored Players", "#ignore" }},
+        new String[][] {{"Following", "#following"},
+                        {"Followers", "#followers"}},
         new String[][] {{"Name Color", "#nameColor"},
                         {"Picture", "#picture"},
                         {"Note", "#note"}},

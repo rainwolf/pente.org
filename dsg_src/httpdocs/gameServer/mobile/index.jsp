@@ -327,9 +327,8 @@ if (hill == null) {
 kingPid = hill.getKing();
 if (!subscriber) {canSendOpenKotH = kothStorer.canPlayerBeChallenged(gameInt, myPID);} 
 amImember = hill.hasPlayer(myPID); %>
-<%=GridStateFactory.getGameName(gameInt) + ";" + ((hill != null)?hill.getNumPlayers():0) + ";" + ((hill != null && amImember)?1:0) + ";" + ((kingPid == myPID)?1:0) + ";" + ((kingPid != 0)?dsgPlayerStorer.loadPlayer(kingPid).getName():"") + ";" + ((amImember && (subscriber || canSendOpenKotH))?"1":"0") + ";" + gameInt%><%
+<%="app needs update;" + ((hill != null)?hill.getNumPlayers():0) + ";" + ((hill != null && amImember)?1:0) + ";" + ((kingPid == myPID)?1:0) + ";" + ((kingPid != 0)?dsgPlayerStorer.loadPlayer(kingPid).getName():"") + ";" + ((amImember && (subscriber || canSendOpenKotH))?"1":"0") + ";" + gameInt%><%
 }
-if ("rainwolf".equals(name)) {
 for (int gameInt: CacheKOTHStorer.liveGames) {
 hill = kothStorer.getHill(gameInt);
 if (hill == null) {
@@ -338,8 +337,7 @@ if (hill == null) {
 kingPid = hill.getKing();
 if (!subscriber) {canSendOpenKotH = kothStorer.canPlayerBeChallenged(gameInt, myPID);} 
 amImember = hill.hasPlayer(myPID); %>
-<%=GridStateFactory.getGameName(gameInt) + ";" + ((hill != null)?hill.getNumPlayers():0) + ";" + ((hill != null && amImember)?1:0) + ";" + ((kingPid == myPID)?1:0) + ";" + ((kingPid != 0)?dsgPlayerStorer.loadPlayer(kingPid).getName():"") + ";" + ((amImember && (subscriber || canSendOpenKotH))?"1":"0") + ";" + gameInt%><%
-}
+<%="app needs update;" + ((hill != null)?hill.getNumPlayers():0) + ";" + ((hill != null && amImember)?1:0) + ";" + ((kingPid == myPID)?1:0) + ";" + ((kingPid != 0)?dsgPlayerStorer.loadPlayer(kingPid).getName():"") + ";" + ((amImember && (subscriber || canSendOpenKotH))?"1":"0") + ";" + gameInt%><%
 }
 %>
 Rating Stats<%

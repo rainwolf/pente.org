@@ -139,6 +139,11 @@
   </context-param>
  
   <context-param>
+    <param-name>NONSUBSCRIBERFOLLOWINGLIMIT</param-name>
+    <param-value>5</param-value>
+  </context-param>
+
+  <context-param>
     <param-name>iOSSharedSecret</param-name>
     <param-value>1ff8dccb271448f19137e1bb621da561</param-value>
   </context-param>
@@ -284,6 +289,11 @@
     <servlet-name>ChangeAvatarServlet</servlet-name>
     <servlet-class>org.pente.gameServer.client.web.ChangeAvatarServlet</servlet-class>
   </servlet>
+  <servlet>
+    <servlet-name>FollowerServlet</servlet-name>
+    <servlet-class>org.pente.gameServer.client.web.FollowerServlet</servlet-class>
+  </servlet>
+  
 
   
   <servlet>
@@ -640,9 +650,13 @@
     <url-pattern>/gameServer/iOSReceiptValidation</url-pattern>
   </servlet-mapping>
   
+  <servlet-mapping>
+    <servlet-name>FollowerServlet</servlet-name>
+    <url-pattern>/gameServer/social</url-pattern>
+  </servlet-mapping>  
 
   <session-config>
-    <session-timeout>5</session-timeout>
+    <session-timeout>8</session-timeout>
   </session-config>
 
   <welcome-file-list>

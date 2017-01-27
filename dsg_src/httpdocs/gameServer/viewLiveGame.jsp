@@ -12,7 +12,32 @@ com.jivesoftware.base.FilterChain filters =
         null, 1, new com.jivesoftware.base.Filter[] { 
             new HTMLFilter(), new URLConverter(), new TBEmoticon(), new Newline() }, 
             new long[] { 1, 1, 1, 1 });
+%>
 
+<% pageContext.setAttribute("title", "Game"); %>
+<% pageContext.setAttribute("leftNav", "false"); %>
+<%@ include file="begin.jsp" %>
+
+
+<table align="left" width="100%" border="0" colspacing="1" colpadding="1">
+
+
+
+<% String error = (String) request.getAttribute("error");
+   if (error != null) { %>
+
+<tr>
+ <td>
+  <b><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="<%= textColor2 %>">
+   Error: <%= error %>
+  </font></b>
+ </td>
+</tr>
+
+<%   
+   } else {
+   %>
+   <%
 GameData game = (GameData) request.getAttribute("game");
 TBGame tbGame = (TBGame) request.getAttribute("tbGame");
 int gameId = GridStateFactory.getGameId(game.getGame()) + 50;//add 50 for tb
@@ -31,10 +56,10 @@ if (game.getEvent() != null && game.getEvent().equals("Turn-based Game") &&
     turnBased = true;
 }
 else if (game.getTimed()) {
-	timer = game.getInitialTime() + "/" + game.getIncrementalTime();
+  timer = game.getInitialTime() + "/" + game.getIncrementalTime();
 }
 else {
-	timer = "No";
+  timer = "No";
 }
 int height = 550;
 int width = 700;
@@ -46,38 +71,35 @@ if (request.getParameter("h") != null) {
 if (request.getParameter("w") != null) {
     try { width = Integer.parseInt(request.getParameter("w")); } catch (NumberFormatException n) {}
 }
-%>
-
-<% pageContext.setAttribute("title", "Game"); %>
-<% pageContext.setAttribute("leftNav", "false"); %>
-<%@ include file="begin.jsp" %>
-
-<%
+//width = width*2/3;
+if (width > height) {
+  width = height;
+} else {
+  height = width;
+}
 String version = globalResources.getAppletVersion();
-
-
 String setStatus = "";
 String otherGame = "";
 if (turnBased) {
-	TBSet set = tbGame.getTbSet();
-	if (set.isDraw()) {
-		setStatus = "draw";
-	}
-	else if (set.isCancelled()) {
-    	setStatus = "cancelled";
-	}
-	else if (set.isCompleted()) {
-		long wPid = set.getWinnerPid();
-		if (wPid == game.getPlayer1Data().getUserID()) {
-			setStatus = game.getPlayer1Data().getUserIDName() + " wins";
-		}
-		else if (wPid == game.getPlayer2Data().getUserID()) {
-			setStatus = game.getPlayer2Data().getUserIDName() + " wins";
-		}
-	}
-	if (set.isTwoGameSet()) {
-		otherGame = Long.toString(set.getOtherGame(tbGame.getGid()).getGid());
-	}
+  TBSet set = tbGame.getTbSet();
+  if (set.isDraw()) {
+    setStatus = "draw";
+  }
+  else if (set.isCancelled()) {
+      setStatus = "cancelled";
+  }
+  else if (set.isCompleted()) {
+    long wPid = set.getWinnerPid();
+    if (wPid == game.getPlayer1Data().getUserID()) {
+      setStatus = game.getPlayer1Data().getUserIDName() + " wins";
+    }
+    else if (wPid == game.getPlayer2Data().getUserID()) {
+      setStatus = game.getPlayer2Data().getUserIDName() + " wins";
+    }
+  }
+  if (set.isTwoGameSet()) {
+    otherGame = Long.toString(set.getOtherGame(tbGame.getGid()).getGid());
+  }
 }
 
 String messages = "";
@@ -88,30 +110,30 @@ String players = ""; //indicates which seat made message
 boolean showMessages = false;
 DSGPlayerData meData = dsgPlayerStorer.loadPlayer(me);
 if (turnBased && 
-	(game.getPlayer1Data().getUserID() == meData.getPlayerID() ||
-	 game.getPlayer2Data().getUserID() == meData.getPlayerID())) {
-	
-	showMessages = true;
+  (game.getPlayer1Data().getUserID() == meData.getPlayerID() ||
+   game.getPlayer2Data().getUserID() == meData.getPlayerID())) {
+  
+  showMessages = true;
 
-	for (TBMessage m : tbGame.getMessages()) {
-		// bug in URLConverter
-		if (m.getMessage().length() == 1) {
-			messages += m.getMessage() + ",";
-		}
-		else {
-		    messages += MessageEncoder.encodeMessage(
-		        filters.applyFilters(0, m.getMessage())) + ",";
-		}
+  for (TBMessage m : tbGame.getMessages()) {
+    // bug in URLConverter
+    if (m.getMessage().length() == 1) {
+      messages += m.getMessage() + ",";
+    }
+    else {
+        messages += MessageEncoder.encodeMessage(
+            filters.applyFilters(0, m.getMessage())) + ",";
+    }
         seqNums += m.getSeqNbr() + ",";
-	    moveNums += m.getMoveNum() + ",";
-	    dates += m.getDate().getTime() + ",";
-	    if (tbGame.getPlayer1Pid() == m.getPid()) {
-	    	players += "1,";
-	    }
-	    else {
-	    	players += "2,";
-	    }
-	}
+      moveNums += m.getMoveNum() + ",";
+      dates += m.getDate().getTime() + ",";
+      if (tbGame.getPlayer1Pid() == m.getPid()) {
+        players += "1,";
+      }
+      else {
+        players += "2,";
+      }
+  }
 }
 
 String attach = (String) request.getAttribute("attach");
@@ -124,24 +146,6 @@ if (color == null) {
 }
 %>
 
-<table align="left" width="100%" border="0" colspacing="1" colpadding="1">
-
-
-
-<% String error = (String) request.getAttribute("error");
-   if (error != null) { %>
-
-<tr>
- <td>
-  <b><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="<%= textColor2 %>">
-   Error: <%= error %>
-  </font></b>
- </td>
-</tr>
-
-<%   
-   }
-%>
 
 <tr>
  <td>
@@ -245,7 +249,9 @@ if (color == null) {
  </td>
 </tr>
 
-</table>
 
+<% }
+%>
+</table>
 
 <%@ include file="end.jsp" %>
