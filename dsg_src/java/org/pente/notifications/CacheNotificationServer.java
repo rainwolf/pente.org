@@ -112,7 +112,7 @@ public class CacheNotificationServer implements NotificationServer {
                 }
             }
         };
-        runnable.run();
+        (new Thread(runnable)).start();
     }
     
     private void sendAndroidNotification(long pid, String token, String message) {
@@ -150,7 +150,7 @@ public class CacheNotificationServer implements NotificationServer {
                 }
             }
         };
-        runnable.run();
+        (new Thread(runnable)).start();
     }
     
     private void sendiOSNotification(long pid, String token, PushNotificationPayload payload) {
@@ -190,7 +190,7 @@ public class CacheNotificationServer implements NotificationServer {
                 }
             }
         };
-        runnable.run();
+        (new Thread(runnable)).start();
     }
 
     @Override
