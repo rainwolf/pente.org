@@ -11,7 +11,7 @@ import org.pente.gameServer.server.*;
 
 import org.apache.log4j.*;
 
-import org.pente.turnBased.SendNotification;
+import org.pente.notifications.NotificationServer;
 
 public class DSGMessageServlet extends HttpServlet {
 	
@@ -24,8 +24,8 @@ public class DSGMessageServlet extends HttpServlet {
 	private static final String mobileRedirectPage = "/gameServer/mobile/empty.jsp";
 	
 	private Resources resources;
-	
-    public void init(ServletConfig config) throws ServletException {
+
+	public void init(ServletConfig config) throws ServletException {
 
         super.init(config);
 
@@ -285,14 +285,8 @@ public class DSGMessageServlet extends HttpServlet {
 
 				dsgMessageStorer.createMessage(m);
 
-					ServletContext ctx = getServletContext();
-					String penteLiveGCMkey = ctx.getInitParameter("penteLiveGCMkey");
-					String penteLiveAPNSkey = ctx.getInitParameter("penteLiveAPNSkey");
-					String penteLiveAPNSpwd = ctx.getInitParameter("penteLiveAPNSpassword");
-					boolean productionFlag = ctx.getInitParameter("penteLiveAPNSproductionFlag").equals("true");
-					Thread thread = new Thread(new SendNotification(3, m.getMid(), playerData.getPlayerID(), toPlayerData.getPlayerID(), 
-						subject, penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, resources.getDbHandler(), penteLiveGCMkey));
-					thread.start();
+				NotificationServer notificationServer = resources.getNotificationServer();
+				notificationServer.sendMessageNotification(playerData.getName(), toPlayerData.getPlayerID(), m.getMid(), m.getSubject());
 				
 				String isMobile = (String) request.getParameter("mobile");
 				if (isMobile == null) {

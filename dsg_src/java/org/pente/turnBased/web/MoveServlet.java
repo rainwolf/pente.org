@@ -7,13 +7,12 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 
 import org.pente.game.*;
+import org.pente.notifications.NotificationServer;
 import org.pente.turnBased.*;
 import org.pente.gameServer.core.*;
 import org.pente.gameServer.server.*;
 
 import org.apache.log4j.*;
-
-import org.pente.turnBased.SendNotification;
 
 public class MoveServlet extends HttpServlet {
 	
@@ -328,14 +327,8 @@ public class MoveServlet extends HttpServlet {
 
 
 				if (!game.isCompleted() || game.getPlayer1Pid() == 23000000020606L || game.getPlayer2Pid() == 23000000020606L) {
-					ServletContext ctx = getServletContext();
-					String penteLiveGCMkey = ctx.getInitParameter("penteLiveGCMkey");
-					String penteLiveAPNSkey = ctx.getInitParameter("penteLiveAPNSkey");
-					String penteLiveAPNSpwd = ctx.getInitParameter("penteLiveAPNSpassword");
-					boolean productionFlag = ctx.getInitParameter("penteLiveAPNSproductionFlag").equals("true");
-					Thread thread = new Thread(new SendNotification(1, game.getGid(), (game.getCurrentPlayer() == game.getPlayer1Pid())?game.getPlayer2Pid():game.getPlayer1Pid(), game.getCurrentPlayer(), 
-						GridStateFactory.getGameName(game.getGame()), penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, resources.getDbHandler(), penteLiveGCMkey));
-					thread.start();
+					NotificationServer notificationServer = resources.getNotificationServer();
+					notificationServer.sendMoveNotification(playerData.getName(), game.getCurrentPlayer(), game.getGid(), GridStateFactory.getGameName(game.getGame()));
 				}
 
 

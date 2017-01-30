@@ -22,7 +22,7 @@ import org.pente.gameServer.core.*;
 import org.pente.gameServer.server.*;
 import org.pente.database.*;
 import org.pente.message.*;
-import org.pente.turnBased.SendNotification;
+import org.pente.notifications.NotificationServer;
 
 import org.json.JSONObject;
 
@@ -39,10 +39,6 @@ public class IOSReceiptServlet extends HttpServlet {
 
         ServletContext ctx = getServletContext();
         String iOSSharedSecret = ctx.getInitParameter("iOSSharedSecret");
-        String penteLiveGCMkey = ctx.getInitParameter("penteLiveGCMkey");
-        String penteLiveAPNSkey = ctx.getInitParameter("penteLiveAPNSkey");
-        String penteLiveAPNSpwd = ctx.getInitParameter("penteLiveAPNSpassword");
-        boolean productionFlag = ctx.getInitParameter("penteLiveAPNSproductionFlag").equals("true");
         resources = (Resources) ctx.getAttribute(Resources.class.getName());
         CacheDSGPlayerStorer dsgPlayerStorer = (CacheDSGPlayerStorer) resources.getDsgPlayerStorer();
         Connection con = null;
@@ -129,9 +125,8 @@ public class IOSReceiptServlet extends HttpServlet {
                 dsgMessageStorer.createMessage(message);
                 dsgPlayerStorer.refreshPlayer(subscriberData.getName());
 
-                Thread thread = new Thread(new SendNotification(0, 0, 23000000016237L, 23000000016237L,
-                    subscriberData.getName() + " subscribed on iOS", penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, dbHandler, penteLiveGCMkey) );
-                thread.start();
+                NotificationServer notificationServer = resources.getNotificationServer();
+                notificationServer.sendMessageNotification("rainwolf", message.getToPid(), message.getMid(), message.getSubject());
 
                 response.setContentType("text/html");
                 PrintWriter out = response.getWriter();

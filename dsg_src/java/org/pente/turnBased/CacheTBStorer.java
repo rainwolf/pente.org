@@ -13,10 +13,7 @@ import org.pente.gameServer.tourney.*;
 import org.pente.kingOfTheHill.*;
 
 import org.apache.log4j.*;
-
-import javax.servlet.*;
-
-import org.pente.turnBased.SendNotification;
+import org.pente.notifications.NotificationServer;
 
 public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
@@ -30,9 +27,8 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 	private DSGMessageStorer dsgMessageStorer;
 	private TourneyStorer tourneyStorer;
 	private CacheKOTHStorer kothStorer;
-	private ServletContext ctx;
-	private DBHandler dbHandler;
-    
+	private NotificationServer notificationServer;
+
 	/** used to cache event ids for tb-games */
 	private Map<Integer, Integer> eidMap = new HashMap<Integer, Integer>();
 	
@@ -354,10 +350,6 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 						}
 						if (floatingVacationDays > 0) {
 							if (floatingVacationDays == 24) {
-								String penteLiveGCMkey = ctx.getInitParameter("penteLiveGCMkey");
-								String penteLiveAPNSkey = ctx.getInitParameter("penteLiveAPNSkey");
-								String penteLiveAPNSpwd = ctx.getInitParameter("penteLiveAPNSpassword");
-								boolean productionFlag = ctx.getInitParameter("penteLiveAPNSproductionFlag").equals("true");
 								DSGMessage message = new DSGMessage();
 								message.setFromPid(23000000016237L);
 								message.setToPid(cp);
@@ -367,9 +359,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 									"You can purchase additional vacation days at https://www.pente.org/gameServer/subscriptions \n\n");
 								message.setCreationDate(new java.util.Date());
 								dsgMessageStorer.createMessage(message, false);
-								Thread thread = new Thread(new SendNotification(3, message.getMid(), message.getFromPid(), message.getToPid(),
-										message.getSubject(), penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, dbHandler, penteLiveGCMkey));
-								thread.start();
+								notificationServer.sendMessageNotification("rainwolf", message.getToPid(), message.getMid(), message.getSubject());
 							}
 							int weekend[]=new int[] { 7, 1 }; //sat/sun default
 							try {
@@ -1516,14 +1506,6 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         */
     }
 
-    public void setServletContext(ServletContext ctx) {
-    	this.ctx = ctx;
-    }
-    public void setDBHandler(DBHandler dbHandler) {
-    	this.dbHandler = dbHandler;
-    }
-
-
     public void createTournamentSet(int game, long player1PID, long player2PID, int daysPerMove, int eventID) {
         try {
 	        TBGame tbg1 = new TBGame();
@@ -1554,11 +1536,6 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 	        tbs.setInvitationRestriction(TBSet.ANY_RATING);
 	        createSet(tbs);
 
-			String penteLiveGCMkey = ctx.getInitParameter("penteLiveGCMkey");
-			String penteLiveAPNSkey = ctx.getInitParameter("penteLiveAPNSkey");
-			String penteLiveAPNSpwd = ctx.getInitParameter("penteLiveAPNSpassword");
-			boolean productionFlag = ctx.getInitParameter("penteLiveAPNSproductionFlag").equals("true");
-
 	        Tourney tourney = tourneyStorer.getTourney(eventID);
 			DSGPlayerData toPlayer = dsgPlayerStorer.loadPlayer(player2PID);
 
@@ -1572,9 +1549,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 								+ eventID + "&round=" + tourney.getNumRounds() + "  \n \n ");
 			message.setCreationDate(new java.util.Date());
 			dsgMessageStorer.createMessage(message, false);
-			Thread thread = new Thread(new SendNotification(3, message.getMid(), message.getFromPid(), message.getToPid(), 
-				message.getSubject(), penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, dbHandler, penteLiveGCMkey));
-			thread.start();
+			notificationServer.sendMessageNotification("rainwolf", message.getToPid(), message.getMid(), message.getSubject());
 
 			toPlayer = dsgPlayerStorer.loadPlayer(player1PID);
 
@@ -1588,11 +1563,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 								+ eventID + "&round=" + tourney.getNumRounds() + "  \n \n ");
 			message.setCreationDate(new java.util.Date());
 			dsgMessageStorer.createMessage(message, false);
-			thread = new Thread(new SendNotification(3, message.getMid(), message.getFromPid(), message.getToPid(), 
-				message.getSubject(), penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, dbHandler, penteLiveGCMkey));
-			thread.start();
-				
-
+			notificationServer.sendMessageNotification("rainwolf", message.getToPid(), message.getMid(), message.getSubject());
         } catch (Throwable t) {
             log4j.error("Problem creating tb sets for tournament", t);
         }
@@ -1639,4 +1610,9 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
             log4j.error("Problem creating tb sets for tournament", t);
         }
     }
+
+	public void setNotificationServer(NotificationServer notificationServer) {
+		this.notificationServer = notificationServer;
+	}
+
 }
