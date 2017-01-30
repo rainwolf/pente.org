@@ -8,6 +8,7 @@ import org.pente.gameDatabase.GameStorerSearcher;
 import org.pente.gameServer.client.web.SiteStatsData;
 import org.pente.gameServer.core.*;
 import org.pente.gameServer.tourney.*;
+import org.pente.notifications.NotificationServer;
 import org.pente.turnBased.*;
 import org.pente.message.*;
 
@@ -43,6 +44,7 @@ public class Resources {
     private FastMySQLDSGGameLookup dsgGameLookup;
     private CacheKOTHStorer kothStorer;
     private DSGFollowerStorer followerStorer;
+    private NotificationServer notificationServer;
 
     private List<ServerData> serverData = new ArrayList<>();
     private List<Server> servers = new ArrayList<>();
@@ -223,5 +225,8 @@ public class Resources {
 
     public DSGFollowerStorer getFollowerStorer() { return followerStorer; }
     public void setFollowerStorer(DSGFollowerStorer followerStorer) { this.followerStorer = followerStorer; }
+
+    public NotificationServer getNotificationServer() { return notificationServer; }
+    public void setNotificationServer(NotificationServer notificationServer) { this.notificationServer = notificationServer; }
 
 }

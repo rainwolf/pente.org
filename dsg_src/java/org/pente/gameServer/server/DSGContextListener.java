@@ -19,8 +19,10 @@
 package org.pente.gameServer.server;
 
 import java.io.*;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.*;
 
@@ -32,6 +34,10 @@ import org.pente.gameDatabase.*;
 import org.pente.gameServer.core.*;
 import org.pente.gameServer.client.web.*;
 import org.pente.gameServer.tourney.*;
+import org.pente.notifications.CacheNotificationServer;
+import org.pente.notifications.MySQLNotificationServer;
+import org.pente.notifications.NotificationServer;
+import org.pente.notifications.NotificationServerException;
 import org.pente.turnBased.*;
 import org.pente.message.*;
 
@@ -215,6 +221,14 @@ public class DSGContextListener implements ServletContextListener {
             
             DSGFollowerStorer followerStorer = new CacheDSGFollowerStorer(new MySQLDSGFollowerStorer(dbHandler));
             resources.setFollowerStorer(followerStorer);
+
+            String penteLiveGCMkey = ctx.getInitParameter("penteLiveGCMkey");
+            String penteLiveAPNSkey = ctx.getInitParameter("penteLiveAPNSkey");
+            String penteLiveAPNSpwd = ctx.getInitParameter("penteLiveAPNSpassword");
+            boolean productionFlag = ctx.getInitParameter("penteLiveAPNSproductionFlag").equals("true");
+            NotificationServer notificationServer = new CacheNotificationServer(new MySQLNotificationServer(dbHandler), penteLiveAPNSkey, penteLiveGCMkey, penteLiveAPNSpwd, productionFlag);
+            resources.setNotificationServer(notificationServer);
+            
             
             ctx.setAttribute(Resources.class.getName(), resources);
             
