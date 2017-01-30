@@ -22,7 +22,7 @@ import org.pente.gameServer.core.*;
 import org.pente.gameServer.server.*;
 import org.pente.database.*;
 import org.pente.message.*;
-import org.pente.turnBased.SendNotification;
+import org.pente.notifications.NotificationServer;
 
 
 
@@ -43,12 +43,9 @@ public class PaypalIPNListenerServlet extends HttpServlet {
             HttpServletResponse response) throws ServletException, IOException {
 
         ServletContext ctx = getServletContext();
-        String penteLiveGCMkey = ctx.getInitParameter("penteLiveGCMkey");
-        String penteLiveAPNSkey = ctx.getInitParameter("penteLiveAPNSkey");
-        String penteLiveAPNSpwd = ctx.getInitParameter("penteLiveAPNSpassword");
-        boolean productionFlag = ctx.getInitParameter("penteLiveAPNSproductionFlag").equals("true");
         String paypalMode = ctx.getInitParameter("paypalMode");
         resources = (Resources) ctx.getAttribute(Resources.class.getName());
+        NotificationServer notificationServer = resources.getNotificationServer();
         CacheDSGPlayerStorer dsgPlayerStorer = (CacheDSGPlayerStorer) resources.getDsgPlayerStorer();
         Connection con = null;
         PreparedStatement stmt = null;
@@ -129,9 +126,7 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                             stmt.setString(1, transactionID);
                             stmt.executeUpdate();
                             stmt.close();
-                            Thread thread = new Thread(new SendNotification(0, 0, 23000000016237L, 23000000016237L,
-                                    "Payment verified", penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, dbHandler, penteLiveGCMkey) );
-                            thread.start();
+                            notificationServer.sendAdminNotification("Payment verified");
                         }
                         return;
                     }
@@ -245,11 +240,7 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                     }
                     stmt.close();
 
-                    Thread thread = new Thread(new SendNotification(0, 0, 23000000016237L, 23000000016237L,
-                        customParts[1] + ((refundTXid == null)?" purchased vacation":" was refunded") + ((gifterPid != 0)?" by "+customParts[0]:"") + " for EUR " + amount + ", the total is now: " + totalSum, penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, dbHandler, penteLiveGCMkey) );
-                    thread.start();
-
-
+                    notificationServer.sendAdminNotification(customParts[1] + ((refundTXid == null)?" purchased vacation":" was refunded") + ((gifterPid != 0)?" by "+customParts[0]:"") + " for EUR " + amount + ", the total is now: " + totalSum);
 
                     ///////// VACATIONDAYS
 
@@ -299,9 +290,7 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                             stmt.setString(1, transactionID);
                             stmt.executeUpdate();
                             stmt.close();
-                            Thread thread = new Thread(new SendNotification(0, 0, 23000000016237L, 23000000016237L,
-                                    "Payment verified", penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, dbHandler, penteLiveGCMkey) );
-                            thread.start();
+                            notificationServer.sendAdminNotification("Payment verified");
                         }
                         return;
                     }
@@ -455,10 +444,7 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                         totalSum = rs.getDouble(1);
                     } 
 
-                    Thread thread = new Thread(new SendNotification(0, 0, 23000000016237L, 23000000016237L,
-                        customParts[1] + ((refundTXid == null)?" subscribed":" was refunded") + ((gifterPid != 0)?" by "+customParts[0]:"") + " for EUR " + amount + ", the total is now: " + totalSum, penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, dbHandler, penteLiveGCMkey) );
-                    thread.start();
-
+                    notificationServer.sendAdminNotification(customParts[1] + ((refundTXid == null)?" subscribed":" was refunded") + ((gifterPid != 0)?" by "+customParts[0]:"") + " for EUR " + amount + ", the total is now: " + totalSum);
                 }
             } catch (SQLException e) {
                 log4j.info("PaypalIPNListenerServlet SQLException " + e);

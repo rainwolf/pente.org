@@ -34,9 +34,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.pente.database.DBHandler;
-import org.pente.message.DSGMessage;
-import org.pente.message.DSGMessageStorer;
-import org.pente.turnBased.SendNotification;
+import org.pente.notifications.NotificationServer;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.servlet.ServletContext;
@@ -58,6 +56,8 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
 
     private Timer checkiOSSubscribersTimer;
     private Timer checkSubscribersTimer;
+    
+    private NotificationServer notificationServer;
 
     private ServletContext ctx;
     private DBHandler dbHandler;
@@ -472,13 +472,7 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
                             DSGPlayerData subscriberData = loadPlayer(entry.getKey().longValue());
                             refreshPlayer(subscriberData.getName());
 
-                            String penteLiveGCMkey = ctx.getInitParameter("penteLiveGCMkey");
-                            String penteLiveAPNSkey = ctx.getInitParameter("penteLiveAPNSkey");
-                            String penteLiveAPNSpwd = ctx.getInitParameter("penteLiveAPNSpassword");
-                            boolean productionFlag = ctx.getInitParameter("penteLiveAPNSproductionFlag").equals("true");
-                            Thread thread = new Thread(new SendNotification(0, 0, 23000000016237L, 23000000016237L,
-                                    subscriberData.getName() + " extended iOS subscription", penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, dbHandler, penteLiveGCMkey) );
-                            thread.start();
+                            notificationServer.sendAdminNotification(subscriberData.getName() + " extended iOS subscription");
 
                             log4j.info("CheckiOSSubscribersRunnable: iOS subscription extension successful for " + subscriberData.getName());
                         }
@@ -618,6 +612,10 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
                 log4j.info("CheckSubscriptionsRunnable: Something went wrong: " + e);
             }
         }
+    }
+
+    public void setNotificationServer(NotificationServer notificationServer) {
+        this.notificationServer = notificationServer;
     }
 
 }

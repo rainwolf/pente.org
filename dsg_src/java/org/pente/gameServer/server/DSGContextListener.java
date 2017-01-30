@@ -73,13 +73,21 @@ public class DSGContextListener implements ServletContextListener {
             DBHandler dbHandlerRo = new MySQLDBHandler(true, "dsg_ro");
             resources.setDbHandlerRo(dbHandlerRo);
             log4j.info("contextInitialized(), created DBHandler[dsg_ro]");
-            
+
+            String penteLiveGCMkey = ctx.getInitParameter("penteLiveGCMkey");
+            String penteLiveAPNSkey = ctx.getInitParameter("penteLiveAPNSkey");
+            String penteLiveAPNSpwd = ctx.getInitParameter("penteLiveAPNSpassword");
+            boolean productionFlag = ctx.getInitParameter("penteLiveAPNSproductionFlag").equals("true");
+            NotificationServer notificationServer = new CacheNotificationServer(new MySQLNotificationServer(dbHandler), penteLiveAPNSkey, penteLiveGCMkey, penteLiveAPNSpwd, productionFlag);
+            resources.setNotificationServer(notificationServer);
+
             gameVenueStorer = new MySQLGameVenueStorer(dbHandler);
             resources.setGameVenueStorer(gameVenueStorer);
             ctx.setAttribute(GameVenueStorer.class.getName(), gameVenueStorer);
             log4j.info("contextInitialized(), created GameVenueStorer");
 
             dsgPlayerStorer = new CacheDSGPlayerStorer(new MySQLDSGPlayerStorer(dbHandler, gameVenueStorer), ctx, dbHandler);
+            dsgPlayerStorer.setNotificationServer(notificationServer);
             resources.setDsgPlayerStorer(dsgPlayerStorer);
             ctx.setAttribute(DSGPlayerStorer.class.getName(), dsgPlayerStorer);
             log4j.info("contextInitialized(), created DSGPlayerStorer");
@@ -199,8 +207,7 @@ public class DSGContextListener implements ServletContextListener {
             CacheTBStorer tbGameStorer = new CacheTBStorer(
                 new MySQLTBGameStorer(dbHandler), dsgPlayerStorer, gameStorer,
                 dsgMessageStorer, kothStorer);
-            tbGameStorer.setServletContext(ctx);
-            tbGameStorer.setDBHandler(dbHandler);
+            tbGameStorer.setNotificationServer(notificationServer);
             resources.setTbGameStorer(tbGameStorer);
             log4j.info("contextInitialized(), created TBGameStorer");
 
@@ -222,14 +229,6 @@ public class DSGContextListener implements ServletContextListener {
             DSGFollowerStorer followerStorer = new CacheDSGFollowerStorer(new MySQLDSGFollowerStorer(dbHandler));
             resources.setFollowerStorer(followerStorer);
 
-            String penteLiveGCMkey = ctx.getInitParameter("penteLiveGCMkey");
-            String penteLiveAPNSkey = ctx.getInitParameter("penteLiveAPNSkey");
-            String penteLiveAPNSpwd = ctx.getInitParameter("penteLiveAPNSpassword");
-            boolean productionFlag = ctx.getInitParameter("penteLiveAPNSproductionFlag").equals("true");
-            NotificationServer notificationServer = new CacheNotificationServer(new MySQLNotificationServer(dbHandler), penteLiveAPNSkey, penteLiveGCMkey, penteLiveAPNSpwd, productionFlag);
-            resources.setNotificationServer(notificationServer);
-            
-            
             ctx.setAttribute(Resources.class.getName(), resources);
             
             LeaderBoard lb = new LeaderBoard(dbHandler, dsgPlayerStorer);
