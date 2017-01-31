@@ -438,6 +438,11 @@ public class CacheNotificationServer implements NotificationServer {
                     }
                 }
             }
+            try {
+                baseStorer.removeOldTokens();
+            } catch (NotificationServerException e) {
+                log4j.info("CheckNotificationRecordsRunnable removeOldTokens: Something went wrong: " + e);
+            }
         }
     }
 

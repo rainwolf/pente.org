@@ -6,6 +6,7 @@ import org.pente.database.DBHandler;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.*;
 
 /**
@@ -160,5 +161,39 @@ public class MySQLNotificationServer implements NotificationServer {
     @Override
     public void sendAdminNotification(String message) {
         // no sql applicable
+    }
+    
+    public void removeOldTokens() throws NotificationServerException {
+        Connection con = null;
+        PreparedStatement stmt = null;
+
+        Date twoWeeksAgo = new Date();
+        long timeMillis = twoWeeksAgo.getTime();
+        twoWeeksAgo.setTime(timeMillis - 1000L*3600*24*15);
+
+        try {
+            try {
+                con = dbHandler.getConnection();
+                stmt = con.prepareStatement(
+                        "DELETE from notifications where lastping < ?");
+                stmt.setTimestamp(1, new Timestamp(twoWeeksAgo.getTime()));
+                stmt.executeUpdate();
+                stmt.close();
+                stmt = con.prepareStatement(
+                        "DELETE from notifications_android where lastping < ?");
+                stmt.setTimestamp(1, new Timestamp(twoWeeksAgo.getTime()));
+                stmt.executeUpdate();
+
+            } finally {
+                if (stmt != null) {
+                    stmt.close();
+                }
+                if (con != null) {
+                    dbHandler.freeConnection(con);
+                }
+            }
+        } catch (Throwable t) {
+            throw new NotificationServerException("removeOldTokens problem", t);
+        }
     }
 }
