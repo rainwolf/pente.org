@@ -29,6 +29,7 @@ public class CacheNotificationServer implements NotificationServer {
     
     private Map<Long, Map<String, Date>> iOStokens = new HashMap<>();
     private Map<Long, Map<String, Date>> androidTokens = new HashMap<>();
+    private Map<Long, Date> broadcasts = new HashMap<>();
 
     private String penteLiveAPNSkey;
     private String penteLiveGCMkey;
@@ -141,8 +142,7 @@ public class CacheNotificationServer implements NotificationServer {
                     }
                 } catch (IOException e) {
                     log4j.error("Unable to send GCM message.");
-                    log4j.error("Please ensure that API_KEY has been replaced by the server " +
-                            "API key, and that the device's registration token is correct (if specified).");
+                    log4j.error("Problem sending android notification for " + pid + " with token " + token);
                     e.printStackTrace();
                 } catch (NotificationServerException e) {
                     log4j.error("Removing android token failed. " + token);
@@ -160,33 +160,35 @@ public class CacheNotificationServer implements NotificationServer {
                 List<PushedNotification> notifications = null;
                 try {
                     notifications = Push.payload(payload, penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, token);
-                } catch (CommunicationException | KeystoreException e) {
-                    e.printStackTrace();
-                }
-                for (PushedNotification notification : notifications) {
-                    if (!notification.isSuccessful()) {
-                        String invalidToken = notification.getDevice().getToken();
-                        ResponsePacket theErrorResponse = notification.getResponse();
-                                        /* Add code here to remove invalidToken from your database */
-
-                        if (theErrorResponse.getMessage().contains("Invalid token")) {
-                            try {
-                                removeInvalidToken(pid, invalidToken, iOS);
-                            } catch (NotificationServerException e) {
-                                log4j.error("sendiOSNotification error removing token " + invalidToken);
-                                e.printStackTrace();
+                    for (PushedNotification notification : notifications) {
+                        if (!notification.isSuccessful()) {
+                            String invalidToken = notification.getDevice().getToken();
+                            ResponsePacket theErrorResponse = notification.getResponse();
+                                            /* Add code here to remove invalidToken from your database */
+    
+                            if (theErrorResponse.getMessage().contains("Invalid token")) {
+                                try {
+                                    removeInvalidToken(pid, invalidToken, iOS);
+                                } catch (NotificationServerException e) {
+                                    log4j.error("sendiOSNotification error removing token " + invalidToken);
+                                    e.printStackTrace();
+                                }
+                            } else {
+                                               /* Find out more about what the problem was */
+                                Exception theProblem = notification.getException();
+                                theProblem.printStackTrace();
+                                log4j.error("Problem sending ios notification for " + pid + " with token " + token);
                             }
-                        } else {
-                                           /* Find out more about what the problem was */
-                            Exception theProblem = notification.getException();
-                            theProblem.printStackTrace();
-                        }
-
-                                        /* If the problem was an error-response packet returned by Apple, get it */
-                        if (theErrorResponse != null) {
-                            log4j.error("sendiOSNotification was unsuccessful because: " + theErrorResponse.getMessage() + " with token " + invalidToken);
+    
+                                            /* If the problem was an error-response packet returned by Apple, get it */
+                            if (theErrorResponse != null) {
+                                log4j.error("sendiOSNotification was unsuccessful because: " + theErrorResponse.getMessage() + " with token " + invalidToken);
+                                log4j.error("Problem sending ios notification for " + pid + " with token " + token);
+                            }
                         }
                     }
+                } catch (CommunicationException | KeystoreException e) {
+                    e.printStackTrace();
                 }
             }
         };
@@ -208,7 +210,7 @@ public class CacheNotificationServer implements NotificationServer {
         }
         for (Map.Entry<String, Date> tokenEntry: tokenMap.entrySet()) {
             if (oneWeekAgo.before(tokenEntry.getValue())) {
-                
+
                 payload = PushNotificationPayload.complex();
                 try {
                     payload.addSound("penteLiveNotificationSound.caf");
@@ -397,6 +399,80 @@ public class CacheNotificationServer implements NotificationServer {
                 e.printStackTrace();
             }
         }
+    }
+
+    @Override
+    public void sendBroadcastNotification(String player, String game, long pid) {
+        Map<String, Date> tokenMap = null;
+        PushNotificationPayload payload = null;
+        Date oneWeekAgo = new Date();
+        long timeMillis = oneWeekAgo.getTime();
+        oneWeekAgo.setTime(timeMillis - 1000L*3600*24*7);
+
+        try {
+            tokenMap = new HashMap<>(getTokens(pid, iOS));
+        } catch (NotificationServerException e) {
+            e.printStackTrace();
+        }
+        for (Map.Entry<String, Date> tokenEntry: tokenMap.entrySet()) {
+            if (oneWeekAgo.before(tokenEntry.getValue())) {
+
+                payload = PushNotificationPayload.complex();
+                try {
+                    payload.addSound("newplayer.caf");
+                    payload.addAlert("Live Game Alert\n" + player + " wants to play live " + game);
+                    payload.addCustomDictionary("liveBroadCastPlayer", player);
+                    payload.addCustomDictionary("liveBroadCastGame", game);
+                    payload.addBadge(1);
+                    sendiOSNotification(pid, tokenEntry.getKey(), payload);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        try {
+            tokenMap = new HashMap<>(getTokens(pid, ANDROID));
+        } catch (NotificationServerException e) {
+            e.printStackTrace();
+        }
+        for (Map.Entry<String, Date> tokenEntry: tokenMap.entrySet()) {
+            if (oneWeekAgo.before(tokenEntry.getValue())) {
+
+                JSONObject jGcmData = new JSONObject();
+                JSONObject jData = new JSONObject();
+                try {
+                    jData.put("liveBroadCastPlayer", player);
+                    jData.put("liveBroadCastGame", game);
+                    jData.put("message", "Live Game Alert\n" + player + " wants to play live " + game);
+                    jGcmData.put("to", tokenEntry.getKey());
+                    jGcmData.put("data", jData);
+
+                    sendAndroidNotification(pid, tokenEntry.getKey(), jGcmData.toString());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    @Override
+    public boolean canBroadcast(long pid) {
+        Date lastBroadcast = broadcasts.get(pid);
+        if (lastBroadcast != null) {
+            Date oneHourAgo = new Date();
+            long timeMillis = oneHourAgo.getTime();
+            oneHourAgo.setTime(timeMillis - 1000L*3600);
+            if (oneHourAgo.before(lastBroadcast)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public void storeBroadcastDate(long pid) {
+        broadcasts.put(pid, new Date());
     }
 
     private class CheckNotificationRecordsRunnable extends TimerTask {

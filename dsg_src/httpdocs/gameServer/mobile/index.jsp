@@ -51,12 +51,11 @@
             name = checkusername;
         }
 
-ServletContext ctx = getServletContext();
-DSGPlayerStorer dsgPlayerStorer = (DSGPlayerStorer) ctx.getAttribute(DSGPlayerStorer.class.getName());
-DSGPlayerData dsgPlayerData = dsgPlayerStorer.loadPlayer(name);
-long myPID = dsgPlayerData.getPlayerID();
 Resources resources = (Resources) application.getAttribute(
    Resources.class.getName());
+DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
+DSGPlayerData dsgPlayerData = dsgPlayerStorer.loadPlayer(name);
+long myPID = dsgPlayerData.getPlayerID();
 TourneyStorer tourneyStorer = resources.getTourneyStorer();
 List<Tourney> currentTournies = (List<Tourney>) tourneyStorer.getCurrentTournies();
 CacheKOTHStorer  kothStorer = resources.getKOTHStorer();

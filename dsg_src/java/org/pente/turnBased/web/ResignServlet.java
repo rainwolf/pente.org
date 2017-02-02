@@ -150,9 +150,9 @@ public class ResignServlet extends HttpServlet {
 				
 				String isMobile = (String) request.getParameter("mobile");
 				if (isMobile == null) {
-					getServletContext().getRequestDispatcher(resignRedirectPage).forward(request, response);
+					response.sendRedirect(resignRedirectPage);
 				} else {
-					getServletContext().getRequestDispatcher(mobileRedirectPage).forward(request, response);
+					response.sendRedirect(mobileRedirectPage);
 				}
 			}
 

@@ -94,6 +94,10 @@ public class FollowerServlet extends HttpServlet {
                 handleError(request, response, "database error, try again later");
                 return;
             }
+            if (followPlayerData == null) {
+                handleError(request, response, "player not found");
+                return;
+            }
             try {
                 followerStorer.addFollower(followPlayerData.getPlayerID(), playerData.getPlayerID());
             } catch (DSGFollowerStoreException e) {
@@ -122,7 +126,7 @@ public class FollowerServlet extends HttpServlet {
         }
 
         if (follow != null && followPlayerData != null) {
-            getServletContext().getRequestDispatcher("/gameServer/profile?viewName="+followPlayerData.getName()).forward(request, response);
+            response.sendRedirect("/gameServer/profile?viewName="+followPlayerData.getName());
         } else {
             if (request.getParameter("social") != null) {
                 try {
@@ -135,9 +139,9 @@ public class FollowerServlet extends HttpServlet {
                 }
                 getServletContext().getRequestDispatcher("/gameServer/followersing.jsp").forward(request, response);
             } else if (unFollow != null) {
-                getServletContext().getRequestDispatcher("/gameServer/profile?viewName="+unFollowPlayerData.getName()).forward(request, response);
+                response.sendRedirect("/gameServer/profile?viewName="+unFollowPlayerData.getName());
             } else {
-                getServletContext().getRequestDispatcher("/gameServer/index.jsp").forward(request, response);
+                response.sendRedirect("/gameServer/index.jsp");
             }
         }
     }

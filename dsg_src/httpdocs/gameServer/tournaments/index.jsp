@@ -9,6 +9,7 @@ Resources resources = (Resources) application.getAttribute(
 List signup = resources.getTourneyStorer().getUpcomingTournies();
 List currentT = resources.getTourneyStorer().getCurrentTournies();
 List completed = resources.getTourneyStorer().getCompletedTournies();
+TourneyStorer tourneyStorer = resources.getTourneyStorer();
 
 %>
 
@@ -132,11 +133,34 @@ List completed = resources.getTourneyStorer().getCompletedTournies();
     <td colspan="2"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">
       <% try 
          { 
-          for (Iterator it = completed.iterator(); it.hasNext();) {
-             Tourney d = (Tourney) it.next(); 
-             Tourney t = resources.getTourneyStorer().getTourney(d.getEventID());%>
+         int year = 0;
+         List<Tourney> completedDetails = new ArrayList();
+         for (Object d: completed) {
+            completedDetails.add(tourneyStorer.getTourney(((Tourney) d).getEventID()));
+         }
+        Collections.sort(completedDetails, new Comparator<Tourney>() {
+          public int compare(Tourney o1, Tourney o2) {
+              return o2.getStartDate().compareTo(o1.getStartDate());
+          }
+        });         
+          for (Iterator it = completedDetails.iterator(); it.hasNext();) {
+             Tourney t = (Tourney) it.next(); 
+//             Tourney t = tourneyStorer.getTourney(d.getEventID());
+             Calendar cal = Calendar.getInstance();
+            cal.setTime(t.getStartDate());  
+            int tourneyYear = cal.get(Calendar.YEAR);
+            if (year != tourneyYear) {
+            year = tourneyYear;
+            %>
+            <h2><%=year%> </h2>
+            <%
+            }
+            DSGPlayerData d = dsgPlayerStorer.loadPlayer(t.getWinnerPid());
+            %>
              <b><a href="statusRound.jsp?eid=<%= t.getEventID() %>&round=<%= t.getNumRounds() %>">
-                 <%= t.getName() %></a></b><br>
+                 <%= t.getName() %></a></b> (winner: 
+                 <%@ include file="../playerLink.jspf" %>)&nbsp;
+<br>
       <%  }
          } 
          catch (Throwable t) 
@@ -144,6 +168,7 @@ List completed = resources.getTourneyStorer().getCompletedTournies();
            t.printStackTrace(); 
          } %>
 
+        <h2>Before 2005</h2>
       <%-- older manual tournaments --%>
       <b><a href="old/tournament5Results.jsp">Pente - Tournament 5</a></b><br>
       <b><a href="old/tournament4Results.jsp">Pente - Tournament 4</a></b><br>

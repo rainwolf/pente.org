@@ -10,5 +10,6 @@ public interface DSGFollowerStorer {
     void removeFollower(long pid, long followerPid) throws DSGFollowerStoreException;
     List<Long> getFollowers(long pid) throws DSGFollowerStoreException;
     List<Long> getFollowing(long pid) throws DSGFollowerStoreException;
+    List<Long> getFriends(long pid) throws DSGFollowerStoreException;
     boolean isFollower(long pid, long followerPid);
 }

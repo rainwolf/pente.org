@@ -229,7 +229,7 @@ if (meData.unlimitedTBGames()) {
 %>
 <br>
 Here you can find other players who want to play turn-based games.<br>
-An open invitation will not show up for you if you are already playing that particular game against the person inviting. <br>
+A public invitation will not show up for you if you are already playing that particular game against the person inviting. <br>
 Games here can be accepted by anyone.  To post a game here, click the button
 below and do not specify a player to invite.<br>
 <br>
@@ -249,13 +249,13 @@ below and do not specify a player to invite.<br>
   <tr>
    <td>
      <% if (openTBgames == 0) { %>
-     <h3>Open Invitation Games</h3>
-        No open invitation games found.<br>
+     <h3>Public Invitation Games</h3>
+        No public invitation games found.<br>
      <% }
         else { %>
 
         <br>
-        Be kind. Don't gobble all the open invitations to yourself, and post some in return.
+        Be kind. Don't gobble all the public invitations to yourself, and post some in return.
         <br>
         The "Open to" column is strictly informative, you can accept any invitation listed below.
         <br>
@@ -271,7 +271,7 @@ below and do not specify a player to invite.<br>
     <tr bgcolor="<%= textColor2 %>">
        <td colspan="6">
          <font color="white">
-           <b>Open Invitation Games (<%= openTBgames %>)
+           <b>Public Invitation Games (<%= openTBgames %>)
          </font>
        </td>
      </tr>

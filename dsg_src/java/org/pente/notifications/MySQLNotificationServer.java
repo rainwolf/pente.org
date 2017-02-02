@@ -162,7 +162,23 @@ public class MySQLNotificationServer implements NotificationServer {
     public void sendAdminNotification(String message) {
         // no sql applicable
     }
-    
+
+    @Override
+    public void sendBroadcastNotification(String player, String game, long pid) {
+        // no sql applicable
+    }
+
+    @Override
+    public boolean canBroadcast(long pid) {
+        // no sql applicable
+        return false;
+    }
+
+    @Override
+    public void storeBroadcastDate(long pid) {
+        // no sql applicable
+    }
+
     public void removeOldTokens() throws NotificationServerException {
         Connection con = null;
         PreparedStatement stmt = null;
