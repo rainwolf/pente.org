@@ -637,7 +637,7 @@ if (inLiveGameRoom) {
   <tr>
    <td align="left" colspan="2">
       <div class="buttonwrapper">
-       <a class="boldbuttons" href="/gameServer/tb/new.jsp"><span>Start a New Game</span></a> <a class="boldbuttons" href="/gameServer/tb/waiting.jsp" style="margin-right:6px; margin-left: 6px"><span>Find an Open Game <b>(<%=openTBgames %>)</b><a class="boldbuttons" href="/gameServer/tb/newAIgame.jsp" style="margin-right:6px"><span>Play the TB AI</span></a></span></a> 
+       <a class="boldbuttons" href="/gameServer/tb/new.jsp"><span>Start a New Game</span></a> <a class="boldbuttons" href="/gameServer/tb/waiting.jsp" style="margin-right:6px; margin-left: 6px"><span>Find a Public Game <b>(<%=openTBgames %>)</b><a class="boldbuttons" href="/gameServer/tb/newAIgame.jsp" style="margin-right:6px"><span>Play the TB AI</span></a></span></a> 
 
        <div style="margin-top:7px;">
           Active games: <b><%= numberFormat.format(siteStatsData.getNumTbGames()) %></b>, Open TB games: <b><%=openTBgames %></b><%-- --%>

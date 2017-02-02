@@ -22,8 +22,6 @@ com.jivesoftware.base.FilterChain filters =
             new long[] { 1, 1, 1, 1 });
 
 
-    DBHandler dbHandler = (DBHandler) application.getAttribute(DBHandler.class.getName());
-    ServletContext ctx = getServletContext();
     Resources resources = (Resources) application.getAttribute(Resources.class.getName());
     TBGameStorer tbGameStorer = resources.getTbGameStorer();
     String gidString = (String) request.getParameter("gid");
@@ -34,7 +32,7 @@ com.jivesoftware.base.FilterChain filters =
 
 private=<%=(set.isPrivateGame()?"":"non-")+"private"%>
 
-rated=<%=(tbGame.isRated()?"":"not ")+"Rated"%>
+rated=<%=(tbGame.isRated()?"":"Not ")+"Rated"%>
 <%    
 
 
@@ -60,7 +58,7 @@ if (!"".equals(moves)) {
 
 %>moves=<%=moves%>
 <%
-DSGPlayerStorer dsgPlayerStorer = (DSGPlayerStorer) ctx.getAttribute(DSGPlayerStorer.class.getName());
+DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
 DSGPlayerData player1 = dsgPlayerStorer.loadPlayer(tbGame.getPlayer1Pid()), player2 = dsgPlayerStorer.loadPlayer(tbGame.getPlayer2Pid());
 DSGPlayerGameData p1Data = player1.getPlayerGameData(tbGame.getGame());
 

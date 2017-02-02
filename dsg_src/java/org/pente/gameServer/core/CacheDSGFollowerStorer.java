@@ -2,6 +2,7 @@ package org.pente.gameServer.core;
 
 import org.apache.log4j.Category;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,9 +83,15 @@ public class CacheDSGFollowerStorer implements DSGFollowerStorer {
         } catch (DSGFollowerStoreException e) {
             e.printStackTrace();
         }
-
         return false;
     }
 
-
+    @Override
+    public List<Long> getFriends(long pid) throws DSGFollowerStoreException {
+        List<Long> followerList = getFollowers(pid);
+        List<Long> followingList = getFollowing(pid);
+        List<Long> friends = new ArrayList<>(followerList);
+        friends.retainAll(followingList);
+        return friends;
+    }
 }

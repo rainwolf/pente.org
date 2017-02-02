@@ -298,6 +298,10 @@
     <servlet-name>NotificationServlet</servlet-name>
     <servlet-class>org.pente.notifications.web.NotificationServlet</servlet-class>
   </servlet>
+  <servlet>
+    <servlet-name>BroadcastServlet</servlet-name>
+    <servlet-class>org.pente.gameServer.client.web.BroadcastServlet</servlet-class>
+  </servlet>
   
 
   
@@ -663,6 +667,11 @@
   <servlet-mapping>
     <servlet-name>NotificationServlet</servlet-name>
     <url-pattern>/gameServer/notification</url-pattern>
+  </servlet-mapping>  
+
+  <servlet-mapping>
+    <servlet-name>BroadcastServlet</servlet-name>
+    <url-pattern>/gameServer/broadcast</url-pattern>
   </servlet-mapping>  
 
   <session-config>

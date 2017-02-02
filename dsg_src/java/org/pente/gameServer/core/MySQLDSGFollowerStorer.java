@@ -168,5 +168,8 @@ public class MySQLDSGFollowerStorer implements DSGFollowerStorer {
         return false;
     }
 
-
+    @Override
+    public List<Long> getFriends(long pid) throws DSGFollowerStoreException {
+        return null;
+    }
 }

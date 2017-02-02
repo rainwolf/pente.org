@@ -1,6 +1,7 @@
 package org.pente.notifications;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -17,4 +18,7 @@ public interface NotificationServer {
     void sendInvitationNotification(String fromName, long pid, long setId, String gameName);
     void sendMessageNotification(String fromName, long pid, long messageId, String subject);
     void sendAdminNotification(String message);
+    void sendBroadcastNotification(String player, String game, long pid);
+    boolean canBroadcast(long pid);
+    void storeBroadcastDate(long pid);
 }
