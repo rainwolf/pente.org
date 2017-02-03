@@ -127,13 +127,14 @@ public class IOSReceiptServlet extends HttpServlet {
 
                 NotificationServer notificationServer = resources.getNotificationServer();
                 notificationServer.sendMessageNotification("rainwolf", message.getToPid(), message.getMid(), message.getSubject());
-
+                
                 response.setContentType("text/html");
                 PrintWriter out = response.getWriter();
                 out.println("success");
 
                 log4j.info("IOSReceiptServlet: iOS subscription purchase successful for " + subscriberData.getName());
-
+                notificationServer.sendAdminNotification("iOS subscription for " + subscriberData.getName());
+                
             } catch (SQLException e) {
                 log4j.info("IOSReceiptServlet SQLException " + e);
             } catch (DSGMessageStoreException e) {

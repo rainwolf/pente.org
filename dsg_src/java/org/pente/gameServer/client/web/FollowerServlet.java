@@ -125,6 +125,11 @@ public class FollowerServlet extends HttpServlet {
             }
         }
 
+        if (request.getParameter("mobile") != null) {
+            response.sendRedirect("/gameServer/tb/empty.jsp");
+            return;
+        }
+
         if (follow != null && followPlayerData != null) {
             response.sendRedirect("/gameServer/profile?viewName="+followPlayerData.getName());
         } else {
