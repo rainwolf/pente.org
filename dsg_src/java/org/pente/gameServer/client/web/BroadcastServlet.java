@@ -126,9 +126,15 @@ public class BroadcastServlet  extends HttpServlet {
             }
             notificationServer.sendBroadcastNotification(player, game, pid);
         }
-        notificationServer.storeBroadcastDate(playerData.getPlayerID());
+        if (!"iostest".equals(player)) {
+            notificationServer.storeBroadcastDate(playerData.getPlayerID());
+        }
 
-        response.sendRedirect("/gameServer/index.jsp");
+        if (request.getParameter("mobile") == null) {
+            response.sendRedirect("/gameServer/index.jsp");
+        } else {
+            response.sendRedirect("/gameServer/tb/empty.jsp");
+        }
     }
 
 
