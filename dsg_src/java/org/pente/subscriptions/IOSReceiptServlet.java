@@ -82,7 +82,8 @@ public class IOSReceiptServlet extends HttpServlet {
                 dbHandler = resources.getDbHandler();
                 con = dbHandler.getConnection();
 
-                stmt = con.prepareStatement("INSERT INTO dsg_subscribers_ios (pid, paymentdate, receipt) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE paymentdate=VALUES(paymentdate)");
+//                stmt = con.prepareStatement("INSERT INTO dsg_subscribers_ios (pid, paymentdate, receipt) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE paymentdate=VALUES(paymentdate)");
+                stmt = con.prepareStatement("INSERT INTO dsg_subscribers_ios (pid, paymentdate, receipt) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE paymentdate=VALUES(paymentdate), receipt=VALUES(receipt)");
                 stmt.setLong(1, subscriberPid);
                 stmt.setTimestamp(2, new Timestamp(startDate.getTime()));
                 stmt.setString(3, receiptDataStr);
