@@ -343,9 +343,8 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 					try {
 						log4j.debug("game t/o, " + t.getGid() + " check floating vacationDays for " + cp);
 						DSGPlayerData playerData = dsgPlayerStorer.loadPlayer(cp);
-						DSGPlayerGameData playerGameData = playerData.getPlayerGameData(t.getGame());
 						int floatingVacationDays = dsgPlayerStorer.loadFloatingVacationDays(cp);
-						if (playerGameData.getTotalGames()/2 <= (MySQLDSGPlayerStorer.FLOATINGVACATIONDAYS*24 - floatingVacationDays)/24) {
+						if (playerData.getTotalGames()/2 <= (MySQLDSGPlayerStorer.FLOATINGVACATIONDAYS*24 - floatingVacationDays)/24) {
 							floatingVacationDays = 0;
 						}
 						if (floatingVacationDays > 0) {
