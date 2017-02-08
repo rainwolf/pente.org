@@ -21,6 +21,10 @@ if (gameStr != null) {
 	CacheKOTHStorer kothStorer = resources.getKOTHStorer();
 	Hill hill = kothStorer.getHill(game);
 	long myPid = dsgPlayerData.getPlayerID();
+	boolean iAmMember = false;
+	if (hill != null) {
+		iAmMember = hill.hasPlayer(myPid);
+	}
 %>
 <center>
 <% if (dsgPlayerData.showAds()) { %>
@@ -135,7 +139,7 @@ if (game > 0) {
 %>
 <td>
 <%
-		if (hill != null && hill.hasPlayer(myPid)) {
+		if (hill != null && iAmMember) {
 			%>
 			<form name="joinLeaveForm" method="post" action="/gameServer/koth" style="margin:0;padding:0;">
 			<input type="hidden" name="leave">
@@ -164,7 +168,7 @@ if (game > 0) {
 
 <!-- </tr> -->
 <%
-if (hill != null && hill.hasPlayer(myPid) && game > 50 && (dsgPlayerData.hasPlayerDonated() || kothStorer.canPlayerBeChallenged(game, myPid))) {
+if (hill != null && iAmMember && game > 50 && (dsgPlayerData.hasPlayerDonated() || kothStorer.canPlayerBeChallenged(game, myPid))) {
 %>
 	<!-- <tr align="top"> -->
 	<td>
@@ -188,9 +192,8 @@ if (hill != null && hill.hasPlayer(myPid) && game > 50 && (dsgPlayerData.hasPlay
 
 <table border="1" width="450">
 	<tr>
-		<td colspan="4" align="center">
-			<h1><%=(game > 50?"Turn-based ":"") + GridStateFactory.getGameName(game) + " (" + (hill != null?hill.getNumPlayers():0)  + ")"%></h1>
-			
+		<td colspan="<%=(iAmMember && game > 50)?4:3%>" align="center" bgcolor="#ff8105">
+			<font color="white"><h1><%=(game > 50?"Turn-based ":"") + GridStateFactory.getGameName(game) + " (" + (hill != null?hill.getNumPlayers():0)  + ")"%></h1></font>
 		</td>
 	</tr>
 
@@ -198,7 +201,7 @@ if (hill != null && hill.hasPlayer(myPid) && game > 50 && (dsgPlayerData.hasPlay
 	if (hill != null && hill.getSteps().size() > 0) {
 		boolean canIchallenge = true;
 		if (game > 50) {
-			canIchallenge = hill.hasPlayer(myPid);
+			canIchallenge = iAmMember;
             if (!dsgPlayerData.hasPlayerDonated()) {
                 canIchallenge = canIchallenge && kothStorer.canPlayerBeChallenged(game, myPid);
             }
@@ -218,7 +221,7 @@ if (hill != null && hill.hasPlayer(myPid) && game > 50 && (dsgPlayerData.hasPlay
 			});
 		%>
 	<tr>
-		<td colspan="4"  align="center"><b><%=(i==steps.size()-1)?"top of the hill":"Step " + (i+1)%></b></td>
+		<td bgcolor="#2C862F" colspan="<%=(iAmMember && game > 50)?4:3%>"  align="center"><font color="white"><b><%=(i==steps.size()-1)?"top of the hill":"Step " + (i+1)%></b></font></td>
 	</tr>
 		<%
 			for( Player player : steps.get(i).getPlayers()) {
@@ -260,7 +263,7 @@ if (hill != null && hill.hasPlayer(myPid) && game > 50 && (dsgPlayerData.hasPlay
             <%=(myPid == pid)?"</h2>":""%>
 			</td>
             <%
-            if (game > 50) {
+            if (game > 50 && iAmMember) {
             %>
             	<td align="center">
             	<%
@@ -318,14 +321,14 @@ if (hill != null && hill.hasPlayer(myPid) && game > 50 && (dsgPlayerData.hasPlay
 		</tr>
       <% 
       int color = 0;
-      for (int i = 0; i < CacheKOTHStorer.tbGames.length; i++ ) {
-			hill = kothStorer.getHill(CacheKOTHStorer.tbGames[i]);
+      for (int gameInt: CacheKOTHStorer.tbGames) {
+			hill = kothStorer.getHill(gameInt);
 			if (hill != null) { 
 			color += 1;
 			%>
 			<tr <%=(color%2 == 0)?"bgcolor=\"#deecde\"":""%>>
             <td align="right">
-            <a href="/gameServer/stairs.jsp?game=<%=CacheKOTHStorer.tbGames[i]%>"><b><h2><%="TB-" + GridStateFactory.getGameName(CacheKOTHStorer.tbGames[i])%></h2></b></a>
+            <a href="/gameServer/stairs.jsp?game=<%=gameInt%>"><b><h2><%="TB-" + GridStateFactory.getGameName(gameInt)%></h2></b></a>
             <%
             long kingPid = hill.getKing();
             if (kingPid != 0) {
@@ -341,14 +344,39 @@ if (hill != null && hill.hasPlayer(myPid) && game > 50 && (dsgPlayerData.hasPlay
             </td>
             </tr>
       <% }} %>
-      <% for (int i = 0; i < CacheKOTHStorer.liveGames.length; i++ ) {
-			hill = kothStorer.getHill(CacheKOTHStorer.liveGames[i]);
+      <% for (int gameInt: CacheKOTHStorer.liveGames) {
+      		if (gameInt%2 == 0) { continue; }
+			hill = kothStorer.getHill(gameInt);
 			if (hill != null) { 
 			color += 1;
 			%>
 			<tr <%=(color%2 == 0)?"bgcolor=\"#deecde\"":""%>>
             <td align="right">
-            <a href="/gameServer/stairs.jsp?game=<%=CacheKOTHStorer.liveGames[i]%>"><b><h2><%=GridStateFactory.getGameName(CacheKOTHStorer.liveGames[i])%></h2></b></a>
+            <a href="/gameServer/stairs.jsp?game=<%=gameInt%>"><b><h2><%=GridStateFactory.getGameName(gameInt)%></h2></b></a>
+            <%
+            long kingPid = hill.getKing();
+            if (kingPid != 0) {
+				DSGPlayerData d = dsgPlayerStorer.loadPlayer(kingPid);
+//				DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(CacheKOTHStorer.liveGames[i]);
+				%>
+			<%@ include file="playerLink.jspf" %>&nbsp;
+			<br>
+			<br>
+				<%
+            }
+            %>
+            </td>
+            </tr>
+      <% }} %>
+      <% for (int gameInt: CacheKOTHStorer.liveGames) {
+      		if (gameInt%2 == 1) { continue; }
+			hill = kothStorer.getHill(gameInt);
+			if (hill != null) { 
+			color += 1;
+			%>
+			<tr <%=(color%2 == 0)?"bgcolor=\"#deecde\"":""%>>
+            <td align="right">
+            <a href="/gameServer/stairs.jsp?game=<%=gameInt%>"><b><h2><%=GridStateFactory.getGameName(gameInt)%></h2></b></a>
             <%
             long kingPid = hill.getKing();
             if (kingPid != 0) {

@@ -30,11 +30,14 @@ public class CacheDSGFollowerStorer implements DSGFollowerStorer {
     @Override
     synchronized public void addFollower(long pid, long followerPid) throws DSGFollowerStoreException {
         List<Long> followerList = getFollowers(pid);
-        followerList.add(followerPid);
+        if (!followerList.contains(followerPid)) {
+            followerList.add(followerPid);
+        }
 
         List<Long> followingList = getFollowing(followerPid);
-        followingList.add(pid);
-
+        if (!followingList.contains(followerPid)) {
+            followingList.add(pid);
+        }
         baseStorer.addFollower(pid, followerPid);
     }
 

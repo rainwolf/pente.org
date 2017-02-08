@@ -87,7 +87,10 @@ String changeProfileSuccess = (String) request.getAttribute("changeProfileSucces
     - You can upload a picture for your account,<br>
     - You can specify a note with your profile for other people to see,<br>
     <!-- - You get to play unlimited turn-based games, <br> -->
-    - You get to play in all the King of the Hills simultaneously, no need to pick one, <br>
+    - Participate in more than 1 (King of the) Hill at a time!<br>
+    - Play King of the Hill without limits!<br>
+    - Remove limits on followers!<br>
+    - Broadcast alers to followers or friends!<br>
     - Get acccess to the database, and/or, <br>
     and optionally, <br>
     - Not see any ads<br>

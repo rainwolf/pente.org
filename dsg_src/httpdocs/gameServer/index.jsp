@@ -486,6 +486,7 @@ addLoadEvent(goJws);
       <% } %>
     <% } %>
     </select>
+    <br>
     Size: <select name="gameRoomSize">
         <option value="640" <% if (grs.equals("640")) { %>selected<% } %>>640x480</option>
         <option value="800" <% if (grs.equals("800")) { %>selected<% } %>>800x600</option>
@@ -537,15 +538,21 @@ if (inLiveGameRoom) {
   md.update(text.getBytes("UTF-8")); 
   String checkHash = new String(Hex.encodeHex( md.digest() ));
   %>
-    <td style="width: 18%;">
+    <td style="width: 18%;" valign="top">
     <div class="buttonwrapper">
       <a class="boldbuttons" href="bootMe.jsp?name=<%= nm %>&pidHash=<%= checkHash %>" 
-         style="margin-right:5px;"><span>Boot me NOW!!!</span></a>
+         style="margin-right:5px;"><span>Boot me NOW!</span></a>
     </div>
 </td>
 <%
 }
 %>
+    <td style="width: 18%;" valign="top">
+    <div class="buttonwrapper">
+      <a class="boldbuttons" href="broadcast.jsp" 
+         style="margin-right:5px;"><span>Broadcast</span></a>
+    </div>
+</td>
 
 
 

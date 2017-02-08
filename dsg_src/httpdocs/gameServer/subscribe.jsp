@@ -33,6 +33,8 @@ if (giftee != null) {
             - Get access to the database!<br>
             - Participate in more than 1 (King of the) Hill at a time!<br>
             - Play King of the Hill without limits!<br>
+            - Remove limits on followers!<br>
+            - Broadcast alers to followers or friends!<br>
             And optionally, <br>
             - No more ads!<br>
           </b></font>

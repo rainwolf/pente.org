@@ -326,9 +326,10 @@ if (hill == null) {
 kingPid = hill.getKing();
 if (!subscriber) {canSendOpenKotH = kothStorer.canPlayerBeChallenged(gameInt, myPID);} 
 amImember = hill.hasPlayer(myPID); %>
-<%="app needs update;" + ((hill != null)?hill.getNumPlayers():0) + ";" + ((hill != null && amImember)?1:0) + ";" + ((kingPid == myPID)?1:0) + ";" + ((kingPid != 0)?dsgPlayerStorer.loadPlayer(kingPid).getName():"") + ";" + ((amImember && (subscriber || canSendOpenKotH))?"1":"0") + ";" + gameInt%><%
+<%="update app;" + ((hill != null)?hill.getNumPlayers():0) + ";" + ((hill != null && amImember)?1:0) + ";" + ((kingPid == myPID)?1:0) + ";" + ((kingPid != 0)?dsgPlayerStorer.loadPlayer(kingPid).getName():"") + ";" + ((amImember && (subscriber || canSendOpenKotH))?"1":"0") + ";" + gameInt%><%
 }
 for (int gameInt: CacheKOTHStorer.liveGames) {
+if (gameInt%2 == 0) { continue; }
 hill = kothStorer.getHill(gameInt);
 if (hill == null) {
     continue;
@@ -336,7 +337,18 @@ if (hill == null) {
 kingPid = hill.getKing();
 if (!subscriber) {canSendOpenKotH = kothStorer.canPlayerBeChallenged(gameInt, myPID);} 
 amImember = hill.hasPlayer(myPID); %>
-<%="app needs update;" + ((hill != null)?hill.getNumPlayers():0) + ";" + ((hill != null && amImember)?1:0) + ";" + ((kingPid == myPID)?1:0) + ";" + ((kingPid != 0)?dsgPlayerStorer.loadPlayer(kingPid).getName():"") + ";" + ((amImember && (subscriber || canSendOpenKotH))?"1":"0") + ";" + gameInt%><%
+<%="update app;" + ((hill != null)?hill.getNumPlayers():0) + ";" + ((hill != null && amImember)?1:0) + ";" + ((kingPid == myPID)?1:0) + ";" + ((kingPid != 0)?dsgPlayerStorer.loadPlayer(kingPid).getName():"") + ";" + ((amImember && (subscriber || canSendOpenKotH))?"1":"0") + ";" + gameInt%><%
+}
+for (int gameInt: CacheKOTHStorer.liveGames) {
+if (gameInt%2 == 1) { continue; }
+hill = kothStorer.getHill(gameInt);
+if (hill == null) {
+    continue;
+}
+kingPid = hill.getKing();
+if (!subscriber) {canSendOpenKotH = kothStorer.canPlayerBeChallenged(gameInt, myPID);} 
+amImember = hill.hasPlayer(myPID); %>
+<%="update app;" + ((hill != null)?hill.getNumPlayers():0) + ";" + ((hill != null && amImember)?1:0) + ";" + ((kingPid == myPID)?1:0) + ";" + ((kingPid != 0)?dsgPlayerStorer.loadPlayer(kingPid).getName():"") + ";" + ((amImember && (subscriber || canSendOpenKotH))?"1":"0") + ";" + gameInt%><%
 }
 %>
 Rating Stats<%

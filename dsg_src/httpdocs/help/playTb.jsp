@@ -41,9 +41,9 @@ the player runs out of vacation days.
 <br><br>
 On January 1st of each year, every player's vacation time is reset to 10 days. 
 <br><br>
-New turn-based players don't get access to all their vacation days before they've played their 
-first 20 games. The available vacation time gradually increases with each played game. This is on a per-game basis 
-and to prevent extra long timeouts from new players who sign up, accept a few open invitations, and don't come 
+New players don't get access to all their vacation days before they've played their 
+first 20 games. The available vacation time gradually increases with each played game. This is 
+ to prevent extra long timeouts from new players who sign up, accept a few open invitations, and don't come 
 back to play.
 <br>
 <br>
