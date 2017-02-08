@@ -66,11 +66,11 @@ String me = (String) request.getAttribute("name");
 %>
 
 <%! private static final String loggedInTabs[][] = new String[][] {
- { "/index.jsp?s=1", "Home" },
+ // { "/index.jsp?s=1", "Home" },
  { "/gameServer/index.jsp", "Dashboard" },
  { "/gameServer/myprofile", "My Profile" },
  { "/gameServer/forums", "Forums" },
- { "/gameServer/stairs.jsp", "KotH" },
+ { "/gameServer/stairs.jsp", "KotH <img src=\"/gameServer/images/kothcrown.gif\">" },
  { "/gameServer/tournaments", "Tournaments" },
  { "/help/helpWindow.jsp?file=gettingStarted", "Help" },
  // { "/help/helpWindow.jsp?file=faq", "FAQ" },

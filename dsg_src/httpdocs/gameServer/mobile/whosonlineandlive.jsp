@@ -18,14 +18,27 @@ String loggedInStr = (String) request.getAttribute("name");
     ServletContext ctx = getServletContext();
     Resources globalResources = (Resources) ctx.getAttribute(Resources.class.getName());
 SessionListener sessionListener = (SessionListener) application.getAttribute(SessionListener.class.getName());
-List<WhosOnlineRoom> rooms = WhosOnline.getPlayers(globalResources, sessionListener);
+List<WhosOnlineRoom> rooms = new ArrayList(WhosOnline.getPlayers(globalResources, sessionListener));
+WhosOnlineRoom webRoom = null;
+for (Iterator<WhosOnlineRoom> iterator = rooms.iterator(); iterator.hasNext();) {
+    WhosOnlineRoom r = iterator.next();
+    if ("web".equals(r.getName())) {
+        webRoom = r;
+        iterator.remove();
+        break;
+    }
+}
+if (webRoom != null) {
+  webRoom.setName("Website");
+  rooms.add(webRoom);
+}
 DateFormat dateFormat = null;
 // TimeZone tz = TimeZone.getTimeZone(dsgPlayerData.getTimezone());
 dateFormat = new SimpleDateFormat("MM/dd/yyyy");
    for (WhosOnlineRoom room : rooms) {
-        if ("web".equals(room.getName())) {
-            continue;
-        }
+//        if ("web".equals(room.getName())) {
+//            continue;
+//        }
         %><%=room.getName()+":"%><%
        for (DSGPlayerData d : room.getPlayers()) {
            DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(GridStateFactory.TB_PENTE); 
