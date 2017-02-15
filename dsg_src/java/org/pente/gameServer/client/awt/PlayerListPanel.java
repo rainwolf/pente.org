@@ -916,13 +916,21 @@ public class PlayerListPanel extends Panel
         p.addPoint(x + x4, y - 10);
         p.addPoint(x + x4, y);
 
-        g.setColor(CROWN_COLORS[type]);
+        if (type <= DSGPlayerGameData.KINGOFTHEHILL_WINNER) {
+            g.setColor(CROWN_COLORS[type]);
+        } else {
+            int rgb = (24 + 3 - type)*255/24;
+            g.setColor(new Color(rgb, rgb, rgb));
+        }
         g.fillPolygon(p);
 
         g.setColor(Color.black);
         g.drawPolygon(p);
 
         // draw little dots on crown
+        if (type > DSGPlayerGameData.KINGOFTHEHILL_WINNER+7) {
+            g.setColor(Color.white);
+        }
         g.drawLine(x + x1, y - 4, x + x1, y - 4);
         g.drawLine(x + x2, y - 4, x + x2, y - 4);
         g.drawLine(x + x3, y - 4, x + x3, y - 4);

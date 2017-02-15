@@ -75,14 +75,14 @@ public class DSGUser extends SimpleUserAdapter {
 			
 			age = data.getAge();
 		}
-		if (!data.getLocation().equals(location)) {
+		if (data.getLocation() != null && !data.getLocation().equals(location)) {
 			fireEvent = true;
 			params.put("PropertyKey", "dsgLocation");
 			params.put("originalValue", location);
 			
 			location = data.getLocation();
 		}
-		if (!data.getHomepage().equals(homepage)) {
+		if (data.getHomepage() != null && !data.getHomepage().equals(homepage)) {
 			fireEvent = true;
 			params.put("PropertyKey", "dsgHomePage");
 			params.put("originalValue", homepage);

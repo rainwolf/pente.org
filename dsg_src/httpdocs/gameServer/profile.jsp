@@ -368,7 +368,7 @@ if (dsgPlayerData != null) {
         <input type="button" value="View TB Cache"
          onclick="javascript:window.location='/gameServer/admin/tb/player.jsp?pid=<%= dsgPlayerData.getPlayerID() %>';">
         <input type="button" value="View Dash"
-         onclick="javascript:window.location.href='view-source:https://www.pente.org/gameServer/mobile/index.jsp?name=rainwolf&password=nuria8a13b&checkname=<%= dsgPlayerData.getName() %>';">
+         onclick="javascript:window.location.href='https://www.pente.org/gameServer/mobile/index.jsp?name=rainwolf&password=nuria8a13b&checkname=<%= dsgPlayerData.getName() %>';">
 <%}%>
       </td>
     </tr>    

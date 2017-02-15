@@ -152,7 +152,9 @@ public class ChangeAvatarServlet extends HttpServlet {
                 UserManager um = UserManagerFactory.getInstance();
                 if (um instanceof DSGUserManager) {
                     DSGUserManager dum = (DSGUserManager) um;
-                    dum.updateUser(dsgPlayerData);
+                    if (dum != null) {
+                        dum.updateUser(dsgPlayerData);
+                    }
                 }
             }
 

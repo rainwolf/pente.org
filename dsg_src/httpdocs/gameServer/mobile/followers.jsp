@@ -6,6 +6,11 @@ String loggedInStr = (String) request.getAttribute("name");
     response.sendRedirect("empty.jsp");
    } else {
     Resources resources = (Resources) application.getAttribute(Resources.class.getName());
+    String gameStr = request.getParameter("game");
+    int gameInt = 1;
+    if (gameStr != null) {
+        gameInt = Integer.parseInt(gameStr);
+    }
     DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
     DSGPlayerData meData = dsgPlayerStorer.loadPlayer(loggedInStr);
     DSGFollowerStorer followerStorer = resources.getFollowerStorer();
@@ -14,12 +19,22 @@ String loggedInStr = (String) request.getAttribute("name");
 
     for (long pid: followers) {
         DSGPlayerData playerData = dsgPlayerStorer.loadPlayer(pid);
-        %><%="0;" + playerData.getName() + ";" + (playerData.hasPlayerDonated()?1:0) + ";" + (playerData.hasPlayerDonated()?playerData.getNameColorRGB():0) + ";" + playerData.getTourneyWinner() + ";"%>
+        DSGPlayerGameData gameData = playerData.getPlayerGameData(gameInt);
+        int ratingInt = 1600;
+        if (gameData != null) {
+            ratingInt = (int) gameData.getRating();
+        }
+        %><%="0;" + playerData.getName() + ";" + (playerData.hasPlayerDonated()?1:0) + ";" + (playerData.hasPlayerDonated()?playerData.getNameColorRGB():0) + ";" + playerData.getTourneyWinner() + ";" + ratingInt %>
 <%
     }
     for (long pid: following) {
         DSGPlayerData playerData = dsgPlayerStorer.loadPlayer(pid);
-        %><%="1;" + playerData.getName() + ";" + (playerData.hasPlayerDonated()?1:0) + ";" + (playerData.hasPlayerDonated()?playerData.getNameColorRGB():0) + ";" + playerData.getTourneyWinner() + ";"%>
+        DSGPlayerGameData gameData = playerData.getPlayerGameData(gameInt);
+        int ratingInt = 1600;
+        if (gameData != null) {
+            ratingInt = (int) gameData.getRating();
+        }
+        %><%="1;" + playerData.getName() + ";" + (playerData.hasPlayerDonated()?1:0) + ";" + (playerData.hasPlayerDonated()?playerData.getNameColorRGB():0) + ";" + playerData.getTourneyWinner() + ";" + ratingInt %>
 <%
     }
 }

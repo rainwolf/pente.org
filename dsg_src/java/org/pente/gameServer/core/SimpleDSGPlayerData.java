@@ -473,10 +473,24 @@ public class SimpleDSGPlayerData implements DSGPlayerData, java.io.Serializable 
     }
 
     public int getTourneyWinner() {
+        int myCrown = DSGPlayerGameData.TOURNEY_WINNER_NONE;
+        int myKotHCrown = 0;
         for (int i = 0; i < gameData.size(); i++) {
             DSGPlayerGameData d = (DSGPlayerGameData) gameData.elementAt(i);
-            if (d.getTourneyWinner() > DSGPlayerGameData.TOURNEY_WINNER_NONE)
-                return d.getTourneyWinner();
+            if (d.getTourneyWinner() > DSGPlayerGameData.TOURNEY_WINNER_NONE) {
+                if (d.getTourneyWinner() == DSGPlayerGameData.KINGOFTHEHILL_WINNER) {
+                    myKotHCrown = myKotHCrown + 1;
+                } else if (0 == myCrown) {
+                    myCrown = d.getTourneyWinner();
+                } else if (d.getTourneyWinner() < myCrown) {
+                    myCrown = d.getTourneyWinner();
+                }
+            } 
+        }
+        if (myCrown > DSGPlayerGameData.TOURNEY_WINNER_NONE) {
+            return myCrown;
+        } else if (myKotHCrown > DSGPlayerGameData.TOURNEY_WINNER_NONE) {
+            return myKotHCrown+3;
         }
         return DSGPlayerGameData.TOURNEY_WINNER_NONE;
     }

@@ -14,7 +14,12 @@
           alt="Current Tournament Champ!">
 <%   break;
    case DSGPlayerGameData.KINGOFTHEHILL_WINNER: %>
-     <img src="/gameServer/images/kothcrown.gif"
+     <img src="/gameServer/images/kothcrown1.png"
           alt="Current King Of The Hill Champ!">
 <%   break;
+   default: 
+   if (tourneyWinner > 3) { %>
+     <img src="/gameServer/images/kothcrown<%=(tourneyWinner-3)%>.png"
+          alt="Current King Of The Hill Champ!">
+<%  } break;
    } %>
