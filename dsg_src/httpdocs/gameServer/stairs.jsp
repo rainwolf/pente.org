@@ -53,14 +53,10 @@ they appear, if there are only 2 players on 2 steps, and the higher placed playe
 <br>
 A few more rules
 <ul>
-	<li>The player on the top step is king of the hill and gets a white crown if they occupy the top step alone,</li>
+	<li>The player on the top step is king of the hill and gets a <img src="/gameServer/images/kothcrown.gif"> if they occupy the top step alone,</li>
 	<li>non-subscribers who don't play any King of the Hill games for 62 days are removed from the hill,</li>
-	<li>non-subscribers can only participate in one hill, when they play a game from another hill, they are removed from the previous hill,</li>
-	<li><a href="https://pente.org/gameServer/subscriptions">subscribers</a> can participate in all hills,</li>
-	<li>each speed game has their own hill,</li>
-	<li>games must be played in the King of the Hill room,</li>
-	<li>games must be rated in order to count,</li>
-	<li>games between players who are more than 2 steps apart are not considered.</li>
+	<li>non-subscribers can only participate in one hill, <a href="https://pente.org/gameServer/subscriptions">subscribers</a> can participate in all hills,</li>
+	<li>live games must be played in the King of the Hill room and must be rated in order to count, games between players who are more than 2 steps apart are not considered.</li>
 </ul>
 <br>
 This is new code so there may still be bugs here and there, that's why this is a beta feature.
@@ -69,14 +65,12 @@ This is new code so there may still be bugs here and there, that's why this is a
 <br>
 Turn-based King of the Hill have a few more rules to consider:
 <ul>
-	<li>non-subscribers can only join one hill and can only play 2 sets at any given time, this includes active sets, sent invitations, and invitations you haven't responded to yet, </li>
+	<li>non-subscribers can only play 2 sets at any given time, this includes active sets, sent invitations, and invitations you haven't responded to yet, </li>
 	<li>non-subscribers who don't play any King of the Hill games for 31 days are removed from the hill,</li>
-	<li><a href="https://pente.org/gameServer/subscriptions">subscribers</a> can play unlimited KotH games,</li>
-	<li>when <a href="https://pente.org/gameServer/subscriptions">subscribers</a> have 5 or more ongoing KotH sets, including waiting invitations, they cannot be challenged anymore, but can still send out challenges,</li>
+	<li><a href="https://pente.org/gameServer/subscriptions">subscribers</a> can play unlimited KotH games, when <a href="https://pente.org/gameServer/subscriptions">subscribers</a> have 5 or more ongoing KotH sets, including waiting invitations, they cannot be challenged anymore, but can still send out challenges,</li>
 	<li>if your opponent leaves the hill before the set is over, the result still counts towards your hill position,</li>
-	<li>joining or leaving a hill has to be done from this page or your mobile device,</li>
-	<li>declining an invitation affects your position if the timeout is 5 days or more, and, you are king of the hill or your rating is higher than that of the challenger,</li>
-	<li>other players from the hill have to be challenged from this page or from your device.</li>
+	<li>joining or leaving a hill, and challenging other players has to be done from this page or your mobile device,</li>
+	<li>declining an invitation affects your position if the timeout is 5 days or more, and, you are king of the hill or your rating is higher than that of the challenger.</li>
 </ul>
 The challenge button appears when you can challenge a player, and they're also marked with a green background. This button takes you to a page where you can decide on the timeout and post an invitation from there.
 <br>

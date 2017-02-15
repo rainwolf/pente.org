@@ -288,7 +288,7 @@ window.google_analytics_uacct = "UA-20529582-2";
  float:left;width:70%">
  
     <h2 style="margin:0;padding:0;">Dashboard - Hi <%= ((dsgPlayerData.hasPlayerDonated() && (dsgPlayerData.getNameColorRGB() != 0)) ? "<span style='color:#" + Integer.toHexString(dsgPlayerData.getNameColorRGB()).substring(2) + "'>" : "<span>") %><%= dsgPlayerData.getName() %></span>!</h2>
-    <a href="/gameServer/myprofile">Edit Profile</a> | <a href="/gameServer/mymessages">My Messages <%= numMessages > 0 ? "("+numMessages+" unread)" : "" %></a>
+    <a href="/gameServer/myprofile">Edit Profile</a> | <a href="/gameServer/mymessages">My Messages <%= numMessages > 0 ? "("+numMessages+" unread)" : "" %></a> | <a href="/gameServer/social?social">Social</a>
     <% if ("rainwolf".equals(dsgPlayerData.getName())) { %>
  | <a href="/gameServer/admin">adminLink</a> | <a href="/gameServer/who.jsp">who</a>
   <%}%>

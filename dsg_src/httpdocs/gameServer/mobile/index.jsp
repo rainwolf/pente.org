@@ -15,7 +15,7 @@
                  java.util.*,
                  org.apache.log4j.*" 
 %>
-<%@ page contentType="text/html; charset=UTF-8" %>
+<%@ page contentType="text/plain; charset=UTF-8" %>
 
  <%! private static Category log4j = 
         Category.getInstance("org.pente.gameServer.web.client.jsp"); %> <%

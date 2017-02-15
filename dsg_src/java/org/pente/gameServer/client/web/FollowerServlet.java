@@ -72,6 +72,10 @@ public class FollowerServlet extends HttpServlet {
         }
 
         if (follow != null) {
+            if (player.toLowerCase().equals(follow.toLowerCase())) {
+                handleError(request, response, "you can't follow yourself");
+                return;
+            }
             if (!playerData.hasPlayerDonated()) {
                 int followingLimit = Integer.parseInt(ctx.getInitParameter("NONSUBSCRIBERFOLLOWINGLIMIT"));
                 try {
