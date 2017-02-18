@@ -95,7 +95,7 @@ public class Server {
         this.port = serverData.getPort();
         this.kothStorer = resources.getKOTHStorer();
 
-        System.setProperty("javax.net.ssl.keyStore", "/var/lib/tomcat7/webapps/MyDSKeyStore.jks");
+        System.setProperty("javax.net.ssl.keyStore", "/var/lib/tomcat8/webapps/MyDSKeyStore.jks");
         System.setProperty("javax.net.ssl.keyStorePassword", "nuria8a13b");
         try {
             ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();

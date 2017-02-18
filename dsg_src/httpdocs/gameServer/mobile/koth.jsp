@@ -52,9 +52,8 @@ Hill hill;
 hill = kothStorer.getHill(game);
 long kingPid = 0;
     if (hill != null && hill.getSteps().size() > 0) {
-        boolean canIchallenge = true;
+        boolean canIchallenge = hill.hasPlayer(myPid);
         if (game > 50) {
-            canIchallenge = hill.hasPlayer(myPid);
             if (!dsgPlayerData.hasPlayerDonated()) {
                 canIchallenge = canIchallenge && kothStorer.canPlayerBeChallenged(game, myPid);
             }

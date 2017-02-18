@@ -53,7 +53,10 @@ they appear, if there are only 2 players on 2 steps, and the higher placed playe
 <br>
 A few more rules
 <ul>
-	<li>The player on the top step is king of the hill and gets a <img src="/gameServer/images/kothcrown.gif"> if they occupy the top step alone,</li>
+	<li>The player on the top step is king of the hill and gets a <img src="/gameServer/images/kothcrown.gif"> if they occupy the top step alone, the more hills you conquer, the darker your crown becomes: 
+	<% for ( int i = 1; i < 25 ; i++ ) { %>
+<img src="/gameServer/images/kothcrown<%=i%>.png">		
+	<%}%> </li>
 	<li>non-subscribers who don't play any King of the Hill games for 62 days are removed from the hill,</li>
 	<li>non-subscribers can only participate in one hill, <a href="https://pente.org/gameServer/subscriptions">subscribers</a> can participate in all hills,</li>
 	<li>live games must be played in the King of the Hill room and must be rated in order to count, games between players who are more than 2 steps apart are not considered.</li>
@@ -215,7 +218,7 @@ if (hill != null && iAmMember && game > 50 && (dsgPlayerData.hasPlayerDonated() 
 			});
 		%>
 	<tr>
-		<td bgcolor="#2C862F" colspan="<%=(iAmMember && game > 50)?4:3%>"  align="center"><font color="white"><b><%=(i==steps.size()-1)?"top of the hill":"Step " + (i+1)%></b></font></td>
+		<td bgcolor="<%=steps.get(i).hasPlayer(myPid)?"#ff8105":"#2C862F"%>" colspan="<%=(iAmMember && game > 50)?4:3%>"  align="center"><font color="white"><b><%=(i==steps.size()-1)?"top of the hill":"Step " + (i+1)%></b></font></td>
 	</tr>
 		<%
 			for( Player player : steps.get(i).getPlayers()) {
