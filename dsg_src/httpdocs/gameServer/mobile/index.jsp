@@ -309,8 +309,7 @@ No Ads
 
 EndOfSettingsParameters
 <%boolean subscriber = dsgPlayerData.hasPlayerDonated(); %>
-<%=dsgPlayerData.getName() + ";" + (subscriber?dsgPlayerData.getNameColorRGB():0) + ";"%>
-<%=dsgPlayerData.getName() + ";" + (subscriber?dsgPlayerData.getNameColorRGB():0) + ";" + (dsgPlayerData.showAds()?"ShowAds":"NoAds") + ";"%>
+<%=dsgPlayerData.getName().toLowerCase() + ";" + (subscriber?dsgPlayerData.getNameColorRGB():0) + ";" + (dsgPlayerData.showAds()?"ShowAds":"NoAds") + ";" + (subscriber?"subscriber":"freeloader") + ";" %>
 
 King of the Hill<%
 Hill hill;

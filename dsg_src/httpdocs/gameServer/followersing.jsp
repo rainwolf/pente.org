@@ -76,17 +76,17 @@ This page provides an overview of players you follow and players who follow you.
 
 
 <tr>
- <td colspan="2">
+ <td colspan="2" align="center">
   <a name="followers"><h3>followers</h3></a>
  </td>
- <td colspan="2">
+ <td colspan="2" align="center">
   <a name="following"><h3>following</h3></a>
  </td>
 </tr>
 
 <% for (int i = 0; i < max; i++ ) { %>
 <tr>
- <td>
+ <td align="center">
 <% if (i < followersSize) { 
   DSGPlayerData d = followersData.get(i); 
   DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(game); %>
@@ -99,7 +99,7 @@ This page provides an overview of players you follow and players who follow you.
       <td>
 <% } %>
  </td>
- <td>
+ <td align="center">
 <% if (i < followingSize) { 
   DSGPlayerData d = followingData.get(i);
   DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(game); %>
