@@ -328,7 +328,9 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 						if (tSet.isTwoGameSet()) {
 							TBGame otherGame = tSet.getOtherGame(t.getGid());
 							if (otherGame != null) {
-								if (gs.contains(otherGame) && (otherGame.getState() == TBGame.STATE_ACTIVE && otherGame.getTimeoutDate() != null && otherGame.getTimeoutDate().getTime() < now)) {
+								if (gs.contains(otherGame) && (otherGame.getState() == TBGame.STATE_ACTIVE 
+										&& otherGame.getTimeoutDate() != null 
+										&& otherGame.getTimeoutDate().getTime() < now)) {
 									if (t.getGid() < otherGame.getGid()) {
 										continue;
 									}
@@ -347,6 +349,20 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 						if (playerData.getTotalGames()/2 <= (MySQLDSGPlayerStorer.FLOATINGVACATIONDAYS*24 - floatingVacationDays)/24) {
 							floatingVacationDays = 0;
 						}
+
+						Tourney tourney = tourneyStorer.getTourney(t.getEventId());
+						if (tourney != null) {
+							int maxExtraDays = tourney.getIncrementalTime();
+//							long lastMoveTime = t.getLastMoveDate().getTime();
+//							long deadline = lastMoveTime + 1000L*3600*24*(t.getDaysPerMove() + maxExtraDays);
+//							if (deadline <= now) {
+//								floatingVacationDays = 0;
+//							}
+							if (maxExtraDays == 0) {
+								floatingVacationDays = 0;
+							}
+						}
+
 						if (floatingVacationDays > 0) {
 							if (floatingVacationDays == 24) {
 								DSGMessage message = new DSGMessage();
@@ -408,6 +424,8 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 						log4j.debug("TimeoutCheckRunnable, TBStoreException " + e);
 					} catch (DSGMessageStoreException e) {
 						log4j.debug("TimeoutCheckRunnable, DSGMessageStoreException " + e);
+					} catch (Throwable e) {
+						log4j.debug("TimeoutCheckRunnable, Throwable " + e);
 					}
 
 					t.timeout();
