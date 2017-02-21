@@ -2,6 +2,7 @@ package org.pente.gameServer.tourney;
 
 import java.util.*;
 
+import com.jivesoftware.oro.util.Cache;
 import org.apache.log4j.*;
 
 import org.pente.game.*;
@@ -21,11 +22,13 @@ public class CacheTourneyStorer implements TourneyStorer {
     private List<Tourney> upcomingTournies = null;
     private List<Tourney> currentTournies = null;
     private List<Tourney> completedTournies = null;
-
+    private Map<Integer, List<Long>> tourneyPlayerPids = null;
     private List<TourneyListener> listeners = new ArrayList<TourneyListener>();
 
     private CacheTBStorer tbStorer;
+    private CacheDSGPlayerStorer dsgPlayerStorer;
 
+    public void setDsgPlayerStorer(CacheDSGPlayerStorer dsgPlayerStorer) { this.dsgPlayerStorer = dsgPlayerStorer; }
     public void setTBStorer(CacheTBStorer tbStorer) {
         this.tbStorer = tbStorer;
     }
@@ -136,7 +139,7 @@ public class CacheTourneyStorer implements TourneyStorer {
         return t;
     }
     
-    public void addPlayerToTourney(long pid, int eid) throws Throwable {
+    public synchronized void addPlayerToTourney(long pid, int eid) throws Throwable {
         log4j.debug("addPlayerToTourney(" + pid + ", " + eid + ")");
         
         // don't update cache since pull current ratings with each query
@@ -144,12 +147,26 @@ public class CacheTourneyStorer implements TourneyStorer {
         // ratings from cacheplayerstorer
         backingStorer.addPlayerToTourney(pid, eid);
         
+        if (tourneyPlayerPids != null) {
+            List<Long> playerPids = tourneyPlayerPids.get(eid);
+            if (playerPids != null) {
+                playerPids.add(pid);
+            }
+        }
+        
         notifyListeners(new TourneyEvent(eid, TourneyEvent.PLAYER_REGISTER,
             new Long(pid)));
     }
-    public void removePlayerFromTourney(long pid, int eid) throws Throwable {
+    public synchronized void removePlayerFromTourney(long pid, int eid) throws Throwable {
         log4j.debug("removePlayerFromTourney(" + pid + ", " + eid + ")");
         backingStorer.removePlayerFromTourney(pid, eid);
+
+        if (tourneyPlayerPids != null) {
+            List<Long> playerPids = tourneyPlayerPids.get(eid);
+            if (playerPids != null) {
+                playerPids.remove(pid);
+            }
+        }
 
         notifyListeners(new TourneyEvent(eid, TourneyEvent.PLAYER_DROP,
                 new Long(pid)));
@@ -163,7 +180,20 @@ public class CacheTourneyStorer implements TourneyStorer {
         return backingStorer.getTourneyPlayers(eid);
     }
 
- 
+    @Override
+    public synchronized List<Long> getTourneyPlayerPids(int eid) throws Throwable {
+        if (tourneyPlayerPids == null) {
+            tourneyPlayerPids = new HashMap<>();
+        }
+        List<Long> playerPids = tourneyPlayerPids.get(eid);
+        if (playerPids == null) {
+            playerPids = backingStorer.getTourneyPlayerPids(eid);
+            tourneyPlayerPids.put(eid, playerPids);
+        }
+        
+        return playerPids;
+    }
+
     public Tourney getTourneyDetails(int eid) throws Throwable {
         log4j.debug("getTourneyDetails(" + eid + ")");
         return getTourney(eid);

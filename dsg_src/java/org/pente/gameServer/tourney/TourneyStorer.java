@@ -22,6 +22,7 @@ public interface TourneyStorer {
     public void addPlayerToTourney(long pid, int eid) throws Throwable;
     public void removePlayerFromTourney(long pid, int eid) throws Throwable;
     public List getTourneyPlayers(int eid) throws Throwable;
+    public List<Long> getTourneyPlayerPids(int eid) throws Throwable;
     public List setInitialSeeds(int eid) throws Throwable;
 
     public void addTourneyListener(TourneyListener listener);

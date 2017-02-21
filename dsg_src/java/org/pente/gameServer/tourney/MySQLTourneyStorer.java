@@ -521,6 +521,37 @@ public class MySQLTourneyStorer implements TourneyStorer {
         return players;
     }
 
+    @Override
+    public List<Long> getTourneyPlayerPids(int eid) throws Throwable {
+        List<Long> players = new ArrayList<>();
+
+        Connection con = null;
+        PreparedStatement stmt = null;
+        ResultSet results = null;
+        try {
+            con = dbHandler.getConnection();
+            stmt = con.prepareStatement(
+                    "select pid from dsg_tournament_player " +
+                            " where event_id = ? ");
+            stmt.setInt(1, eid);
+            results = stmt.executeQuery();
+
+            while (results.next()) {
+                players.add(results.getLong(1));
+            }
+
+        } finally {
+
+            if (stmt != null) {
+                stmt.close();
+            }
+            if (con != null) {
+                dbHandler.freeConnection(con);
+            }
+        }
+        return players;
+    }
+
     public Tourney getTourneyDetails(int eid) throws Throwable {
 
         Connection con = null;
