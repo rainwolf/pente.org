@@ -60,7 +60,6 @@ public class SimpleDSGPlayerData implements DSGPlayerData, java.io.Serializable 
     private transient long avatarLastModified;
     private String      note;
     
-    
     private Vector<DSGPlayerGameData>      gameData;
 
 	public SimpleDSGPlayerData() {

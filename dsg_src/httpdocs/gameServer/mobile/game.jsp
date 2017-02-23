@@ -24,23 +24,21 @@ com.jivesoftware.base.FilterChain filters =
 
     Resources resources = (Resources) application.getAttribute(Resources.class.getName());
     TBGameStorer tbGameStorer = resources.getTbGameStorer();
+    DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
     String gidString = (String) request.getParameter("gid");
-    TBGame  tbGame = tbGameStorer.loadGame(Long.parseLong(gidString));
+    long gid = Long.parseLong(gidString);
+
+    TBGame  tbGame = tbGameStorer.loadGame(gid);
+
+    if (tbGame != null) {
     TBSet set = tbGame.getTbSet();
 
 %>gid=<%=gidString%>
-
 private=<%=(set.isPrivateGame()?"":"non-")+"private"%>
-
 rated=<%=(tbGame.isRated()?"":"Not ")+"Rated"%>
-<%    
-
-
-%>sid=<%=set.getSetId()%>
+sid=<%=set.getSetId()%>
 
 <%
-
-
 String moves = "";
 String messages = "";
 String moveNums = "";
@@ -58,7 +56,6 @@ if (!"".equals(moves)) {
 
 %>moves=<%=moves%>
 <%
-DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
 DSGPlayerData player1 = dsgPlayerStorer.loadPlayer(tbGame.getPlayer1Pid()), player2 = dsgPlayerStorer.loadPlayer(tbGame.getPlayer2Pid());
 DSGPlayerGameData p1Data = player1.getPlayerGameData(tbGame.getGame());
 
@@ -99,50 +96,48 @@ if (!"".equals(moveNums)) {
 %>messageNums=<%=moveNums%>
 
 gameName=<%=GridStateFactory.getGameName(tbGame.getGame())%>
-<%
-
-
-
-
-%>player1=<%=player1.getName() + "," + ((int) p1Data.getRating()) %>
+player1=<%=player1.getName() + "," + ((int) p1Data.getRating()) %>
 <%
 
 p1Data = player2.getPlayerGameData(tbGame.getGame());
 
 %>player2=<%=player2.getName() + "," + ((int) p1Data.getRating()) %>
+
 <%
-
-
 if (set.getCancelPid() != 0) {
-
-player1 = dsgPlayerStorer.loadPlayer(set.getCancelPid());
+    player1 = dsgPlayerStorer.loadPlayer(set.getCancelPid());
 
 %>cancel=<%=player1.getName() + "," + set.getCancelMsg().replace("\\2","'")%>
 
-<%
-    
-}
+<% }
 %><%="state="+(tbGame.getState()==TBGame.STATE_ACTIVE?"active":"blub")%><%
 
 if (!tbGame.isCompleted() && (tbGame.getGame() == GridStateFactory.TB_DPENTE)) {
-
 %>dPenteState=<%=tbGame.getDPenteState()%>
 <%
 
 }
-
-
-
-
-// DateFormat messageDateFormat = null;
-// TimeZone tz = TimeZone.getTimeZone(dsgPlayerData.getTimezone());
-// messageDateFormat = new SimpleDateFormat("MMM dd, yyyy hh:mm aa z");
-// messageDateFormat.setTimeZone(tz);
-// Collections.sort(messages, new Comparator<DSGMessage>() {
-//     public int compare(DSGMessage m1, DSGMessage m2) {
-//         return (m2.getMid() - m1.getMid());
-//     }
-// });
+        
+    } else {
+        GameStorer gameStorer = resources.getGameStorer();
+        GameData game = new DefaultGameData();
+        gameStorer.loadGame(gid, game);
+        PlayerData p1Data = game.getPlayer1Data(), p2Data = game.getPlayer2Data();
+        String moveStr = "";
+        for(int move: game.getMoves()) {
+            moveStr = moveStr + move + ",";
+        }
+%>gid=<%=gidString%>
+private=<%=(game.isPrivateGame()?"":"non-")+"private"%>
+rated=<%=(game.getRated()?"":"Not ")+"Rated"%>
+gameName=<%=game.getGame()%>
+moves=<%=moveStr.substring(0, moveStr.length() - 1)%>
+player1=<%=p1Data.getUserIDName() + "," + (p1Data.getRating()) %>
+player2=<%=p2Data.getUserIDName() + "," + (p2Data.getRating()) %>
+messages=
+messageNums=
+<%
+    }
 
 %>
 

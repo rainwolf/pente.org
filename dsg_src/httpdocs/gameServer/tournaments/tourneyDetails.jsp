@@ -1,8 +1,9 @@
 <%
 DateFormat dateTimeFormat = new SimpleDateFormat("EEE, MMM dd, yyyy hh:mm:ss aa z Z");
+DSGPlayerData meData = null;
 {
   if (me != null) { // null for guests
-      DSGPlayerData meData = dsgPlayerStorer.loadPlayer(me);
+      meData = dsgPlayerStorer.loadPlayer(me);
       TimeZone tz = TimeZone.getTimeZone(meData.getTimezone());
       dateTimeFormat.setTimeZone(tz);
   }
@@ -37,7 +38,7 @@ DateFormat dateTimeFormat = new SimpleDateFormat("EEE, MMM dd, yyyy hh:mm:ss aa 
   <tr>
     <td>Game timers:</td>
     <% if (tourney.isTurnBased()) { %>
-        <td><%= tourney.getInitialTime() %> days per move</td>
+        <td><%= tourney.getInitialTime() %> days per move (<%= "Vacation is "+(tourney.getIncrementalTime()>0?"":"<b> not </b>")+ "available for this tournament" %>)</td>
     <% } else { %>
       <td><%= tourney.getInitialTime() %> minutes initial / 
       <%= tourney.getIncrementalTime() %> seconds incremental</td>
@@ -80,7 +81,27 @@ DateFormat dateTimeFormat = new SimpleDateFormat("EEE, MMM dd, yyyy hh:mm:ss aa 
     <td><b>Winner:</b>&nbsp;&nbsp;&nbsp;</td>
     <td><b><a href="/gameServer/profile?viewName=<%= tourney.getWinner() %>">
       <%= tourney.getWinner() %></a> <img src="/gameServer/images/crown.gif"
-          alt="Tournament Champ!"></td>
+          alt="Tournament Champ!">
+          <% if (meData != null && meData.getName().equals("rainwolf")) {
+          %>
+          </td>
+      <td>
+      <form name="addcrown" method="post" action="/gameServer/tournament" style="margin:0;padding:0;">
+      <input type="hidden" name="crown" value="assign">
+      <input type="hidden" name="eid" value="<%=tourney.getEventID()%>">
+      <input type="submit" value="assign crown">
+      </form>
+      </td>
+      <td>
+      <form name="takecrown" method="post" action="/gameServer/tournament" style="margin:0;padding:0;">
+      <input type="hidden" name="crown" value="remove">
+      <input type="hidden" name="eid" value="<%=tourney.getEventID()%>">
+      <input type="submit" value="remove crown">
+      </form>
+          <%
+          }
+          %>
+          </td>
   </tr>
   <% } %>
   <tr>

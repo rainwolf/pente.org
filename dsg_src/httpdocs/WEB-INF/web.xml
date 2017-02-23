@@ -148,6 +148,11 @@
     <param-value>1ff8dccb271448f19137e1bb621da561</param-value>
   </context-param>
  
+  <context-param>
+    <param-name>adminName</param-name>
+    <param-value>rainwolf</param-value>
+  </context-param>
+
   <filter>
     <filter-name>LoginFilter</filter-name>
     <filter-class>org.pente.gameServer.client.web.LoginFilter</filter-class>
@@ -302,7 +307,10 @@
     <servlet-name>BroadcastServlet</servlet-name>
     <servlet-class>org.pente.gameServer.client.web.BroadcastServlet</servlet-class>
   </servlet>
-  
+  <servlet>
+    <servlet-name>TournamentServlet</servlet-name>
+    <servlet-class>org.pente.gameServer.tourney.web.TournamentServlet</servlet-class>
+  </servlet>  
 
   
   <servlet>
@@ -673,6 +681,11 @@
     <servlet-name>BroadcastServlet</servlet-name>
     <url-pattern>/gameServer/broadcast</url-pattern>
   </servlet-mapping>  
+
+  <servlet-mapping>
+    <servlet-name>TournamentServlet</servlet-name>
+    <url-pattern>/gameServer/tournament</url-pattern>
+  </servlet-mapping>
 
   <session-config>
     <session-timeout>8</session-timeout>
