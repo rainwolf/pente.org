@@ -17,18 +17,21 @@
    Tourney tourney = null;
    if (action != null && action.equals("add")) {
        
-       System.out.print("------------ here kitty " + request.getParameter("game"));
+       System.out.print("------------ here game " + request.getParameter("game"));
        int game = Integer.parseInt(request.getParameter("game"));
        String name = request.getParameter("name");
 
        tourney = new Tourney();
        tourney.setName(name);
        tourney.setGame(game);
+       System.out.print("------------ here initial " + request.getParameter("initial"));
        tourney.setInitialTime(Integer.parseInt(request.getParameter("initial")));
+       System.out.print("------------ here incremental " + request.getParameter("incremental"));
        tourney.setIncrementalTime(Integer.parseInt(request.getParameter("incremental")));
        String speed = request.getParameter("speed");
        tourney.setSpeed(speed != null && speed.equals("Y"));
        if (!tourney.isSpeed()) {
+       System.out.print("------------ here roundLength " + request.getParameter("roundLength"));
           tourney.setRoundLengthDays(Integer.parseInt(request.getParameter("roundLength")));
        }
        String signupEnd = request.getParameter("signupEnd");
@@ -40,6 +43,7 @@
        else {
          tourney.setStartDate(dateFormat.parse(start));
      }
+       System.out.print("------------ here format " + request.getParameter("format"));
      int format = Integer.parseInt(request.getParameter("format"));
      if (format == 1) {
          tourney.setFormat(new RoundRobinFormat());
@@ -65,8 +69,8 @@
      if (rrTypeStr != null && rrValueStr != null) {
        try {
           int rrType = Integer.parseInt(rrTypeStr);
-          int rrValue = Integer.parseInt(rrValueStr);
           if (rrType != 0) {
+            int rrValue = Integer.parseInt(rrValueStr);
             Restriction r = new Restriction(rrType, rrValue);
             tourney.addRestriction(r);
           }

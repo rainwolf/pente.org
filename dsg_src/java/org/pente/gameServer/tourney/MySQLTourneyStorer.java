@@ -822,6 +822,52 @@ public class MySQLTourneyStorer implements TourneyStorer {
         }
     }
 
+    @Override
+    public void assignCrown(int eid, int game, long pid, int crown) throws Throwable {
+        Connection con = null;
+        PreparedStatement stmt = null;
+        try {
+            con = dbHandler.getConnection();
+            stmt = con.prepareStatement("update dsg_player_game set tourney_winner=? where pid = ? and computer = 'N' and game = ?");
+            stmt.setString(1, ""+crown);
+            stmt.setLong(2, pid);
+            stmt.setInt(3, game);
+            stmt.executeUpdate();
+            
+        } finally {
+
+            if (stmt != null) {
+                stmt.close();
+            }
+            if (con != null) {
+                dbHandler.freeConnection(con);
+            }
+        }
+    }
+
+    @Override
+    public void removeCrown(int eid, int game, long pid, int crown) throws Throwable {
+        Connection con = null;
+        PreparedStatement stmt = null;
+        try {
+            con = dbHandler.getConnection();
+            stmt = con.prepareStatement("update dsg_player_game set tourney_winner='0' where pid = ? and tourney_winner=? and computer = 'N' and game = ?");
+            stmt.setLong(1, pid);
+            stmt.setString(2, ""+crown);
+            stmt.setInt(3, game);
+            stmt.executeUpdate();
+
+        } finally {
+
+            if (stmt != null) {
+                stmt.close();
+            }
+            if (con != null) {
+                dbHandler.freeConnection(con);
+            }
+        } 
+    }
+
     // not implemented here
     public void updateMatches(List tourneyMatches, Tourney t) throws Throwable {}
     public void addTourneyListener(TourneyListener listener) {}

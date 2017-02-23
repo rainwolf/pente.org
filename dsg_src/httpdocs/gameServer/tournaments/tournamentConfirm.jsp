@@ -2,8 +2,11 @@
 
 <%! private boolean alreadySignedUp(List players, DSGPlayerData data) {
         for (Iterator it = players.iterator(); it.hasNext();) {
-            TourneyPlayerData d = (TourneyPlayerData) it.next();
-            if (d.getPlayerID() == data.getPlayerID()) return true;
+//            TourneyPlayerData d = (TourneyPlayerData) it.next();
+//            if (d.getPlayerID() == data.getPlayerID()) return true;
+            if (players.contains(data.getPlayerID())) {
+                return true;
+            }
         }
         return false;
     }
@@ -17,7 +20,7 @@ Resources resources = (Resources) application.getAttribute(
     Resources.class.getName());
 
 Tourney tourney = resources.getTourneyStorer().getTourneyDetails(eid);
-List tournamentPlayers = resources.getTourneyStorer().getTourneyPlayers(eid);
+List<Long> tournamentPlayers = resources.getTourneyStorer().getTourneyPlayerPids(eid);
 
 
 String currentPage = "Signup";
@@ -200,28 +203,25 @@ if (name != null) {
               </font>
             </td>
           </tr>
-            <%
-            for (int i = 0; i < tournamentPlayers.size(); i++) {
-                TourneyPlayerData t = (TourneyPlayerData) tournamentPlayers.get(i); %>
+            <% int i = 0;
+            for (Long pid: tournamentPlayers) { %>
                 <tr>
                   <td align="center"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">
                     <%= (i + 1) %>
                   </td>
                   <td><font face="Verdana, Arial, Helvetica, sans-serif" size="2">
-                    <a href="../profile?viewName=<%= t.getName() %>"><%= t.getName() %></a>
-                    <% DSGPlayerData d = resources.getDsgPlayerStorer().loadPlayer(t.getName());
-                       DSGPlayerGameData g = d.getPlayerGameData(tourney.getGame());
-                       if (g != null) {
-                        int tourneyWinner = g.getTourneyWinner(); %>
+                    <% DSGPlayerData d = resources.getDsgPlayerStorer().loadPlayer(pid);
+                       DSGPlayerGameData g = d.getPlayerGameData(tourney.getGame()); %>
+                    <a href="../profile?viewName=<%= d.getName() %>"><%= d.getName() %></a>
+<%                       int tourneyWinner = d.getTourneyWinner(); %>
 			            <%@ include file="crown.jspf" %>
-                    <% } %>
                     &nbsp;&nbsp;
                   </font></td>
                   <td align="center"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">
                   <%
-		           int rating = t.getRating();
+		           int rating = (int) g.getRating();
 		    	   String gif = "ratings_";
-		    	   if (t.getTotalGames() < 20) {
+		    	   if (g.getTotalGames() < 20) {
 		    	       gif += "white.gif";
 		    	   }
 				   else if (rating > 1899) {
@@ -243,9 +243,9 @@ if (name != null) {
 					<img src="/gameServer/images/<%= gif %>"> <%= rating %>
                   </font></td>
                   <td align="center"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">
-                    <%= t.getTotalGames() %>
+                    <%= g.getTotalGames() %>
                   </font></td>
-                </tr> <%
+                </tr> <% i = i + 1;
             }
             %>
         </table>

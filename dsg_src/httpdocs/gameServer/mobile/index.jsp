@@ -488,7 +488,7 @@ Active Games - My Turn<%
                  g.getPlayer2Pid() : g.getPlayer1Pid();
                 DSGPlayerData d = dsgPlayerStorer.loadPlayer(oppPid);
                 DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(g.getGame());%>
-<%=g.getGid() + ";" + GridStateFactory.getGameName(g.getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + g.getNumMoves() + 1 + ";" + Utilities.getTimeLeft(g.getTimeoutDate().getTime()) +";" + ratedStr + ";" + (d.hasPlayerDonated()?d.getNameColorRGB():0) + ";" + d.getTourneyWinner() %><%}
+<%=g.getGid() + ";" + GridStateFactory.getGameName(g.getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + (g.getNumMoves() + 1) + ";" + Utilities.getTimeLeft(g.getTimeoutDate().getTime()) +";" + ratedStr + ";" + (d.hasPlayerDonated()?d.getNameColorRGB():0) + ";" + d.getTourneyWinner() %><%}
      
 
 
@@ -520,7 +520,7 @@ Active Games - Opponents Turn<%
                  g.getPlayer2Pid() : g.getPlayer1Pid();
                 DSGPlayerData d = dsgPlayerStorer.loadPlayer(oppPid);
                 DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(g.getGame());%>
-<%=g.getGid() + ";" + GridStateFactory.getGameName(g.getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + g.getNumMoves() + 1 + ";" + Utilities.getTimeLeft(g.getTimeoutDate().getTime()) +";" + ratedStr + ";" + (d.hasPlayerDonated()?d.getNameColorRGB():0) + ";" + d.getTourneyWinner() %><%} 
+<%=g.getGid() + ";" + GridStateFactory.getGameName(g.getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + (g.getNumMoves() + 1) + ";" + Utilities.getTimeLeft(g.getTimeoutDate().getTime()) +";" + ratedStr + ";" + (d.hasPlayerDonated()?d.getNameColorRGB():0) + ";" + d.getTourneyWinner() %><%} 
      
 
 
@@ -574,14 +574,14 @@ Tournaments<%
 for (Tourney tmpTourney :  (List<Tourney>) tourneyStorer.getUpcomingTournies()) {
     Tourney tourney = tourneyStorer.getTourney(tmpTourney.getEventID());
     if (!tourney.isTurnBased()) {
-        continue;
+//        continue;
     }
     %>
-<%=tourney.getName() + ";" + tourney.getEventID() + ";" + tourney.getNumRounds() + ";" + GridStateFactory.getGameName(tourney.getGame()) + ";1;" + dateFormat.format(tourney.getSignupEndDate()) %><%}
+<%=tourney.getName() + ";" + tourney.getEventID() + ";" + tourney.getNumRounds() + ";" + (tourney.isTurnBased()?"tb-":"") + GridStateFactory.getGameName(tourney.getGame()) + ";1;" + dateFormat.format(tourney.getSignupEndDate()) %><%}
 for (Tourney tmpTourney : currentTournies) {
     Tourney tourney = tourneyStorer.getTourney(tmpTourney.getEventID());
     if (!tourney.isTurnBased()) {
-        continue;
+//        continue;
     }
     %>
 <%=tourney.getName() + ";" + tourney.getEventID() + ";" + tourney.getNumRounds() + ";" + GridStateFactory.getGameName(tourney.getGame()) + ";" + (tourney.getNumRounds()==0?"2":"3") + ";" + dateFormat.format(tourney.getStartDate()) %><%}

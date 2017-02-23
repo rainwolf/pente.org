@@ -27,9 +27,9 @@ function goWH(url) {
       else if (myHeight > myWidth - 100) {
           myHeight = myWidth - 100;
       }
-      window.location=url + "&w="+myWidth+"&h="+myHeight;
+      window.open(url + "&w="+myWidth+"&h="+myHeight, "_self");
   }
   else {
-      window.location=url;
+      window.open(url, "_self");
   }
 }

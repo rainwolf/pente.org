@@ -333,4 +333,44 @@ public class CacheTourneyStorer implements TourneyStorer {
             insertRound(newRound);
         }
     }
+
+    @Override
+    public void assignCrown(int eid, int game, long pid, int crown) throws Throwable {
+        Tourney tourney = getTourney(eid);
+        if (tourney != null) {
+            String prizeStr = tourney.getPrize().toLowerCase();
+            int crownInt = 0;
+            int gameInt = tourney.getGame();
+            long winner = tourney.getWinnerPid();
+            if (prizeStr.contains("gold")) {
+                crownInt = DSGPlayerGameData.TOURNEY_WINNER_GOLD;
+            } else if (prizeStr.contains("silver")) {
+                crownInt = DSGPlayerGameData.TOURNEY_WINNER_SILVER;
+            } else if (prizeStr.contains("bronze")) {
+                crownInt = DSGPlayerGameData.TOURNEY_WINNER_BRONZE;
+            }
+            backingStorer.assignCrown(eid, gameInt, winner, crownInt);
+            dsgPlayerStorer.refreshPlayer(tourney.getWinner());
+        }
+    }
+
+    @Override
+    public void removeCrown(int eid, int game, long pid, int crown) throws Throwable {
+        Tourney tourney = getTourney(eid);
+        if (tourney != null) {
+            String prizeStr = tourney.getPrize().toLowerCase();
+            int crownInt = 0;
+            int gameInt = tourney.getGame();
+            long winner = tourney.getWinnerPid();
+            if (prizeStr.contains("gold")) {
+                crownInt = DSGPlayerGameData.TOURNEY_WINNER_GOLD;
+            } else if (prizeStr.contains("silver")) {
+                crownInt = DSGPlayerGameData.TOURNEY_WINNER_SILVER;
+            } else if (prizeStr.contains("bronze")) {
+                crownInt = DSGPlayerGameData.TOURNEY_WINNER_BRONZE;
+            }
+            backingStorer.removeCrown(eid, gameInt, winner, crownInt);
+            dsgPlayerStorer.refreshPlayer(tourney.getWinner());
+        }
+    }
 }

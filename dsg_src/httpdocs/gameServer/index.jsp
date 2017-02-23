@@ -357,7 +357,8 @@ window.google_analytics_uacct = "UA-20529582-2";
 
           <li>16th Anniversary World Champion <a href="/gameServer/tournaments/statusRound.jsp?eid=1184&round=4">tournament</a> - 2015. Round 4 has started! 
           The <a href="/gameServer/forums/forum.jspa?forumID=35&start=0">tournament forum</a> is now opened. </li>
-          <li>Our very first turn-based tournament: <a href="/gameServer/tournaments/statusRound.jsp?eid=1267&round=3">Remember, remember, the 5th of November</a> - Round 3 has started! </li>
+          <li>Our very first turn-based tournament: <a href="/gameServer/tournaments/statusRound.jsp?eid=1267&round=4">Remember, remember, the 5th of November</a> - Round 4 has started! </li>
+          <li>New turn-based <a href="/gameServer/tournaments">tournaments</a> - starting April 1st! </li>
 
 
 <%--

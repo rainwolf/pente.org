@@ -350,17 +350,20 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 							floatingVacationDays = 0;
 						}
 
-						Tourney tourney = tourneyStorer.getTourney(t.getEventId());
-						if (tourney != null) {
-							int maxExtraDays = tourney.getIncrementalTime();
+						if (getEventId(t.getGame()) != t.getEventId()) {
+							Tourney tourney = tourneyStorer.getTourney(t.getEventId());
+							if (tourney != null) {
+								int maxExtraDays = tourney.getIncrementalTime();
 //							long lastMoveTime = t.getLastMoveDate().getTime();
 //							long deadline = lastMoveTime + 1000L*3600*24*(t.getDaysPerMove() + maxExtraDays);
 //							if (deadline <= now) {
 //								floatingVacationDays = 0;
 //							}
-							if (maxExtraDays == 0) {
-								floatingVacationDays = 0;
+								if (maxExtraDays == 0) {
+									floatingVacationDays = 0;
+								}
 							}
+							
 						}
 
 						if (floatingVacationDays > 0) {

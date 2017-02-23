@@ -307,7 +307,7 @@ if (hill != null && iAmMember && game > 50 && (dsgPlayerData.hasPlayerDonated() 
 </center>      
 
 		</td>
-		<td width="22%" valign="top">
+		<td width="29%" valign="top">
 		<br>
 		<br>
 		<table align="right">
@@ -325,13 +325,13 @@ if (hill != null && iAmMember && game > 50 && (dsgPlayerData.hasPlayerDonated() 
 			%>
 			<tr <%=(color%2 == 0)?"bgcolor=\"#deecde\"":""%>>
             <td align="right">
-            <a href="/gameServer/stairs.jsp?game=<%=gameInt%>"><b><h2><%="TB-" + GridStateFactory.getGameName(gameInt)%></h2></b></a>
+            <a href="/gameServer/stairs.jsp?game=<%=gameInt%>"><b><h2><%="TB-" + GridStateFactory.getGameName(gameInt)%> (<%=hill.getNumPlayers()%>)</h2></b></a>
             <%
             long kingPid = hill.getKing();
             if (kingPid != 0) {
 				DSGPlayerData d = dsgPlayerStorer.loadPlayer(kingPid);
 //				DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(CacheKOTHStorer.tbGames[i]);
-				%>
+				%>ruled by 
 			<%@ include file="playerLink.jspf" %>&nbsp;
 			<br>
 			<br>
@@ -349,13 +349,13 @@ if (hill != null && iAmMember && game > 50 && (dsgPlayerData.hasPlayerDonated() 
 			%>
 			<tr <%=(color%2 == 0)?"bgcolor=\"#deecde\"":""%>>
             <td align="right">
-            <a href="/gameServer/stairs.jsp?game=<%=gameInt%>"><b><h2><%=GridStateFactory.getGameName(gameInt)%></h2></b></a>
+            <a href="/gameServer/stairs.jsp?game=<%=gameInt%>"><b><h2><%=GridStateFactory.getGameName(gameInt)%> (<%=hill.getNumPlayers()%>)</h2></b></a>
             <%
             long kingPid = hill.getKing();
             if (kingPid != 0) {
 				DSGPlayerData d = dsgPlayerStorer.loadPlayer(kingPid);
 //				DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(CacheKOTHStorer.liveGames[i]);
-				%>
+				%>ruled by 
 			<%@ include file="playerLink.jspf" %>&nbsp;
 			<br>
 			<br>
@@ -373,13 +373,13 @@ if (hill != null && iAmMember && game > 50 && (dsgPlayerData.hasPlayerDonated() 
 			%>
 			<tr <%=(color%2 == 0)?"bgcolor=\"#deecde\"":""%>>
             <td align="right">
-            <a href="/gameServer/stairs.jsp?game=<%=gameInt%>"><b><h2><%=GridStateFactory.getGameName(gameInt)%></h2></b></a>
+            <a href="/gameServer/stairs.jsp?game=<%=gameInt%>"><b><h2><%=GridStateFactory.getGameName(gameInt)%> (<%=hill.getNumPlayers()%>)</h2></b></a>
             <%
             long kingPid = hill.getKing();
             if (kingPid != 0) {
 				DSGPlayerData d = dsgPlayerStorer.loadPlayer(kingPid);
 //				DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(CacheKOTHStorer.liveGames[i]);
-				%>
+				%>ruled by 
 			<%@ include file="playerLink.jspf" %>&nbsp;
 			<br>
 			<br>
