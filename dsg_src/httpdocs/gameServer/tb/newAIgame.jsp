@@ -147,10 +147,15 @@ function submitnewgameform()
                <option <% if (i == 0) { %>selected <% } %>value="<%= games[i].getId() %>"><%= games[i].getName() %></option>
 --%>               
          <% } %>
+         </select>
        </font>
        
     <script type="text/javascript">
+      <% if (request.getParameter("game") != null) { %>
         SelectElement(<%=request.getParameter("game") %>);
+      <% } else { %>
+        SelectElement(51);
+        <% } %>
     </script>
        
        

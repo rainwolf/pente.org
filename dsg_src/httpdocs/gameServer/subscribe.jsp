@@ -51,7 +51,7 @@ if (giftee != null) {
 
 <table align="center" border="1" cellpadding="10" cellspacing="0" width="100%">
 <tr>
-  <td align="center">
+  <td align="center" width="75%">
      Subscription Type 
   </td>
   <td align="left" colspan="2">

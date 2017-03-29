@@ -1,4 +1,4 @@
-<%@ page import="org.pente.game.*, org.pente.gameServer.tourney.*"
+<%@ page import="org.pente.game.*, org.pente.gameServer.tourney.*, org.pente.turnBased.*"
     errorPage="../../five00.jsp" %>
 
 <%! private static final NumberFormat percentNF =
@@ -10,8 +10,9 @@ int eid = Integer.parseInt(eidStr);
 
 Resources resources = (Resources) application.getAttribute(
     Resources.class.getName());
-
-Tourney tourney = resources.getTourneyStorer().getTourney(eid);
+TourneyStorer tourneyStorer = resources.getTourneyStorer();
+TBGameStorer tbStorer = resources.getTbGameStorer();
+Tourney tourney = tourneyStorer.getTourney(eid);
 
 String roundStr = request.getParameter("round");
 int r = Integer.parseInt(roundStr);

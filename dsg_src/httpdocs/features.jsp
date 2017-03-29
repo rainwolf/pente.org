@@ -39,7 +39,7 @@ a {text-decoration:none;}
     z-index:0;
 }
 #features-livegame,#features-database,#features-tbgame,#features-ai,#features-tutorials,
-#features-puzzles,#features-stats {
+#features-puzzles,#features-stats, #features-apps, #features-competition {
     border-top:1px solid #dfdfdf;
     padding-top:25px;
 }
@@ -99,7 +99,7 @@ a {text-decoration:none;}
 }
 
 
-#features-ai, #features-tutorials, #features-puzzles {
+#features-ai, #features-tutorials, #features-puzzles, #features-apps, #features-competition {
     padding-top: 5px;
 }
 
@@ -131,20 +131,28 @@ a {text-decoration:none;}
         opponent in the live game room, it's a great way to improve your skills.
         </p>
     </div>
-    <div id="features-tutorials">
-        <h3>Tutorials</a></h3>
-        <p>Learn basic strategy of the game with our Pente <a href="/gameServer/strategy.jsp">tutorials</a>,
-        designed for the beginner player.        
+    <div id="features-apps">
+        <h3>Mobile Apps</a></h3>
+        <p> Not always in front of your computer? Play from anywhere, any time with out mobile apps for iOS and Android. Our apps support all website features: turn-based play, live play, access the game database, play 2 different computer players.
+        <br>
+        <br>
+        <center>
+        <a href="https://itunes.apple.com/us/app/pente-live/id595426592?ls=1&mt=8" target="mobileApp"><img src="gameServer/images/app_store.png"></a>
+        <a href="https://play.google.com/store/apps/details?id=be.submanifold.pentelive" target="mobileApp"><img src="gameServer/images/google_play.png"></a>
+        </center>
+
         </p>
     </div>
-    <div id="features-puzzles">
-        <h3>Puzzles</a></h3>
-        <p>Once you've got the hang of the game, try the <a href="/gameServer/puzzles.jsp">puzzles</a> for a good
-        challenge!        
+    <div id="features-competition">
+        <h3>Competitions</a></h3>
+        <p> We have regular tournaments where you can battle for eternal glory and a crown. And King of the Hill where you fight your way to the top of the hill for a well-earned crown.
+        <br>
+
         </p>
     </div>
     </div>
     
+    <div style="clear:both">
     <div id="features-stats">
         <h3>Stats and Rankings</h3><p>We keep track of your ratings over time
         so you can see your improvement.</p><br>
@@ -159,6 +167,19 @@ a {text-decoration:none;}
         can find games with the same openings in seconds.</p>
         <img src="/res/db-sm.png"><br>
 
+    </div>
+    </div>
+    <div id="features-tutorials">
+        <h3>Tutorials</a></h3>
+        <p>Learn basic strategy of the game with our Pente <a href="/gameServer/strategy.jsp">tutorials</a>,
+        designed for the beginner player.        
+        </p>
+    </div>
+    <div id="features-puzzles">
+        <h3>Puzzles</a></h3>
+        <p>Once you've got the hang of the game, try the <a href="/gameServer/puzzles.jsp">puzzles</a> for a good
+        challenge!        
+        </p>
     </div>
 </div>
 
