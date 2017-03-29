@@ -7,6 +7,7 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 
 import org.pente.game.*;
+import org.pente.gameServer.tourney.TourneyStorer;
 import org.pente.notifications.NotificationServer;
 import org.pente.turnBased.*;
 import org.pente.gameServer.core.*;
@@ -128,9 +129,13 @@ public class MoveServlet extends HttpServlet {
 
 					if (!playerData.isAdmin() && 
 						game.getState() == TBGame.STATE_ACTIVE) {
-						log4j.error("MoveServlet, game state invalid " + gid);
-						handleError(request, response, "Invalid game, game active and other player trying to view it.");
-						return;
+						TourneyStorer tourneyStorer = resources.getTourneyStorer();
+						int eventId = game.getEventId();
+						if (tourneyStorer.getTourney(eventId) == null) {
+							log4j.error("MoveServlet, game state invalid " + gid);
+							handleError(request, response, "Invalid game, game active and other player trying to view it.");
+							return;
+						}
 					}
 
 					// else if complete, show game but restrict messages

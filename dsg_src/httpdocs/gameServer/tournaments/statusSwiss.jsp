@@ -12,10 +12,10 @@
 <b>Matches</b>
 <table width="400" border="0" cellspacing="0" cellpadding="0" bordercolor="black">
   <tr bgcolor="<%= bgColor1 %>">
-    <th width="30%" align="left"><font color="white">Player 1</font></th>
-    <th width="30%" align="center"><font color="white">Result</font></th>	
-    <th width="30%" align="left"><font color="white">Player 2</font></th>
-    <th width="10%" align="left"><font color="white">Score</font></th>
+    <th width="25%" align="left"><font color="white">Player 1</font></th>
+    <th width="25%" align="center"><font color="white">Result</font></th> 
+    <th width="25%" align="left"><font color="white">Player 2</font></th>
+    <th width="25%" align="center"><font color="white">Score</font></th>
   </tr>
 <%
 SwissSection section = (SwissSection) round.getSection(1);
@@ -42,7 +42,7 @@ for (Iterator it = matches.iterator(); it.hasNext();) {
            <%= m.getPlayer2().getName() %></a></b>
       </td>
       <%-- wins column --%>
-      <td>
+      <td align="center">
           <%= m.getPlayer1Wins() %> - <%= m.getPlayer2Wins() %>
       </td>
       <% } %>

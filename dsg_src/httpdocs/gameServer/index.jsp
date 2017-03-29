@@ -243,6 +243,12 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
         iterator.remove();
     }
 }
+int kothSets = 0;
+for (TBSet tbSet:  waitingSets) {
+    if (kothStorer.getEventId(tbSet.getGame1().getGame()) == tbSet.getGame1().getEventId()) {
+      kothSets += 1;
+    }
+}
 
 %>
 <% pageContext.setAttribute("title", title2); %>
@@ -358,7 +364,7 @@ window.google_analytics_uacct = "UA-20529582-2";
           <li>16th Anniversary World Champion <a href="/gameServer/tournaments/statusRound.jsp?eid=1184&round=4">tournament</a> - 2015. Round 4 has started! 
           The <a href="/gameServer/forums/forum.jspa?forumID=35&start=0">tournament forum</a> is now opened. </li>
           <li>Our very first turn-based tournament: <a href="/gameServer/tournaments/statusRound.jsp?eid=1267&round=4">Remember, remember, the 5th of November</a> - Round 4 has started! </li>
-          <li>New turn-based <a href="/gameServer/tournaments">tournaments</a> - starting April 1st! </li>
+          <li>New turn-based <a href="/gameServer/tournaments">tournaments</a> - starting April 1st: <a href="/gameServer/tournaments/tournamentConfirm.jsp?eid=1281">Pente Masters</a>, <a href="/gameServer/tournaments/tournamentConfirm.jsp?eid=1282">Fool's Keryo</a>, <a href="/gameServer/tournaments/tournamentConfirm.jsp?eid=1283">Fool's Gomoku</a>, <a href="/gameServer/tournaments/tournamentConfirm.jsp?eid=1284">Fool's D</a>, <a href="/gameServer/tournaments/tournamentConfirm.jsp?eid=1285">Fool's Poof</a>, <a href="/gameServer/tournaments/tournamentConfirm.jsp?eid=1286">Fool's C6</a>, <a href="/gameServer/tournaments/tournamentConfirm.jsp?eid=1287">Fool's Boat</a></li>
 
 
 <%--
@@ -643,14 +649,15 @@ if (inLiveGameRoom) {
 
 <table border="0" cellpadding="0" cellspacing="0" width="100%">
   <tr>
-   <td align="left" colspan="2">
+   <td align="left" >
       <div class="buttonwrapper">
-       <a class="boldbuttons" href="/gameServer/tb/new.jsp"><span>Start a New Game</span></a> <a class="boldbuttons" href="/gameServer/tb/waiting.jsp" style="margin-right:6px; margin-left: 6px"><span>Find a Public Game <b>(<%=openTBgames %>)</b><a class="boldbuttons" href="/gameServer/tb/newAIgame.jsp" style="margin-right:6px"><span>Play the TB AI</span></a></span></a> 
-
-       <div style="margin-top:7px;">
-          Active games: <b><%= numberFormat.format(siteStatsData.getNumTbGames()) %></b>, Open TB games: <b><%=openTBgames %></b><%-- --%>
-       </div>
+       <a class="boldbuttons" href="/gameServer/tb/new.jsp"><span>Start a New Game</span></a> <a class="boldbuttons" href="/gameServer/tb/waiting.jsp" style="margin-right:6px; margin-left: 6px"><span>Find a Public Game <b>
+       (<%=openTBgames %>)</b><a class="boldbuttons" href="/gameServer/tb/newAIgame.jsp" style="margin-right:6px"><span>Play the TB AI</span></a></span></a> 
       </div>
+   </td>
+   <td>
+          Active games: <b><%= numberFormat.format(siteStatsData.getNumTbGames()) %></b>, <br>Public games: <b><%=(kothSets==0?openTBgames:(openTBgames-kothSets)+" + "+kothSets+" KotH") %></b><%-- --%>
+
    </td>
    <td width="5">&nbsp;</td>
  </tr>

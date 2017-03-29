@@ -20,7 +20,7 @@ List<TBGame> myTurn = new ArrayList<TBGame>();
 List<TBGame> oppTurn = new ArrayList<TBGame>();
 Utilities.organizeGames(meData.getPlayerID(), currentSets,
     invitesTo, invitesFrom, myTurn, oppTurn);
-CacheKOTHStorer kothStorer = resources.getKOTHStorer();
+final CacheKOTHStorer kothStorer = resources.getKOTHStorer();
 
 // int myPenteRating = 0;
 // int myKeryoPenteRating = 0;
@@ -199,6 +199,13 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
       Collections.sort(waitingSets, new Comparator<TBSet>() {
           @Override
           public int compare(TBSet o1, TBSet o2) {
+              boolean o1KotH = (kothStorer.getEventId(o1.getGame1().getGame()) == o1.getGame1().getEventId());
+              boolean o2KotH = (kothStorer.getEventId(o2.getGame1().getGame()) == o2.getGame1().getEventId());
+              if (o1KotH && !o2KotH) {
+                  return -1;
+              } else if (!o1KotH && o2KotH) {
+                return 1;
+              }
               return o2.getCreationDate().compareTo(o1.getCreationDate());
           }
       });

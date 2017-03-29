@@ -202,9 +202,14 @@ if (!limitExceeded) {%>
 --%>               
          <% } %>
        </font>
+       </select>
        
     <script type="text/javascript">
+      <% if (request.getParameter("game") != null) { %>
         SelectElement(<%=request.getParameter("game") %>);
+      <% } else { %>
+        SelectElement(51);
+        <% } %>
     </script>
        
        

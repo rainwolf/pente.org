@@ -45,10 +45,12 @@ TourneyStorer tourneyStorer = resources.getTourneyStorer();
                boolean live = !t.isTurnBased();
                if (t.getNumRounds() > 0) { %>
                    <b><a href="statusRound.jsp?eid=<%= t.getEventID() %>&round=<%= t.getNumRounds() %>">
-                    <%= t.getName() %></a> (<%=(live?"Live":"Turn-Based")%> tournament, <%=tourneyStorer.getTourneyPlayerPids(d.getEventID()).size()%> players)</b><br>
+                   <% int numPlayers = tourneyStorer.getTourneyPlayerPids(d.getEventID()).size(); %>
+                    <%= t.getName() %></a> (<%=(live?"Live":"Turn-Based")%> tournament, </b> <%=numPlayers%> player<%=numPlayers==1?"":"s"%><b>)</b><br>
             <% } else { %>
                    <b><a href="status.jsp?eid=<%= t.getEventID() %>">
-                    <%= t.getName() %></a> (<%=(live?"Live":"Turn-Based")%> tournament, <%=tourneyStorer.getTourneyPlayerPids(d.getEventID()).size()%> players)</b><br>
+                   <% int numPlayers = tourneyStorer.getTourneyPlayerPids(d.getEventID()).size(); %>
+                    <%= t.getName() %></a> (<%=(live?"Live":"Turn-Based")%> tournament, </b> <%=numPlayers%> player<%=numPlayers==1?"":"s"%><b>)</b><br>
             <% }
              }
          } %>
@@ -71,7 +73,8 @@ TourneyStorer tourneyStorer = resources.getTourneyStorer();
                Tourney t = tourneyStorer.getTourney(d.getEventID());
                 boolean live = !t.isTurnBased();%>
                <b><a href="tournamentConfirm.jsp?eid=<%= t.getEventID() %>">
-                    <%= t.getName() %></a> (<%=(live?"Live":"Turn-Based")%> tournament, <%=tourneyStorer.getTourneyPlayerPids(d.getEventID()).size()%> players)</b><br>
+                   <% int numPlayers = tourneyStorer.getTourneyPlayerPids(d.getEventID()).size(); %>
+                    <%= t.getName() %></a> (<%=(live?"Live":"Turn-Based")%> tournament, </b> <%=numPlayers%> player<%=numPlayers==1?"":"s"%><b>)</b><br>
           <% }
          } %>
     </td>

@@ -71,6 +71,9 @@ public class RegisterServlet extends HttpServlet {
 		String registrationError = null;
 
 		String name = request.getParameter("registerName");
+		if (name == null) {
+			name = request.getParameter("name");
+		}
 		if (name != null) {
 			name = name.trim().toLowerCase();
 		}
@@ -84,7 +87,7 @@ public class RegisterServlet extends HttpServlet {
 		}
 		String email = request.getParameter("registerEmail");
 		if (email != null) {
-			email = email.trim();
+			email = email.replace(" ", "");
 		}
 		String emailVisibleStr = request.getParameter("registerEmailVisible");
 		boolean emailVisible = false;

@@ -58,7 +58,7 @@ DSGPlayerData dsgPlayerData = dsgPlayerStorer.loadPlayer(name);
 long myPID = dsgPlayerData.getPlayerID();
 TourneyStorer tourneyStorer = resources.getTourneyStorer();
 List<Tourney> currentTournies = (List<Tourney>) tourneyStorer.getCurrentTournies();
-CacheKOTHStorer  kothStorer = resources.getKOTHStorer();
+final CacheKOTHStorer  kothStorer = resources.getKOTHStorer();
 TBGameStorer tbGameStorer = resources.getTbGameStorer();
 List<TBSet> waitingSets = tbGameStorer.loadWaitingSets();
 List<TBSet> currentSets = tbGameStorer.loadSets(myPID);
@@ -243,6 +243,13 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
 Collections.sort(waitingSets, new Comparator<TBSet>() {
   @Override
   public int compare(TBSet o1, TBSet o2) {
+      boolean o1KotH = (kothStorer.getEventId(o1.getGame1().getGame()) == o1.getGame1().getEventId());
+      boolean o2KotH = (kothStorer.getEventId(o2.getGame1().getGame()) == o2.getGame1().getEventId());
+      if (o1KotH && !o2KotH) {
+          return -1;
+      } else if (!o1KotH && o2KotH) {
+        return 1;
+      }
       return o2.getCreationDate().compareTo(o1.getCreationDate());
   }
 });
@@ -387,7 +394,7 @@ Invitations received<%
                  }
                  DSGPlayerData d = dsgPlayerStorer.loadPlayer(s.getInviterPid());
                  DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(s.getGame1().getGame());%>
-<%=s.getSetId() + ";" + GridStateFactory.getGameName(s.getGame1().getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + s.getGame1().getDaysPerMove() + " days;" + ratedStr + ";" + (d.hasPlayerDonated()?d.getNameColorRGB():0) + ";" + d.getTourneyWinner() %><%} 
+<%=s.getSetId() + ";" + GridStateFactory.getGameName(s.getGame1().getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + s.getGame1().getDaysPerMove() + " days;" + ratedStr + ";" + (d.hasPlayerDonated()?(d.getNameColorRGB()==0?((255<<24)+1):d.getNameColorRGB()):0) + ";" + d.getTourneyWinner() %><%} 
      
 
 
@@ -456,7 +463,7 @@ Invitations sent<%
                       }
                  }
                  %>
-<%=s.getSetId() + ";" + GridStateFactory.getGameName(s.getGame1().getGame()) + ";" + ((pid == 0) ? anyoneString:d.getName()) + ";" + ((dsgPlayerGameData != null)?(int) Math.round(dsgPlayerGameData.getRating()):"1600") + ";" +  color + ";" + s.getGame1().getDaysPerMove() + " days;" + ratedStr + ";" + ((pid == 0)?"0":(d.hasPlayerDonated()?d.getNameColorRGB():0)) + ";" + ((pid == 0)?"0":d.getTourneyWinner()) %><%} 
+<%=s.getSetId() + ";" + GridStateFactory.getGameName(s.getGame1().getGame()) + ";" + ((pid == 0) ? anyoneString:d.getName()) + ";" + ((dsgPlayerGameData != null)?(int) Math.round(dsgPlayerGameData.getRating()):"1600") + ";" +  color + ";" + s.getGame1().getDaysPerMove() + " days;" + ratedStr + ";" + ((pid == 0)?"0":(d.hasPlayerDonated()?(d.getNameColorRGB()==0?((255<<24)+1):d.getNameColorRGB()):0)) + ";" + ((pid == 0)?"0":d.getTourneyWinner()) %><%} 
 
      
 
@@ -488,7 +495,7 @@ Active Games - My Turn<%
                  g.getPlayer2Pid() : g.getPlayer1Pid();
                 DSGPlayerData d = dsgPlayerStorer.loadPlayer(oppPid);
                 DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(g.getGame());%>
-<%=g.getGid() + ";" + GridStateFactory.getGameName(g.getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + (g.getNumMoves() + 1) + ";" + Utilities.getTimeLeft(g.getTimeoutDate().getTime()) +";" + ratedStr + ";" + (d.hasPlayerDonated()?d.getNameColorRGB():0) + ";" + d.getTourneyWinner() %><%}
+<%=g.getGid() + ";" + GridStateFactory.getGameName(g.getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + (g.getNumMoves() + 1) + ";" + Utilities.getTimeLeft(g.getTimeoutDate().getTime()) +";" + ratedStr + ";" + (d.hasPlayerDonated()?(d.getNameColorRGB()==0?((255<<24)+1):d.getNameColorRGB()):0) + ";" + d.getTourneyWinner() %><%}
      
 
 
@@ -520,7 +527,7 @@ Active Games - Opponents Turn<%
                  g.getPlayer2Pid() : g.getPlayer1Pid();
                 DSGPlayerData d = dsgPlayerStorer.loadPlayer(oppPid);
                 DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(g.getGame());%>
-<%=g.getGid() + ";" + GridStateFactory.getGameName(g.getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + (g.getNumMoves() + 1) + ";" + Utilities.getTimeLeft(g.getTimeoutDate().getTime()) +";" + ratedStr + ";" + (d.hasPlayerDonated()?d.getNameColorRGB():0) + ";" + d.getTourneyWinner() %><%} 
+<%=g.getGid() + ";" + GridStateFactory.getGameName(g.getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + (g.getNumMoves() + 1) + ";" + Utilities.getTimeLeft(g.getTimeoutDate().getTime()) +";" + ratedStr + ";" + (d.hasPlayerDonated()?(d.getNameColorRGB()==0?((255<<24)+1):d.getNameColorRGB()):0) + ";" + d.getTourneyWinner() %><%} 
      
 
 
@@ -551,7 +558,7 @@ Open Invitation Games<%
                 }
                  DSGPlayerData d = dsgPlayerStorer.loadPlayer(s.getInviterPid());
                  DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(s.getGame1().getGame());%>
-<%=s.getSetId() + ";" + GridStateFactory.getGameName(s.getGame1().getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + s.getGame1().getDaysPerMove() + " days;" + ratedStr + ";" + (d.hasPlayerDonated()?d.getNameColorRGB():0) + ";" + d.getTourneyWinner() %><%}
+<%=s.getSetId() + ";" + GridStateFactory.getGameName(s.getGame1().getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + s.getGame1().getDaysPerMove() + " days;" + ratedStr + ";" + (d.hasPlayerDonated()?(d.getNameColorRGB()==0?((255<<24)+1):d.getNameColorRGB()):0) + ";" + d.getTourneyWinner() %><%}
 
 
 
@@ -565,7 +572,7 @@ Messages<%
             break;
         }
        DSGPlayerData from = dsgPlayerStorer.loadPlayer(m.getFromPid()); %>
-<%=m.getMid() + ";" +(m.isRead() ? "read" : "unread") + ";" + m.getSubject() + ";" + from.getName() + ";" + messageDateFormat.format(m.getCreationDate()) + ";" + (from.hasPlayerDonated()?from.getNameColorRGB():0) + ";" + from.getTourneyWinner() %><%}
+<%=m.getMid() + ";" +(m.isRead() ? "read" : "unread") + ";" + m.getSubject() + ";" + from.getName() + ";" + messageDateFormat.format(m.getCreationDate()) + ";" + (from.hasPlayerDonated()?(from.getNameColorRGB()==0?((255<<24)+1):from.getNameColorRGB()):0) + ";" + from.getTourneyWinner() %><%}
 
 
 %>

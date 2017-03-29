@@ -1,17 +1,5 @@
 <%@ page import="org.pente.game.*, org.pente.gameServer.tourney.*" %>
 
-<%! private boolean alreadySignedUp(List players, DSGPlayerData data) {
-        for (Iterator it = players.iterator(); it.hasNext();) {
-//            TourneyPlayerData d = (TourneyPlayerData) it.next();
-//            if (d.getPlayerID() == data.getPlayerID()) return true;
-            if (players.contains(data.getPlayerID())) {
-                return true;
-            }
-        }
-        return false;
-    }
-%>
-
 <%
 String eidStr = request.getParameter("eid");
 int eid = Integer.parseInt(eidStr);
@@ -19,8 +7,24 @@ int eid = Integer.parseInt(eidStr);
 Resources resources = (Resources) application.getAttribute(
     Resources.class.getName());
 
-Tourney tourney = resources.getTourneyStorer().getTourneyDetails(eid);
+final Tourney tourney = resources.getTourneyStorer().getTourneyDetails(eid);
 List<Long> tournamentPlayers = resources.getTourneyStorer().getTourneyPlayerPids(eid);
+
+Collections.sort(tournamentPlayers, new Comparator<Long>() {
+    public int compare(Long m1, Long m2) {
+        try {
+          DSGPlayerGameData m1Data = dsgPlayerStorer.loadPlayer(m1).getPlayerGameData(tourney.getGame()), m2Data = dsgPlayerStorer.loadPlayer(m2).getPlayerGameData(tourney.getGame());
+          // if (m1Data == null) {
+          //     return -1;
+          // } else if (m2Data == null) {
+          //   return 1;
+          // }
+          return (int) (m2Data.getRating() - m1Data.getRating());
+        } catch (DSGPlayerStoreException e) {
+          return 0;
+        }
+    }
+});
 
 
 String currentPage = "Signup";
@@ -56,7 +60,7 @@ if (name != null) {
         You must be a registered player to signup for this tournament.
         Please <a href="/join.jsp">Join</a> pente.org and then signup!
       <% } else { %>
-	     <% if (alreadySignedUp(tournamentPlayers, dsgPlayerData)) { %>
+       <% if (tournamentPlayers.contains(dsgPlayerData.getPlayerID())) { %>
 	            You are currently signed up for this tournament.<br>
 	     <% } else { 
 	          DSGPlayerGameData game = dsgPlayerData.getPlayerGameData(tourney.getGame()); %>
@@ -210,40 +214,14 @@ if (name != null) {
                     <%= (i + 1) %>
                   </td>
                   <td><font face="Verdana, Arial, Helvetica, sans-serif" size="2">
-                    <% DSGPlayerData d = resources.getDsgPlayerStorer().loadPlayer(pid);
-                       DSGPlayerGameData g = d.getPlayerGameData(tourney.getGame()); %>
-                    <a href="../profile?viewName=<%= d.getName() %>"><%= d.getName() %></a>
-<%                       int tourneyWinner = d.getTourneyWinner(); %>
-			            <%@ include file="crown.jspf" %>
-                    &nbsp;&nbsp;
+                    <% DSGPlayerData d = resources.getDsgPlayerStorer().loadPlayer(pid.longValue());
+                       DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(tourney.getGame()); %>
+            <%@ include file="../playerLink.jspf" %>&nbsp;</td>
+            <td align="center"><%@ include file="../ratings.jspf" %>&nbsp;
+
                   </font></td>
                   <td align="center"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">
-                  <%
-		           int rating = (int) g.getRating();
-		    	   String gif = "ratings_";
-		    	   if (g.getTotalGames() < 20) {
-		    	       gif += "white.gif";
-		    	   }
-				   else if (rating > 1899) {
-				       gif += "red.gif";
-				   }
-				   else if (rating > 1699) {
-				       gif += "yellow.gif";
-				   }
-				   else if (rating > 1399) {
-				       gif += "blue.gif";
-				   }
-				   else if (rating > 999) {
-				       gif += "green.gif";
-				   }
-				   else {
-				       gif += "gray.gif";
-				   }
-				  %>
-					<img src="/gameServer/images/<%= gif %>"> <%= rating %>
-                  </font></td>
-                  <td align="center"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">
-                    <%= g.getTotalGames() %>
+                    <%= dsgPlayerGameData.getTotalGames() %>
                   </font></td>
                 </tr> <% i = i + 1;
             }

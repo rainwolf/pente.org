@@ -155,6 +155,9 @@ if (game > 0) {
         <a class="boldbuttons" href="javascript: submitJoinLeaveForm()" style="margin-right:6px; margin-left: 6px"><span>Join this hill</span></a>
 			</form>
 			<%
+			if (!dsgPlayerData.hasPlayerDonated()) { %>
+				<u><b>note:</b></u> you will be automatically removed from any other hills you are in when you join.
+			<% }
 	}
 %>
 
@@ -189,8 +192,14 @@ if (hill != null && iAmMember && game > 50 && (dsgPlayerData.hasPlayerDonated() 
 
 <table border="1" width="450">
 	<tr>
-		<td colspan="<%=(iAmMember && game > 50)?4:3%>" align="center" bgcolor="#ff8105">
+	<% if (iAmMember) { %>
+		<td colspan="<%=(game > 50)?4:3%>" align="center" bgcolor="#ff8105">
 			<font color="white"><h1><%=(game > 50?"Turn-based ":"") + GridStateFactory.getGameName(game) + " (" + (hill != null?hill.getNumPlayers():0)  + ")"%></h1></font>
+		
+	<% } else { %>
+		<td colspan="3" align="center">
+			<h1><%=(game > 50?"Turn-based ":"") + GridStateFactory.getGameName(game) + " (" + (hill != null?hill.getNumPlayers():0)  + ")"%></h1>
+	<% } %>
 		</td>
 	</tr>
 

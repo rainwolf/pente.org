@@ -340,13 +340,17 @@ public class CacheKOTHStorer implements KOTHStorer {
             if (playerData == null) {
                 return false;
             }
-            if (playerData.hasPlayerDonated()) {
+            boolean subscriber = playerData.hasPlayerDonated(); 
+            if (subscriber) {
                 limit = 4;
             }
             int ongoingGames = 0;
+            
             List<TBSet> setsPlaying = tbStorer.loadSets(pid);
             for (TBSet set : setsPlaying) {
-                if (set.getGame1().getEventId() == hill_id && (set.getState() == TBSet.STATE_ACTIVE || set.getState() == TBSet.STATE_NOT_STARTED)) {
+                if (subscriber && set.getGame1().getEventId() == hill_id && (set.getState() == TBSet.STATE_ACTIVE || set.getState() == TBSet.STATE_NOT_STARTED)) {
+                    ongoingGames += 1;
+                } else if (!subscriber && getEventId(set.getGame1().getGame()) == set.getGame1().getEventId() && (set.getState() == TBSet.STATE_ACTIVE || set.getState() == TBSet.STATE_NOT_STARTED)) {
                     ongoingGames += 1;
                 }
                 if (ongoingGames > limit) {
