@@ -53,6 +53,10 @@ public class CacheTourneyStorer implements TourneyStorer {
     
     public synchronized void flushCache() {
         tournies.clear();
+        upcomingTournies = null;
+        currentTournies = null;
+        completedTournies = null;
+        tourneyPlayerPids = null;
     }
 
     public synchronized void insertTourney(Tourney tourney) throws Throwable { 
@@ -251,7 +255,9 @@ public class CacheTourneyStorer implements TourneyStorer {
         log4j.debug("insertMatch(" + tourneyMatch.getMatchID() + ")");
         backingStorer.insertMatch(tourneyMatch);
         Tourney t = getTourney(tourneyMatch.getEvent());
-        if (t.getGame() > 50 && tourneyMatch.getPlayer1().getPlayerID() != 0 &&
+        if (t.getGame() > 50 && tourneyMatch.getPlayer1() != null && 
+                tourneyMatch.getPlayer1().getPlayerID() != 0 &&
+                tourneyMatch.getPlayer2() != null &&
                 tourneyMatch.getPlayer2().getPlayerID() != 0 &&
                 tourneyMatch.getPlayer1().getPlayerID() < tourneyMatch.getPlayer2().getPlayerID()) {
             this.tbStorer.createTournamentSet(t.getGame(), tourneyMatch.getPlayer1().getPlayerID(), tourneyMatch.getPlayer2().getPlayerID(), 

@@ -214,7 +214,7 @@ if (color == null) {
 </tr>
 <tr>
 <td width="10%"></td>
-   <td align="center">
+   <td width="45%" align="center">
  <b>   <%=game.getPlayer1Data().getUserIDName()%> </b>
    </td>
    <td align="center" bgcolor="#000000">

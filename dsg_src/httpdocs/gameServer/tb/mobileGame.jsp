@@ -254,7 +254,7 @@ function changeCycle() {
 <%
 }
 %>
-<% if (game.getDPenteState() == 2) { %>
+<% if (game.getDPenteState() == 2 && !"false".equals(myTurn)) { %>
       <a class="boldbuttons" href="javascript:dPentePlayAsP1();" 
          style="margin-right:5px;"><span>Play as P1 (white)</span></a>
       <a class="boldbuttons" href="javascript:dPentePlayAsP2();" 
