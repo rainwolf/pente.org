@@ -84,6 +84,26 @@ TourneyStorer tourneyStorer = resources.getTourneyStorer();
      <td><b>Current Tournament Champs!</b></td>
   </tr>
   <tr><td>&nbsp;</td></tr>
+  <tr>
+  <td>
+     <table border="1" cellpadding="2" cellspacing="0" bordercolor="black">
+       <tr bgcolor="<%= bgColor1 %>">
+        <td><font color="white">TB Boat-Pente</font></td>
+       </tr>
+      </tr>
+      <tr>
+        <td>Fool's Boat (2017)</td>
+      </tr>
+      <tr>
+        <td><a href="../profile?viewName=pete77">pete777</a> <img src="/gameServer/images/bcrown.gif"></td>
+      </tr>
+      <tr>
+        <td><img src="/gameServer/avatar?name=pete777" style="width:125px;height:125px;"></td>
+      </tr>
+     </table>
+     </td>
+  </tr>
+  <tr>
   <td>
      <table border="1" cellpadding="2" cellspacing="0" bordercolor="black">
        <tr bgcolor="<%= bgColor1 %>">
