@@ -4,6 +4,7 @@
                  org.pente.gameServer.core.*, 
                  org.pente.gameServer.tourney.*, 
                  org.pente.gameServer.server.*,
+                 org.pente.gameServer.client.web.*,
                  org.pente.message.*,
                  org.pente.kingOfTheHill.*,
                  java.text.*,
@@ -53,6 +54,18 @@
 
 Resources resources = (Resources) application.getAttribute(
    Resources.class.getName());
+SessionListener sessionListener = (SessionListener) application.getAttribute(SessionListener.class.getName());
+List<WhosOnlineRoom> rooms = WhosOnline.getPlayers(resources, sessionListener);
+int livePlayers = 0;
+for (Iterator<WhosOnlineRoom> iterator = rooms.iterator(); iterator.hasNext();) {
+    WhosOnlineRoom r = iterator.next();
+    if ("web".equals(r.getName()) || "Mobile".equals(r.getName())) {
+        continue;
+    }
+    livePlayers += r.getPlayers().size();
+}
+
+
 DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
 DSGPlayerData dsgPlayerData = dsgPlayerStorer.loadPlayer(name);
 long myPID = dsgPlayerData.getPlayerID();
@@ -316,7 +329,7 @@ No Ads
 
 EndOfSettingsParameters
 <%boolean subscriber = dsgPlayerData.hasPlayerDonated(); %>
-<%=dsgPlayerData.getName().toLowerCase() + ";" + (subscriber?dsgPlayerData.getNameColorRGB():0) + ";" + (dsgPlayerData.showAds()?"ShowAds":"NoAds") + ";" + (subscriber?"subscriber":"freeloader") + ";" %>
+<%=dsgPlayerData.getName().toLowerCase() + ";" + (subscriber?dsgPlayerData.getNameColorRGB():0) + ";" + (dsgPlayerData.showAds()?"ShowAds":"NoAds") + ";" + (subscriber?"subscriber":"freeloader") + ";" + livePlayers + ";"%>
 
 King of the Hill<%
 Hill hill;
@@ -386,12 +399,23 @@ Invitations received<%
                  else {
                      color = "black (p2)";
                  }
-                 String ratedStr = "Not Rated";
-                 if (koth) {
+                boolean tourney = false;
+                if (!koth) {
+                    for (Tourney tmpTourney : currentTournies) {
+                        if (tmpTourney.getEventID() == g.getEventId()) {
+                            tourney = true;
+                            break;
+                        }
+                    }
+                }
+                String ratedStr = "Not Rated";
+                if (koth) {
                     ratedStr = "KotH";
-                 } else if (s.isTwoGameSet()) {
+                } else if (tourney) {
+                    ratedStr = "Tournament";
+                } else if (g.isRated()) {
                     ratedStr = "Rated";
-                 }
+                }
                  DSGPlayerData d = dsgPlayerStorer.loadPlayer(s.getInviterPid());
                  DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(s.getGame1().getGame());%>
 <%=s.getSetId() + ";" + GridStateFactory.getGameName(s.getGame1().getGame()) + ";" + d.getName() + ";" + (int) Math.round(dsgPlayerGameData.getRating()) + ";" +  color + ";" + s.getGame1().getDaysPerMove() + " days;" + ratedStr + ";" + (d.hasPlayerDonated()?(d.getNameColorRGB()==0?((255<<24)+1):d.getNameColorRGB()):0) + ";" + d.getTourneyWinner() %><%} 
@@ -418,12 +442,23 @@ Invitations sent<%
                  String anyoneString = "Anyone";
                  TBGame g = s.getGame1();
                  boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
-                 String ratedStr = "Not Rated";
-                 if (koth) {
+                boolean tourney = false;
+                if (!koth) {
+                    for (Tourney tmpTourney : currentTournies) {
+                        if (tmpTourney.getEventID() == g.getEventId()) {
+                            tourney = true;
+                            break;
+                        }
+                    }
+                }
+                String ratedStr = "Not Rated";
+                if (koth) {
                     ratedStr = "KotH";
-                 } else if (s.isTwoGameSet()) {
+                } else if (tourney) {
+                    ratedStr = "Tournament";
+                } else if (g.isRated()) {
                     ratedStr = "Rated";
-                 }
+                }
                  if (pid != 0) {
                      d = dsgPlayerStorer.loadPlayer(pid);
                      dsgPlayerGameData = d.getPlayerGameData(s.getGame1().getGame());

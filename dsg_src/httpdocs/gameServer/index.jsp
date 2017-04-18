@@ -363,8 +363,10 @@ window.google_analytics_uacct = "UA-20529582-2";
 
           <li>16th Anniversary World Champion <a href="/gameServer/tournaments/statusRound.jsp?eid=1184&round=4">tournament</a> - 2015. Round 4 has started! 
           The <a href="/gameServer/forums/forum.jspa?forumID=35&start=0">tournament forum</a> is now opened. </li>
-          <li>Our very first turn-based tournament: <a href="/gameServer/tournaments/statusRound.jsp?eid=1267&round=4">Remember, remember, the 5th of November</a> - Round 4 has started! </li>
-          <li>Round 1 has started: <a href="/gameServer/tournaments/statusRound.jsp?eid=1281&round=1">Pente Masters</a>, <a href="/gameServer/tournaments/statusRound.jsp?eid=1282&round=1">Fool's Keryo</a>, <a href="/gameServer/tournaments/statusRound.jsp?eid=1283&round=1">Fool's Gomoku</a>, <a href="/gameServer/tournaments/statusRound.jsp?eid=1284&round=1">Fool's D</a>, <a href="/gameServer/tournaments/statusRound.jsp?eid=1285&round=1">Fool's Poof</a>, <a href="/gameServer/tournaments/statusRound.jsp?eid=1286&round=1">Fool's C6</a>, <a href="/gameServer/tournaments/statusRound.jsp?eid=1287&round=1">Fool's Boat</a></li>
+          <li>Round 1: <a href="/gameServer/tournaments/statusRound.jsp?eid=1281&round=1">Pente Masters</a>, <a href="/gameServer/tournaments/statusRound.jsp?eid=1282&round=1">Fool's Keryo</a>, <a href="/gameServer/tournaments/statusRound.jsp?eid=1284&round=1">Fool's D</a></li>
+          <li>Round 2: <a href="/gameServer/tournaments/statusRound.jsp?eid=1285&round=2">Fool's Poof</a>, <a href="/gameServer/tournaments/statusRound.jsp?eid=1286&round=2">Fool's C6</a></li>
+          <li>Round 5: <a href="/gameServer/tournaments/statusRound.jsp?eid=1267&round=5">Remember, remember, the 5th of November</a></li>
+          <li>Final: <a href="/gameServer/tournaments/statusRound.jsp?eid=1283&round=2">Fool's Gomoku</a></li>
 
 
 <%--
@@ -698,6 +700,17 @@ if (inLiveGameRoom) {
          else {
              color = "black (p2)";
          }
+         TBGame g = s.getGame1();
+         boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
+        boolean tourney = false;
+        if (!koth) {
+            for (Tourney tmpTourney : currentTournies) {
+                if (tmpTourney.getEventID() == g.getEventId()) {
+                    tourney = true;
+                    break;
+                }
+            }
+        }
          DSGPlayerData d = dsgPlayerStorer.loadPlayer(s.getInviterPid());
          DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(s.getGame1().getGame());
          %>
@@ -710,7 +723,7 @@ if (inLiveGameRoom) {
              <%= GridStateFactory.getGameName(s.getGame1().getGame()) %></a>
           <%}%>
  -->           <a href="/gameServer/tb/replyInvitation?command=load&sid=<%= s.getSetId() %>">
-             <%= GridStateFactory.getGameName(s.getGame1().getGame()) + (s.getGame1().getEventId()==kothStorer.getEventId(s.getGame1().getGame())?" (KotH)":"")%></a>
+             <%= GridStateFactory.getGameName(s.getGame1().getGame()) + (koth?" (KotH)":"") + (tourney?" (Tournament)":"")%></a>
           </td>
            <td><%@include file="playerLink.jspf" %><%@ include file="ratings.jspf" %></td>
            <td><%= color %></td>
@@ -780,10 +793,21 @@ if (inLiveGameRoom) {
                   anyoneString += " <img src=\"/gameServer/images/" + tmpData.getRatingsGifRatingOnly(myRating) + "\">";
               }
          }
+         TBGame g = s.getGame1();
+         boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
+        boolean tourney = false;
+        if (!koth) {
+            for (Tourney tmpTourney : currentTournies) {
+                if (tmpTourney.getEventID() == g.getEventId()) {
+                    tourney = true;
+                    break;
+                }
+            }
+        }
          %>
          <tr>
            <td><a href="/gameServer/tb/cancelInvitation?command=load&sid=<%= s.getSetId() %>">
-               <%= GridStateFactory.getGameName(s.getGame1().getGame()) + (s.getGame1().getEventId()==kothStorer.getEventId(s.getGame1().getGame())?" (KotH)":"")%></a></td>
+             <%= GridStateFactory.getGameName(s.getGame1().getGame()) + (koth?" (KotH)":"") + (tourney?" (Tournament)":"")%></a></td>
            <td><% if (pid == 0) { %> <%=anyoneString%> <% } else {%><%@include file="playerLink.jspf" %><% } %><% if (dsgPlayerGameData != null) { %><%@ include file="ratings.jspf" %><% } %></td>
            <td><%= color %></td>
            <td><%= s.getGame1().getDaysPerMove() %> days</td>

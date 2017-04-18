@@ -830,10 +830,19 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 					kothStorer.updatePlayerLastGameDate(game.getGame(), winnerData.getPlayerID());
 					kothStorer.updatePlayerLastGameDate(game.getGame(), loserData.getPlayerID());
 				} else if (game.getEventId() != getEventId(game.getGame())) {
-					TourneyMatch tourneyMatch = tourneyStorer.getUnplayedMatch(game.getPlayer1Pid(),game.getPlayer2Pid(),game.getEventId());
+					TourneyMatch tourneyMatch = null;
+					if (game.getGame() == GridStateFactory.TB_DPENTE && game.didDPenteSwap()) {
+						tourneyMatch = tourneyStorer.getUnplayedMatch(game.getPlayer2Pid(),game.getPlayer1Pid(),game.getEventId());
+					} else {
+						tourneyMatch = tourneyStorer.getUnplayedMatch(game.getPlayer1Pid(),game.getPlayer2Pid(),game.getEventId());
+					}
 					if (tourneyMatch != null) {
 						tourneyMatch.setGid(game.getGid());
-						tourneyMatch.setResult(game.getWinner());
+						int winner = game.getWinner();
+						if (game.getGame() == GridStateFactory.TB_DPENTE && game.didDPenteSwap()) {
+							winner = 3 - winner;
+						}						
+						tourneyMatch.setResult(winner);
 						tourneyStorer.updateMatch(tourneyMatch);
 						// return;
 					}
