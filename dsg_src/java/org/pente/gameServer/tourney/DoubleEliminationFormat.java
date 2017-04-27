@@ -283,7 +283,7 @@ public class DoubleEliminationFormat extends SingleEliminationFormat {
                     TourneyPlayerData byePlayer = (TourneyPlayerData) 
                         byePlayers.get(0);
                     byeMatch.setPlayer1(byePlayer);
-                    bracketPlayers0.remove(byePlayer);
+                    bracketPlayers1.remove(byePlayer);
                     //log4j.debug("bye player=" + byePlayer.getName());
                 }
                 

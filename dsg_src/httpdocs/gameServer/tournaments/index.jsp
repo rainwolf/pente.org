@@ -46,7 +46,7 @@ TourneyStorer tourneyStorer = resources.getTourneyStorer();
                if (t.getNumRounds() > 0) { %>
                    <b><a href="statusRound.jsp?eid=<%= t.getEventID() %>&round=<%= t.getNumRounds() %>">
                    <% int numPlayers = tourneyStorer.getTourneyPlayerPids(d.getEventID()).size(); %>
-                    <%= t.getName() %></a> (<%=(live?"Live":"Turn-Based")%> tournament, </b> <%=numPlayers%> player<%=numPlayers==1?"":"s"%><b>)</b><br>
+                    <%= t.getName() %></a> (<%=(live?"Live":"Turn-Based")%> tournament</b>, round: <%=t.getNumRounds()%>, <%=numPlayers%> player<%=numPlayers==1?"":"s"%><b>)</b><br>
             <% } else { %>
                    <b><a href="status.jsp?eid=<%= t.getEventID() %>">
                    <% int numPlayers = tourneyStorer.getTourneyPlayerPids(d.getEventID()).size(); %>
@@ -89,16 +89,24 @@ TourneyStorer tourneyStorer = resources.getTourneyStorer();
      <table border="1" cellpadding="2" cellspacing="0" bordercolor="black">
        <tr bgcolor="<%= bgColor1 %>">
         <td><font color="white">TB Boat-Pente</font></td>
+        <td><font color="white">TB Gomoku</font></td>
+        <td><font color="white">TB Connect6</font></td>
        </tr>
       </tr>
       <tr>
         <td>Fool's Boat (2017)</td>
+        <td>Fool's Gomoku (2017)</td>
+        <td>Fool's Connect6 (2017)</td>
       </tr>
       <tr>
         <td><a href="../profile?viewName=pete77">pete777</a> <img src="/gameServer/images/bcrown.gif"></td>
+        <td><a href="../profile?viewName=myuym">myuym</a> <img src="/gameServer/images/bcrown.gif"></td>
+        <td><a href="../profile?viewName=ivans73">ivans73</a> <img src="/gameServer/images/bcrown.gif"></td>
       </tr>
       <tr>
         <td><img src="/gameServer/avatar?name=pete777" style="width:125px;height:125px;"></td>
+        <td><img src="/gameServer/avatar?name=myuym" style="width:125px;height:125px;"></td>
+        <td><img src="/gameServer/avatar?name=ivans73" style="width:125px;height:125px;"></td>
       </tr>
      </table>
      </td>
