@@ -407,7 +407,7 @@ public class ServerTable {
         // player wasn't invited and
         // player is not returning to ongoing game
         // don't allow access
-        if (!joinPlayerData.isAdmin() && 
+        if (joinPlayerData != null && !joinPlayerData.isAdmin() && 
             tableType == DSGChangeStateTableEvent.TABLE_TYPE_PRIVATE &&
             !playersInvited.contains(player) && 
             !returningPlayer &&
@@ -495,8 +495,9 @@ public class ServerTable {
 
             // if playing d-pente at table, send swap decision 1st, before
             // any moves made (currently this is ok because it's a "silent" swap             
-            if ((game == GridStateFactory.DPENTE_GAME ||
-                 game == GridStateFactory.SPEED_DPENTE_GAME) && 
+			if ((game == GridStateFactory.DPENTE_GAME || game == GridStateFactory.SPEED_DPENTE_GAME ||
+					game == GridStateFactory.DKERYO_GAME || game == GridStateFactory.SPEED_DKERYO_GAME) &&
+					gridState != null &&
                 ((PenteState) gridState).wasDPenteSwapDecisionMade()) {
                 dsgEventRouter.routeEvent(
                     new DSGSwapSeatsTableEvent(null, tableNum,
@@ -1001,7 +1002,9 @@ public class ServerTable {
                 error = DSGTableErrorEvent.NO_GAME_IN_PROGRESS;
             }
             else if ((game != GridStateFactory.DPENTE_GAME &&
-                      game != GridStateFactory.SPEED_DPENTE_GAME) || 
+                      game != GridStateFactory.SPEED_DPENTE_GAME &&
+			game != GridStateFactory.DKERYO_GAME &&
+			game != GridStateFactory.SPEED_DKERYO_GAME) || 
                      gridState.getNumMoves() != 4 ||
                      ((PenteState) gridState).wasDPenteSwapDecisionMade()) {
                 error = DSGTableErrorEvent.UNKNOWN;
@@ -1385,7 +1388,8 @@ public class ServerTable {
 	                    // not. if p1 requests undo and accepted, reset p2's clock
 	                    // to initial time
 	                    if ((game == GridStateFactory.DPENTE_GAME ||
-	                         game == GridStateFactory.SPEED_DPENTE_GAME) &&
+	                         game == GridStateFactory.SPEED_DPENTE_GAME ||
+								game == GridStateFactory.DKERYO_GAME || game == GridStateFactory.SPEED_DKERYO_GAME) &&
 	                        gridState.getNumMoves() == 4) {
 	                        Time newTime2 =
 	                            new Time(timers[newCurrentPlayer].getMinutes(),
@@ -1453,7 +1457,8 @@ public class ServerTable {
 					// if playing d-pente, start timer for p1 after 1st move
 					// because it is still p1's turn
 					else if ((game == GridStateFactory.DPENTE_GAME ||
-                              game == GridStateFactory.SPEED_DPENTE_GAME) &&
+                              game == GridStateFactory.SPEED_DPENTE_GAME ||
+					game == GridStateFactory.DKERYO_GAME || game == GridStateFactory.SPEED_DKERYO_GAME) &&
                              gridState.getNumMoves() == 1) {
 						timers[newCurrentPlayer].go();
 					}
@@ -2648,7 +2653,8 @@ public class ServerTable {
             gameData.setWinner(winner);
             
             if (game == GridStateFactory.DPENTE_GAME ||
-                game == GridStateFactory.SPEED_DPENTE_GAME) {
+                game == GridStateFactory.SPEED_DPENTE_GAME ||
+					game == GridStateFactory.DKERYO_GAME || game == GridStateFactory.SPEED_DKERYO_GAME) {
                 gameData.setSwapped(((PenteState) gridState).didDPenteSwap());
             }
 
@@ -2666,7 +2672,8 @@ public class ServerTable {
         // only swap if both players still sitting
         // (if forced resign, don't swap)
         // (if d-pente and already swapped, don't swap back)
-        if (game == GridStateFactory.DPENTE_GAME) {
+        if (game == GridStateFactory.DPENTE_GAME || game == GridStateFactory.SPEED_DPENTE_GAME
+				|| game == GridStateFactory.DKERYO_GAME || game == GridStateFactory.SPEED_DKERYO_GAME) {
             if (((PenteState) gridState).didDPenteSwap()) return; // already swapped seats
         }
         
@@ -2967,9 +2974,9 @@ public class ServerTable {
 	                    tableNum, loserString));
     
 
-                    if ("King of the Hill".equals(serverData.getName())) {
+                    if (serverData.getName() != null && serverData.getName().startsWith("King of the Hill")) {
 						Hill hill = kothStorer.getHill(game);
-						long oldKingPid = hill.getKing();
+						long oldKingPid = (hill!= null)?hill.getKing():0;
                         long winnerPid = winnerPlayerData.getPlayerID();
                         long loserPid = loserPlayerData.getPlayerID();
                         int stepsBetween = kothStorer.stepsBetween(game, winnerPid, loserPid);
@@ -2977,7 +2984,10 @@ public class ServerTable {
                             kothStorer.addPlayer(game, winnerPid);
                             kothStorer.addPlayer(game, loserPid);
                             kothStorer.movePlayersUpDown(game, winnerPid, loserPid);
-							long kingPid = hill.getKing();
+                            if (hill == null) {
+								hill = kothStorer.getHill(game);
+							}
+							long kingPid = (hill!= null)?hill.getKing():0;
 							if (kingPid != oldKingPid && kingPid != 0) {
 								try {
 									broadcastTable(new DSGSystemMessageTableEvent(
@@ -2998,7 +3008,7 @@ public class ServerTable {
                         }
                     }
                 }
-                if ("King of the Hill".equals(serverData.getName())) {
+				if (serverData.getName() != null && serverData.getName().startsWith("King of the Hill")) {
                     long winnerPid = winnerPlayerData.getPlayerID();
                     long loserPid = loserPlayerData.getPlayerID();
                     kothStorer.updatePlayerLastGameDate(game, winnerPid);
@@ -3043,7 +3053,8 @@ public class ServerTable {
             	// for dpente games, don't swap player ids
             	// just record game as being won by correct id
             	if (game == GridStateFactory.DPENTE ||
-            		game == GridStateFactory.SPEED_DPENTE) {
+            		game == GridStateFactory.SPEED_DPENTE ||
+						game == GridStateFactory.DKERYO || game == GridStateFactory.SPEED_DKERYO) {
             		
             		if (((PenteState) gridState).didDPenteSwap()) {
             			if (localWinner2 != 0) { //draw

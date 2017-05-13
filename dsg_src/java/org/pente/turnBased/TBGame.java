@@ -162,7 +162,7 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 	}
 	public long getCurrentPlayer() {
 //TODO why couldn't i just instantiate a gridstate and use that?
-		if (game == GridStateFactory.TB_DPENTE &&
+		if ((game == GridStateFactory.TB_DPENTE || game == GridStateFactory.TB_DKERYO) &&
 			dPenteState != DPENTE_STATE_DECIDED) {
 			if (dPenteState == DPENTE_STATE_START) return player1Pid;
 			else if (dPenteState == DPENTE_STATE_DECIDE) return player2Pid;
@@ -360,7 +360,7 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 
         gameData.setWinner(getWinner());
 
-        if (getGame() == GridStateFactory.TB_DPENTE) {
+        if (getGame() == GridStateFactory.TB_DPENTE || getGame() == GridStateFactory.TB_DKERYO) {
             gameData.setSwapped(didDPenteSwap());
         }
 

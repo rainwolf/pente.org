@@ -17,6 +17,7 @@ also cover the rules of Pente with some helpful examples.<br>
   <li><a href="#poof-pente"><b>Poof-Pente Rules</b></a></li>
   <li><a href="#boat-pente"><b>Boat-Pente Rules</b></a></li>
   <li><a href="#connect6"><b>Connect6 Rules</b></a></li>
+  <li><a href="#dkeryo"><b>DK-Pente Rules</b></a></li>
   <li><a href="#speed"><b>Speed Games</b></a></li>
 </ul>
 <br>
@@ -142,6 +143,9 @@ pieces in a row, either vertically, horizontally or diagonally.<br>
 Player one plays one stone at the center of the board.  After that each player
 gets to place <b>two</b> stones on the board at a time.<br>
 More info at <a href="http://en.wikipedia.org/wiki/Connect6">http://en.wikipedia.org/wiki/Connect6</a>.<br>
+<br>
+<a name="dkeryo"><u>DK-Pente</u></a><br>
+DK-Pente combines the rules of D-Pente and Keryo-Pente.
 <br>
 <a name="speed"><u>Speed Games</u></a><br>
 All of the above games can be played untimed, with a "normal" time limit, or

@@ -26,8 +26,8 @@ public class CacheKOTHStorer implements KOTHStorer {
     private Map<Integer, Hill> hills;
     private Map<Integer, Integer> eidMap = new HashMap<>();
 
-    public static final int liveGames[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
-    public static final int tbGames[] = {51, 53, 55, 57, 59, 61, 63, 65};
+    public static final int liveGames[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
+    public static final int tbGames[] = {51, 53, 55, 57, 59, 61, 63, 65, 67};
 
     private Timer removeStalePlayersTimer;
 
