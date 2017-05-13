@@ -60,7 +60,12 @@ for (Iterator it = matches.iterator(); it.hasNext();) {
               if (matchSet != null) { 
               %>
               <br>Match: 
-              <% if (m1 != null) { %>
+              <% if (m1 != null || m2 != null) { %>
+                        <a href="/gameServer/tb/game?command=load&mobile&gid=<%=matchSet.getGame1().getGid()%>">game 1</a>
+               - 
+                        <a href="/gameServer/tb/game?command=load&mobile&gid=<%=matchSet.getGame2().getGid()%>">game 2</a>
+              <% } %>
+<!--               <% if (m1 != null) { %>
                       <% if (matchSet.getGame1().getPlayer1Pid() == m.getPlayer1().getPlayerID()) { %>
                         <a href="/gameServer/tb/game?command=load&mobile&gid=<%=matchSet.getGame1().getGid()%>">game 1</a>
                       <% } else { %>
@@ -87,7 +92,7 @@ for (Iterator it = matches.iterator(); it.hasNext();) {
                         <a href="/gameServer/viewLiveGame?mobile&g=<%=matchSet.getGame2().getGid()%>">game 2</a>
                       <% } %>
               <% } %>
-              <% } %>
+ -->              <% } %>
           <% } %>
           <% } %>
       </td>

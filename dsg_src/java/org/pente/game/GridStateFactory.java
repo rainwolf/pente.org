@@ -18,6 +18,8 @@ public class GridStateFactory {
     public static final int SPEED_CONNECT6 = CONNECT6 + 1;
     public static final int BOAT_PENTE = 15;
     public static final int SPEED_BOAT_PENTE = BOAT_PENTE + 1;
+    public static final int DKERYO = 17;
+    public static final int SPEED_DKERYO = DKERYO + 1;
 
 	// 50 + normal game for turn-based games
 	// only used for separate ratings
@@ -30,6 +32,7 @@ public class GridStateFactory {
 	public static final int TB_POOF_PENTE = TB_START + POOF_PENTE;
 	public static final int TB_CONNECT6 = TB_START + CONNECT6;
 	public static final int TB_BOAT_PENTE = TB_START + BOAT_PENTE;
+    public static final int TB_DKERYO = TB_START + DKERYO;
 	
 	
     public static final Game PENTE_GAME = new Game(PENTE, "Pente", false);
@@ -56,14 +59,19 @@ public class GridStateFactory {
 	public static final Game BOAT_PENTE_GAME = new Game(BOAT_PENTE, "Boat-Pente", false);
 	public static final Game SPEED_BOAT_PENTE_GAME = new Game(SPEED_BOAT_PENTE, "Speed Boat-Pente", true);
 	public static final Game TB_BOAT_PENTE_GAME = new Game(TB_BOAT_PENTE, "Boat-Pente", false);
+    public static final Game DKERYO_GAME = new Game(DKERYO, "DK-Pente", false);
+    public static final Game SPEED_DKERYO_GAME = new Game(SPEED_DKERYO, "Speed DK-Pente", true);
+    public static final Game TB_DKERYO_GAME = new Game(TB_DKERYO, "DK-Pente", false);
 	
     private static final Game allGames[] = {
         null, PENTE_GAME, SPEED_PENTE_GAME, KERYO_GAME, SPEED_KERYO_GAME,
         GOMOKU_GAME, SPEED_GOMOKU_GAME, DPENTE_GAME, SPEED_DPENTE_GAME,
         GPENTE_GAME, SPEED_GPENTE_GAME, POOF_PENTE_GAME, SPEED_POOF_PENTE_GAME,
         CONNECT6_GAME, SPEED_CONNECT6_GAME, BOAT_PENTE_GAME, SPEED_BOAT_PENTE_GAME,
+            DKERYO_GAME, SPEED_DKERYO_GAME, 
         TB_PENTE_GAME, TB_KERYO_GAME, TB_GOMOKU_GAME, TB_DPENTE_GAME,
-        TB_GPENTE_GAME, TB_POOF_PENTE_GAME, TB_CONNECT6_GAME, TB_BOAT_PENTE_GAME
+        TB_GPENTE_GAME, TB_POOF_PENTE_GAME, TB_CONNECT6_GAME, 
+            TB_BOAT_PENTE_GAME, TB_DKERYO_GAME
     };
 	private static final Game displaygames[] = {
 		PENTE_GAME, 
@@ -74,6 +82,7 @@ public class GridStateFactory {
         DPENTE_GAME, 
         GPENTE_GAME,
         POOF_PENTE_GAME, 
+            DKERYO_GAME,
 		new Game(TB_PENTE, "Turn-based Pente", false), 
 		new Game(TB_KERYO, "Turn-based Keryo-Pente", false), 
         new Game(TB_GOMOKU, "Turn-based Gomoku", false), 
@@ -81,34 +90,39 @@ public class GridStateFactory {
         new Game(TB_BOAT_PENTE, "Turn-based Boat-Pente", false),
         new Game(TB_DPENTE, "Turn-based D-Pente", false), 
         new Game(TB_GPENTE, "Turn-based G-Pente", false), 
-        new Game(TB_POOF_PENTE, "Turn-based Poof-Pente", false), 
-		SPEED_PENTE_GAME, 
+        new Game(TB_POOF_PENTE, "Turn-based Poof-Pente", false),
+            new Game(TB_DKERYO, "Turn-based DKeryo-Pente", false),
+        SPEED_PENTE_GAME, 
 		SPEED_KERYO_GAME,
         SPEED_GOMOKU_GAME, 
         SPEED_CONNECT6_GAME,
         SPEED_BOAT_PENTE_GAME,
         SPEED_DPENTE_GAME, 
         SPEED_GPENTE_GAME, 
-        SPEED_POOF_PENTE_GAME
+        SPEED_POOF_PENTE_GAME,
+            SPEED_DKERYO_GAME
 	};
 	
     private static final Game normalGames[] = {
         PENTE_GAME, KERYO_GAME, 
         GOMOKU_GAME, DPENTE_GAME, 
         GPENTE_GAME, POOF_PENTE_GAME,
-        CONNECT6_GAME, BOAT_PENTE_GAME
+        CONNECT6_GAME, BOAT_PENTE_GAME,
+            DKERYO_GAME
     };
     private static final Game speedGames[] = {
         SPEED_PENTE_GAME, SPEED_KERYO_GAME,
         SPEED_GOMOKU_GAME, SPEED_DPENTE_GAME,
         SPEED_GPENTE_GAME, SPEED_POOF_PENTE_GAME,
-        SPEED_CONNECT6_GAME, SPEED_BOAT_PENTE_GAME
+        SPEED_CONNECT6_GAME, SPEED_BOAT_PENTE_GAME,
+            SPEED_DKERYO_GAME
     };
     private static final Game tbGames[] = {
         TB_PENTE_GAME, TB_KERYO_GAME,
 		TB_GOMOKU_GAME, TB_DPENTE_GAME,
 		TB_GPENTE_GAME, TB_POOF_PENTE_GAME,
-		TB_CONNECT6_GAME, TB_BOAT_PENTE_GAME
+		TB_CONNECT6_GAME, TB_BOAT_PENTE_GAME,
+            TB_DKERYO_GAME
     };
     
     private static final GridState gridStates[] = new GridState[getNumGames() + 1];
@@ -188,7 +202,17 @@ public class GridStateFactory {
             case TB_BOAT_PENTE:
             	gomoku.allowOverlines(true);
             	return new BoatPenteState(gomoku);
-            	
+            case DKERYO:
+            case SPEED_DKERYO:
+            case TB_DKERYO:
+                gomoku.allowOverlines(true);
+                PenteState dkeryoState = new SimplePenteState(gomoku);
+                dkeryoState.setTournamentRule(false);
+                dkeryoState.setDPenteRules(true);
+                dkeryoState.setCaptureLengths(new int[] { 2, 3 });
+                dkeryoState.setCapturesToWin(15);
+                return dkeryoState;
+                
         }
         
         return null;
@@ -212,7 +236,7 @@ public class GridStateFactory {
 		}
     }
     public static boolean isValidGame(int game) {
-        if (game < PENTE || game > SPEED_BOAT_PENTE) return false;
+        if (game < PENTE || game > SPEED_DKERYO) return false;
         return true;
     }
     public static String getGameName(int game) {
@@ -237,7 +261,7 @@ public class GridStateFactory {
         return allGames.length - 1;
     }
 	public static int getMaxGameId() {
-		return TB_BOAT_PENTE;
+		return TB_DKERYO;
 	}
 
     public static Game[] getAllGames() {

@@ -231,7 +231,7 @@ public class MoveServlet extends HttpServlet {
 				}
 
 				// handle dpente separately
-				if (game.getGame() == GridStateFactory.TB_DPENTE &&
+				if ((game.getGame() == GridStateFactory.TB_DPENTE || game.getGame() == GridStateFactory.TB_DKERYO) &&
 					game.getDPenteState() != TBGame.DPENTE_STATE_DECIDED) {
 
 					log4j.debug("MoveServlet, handle dpente move");

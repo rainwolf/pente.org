@@ -1023,7 +1023,8 @@ public class GameBoardFrame extends Frame implements TableComponent,
                 chatArea.newSystemMessage("point and click on the board to make your moves");
             }
             if (playerType == 1 && (game == GridStateFactory.DPENTE ||
-                    game == GridStateFactory.SPEED_DPENTE)) {
+                    game == GridStateFactory.SPEED_DPENTE || 
+                    game == GridStateFactory.DKERYO || game == GridStateFactory.SPEED_DKERYO)) {
                 chatArea.newSystemMessage("place the first four stones, then " +
                         "your opponent will get a chance to swap seats");
             }
@@ -1322,7 +1323,8 @@ public class GameBoardFrame extends Frame implements TableComponent,
     /** Checks if it's time to show the swap dialog and does so */
     private void showSwapDialog() {
         if (gameBoard.getGridState().getNumMoves() == 4 &&
-                (game == GridStateFactory.DPENTE || game == GridStateFactory.SPEED_DPENTE) &&
+                (game == GridStateFactory.DPENTE || game == GridStateFactory.SPEED_DPENTE ||
+                        game == GridStateFactory.DKERYO || game == GridStateFactory.SPEED_DKERYO) &&
                 !((PenteState) gameBoard.getGridState()).wasDPenteSwapDecisionMade()) {
 
             if (playerType == 2) {
@@ -1469,7 +1471,9 @@ public class GameBoardFrame extends Frame implements TableComponent,
     public void receivePlayerSwap(DSGSwapSeatsTableEvent swapEvent) {
 
         if (game != GridStateFactory.DPENTE &&
-                game != GridStateFactory.SPEED_DPENTE) return; // sanity
+                game != GridStateFactory.SPEED_DPENTE &&
+                game != GridStateFactory.DKERYO &&
+                game != GridStateFactory.SPEED_DKERYO) return; // sanity
 
         // close undo request since p2 decided to swap or not before
         // undo request made it

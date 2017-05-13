@@ -626,7 +626,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
 		        gameData.setWinner(game.getWinner());
 
-		        if (game.getGame() == GridStateFactory.TB_DPENTE) {
+		        if (game.getGame() == GridStateFactory.TB_DPENTE || game.getGame() == GridStateFactory.TB_DKERYO) {
 		            gameData.setSwapped(game.didDPenteSwap());
 		        }
 	
@@ -831,7 +831,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 					kothStorer.updatePlayerLastGameDate(game.getGame(), loserData.getPlayerID());
 				} else if (game.getEventId() != getEventId(game.getGame())) {
 					TourneyMatch tourneyMatch = null;
-					if (game.getGame() == GridStateFactory.TB_DPENTE && game.didDPenteSwap()) {
+					if ((game.getGame() == GridStateFactory.TB_DPENTE || game.getGame() == GridStateFactory.TB_DKERYO) && game.didDPenteSwap()) {
 						tourneyMatch = tourneyStorer.getUnplayedMatch(game.getPlayer2Pid(),game.getPlayer1Pid(),game.getEventId());
 					} else {
 						tourneyMatch = tourneyStorer.getUnplayedMatch(game.getPlayer1Pid(),game.getPlayer2Pid(),game.getEventId());
@@ -839,7 +839,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 					if (tourneyMatch != null) {
 						tourneyMatch.setGid(game.getGid());
 						int winner = game.getWinner();
-						if (game.getGame() == GridStateFactory.TB_DPENTE && game.didDPenteSwap()) {
+						if ((game.getGame() == GridStateFactory.TB_DPENTE || game.getGame() == GridStateFactory.TB_DKERYO) && game.didDPenteSwap()) {
 							winner = 3 - winner;
 						}						
 						tourneyMatch.setResult(winner);

@@ -301,18 +301,35 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
    <td width="30%">Player 1
    </td>
    <td>
-     <% PlayerData d = game.getPlayer1Data(); %> <%@include file="vgplayerLink.jspf" %> &nbsp;<%= d.getRating()  %> 
-               <img src="/gameServer/images/<%= SimpleDSGPlayerGameData.getRatingsGifRatingOnly(d.getRating()) %>">
+     <%
+        DSGPlayerData d = dsgPlayerStorer.loadPlayer(game.getPlayer1Data().getUserIDName());
+        PlayerData playerData = game.getPlayer1Data(); %> 
+     <%@include file="playerLink.jspf" %> &nbsp;<%= playerData.getRating()  %> 
+               <img src="/gameServer/images/<%= SimpleDSGPlayerGameData.getRatingsGifRatingOnly(playerData.getRating()) %>">
    </td>
 </tr>
 <tr>
    <td>Player 2
    </td>
    <td>
-     <% d = game.getPlayer2Data(); %> <%@include file="vgplayerLink.jspf" %>&nbsp;<%= d.getRating() %> 
-               <img src="/gameServer/images/<%= SimpleDSGPlayerGameData.getRatingsGifRatingOnly(d.getRating()) %>">
+     <%
+        d = dsgPlayerStorer.loadPlayer(game.getPlayer2Data().getUserIDName());
+        playerData = game.getPlayer2Data(); %> 
+     <%@include file="playerLink.jspf" %> &nbsp;<%= playerData.getRating()  %> 
+               <img src="/gameServer/images/<%= SimpleDSGPlayerGameData.getRatingsGifRatingOnly(playerData.getRating()) %>">
    </td>
 </tr>
+
+<% if (game.getGame().endsWith("D-Pente") || game.getGame().endsWith("DK-Pente")) { %>
+<tr>
+   <td>
+   Swapped?
+   </td>
+   <td>
+   <%=(game.didPlayersSwap()?"Yes":"No")%>
+   </td>
+</tr>
+<% } %>
 <tr>
    <td>
    Timer

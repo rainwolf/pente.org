@@ -139,3 +139,7 @@ Player one plays one stone at the center of the board.  After that each player
 gets to place <b>two</b> stones on the board at a time.<br>
 More info at <a href="http://en.wikipedia.org/wiki/Connect6">http://en.wikipedia.org/wiki/Connect6</a>.<br>
 <br>
+<br>
+<a name="dkeryo"><u>DK-Pente</u></a><br>
+DK-Pente combines the rules of D-Pente and Keryo-Pente.
+<br>

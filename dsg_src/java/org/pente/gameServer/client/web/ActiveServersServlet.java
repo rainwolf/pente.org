@@ -20,9 +20,12 @@ public class ActiveServersServlet extends HttpServlet {
                       HttpServletResponse response)
             throws ServletException, IOException {
 
+        ServletContext ctx = getServletContext();
         Resources resources = (Resources)
-                getServletContext().getAttribute(Resources.class.getName());
-
+                ctx.getAttribute(Resources.class.getName());
+        SessionListener sessionListener = (SessionListener) ctx.getAttribute(SessionListener.class.getName());
+        List<WhosOnlineRoom> rooms = WhosOnline.getPlayers(resources, sessionListener);
+        
         PrintWriter out = new PrintWriter(response.getOutputStream());
         response.setContentType("text/plain");
 
@@ -30,9 +33,21 @@ public class ActiveServersServlet extends HttpServlet {
 
         for (Iterator it = resources.getServerData().iterator(); it.hasNext();) {
             ServerData data = (ServerData) it.next();
-            log4j.info(data.getPort() + " " + data.getName());
-            out.write(data.getPort() + " " + data.getName());
-            out.write("\n");
+            String serverName = data.getName();
+            log4j.info(data.getPort() + " " + serverName);
+            boolean empty = true;
+            for (WhosOnlineRoom room : rooms) {
+                if (serverName.equals(room.getName())) {
+                    empty = false;
+                    out.write(data.getPort() + " " + serverName + " (" + room.getPlayers().size() + ")");
+                    out.write("\n");
+                    break;
+                }
+            }
+            if (empty) {
+                out.write(data.getPort() + " " + serverName + " (0)");
+                out.write("\n");
+            }
         }
         out.flush();
     }
