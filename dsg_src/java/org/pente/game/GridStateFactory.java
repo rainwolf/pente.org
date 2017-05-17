@@ -91,7 +91,7 @@ public class GridStateFactory {
         new Game(TB_DPENTE, "Turn-based D-Pente", false), 
         new Game(TB_GPENTE, "Turn-based G-Pente", false), 
         new Game(TB_POOF_PENTE, "Turn-based Poof-Pente", false),
-            new Game(TB_DKERYO, "Turn-based DKeryo-Pente", false),
+            new Game(TB_DKERYO, "Turn-based DK-Pente", false),
         SPEED_PENTE_GAME, 
 		SPEED_KERYO_GAME,
         SPEED_GOMOKU_GAME, 

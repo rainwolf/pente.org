@@ -1925,7 +1925,7 @@ public class ServerTable {
     private DSGPlayerData getPlayerInTable(String name) {
         for (int i = 0; i < playersInTable.size(); i++) {
             DSGPlayerData data = (DSGPlayerData) playersInTable.elementAt(i);
-            if (data.getName().equals(name)) {
+            if (data != null && name.equals(data.getName())) {
                 return data;
             }
         }

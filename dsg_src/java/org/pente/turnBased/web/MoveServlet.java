@@ -242,6 +242,16 @@ public class MoveServlet extends HttpServlet {
 							handleError(request, response, "Invalid start of dpente.");
 							return;
 						}
+						if (!(moves[0] != moves[1] && moves[2] != moves[1] && moves[0] != moves[2]) || 
+								(moves[0]==180 || moves[1]==180 || moves[2]==180) ||
+								(moves[0]<0 || moves[0]>360) ||
+								(moves[1]<0 || moves[1]>360) ||
+								(moves[2]<0 || moves[2]>360) ) {
+							log4j.error("MoveServlet, dpente game start, " +
+									"expected 3 moves.");
+							handleError(request, response, "Invalid start of dpente.");
+							return;
+						}
 						log4j.debug("MoveServlet, handle dpente start");
 						
 						tbGameStorer.updateDPenteState(game, TBGame.DPENTE_STATE_DECIDE);
