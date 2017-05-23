@@ -57,9 +57,9 @@
               <br>Match: 
               <% if (m1 != null) { %>
                       <% if (matchSet.getGame1().getPlayer1Pid() == m.getPlayer1().getPlayerID()) { %>
-                        <a href="/gameServer/tb/game?command=load&mobile&gid=<%=matchSet.getGame1().getGid()%>">game 1</a>
+                        <a href="javascript:goWH('/gameServer/tb/game?gid=<%=matchSet.getGame1().getGid()%>&command=load&mobile');">game 1</a>
                       <% } else { %>
-                        <a href="/gameServer/tb/game?command=load&mobile&gid=<%=matchSet.getGame2().getGid()%>">game 1</a>
+                        <a href="javascript:goWH('/gameServer/tb/game?gid=<%=matchSet.getGame2().getGid()%>&command=load&mobile');">game 1</a>
                       <% } %>
               <% } else { %>
                       <% if (matchSet.getGame1().getPlayer1Pid() == m.getPlayer1().getPlayerID()) { %>
@@ -71,9 +71,9 @@
                - 
               <% if (m2 != null) { %>
                       <% if (matchSet.getGame1().getPlayer1Pid() == m.getPlayer1().getPlayerID()) { %>
-                        <a href="/gameServer/tb/game?command=load&mobile&gid=<%=matchSet.getGame2().getGid()%>">game 2</a>
+                        <a href="javascript:goWH('/gameServer/tb/game?gid=<%=matchSet.getGame2().getGid()%>&command=load&mobile');">game 2</a>
                       <% } else { %>
-                        <a href="/gameServer/tb/game?command=load&mobile&gid=<%=matchSet.getGame1().getGid()%>">game 2</a>
+                        <a href="javascript:goWH('/gameServer/tb/game?gid=<%=matchSet.getGame1().getGid()%>&command=load&mobile');">game 2</a>
                       <% } %>
               <% } else { %>
                       <% if (matchSet.getGame1().getPlayer1Pid() != m.getPlayer1().getPlayerID()) { %>

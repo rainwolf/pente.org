@@ -363,7 +363,7 @@ window.google_analytics_uacct = "UA-20529582-2";
 
           <li>16th Anniversary World Champion <a href="/gameServer/tournaments/statusRound.jsp?eid=1184&round=5">tournament</a> - 2015. Round 5 has started! 
           The <a href="/gameServer/forums/forum.jspa?forumID=35&start=0">tournament forum</a> is now opened. </li>
-          <li>Round 2: <a href="/gameServer/tournaments/statusRound.jsp?eid=1281&round=2">Pente Masters</a>, <a href="/gameServer/tournaments/statusRound.jsp?eid=1285&round=2">Fool's Poof</a>, <a href="/gameServer/tournaments/statusRound.jsp?eid=1282&round=2">Fool's Keryo</a></li>
+          <li>Round 2: <a href="/gameServer/tournaments/statusRound.jsp?eid=1281&round=2">Pente Masters</a>, <a href="/gameServer/tournaments/statusRound.jsp?eid=1282&round=2">Fool's Keryo</a></li>
           <li>Final: <a href="/gameServer/tournaments/statusRound.jsp?eid=1267&round=6">Remember, remember, the 5th of November</a></li>
 
 

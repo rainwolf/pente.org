@@ -68,6 +68,9 @@
   Collections.sort(players, Collections.reverseOrder());
 
   for (int i = 0; i < players.size(); i++) {
+  if (i > 5) {
+    break;
+}
    DSGPlayerData d = dsgPlayerStorer.loadPlayer(players.get(i).getPlayer().getPid());
     String color = i % 2 == 1 ? "style=\"background:white\"" : ""; 
         // DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(("Mobile".equals(room.getName())?GridStateFactory.TB_PENTE:GridStateFactory.PENTE)); 
@@ -79,5 +82,9 @@
            </tr>
 <% } %>
     </table>
+<div style="float:right;padding:2px 2px;">
+ <a class="boldbuttons"  href="stairs.jsp"><span>more hills and kings&rarr;</span></a>
+</div>
+<br style="clear:both">
   </div>
 </div>
