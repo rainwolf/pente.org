@@ -127,16 +127,16 @@ public class MoveServlet extends HttpServlet {
 				if (playerData.getPlayerID() != game.getPlayer1Pid() &&
 					playerData.getPlayerID() != game.getPlayer2Pid()) {
 
-					if (!playerData.isAdmin() && 
-						game.getState() == TBGame.STATE_ACTIVE) {
-						TourneyStorer tourneyStorer = resources.getTourneyStorer();
-						int eventId = game.getEventId();
-						if (tourneyStorer.getTourney(eventId) == null) {
-							log4j.error("MoveServlet, game state invalid " + gid);
-							handleError(request, response, "Invalid game, game active and other player trying to view it.");
-							return;
-						}
-					}
+//					if (!playerData.isAdmin() && 
+//						game.getState() == TBGame.STATE_ACTIVE) {
+//						TourneyStorer tourneyStorer = resources.getTourneyStorer();
+//						int eventId = game.getEventId();
+//						if (tourneyStorer.getTourney(eventId) == null) {
+//							log4j.error("MoveServlet, game state invalid " + gid);
+//							handleError(request, response, "Invalid game, game active and other player trying to view it.");
+//							return;
+//						}
+//					}
 
 					// else if complete, show game but restrict messages
 					request.setAttribute("showMessages", new Boolean(playerData.isAdmin()));

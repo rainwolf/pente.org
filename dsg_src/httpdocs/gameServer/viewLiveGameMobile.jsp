@@ -263,19 +263,15 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
 </div>
 </div>
 
- <table align="right" border=1  width="250px">
+ <table align="right" width="250px">
 <tr>
-   <td width="50%" onclick="goBack()" align="center">
-   <br>
-   back
-   <br>
-   <br>
+   <td width="50%" align="center">
+      <a class="boldbuttons" href="javascript:goBack();" 
+         style="width:110px;"><span>back</span></a>
    </td>
-   <td onclick="goForward()" align="center">
-   <br>
-   forward
-   <br>
-   <br>
+   <td align="center">
+      <a class="boldbuttons" href="javascript:goForward();" 
+         style="width:110px;"><span>forward</span></a>
    </td>
 </tr>
 </table>
@@ -570,6 +566,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                     case 61: replayPoofPenteGame(abstractBoard, movesList, until); break;
                     case 63: replayConnect6Game(abstractBoard, movesList, until); break;
                     case 65: replayPenteGame(abstractBoard, movesList, until); break;
+                    case 67: replayPenteGame(abstractBoard, movesList, until); break;
                 }
                 if (until <= moves.length) {
                     if (messageMoveNums.indexOf(until) != -1) {
@@ -762,6 +759,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                     case 61: boardColor = poofPenteColor; break;
                     case 63: boardColor = connect6Color; break;
                     case 65: boardColor = boatPenteColor; break;
+                    case 67: boardColor = dkeryoPenteColor; break;
                     default: boardColor = penteColor; break;
                 }
                 boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);

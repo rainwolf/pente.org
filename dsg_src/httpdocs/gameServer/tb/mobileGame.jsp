@@ -360,19 +360,15 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
 <% if (game.getDPenteState() != 2) { %>
 <tr>
 <td>
-<table align="right" border=1  width="250px">
+<table align="right" width="250px">
 <tr>
-   <td width="50%" onclick="goBack()" align="center">
-   <br>
-   back
-   <br>
-   <br>
+   <td width="50%" align="center">
+      <a class="boldbuttons" href="javascript:goBack();" 
+         style="width:110px;"><span>back</span></a>
    </td>
-   <td onclick="goForward()" align="center">
-   <br>
-   forward
-   <br>
-   <br>
+   <td align="center">
+      <a class="boldbuttons" href="javascript:goForward();" 
+         style="width:110px;"><span>forward</span></a>
    </td>
 </tr>
 </table>
@@ -1249,6 +1245,7 @@ function touchEnd(evt) {
 &nbsp;
 <br>
 <br>
+        
       </td>
     </tr>
         <tr>

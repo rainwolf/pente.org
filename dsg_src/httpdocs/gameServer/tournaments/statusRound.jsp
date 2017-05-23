@@ -26,6 +26,8 @@ pageContext.setAttribute("title", title);
 
 <%@ include file="../begin.jsp" %>
 
+<script type="text/javascript" src="/gameServer/js/go.js"></script>
+
 <table border="0" cellpadding="0" cellspacing="0" width="100%">
 
   <tr> 

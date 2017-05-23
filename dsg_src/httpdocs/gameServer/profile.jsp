@@ -82,6 +82,7 @@ if (dsgPlayerData != null) {
    <table border="0" colspacing="1" colpadding="1">
    
      <% String name = (String) request.getAttribute("name");
+        DSGPlayerData meData = dsgPlayerStorer.loadPlayer(name);
         if (dsgPlayerData.getName().equals(name)) { %>
         
      <tr>
@@ -347,7 +348,6 @@ if (dsgPlayerData != null) {
   Resources resources = (Resources) application.getAttribute(
    Resources.class.getName());
   DSGFollowerStorer followerStorer = resources.getFollowerStorer();
-  DSGPlayerData meData = dsgPlayerStorer.loadPlayer(name);
 %>
         <input type="button" value="Send Message"
          onclick="javascript:window.location='/gameServer/newMessage.jsp?to=<%= dsgPlayerData.getName() %>';">
@@ -403,6 +403,8 @@ This subscription ends on <%=dsgPlayerData.hasPlayerDonated()?""+profileDateForm
 </table>
 
 <br>
+
+<%@ include file="playerrunninggamesbox.jsp" %>
 
 <%@ include file="playerstatsbox.jsp" %>
 

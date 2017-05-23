@@ -110,9 +110,10 @@ if (set.getCancelPid() != 0) {
 %>cancel=<%=player1.getName() + "," + set.getCancelMsg().replace("\\2","'")%>
 
 <% }
-%><%="state="+(tbGame.getState()==TBGame.STATE_ACTIVE?"active":"blub")%><%
+%><%="state="+(tbGame.getState()==TBGame.STATE_ACTIVE?"active":"blub")%>
+<%
 
-if (!tbGame.isCompleted() && (tbGame.getGame() == GridStateFactory.TB_DPENTE)) {
+if (!tbGame.isCompleted() && (tbGame.getGame() == GridStateFactory.TB_DPENTE || tbGame.getGame() == GridStateFactory.TB_DKERYO)) {
 %>dPenteState=<%=tbGame.getDPenteState()%>
 <%
 

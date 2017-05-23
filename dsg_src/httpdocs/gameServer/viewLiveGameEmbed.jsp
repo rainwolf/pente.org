@@ -467,6 +467,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                     case 61: replayPoofPenteGame(abstractBoard, movesList, until); break;
                     case 63: replayConnect6Game(abstractBoard, movesList, until); break;
                     case 65: replayPenteGame(abstractBoard, movesList, until); break;
+                    case 67: replayKeryoPenteGame(abstractBoard, movesList, until); break;
                 }
             }
             function drawCaptures () {
@@ -638,6 +639,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                     case 61: boardColor = poofPenteColor; break;
                     case 63: boardColor = connect6Color; break;
                     case 65: boardColor = boatPenteColor; break;
+                    case 67: boardColor = dkeryoPenteColor; break;
                     default: boardColor = penteColor; break;
                 }
                 boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
