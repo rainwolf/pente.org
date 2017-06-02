@@ -604,6 +604,9 @@ public class ServerTable {
 	private void sendPlayerList(String toPlayer) {
 		for (int i = 0; i < playersInTable.size(); i++) {
             DSGPlayerData data = (DSGPlayerData) playersInTable.elementAt(i);
+            if (data == null) {
+            	continue;
+			}
 			dsgEventRouter.routeEvent(
 				new DSGJoinTableEvent(data.getName(), tableNum),
 				toPlayer);
