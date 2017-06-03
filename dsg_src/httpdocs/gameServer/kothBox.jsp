@@ -83,7 +83,7 @@
 <% } %>
     </table>
 <div style="float:right;padding:2px 2px;">
- <a class="boldbuttons"  href="stairs.jsp"><span>more hills and kings&rarr;</span></a>
+ <a class="boldbuttons"  href="stairs.jsp"><span>More Hills and Kings&rarr;</span></a>
 </div>
 <br style="clear:both">
   </div>

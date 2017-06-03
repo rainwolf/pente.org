@@ -105,6 +105,10 @@ function submitNewGameForm()
 {
   document.new_game_form.submit();
 }
+function submitNewGameFormIndividual(individual) {
+  document.getElementById('new_game_form_'+individual).submit();
+	// alert('new_game_form_'+individual+'\"');
+}
 </script>
 
 <%
@@ -275,11 +279,12 @@ if (hill != null && iAmMember && game > 50 && (dsgPlayerData.hasPlayerDonated() 
             	<%
 	            if (game > 50 && canIchallenge && myPid != pid && (myStep - i)*(myStep - i)<5 && canChallengeThem) {
 	            	%>
-	            	   <form name="new_game_form_individual" method="post" action="<%= request.getContextPath() %>/gameServer/tb/newKotH.jsp">
+	            	   <form id="new_game_form_<%=d.getName()%>" name="new_game_form_<%=d.getName()%>" method="post" action="<%= request.getContextPath() %>/gameServer/tb/newKotH.jsp">
 	            	   <input type="hidden" name="invitee" value="<%=d.getName()%>">
 	            	   <input type="hidden" name="game" value="<%=game%>">
-	            	   <input type="submit" name="challenge" value="challenge">
+	            	   <!-- <input type="submit" name="challenge" value="challenge"> -->
 	         			</form>
+      <a class="boldbuttons" href="javascript:submitNewGameFormIndividual('<%=d.getName()%>');"><span>challenge</span></a>
 	            	<%
 	            }
             	%>

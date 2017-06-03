@@ -1,11 +1,11 @@
 <%-- displays results for a double elimination format tourney --%>
 <%-- assumes Tourney tourney, String game, TourneyRound round is defined --%>
 
-<% for (int i = 0; i < round.getNumSections(); i++) { %>
+<% for (int j = 0; j < round.getNumSections(); j++) { %>
 <br>
-<b>Bracket <%= (i + 1)%></b> - <a href="javascript:submitToDatabase(
-   '<%= game %>', 'Pente.org',
-   '<%= tourney.getName() %>', '<%= round.getRound() %>', '<%= (i + 1)%>');">View Games in Games History</a></b>
+<b>Bracket <%= (j + 1)%></b> - <a href="javascript:submitToDatabase(
+   '<%= gameName %>', 'Pente.org',
+   '<%= tourney.getName() %>', '<%= round.getRound() %>', '<%= (j + 1)%>');">View Games in Games History</a></b>
 <br>
 <table width="100%" border="1" cellspacing="0" cellpadding="1" bordercolor="black">
   <tr bgcolor="<%= bgColor1 %>">
@@ -15,8 +15,9 @@
     <th width="25%" align="center"><font color="white">Score</font></th>
   </tr>
 <%
- SingleEliminationSection section = (SingleEliminationSection) round.getSection(i + 1);
+ SingleEliminationSection section = (SingleEliminationSection) round.getSection(j + 1);
  List matches = section.getSingleEliminationMatches();
+String myTurn = "false";
  for (Iterator it = matches.iterator(); it.hasNext();) {
     SingleEliminationMatch m = (SingleEliminationMatch) it.next(); %>
     
@@ -82,6 +83,20 @@
                         <a href="/gameServer/viewLiveGame?mobile&g=<%=matchSet.getGame2().getGid()%>">game 2</a>
                       <% } %>
               <% } %>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colspan="2" align="center">
+                        <% if (true) { 
+                        TBGame game = matchSet.getGame1(); %> 
+                        <%@ include file="../tb/listedMobileGame.jsp" %>
+                        <% } %>
+                      </td>
+                      <td colspan="2" align="center">
+                        <% if (true) { 
+                        TBGame game = matchSet.getGame2(); %> 
+                        <%@ include file="../tb/listedMobileGame.jsp" %>
+                        <% } %>
           <% } %>
           <% } %>
       </td>

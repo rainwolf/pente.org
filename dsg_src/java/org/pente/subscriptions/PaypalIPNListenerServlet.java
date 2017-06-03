@@ -81,6 +81,11 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                     itemID = map.get("item_number"+tries);
                     tries++;
                 }
+                
+                if (itemID == null) {
+                    log4j.info("PaypalIPNListenerServlet: item_number is null, different payment");
+                    return;
+                }
 
                 if (itemID.contains("VACATIONDAYS")) {
 

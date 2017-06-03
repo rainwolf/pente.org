@@ -2,7 +2,7 @@
 <%-- assumes Tourney tourney, String game, TourneyRound round is defined --%>
 
 <br>
-<a href="javascript:submitToDatabase('<%= game %>', 'Pente.org',
+<a href="javascript:submitToDatabase('<%= gameName %>', 'Pente.org',
    '<%= tourney.getName() %>', '<%= round.getRound() %>', '1');">View Games in Games History</a></b>
 <br>
 <br>
@@ -16,6 +16,7 @@
 <%
 SingleEliminationSection section = (SingleEliminationSection) round.getSection(1);
 List matches = section.getSingleEliminationMatches();
+String myTurn = "false";
 for (Iterator it = matches.iterator(); it.hasNext();) {
     SingleEliminationMatch m = (SingleEliminationMatch) it.next(); %>
     
@@ -64,6 +65,21 @@ for (Iterator it = matches.iterator(); it.hasNext();) {
                         <a href="javascript:goWH('/gameServer/tb/game?gid=<%=matchSet.getGame1().getGid()%>&command=load&mobile');">game 1</a>
                - 
                         <a href="javascript:goWH('/gameServer/tb/game?gid=<%=matchSet.getGame2().getGid()%>&command=load&mobile');">game 2</a>
+
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colspan="2" align="center">
+                        <% if (true) { 
+                        TBGame game = matchSet.getGame1(); %> 
+                        <%@ include file="../tb/listedMobileGame.jsp" %>
+                        <% } %>
+                      </td>
+                      <td colspan="2" align="center">
+                        <% if (true) { 
+                        TBGame game = matchSet.getGame2(); %> 
+                        <%@ include file="../tb/listedMobileGame.jsp" %>
+                        <% } %>
               <% } %>
 <!--               <% if (m1 != null) { %>
                       <% if (matchSet.getGame1().getPlayer1Pid() == m.getPlayer1().getPlayerID()) { %>
