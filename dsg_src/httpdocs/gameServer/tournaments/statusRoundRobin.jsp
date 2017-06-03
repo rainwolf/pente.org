@@ -18,7 +18,7 @@
                RoundRobinSection section = (RoundRobinSection) it.next(); %>
          
                <b>Section <%= section.getSection() %> - 
-                  <a href="javascript:submitToDatabase('<%= game %>',
+                  <a href="javascript:submitToDatabase('<%= gameName %>',
                     'Pente.org',
                     '<%= tourney.getName() %>', 
                     '<%= round.getRound() %>', 

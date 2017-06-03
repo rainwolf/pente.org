@@ -23,6 +23,7 @@ Utilities.organizeGames(dsgPlayerData.getPlayerID(), currentSets,
 
 <b>Ongoing turn-based games</b>
 
+<center>
 <table border="0" cellpadding="0" cellspacing="0" width="100%">
   <tr>
     <td>
@@ -39,7 +40,7 @@ Utilities.organizeGames(dsgPlayerData.getPlayerID(), currentSets,
               <td>
                 <%@ include file="tb/listedMobileGame.jsp" %>
               </td>
-              <% if (columns > 2) { 
+              <% if (columns > 1) { 
               columns = 0; %>
             </tr>
             <tr>
@@ -54,7 +55,7 @@ Utilities.organizeGames(dsgPlayerData.getPlayerID(), currentSets,
               <td>
                 <%@ include file="tb/listedMobileGame.jsp" %>
               </td>
-              <% if (columns > 2) { 
+              <% if (columns > 1) { 
               columns = 0; %>
             </tr>
             <tr>
@@ -66,5 +67,7 @@ Utilities.organizeGames(dsgPlayerData.getPlayerID(), currentSets,
     </td>
   </tr>
 </table>
+</center>
+
 <br>
 

@@ -1342,7 +1342,7 @@ public class ServerTable {
 		else {
             for (Iterator it = playersInTable.iterator(); it.hasNext();) {
                 DSGPlayerData d = (DSGPlayerData) it.next();
-                if (d.isHuman()) {
+                if (d != null && d.isHuman()) {
                     return d.getName();
                 }
             }

@@ -2,7 +2,7 @@
 <%-- assumes String game, TourneyRound round is defined --%>
 
 <br>
-<a href="javascript:submitToDatabase('<%= game %>', 'Pente.org',
+<a href="javascript:submitToDatabase('<%= gameName %>', 'Pente.org',
    '<%= tourney.getName() %>', '<%= round.getRound() %>', '1');">View Games in Games History</a></b>
 <br>
 <br>

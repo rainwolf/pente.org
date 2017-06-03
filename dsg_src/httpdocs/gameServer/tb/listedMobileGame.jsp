@@ -90,12 +90,10 @@ String cancelRequested="false";
  <td>
 
 
-<br>
-<br>
 <table>
 <tr>
 <td align="center">
-        <canvas id="<%=game.getGid()+"board"%>" width="180" height="180" style="position: relative;"></canvas>
+        <canvas id="<%=game.getGid()+"board"%>" width="230" height="230" style="position: relative;"></canvas>
         <br>
              <table align="center" width="100%" border=1>
             <tr>
@@ -148,7 +146,7 @@ window.google_analytics_uacct = "UA-20529582-2";
         var opponentName = "<%= (me.equals(p1.getName())?p2.getName():p1.getName()) %>";
         var iAmP1 = <%=me.equals(p1.getName())%>;
 
-        var boardSize = 150;
+        var boardSize = 200;
         var boardCanvas = document.getElementById("<%=game.getGid()+"board"%>");
         var boardContext = boardCanvas.getContext("2d");
         var indentWidth = (boardCanvas.width - boardSize) / 2;

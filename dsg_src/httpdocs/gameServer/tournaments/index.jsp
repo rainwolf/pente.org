@@ -88,6 +88,7 @@ TourneyStorer tourneyStorer = resources.getTourneyStorer();
   <td>
      <table border="1" cellpadding="2" cellspacing="0" bordercolor="black">
        <tr bgcolor="<%= bgColor1 %>">
+        <td><font color="white">TB Pente</font></td>
         <td><font color="white">TB Boat-Pente</font></td>
         <td><font color="white">TB Gomoku</font></td>
         <td><font color="white">TB Connect6</font></td>
@@ -96,6 +97,7 @@ TourneyStorer tourneyStorer = resources.getTourneyStorer();
        </tr>
       </tr>
       <tr>
+        <td>Remember, remember, the 5th of November (2016)</td>
         <td>Fool's Boat (2017)</td>
         <td>Fool's Gomoku (2017)</td>
         <td>Fool's Connect6 (2017)</td>
@@ -103,6 +105,7 @@ TourneyStorer tourneyStorer = resources.getTourneyStorer();
         <td>Fool's Poof (2017)</td>
       </tr>
       <tr>
+        <td><a href="../profile?viewName=brf">brf</a> <img src="/gameServer/images/bcrown.gif"></td>
         <td><a href="../profile?viewName=pete77">pete777</a> <img src="/gameServer/images/bcrown.gif"></td>
         <td><a href="../profile?viewName=myuym">myuym</a> <img src="/gameServer/images/bcrown.gif"></td>
         <td><a href="../profile?viewName=ivans73">ivans73</a> <img src="/gameServer/images/bcrown.gif"></td>
@@ -110,6 +113,7 @@ TourneyStorer tourneyStorer = resources.getTourneyStorer();
         <td><a href="../profile?viewName=watsu">ivans73</a> <img src="/gameServer/images/bcrown.gif"></td>
       </tr>
       <tr>
+        <td><img src="/gameServer/avatar?name=brf" style="width:125px;height:125px;"></td>
         <td><img src="/gameServer/avatar?name=pete777" style="width:125px;height:125px;"></td>
         <td><img src="/gameServer/avatar?name=myuym" style="width:125px;height:125px;"></td>
         <td><img src="/gameServer/avatar?name=ivans73" style="width:125px;height:125px;"></td>
