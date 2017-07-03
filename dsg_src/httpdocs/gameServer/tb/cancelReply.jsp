@@ -434,6 +434,7 @@ window.google_analytics_uacct = "UA-20529582-2";
                     case 61: boardColor = poofPenteColor; break;
                     case 63: boardColor = connect6Color; break;
                     case 65: boardColor = boatPenteColor; break;
+                    case 67: boardColor = dkeryoPenteColor; break;
                     default: boardColor = penteColor; break;
                 }
                 boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
@@ -594,7 +595,7 @@ function touchEnd(evt) {
                 c6Move1 = playedMove;
             }
         }
-        if (game == 57 && moves.length == 1) {
+        if ((game == 57 || game == 67) && moves.length == 1) {
             if (dPenteMove1 == -1) {
                 dPenteMove1 = playedMove;
             } else if (dPenteMove2 == -1) {
@@ -905,6 +906,7 @@ function touchEnd(evt) {
                     case 61: replayPoofPenteGame(abstractBoard, movesList, until); break;
                     case 63: replayConnect6Game(abstractBoard, movesList, until); break;
                     case 65: replayPenteGame(abstractBoard, movesList, until); break;
+                    case 67: replayKeryoPenteGame(abstractBoard, movesList, until); break;
                 }
                     // document.getElementById("messageBox").innerHTML = "message";
                 if (until <= moves.length) {
@@ -1057,9 +1059,9 @@ function touchEnd(evt) {
                     } else {
                         alert("Invalid Connect6 moves detected, please (reload and) try again");
                     }
-                } else if (game == 57 && moves.length == 1 && (dPenteMove1 == -1 || dPenteMove2 == -1 || dPenteMove3 == -1)) {
+                } else if ((game == 57 || game == 67) && moves.length == 1 && (dPenteMove1 == -1 || dPenteMove2 == -1 || dPenteMove3 == -1)) {
                     alert("You have to place 3 stones for D-Pente");
-                } else if (game == 57 && moves.length == 1) {
+                } else if ((game == 57 || game == 67) && moves.length == 1) {
                   if ((dPenteMove1 != dPenteMove2) && (dPenteMove2 != dPenteMove3) && (dPenteMove3 != dPenteMove1)) {
                     window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+"&moves="+dPenteMove1 + "," + dPenteMove2 + "," + dPenteMove3 +"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
                     // window.open("http://development.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+"&moves="+dPenteMove1 + "," + dPenteMove2 + "," + dPenteMove3 +"&message="+encodeURIComponent(document.getElementById('message').value),"_self");

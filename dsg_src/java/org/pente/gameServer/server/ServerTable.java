@@ -330,15 +330,21 @@ public class ServerTable {
 	private void broadcastTable(DSGEvent dsgEvent) {
 		
 		for (int i = 0; i < playersInTable.size(); i++) {
-            String name = ((DSGPlayerData) playersInTable.elementAt(i)).getName();
-			dsgEventRouter.routeEvent(dsgEvent, name);
+			DSGPlayerData data = (DSGPlayerData) playersInTable.elementAt(i);
+			if (data != null) {
+				String name = data.getName();
+				dsgEventRouter.routeEvent(dsgEvent, name);
+			}
 		}
 	}
 
 	private void broadcastMainRoom(DSGEvent dsgEvent) {
 		for (int i = 0; i < playersInMainRoom.size(); i++) {
-            String name = ((DSGPlayerData) playersInMainRoom.elementAt(i)).getName();
-			dsgEventRouter.routeEvent(dsgEvent, name);
+			DSGPlayerData data = (DSGPlayerData) playersInMainRoom.elementAt(i);
+			if (data != null) {
+				String name = data.getName();
+				dsgEventRouter.routeEvent(dsgEvent, name);
+			}
 		}
 	}
 
@@ -907,7 +913,7 @@ public class ServerTable {
     private void removeAllComputers() {
         for (Iterator it = playersInTable.iterator(); it.hasNext();) {
             DSGPlayerData data = (DSGPlayerData) it.next();
-            if (data.isComputer()) {
+            if (data != null && data.isComputer()) {
                 aiController.removeAIPlayer(data.getName(), tableNum);
             }
         }
@@ -915,7 +921,8 @@ public class ServerTable {
 
     private boolean noHumanPlayersInTable() {
         for (Iterator it = playersInTable.iterator(); it.hasNext();) {
-            if (((DSGPlayerData) it.next()).isHuman()) {
+			DSGPlayerData data = (DSGPlayerData) it.next();
+            if (data != null && data.isHuman()) {
                 return false;
             }
         }
@@ -1920,7 +1927,7 @@ public class ServerTable {
     private void removePlayer(String name) {
         for (int i = 0; i < playersInTable.size(); i++) {
             DSGPlayerData data = (DSGPlayerData) playersInTable.elementAt(i);
-            if (data.getName().equals(name)) {
+            if (data != null && data.getName().equals(name)) {
                 playersInTable.remove(i);
             }
         }

@@ -626,7 +626,7 @@ for (Tourney tmpTourney : currentTournies) {
 //        continue;
     }
     %>
-<%=tourney.getName() + ";" + tourney.getEventID() + ";" + tourney.getNumRounds() + ";" + GridStateFactory.getGameName(tourney.getGame()) + ";" + (tourney.getNumRounds()==0?"2":"3") + ";" + dateFormat.format(tourney.getStartDate()) %><%}
+<%=tourney.getName() + ";" + tourney.getEventID() + ";" + tourney.getNumRounds() + ";" + (tourney.isTurnBased()?"tb-":"") + GridStateFactory.getGameName(tourney.getGame()) + ";" + (tourney.getNumRounds()==0?"2":"3") + ";" + dateFormat.format(tourney.getStartDate()) %><%}
 %>
 
 

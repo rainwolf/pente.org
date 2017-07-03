@@ -18,7 +18,10 @@ List<TBGame> myTurn = new ArrayList<TBGame>();
 List<TBGame> oppTurn = new ArrayList<TBGame>();
 Utilities.organizeGames(dsgPlayerData.getPlayerID(), currentSets,
     invitesTo, invitesFrom, myTurn, oppTurn);
-%>
+
+if (myTurn.size() + oppTurn.size() > 0) { %>
+
+
 <script type="text/javascript" src="/gameServer/js/go.js"></script>
 
 <b>Ongoing turn-based games</b>
@@ -70,4 +73,6 @@ Utilities.organizeGames(dsgPlayerData.getPlayerID(), currentSets,
 </center>
 
 <br>
+
+<% } %>
 
