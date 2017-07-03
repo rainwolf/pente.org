@@ -566,7 +566,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                     case 61: replayPoofPenteGame(abstractBoard, movesList, until); break;
                     case 63: replayConnect6Game(abstractBoard, movesList, until); break;
                     case 65: replayPenteGame(abstractBoard, movesList, until); break;
-                    case 67: replayPenteGame(abstractBoard, movesList, until); break;
+                    case 67: replayKeryoPenteGame(abstractBoard, movesList, until); break;
                 }
                 if (until <= moves.length) {
                     if (messageMoveNums.indexOf(until) != -1) {

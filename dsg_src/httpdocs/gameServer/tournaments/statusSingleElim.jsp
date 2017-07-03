@@ -8,9 +8,9 @@
 <br>
 <table width="100%" border="1" cellspacing="0" cellpadding="1" bordercolor="black">
   <tr bgcolor="<%= bgColor1 %>">
-    <th width="25%" align="left"><font color="white">Player 1</font></th>
+    <th width="25%" align="center"><font color="white">Player 1</font></th>
     <th width="25%" align="center"><font color="white">Result</font></th>	
-    <th width="25%" align="left"><font color="white">Player 2</font></th>
+    <th width="25%" align="center"><font color="white">Player 2</font></th>
     <th width="25%" align="center"><font color="white">Score</font></th>
   </tr>
 <%
@@ -22,7 +22,7 @@ for (Iterator it = matches.iterator(); it.hasNext();) {
     
     <tr>
       <%-- p1 column --%>
-      <td>
+      <td align="center">
          <b><a href="../profile?viewName=<%= m.getPlayer1().getName() %>">
            <%= m.getPlayer1().getName() %></b></a> (<%= m.getPlayer1().getSeed() %>)
       </td>
@@ -39,7 +39,7 @@ for (Iterator it = matches.iterator(); it.hasNext();) {
       <% if (m.isBye()) { %>
       <td colspan="2">&nbsp;</td>
       <% } else { %>
-      <td>
+      <td align="center">
          <b><a href="../profile?viewName=<%= m.getPlayer2().getName() %>">
            <%= m.getPlayer2().getName() %></b></a> (<%= m.getPlayer2().getSeed() %>)
       </td>
@@ -60,13 +60,13 @@ for (Iterator it = matches.iterator(); it.hasNext();) {
                }
               if (matchSet != null) { 
               %>
-              <br>Match: 
               <% if (m1 != null || m2 != null) { %>
+<!--               <br>Match: 
                         <a href="javascript:goWH('/gameServer/tb/game?gid=<%=matchSet.getGame1().getGid()%>&command=load&mobile');">game 1</a>
                - 
                         <a href="javascript:goWH('/gameServer/tb/game?gid=<%=matchSet.getGame2().getGid()%>&command=load&mobile');">game 2</a>
 
-                      </td>
+ -->                      </td>
                     </tr>
                     <tr>
                       <td colspan="2" align="center">

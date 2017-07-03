@@ -293,8 +293,13 @@ window.google_analytics_uacct = "UA-20529582-2";
  <div style="font-family:Verdana, Arial, Helvetica, sans-serif;
  float:left;width:70%">
  
-    <h2 style="margin:0;padding:0;">Dashboard - Hi <%= ((dsgPlayerData.hasPlayerDonated() && (dsgPlayerData.getNameColorRGB() != 0)) ? "<span style='color:#" + Integer.toHexString(dsgPlayerData.getNameColorRGB()).substring(2) + "'>" : "<span>") %><%= dsgPlayerData.getName() %></span>!</h2>
-    <a href="/gameServer/myprofile">Edit Profile</a> | <a href="/gameServer/mymessages">My Messages <%= numMessages > 0 ? "("+numMessages+" unread)" : "" %></a> | <a href="/gameServer/social?social">Social</a>
+ <!--    <h2 style="margin:0;padding:0;">Dashboard - Hi <%= ((dsgPlayerData.hasPlayerDonated() && (dsgPlayerData.getNameColorRGB() != 0)) ? "<span style='color:#" + Integer.toHexString(dsgPlayerData.getNameColorRGB()).substring(2) + "'>" : "<span>") %><%= dsgPlayerData.getName() %></span>!</h2>
+  -->   
+   <% if (true) {
+     DSGPlayerData d = dsgPlayerData; %>
+    <h2 style="margin:0;padding:0;">Dashboard - Hi <%@ include file="playerLink.jspf" %>!</h2>
+  <% } %>    
+<a href="/gameServer/myprofile">Edit Profile</a> | <a href="/gameServer/mymessages">My Messages <%= numMessages > 0 ? "("+numMessages+" unread)" : "" %></a> | <a href="/gameServer/social?social">Social</a>
     <% if ("rainwolf".equals(dsgPlayerData.getName())) { %>
  | <a href="/gameServer/admin">adminLink</a> | <a href="/gameServer/who.jsp">who</a>
   <%}%>
@@ -363,9 +368,8 @@ window.google_analytics_uacct = "UA-20529582-2";
 
           <li>16th Anniversary World Champion <a href="/gameServer/tournaments/statusRound.jsp?eid=1184&round=5">tournament</a> - 2015. Round 5 has started! 
           The <a href="/gameServer/forums/forum.jspa?forumID=35&start=0">tournament forum</a> is now opened. </li>
-          <li>Registration open: <a href="/gameServer/tournaments/tournamentConfirm.jsp?eid=1304">Summer Renaissance (1800 and below)</a></li>
-          <li>Round 2: <a href="/gameServer/tournaments/statusRound.jsp?eid=1281&round=2">Pente Masters</a>, <a href="/gameServer/tournaments/statusRound.jsp?eid=1282&round=2">Fool's Keryo</a></li>
-          <!-- <li>Final: <a href="/gameServer/tournaments/statusRound.jsp?eid=1267&round=6">Remember, remember, the 5th of November</a></li> -->
+          <li>Round 1: <a href="/gameServer/tournaments/statusRound.jsp?eid=1304&round=1">Summer Renaissance </a></li>
+          <li>Round 3: <a href="/gameServer/tournaments/statusRound.jsp?eid=1281&round=3">Pente Masters</a></li>
 
 
 <%--

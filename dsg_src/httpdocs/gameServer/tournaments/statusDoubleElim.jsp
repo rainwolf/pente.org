@@ -9,9 +9,9 @@
 <br>
 <table width="100%" border="1" cellspacing="0" cellpadding="1" bordercolor="black">
   <tr bgcolor="<%= bgColor1 %>">
-    <th width="25%" align="left"><font color="white">Player 1</font></th>
+    <th width="25%" align="center"><font color="white">Player 1</font></th>
     <th width="25%" align="center"><font color="white">Result</font></th> 
-    <th width="25%" align="left"><font color="white">Player 2</font></th>
+    <th width="25%" align="center"><font color="white">Player 2</font></th>
     <th width="25%" align="center"><font color="white">Score</font></th>
   </tr>
 <%
@@ -23,7 +23,7 @@ String myTurn = "false";
     
     <tr>
       <%-- p1 column --%>
-      <td>
+      <td align="center">
          <b><a href="../profile?viewName=<%= m.getPlayer1().getName() %>">
            <%= m.getPlayer1().getName() %></b></a> (<%= m.getPlayer1().getSeed() %>)
       </td>
@@ -35,7 +35,7 @@ String myTurn = "false";
       <% if (m.isBye()) { %>
       <td colspan="2">&nbsp;</td>
       <% } else { %>
-      <td>
+      <td align="center">
          <b><a href="../profile?viewName=<%= m.getPlayer2().getName() %>">
            <%= m.getPlayer2().getName() %></b></a> (<%= m.getPlayer2().getSeed() %>)
       </td>
@@ -55,7 +55,7 @@ String myTurn = "false";
                     }
                }
               %>
-              <br>Match: 
+<!--               <br>Match: 
               <% if (m1 != null) { %>
                       <% if (matchSet.getGame1().getPlayer1Pid() == m.getPlayer1().getPlayerID()) { %>
                         <a href="javascript:goWH('/gameServer/tb/game?gid=<%=matchSet.getGame1().getGid()%>&command=load&mobile');">game 1</a>
@@ -83,7 +83,7 @@ String myTurn = "false";
                         <a href="/gameServer/viewLiveGame?mobile&g=<%=matchSet.getGame2().getGid()%>">game 2</a>
                       <% } %>
               <% } %>
-                      </td>
+ -->                      </td>
                     </tr>
                     <tr>
                       <td colspan="2" align="center">

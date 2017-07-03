@@ -404,9 +404,11 @@ This subscription ends on <%=dsgPlayerData.hasPlayerDonated()?""+profileDateForm
 
 <br>
 
-<%@ include file="playerrunninggamesbox.jsp" %>
-
 <%@ include file="playerstatsbox.jsp" %>
+
+<br>
+
+<%@ include file="playerrunninggamesbox.jsp" %>
 
 <% } %>
 
