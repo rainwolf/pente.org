@@ -385,7 +385,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
    <td width="30%">Player 1
    </td>
    <td>
-   <%
+   <% if (true) {
          DSGPlayerData d = p1;
          DSGPlayerGameData dsgPlayerGameData = p1GameData;
      %>
@@ -400,7 +400,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
          d = p2;
          dsgPlayerGameData = p2GameData;
      %>
-     <%@ include file="../playerLink.jspf" %></a>&nbsp;<% if (dsgPlayerGameData != null) { %><%@ include file="../ratings.jspf" %><% } %>
+     <%@ include file="../playerLink.jspf" %></a>&nbsp;<% if (dsgPlayerGameData != null) { %><%@ include file="../ratings.jspf" %><% } }%>
    </td>
 </tr>
 <tr>
@@ -1003,13 +1003,19 @@ function touchEnd(evt) {
                     // document.getElementById("messageBox").innerHTML = "message";
                 if (until <= moves.length) {
                     if (messageMoveNums.indexOf(until) != -1) {
+                      <% if (true) { 
+                         DSGPlayerData d = null;
+                      %>
+
                         var encMessage = messages[messageMoveNums.indexOf(until)];
                         // var message = encMessage.replace("\\",",");
                         var msgr = myName;
                         if (((until + 1) % 2) == 0) {
                             msgr = p1Name;
+                            <%  d = p1; %>
                         } else {
                             msgr = p2Name;
+                            <%  d = p2; %>
                         }
                         if (game == 63) {
                             if ((Math.floor((until - 1)/2) % 2) == 0) {
@@ -1018,7 +1024,8 @@ function touchEnd(evt) {
                                 msgr = p2Name;
                             }
                         }
-                        document.getElementById("messageBox").innerHTML = msgr + ": " + messages[messageMoveNums.indexOf(until)].replace("[host]",window.location.host);
+                        document.getElementById("messageBox").innerHTML =  "<b>" + msgr + "</b>" + ": " + messages[messageMoveNums.indexOf(until)].replace("[host]",window.location.host);
+                        <% } %>
                     } else {
                         document.getElementById("messageBox").innerHTML = "";
                     }

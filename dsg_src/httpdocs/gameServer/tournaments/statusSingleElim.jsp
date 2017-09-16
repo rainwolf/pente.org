@@ -71,15 +71,19 @@ for (Iterator it = matches.iterator(); it.hasNext();) {
                     <tr>
                       <td colspan="2" align="center">
                         <% if (true) { 
-                        TBGame game = matchSet.getGame1(); %> 
+                        TBGame game = matchSet.getGame1(); 
+                        if (!game.isCompleted()) {
+                        %> 
                         <%@ include file="../tb/listedMobileGame.jsp" %>
-                        <% } %>
+                        <% } } %>
                       </td>
                       <td colspan="2" align="center">
                         <% if (true) { 
-                        TBGame game = matchSet.getGame2(); %> 
+                        TBGame game = matchSet.getGame2();
+                        if (!game.isCompleted()) {
+                        %> 
                         <%@ include file="../tb/listedMobileGame.jsp" %>
-                        <% } %>
+                        <% } } %>
               <% } %>
 <!--               <% if (m1 != null) { %>
                       <% if (matchSet.getGame1().getPlayer1Pid() == m.getPlayer1().getPlayerID()) { %>

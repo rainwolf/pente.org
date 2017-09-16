@@ -120,20 +120,24 @@ public class CacheKOTHStorer implements KOTHStorer {
                         if (hill.getHillID() == hill_id) {
                             continue;
                         }
+                        long oldKingPid = hill.getKing();
                         if (hill.removePlayer(pid)) {
+                            long newKingPid = hill.getKing();
                             baseStorer.removePlayerFromHill(hill.getHillID(), pid);
                             storeHill(hill.getHillID());
-                            for (int liveGame : liveGames) {
-                                if (hill.getHillID() == getEventId(liveGame)) {
-                                    adjustCrown(liveGame);
-                                    break;
+                            if (oldKingPid != newKingPid) {
+                                for (int liveGame : liveGames) {
+                                    if (hill.getHillID() == getEventId(liveGame)) {
+                                        adjustCrown(liveGame);
+                                        break;
+                                    }
                                 }
-                            }
-                            for (int tbGame : tbGames) {
-                                if (hill.getHillID() == getEventId(tbGame)) {
-                                    adjustCrown(tbGame);
-                                    fixTBinvitations(tbGame, pid);
-                                    break;
+                                for (int tbGame : tbGames) {
+                                    if (hill.getHillID() == getEventId(tbGame)) {
+                                        adjustCrown(tbGame);
+                                        fixTBinvitations(tbGame, pid);
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -162,10 +166,14 @@ public class CacheKOTHStorer implements KOTHStorer {
         synchronized (cacheKotHLock) {
             Hill hill = hills.get(hill_id);
             if (hill != null) {
+                long oldKingPid = hill.getKing();
                 if (hill.removePlayer(pid)) {
                     baseStorer.removePlayerFromHill(hill_id, pid);
                     storeHill(hill_id);
-                    adjustCrown(game);
+                    long newKingPid = hill.getKing();
+                    if (oldKingPid != newKingPid) {
+                        adjustCrown(game);
+                    }
                     if (game > 50) {
                         fixTBinvitations(game, pid);
                     }
@@ -182,9 +190,16 @@ public class CacheKOTHStorer implements KOTHStorer {
         synchronized (cacheKotHLock) {
             Hill hill = hills.get(hill_id);
             if (hill != null) {
+                long oldKingPid = hill.getKing();
                 hill.movePlayersUpDown(winner, loser);
                 storeHill(hill_id);
-                adjustCrown(game);
+                long newKingPid = hill.getKing();
+                if (oldKingPid != newKingPid) {
+                    if (newKingPid == 0 && loser != oldKingPid) {
+                        return;
+                    }
+                    adjustCrown(game);
+                }
             }
         }
     }
@@ -209,12 +224,9 @@ public class CacheKOTHStorer implements KOTHStorer {
         Hill hill = hills.get(hill_id);
         if (hill != null) {
             try {
-                long kingPid = 0;
+                long kingPid = hill.getKing();
                 long oldKingPid = baseStorer.getCrownPid(game);
 
-                if (hill.getSteps().size() > 0 && hill.getSteps().get(hill.getSteps().size() - 1).getPlayers().size() == 1) {
-                    kingPid = hill.getSteps().get(hill.getSteps().size() - 1).getPlayers().get(0).getPid();
-                }
                 baseStorer.adjustCrown(game, kingPid);
                 if (kingPid != 0) {
                     dsgPlayerStorer.refreshPlayer(dsgPlayerStorer.loadPlayer(kingPid).getName());
@@ -239,7 +251,7 @@ public class CacheKOTHStorer implements KOTHStorer {
         public void run() {
             Date lastMonth = new Date();
             lastMonth.setTime(lastMonth.getTime() - (31L*3600*24*1000));
-            boolean altered = false;
+//            boolean altered = false;
             synchronized (cacheKotHLock) {
                 for (int tbGame : tbGames) {
                     Hill hill = getHill(tbGame);
@@ -259,22 +271,23 @@ public class CacheKOTHStorer implements KOTHStorer {
                             }
                             Date lastDate = player.getLastGame();
                             if (lastDate != null && lastDate.before(lastMonth)) {
-                                baseStorer.removePlayerFromHill(hill.getHillID(), player.getPid());
-                                hill.removePlayer(player.getPid());
+                                removePlayer(tbGame, player.getPid());
+//                                baseStorer.removePlayerFromHill(hill.getHillID(), player.getPid());
+//                                hill.removePlayer(player.getPid());
                                 fixTBinvitations(tbGame, player.getPid());
-                                altered = true;
+//                                altered = true;
                             }
                         }
-                        if (altered) {
-                            altered = false;
-                            storeHill(hill.getHillID());
-                            adjustCrown(tbGame);
-                        }
+//                        if (altered) {
+//                            altered = false;
+//                            storeHill(hill.getHillID());
+//                            adjustCrown(tbGame);
+//                        }
                     }
                 }
 
                 lastMonth.setTime(lastMonth.getTime() - (31L * 3600 * 24 * 1000));
-                altered = false;
+//                altered = false;
                 for (int liveGame : liveGames) {
                     Hill hill = getHill(liveGame);
                     if (hill != null) {
@@ -290,16 +303,17 @@ public class CacheKOTHStorer implements KOTHStorer {
                             Date lastDate = player.getLastGame();
                             //                        Date lastDate = baseStorer.getLastGameDate(hill.getHillID(), pid);
                             if (lastDate != null && lastDate.before(lastMonth)) {
-                                baseStorer.removePlayerFromHill(hill.getHillID(), player.getPid());
-                                hill.removePlayer(player.getPid());
-                                altered = true;
+                                removePlayer(liveGame, player.getPid());
+//                                baseStorer.removePlayerFromHill(hill.getHillID(), player.getPid());
+//                                hill.removePlayer(player.getPid());
+//                                altered = true;
                             }
                         }
-                        if (altered) {
-                            altered = false;
-                            storeHill(hill.getHillID());
-                            adjustCrown(liveGame);
-                        }
+//                        if (altered) {
+//                            altered = false;
+//                            storeHill(hill.getHillID());
+//                            adjustCrown(liveGame);
+//                        }
                     }
                 }
             }

@@ -3,7 +3,6 @@ package org.pente.kingOfTheHill;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Created by waliedothman on 25/06/16.
