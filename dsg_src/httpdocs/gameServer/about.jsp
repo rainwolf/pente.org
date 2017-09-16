@@ -44,6 +44,15 @@
               </font></td>
             </tr>
 
+            <tr> 
+              <td>
+                 <br>
+                <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
+                  Since August 2013, pente.org ownership and development was taken over by rainwolf. Most notable in this transition 
+                  was the deprecation of Java in the browser and development of the mobile apps for both iOS and Android. 
+                <br>
+             </td>
+           </tr>
           </table>
 <br>
 <br>

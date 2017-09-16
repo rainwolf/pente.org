@@ -88,15 +88,19 @@ String myTurn = "false";
                     <tr>
                       <td colspan="2" align="center">
                         <% if (true) { 
-                        TBGame game = matchSet.getGame1(); %> 
+                        TBGame game = matchSet.getGame1(); 
+                        if (!game.isCompleted()) {
+                        %> 
                         <%@ include file="../tb/listedMobileGame.jsp" %>
-                        <% } %>
+                        <% } } %>
                       </td>
                       <td colspan="2" align="center">
                         <% if (true) { 
-                        TBGame game = matchSet.getGame2(); %> 
+                        TBGame game = matchSet.getGame2();
+                        if (!game.isCompleted()) {
+                        %> 
                         <%@ include file="../tb/listedMobileGame.jsp" %>
-                        <% } %>
+                        <% } } %>
           <% } %>
           <% } %>
       </td>

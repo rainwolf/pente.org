@@ -70,7 +70,7 @@ function gameHasCaptures() {
   return (game != 5 && game != 6);
 }
 function gameHasTripleCaptures() {
-  return (game == 3 || game == 4);
+  return (game == 3 || game == 4 || game == 17 || game == 18);
 }
 
 function initializeGame() {
