@@ -373,11 +373,26 @@ amImember = hill.hasPlayer(myPID); %>
 Rating Stats<%
 
         DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
-        Game games[] = GridStateFactory.getDisplayGames();
+        Game games[] = GridStateFactory.getTbGames();
         for (int i = 0; i < games.length; i++) {
-//            if (games[i].getId() < 51) {
-//                continue;
-//            }
+            DSGPlayerGameData dsgPlayerGameData =
+                dsgPlayerData.getPlayerGameData(games[i].getId());
+            if (dsgPlayerGameData == null ||
+                dsgPlayerGameData.getTotalGames() == 0) {
+                continue;
+            } %>
+<%= (games[i].getId()>50?"tb-":"") + GridStateFactory.getGameName(games[i].getId()).replace("Speed ", "Speed-") %>;<%= (int) Math.round(dsgPlayerGameData.getRating()) %>;<%= dsgPlayerGameData.getTotalGames() %>;<%=dsgPlayerGameData.getTourneyWinner() %>;<%= dateFormat.format(dsgPlayerGameData.getLastGameDate()) %>;<%= games[i].getId() %><%}
+        games = GridStateFactory.getNormalGames();
+        for (int i = 0; i < games.length; i++) {
+            DSGPlayerGameData dsgPlayerGameData =
+                dsgPlayerData.getPlayerGameData(games[i].getId());
+            if (dsgPlayerGameData == null ||
+                dsgPlayerGameData.getTotalGames() == 0) {
+                continue;
+            } %>
+<%= (games[i].getId()>50?"tb-":"") + GridStateFactory.getGameName(games[i].getId()).replace("Speed ", "Speed-") %>;<%= (int) Math.round(dsgPlayerGameData.getRating()) %>;<%= dsgPlayerGameData.getTotalGames() %>;<%=dsgPlayerGameData.getTourneyWinner() %>;<%= dateFormat.format(dsgPlayerGameData.getLastGameDate()) %>;<%= games[i].getId() %><%}
+        games = GridStateFactory.getSpeedGames();
+        for (int i = 0; i < games.length; i++) {
             DSGPlayerGameData dsgPlayerGameData =
                 dsgPlayerData.getPlayerGameData(games[i].getId());
             if (dsgPlayerGameData == null ||
