@@ -261,18 +261,67 @@ onmouseover="javascript:highlightStat('<%= moveStr %>s');" onmouseout="javascrip
 
 <tr><td>&nbsp;</td>
 <td></td>
-<% for (int i = 0; i < 19; i++) { %>
-<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="wc<%= i %>" width="19" height="19"></td>
-<% } %>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="wc0" width="19" height="19"></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="wc1" width="19" height="19"></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="wc2" width="19" height="19"></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="wc3" width="19" height="19"></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="wc4" width="19" height="19"></td>
+    <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="bc0" width="19" height="19"></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="bc1" width="19" height="19"></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="bc2" width="19" height="19"></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="bc3" width="19" height="19"></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="bc4" width="19" height="19"></td>
 <td></td><td>&nbsp;</td>
 </tr>
 <tr><td>&nbsp;</td>
 <td></td>
-<% for (int i = 0; i < 19; i++) { %>
-<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="bc<%= i %>" width="19" height="19"></td>
-<% } %>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="wc5" width="19" height="19"></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="wc6" width="19" height="19"></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="wc7" width="19" height="19"></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="wc8" width="19" height="19"></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="wc9" width="19" height="19"></td>
+    <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="bc5" width="19" height="19"></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="bc6" width="19" height="19"></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="bc7" width="19" height="19"></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="bc8" width="19" height="19"></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="bc9" width="19" height="19"></td>
 <td></td><td>&nbsp;</td>
 </tr>
+<tr><td>&nbsp;</td>
+<td></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="wc10" width="19" height="19"></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="wc11" width="19" height="19"></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="wc12" width="19" height="19"></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="wc13" width="19" height="19"></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="wc14" width="19" height="19"></td>
+    <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="bc10" width="19" height="19"></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="bc11" width="19" height="19"></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="bc12" width="19" height="19"></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="bc13" width="19" height="19"></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="bc14" width="19" height="19"></td>
+<td></td><td>&nbsp;</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="wc15" width="19" height="19"></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="wc16" width="19" height="19"></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="wc17" width="19" height="19"></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="wc18" width="19" height="19"></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="wc19" width="19" height="19"></td>
+    <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="bc15" width="19" height="19"></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="bc16" width="19" height="19"></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="bc17" width="19" height="19"></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="bc18" width="19" height="19"></td>
+<td><image src="<%= request.getContextPath() %>/gameServer/images/stats_blank.gif" name="bc19" width="19" height="19"></td>
+<td></td><td>&nbsp;</td>
+</tr>
+
+
+
 </table>
 
 <%

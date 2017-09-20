@@ -64,9 +64,9 @@ public class GameVenueJSFormat {
         Vector newTreeData = new Vector();
         for (int i = 0; i < treeData.size(); i++) {
             GameTreeData t = (GameTreeData) treeData.get(i);
-            if (t.getID() == GridStateFactory.CONNECT6 ||
-                t.getID() == GridStateFactory.SPEED_CONNECT6 ||
-                t.getID() == GridStateFactory.TB_CONNECT6) continue;
+//            if (t.getID() == GridStateFactory.CONNECT6 ||
+//                t.getID() == GridStateFactory.SPEED_CONNECT6 ||
+//                t.getID() == GridStateFactory.TB_CONNECT6) continue;
             
             newTreeData.addElement(t.clone());
         }

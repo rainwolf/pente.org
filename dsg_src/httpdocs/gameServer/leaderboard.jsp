@@ -4,7 +4,7 @@
                  org.pente.gameServer.core.*, 
                  org.pente.gameServer.client.web.*" %>
 
-<% int cg = 1;
+<% int cg = 51;
    String cgStr = LoginCookieHandler.getCookie(request, "g");
    if (cgStr != null) {
 	   try { cg = Integer.parseInt(cgStr); } catch (NumberFormatException n) {}

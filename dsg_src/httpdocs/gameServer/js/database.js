@@ -67,7 +67,7 @@ var currentNumMatchedGames = 0;
 //POOF PENTE 11
 //SPEED POOF PENTE 12
 function gameHasCaptures() {
-  return (game != 5 && game != 6);
+  return (game != 5 && game != 6 && game != 13 && game != 14);
 }
 function gameHasTripleCaptures() {
   return (game == 3 || game == 4 || game == 17 || game == 18);
@@ -97,6 +97,13 @@ function resetGame() {
     viewingSearchResults = 1;
     setGame(document.data_form.moves.value);
     showStatistics();
+}
+
+function isConnect6(game) {
+    if (game == 13 || game == 14) {
+        return true;
+    }
+    return false;
 }
 
 function setGame(moveStr) {
@@ -178,6 +185,9 @@ function highlightMove(move) {
     if (document[move].src == statisticImage.src) {
 
         var currentPlayer = currentMove % 2;
+        if (isConnect6(game)) {
+            currentPlayer = parseInt((currentMove + 1)/2)%2;
+        }
         document[move].src = moveImages[currentPlayer].src;
 
         highlightedMove = move;
@@ -219,6 +229,9 @@ function addMoveInternal(intMove) {
     var x = intMove % 19;
     var y = parseInt(intMove / 19);
     var currentPlayer = currentMove % 2 + 1;
+        if (isConnect6(game)) {
+            currentPlayer = parseInt((currentMove+4)/2)%2 + 1;
+        }
     board[x][y] = currentPlayer;
 }
 
@@ -236,6 +249,9 @@ function addMove(move) {
 
         // put move on image board
         var currentPlayer = currentMove++ % 2;
+        if (isConnect6(game)) {
+            currentPlayer = parseInt((currentMove + 4)/2)%2;
+        }
         document[move].src = moveImages[currentPlayer].src;
 
         maxMove = currentMove;
@@ -274,6 +290,9 @@ p = new Array("", "w", "b");
 function removeCaptures(intMove, internal) {
 
    var currentPlayer = (currentMove - 1) % 2 + 1;
+        // if (isConnect6(game)) {
+        //     currentPlayer = parseInt((currentMove - 1)/2)%2 + 1;
+        // }
    var otherPlayer = 3 - currentPlayer;
    var x = intMove % 19;
    var y = parseInt(intMove / 19);
@@ -383,6 +402,9 @@ function removeCaptures(intMove, internal) {
 function putBackCaptures() {
 
     var currentPlayer = currentMove  % 2 + 1;
+        // if (isConnect6(game)) {
+        //     currentPlayer = parseInt((currentMove - 1)/2)%2 + 1;
+        // }
     var otherPlayer = 3 - currentPlayer;
 
     while (capturedAt[currentPlayer][numCaptures[currentPlayer] - 1] == currentMove) {
@@ -463,6 +485,9 @@ function forwardMove() {
         var intMove = moves[currentMove];
 
         var currentPlayer = currentMove++ % 2;
+        if (isConnect6(game)) {
+            currentPlayer = parseInt((currentMove + 4)/2)%2;
+        }
         document[getStrMove(intMove)].src = moveImages[currentPlayer].src;
 
         var x = intMove % 19;
