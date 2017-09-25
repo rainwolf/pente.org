@@ -852,7 +852,6 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
     <% if (!game.isPrivateGame()) { %><a class="button" style="clear:right;" href="/gameServer/forums/post!default.jspa?forumID=27&body=[game]<%= game.getGameID() %>[/game]<%= URLEncoder.encode("\n\nEnter your comments here") %>&subject=<%= URLEncoder.encode("Game: " + game.getPlayer1Data().getUserIDName() + " vs. " + game.getPlayer2Data().getUserIDName() + " " + dateFormat.format(game.getDate().getTime())) %>"><span style="color:white">Discuss this game</span></a><% } %>
     <a class="button" href="javascript:gifer();" ><span style="color:white">Animated GIF</span></a>
 
-    <% if (gameId != GridStateFactory.CONNECT6 && gameId != GridStateFactory.SPEED_CONNECT6 && gameId != GridStateFactory.TB_CONNECT6 ) { %> 
         <script type="text/javascript">
             gameStr = "<%=(((gameId % 2) == 0)?"Speed ":"")+GridStateFactory.getGameName(gameId) %>";
             coordinateAlphas = new Array("A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T");
@@ -876,7 +875,6 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
 <form name="filter_data">
 <input type="hidden" name="startGameNum" value="0">
 </form>
-    <%}%>
     <br>
     <br>
  </td>

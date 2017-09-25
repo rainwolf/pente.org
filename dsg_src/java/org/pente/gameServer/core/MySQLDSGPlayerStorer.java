@@ -974,7 +974,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
         Calendar inactiveCutoff = null;
         if (!showInactive) {
 			inactiveCutoff = Calendar.getInstance();
-			inactiveCutoff.add(Calendar.DATE, -7);
+			inactiveCutoff.add(Calendar.DATE, -30);
 			searchString +=	  "and last_game_date > ? ";
 		}
 
