@@ -77,6 +77,8 @@ function hide(id) {
     }
     else if (ns6) {
         document.getElementById(id).style.visibility = "hidden";
+    } else {
+        document.getElementById(id).style.visibility = "hidden";
     }
 }
 
@@ -89,6 +91,8 @@ function show(id) {
         document.all[id].style.visibility = "visible";
     }
     else if (ns6) {
+        document.getElementById(id).style.visibility = "visible";
+    } else {
         document.getElementById(id).style.visibility = "visible";
     }
 }

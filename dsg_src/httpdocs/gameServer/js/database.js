@@ -105,6 +105,12 @@ function isConnect6(game) {
     }
     return false;
 }
+function isPoofPente(game) {
+    if (game == 11 || game == 12) {
+        return true;
+    }
+    return false;
+}
 
 function setGame(moveStr) {
 
@@ -258,6 +264,9 @@ function addMove(move) {
 
         highlightedMove = "";
 
+        if (isPoofPente(game)) {
+            detectPoof(intMove, false);
+        }
         if (gameHasCaptures()) {
             removeCaptures(intMove, false);
         }
@@ -425,7 +434,267 @@ function putBackCaptures() {
             document[i1].src = dummyImage.src;
         }
     }
+
+    if (isPoofPente(game)) {
+      var first = true;
+      while (capturedAt[otherPlayer][numCaptures[otherPlayer] - 1] == currentMove) {
+
+          var back = capturedMoves[otherPlayer][(numCaptures[otherPlayer] - 1)];
+
+          var x = back % 19;
+          var y = parseInt(back / 19);
+          if (!first) {
+            board[x][y] = currentPlayer;
+            document[getStrMove(back)].src = moveImages[currentPlayer - 1].src;
+          }
+          first = false;
+
+
+          numCaptures[otherPlayer]--;
+          
+          // don't un-display captures if they go over the limit
+          if (numCaptures[otherPlayer] < 19) {
+              var i1 = p[currentPlayer] + "c" + numCaptures[otherPlayer];
+              document[i1].src = dummyImage.src;
+          }
+      }
+    }
 }
+
+function detectPoof(intMove, internal) {
+   var myColor = (currentMove - 1) % 2 + 1;
+   var opponentColor = 3 - myColor;
+   var i = intMove % 19;
+   var j = parseInt(intMove / 19);
+
+    var poofed = false;
+    if (((i-2) > -1) && ((i+1) < 19)) {
+        if (board[i-1][j] == myColor) {
+            if ((board[i-2][j] == opponentColor) && (board[i+1][j] == opponentColor)) {
+                board[i-1][j] = 0;
+                board[i][j] = 0;
+
+               var x = i-1, y = j;
+               capturedAt[opponentColor]
+                         [numCaptures[opponentColor]] = (currentMove - 1);
+               capturedMoves[opponentColor]
+                            [numCaptures[opponentColor]] = x + y * 19;
+               // don't display captures if they go over the limit
+               if (numCaptures[opponentColor] < 19) {
+                   var i1 = p[myColor] + "c" + numCaptures[opponentColor] + "";
+                   document[i1].src = moveCaptureImages[myColor - 1].src;
+               }
+               numCaptures[opponentColor]++;
+
+               if (!internal) {
+                   clearMove(getStrMove(x + y * 19));
+               }
+
+                poofed = true;
+            }
+        }
+    }
+    if (((i-2) > -1) && ((j-2) > -1) && ((i+1) < 19) && ((j+1) < 19)) {
+        if (board[i-1][j-1] == myColor) {
+            if ((board[i-2][j-2] == opponentColor) && (board[i+1][j+1] == opponentColor)) {
+                board[i-1][j-1] = 0;
+                board[i][j] = 0;
+
+               var x = i-1, y = j-1;
+               capturedAt[opponentColor]
+                         [numCaptures[opponentColor]] = (currentMove - 1);
+               capturedMoves[opponentColor]
+                            [numCaptures[opponentColor]] = x + y * 19;
+               // don't display captures if they go over the limit
+               if (numCaptures[opponentColor] < 19) {
+                   var i1 = p[myColor] + "c" + numCaptures[opponentColor] + "";
+                   document[i1].src = moveCaptureImages[myColor - 1].src;
+               }
+               numCaptures[opponentColor]++;
+
+               if (!internal) {
+                   clearMove(getStrMove(x + y * 19));
+               }
+
+                poofed = true;
+            }
+        }
+    }
+    if (((j-2) > -1) && ((j+1) < 19)) {
+        if (board[i][j-1] == myColor) {
+            if ((board[i][j-2] == opponentColor) && (board[i][j+1] == opponentColor)) {
+                board[i][j-1] = 0;
+                board[i][j] = 0;
+
+               var x = i, y = j-1;
+               capturedAt[opponentColor]
+                         [numCaptures[opponentColor]] = (currentMove - 1);
+               capturedMoves[opponentColor]
+                            [numCaptures[opponentColor]] = x + y * 19;
+               // don't display captures if they go over the limit
+               if (numCaptures[opponentColor] < 19) {
+                   var i1 = p[myColor] + "c" + numCaptures[opponentColor] + "";
+                   document[i1].src = moveCaptureImages[myColor - 1].src;
+               }
+               numCaptures[opponentColor]++;
+
+               if (!internal) {
+                   clearMove(getStrMove(x + y * 19));
+               }
+
+                poofed = true;
+            }
+        }
+    }
+    if (((i-1) > -1) && ((j-2) > -1) && ((i+2) < 19) && ((j+1) < 19)) {
+        if (board[i+1][j-1] == myColor) {
+            if ((board[i-1][j+1] == opponentColor) && (board[i+2][j-2] == opponentColor)) {
+                board[i+1][j-1] = 0;
+                board[i][j] = 0;
+
+               var x = i+1, y = j-1;
+               capturedAt[opponentColor]
+                         [numCaptures[opponentColor]] = (currentMove - 1);
+               capturedMoves[opponentColor]
+                            [numCaptures[opponentColor]] = x + y * 19;
+               // don't display captures if they go over the limit
+               if (numCaptures[opponentColor] < 19) {
+                   var i1 = p[myColor] + "c" + numCaptures[opponentColor] + "";
+                   document[i1].src = moveCaptureImages[myColor - 1].src;
+               }
+               numCaptures[opponentColor]++;
+
+               if (!internal) {
+                   clearMove(getStrMove(x + y * 19));
+               }
+
+                poofed = true;
+            }
+        }
+    }
+    if (((i+2) < 19) && ((i-1) > -1)) {
+        if (board[i+1][j] == myColor) {
+            if ((board[i+2][j] == opponentColor) && (board[i-1][j] == opponentColor)) {
+                board[i+1][j] = 0;
+                board[i][j] = 0;
+
+               var x = i+1, y = j;
+               capturedAt[opponentColor]
+                         [numCaptures[opponentColor]] = (currentMove - 1);
+               capturedMoves[opponentColor]
+                            [numCaptures[opponentColor]] = x + y * 19;
+               // don't display captures if they go over the limit
+               if (numCaptures[opponentColor] < 19) {
+                   var i1 = p[myColor] + "c" + numCaptures[opponentColor] + "";
+                   document[i1].src = moveCaptureImages[myColor - 1].src;
+               }
+               numCaptures[opponentColor]++;
+
+               if (!internal) {
+                   clearMove(getStrMove(x + y * 19));
+               }
+
+                poofed = true;
+            }
+        }
+    }
+    if (((i-1) > -1) && ((j-1) > -1) && ((i+2) < 19) && ((j+2) < 19)) {
+        if (board[i+1][j+1] == myColor) {
+            if ((board[i-1][j-1] == opponentColor) && (board[i+2][j+2] == opponentColor)) {
+                board[i+1][j+1] = 0;
+                board[i][j] = 0;
+
+               var x = i+1, y = j+1;
+               capturedAt[opponentColor]
+                         [numCaptures[opponentColor]] = (currentMove - 1);
+               capturedMoves[opponentColor]
+                            [numCaptures[opponentColor]] = x + y * 19;
+               // don't display captures if they go over the limit
+               if (numCaptures[opponentColor] < 19) {
+                   var i1 = p[myColor] + "c" + numCaptures[opponentColor] + "";
+                   document[i1].src = moveCaptureImages[myColor - 1].src;
+               }
+               numCaptures[opponentColor]++;
+
+               if (!internal) {
+                   clearMove(getStrMove(x + y * 19));
+               }
+
+                poofed = true;
+            }
+        }
+    }
+    if (((j+2) < 19) && ((j-1) > -1)) {
+        if (board[i][j+1] == myColor) {
+            if ((board[i][j-1] == opponentColor) && (board[i][j+2] == opponentColor)) {
+                board[i][j+1] = 0;
+                board[i][j] = 0;
+
+               var x = i, y = j+1;
+               capturedAt[opponentColor]
+                         [numCaptures[opponentColor]] = (currentMove - 1);
+               capturedMoves[opponentColor]
+                            [numCaptures[opponentColor]] = x + y * 19;
+               // don't display captures if they go over the limit
+               if (numCaptures[opponentColor] < 19) {
+                   var i1 = p[myColor] + "c" + numCaptures[opponentColor] + "";
+                   document[i1].src = moveCaptureImages[myColor - 1].src;
+               }
+               numCaptures[opponentColor]++;
+
+               if (!internal) {
+                   clearMove(getStrMove(x + y * 19));
+               }
+
+                poofed = true;
+            }
+        }
+    }
+    if (((i-2) > -1) && ((j-1) > -1) && ((i+1) < 19) && ((j+2) < 19)) {
+        if (board[i-1][j+1] == myColor) {
+            if ((board[i+1][j-1] == opponentColor) && (board[i-2][j+2] == opponentColor)) {
+                board[i-1][j+1] = 0;
+                board[i][j] = 0;
+
+               var x = i-1, y = j+1;
+               capturedAt[opponentColor]
+                         [numCaptures[opponentColor]] = (currentMove - 1);
+               capturedMoves[opponentColor]
+                            [numCaptures[opponentColor]] = x + y * 19;
+               // don't display captures if they go over the limit
+               if (numCaptures[opponentColor] < 19) {
+                   var i1 = p[myColor] + "c" + numCaptures[opponentColor] + "";
+                   document[i1].src = moveCaptureImages[myColor - 1].src;
+               }
+               numCaptures[opponentColor]++;
+
+               if (!internal) {
+                   clearMove(getStrMove(x + y * 19));
+               }
+
+                poofed = true;
+            }
+        }
+    }
+    
+    if (poofed) {
+               capturedAt[opponentColor]
+                         [numCaptures[opponentColor]] = (currentMove - 1);
+               capturedMoves[opponentColor]
+                            [numCaptures[opponentColor]] = i + j * 19;
+               // don't display captures if they go over the limit
+               if (numCaptures[opponentColor] < 19) {
+                   var i2 = p[myColor] + "c" + numCaptures[opponentColor] + "";
+                   document[i2].src = moveCaptureImages[myColor - 1].src;
+               }
+
+               numCaptures[opponentColor]++;
+               if (!internal) {
+                   clearMove(getStrMove(i + j * 19));
+               }
+    }
+}
+
 
 function getIntMove(move) {
 
@@ -493,6 +762,10 @@ function forwardMove() {
         var x = intMove % 19;
         var y = parseInt(intMove / 19);
         board[x][y] = currentPlayer + 1;
+
+        if (isPoofPente(game)) {
+            detectPoof(intMove, false);
+        }
 
         if (gameHasCaptures()) {
             removeCaptures(intMove, false);

@@ -368,7 +368,7 @@ window.google_analytics_uacct = "UA-20529582-2";
 
           <li>16th Anniversary World Champion <a href="/gameServer/tournaments/statusRound.jsp?eid=1184&round=5">tournament</a> - 2015. Round 5 has started! 
           The <a href="/gameServer/forums/forum.jspa?forumID=35&start=0">tournament forum</a> is now opened. </li>
-          <li>Round 4: <a href="/gameServer/tournaments/statusRound.jsp?eid=1304&round=4">Summer Renaissance </a></li>
+          <li>Round 5: <a href="/gameServer/tournaments/statusRound.jsp?eid=1304&round=5">Summer Renaissance </a></li>
           <li>Round 6: <a href="/gameServer/tournaments/statusRound.jsp?eid=1281&round=6">Pente Masters</a></li>
 
 
