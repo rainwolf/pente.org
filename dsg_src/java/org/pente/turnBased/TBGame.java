@@ -37,6 +37,8 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 	
 	private int daysPerMove;
 	private boolean rated;
+	
+	private boolean undoRequested;
 
 	private List<Integer> moves = new ArrayList<Integer>();
 	private List<TBMessage> messages = new ArrayList<TBMessage>();
@@ -144,7 +146,7 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 		return m;
 	}
 	public void undoMove() {
-		throw new UnsupportedOperationException("Not needed for TB games");
+		moves.remove(moves.size()-1);
 	}
 	public int getMove(int num) {
 		return moves.get(num);
@@ -162,20 +164,28 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 	}
 	public long getCurrentPlayer() {
 //TODO why couldn't i just instantiate a gridstate and use that?
+		int cp = 0;
 		if ((game == GridStateFactory.TB_DPENTE || game == GridStateFactory.TB_DKERYO) &&
 			dPenteState != DPENTE_STATE_DECIDED) {
-			if (dPenteState == DPENTE_STATE_START) return player1Pid;
-			else if (dPenteState == DPENTE_STATE_DECIDE) return player2Pid;
-			else return -1;
-		}  
-		else if (game == GridStateFactory.TB_CONNECT6) {
-	    	int cp = ((moves.size() + 1) / 2) % 2 + 1;
-			return cp == 1 ? player1Pid : player2Pid;
+			if (dPenteState == DPENTE_STATE_START) {
+				cp = 1;
+			}
+			else if (dPenteState == DPENTE_STATE_DECIDE) {
+				cp = 2;
+			} else {
+				cp = -1;
+			}
+		}  else if (game == GridStateFactory.TB_CONNECT6) {
+	    	cp = ((moves.size() + 1) / 2) % 2 + 1;
+		} else {
+			cp = moves.size() % 2 + 1;
 		}
-		else {
-			int cp = moves.size() % 2 + 1;
-			return cp == 1 ? player1Pid : player2Pid;
+		if (cp == 1) {
+			return player1Pid;
+		} else if (cp == 2) {
+			return player2Pid;
 		}
+		return -1;
 	}
 	public int getNumMoves() {
 		return moves.size();
@@ -305,8 +315,11 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 
 		lastMoveDate = new Date();
 	}
-	
-	
+
+	public boolean isUndoRequested() { return undoRequested; }
+	public void setUndoRequested(boolean undoRequested) { this.undoRequested = undoRequested; }
+
+
 	public int hashCode() {
 		return (int) gid;
 	}

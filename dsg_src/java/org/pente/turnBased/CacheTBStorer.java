@@ -166,6 +166,66 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 		}
 	}
 
+	public void undoLastMove(long gid, int numMoves) {
+		synchronized (cacheTbLock) {
+			TBGame tbGame = getGame(gid);
+			if (tbGame.isUndoRequested()) {
+				tbGame.setUndoRequested(false);
+				((MySQLTBGameStorer)baseStorer).undoLastMove(gid);
+			}
+			for (int i = 0; i < numMoves; i++) {
+				((MySQLTBGameStorer)baseStorer).undoLastMove(gid);
+				tbGame.undoMove();
+			}
+			long newTimeout = Utilities.calculateNewTimeout(
+					tbGame, dsgPlayerStorer);
+
+			tbGame.setTimeoutDate(new Date(newTimeout));
+
+			try {
+				baseStorer.updateGameAfterMove(tbGame);
+			} catch (TBStoreException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	public void declineUndo(long gid) {
+		synchronized (cacheTbLock) {
+			TBGame tbGame = getGame(gid);
+			if (tbGame.isUndoRequested()) {
+				tbGame.setUndoRequested(false);
+				((MySQLTBGameStorer)baseStorer).undoLastMove(gid);
+			}
+			long newTimeout = Utilities.calculateNewTimeout(
+					tbGame, dsgPlayerStorer);
+
+			tbGame.setTimeoutDate(new Date(newTimeout));
+
+			try {
+				baseStorer.updateGameAfterMove(tbGame);
+			} catch (TBStoreException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public void requestUndo(long gid) {
+		synchronized (cacheTbLock) {
+			TBGame tbGame = getGame(gid);
+			try {
+				((MySQLTBGameStorer)baseStorer).storeNewMove(gid, tbGame.getNumMoves(), -1);
+				tbGame.setUndoRequested(true);
+				long newTimeout = Utilities.calculateNewTimeout(
+						tbGame, dsgPlayerStorer);
+
+				tbGame.setTimeoutDate(new Date(newTimeout));
+
+				baseStorer.updateGameAfterMove(tbGame);
+			} catch (TBStoreException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 
 
 	public CacheTBStorer(TBGameStorer baseStorer, 

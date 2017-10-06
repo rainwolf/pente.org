@@ -265,7 +265,7 @@ function addMove(move) {
         highlightedMove = "";
 
         if (isPoofPente(game)) {
-            detectPoof(intMove, false);
+            detectPoofCapture(intMove, false);
         }
         if (gameHasCaptures()) {
             removeCaptures(intMove, false);
@@ -461,7 +461,7 @@ function putBackCaptures() {
     }
 }
 
-function detectPoof(intMove, internal) {
+function detectPoofCapture(intMove, internal) {
    var myColor = (currentMove - 1) % 2 + 1;
    var opponentColor = 3 - myColor;
    var i = intMove % 19;
@@ -764,7 +764,7 @@ function forwardMove() {
         board[x][y] = currentPlayer + 1;
 
         if (isPoofPente(game)) {
-            detectPoof(intMove, false);
+            detectPoofCapture(intMove, false);
         }
 
         if (gameHasCaptures()) {

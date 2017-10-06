@@ -106,9 +106,8 @@ captures to win remains at 10 stones. Note that more than 2 stones could be
 poofed in one move, specifically up to 5 at once! Also note that my current
 implementation performs the following actions in sequence after a move:
 <ol>
-  <li>Check if move captured any opponents stones, if so remove stones from the
-   board.
-  <li>Check if move creates a poof position, if so remove stones from the board.
+  <li>Check if the move captured any opponents stones and if it creates a poof 
+    position, if so, remove captured and poofed stones from the board.
   <li>Check if player has a 5-in-a-row, if so the player wins.
 </ol>
 There are some weird scenarios that can occur at the end of the game, for
