@@ -78,6 +78,12 @@ if (loggedInStr.equals(player1.getName()) || loggedInStr.equals(player2.getName(
             players += "2,";
         }
     }
+
+    if (tbGame.isUndoRequested()) {
+%>
+<%="undo=requested"%>
+<%        
+    }
 }
 if (!"".equals(messages)) {
 //    tmpMsgs = messages.substring(0, messages.length() - 1);

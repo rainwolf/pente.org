@@ -33,7 +33,7 @@ DSGPlayerData opponent = dsgPlayerStorer.loadPlayer(
 
 <tr>
  <td>
-  <h3>Cancel Set</h3>
+  <h3>Undo last move</h3>
  </td>
 </tr>
 
@@ -42,24 +42,17 @@ DSGPlayerData opponent = dsgPlayerStorer.loadPlayer(
 <tr>
  <td>
 
-   <form name="reply_cancel_form" method="post" 
-         action="<%= request.getContextPath() %>/gameServer/tb/cancel">
-     <input type="hidden" name="sid" value="<%= set.getSetId() %>">
+   <form name="reply_undo_form" method="post" 
+         action="<%= request.getContextPath() %>/gameServer/tb/game">
      <input type="hidden" name="gid" value="<%= game.getGid() %>">
      
-     <%= opponent.getName() %> is requesting that this set be cancelled.<br>
+     <%= opponent.getName() %> is requesting to <b>undo</b> his last move.<br>
      <br>
-     Message:
-    <% String message = "";
-       if (set.getCancelMsg() != null) {
-           message = filters.applyFilters(0, set.getCancelMsg());
-       } %>
-    <%= message %><br>
-  <br>
-    Do you want this set to be cancelled?<br>
+    Do you accept?
     <br>
-    <button type="submit" name="command" value="Yes" style="background-color:#4CAF50;color: white;font-size: 16px;padding: 5px 15px;"> accept </button>
-    <button type="submit" name="command" value="No" style="background-color:#f44336;color: white;font-size: 16px;padding: 5px 15px;"> decline </button>
+    <br>
+    <button type="submit" name="command" value="acceptUndo" style="background-color:#4CAF50;color: white;font-size: 16px;padding: 5px 15px;"> accept undo </button>
+    <button type="submit" name="command" value="declineUndo" style="background-color:#f44336;color: white;font-size: 16px;padding: 5px 15px;"> decline undo </button>
     <input type="hidden" name="mobileBrowser" value="">
 
    </form>
@@ -168,15 +161,9 @@ function changeCycle() {
     <br>
     <div id="messageBox" style="width:550px; height:auto; background: #cf9;"></div>
     <br>
-<% if (!"false".equals(myTurn)) { %>
-    Message:  <input type="text" id="message" size="256" style="width:500px;">
-    <br>
     <br>
 <label><input id="cycleCheck" name="cycleCheck" type="checkbox" onclick="changeCycle()" /> check this to cycle to the next game after submitting</label>
 <br>
-<%
-}
-%>
 
 
 </td>

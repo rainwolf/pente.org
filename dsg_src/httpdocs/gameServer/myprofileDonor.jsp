@@ -86,9 +86,9 @@ String changeProfileSuccess = (String) request.getAttribute("changeProfileSucces
     - You can change the color of your name in the live game room,<br>
     - You can upload a picture for your account,<br>
     - You can specify a note with your profile for other people to see,<br>
-    <!-- - You get to play unlimited turn-based games, <br> -->
     - Participate in more than 1 (King of the) Hill at a time!<br>
     - Play King of the Hill without limits!<br>
+    - Request undo in turn-based games!<br>
     - Remove limits on followers!<br>
     - Broadcast alers to followers or friends!<br>
     - Get acccess to the database, and/or, <br>

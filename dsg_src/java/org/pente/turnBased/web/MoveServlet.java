@@ -20,11 +20,12 @@ public class MoveServlet extends HttpServlet {
 	private static final Category log4j = Category.getInstance(
 		MoveServlet.class.getName());
 
-	private static final String gamePage = "/gameServer/tb/game.jsp";
+	private static final String gamePage = "/gameServer/tb/mobileGame.jsp";
 	private static final String mobileGamePage = "/gameServer/tb/mobileGame.jsp";
 	private static final String errorRedirectPage = "/gameServer/tb/error.jsp";
 	private static final String moveRedirectPage = "/gameServer/index.jsp";
 	private static final String cancelRedirectPage = "/gameServer/tb/cancelReply.jsp";
+	private static final String undoRedirectPage = "/gameServer/tb/undoReply.jsp";
 	private static final String mobileRedirectPage = "/gameServer/mobile/empty.jsp";
     
 	private Resources resources;
@@ -106,7 +107,7 @@ public class MoveServlet extends HttpServlet {
 			}
 
 			request.setAttribute("game", game);
-		
+
 			try {
 				DSGPlayerData p1 = dsgPlayerStorer.loadPlayer(game.getPlayer1Pid());
 				DSGPlayerData p2 = dsgPlayerStorer.loadPlayer(game.getPlayer2Pid());
@@ -147,7 +148,9 @@ public class MoveServlet extends HttpServlet {
                 // and the requestor is not this player
                 if (set.getCancelPid() != 0 && 
                     game.getState() == TBGame.STATE_ACTIVE &&
-                    set.getCancelPid() != playerData.getPlayerID()) {
+                    set.getCancelPid() != playerData.getPlayerID() &&
+						(playerData.getPlayerID() == game.getPlayer1Pid() ||
+								playerData.getPlayerID() == game.getPlayer2Pid())) {
                     log4j.debug("forward to cancel reply page");
 
                     request.setAttribute("set", set);
@@ -156,7 +159,18 @@ public class MoveServlet extends HttpServlet {
                     return;
                 }
                 
-                // if player prefers to make moves attached or not
+                if (game.isUndoRequested() && game.getState() == TBGame.STATE_ACTIVE &&
+						(playerData.getPlayerID() == game.getCurrentPlayer())) {
+					log4j.debug("forward to undo reply page");
+
+					request.setAttribute("set", set);
+					getServletContext().getRequestDispatcher(undoRedirectPage).forward(
+							request, response);
+					return;
+				}
+
+
+				// if player prefers to make moves attached or not
 				List prefs = dsgPlayerStorer.loadPlayerPreferences(
 					playerData.getPlayerID());
             	for (Iterator it = prefs.iterator(); it.hasNext();) {
@@ -179,8 +193,74 @@ public class MoveServlet extends HttpServlet {
 		       }
 		       	log4j.debug("done forwarding");
 		       	return;
-			}
-			else if (command.equals("move")) {
+			} else if (command.equals("requestUndo")) {
+				DSGPlayerData plr = dsgPlayerStorer.loadPlayer(game.getOpponent(game.getCurrentPlayer()));
+				if (plr.hasPlayerDonated()) {
+					if ((game.getGame() == GridStateFactory.TB_DPENTE || game.getGame() == GridStateFactory.TB_DKERYO) && game.getNumMoves() < 5) {
+						log4j.error("MoveServlet, undo request for d-pente or dk-pente opening");
+						handleError(request, response,
+								"Undo requests are not available for opening moves.");
+						return;
+					} else if (game.getNumMoves() == 1) {
+						log4j.error("MoveServlet, undo request no move");
+						handleError(request, response,
+								"Undo requests are possible after the 1st move is played.");
+						return;
+					}
+					((CacheTBStorer) tbGameStorer).requestUndo(gid);
+				} else {
+					log4j.error("MoveServlet, undo request for non-subscriber ");
+					handleError(request, response,
+							"Undo requests are available to subscribers only.");
+					return;
+				}
+				log4j.debug("forward to game page");
+				String isMobile = (String) request.getParameter("mobile");
+				if (isMobile == null) {
+					response.sendRedirect(moveRedirectPage);
+				} else {
+					response.sendRedirect(mobileRedirectPage);
+				}
+				log4j.debug("done forwarding");
+				return;
+			} else if (command.equals("acceptUndo")) {
+				if (game.getNumMoves() > 1 || ((game.getGame() == GridStateFactory.TB_DPENTE || game.getGame() == GridStateFactory.TB_DKERYO) && game.getNumMoves() > 4)) {
+					int numMoves = 1;
+					if (game.getGame() == GridStateFactory.TB_CONNECT6) {
+						numMoves += 1;
+					}
+					((CacheTBStorer) tbGameStorer).undoLastMove(gid, numMoves);
+				}
+
+				log4j.debug("forward to game page");
+				String isMobile = (String) request.getParameter("mobile");
+				if (isMobile == null) {
+					response.sendRedirect(moveRedirectPage);
+				} else {
+					response.sendRedirect(mobileRedirectPage);
+				}
+				log4j.debug("done forwarding");
+				return;
+			} else if (command.equals("declineUndo")) {
+				((CacheTBStorer) tbGameStorer).declineUndo(gid);
+
+				if (game.getState() == TBGame.STATE_ACTIVE &&
+						game.getCurrentPlayer() == playerData.getPlayerID()) {
+					request.setAttribute("myTurn", "true");
+				}
+				
+				log4j.debug("forward to game page");
+				String isMobile = (String) request.getParameter("mobile");
+				if (isMobile == null) {
+					getServletContext().getRequestDispatcher(gamePage).forward(
+							request, response);
+				} else {
+					getServletContext().getRequestDispatcher(mobileGamePage).forward(
+							request, response);
+				}
+				log4j.debug("done forwarding");
+				return;
+			} else if (command.equals("move")) {
 				
 // log4j.debug("************current player initial pid " + game.getCurrentPlayer());
 
@@ -346,7 +426,7 @@ public class MoveServlet extends HttpServlet {
 					notificationServer.sendMoveNotification(playerData.getName(), game.getCurrentPlayer(), game.getGid(), GridStateFactory.getGameName(game.getGame()));
 				}
 
-
+				game.setUndoRequested(false);
 
 				//redirect to somewhere
 				String isMobile = (String) request.getParameter("mobile");

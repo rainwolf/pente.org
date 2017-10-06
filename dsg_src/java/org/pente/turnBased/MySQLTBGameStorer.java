@@ -346,6 +346,34 @@ public class MySQLTBGameStorer implements TBGameStorer {
 		return set;
 	}
 	
+	public void undoLastMove(long gid) {
+
+		log4j.debug("MySQLGameTbStorer.undoLastMove(" + gid + ")");
+
+		Connection con = null;
+		PreparedStatement stmt = null;
+
+		try {
+			con = dbHandler.getConnection();
+
+			stmt = con.prepareStatement(
+					"DELETE FROM tb_move WHERE gid = ? and move_num = (SELECT maxmove FROM ( SELECT MAX(move_num) AS maxmove FROM tb_move where gid = ?) AS tmp)");
+			stmt.setLong(1, gid);
+			stmt.setLong(2, gid);
+
+			stmt.executeUpdate();
+
+		} catch (SQLException se) {
+//			throw new TBStoreException(se);
+		} finally {
+			if (stmt != null) {
+				try { stmt.close(); } catch (SQLException se) {}
+			}
+			if (con != null) {
+				try { dbHandler.freeConnection(con); } catch (SQLException se) {}
+			}
+		}
+	}
 	
 	private static final String TB_SET_COLUMNS = 
 		"s.sid, s.p1_pid, s.p2_pid, s.state, s.creation_date, " +
@@ -438,7 +466,12 @@ public class MySQLTBGameStorer implements TBGameStorer {
 			result = stmt.executeQuery();
 			List<Integer> moves = new ArrayList<Integer>();
 			while (result.next()) {
-				moves.add(result.getInt(1));
+				int move = result.getInt(1);
+				if (move == -1) {
+					game.setUndoRequested(true);
+				} else {
+					moves.add(move);
+				}
 			}
 			game.setMoves(moves);
 			
@@ -497,7 +530,7 @@ public class MySQLTBGameStorer implements TBGameStorer {
 			stmt = con.prepareStatement(
 				"insert into tb_message" +
 				"(gid, pid, seq_nbr, message, move_num, date) " +
-				"values(?, ?, ?, ?, ?, ?)");
+				"values(?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE message=VALUES(message)");
 			stmt.setLong(1, gid);
 			stmt.setLong(2, message.getPid());
 			stmt.setInt(3, message.getSeqNbr());
@@ -774,7 +807,7 @@ public class MySQLTBGameStorer implements TBGameStorer {
 	        stmt = con.prepareStatement(
 				"insert into tb_move " +
 				"(gid, move_num, move) " +
-				"values(?, ?, ?)");
+				"values(?, ?, ?) ON DUPLICATE KEY UPDATE move=VALUES(move)");
 			stmt.setLong(1, gid);
 			stmt.setInt(2, moveNum);
 			stmt.setInt(3, move);
