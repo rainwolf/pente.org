@@ -1963,7 +1963,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                 stmt = con.prepareStatement(
                         "select * " +
                                 "from dsg_subscribers " +
-                                "where transaction_id = ?");
+                                "where transactionid = ?");
                 stmt.setString(1, transactionId);
                 result = stmt.executeQuery();
 
