@@ -48,7 +48,7 @@ to</p>
 </pre>
 Where <strong>r1</strong> and <strong>r2</strong> are the same as defined above.<br>
 <strong>w</strong> is 1 for a win and -1 for a loss.<br>
-<strong>e</strong> is 0 if your opponent is established, otherwise it equals w.<br>
+<strong>e</strong> is 0 if your opponent is provisional, otherwise it equals w.<br>
 Then that value is incorporated into your new provisional rating by the following formula.<br>
 <pre>
     <strong><font face="Verdana, Arial, Helvetica, sans-serif" size="2">

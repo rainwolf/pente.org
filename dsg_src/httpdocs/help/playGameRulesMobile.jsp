@@ -101,7 +101,7 @@ captures to win remains at 10 stones. Note that more than 2 stones could be
 poofed in one move, specifically up to 5 at once! Also note that my current
 implementation performs the following actions in sequence after a move:
 <ol>
-  <li>Check if the move captured any opponents stones and if it creates a poof 
+  <li>Simultaneously check if the move captured any opponents stones and if it creates a poof 
     position, if so, remove captured and poofed stones from the board.
   <li>Check if player has a 5-in-a-row, if so the player wins.
 </ol>
@@ -110,6 +110,9 @@ example a player could capture and be poofed in the same move and the capture
 count could end up as 10-10. My current implementation keeps the game going in
 this case until one player has an advantage (i.e., gets more captured stones
 or gets five-in-a-row). There are no draws right now in Poof-Pente.<br>
+<center><img src="../gameServer/images/poofExample.png"></center>
+For example, when black plays into the opening of the line of stones, the 2 white stones on the right will becaptured, and poof the 2 black stones on the left will be poofed.
+<br>
 <br>
 <a name="boat-pente"><u>Boat-Pente</u></a><br>
 Boat-Pente is a variation of Pente proposed to Pente.org by player zoeyk.  Also known
@@ -122,7 +125,7 @@ Once a Pente is made (5 stones in a row), the game can continue as long as the
 opponent is able to capture across the Pente!  So in the example game below
 white hasn't won yet because black can capture on the next turn, removing the
 Pente.  If after black moves the Pente is still in place then white wins.<br>
-<center><img src="../gameServer/images/boat_pente_ex1.jpg"></center>
+<center><img src="../gameServer/images/boat_pente_ex1.jpg"></center> 
 <br>
 <br>
 Capturing 5 pairs is still a win like in Pente and the tournament rule is used
