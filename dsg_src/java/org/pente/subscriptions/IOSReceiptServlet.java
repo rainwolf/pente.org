@@ -87,7 +87,7 @@ public class IOSReceiptServlet extends HttpServlet {
                 stmt.setLong(1, subscriberPid);
                 stmt.setTimestamp(2, new Timestamp(startDate.getTime()));
                 stmt.setString(3, receiptDataStr);
-                log4j.info("PaypalIIOSReceiptServletPNListenerServlet: before executeUpdate of insert");
+                log4j.info("IOSReceiptServlet: before executeUpdate of insert");
                 int worked = stmt.executeUpdate();
                 stmt.close();
 
@@ -160,6 +160,7 @@ public class IOSReceiptServlet extends HttpServlet {
         }
 
         private boolean checkReceipt(String receiptDataStr, String sharedSecret, boolean production) {
+            String lines = "";
             // sandbox URL
             try {
                 String SANDBOX_URL = "https://sandbox.itunes.apple.com/verifyReceipt";
@@ -181,14 +182,12 @@ public class IOSReceiptServlet extends HttpServlet {
 
                 // obtain the response
                 final BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                String lines = "";
                 String line;
                 while ((line = rd.readLine()) != null) {
                     lines += line + "\n";
                 }
                 wr.close();
                 rd.close();
-//                log4j.info("IOSReceiptServlet: received response: " + lines);
 
                 JSONObject json =  new JSONObject(lines);
 
@@ -215,6 +214,8 @@ public class IOSReceiptServlet extends HttpServlet {
                 e.printStackTrace();
                 return false;
             } catch (JSONException e) {
+                log4j.info("IOSReceiptServlet: JSONException during verification: " + e);
+                log4j.info("IOSReceiptServlet: received response: " + lines);
                 e.printStackTrace();
                 return false;
             }
@@ -242,6 +243,7 @@ public class IOSReceiptServlet extends HttpServlet {
                 } else if (json.has("latest_expired_receipt_info")) {
                     jsonArray = json.getJSONArray("latest_expired_receipt_info");
                 } else {
+                    log4j.info("IOSReceiptServlet: getStartDate: Returned data: " + json.toString());
                     return false;
                 }
 
@@ -259,6 +261,7 @@ public class IOSReceiptServlet extends HttpServlet {
                 if (transactionId != null) {
                     return true;
                 } else {
+                    log4j.info("IOSReceiptServlet: getStartDate: Returned data: " + json.toString());
                     return false;
                 }
             } catch (JSONException e) {

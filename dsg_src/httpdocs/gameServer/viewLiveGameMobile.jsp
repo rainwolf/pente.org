@@ -293,6 +293,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
    <%=game.getEvent()%>
    </td>
 </tr>
+<% if ("Pente.org".equals(game.getShortSite())) { %>
 <tr>
    <td width="30%">Player 1
    </td>
@@ -315,6 +316,23 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                <img src="/gameServer/images/<%= SimpleDSGPlayerGameData.getRatingsGifRatingOnly(playerData.getRating()) %>">
    </td>
 </tr>
+<% } else { %>
+<tr>
+   <td width="30%">Player 1
+   </td>
+   <td>
+     <%= game.getPlayer1Data().getUserIDName() %> 
+   </td>
+</tr>
+<tr>
+   <td>Player 2
+   </td>
+   <td>
+     <%= game.getPlayer2Data().getUserIDName() %> 
+   </td>
+</tr>
+  
+<% } %>
 
 <% if (game.getGame().endsWith("D-Pente") || game.getGame().endsWith("DK-Pente")) { %>
 <tr>

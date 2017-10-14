@@ -73,10 +73,10 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         this.ctx = ctx;
         checkiOSSubscribersTimer = new Timer();
         checkiOSSubscribersTimer.scheduleAtFixedRate(
-                new CheckiOSSubscribersRunnable(), 10000, 24L * 3600 * 1000);
+                new CheckiOSSubscribersRunnable(), 10000, 6L * 3600 * 1000);
         checkSubscribersTimer = new Timer();
         checkSubscribersTimer.scheduleAtFixedRate(
-                new CheckSubscriptionsRunnable(), 10000, 24L * 3600 * 1000);
+                new CheckSubscriptionsRunnable(), 1000000, 24L * 3600 * 1000);
     }
 
     public synchronized void addPlayerDataChangeListener(
