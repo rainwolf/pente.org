@@ -256,7 +256,7 @@ function changeCycle() {
   %>
   <b>Undo requested</b>
   <%
-} else if ((game.getPlayer1Pid() == meData.getPlayerID() || game.getPlayer2Pid() == meData.getPlayerID()) && meData.hasPlayerDonated()) {
+} else if ((game.getPlayer1Pid() == meData.getPlayerID() || game.getPlayer2Pid() == meData.getPlayerID()) && meData.hasPlayerDonated() && game.getState() == TBGame.STATE_ACTIVE) {
   %>
       <a class="boldbuttons" href="javascript:requestUndo();" 
          style="margin-right:5px;"><span>Request undo</span></a>
@@ -1199,8 +1199,8 @@ function touchEnd(evt) {
                 }
             }
             function resign () {
-                // window.open("http://development.pente.org/gameServer/tb/resign?command=resign&gid="+<%=game.getGid()%>,"_self");
-                window.open("/gameServer/tb/resign?command=resign&gid="+<%=game.getGid()%>,"_self");
+                // window.open("http://development.pente.org/gameServer/tb/resign?command=confirm&gid="+<%=game.getGid()%>,"_self");
+                window.open("/gameServer/tb/resign?command=confirm&gid="+<%=game.getGid()%>,"_self");
             }
             function requestCancel () {
                 // window.open("http://development.pente.org/gameServer/tb/cancel?command=request&sid="+<%= set.getSetId() %>+"&message="+encodeURIComponent(document.getElementById('message').value),"_self");

@@ -214,6 +214,12 @@ public class MoveServlet extends HttpServlet {
 							"Undo requests are available to subscribers only.");
 					return;
 				}
+				if (game.getOpponent(game.getCurrentPlayer()) != playerData.getPlayerID()) {
+					log4j.error("MoveServlet, out-of-turn undo request");
+					handleError(request, response,
+							"Undo requests are available when it's not your turn.");
+					return;
+				}
 				log4j.debug("forward to game page");
 				String isMobile = (String) request.getParameter("mobile");
 				if (isMobile == null) {
@@ -224,6 +230,18 @@ public class MoveServlet extends HttpServlet {
 				log4j.debug("done forwarding");
 				return;
 			} else if (command.equals("acceptUndo")) {
+				if (game.getCurrentPlayer() != playerData.getPlayerID()) {
+					log4j.error("MoveServlet, out-of-turn undo accept");
+					handleError(request, response,
+							"Undo accept is available when it's your turn.");
+					return;
+				}
+				if (!game.isUndoRequested()) {
+					log4j.error("MoveServlet, no undo request exists");
+					handleError(request, response,
+							"No undo request exists.");
+					return;
+				}
 				if (game.getNumMoves() > 1 || ((game.getGame() == GridStateFactory.TB_DPENTE || game.getGame() == GridStateFactory.TB_DKERYO) && game.getNumMoves() > 4)) {
 					int numMoves = 1;
 					if (game.getGame() == GridStateFactory.TB_CONNECT6) {
@@ -242,6 +260,18 @@ public class MoveServlet extends HttpServlet {
 				log4j.debug("done forwarding");
 				return;
 			} else if (command.equals("declineUndo")) {
+				if (game.getCurrentPlayer() != playerData.getPlayerID()) {
+					log4j.error("MoveServlet, out-of-turn undo decline");
+					handleError(request, response,
+							"Undo decline is available when it's your turn.");
+					return;
+				}
+				if (!game.isUndoRequested()) {
+					log4j.error("MoveServlet, no undo request exists");
+					handleError(request, response,
+							"No undo request exists.");
+					return;
+				}
 				((CacheTBStorer) tbGameStorer).declineUndo(gid);
 
 				if (game.getState() == TBGame.STATE_ACTIVE &&
