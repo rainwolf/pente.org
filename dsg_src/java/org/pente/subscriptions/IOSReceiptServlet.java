@@ -68,6 +68,9 @@ public class IOSReceiptServlet extends HttpServlet {
 
         if (!checkReceipt(receiptDataStr, iOSSharedSecret, true)) {
             log4j.info("IOSReceiptServlet: error: Receipt not valid");
+            response.setContentType("text/html");
+            PrintWriter out = response.getWriter();
+            out.println("invalid receipt");
             return;
         }
 

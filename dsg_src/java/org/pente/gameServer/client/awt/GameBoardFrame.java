@@ -1027,6 +1027,10 @@ public class GameBoardFrame extends Frame implements TableComponent,
                     game == GridStateFactory.DKERYO || game == GridStateFactory.SPEED_DKERYO)) {
                 chatArea.newSystemMessage("place the first four stones, then " +
                         "your opponent will get a chance to swap seats");
+                gameBoard.getGridBoard().setThinkingPiecePlayer(gameBoard.getGridState().getCurrentColor());
+                if (timed) {
+                    playerGameTimers[1].go();
+                }
             }
 
         }
