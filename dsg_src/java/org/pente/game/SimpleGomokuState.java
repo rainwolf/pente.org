@@ -101,6 +101,10 @@ public class SimpleGomokuState extends GridStateDecorator
      *  @return boolean True if game is over
      */
     public boolean isGameOver() {
+        
+        if (getNumMoves() == 0) {
+            return false;
+        }
 
         int lines[] = new int[4];
         int lastMove = getMove(getNumMoves() - 1);

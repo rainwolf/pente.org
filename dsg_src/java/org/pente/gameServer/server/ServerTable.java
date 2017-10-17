@@ -363,6 +363,9 @@ public class ServerTable {
 			for (int i = 0; i < playersInTable.size(); i++) {
 	            DSGPlayerData d = ((DSGPlayerData) playersInTable.elementAt(i));
 	            DSGIgnoreData ig = null;
+	            if (d == null || actor == null) {
+	            	continue;
+				}
 	            try {
 	            	ig = dsgPlayerStorer.getIgnoreData(d.getPlayerID(), actor.getPlayerID());
 	            } catch (DSGPlayerStoreException dpse) {
@@ -1318,7 +1321,12 @@ public class ServerTable {
         gameStarted = true;
         
         // handle 1st move
-        handleMove(playingPlayers[1].getName(), 180);
+		if (game != GridStateFactory.DPENTE_GAME && game != GridStateFactory.SPEED_DPENTE_GAME && 
+				game != GridStateFactory.DKERYO_GAME && game != GridStateFactory.SPEED_DKERYO_GAME) {
+			handleMove(playingPlayers[1].getName(), 180);
+		} else if (timed) {
+			timers[gridState.getCurrentPlayer()].go();
+		}
     }
 
 	private int getGameInSet() {
@@ -1466,12 +1474,12 @@ public class ServerTable {
 					}
 					// if playing d-pente, start timer for p1 after 1st move
 					// because it is still p1's turn
-					else if ((game == GridStateFactory.DPENTE_GAME ||
-                              game == GridStateFactory.SPEED_DPENTE_GAME ||
-					game == GridStateFactory.DKERYO_GAME || game == GridStateFactory.SPEED_DKERYO_GAME) &&
-                             gridState.getNumMoves() == 1) {
-						timers[newCurrentPlayer].go();
-					}
+//					else if ((game == GridStateFactory.DPENTE_GAME ||
+//                              game == GridStateFactory.SPEED_DPENTE_GAME ||
+//					game == GridStateFactory.DKERYO_GAME || game == GridStateFactory.SPEED_DKERYO_GAME) &&
+//                             gridState.getNumMoves() == 0) {
+//						timers[newCurrentPlayer].go();
+//					}
 				}
 			}
 		}
@@ -2231,8 +2239,8 @@ public class ServerTable {
             else {
                 if (timers[seat].getMinutes() <= 0 &&
                     timers[seat].getSeconds() <= 0) {
-                    
-                	gameOver(false, playingPlayers[3 - seat].getName(),
+
+					gameOver(false, playingPlayers[3 - seat].getName(),
                 		timeUpEvent.getPlayer(), false, true, false);
                 }
                 else {

@@ -58,6 +58,9 @@ String players = ""; //indicates which seat made message
 for (int i = 0; i < game.getNumMoves(); i++) {
     moves += game.getMove(i) + ",";
 }
+if (moves.length() == 0) {
+  moves = ",";
+}
 // if (loggedInStr.equals("rainwolf") || loggedInStr.equals(p1.getName()) || loggedInStr.equals(p2.getName())) {
 if (loggedInStr.equals(p1.getName()) || loggedInStr.equals(p2.getName())) {
   for (TBMessage m : game.getMessages()) {
@@ -256,7 +259,7 @@ function changeCycle() {
   %>
   <b>Undo requested</b>
   <%
-} else if ((game.getPlayer1Pid() == meData.getPlayerID() || game.getPlayer2Pid() == meData.getPlayerID()) && meData.hasPlayerDonated() && game.getState() == TBGame.STATE_ACTIVE) {
+} else if ((game.getPlayer1Pid() == meData.getPlayerID() || game.getPlayer2Pid() == meData.getPlayerID()) && meData.hasPlayerDonated() && game.getState() == TBGame.STATE_ACTIVE && (game.getDPenteState() != 2)) {
   %>
       <a class="boldbuttons" href="javascript:requestUndo();" 
          style="margin-right:5px;"><span>Request undo</span></a>
@@ -514,6 +517,7 @@ window.google_analytics_uacct = "UA-20529582-2";
         var dPenteMove1 = -1;
         var dPenteMove2 = -1;
         var dPenteMove3 = -1;
+        var dPenteMove4 = -1;
         var dPenteChoice = <%= game.getDPenteState() == 2 %>;
         var dPenteSwap = <%= game.didDPenteSwap()%>;
 
@@ -696,16 +700,18 @@ function touchEnd(evt) {
                 c6Move1 = playedMove;
             }
         }
-        if ((game == 57 || game == 67) && moves.length == 1) {
+        if ((game == 57 || game == 67) && moves.length == 0) {
             if (dPenteMove1 == -1) {
                 dPenteMove1 = playedMove;
             } else if (dPenteMove2 == -1) {
                 newMoves.push(dPenteMove1);
                 dPenteMove2 = playedMove;
-            } else {
-                newMoves.push(dPenteMove1);
+            } else if (dPenteMove3 == -1) {
                 newMoves.push(dPenteMove2);
                 dPenteMove3 = playedMove;
+            } else {
+                newMoves.push(dPenteMove3);
+                dPenteMove4 = playedMove;
             }
         } 
         newMoves.push(playedMove);
@@ -729,6 +735,7 @@ function touchEnd(evt) {
         dPenteMove1 = -1;
         dPenteMove2 = -1;
         dPenteMove3 = -1;
+        dPenteMove4 = -1;
 
         resetAbstractBoard(abstractBoard);
         drawUntilMove = moves.length;
@@ -754,7 +761,7 @@ function touchEnd(evt) {
   } else {
     playedMove = -1;
     c6Move2 = -1;
-    dPenteMove3 = -1;
+    dPenteMove4 = -1;
     if (game == 63 && moves.length > 1) {
         selectMove(drawUntilMove - 2);
     } else {
@@ -793,9 +800,9 @@ function touchEnd(evt) {
                         }
                         document.getElementById("movesTable").scrollTop = document.getElementById("movesTable").scrollHeight;
                     }
-                    if (abstractBoard[i][j] == 0 && active == true) {
+                    playedMove = j*19+i;
+                    if (abstractBoard[i][j] == 0 && active == true && playedMove != dPenteMove1 && playedMove != dPenteMove2 && playedMove != dPenteMove3 && playedMove != dPenteMove4) {
                         var newMoves = moves.slice(0);
-                        playedMove = j*19+i;
                         if (game == 63) {
                             if (c6Move1 > -1) {
                                 newMoves.push(c6Move1);
@@ -804,16 +811,21 @@ function touchEnd(evt) {
                                 c6Move1 = playedMove;
                             }
                         }
-                        if ((game == 57 || game == 67) && moves.length == 1) {
+                        if ((game == 57 || game == 67) && moves.length == 0) {
                             if (dPenteMove1 == -1) {
                                 dPenteMove1 = playedMove;
                             } else if (dPenteMove2 == -1) {
                                 newMoves.push(dPenteMove1);
                                 dPenteMove2 = playedMove;
-                            } else {
+                            } else if (dPenteMove3 == -1) {
                                 newMoves.push(dPenteMove1);
                                 newMoves.push(dPenteMove2);
                                 dPenteMove3 = playedMove;
+                            } else {
+                                newMoves.push(dPenteMove1);
+                                newMoves.push(dPenteMove2);
+                                newMoves.push(dPenteMove3);
+                                dPenteMove4 = playedMove;
                             }
                         } 
                         newMoves.push(playedMove);
@@ -837,6 +849,7 @@ function touchEnd(evt) {
                         dPenteMove1 = -1;
                         dPenteMove2 = -1;
                         dPenteMove3 = -1;
+                        dPenteMove4 = -1;
                         if (game == 63 && moves.length > 1) {
                             selectMove(drawUntilMove - 2);
                         } else {
@@ -1110,8 +1123,9 @@ function touchEnd(evt) {
                         c6Move1 = -1;
                         c6Move2 = -1;
                     }
-                    if ((game == 57 || game == 67) && moves.length == 1) {
+                    if ((game == 57 || game == 67) && moves.length == 0) {
                         drawUntilMove = 2;
+                        dPenteMove4 = -1;
                         dPenteMove3 = -1;
                         dPenteMove2 = -1;
                         dPenteMove1 = -1;
@@ -1167,11 +1181,11 @@ function touchEnd(evt) {
                     } else {
                         alert("Invalid Connect6 moves detected, please (reload and) try again");
                     }
-                } else if ((game == 57 || game == 67) && moves.length == 1 && (dPenteMove1 == -1 || dPenteMove2 == -1 || dPenteMove3 == -1)) {
-                    alert("You have to place 3 stones for D-Pente");
-                } else if ((game == 57 || game == 67) && moves.length == 1) {
+                } else if ((game == 57 || game == 67) && moves.length == 0 && (dPenteMove1 == -1 || dPenteMove2 == -1 || dPenteMove3 == -1 || dPenteMove4 == -1)) {
+                    alert("You have to place 4 stones for D-Pente");
+                } else if ((game == 57 || game == 67) && moves.length == 0) {
                   if ((dPenteMove1 != dPenteMove2) && (dPenteMove2 != dPenteMove3) && (dPenteMove3 != dPenteMove1)) {
-                    window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+"&moves="+dPenteMove1 + "," + dPenteMove2 + "," + dPenteMove3 +"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
+                    window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+"&moves="+dPenteMove1 + "," + dPenteMove2 + "," + dPenteMove3 + "," + dPenteMove4 +"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
                     // window.open("http://development.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+"&moves="+dPenteMove1 + "," + dPenteMove2 + "," + dPenteMove3 +"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
 
                   } else {

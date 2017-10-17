@@ -1059,7 +1059,9 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         if (set.getState() == TBSet.STATE_ACTIVE) {
             for (int i = 0; i < 2; i++) {
                 TBGame game = set.getGames()[i];
-				if (game == null) {
+				if (game == null || 
+						game.getGame() == GridStateFactory.TB_DPENTE || 
+						game.getGame() == GridStateFactory.TB_DKERYO) {
 					continue;
 				}
                 storeNewMove(game.getGid(), 0, 180);
@@ -1376,7 +1378,9 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 					continue;
 				}
 				game.acceptInvite(pid, set.getInviterPid());
-				game.addMove(180);
+				if (game.getGame() != GridStateFactory.TB_DPENTE && game.getGame() != GridStateFactory.TB_DKERYO) {
+					game.addMove(180);
+				}
 			}
 		}
 
@@ -1405,7 +1409,9 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 			if (game == null) {
 				continue;
 			}
-			baseStorer.storeNewMove(game.getGid(), 0, 180);
+			if (game.getGame() != GridStateFactory.TB_DPENTE && game.getGame() != GridStateFactory.TB_DKERYO) {
+				baseStorer.storeNewMove(game.getGid(), 0, 180);
+			}
 		}
 	}
 

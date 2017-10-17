@@ -346,33 +346,32 @@ public class MoveServlet extends HttpServlet {
 
 					log4j.debug("MoveServlet, handle dpente move");
 					if (game.getDPenteState() == TBGame.DPENTE_STATE_START) {
-						if (moves.length != 3) {
+						if (moves.length != 4) {
 							log4j.error("MoveServlet, dpente game start, " +
-								"expected 3 moves.");
-							handleError(request, response, "Invalid start of dpente.");
+								"expected 4 moves.");
+							handleError(request, response, "Expected 4 moves.");
 							return;
 						}
-						if (!(moves[0] != moves[1] && moves[2] != moves[1] && moves[0] != moves[2]) || 
-								(moves[0]==180 || moves[1]==180 || moves[2]==180) ||
+						if ((moves[0] == moves[1] || moves[0] == moves[2] || moves[0] == moves[3]
+								|| moves[2] == moves[1] || moves[1] == moves[3] || moves[2] == moves[3]) || 
 								(moves[0]<0 || moves[0]>360) ||
 								(moves[1]<0 || moves[1]>360) ||
+								(moves[3]<0 || moves[3]>360) ||
 								(moves[2]<0 || moves[2]>360) ) {
-							log4j.error("MoveServlet, dpente game start, " +
-									"expected 3 moves.");
-							handleError(request, response, "Invalid start of dpente.");
+							log4j.error("MoveServlet, d(keryo)pente game start, " +
+									"expected 4 different moves.");
+							handleError(request, response, "Expected 4 different moves to start d(keryo)pente.");
 							return;
 						}
-						log4j.debug("MoveServlet, handle dpente start");
+						log4j.debug("MoveServlet, handle d(keryo)pente start");
 						
 						tbGameStorer.updateDPenteState(game, TBGame.DPENTE_STATE_DECIDE);
 
-						for (int i = 0; i < 2; i++) {
+						for (int i = 0; i < moves.length; i++) {
 							tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(),
 								moves[i]);
 						}
-
-						tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(),
-							moves[2]);
+						
 						if (message != null) {
 							message.setMoveNum(4);
 							tbGameStorer.storeNewMessage(game.getGid(), message);

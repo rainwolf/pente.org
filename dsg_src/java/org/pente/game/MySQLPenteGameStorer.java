@@ -409,6 +409,25 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
                     " play_date, seconds_left) " +
                 	"values(?, ?, ?, ?, ?, ?, ?, ?, ?)");
                 stmt.setLong(1, data.getGameID());
+                
+                if (numMovesInDb == 0 && state.getNumMoves() > 0 && state.getMove(0) != 180) {
+                    stmt.setInt(2, -1);
+                    stmt.setInt(3, data.getMove(0));
+                    stmt.setLong(4, 0);
+                    stmt.setInt(5, 0);
+                    stmt.setInt(6, game);
+                    stmt.setInt(7, data.getWinner());
+                    stmt.setTimestamp(8, new Timestamp(data.getDate().getTime()));
+
+                    if (data.getTimed() && data.getMoveTimes() != null && 0 < data.getMoveTimes().size()) {
+                        stmt.setInt(9, data.getMoveTimes().get(0).getTotalSeconds());
+                    }
+                    else {
+                        stmt.setInt(9, 0);
+                    }
+
+                    stmt.executeUpdate();
+                }
                 for (int i = numMovesInDb; i < state.getNumMoves(); i++) {
                     stmt.setInt(2, i);
 					// last move sets next_move to 361
@@ -648,7 +667,7 @@ log4j.debug("select data complete");
                 gameData.setGame(GridStateFactory.getGameName(game));
 
 				log4j.debug("get moves");
-                moveStmt = con.prepareStatement("select next_move " +
+                moveStmt = con.prepareStatement("select next_move, move_num " +
                                                 "from " + MOVE_TABLE + " " +
                                                 "where gid = ? " +
                                                 "and next_move != 361 " +
@@ -656,7 +675,14 @@ log4j.debug("select data complete");
                 moveStmt.setLong(1, gameID);
 
                 moveResult = moveStmt.executeQuery();
-				gameData.addMove(180);//180 is always 1st move
+                if (moveResult.next()) {
+                    if (moveResult.getInt(2) == -1) {
+                        gameData.addMove(moveResult.getInt(1));
+                    } else {
+                        gameData.addMove(180); //180 is always 1st move, not anymore
+                        gameData.addMove(moveResult.getInt(1));
+                    }
+                }
                 while (moveResult.next()) {
                     gameData.addMove(moveResult.getInt(1));
                 }
