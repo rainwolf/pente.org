@@ -35,6 +35,8 @@ public interface TBGameStorer {
 		throws TBStoreException;
 	public void dPenteSwap(TBGame game, boolean swap)
 		throws TBStoreException;
+	public void restoreGame(long gid) throws TBStoreException;
+	public TBVacation getTBVacation(long pid);
 	
 	public void updateDaysOff(long pid, int weekend[]) throws TBStoreException;
 	

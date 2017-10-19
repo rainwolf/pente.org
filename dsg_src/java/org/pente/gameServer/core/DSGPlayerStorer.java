@@ -60,9 +60,9 @@ public interface DSGPlayerStorer {
     
     public List<java.util.Date> loadVacationDays(long playerID) throws DSGPlayerStoreException;
     public void storeVacationDays(long playerID, List<Date> vacationDays) throws DSGPlayerStoreException;
-    public int loadFloatingVacationDays(long playerID) throws DSGPlayerStoreException;
-    public void pinchFloatingVacationDays(long playerID) throws DSGPlayerStoreException;
-    public void addFloatingVacationDays(long playerID, int extraDays) throws DSGPlayerStoreException;
+//    public int loadFloatingVacationDays(long playerID) throws DSGPlayerStoreException;
+//    public void pinchFloatingVacationDays(long playerID) throws DSGPlayerStoreException;
+//    public void addFloatingVacationDays(long playerID, int extraDays) throws DSGPlayerStoreException;
     
     public Vector search(
         int game, int sortField, 

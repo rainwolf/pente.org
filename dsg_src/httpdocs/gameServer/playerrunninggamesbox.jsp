@@ -7,9 +7,6 @@
                  java.text.*,
                  java.util.*" %>
 <%
-Resources resources = (Resources) application.getAttribute(
-   Resources.class.getName());
-TBGameStorer tbGameStorer = resources.getTbGameStorer();
 List<TBSet> waitingSets = tbGameStorer.loadWaitingSets();
 List<TBSet> currentSets = tbGameStorer.loadSets(dsgPlayerData.getPlayerID());
 List<TBSet> invitesTo = new ArrayList<TBSet>();

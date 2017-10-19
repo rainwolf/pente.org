@@ -1423,192 +1423,192 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
         }
     }
 
-    public int loadFloatingVacationDays(long playerID) throws DSGPlayerStoreException {
-
-        Connection con = null;
-        PreparedStatement stmt = null;
-        ResultSet result = null;
-        int days = 0;
-
-        try {
-            try {
-
-                con = dbHandler.getConnection();
-
-                stmt = con.prepareStatement(
-                    "select daysLeft, lastUpdateYear " +
-                    "from tb_vacation_floating " +
-                    "where pid = ?");
-                stmt.setLong(1, playerID);
-                result = stmt.executeQuery();
-
-                if (result.next()) {
-                    Calendar now = Calendar.getInstance();
-                    int currentYear = now.get(Calendar.YEAR);
-                    int lastUpdate = result.getInt(2);
-                    if (lastUpdate < currentYear) {
-                        days = FLOATINGVACATIONDAYS*24;
-                    } else {
-                        days = result.getInt(1);
-                    }
-                } else {
-                    days = FLOATINGVACATIONDAYS*24;
-                }
-            }
-            finally {
-                if (result != null) {
-                    result.close();
-                }
-                if (stmt != null) {
-                    stmt.close();
-                }
-                if (con != null) {
-                    dbHandler.freeConnection(con);
-                }
-            }
-
-        } catch (SQLException sq) {
-            throw new DSGPlayerStoreException("Problem getting floating vacation days for " + playerID, sq);
-        }
-
-        return days;
-    }
-
-    public void pinchFloatingVacationDays(long pid) throws DSGPlayerStoreException {
-
-        Connection con = null;
-        PreparedStatement stmt = null;
-        ResultSet result = null;
-
-        try {
-            try {
-                Calendar now = Calendar.getInstance();
-                int currentYear = now.get(Calendar.YEAR);
-                int days = 0;
-
-                con = dbHandler.getConnection();
-
-                stmt = con.prepareStatement(
-                    "select daysLeft, lastUpdateYear " +
-                    "from tb_vacation_floating " +
-                    "where pid = ?");
-                stmt.setLong(1, pid);
-                result = stmt.executeQuery();
-
-                if (result.next()) {
-                    int lastUpdate = result.getInt(2);
-                    if (lastUpdate < currentYear) {
-                        days = FLOATINGVACATIONDAYS*24;
-                    } else {
-                        days = result.getInt(1);
-                    }
-                } else {
-                    days = FLOATINGVACATIONDAYS*24;
-                }
-                stmt.close();
-
-                if (days > 0) {
-                    days -= 1;
-                }
-
-                stmt = con.prepareStatement(
-                    "delete from tb_vacation_floating " +
-                    "where pid = ?");
-                stmt.setLong(1, pid);
-                stmt.executeUpdate();
-                stmt.close();
-
-                stmt = con.prepareStatement(
-                    "insert into tb_vacation_floating " +
-                    "(pid, daysLeft, lastUpdateYear) " +
-                    "values(?, ?, ?)");
-                stmt.setLong(1, pid);
-                stmt.setInt(2, days);
-                stmt.setInt(3, currentYear);
-                stmt.executeUpdate();
-
-            } finally {
-                if (result != null) {
-                    result.close();
-                }
-                if (stmt != null) {
-                    stmt.close();
-                }
-                if (con != null) {
-                    dbHandler.freeConnection(con);
-                }
-            }
-        } catch (SQLException sq) {
-            throw new DSGPlayerStoreException("Problem setting floating vacation days for " + pid, sq);
-        }
-    }
-
-    public void addFloatingVacationDays(long playerID, int extraDays) throws DSGPlayerStoreException {
-
-        Connection con = null;
-        PreparedStatement stmt = null;
-        ResultSet result = null;
-
-        try {
-            try {
-                Calendar now = Calendar.getInstance();
-                int currentYear = now.get(Calendar.YEAR);
-                int days = 0;
-
-                con = dbHandler.getConnection();
-
-                stmt = con.prepareStatement(
-                    "select daysLeft, lastUpdateYear " +
-                    "from tb_vacation_floating " +
-                    "where pid = ?");
-                stmt.setLong(1, playerID);
-                result = stmt.executeQuery();
-
-                if (result.next()) {
-                    int lastUpdate = result.getInt(2);
-                    if (lastUpdate < currentYear) {
-                        days = FLOATINGVACATIONDAYS*24;
-                    } else {
-                        days = result.getInt(1);
-                    }
-                } else {
-                    days = FLOATINGVACATIONDAYS*24;
-                }
-                stmt.close();
-
-                days += (24*extraDays);
-
-                stmt = con.prepareStatement(
-                    "delete from tb_vacation_floating " +
-                    "where pid = ?");
-                stmt.setLong(1, playerID);
-                stmt.executeUpdate();
-                stmt.close();
-
-                stmt = con.prepareStatement(
-                    "insert into tb_vacation_floating " +
-                    "(pid, daysLeft, lastUpdateYear) " +
-                    "values(?, ?, ?)");
-                stmt.setLong(1, playerID);
-                stmt.setInt(2, days);
-                stmt.setInt(3, currentYear);
-                stmt.executeUpdate();
-
-            } finally {
-                if (result != null) {
-                    result.close();
-                }
-                if (stmt != null) {
-                    stmt.close();
-                }
-                if (con != null) {
-                    dbHandler.freeConnection(con);
-                }
-            }
-        } catch (SQLException sq) {
-            throw new DSGPlayerStoreException("Problem setting floating vacation days for " + playerID, sq);
-        }
-    }
+//    public int loadFloatingVacationDays(long playerID) throws DSGPlayerStoreException {
+//
+//        Connection con = null;
+//        PreparedStatement stmt = null;
+//        ResultSet result = null;
+//        int days = 0;
+//
+//        try {
+//            try {
+//
+//                con = dbHandler.getConnection();
+//
+//                stmt = con.prepareStatement(
+//                    "select daysLeft, lastUpdateYear " +
+//                    "from tb_vacation_floating " +
+//                    "where pid = ?");
+//                stmt.setLong(1, playerID);
+//                result = stmt.executeQuery();
+//
+//                if (result.next()) {
+//                    Calendar now = Calendar.getInstance();
+//                    int currentYear = now.get(Calendar.YEAR);
+//                    int lastUpdate = result.getInt(2);
+//                    if (lastUpdate < currentYear) {
+//                        days = FLOATINGVACATIONDAYS*24;
+//                    } else {
+//                        days = result.getInt(1);
+//                    }
+//                } else {
+//                    days = FLOATINGVACATIONDAYS*24;
+//                }
+//            }
+//            finally {
+//                if (result != null) {
+//                    result.close();
+//                }
+//                if (stmt != null) {
+//                    stmt.close();
+//                }
+//                if (con != null) {
+//                    dbHandler.freeConnection(con);
+//                }
+//            }
+//
+//        } catch (SQLException sq) {
+//            throw new DSGPlayerStoreException("Problem getting floating vacation days for " + playerID, sq);
+//        }
+//
+//        return days;
+//    }
+//
+//    public void pinchFloatingVacationDays(long pid) throws DSGPlayerStoreException {
+//
+//        Connection con = null;
+//        PreparedStatement stmt = null;
+//        ResultSet result = null;
+//
+//        try {
+//            try {
+//                Calendar now = Calendar.getInstance();
+//                int currentYear = now.get(Calendar.YEAR);
+//                int days = 0;
+//
+//                con = dbHandler.getConnection();
+//
+//                stmt = con.prepareStatement(
+//                    "select daysLeft, lastUpdateYear " +
+//                    "from tb_vacation_floating " +
+//                    "where pid = ?");
+//                stmt.setLong(1, pid);
+//                result = stmt.executeQuery();
+//
+//                if (result.next()) {
+//                    int lastUpdate = result.getInt(2);
+//                    if (lastUpdate < currentYear) {
+//                        days = FLOATINGVACATIONDAYS*24;
+//                    } else {
+//                        days = result.getInt(1);
+//                    }
+//                } else {
+//                    days = FLOATINGVACATIONDAYS*24;
+//                }
+//                stmt.close();
+//
+//                if (days > 0) {
+//                    days -= 1;
+//                }
+//
+//                stmt = con.prepareStatement(
+//                    "delete from tb_vacation_floating " +
+//                    "where pid = ?");
+//                stmt.setLong(1, pid);
+//                stmt.executeUpdate();
+//                stmt.close();
+//
+//                stmt = con.prepareStatement(
+//                    "insert into tb_vacation_floating " +
+//                    "(pid, daysLeft, lastUpdateYear) " +
+//                    "values(?, ?, ?)");
+//                stmt.setLong(1, pid);
+//                stmt.setInt(2, days);
+//                stmt.setInt(3, currentYear);
+//                stmt.executeUpdate();
+//
+//            } finally {
+//                if (result != null) {
+//                    result.close();
+//                }
+//                if (stmt != null) {
+//                    stmt.close();
+//                }
+//                if (con != null) {
+//                    dbHandler.freeConnection(con);
+//                }
+//            }
+//        } catch (SQLException sq) {
+//            throw new DSGPlayerStoreException("Problem setting floating vacation days for " + pid, sq);
+//        }
+//    }
+//
+//    public void addFloatingVacationDays(long playerID, int extraDays) throws DSGPlayerStoreException {
+//
+//        Connection con = null;
+//        PreparedStatement stmt = null;
+//        ResultSet result = null;
+//
+//        try {
+//            try {
+//                Calendar now = Calendar.getInstance();
+//                int currentYear = now.get(Calendar.YEAR);
+//                int days = 0;
+//
+//                con = dbHandler.getConnection();
+//
+//                stmt = con.prepareStatement(
+//                    "select daysLeft, lastUpdateYear " +
+//                    "from tb_vacation_floating " +
+//                    "where pid = ?");
+//                stmt.setLong(1, playerID);
+//                result = stmt.executeQuery();
+//
+//                if (result.next()) {
+//                    int lastUpdate = result.getInt(2);
+//                    if (lastUpdate < currentYear) {
+//                        days = FLOATINGVACATIONDAYS*24;
+//                    } else {
+//                        days = result.getInt(1);
+//                    }
+//                } else {
+//                    days = FLOATINGVACATIONDAYS*24;
+//                }
+//                stmt.close();
+//
+//                days += (24*extraDays);
+//
+//                stmt = con.prepareStatement(
+//                    "delete from tb_vacation_floating " +
+//                    "where pid = ?");
+//                stmt.setLong(1, playerID);
+//                stmt.executeUpdate();
+//                stmt.close();
+//
+//                stmt = con.prepareStatement(
+//                    "insert into tb_vacation_floating " +
+//                    "(pid, daysLeft, lastUpdateYear) " +
+//                    "values(?, ?, ?)");
+//                stmt.setLong(1, playerID);
+//                stmt.setInt(2, days);
+//                stmt.setInt(3, currentYear);
+//                stmt.executeUpdate();
+//
+//            } finally {
+//                if (result != null) {
+//                    result.close();
+//                }
+//                if (stmt != null) {
+//                    stmt.close();
+//                }
+//                if (con != null) {
+//                    dbHandler.freeConnection(con);
+//                }
+//            }
+//        } catch (SQLException sq) {
+//            throw new DSGPlayerStoreException("Problem setting floating vacation days for " + playerID, sq);
+//        }
+//    }
 
 	public void insertIgnore(DSGIgnoreData data) throws DSGPlayerStoreException {
 
