@@ -365,15 +365,15 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
     public void storeVacationDays(long playerID, List<Date> vacationDays) throws DSGPlayerStoreException {
         basePlayerStorer.storeVacationDays(playerID, vacationDays);
     }
-    public int loadFloatingVacationDays(long playerID) throws DSGPlayerStoreException {
-        return basePlayerStorer.loadFloatingVacationDays(playerID);
-    } 
-    public void pinchFloatingVacationDays(long playerID) throws DSGPlayerStoreException {
-        basePlayerStorer.pinchFloatingVacationDays(playerID);
-    }
-    public void addFloatingVacationDays(long playerID, int extraDays) throws DSGPlayerStoreException {
-        basePlayerStorer.addFloatingVacationDays(playerID, extraDays);
-    }
+//    public int loadFloatingVacationDays(long playerID) throws DSGPlayerStoreException {
+//        return basePlayerStorer.loadFloatingVacationDays(playerID);
+//    } 
+//    public void pinchFloatingVacationDays(long playerID) throws DSGPlayerStoreException {
+//        basePlayerStorer.pinchFloatingVacationDays(playerID);
+//    }
+//    public void addFloatingVacationDays(long playerID, int extraDays) throws DSGPlayerStoreException {
+//        basePlayerStorer.addFloatingVacationDays(playerID, extraDays);
+//    }
     
     public void deleteIgnore(DSGIgnoreData data) throws DSGPlayerStoreException {
         if (!data.isGuest()) {

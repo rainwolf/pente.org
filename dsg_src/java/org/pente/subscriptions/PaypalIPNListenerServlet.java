@@ -16,6 +16,7 @@ import com.paypal.core.LoggingManager;
 import com.paypal.ipn.IPNMessage;
 // import com.sample.util.Configuration;
 
+import net.sf.ehcache.config.Configuration;
 import org.apache.log4j.*;
 
 import org.pente.gameServer.core.*;
@@ -23,7 +24,8 @@ import org.pente.gameServer.server.*;
 import org.pente.database.*;
 import org.pente.message.*;
 import org.pente.notifications.NotificationServer;
-
+import org.pente.turnBased.CacheTBStorer;
+import org.pente.turnBased.TBVacation;
 
 
 public class PaypalIPNListenerServlet extends HttpServlet {
@@ -47,6 +49,7 @@ public class PaypalIPNListenerServlet extends HttpServlet {
         resources = (Resources) ctx.getAttribute(Resources.class.getName());
         NotificationServer notificationServer = resources.getNotificationServer();
         CacheDSGPlayerStorer dsgPlayerStorer = (CacheDSGPlayerStorer) resources.getDsgPlayerStorer();
+        CacheTBStorer tbStorer = (CacheTBStorer) resources.getTbGameStorer(); 
         Connection con = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -195,7 +198,8 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                         log4j.info(logString + indentString + "Error: vacation days option not recognized: " + itemSelected);
                         return;
                     } else {
-                        dsgPlayerStorer.addFloatingVacationDays(subscriberPid, vacationDays);
+                        tbStorer.addExtraTBVacationDays(subscriberPid, vacationDays);
+//                        dsgPlayerStorer.addFloatingVacationDays(subscriberPid, vacationDays);
                     }
                     stmt = con.prepareStatement("INSERT INTO dsg_subscribers (pid, level, paymentdate, transactionid, amount, verified) VALUES (?, ?, NOW(), ?, ?, ?)");
                     stmt.setLong(1, subscriberPid);
@@ -219,7 +223,8 @@ public class PaypalIPNListenerServlet extends HttpServlet {
                         message.setFromPid(23000000016237L);
                         message.setToPid(subscriberPid);
                         message.setSubject("Extra vacation days purchase successful");
-                        vacationDays = dsgPlayerStorer.loadFloatingVacationDays(subscriberPid);
+                        TBVacation vacation = tbStorer.getTBVacation(subscriberPid);
+                        vacationDays = vacation.getHoursLeft();
                         if (gifterPid != 0) {
                             message.setBody(customParts[0] + " has purchased " + itemSelected + " for you. You now have " + (vacationDays/24) + " days and " + (vacationDays%24) + " hours of vacation left for " + Calendar.getInstance().get(Calendar.YEAR) + "." + "\n\nPS: if you have any questions, feel free to reply to this message.");
                         } else {

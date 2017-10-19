@@ -28,6 +28,8 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 	private TourneyStorer tourneyStorer;
 	private CacheKOTHStorer kothStorer;
 	private NotificationServer notificationServer;
+	
+	private Map<Long, TBVacation> vacationPerPlayer;
 
 	/** used to cache event ids for tb-games */
 	private Map<Integer, Integer> eidMap = new HashMap<Integer, Integer>();
@@ -161,6 +163,8 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 			waitingSetsLoaded = false;
 			setsByPid.clear();
 			
+			vacationPerPlayer.clear();
+			
 			// restart threads
 			restartTasks();
 		}
@@ -236,6 +240,8 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 		this.gameStorer = gameStorer;
 		this.dsgMessageStorer = dsgMessageStorer;
 		this.kothStorer = kothStorer;
+		
+		this.vacationPerPlayer = new HashMap<>();
 		
 		startTasks();
 	}
@@ -402,91 +408,71 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 					}
 					log4j.debug("game t/o, " + t.getGid());
 					long cp = t.getCurrentPlayer();
+					boolean tournamentNoVacation = false;
+					try {
+						if (getEventId(t.getGame()) != t.getEventId()) {
+                            Tourney tourney = tourneyStorer.getTourney(t.getEventId());
+                            if (tourney != null) {
+                                int maxExtraDays = tourney.getIncrementalTime();
+                                if (maxExtraDays != 0) {
+                                    tournamentNoVacation = true;
+                                }
+                            }
+    
+                        }
+					} catch (Throwable throwable) {
+						throwable.printStackTrace();
+					}
 					try {
 						log4j.debug("game t/o, " + t.getGid() + " check floating vacationDays for " + cp);
-						DSGPlayerData playerData = dsgPlayerStorer.loadPlayer(cp);
-						int floatingVacationDays = dsgPlayerStorer.loadFloatingVacationDays(cp);
-						if (playerData.getTotalGames()/2 <= (MySQLDSGPlayerStorer.FLOATINGVACATIONDAYS*24 - floatingVacationDays)/24) {
-							floatingVacationDays = 0;
-						}
 
-						if (getEventId(t.getGame()) != t.getEventId()) {
-							Tourney tourney = tourneyStorer.getTourney(t.getEventId());
-							if (tourney != null) {
-								int maxExtraDays = tourney.getIncrementalTime();
-//							long lastMoveTime = t.getLastMoveDate().getTime();
-//							long deadline = lastMoveTime + 1000L*3600*24*(t.getDaysPerMove() + maxExtraDays);
-//							if (deadline <= now) {
-//								floatingVacationDays = 0;
-//							}
-								if (maxExtraDays == 0) {
-									floatingVacationDays = 0;
-								}
-							}
-							
-						}
 
-						if (floatingVacationDays > 0) {
-							if (floatingVacationDays == 24) {
-								DSGMessage message = new DSGMessage();
-								message.setFromPid(23000000016237L);
-								message.setToPid(cp);
-								message.setSubject("24 hours of vacation left");
-								message.setBody("The gameServer informs you that it has detected that you only have 24 hours of vacation time left for this year." +
-								   " Once these are depleted, timeouts for turn-based games become hard deadlines.\n \n " +
-									"You can purchase additional vacation days at https://www.pente.org/gameServer/subscriptions \n\n");
-								message.setCreationDate(new java.util.Date());
-								dsgMessageStorer.createMessage(message, false);
-								notificationServer.sendMessageNotification("rainwolf", message.getToPid(), message.getMid(), message.getSubject());
-							}
-							int weekend[]=new int[] { 7, 1 }; //sat/sun default
-							try {
-								// get wk1, wk2 for player whose turn it now is
-								List l = dsgPlayerStorer.loadPlayerPreferences(cp);
-								for (Iterator it = l.iterator(); it.hasNext();) {
-									DSGPlayerPreference p = (DSGPlayerPreference) it.next();
-									if (p.getName().equals("weekend")) {
-										weekend = (int[]) p.getValue();
+						if (!tournamentNoVacation) {
+							Date newTimeOutDate = newTimeout(cp);
+							if (newTimeOutDate != null) {
+								DSGPlayerData playerData = dsgPlayerStorer.loadPlayer(cp);
+								int weekend[]=new int[] { 7, 1 }; //sat/sun default
+								try {
+									// get wk1, wk2 for player whose turn it now is
+									List l = dsgPlayerStorer.loadPlayerPreferences(cp);
+									for (Iterator it = l.iterator(); it.hasNext();) {
+										DSGPlayerPreference p = (DSGPlayerPreference) it.next();
+										if (p.getName().equals("weekend")) {
+											weekend = (int[]) p.getValue();
+										}
 									}
+								} catch (DSGPlayerStoreException dpse) {
+									log4j.error("TimeoutCheckRunnable: Error getting weekend for player " +
+											cp + ", game=" + t.getGid(), dpse);
 								}
-							} catch (DSGPlayerStoreException dpse) {
-								log4j.error("TimeoutCheckRunnable: Error getting weekend for player " + 
-									cp + ", game=" + t.getGid(), dpse);
-							}
-							dsgPlayerStorer.pinchFloatingVacationDays(cp);
-		                    Calendar newTimeout = Calendar.getInstance();
-							TimeZone tz = TimeZone.getTimeZone(playerData.getTimezone());
-                            if (tz != null) {
-                                newTimeout.setTimeZone(tz);
-                            }
-		                    newTimeout.add(Calendar.HOUR, 1);
-		                    if ((newTimeout.get(Calendar.DAY_OF_WEEK) == weekend[0]) || (newTimeout.get(Calendar.DAY_OF_WEEK) == weekend[1])) {
-								newTimeout.add(Calendar.DATE, 1);
-								newTimeout.set(Calendar.HOUR_OF_DAY, 0);
-								newTimeout.set(Calendar.MINUTE, 0);
-								newTimeout.set(Calendar.SECOND, 0);
-		                    }
-		                    if ((newTimeout.get(Calendar.DAY_OF_WEEK) == weekend[0]) || (newTimeout.get(Calendar.DAY_OF_WEEK) == weekend[1])) {
-								newTimeout.add(Calendar.DATE, 1);
-								newTimeout.set(Calendar.HOUR_OF_DAY, 0);
-								newTimeout.set(Calendar.MINUTE, 0);
-								newTimeout.set(Calendar.SECOND, 0);
-		                    }
-							// if (t.getPlayer1Pid() < t.getPlayer2Pid()) {
-							// 	newTimeout.add(Calendar.MINUTE,3);
-							// 	newTimeout.add(Calendar.SECOND,11);
-							// }
+								Calendar newTimeout = Calendar.getInstance();
+								newTimeout.setTime(newTimeOutDate);
+								TimeZone tz = TimeZone.getTimeZone(playerData.getTimezone());
+								if (tz != null) {
+									newTimeout.setTimeZone(tz);
+								}
+								if ((newTimeout.get(Calendar.DAY_OF_WEEK) == weekend[0]) || (newTimeout.get(Calendar.DAY_OF_WEEK) == weekend[1])) {
+									newTimeout.add(Calendar.DATE, 1);
+									newTimeout.set(Calendar.HOUR_OF_DAY, 0);
+									newTimeout.set(Calendar.MINUTE, 0);
+									newTimeout.set(Calendar.SECOND, 0);
+								}
+								if ((newTimeout.get(Calendar.DAY_OF_WEEK) == weekend[0]) || (newTimeout.get(Calendar.DAY_OF_WEEK) == weekend[1])) {
+									newTimeout.add(Calendar.DATE, 1);
+									newTimeout.set(Calendar.HOUR_OF_DAY, 0);
+									newTimeout.set(Calendar.MINUTE, 0);
+									newTimeout.set(Calendar.SECOND, 0);
+								}
 
-							t.setTimeoutDate(newTimeout.getTime());
-							updateGameAfterMove(t);
-							continue;
+								t.setTimeoutDate(newTimeout.getTime());
+								updateGameAfterMove(t);
+								continue;
+							}
 						}
 					} catch (DSGPlayerStoreException e) {
 						log4j.debug("TimeoutCheckRunnable, DSGPlayerStoreException " + e);
 					} catch (TBStoreException e) {
 						log4j.debug("TimeoutCheckRunnable, TBStoreException " + e);
-					} catch (DSGMessageStoreException e) {
-						log4j.debug("TimeoutCheckRunnable, DSGMessageStoreException " + e);
 					} catch (Throwable e) {
 						log4j.debug("TimeoutCheckRunnable, Throwable " + e);
 					}
@@ -503,7 +489,64 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 			}
 		}
 	};
+
 	
+	
+	private Date newTimeout(long pid) {
+		TBVacation vacation = getTBVacation(pid);
+		if (vacation != null) {
+			Date lastPinched = vacation.getLastPinched();
+			Date oneHourAgo = new Date(System.currentTimeMillis() - 3600L * 1000);
+			if (lastPinched != null && oneHourAgo.before(lastPinched)) {
+				return new Date(lastPinched.getTime() + 3600L * 1000);
+			} else {
+				int hoursLeft = vacation.getHoursLeft();
+				if (hoursLeft > 0) {
+					if (hoursLeft - 1 == 24) {
+						DSGMessage message = new DSGMessage();
+						message.setFromPid(23000000016237L);
+						message.setToPid(pid);
+						message.setSubject("24 hours of vacation left");
+						message.setBody("The gameServer informs you that you only have 24 hours of vacation time left for this year." +
+								" Once these are depleted, timeouts for turn-based games become hard deadlines.\n \n " +
+								"You can purchase additional vacation days at https://www.pente.org/gameServer/subscriptions \n\n");
+						message.setCreationDate(new java.util.Date());
+						try {
+							dsgMessageStorer.createMessage(message, false);
+						} catch (DSGMessageStoreException e) {
+							e.printStackTrace();
+						}
+						notificationServer.sendMessageNotification("rainwolf", message.getToPid(), message.getMid(), message.getSubject());
+					}
+					lastPinched = new Date();
+					vacation.setLastPinched(lastPinched);
+					vacation.setHoursLeft(hoursLeft - 1);
+					((MySQLTBGameStorer) baseStorer).storeTBVacation(pid, vacation);
+					return new Date(System.currentTimeMillis() + 3600L * 1000);
+				}
+			}
+		}
+		return null;
+	}
+
+	public TBVacation getTBVacation(long pid) {
+		TBVacation vacation = this.vacationPerPlayer.get(pid);
+		if (vacation == null) {
+			vacation = baseStorer.getTBVacation(pid);
+			this.vacationPerPlayer.put(pid, vacation);
+		}
+		return vacation;
+	}
+	
+	public void addExtraTBVacationDays(long pid, int extraDays) {
+		TBVacation vacation = getTBVacation(pid);
+		if (vacation != null) {
+			int hoursLeft = vacation.getHoursLeft();
+			vacation.setHoursLeft(hoursLeft + 24*extraDays);
+			((MySQLTBGameStorer) baseStorer).storeTBVacation(pid, vacation);
+		}
+	}
+
 	// algorithm - end game thread (just offloads updating ended games to db)
 	// do forever
 	//   synch (lock)
@@ -1705,6 +1748,18 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
             log4j.error("Problem creating tb sets for tournament", t);
         }
     }
+
+	public void restoreGame(long gid) throws TBStoreException {
+		log4j.debug("CacheTBGameStorer.restoreGame " + gid);
+
+		synchronized (cacheTbLock) {
+			TBGame game = loadGame(gid);
+			baseStorer.restoreGame(gid);
+			uncacheGamesForPlayer(game.getPlayer1Pid());
+			uncacheGamesForPlayer(game.getPlayer2Pid());
+		}
+	}
+
 
 	public void setNotificationServer(NotificationServer notificationServer) {
 		this.notificationServer = notificationServer;

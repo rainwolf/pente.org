@@ -13,6 +13,8 @@ public class MySQLTBGameStorer implements TBGameStorer {
 	private Category log4j = Category.getInstance(
 		MySQLTBGameStorer.class.getName());
 
+	public static final int FLOATINGVACATIONDAYS = 10;
+
 	private DBHandler dbHandler;
 	
 	public MySQLTBGameStorer(DBHandler dbHandler) {
@@ -1201,5 +1203,140 @@ public class MySQLTBGameStorer implements TBGameStorer {
 	public void destroy() {
 		// nothing to destroy
 	}
+
+	public void restoreGame(long gid) throws TBStoreException {
+		Connection con = null;
+		PreparedStatement stmt = null;
+
+		try {
+			con = dbHandler.getConnection();
+
+			stmt = con.prepareStatement(
+					"delete from pente_game where gid = ?");
+			stmt.setLong(1, gid);
+			stmt.executeUpdate();
+
+			stmt = con.prepareStatement(
+					"delete from pente_move where gid = ?");
+			stmt.setLong(1, gid);
+			stmt.executeUpdate();
+
+			stmt = con.prepareStatement(
+					"update tb_game set state = 'A', timeout_date = ?, completion_date = NULL, winner = 0 where gid = ?");
+			stmt.setTimestamp(1, new Timestamp((new Date()).getTime() + 1000L * 3600*24*5));
+			stmt.setLong(2, gid);
+			stmt.executeUpdate();
+
+			stmt = con.prepareStatement(
+					"update tb_set set state = 'A', completion_date = NULL where (gid1 = ?) or (gid2 = ?)");
+			stmt.setLong(1, gid);
+			stmt.setLong(2, gid);
+			stmt.executeUpdate();
+
+		} catch (SQLException se) {
+			throw new TBStoreException(se);
+		} finally {
+			if (stmt != null) {
+				try { stmt.close(); } catch (SQLException se) {}
+			}
+			if (con != null) {
+				try { dbHandler.freeConnection(con); } catch (SQLException se) {}
+			}
+		}
+	}
+
+	public TBVacation getTBVacation(long pid) {
+
+		Connection con = null;
+		PreparedStatement stmt = null;
+		ResultSet result = null;
+		int hoursLeft = FLOATINGVACATIONDAYS*24;;
+		Date lastPinchDate = null;
+		TBVacation vacation = new TBVacation();
+
+		try {
+			try {
+
+				con = dbHandler.getConnection();
+
+				stmt = con.prepareStatement(
+						"select hoursLeft, lastPinch " +
+								"from tb_emergency_time " +
+								"where pid = ?");
+				stmt.setLong(1, pid);
+				result = stmt.executeQuery();
+
+				if (result.next()) {
+					Calendar now = Calendar.getInstance();
+					int currentYear = now.get(Calendar.YEAR);
+					Calendar storedLastPinch = Calendar.getInstance();
+					lastPinchDate = getDate(result, 2);
+					if (lastPinchDate != null) {
+						storedLastPinch.setTime(lastPinchDate);
+						int lastPinchYear = storedLastPinch.get(Calendar.YEAR);
+
+						if (lastPinchYear == currentYear) {
+							hoursLeft = result.getInt(1);
+							vacation.setLastPinched(lastPinchDate);
+						}
+					}
+				}
+
+				vacation.setHoursLeft(hoursLeft);
+			}
+			finally {
+				if (result != null) {
+					result.close();
+				}
+				if (stmt != null) {
+					stmt.close();
+				}
+				if (con != null) {
+					dbHandler.freeConnection(con);
+				}
+			}
+
+		} catch (SQLException sq) {
+			log4j.debug("Problem getting emergency time for " + pid + "\n" + sq);
+		}
+
+		return vacation;
+	}
+
+
+	public void storeTBVacation(long pid, TBVacation vacation) {
+
+		Connection con = null;
+		PreparedStatement stmt = null;
+
+		try {
+			try {
+
+				con = dbHandler.getConnection();
+
+				stmt = con.prepareStatement(
+						"insert into tb_emergency_time " +
+								"(pid, hoursLeft, lastPinch) " +
+								"values(?, ?, ?) ON DUPLICATE KEY UPDATE hoursLeft=VALUES(hoursLeft), lastPinch=VALUES(lastPinch)");
+				stmt.setLong(1, pid);
+				stmt.setInt(2, vacation.getHoursLeft());
+				stmt.setTimestamp(3, new Timestamp(vacation.getLastPinched().getTime()));
+				stmt.executeUpdate();
+
+			}
+			finally {
+				if (stmt != null) {
+					stmt.close();
+				}
+				if (con != null) {
+					dbHandler.freeConnection(con);
+				}
+			}
+
+		} catch (SQLException sq) {
+			log4j.debug("Problem storeTBVacation emergency time for " + pid + "\n" + sq);
+		}
+	}
+
 
 }

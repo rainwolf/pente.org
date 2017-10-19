@@ -29,6 +29,9 @@ if (dsgPlayerData != null){
     conditionalHeading = "Player Profile";
 }
 
+  Resources resources = (Resources) application.getAttribute(
+   Resources.class.getName());
+
 %>
 
 <% pageContext.setAttribute("title", conditionalHeading); %>
@@ -39,13 +42,13 @@ int hoursDiff2 = 0;
 DateFormat profileDateFormat = null;
 TimeZone playerTimeZone = null;
 if (dsgPlayerData != null) { 
-	DSGPlayerData meData = dsgPlayerStorer.loadPlayer(me);
-	TimeZone tz = TimeZone.getTimeZone(meData.getTimezone());
-	profileDateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm z");
-	profileDateFormat.setTimeZone(tz);
-	
-	playerTimeZone = TimeZone.getTimeZone(dsgPlayerData.getTimezone());
-	hoursDiff2 = (playerTimeZone.getRawOffset() - tz.getRawOffset()) / (1000 * 60 * 60);
+  DSGPlayerData meData = dsgPlayerStorer.loadPlayer(me);
+  TimeZone tz = TimeZone.getTimeZone(meData.getTimezone());
+  profileDateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm z");
+  profileDateFormat.setTimeZone(tz);
+  
+  playerTimeZone = TimeZone.getTimeZone(dsgPlayerData.getTimezone());
+  hoursDiff2 = (playerTimeZone.getRawOffset() - tz.getRawOffset()) / (1000 * 60 * 60);
 }
 %>
 
@@ -102,7 +105,7 @@ if (dsgPlayerData != null) {
       </td>
      <% int tourneyWinner = dsgPlayerData.getTourneyWinner(); %>
      <% if (name.equals("rainwolf")) { %>
-	  <td colspan="2">
+    <td colspan="2">
        <font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="<%= textColor2 %>"><b>
 <!--             <form method="GET" action="setKOTHcrown.jsp">
             <input type="hidden" name="kothname" value="<%= dsgPlayerData.getName() %>" />
@@ -336,7 +339,10 @@ if (dsgPlayerData != null) {
       </td>
       <td>
         <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
-        <% int floatingHourDays = dsgPlayerStorer.loadFloatingVacationDays(dsgPlayerData.getPlayerID()); %>
+        <% 
+        CacheTBStorer tbGameStorer = (CacheTBStorer) resources.getTbGameStorer();
+        TBVacation vacation = tbGameStorer.getTBVacation(dsgPlayerData.getPlayerID());
+        int floatingHourDays = vacation.getHoursLeft(); %>
         <%=floatingHourDays/24%> days and <%=floatingHourDays % 24%> hours
         </font>
       </td>
@@ -345,8 +351,6 @@ if (dsgPlayerData != null) {
   <tr>
     <td colspan="5">
   <% if (!dsgPlayerData.getName().equals(name)) { 
-  Resources resources = (Resources) application.getAttribute(
-   Resources.class.getName());
   DSGFollowerStorer followerStorer = resources.getFollowerStorer();
 %>
         <input type="button" value="Send Message"
