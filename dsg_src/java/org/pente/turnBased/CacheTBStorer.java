@@ -408,14 +408,14 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 					}
 					log4j.debug("game t/o, " + t.getGid());
 					long cp = t.getCurrentPlayer();
-					boolean tournamentNoVacation = false;
+					boolean useVacation = true;
 					try {
 						if (getEventId(t.getGame()) != t.getEventId()) {
                             Tourney tourney = tourneyStorer.getTourney(t.getEventId());
                             if (tourney != null) {
                                 int maxExtraDays = tourney.getIncrementalTime();
-                                if (maxExtraDays != 0) {
-                                    tournamentNoVacation = true;
+                                if (maxExtraDays == 0) {
+                                    useVacation = false;
                                 }
                             }
     
@@ -427,7 +427,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 						log4j.debug("game t/o, " + t.getGid() + " check floating vacationDays for " + cp);
 
 
-						if (!tournamentNoVacation) {
+						if (useVacation) {
 							Date newTimeOutDate = newTimeout(cp);
 							if (newTimeOutDate != null) {
 								DSGPlayerData playerData = dsgPlayerStorer.loadPlayer(cp);
