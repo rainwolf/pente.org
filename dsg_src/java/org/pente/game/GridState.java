@@ -139,6 +139,8 @@ public interface GridState extends MoveData {
     
     public int rotateMove(int move, int newRotation);
     public int rotateMoveToLocalRotation(int move, int newRotation);
+    public int getFirstMoveRotation(int move);
+    public int rotateFirstMove(int move, int rotation);
     
     public int[] getAllPossibleRotations(int move, int newRotation);
     // callbacks for subclasses to generate unique hash values
