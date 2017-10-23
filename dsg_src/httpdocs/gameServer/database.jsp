@@ -83,6 +83,18 @@ org.pente.game.*, java.text.*, java.util.*" %>
    GameStats gameStats = (GameStats) request.getAttribute("gameStats");
    GameStorerSearchRequestFilterData filterData =
        data.getGameStorerSearchRequestData().getGameStorerSearchRequestFilterData();
+
+    String nm = (String) request.getAttribute("name");
+    DSGPlayerData pdata = null;
+    if (nm != null) {
+        pdata = dsgPlayerStorer.loadPlayer(nm);
+    }
+    boolean dbAccess = true;
+    if (pdata == null) {
+        dbAccess = false;
+    } else {
+        dbAccess = pdata.databaseAccess() || pdata.getRegisterDate().getTime() > System.currentTimeMillis() - 1000L*3600*24*30;
+    }
 %>
 
 <% String searchURL = request.getContextPath() + "/gameServer/controller/search?quick_start=1";
@@ -109,12 +121,7 @@ Read the <b><a href="/help/helpWindow.jsp?file=gamesHistory">
 Game Database Instructions</a></b> to get the most information out of this tool.<br>
 
     <%
-    String nm = (String) request.getAttribute("name");
-    DSGPlayerData pdata = null;
-    if (nm != null) {
-        pdata = dsgPlayerStorer.loadPlayer(nm);
-    }
-    if (pdata == null || pdata.databaseAccess()) { %>
+    if (dbAccess) { %>
 
 
 <br>

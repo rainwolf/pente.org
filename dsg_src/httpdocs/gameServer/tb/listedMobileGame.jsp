@@ -45,6 +45,9 @@ String players = ""; //indicates which seat made message
 for (int i = 0; i < game.getNumMoves(); i++) {
     moves += game.getMove(i) + ",";
 }
+if ("".equals(moves)) {
+    moves = ",";
+}
 
 
 int height = 550;

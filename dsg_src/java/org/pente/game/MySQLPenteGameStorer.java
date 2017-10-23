@@ -414,7 +414,7 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
                     stmt.setInt(2, -1);
                     stmt.setInt(3, data.getMove(0));
                     stmt.setLong(4, 0);
-                    stmt.setInt(5, 0);
+                    stmt.setInt(5, state.getFirstMoveRotation(data.getMove(0)));
                     stmt.setInt(6, game);
                     stmt.setInt(7, data.getWinner());
                     stmt.setTimestamp(8, new Timestamp(data.getDate().getTime()));

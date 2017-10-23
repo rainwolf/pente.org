@@ -230,6 +230,12 @@ public abstract class GridStateDecorator implements GridState {
     public int rotateMoveToLocalRotation(int move, int newRotation) {
         return gridState.rotateMoveToLocalRotation(move, newRotation);
     }
+    public int getFirstMoveRotation(int move) {
+        return gridState.getFirstMoveRotation(move);
+    }
+    public int rotateFirstMove(int move, int rotation) {
+        return gridState.rotateFirstMove(move, rotation);
+    }
     public int[] getAllPossibleRotations(int move, int newRotation) {
     	return gridState.getAllPossibleRotations(move, newRotation);
     }

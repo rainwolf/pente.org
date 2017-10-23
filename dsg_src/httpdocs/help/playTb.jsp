@@ -36,15 +36,13 @@ Turn-based timeouts per move are set to a number of days and take into account w
 Weekends are set to Saturday and Sunday by default but this can be changed in your profile.<br><br>
 Each player also gets 10 vacation days each year and can, optionally, purchase more. Vacation 
 days are floating, this means that when a game is set to timeout, and the player has vacation days 
-left, 1 hour is deducted from those vacation days and the timeout is extended by 1 hour. This continues until 
+left, 1 hour is deducted from those vacation days and the timeout is postponed by an hour. If another game 
+is set to timeout 20 minutes later, then its timeout is postponed by 40 minutes until the end of the vacation 
+hour that was deducted. All games that are to timeout during that hour of 
+vacation time have their timeouts moved to the end of that hour. This continues until 
 the player runs out of vacation days.
 <br><br>
 On January 1st of each year, every player's vacation time is reset to 10 days. 
-<br><br>
-New players don't get access to all their vacation days before they've played their 
-first 20 games. The available vacation time gradually increases with each played game. This is 
- to prevent extra long timeouts from new players who sign up, accept a few open invitations, and don't come 
-back to play.
 <br>
 <br>
 <b><a href="helpWindow.jsp?file=playGameTable">&lt;&lt; Game Table</a>&nbsp;&nbsp;&nbsp;

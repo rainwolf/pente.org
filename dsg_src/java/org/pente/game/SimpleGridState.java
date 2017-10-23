@@ -40,6 +40,9 @@ public class SimpleGridState implements GridState {
     /** The list of moves made on the board in order */
     private Vector  moves;
 
+    private boolean allowNonBoardMoves;
+    public boolean allowNonBoardMoves() { return allowNonBoardMoves; }
+    public void setAllowNonBoardMoves(boolean allowNonBoardMoves) { this.allowNonBoardMoves = allowNonBoardMoves; }
 
     /** Create a new grid state with a specified size
      *  @param boardSize The size of the board
@@ -83,18 +86,17 @@ public class SimpleGridState implements GridState {
      */
     public boolean isValidMove(int move, int player) {
 
-        // make sure move is in bounds
-        try {
-            checkOutOfBounds(move);
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
-
         if (player != getCurrentPlayer()) {
             return false;
         }
 
-        if (getPosition(move) != 0) {
+        // make sure move is in bounds
+        
+        if (outOfBounds(move)) {
+            if (!allowNonBoardMoves) {
+                return false;
+            }
+        } else if (getPosition(move) != 0) {
             return false;
         }
 
@@ -116,7 +118,9 @@ public class SimpleGridState implements GridState {
         if (moves.size() > 0) {
             int move = ((Integer) moves.elementAt(moves.size() - 1)).intValue();
             moves.removeElementAt(moves.size() - 1);
-            setPosition(move, 0);
+            if (!outOfBounds(move)) {
+                setPosition(move, 0);
+            }
         }
     }
 
@@ -144,13 +148,14 @@ public class SimpleGridState implements GridState {
      *  @param move An integer representation of a move
      */
     public void addMove(int move) {
-        checkOutOfBounds(move);
-        int currentPlayer = getCurrentColor();
-        moves.addElement(new Integer(move));
-        if (getPosition(move) != 0) {
-            throw new IllegalArgumentException("position already filled " + move);
+        if (!outOfBounds(move)) {
+            int currentPlayer = getCurrentColor();
+            if (getPosition(move) != 0) {
+                throw new IllegalArgumentException("position already filled " + move);
+            }
+            moves.addElement(new Integer(move));
+            setPosition(move, currentPlayer);
         }
-        setPosition(move, currentPlayer);
     }
 
     /** Get which color it is
@@ -212,14 +217,26 @@ public class SimpleGridState implements GridState {
         return board[x][y];
     }
 
+    public void checkOutOfBounds(int move) {
+        Coord p = convertMove(move);
+        checkOutOfBounds(p.x, p.y);
+    }
+    public void checkOutOfBounds(int x, int y) {
+        if (x < 0 || x >= boardSizeX ||
+                y < 0 || y >= boardSizeY) {
+            throw new IllegalArgumentException("Out of bounds: " + x + ", " + y + " max = " + (boardSizeX - 1) + ", " + (boardSizeY - 1));
+        }
+    }
+
     /** Set a position
      *  @param position The position on the board
      *  @param value The value to put at this position
      */
     public void setPosition(int position, int value) {
-        checkOutOfBounds(position);
-        Coord move = convertMove(position);
-        setPosition(move.x, move.y, value);
+        if (!outOfBounds(position)) {
+            Coord move = convertMove(position);
+            setPosition(move.x, move.y, value);
+        }
     }
 
     /** Set a position
@@ -228,8 +245,9 @@ public class SimpleGridState implements GridState {
      *  @param value The value to put at this position
      */
     public void setPosition(int x, int y, int value) {
-        checkOutOfBounds(x, y);
-        board[x][y] = value;
+        if (!outOfBounds(x, y)) {
+            board[x][y] = value;
+        }
     }
 
     /** Get the whole board
@@ -256,15 +274,16 @@ public class SimpleGridState implements GridState {
         return new Coord(move % boardSizeX, move / boardSizeX);
     }
 
-    public void checkOutOfBounds(int move) {
+    public boolean outOfBounds(int move) {
     	Coord p = convertMove(move);
-        checkOutOfBounds(p.x, p.y);
+        return outOfBounds(p.x, p.y);
     }
-    public void checkOutOfBounds(int x, int y) {
+    public boolean outOfBounds(int x, int y) {
         if (x < 0 || x >= boardSizeX ||
             y < 0 || y >= boardSizeY) {
-            throw new IllegalArgumentException("Out of bounds: " + x + ", " + y + " max = " + (boardSizeX - 1) + ", " + (boardSizeY - 1));
+            return true;
         }
+        return false;
     }
 
     /** Determine if the pieces on the board are the same
@@ -339,11 +358,13 @@ public class SimpleGridState implements GridState {
     static final int roty[] = new int[] { 1, 1, -1, -1, -1, -1,  1,  1 };
     static final int rotf[] = new int[] { 0, 1,  0,  1,  0,  1,  0,  1 };
 
-    static int xoff = -9;
-    static int yoff = -9;
     public int rotateMove(int move, int rotationIndex) {
-        int x = move % 19;
-        int y = move / 19;
+        int xoff = - (boardSizeX/2);
+        int yoff = - (boardSizeY/2);
+
+        Coord p = convertMove(move);
+        int x = p.x;
+        int y = p.y;
         int x1 = (x + xoff) * rotx[rotationIndex];
         int y1 = (y + yoff) * roty[rotationIndex];
         if (rotf[rotationIndex] != 0) {
@@ -351,12 +372,71 @@ public class SimpleGridState implements GridState {
             x1 = y1;
             y1 = t;
         }
-        return (y1 + 9) * 19 + x1 + 9;
+        return convertMove(x1 - xoff, y1 - yoff);
+    }
+
+    public int rotateFirstMove(int move, int rotation) {
+        int xoff = - (boardSizeX/2);
+        int yoff = - (boardSizeY/2);
+
+        Coord p = convertMove(move);
+        int x = p.x;
+        int y = p.y;
+
+        int x1 = (x + xoff) * rotx[rotation] - xoff;
+        int y1 = (y + yoff) * roty[rotation] - yoff;
+        if (rotf[rotation] != 0) {
+            int t = x1;
+            x1 = y1;
+            y1 = t;
+        }
+
+        return convertMove(x1, y1);
+    }
+
+    public int getFirstMoveRotation(int move) {
+        int xoff = - (boardSizeX/2);
+        int yoff = - (boardSizeY/2);
+
+        Coord p = convertMove(move);
+        int x = p.x;
+        int y = p.y;
+
+        int x1 = (x + xoff);
+        int y1 = (y + yoff);
+
+        x = -boardSizeX;
+        y = -boardSizeY;
+        int rotation = 0;
+
+        for (int k = 0; k < 8; k++) {
+            int x2 = x1;
+            int y2 = y1;
+            x2 = x2 * rotx[k];
+            y2 = y2 * roty[k];
+            if (rotf[k] != 0) {
+                int t = x2;
+                x2 = y2;
+                y2 = t;
+            }
+
+            if (x2 > x || x2 == x && y2 > y) {
+                x = x2;
+                y = y2;
+                rotation = k;
+            }
+        }
+
+        return rotation;
     }
 
     public int rotateMoveToLocalRotation(int move, int newRotation) {
-        int x = move % 19;
-        int y = move / 19;
+        int xoff = - (boardSizeX/2);
+        int yoff = - (boardSizeY/2);
+
+        Coord p = convertMove(move);
+        int x = p.x;
+        int y = p.y;
 
         int x1 = (x + xoff) * rotx[newRotation];
         int y1 = (y + yoff) * roty[newRotation];
@@ -366,8 +446,13 @@ public class SimpleGridState implements GridState {
             y1 = t;
         }
 
-        x = -1;
-        y = -1;
+        if (numPossibleRotations > 0) {
+            x = -1;
+            y = -1;
+        } else {
+            x = x1 - xoff;
+            y = y1 - yoff;
+        }
         
         for (int k = 0; k < numPossibleRotations; k++) {
             //rotate from std to test
@@ -379,8 +464,8 @@ public class SimpleGridState implements GridState {
                 x2 = y2;
                 y2 = t;
             }
-            x2 = x2 * rotx[newRotation] + 9;
-            y2 = y2 * roty[newRotation] + 9;
+            x2 = x2 * rotx[newRotation] - xoff;
+            y2 = y2 * roty[newRotation] - yoff;
     
             if (x2 > x || x2 == x && y2 > y) {
                 x = x2;
@@ -388,11 +473,15 @@ public class SimpleGridState implements GridState {
             }
         }
 
-        return y * 19 + x;
+        return convertMove(x, y);
     }
     public int[] getAllPossibleRotations(int move, int newRotation) {
-        int x = move % 19;
-        int y = move / 19;
+        int xoff = - (boardSizeX/2);
+        int yoff = - (boardSizeY/2);
+
+        Coord p = convertMove(move);
+        int x = p.x;
+        int y = p.y;
 
         int x1 = (x + xoff) * rotx[newRotation];
         int y1 = (y + yoff) * roty[newRotation];
@@ -413,10 +502,10 @@ public class SimpleGridState implements GridState {
                 x2 = y2;
                 y2 = t;
             }
-            x2 = x2 * rotx[newRotation] + 9;
-            y2 = y2 * roty[newRotation] + 9;
+            x2 = x2 * rotx[newRotation] - xoff;
+            y2 = y2 * roty[newRotation] - yoff;
     
-            poss[k] = y2 * 19 + x2;
+            poss[k] = convertMove(x2, y2);
         }
 
         return poss;
@@ -469,8 +558,8 @@ public class SimpleGridState implements GridState {
     }
     
     public void printBoard() {
-        for (int i=0;i<19;i++) {
-            for (int j=0;j<19;j++) {
+        for (int i=0;i<boardSizeY;i++) {
+            for (int j=0;j<boardSizeX;j++) {
                 System.out.print(board[j][i] + " ");
             }
             System.out.println();

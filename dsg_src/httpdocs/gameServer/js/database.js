@@ -111,6 +111,12 @@ function isPoofPente(game) {
     }
     return false;
 }
+function isDPente(game) {
+    if (game == 17 || game == 18 || game == 7 || game == 8) {
+        return true;
+    }
+    return false;
+}
 
 function setGame(moveStr) {
 
@@ -154,7 +160,7 @@ function setGame(moveStr) {
     currentMove = 0;
     var startMove = -1, endMove = 0;
 
-    var stillMovesLeft = true;
+    var stillMovesLeft = moveStr.length > 0;
 
     while (stillMovesLeft) {
 
@@ -724,7 +730,7 @@ function getStrMove(move) {
 
 function backMove() {
 
-    if (currentMove != 1) {
+    if (currentMove != 1 || (isDPente(game) && currentMove > 0)) {
 
         hideStatistics();
 
@@ -734,6 +740,7 @@ function backMove() {
         board[x][y] = 0;
 
         clearMove(getStrMove(intMove));
+
 
         if (gameHasCaptures()) {
             putBackCaptures();
@@ -825,7 +832,6 @@ function hideStatistics() {
 }
 
 function shouldShowSearchStats() {
-
     var at = true;
 
     if (!statisticsShowing && 
