@@ -195,6 +195,12 @@ public class MoveServlet extends HttpServlet {
 		       	return;
 			} else if (command.equals("requestUndo")) {
 				DSGPlayerData plr = dsgPlayerStorer.loadPlayer(game.getOpponent(game.getCurrentPlayer()));
+				if (game.getOpponent(game.getCurrentPlayer()) != playerData.getPlayerID()) {
+					log4j.error("MoveServlet, out-of-turn undo request");
+					handleError(request, response,
+							"Undo request is available when it's not your turn.");
+					return;
+				}
 				if (plr.hasPlayerDonated()) {
 					if ((game.getGame() == GridStateFactory.TB_DPENTE || game.getGame() == GridStateFactory.TB_DKERYO) && game.getNumMoves() < 5) {
 						log4j.error("MoveServlet, undo request for d-pente or dk-pente opening");
