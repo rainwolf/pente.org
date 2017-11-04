@@ -231,6 +231,14 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 		}
 	}
 
+	public void hideGame(long gid, byte hiddenBy) {
+		synchronized (cacheTbLock) {
+			TBGame tbGame = getGame(gid);
+			baseStorer.hideGame(gid, hiddenBy);
+			tbGame.setHiddenBy(hiddenBy);
+		}
+	}
+
 
 	public CacheTBStorer(TBGameStorer baseStorer, 
 		DSGPlayerStorer dsgPlayerStorer, GameStorer gameStorer,

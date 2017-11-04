@@ -210,6 +210,14 @@ function changeCycle() {
     cycleStr = "";
   }
 }
+
+function changeHidden() {
+  if (document.getElementById('hideCheck').checked) {
+    hideStr = "&hide=yes";
+  } else {
+    hideStr = "&hide=no";
+  }
+}
 // function IsSelected()
 // {
 //    return currentRow==-1?false:true;
@@ -244,6 +252,13 @@ function changeCycle() {
     <br>
     <br>
 <label><input id="cycleCheck" name="cycleCheck" type="checkbox" onclick="changeCycle()" /> check this to cycle to the next game after submitting</label>
+<% if (meData.hasPlayerDonated()) { 
+      if (game.canHide(meData.getPlayerID()) || game.canUnHide(meData.getPlayerID())) { %>
+<br>
+<label><input id="hideCheck" name="hideCheck" type="checkbox" onclick="changeHidden()" <%=(game.isHidden()?"checked":"")%>/> hide this game from public view</label>
+<%      
+      }
+   } %>
 <br>
 <%
 }
@@ -526,6 +541,7 @@ window.google_analytics_uacct = "UA-20529582-2";
         var iRadius = 6*radius/4;
         var cycleCheck = <%=((request.getParameter("cycle") != null)?"true":"false")%>;
         var cycleStr = <%=((request.getParameter("cycle") != null)?"\"&cycle\"":"\"\"")%>;
+        var hideStr = "";
 
 
 
@@ -1177,7 +1193,7 @@ function touchEnd(evt) {
                 } else if (game == 63 && c6Move2 > -1) {
                     // window.open("http://development.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+"&moves="+c6Move1 + "," + c6Move2 +"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
                     if ((c6Move1 > -1) && (c6Move1 < 361) && (c6Move2 > -1) && (c6Move2 < 361) && (moves.indexOf(c6Move1) == -1) && (moves.indexOf(c6Move2) == -1) && (c6Move1 != c6Move2)) {
-                      window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+"&moves="+c6Move1 + "," + c6Move2 +"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
+                      window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+hideStr+"&moves="+c6Move1 + "," + c6Move2 +"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
                     } else {
                         alert("Invalid Connect6 moves detected, please (reload and) try again");
                     }
@@ -1185,7 +1201,7 @@ function touchEnd(evt) {
                     alert("You have to place 4 stones for D-Pente");
                 } else if ((game == 57 || game == 67) && moves.length == 0) {
                   if ((dPenteMove1 != dPenteMove2) && (dPenteMove2 != dPenteMove3) && (dPenteMove3 != dPenteMove1)) {
-                    window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+"&moves="+dPenteMove1 + "," + dPenteMove2 + "," + dPenteMove3 + "," + dPenteMove4 +"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
+                    window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+hideStr+"&moves="+dPenteMove1 + "," + dPenteMove2 + "," + dPenteMove3 + "," + dPenteMove4 +"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
                     // window.open("http://development.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+"&moves="+dPenteMove1 + "," + dPenteMove2 + "," + dPenteMove3 +"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
 
                   } else {
@@ -1193,14 +1209,14 @@ function touchEnd(evt) {
                   }
                 } else {
                     // window.open("http://development.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+"&moves="+playedMove+"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
-                    window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+"&moves="+playedMove+"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
+                    window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+hideStr+"&moves="+playedMove+"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
                 }
             }
             function dPentePlayAsP1() {
                 if (playedMove == -1) {
                     alert("You have to place a stone if you choose to play as P1.");
                 } else {
-                    window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+"&moves=1,"+playedMove+"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
+                    window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+hideStr+"&moves=1,"+playedMove+"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
                     // window.open("http://development.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+"&moves=1,"+playedMove+"&message="+encodeURIComponent(document.getElementById('message').value),"_self");
                 }
             }
@@ -1208,7 +1224,7 @@ function touchEnd(evt) {
                 if (playedMove > -1) {
                     alert("You placed a stone. Remove it first if you choose to play as P2.");
                 } else {
-                    window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+"&moves=0&message="+encodeURIComponent(document.getElementById('message').value),"_self");
+                    window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+cycleStr+hideStr+"&moves=0&message="+encodeURIComponent(document.getElementById('message').value),"_self");
                     // window.open("http://development.pente.org/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+"&moves=0&message="+encodeURIComponent(document.getElementById('message').value),"_self");
                 }
             }

@@ -331,6 +331,7 @@ EndOfSettingsParameters
 <%
 boolean subscriber = dsgPlayerData.hasPlayerDonated(); 
 boolean dbAccess = subscriber || dsgPlayerData.getRegisterDate().getTime() > System.currentTimeMillis() - 1000L*3600*24*30;
+dbAccess = true;
 %>
 <%=dsgPlayerData.getName().toLowerCase() + ";" + (subscriber?dsgPlayerData.getNameColorRGB():0) + ";" + (dsgPlayerData.showAds()?"ShowAds":"NoAds") + ";" + (subscriber?"subscriber":"freeloader") + ";" + livePlayers + ";" + (dbAccess?"dbAccessGranted":"dbAccessDenied")%>
 

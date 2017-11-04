@@ -72,7 +72,7 @@ for (Iterator it = matches.iterator(); it.hasNext();) {
                       <td colspan="2" align="center">
                         <% if (true) { 
                         TBGame game = matchSet.getGame1(); 
-                        if (!game.isCompleted()) {
+                        if (!game.isCompleted() && !game.isHidden()) {
                         %> 
                         <%@ include file="../tb/listedMobileGame.jsp" %>
                         <% } } %>
@@ -80,7 +80,7 @@ for (Iterator it = matches.iterator(); it.hasNext();) {
                       <td colspan="2" align="center">
                         <% if (true) { 
                         TBGame game = matchSet.getGame2();
-                        if (!game.isCompleted()) {
+                        if (!game.isCompleted() && !game.isHidden()) {
                         %> 
                         <%@ include file="../tb/listedMobileGame.jsp" %>
                         <% } } %>

@@ -128,6 +128,12 @@ public class MoveServlet extends HttpServlet {
 				if (playerData.getPlayerID() != game.getPlayer1Pid() &&
 					playerData.getPlayerID() != game.getPlayer2Pid()) {
 
+					if (game.getTbSet().isPrivateGame() || game.isHidden()) {
+						log4j.error("MoveServlet, trying to view hidden or private game");
+						handleError(request, response, "Invalid game, game hidden or private and other player trying to view it.");
+						return;
+					}
+					
 //					if (!playerData.isAdmin() && 
 //						game.getState() == TBGame.STATE_ACTIVE) {
 //						TourneyStorer tourneyStorer = resources.getTourneyStorer();
@@ -345,6 +351,17 @@ public class MoveServlet extends HttpServlet {
 					message.setSeqNbr(1);
 					message.setPid(game.getCurrentPlayer());
 				}
+				
+				String hideStr = request.getParameter("hide");
+				if (hideStr != null) {
+					if (playerData.hasPlayerDonated()) {
+						byte hiddenBy = 0;
+						if ("yes".equals(hideStr)) {
+							hiddenBy = (byte) (playerData.getPlayerID() == game.getPlayer1Pid()?1:2);
+						}
+						tbGameStorer.hideGame(game.getGid(), hiddenBy);
+					}
+				}
 
 				// handle dpente separately
 				if ((game.getGame() == GridStateFactory.TB_DPENTE || game.getGame() == GridStateFactory.TB_DKERYO) &&
@@ -403,6 +420,9 @@ public class MoveServlet extends HttpServlet {
 							game.setDPenteSwapped(true);
 							tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(),
 								moves[1]);
+							if (game.isHidden()) {
+								tbGameStorer.hideGame(game.getGid(), (byte) (3 - game.getHiddenBy()));
+							}
 							if (message != null) {
 								message.setMoveNum(5);
 								tbGameStorer.storeNewMessage(game.getGid(), message);

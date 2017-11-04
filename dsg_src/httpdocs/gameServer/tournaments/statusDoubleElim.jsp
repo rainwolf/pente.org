@@ -89,7 +89,7 @@ String myTurn = "false";
                       <td colspan="2" align="center">
                         <% if (true) { 
                         TBGame game = matchSet.getGame1(); 
-                        if (!game.isCompleted()) {
+                        if (!game.isCompleted() && !game.isHidden()) {
                         %> 
                         <%@ include file="../tb/listedMobileGame.jsp" %>
                         <% } } %>
@@ -97,7 +97,7 @@ String myTurn = "false";
                       <td colspan="2" align="center">
                         <% if (true) { 
                         TBGame game = matchSet.getGame2();
-                        if (!game.isCompleted()) {
+                        if (!game.isCompleted() && !game.isHidden()) {
                         %> 
                         <%@ include file="../tb/listedMobileGame.jsp" %>
                         <% } } %>

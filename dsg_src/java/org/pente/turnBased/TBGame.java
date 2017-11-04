@@ -39,6 +39,7 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 	private boolean rated;
 	
 	private boolean undoRequested;
+	private byte hiddenBy = 0;
 
 	private List<Integer> moves = new ArrayList<Integer>();
 	private List<TBMessage> messages = new ArrayList<TBMessage>();
@@ -48,6 +49,7 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
     public static final int DPENTE_STATE_DECIDED = 3;
 	private int dPenteState = DPENTE_STATE_START;
 	private boolean dPenteSwapped = false;
+	
 
 	private TBSet tbSet;
 	
@@ -318,6 +320,24 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 
 	public boolean isUndoRequested() { return undoRequested; }
 	public void setUndoRequested(boolean undoRequested) { this.undoRequested = undoRequested; }
+	public byte getHiddenBy() { return hiddenBy; }
+	public void setHiddenBy(byte hider) { this.hiddenBy = hider; }
+	public boolean canHide(long pid) {
+		if (getCurrentPlayer() == pid) {
+			return true;
+		}
+		return false;
+	}
+	public boolean canUnHide(long pid) {
+		if (isHidden()) {
+			long hiderPid = (getHiddenBy()==1?player1Pid:player2Pid);
+			return hiderPid == pid;
+		}
+		return false;
+	}
+	public boolean isHidden() {
+		return (getHiddenBy() != 0);
+	}
 
 
 	public int hashCode() {
