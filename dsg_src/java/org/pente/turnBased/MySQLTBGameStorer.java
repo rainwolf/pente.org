@@ -376,7 +376,36 @@ public class MySQLTBGameStorer implements TBGameStorer {
 			}
 		}
 	}
-	
+
+	public void hideGame(long gid, byte hiddenBy) {
+		log4j.debug("MySQLGameTbStorer.hideGame(" + gid + ", " + hiddenBy + ")");
+
+		Connection con = null;
+		PreparedStatement stmt = null;
+
+		try {
+			con = dbHandler.getConnection();
+
+			stmt = con.prepareStatement(
+					"update tb_game " +
+							" set hiddenBy = ? " +
+							" where gid = ?");
+			stmt.setByte(1, hiddenBy);
+			stmt.setLong(2, gid);
+			stmt.executeUpdate();
+
+		} catch (SQLException se) {
+			se.printStackTrace();
+		} finally {
+			if (stmt != null) {
+				try { stmt.close(); } catch (SQLException se) {}
+			}
+			if (con != null) {
+				try { dbHandler.freeConnection(con); } catch (SQLException se) {}
+			}
+		}
+	}
+
 	private static final String TB_SET_COLUMNS = 
 		"s.sid, s.p1_pid, s.p2_pid, s.state, s.creation_date, " +
 		"s.completion_date, s.inviter_pid, s.cancel_pid, s.cancel_msg, " +
@@ -384,13 +413,13 @@ public class MySQLTBGameStorer implements TBGameStorer {
 		"g.gid, g.state, g.p1_pid, g.p2_pid, g.creation_date, " +
 		"g.start_date, g.last_move_date, g.timeout_date, g.completion_date, " +
 		"g.game, g.event_id, g.round, g.section, g.days_per_move, g.rated, " +
-		"g.winner, g.dpente_state, g.dpente_swap";
+		"g.winner, g.dpente_state, g.dpente_swap, g.hiddenBy";
 
 	private static final String TB_COLUMNS = 
 		"gid, state, p1_pid, p2_pid, creation_date, " +
 		"start_date, last_move_date, timeout_date, completion_date, " +
 		"game, event_id, round, section, days_per_move, rated, " +
-		"winner, dpente_state, dpente_swap";
+		"winner, dpente_state, dpente_swap, hiddenBy";
 
 	public TBGame loadGame(long gid) throws TBStoreException {
 
@@ -580,6 +609,7 @@ public class MySQLTBGameStorer implements TBGameStorer {
 		game.setDPenteState(result.getInt(r++));
 		String swapped = result.getString(r++);
 		game.setDPenteSwapped(swapped != null && swapped.equals("Y"));
+		game.setHiddenBy(result.getByte(r++));
 	}
 	private java.util.Date getDate(ResultSet result, int column) 
 		throws SQLException {

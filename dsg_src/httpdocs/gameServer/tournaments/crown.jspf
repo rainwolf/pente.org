@@ -3,23 +3,18 @@
      break;
    case DSGPlayerGameData.TOURNEY_WINNER_GOLD: %>
      <img src="/gameServer/images/crown.gif"
-          alt="Current Tournament Champ!">
-<%   break;
+          alt="Current Tournament Champ!"><%   break;
    case DSGPlayerGameData.TOURNEY_WINNER_SILVER: %>
      <img src="/gameServer/images/scrown.gif"
-          alt="Current Tournament Champ!">
-<%   break;
+          alt="Current Tournament Champ!"><%   break;
    case DSGPlayerGameData.TOURNEY_WINNER_BRONZE: %>
      <img src="/gameServer/images/bcrown.gif"
-          alt="Current Tournament Champ!">
-<%   break;
+          alt="Current Tournament Champ!"><%   break;
    case DSGPlayerGameData.KINGOFTHEHILL_WINNER: %>
      <img src="/gameServer/images/kothcrown1.png"
-          alt="Current King Of The Hill Champ!">
-<%   break;
+          alt="Current King Of The Hill Champ!"><%   break;
    default: 
    if (tourneyWinner > 3) { %>
      <img src="/gameServer/images/kothcrown<%=(tourneyWinner-3)%>.png"
-          alt="Current King Of The Hill Champ!">
-<%  } break;
+          alt="Current King Of The Hill Champ!"><%  } break;
    } %>

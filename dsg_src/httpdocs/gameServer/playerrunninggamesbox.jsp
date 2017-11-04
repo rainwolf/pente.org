@@ -46,7 +46,7 @@ if (myTurn.size() + oppTurn.size() > 0) {
             <tr>
 <%   int columns = 0;
         for (TBGame game : gamesList) {
-            if (game.getTbSet().isPrivateGame()) {
+            if (game.getTbSet().isPrivateGame() || game.isHidden()) {
                 continue;
             } %>
             

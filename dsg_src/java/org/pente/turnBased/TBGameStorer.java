@@ -38,6 +38,8 @@ public interface TBGameStorer {
 	public void restoreGame(long gid) throws TBStoreException;
 	public TBVacation getTBVacation(long pid);
 	
+	public void hideGame(long gid, byte hiddenBy);
+	
 	public void updateDaysOff(long pid, int weekend[]) throws TBStoreException;
 	
 	public void destroy();
