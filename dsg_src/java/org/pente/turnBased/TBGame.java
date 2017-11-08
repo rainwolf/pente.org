@@ -323,7 +323,7 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 	public byte getHiddenBy() { return hiddenBy; }
 	public void setHiddenBy(byte hider) { this.hiddenBy = hider; }
 	public boolean canHide(long pid) {
-		if (getCurrentPlayer() == pid) {
+		if (getCurrentPlayer() == pid && !isHidden()) {
 			return true;
 		}
 		return false;
