@@ -56,10 +56,11 @@ if (!"".equals(moves)) {
 
 %>moves=<%=moves%>
 <%
-DSGPlayerData player1 = dsgPlayerStorer.loadPlayer(tbGame.getPlayer1Pid()), player2 = dsgPlayerStorer.loadPlayer(tbGame.getPlayer2Pid());
+DSGPlayerData player1 = dsgPlayerStorer.loadPlayer(tbGame.getPlayer1Pid()), player2 = dsgPlayerStorer.loadPlayer(tbGame.getPlayer2Pid()), visitor = dsgPlayerStorer.loadPlayer(loggedInStr);
 DSGPlayerGameData p1Data = player1.getPlayerGameData(tbGame.getGame());
 
 if (loggedInStr.equals(player1.getName()) || loggedInStr.equals(player2.getName())) {
+
     for (TBMessage m : tbGame.getMessages()) {
         // bug in URLConverter
         if (m.getMessage().length() == 1) {
@@ -84,6 +85,17 @@ if (loggedInStr.equals(player1.getName()) || loggedInStr.equals(player2.getName(
 <%="undo=requested"%>
 <%        
     }
+    if (tbGame.canHide(visitor.getPlayerID())) {
+%>
+<%="can_hide=yes"%>
+<%        
+    }
+    if (tbGame.canUnHide(visitor.getPlayerID())) {
+%>
+<%="can_unhide=yes"%>
+<%        
+    }
+
 }
 if (!"".equals(messages)) {
 //    tmpMsgs = messages.substring(0, messages.length() - 1);

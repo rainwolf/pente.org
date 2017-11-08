@@ -402,7 +402,7 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
 				int game = GridStateFactory.getGameId(data.getGame());
                 GridState state = GridStateFactory.createGridState(
                     game, data);
-
+                
                 // store moves
                 stmt = con.prepareStatement("insert into " + MOVE_TABLE + " " +
                     "(gid, move_num, next_move, hash_key, rotation, game, winner, " +
@@ -410,7 +410,7 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
                 	"values(?, ?, ?, ?, ?, ?, ?, ?, ?)");
                 stmt.setLong(1, data.getGameID());
                 
-                if (numMovesInDb == 0 && state.getNumMoves() > 0 && state.getMove(0) != 180) {
+                if (numMovesInDb == 0 && state.getNumMoves() > 0 && firstMoveCanBeOffCenter(game)) {
                     stmt.setInt(2, -1);
                     stmt.setInt(3, data.getMove(0));
                     stmt.setLong(4, 0);
@@ -460,6 +460,12 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
         }
     }
 
+    private boolean firstMoveCanBeOffCenter(int gameId) {
+        return (gameId == GridStateFactory.DPENTE || gameId == GridStateFactory.SPEED_DPENTE ||
+                gameId == GridStateFactory.DKERYO || gameId == GridStateFactory.SPEED_DKERYO ||
+                gameId == GridStateFactory.TB_DPENTE || gameId == GridStateFactory.TB_DKERYO);
+    }
+    
     /** Gets the current number of moves stored for a game
      *  @param con A database connection
      *  @param gameID The unique game indentifier
