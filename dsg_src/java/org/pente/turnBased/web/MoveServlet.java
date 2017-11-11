@@ -260,6 +260,8 @@ public class MoveServlet extends HttpServlet {
 						numMoves += 1;
 					}
 					((CacheTBStorer) tbGameStorer).undoLastMove(gid, numMoves);
+					NotificationServer notificationServer = resources.getNotificationServer();
+					notificationServer.sendMoveNotification(playerData.getName(), game.getCurrentPlayer(), game.getGid(), GridStateFactory.getGameName(game.getGame()));
 				}
 
 				log4j.debug("forward to game page");
