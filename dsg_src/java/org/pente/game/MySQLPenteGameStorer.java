@@ -681,13 +681,8 @@ log4j.debug("select data complete");
                 moveStmt.setLong(1, gameID);
 
                 moveResult = moveStmt.executeQuery();
-                if (moveResult.next()) {
-                    if (moveResult.getInt(2) == -1) {
-                        gameData.addMove(moveResult.getInt(1));
-                    } else {
-                        gameData.addMove(180); //180 is always 1st move, not anymore
-                        gameData.addMove(moveResult.getInt(1));
-                    }
+                if (!firstMoveCanBeOffCenter(game)) {
+                    gameData.addMove(180);
                 }
                 while (moveResult.next()) {
                     gameData.addMove(moveResult.getInt(1));

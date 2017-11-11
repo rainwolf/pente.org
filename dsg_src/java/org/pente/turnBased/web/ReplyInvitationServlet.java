@@ -11,6 +11,7 @@ import org.pente.kingOfTheHill.CacheKOTHStorer;
 import org.pente.kingOfTheHill.Hill;
 import org.pente.kingOfTheHill.KOTHException;
 import org.pente.kingOfTheHill.KOTHStorer;
+import org.pente.notifications.NotificationServer;
 import org.pente.turnBased.*;
 import org.pente.gameServer.core.*;
 import org.pente.gameServer.server.*;
@@ -255,7 +256,24 @@ public class ReplyInvitationServlet extends HttpServlet {
 									tbGameStorer.storeNewMessage(game.getGid(), m);
 								}
 							}
-							
+							NotificationServer notificationServer = resources.getNotificationServer();
+							for (int i = 0; i < 2; i++) {
+								TBGame game = set.getGames()[i];
+								if (game == null) {
+									continue;
+								}
+								DSGPlayerData playerData = null;
+								try {
+									playerData = dsgPlayerStorer.loadPlayer(game.getOpponent(game.getCurrentPlayer()));
+								} catch (DSGPlayerStoreException e) {
+									e.printStackTrace();
+								}
+								if (game.getCurrentPlayer() != 23000000020606L) {
+									notificationServer.sendMoveNotification(playerData.getName(), game.getCurrentPlayer(), game.getGid(), GridStateFactory.getGameName(game.getGame()));
+								}
+							}
+
+
 							if (isMobile == null) {
 						        response.sendRedirect(request.getContextPath() + successPage);
 							} else {
