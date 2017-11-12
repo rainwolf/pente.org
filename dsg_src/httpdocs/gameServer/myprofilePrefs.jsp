@@ -1,4 +1,5 @@
 <%@ page import="java.util.*,
+                  org.pente.turnBased.*,
                  org.pente.gameServer.core.*, 
                  com.jivesoftware.forum.*" %>
 
@@ -10,6 +11,9 @@ DSGPlayerData dsgPlayerData = (DSGPlayerData) request.getAttribute("dsgPlayerDat
 if (dsgPlayerData == null) {
   throw new Exception("Illegal access attempted");
 }
+  Resources resources = (Resources) application.getAttribute(
+   Resources.class.getName());
+
 List prefs = (List) request.getAttribute("prefs");
 List<Date> vacationDays = (List<Date>) request.getAttribute("vacationDays");
 List<DSGIgnoreData> ignoreData = (List<DSGIgnoreData>) request.getAttribute("ignoreData");
@@ -179,7 +183,10 @@ pageContext.setAttribute("current", "My Profile");
 <tr>
    <td><br>
      <b>Vacation days:</b><br>
-<% int floatingHourDays = dsgPlayerStorer.loadFloatingVacationDays(dsgPlayerData.getPlayerID()); %>
+        <% 
+        CacheTBStorer tbGameStorer = (CacheTBStorer) resources.getTbGameStorer();
+        TBVacation vacation = tbGameStorer.getTBVacation(dsgPlayerData.getPlayerID());
+        int floatingHourDays = vacation.getHoursLeft(); %>
 You get <%=MySQLDSGPlayerStorer.FLOATINGVACATIONDAYS%> floating vacation days each year, and you have <font color="red"> <%=floatingHourDays/24%> days and <%=floatingHourDays % 24%> hours</font> left for <b> <%=Calendar.getInstance().get(Calendar.YEAR)%></b>.
 (These vacation days do not roll over to <%=Calendar.getInstance().get(Calendar.YEAR) + 1%>.)
 

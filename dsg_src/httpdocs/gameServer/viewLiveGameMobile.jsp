@@ -24,6 +24,9 @@ String moves="";
 for (int i = 0; i < game.getNumMoves(); i++) {
     moves += game.getMove(i) + ",";
 }
+if (game.getNumMoves() == 0) {
+  moves = ",";
+}
 
 
 boolean turnBased = false;
@@ -164,8 +167,8 @@ if (color == null) {
 </tr>
 
 <%   
-   }
-%>
+   } else {
+%> 
 <br>
 <!-- <ul>
           <li>Tap anywhere on the board and the game will reset to its final state.
@@ -899,6 +902,10 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
 </tr>
 
 </table>
+
+<%
+ }
+%>
 
 
 <%@ include file="end.jsp" %>

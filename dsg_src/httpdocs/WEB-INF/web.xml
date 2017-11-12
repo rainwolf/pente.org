@@ -432,6 +432,15 @@
 
   <servlet>
     <servlet-name>
+      ChangeEmailPreferenceServlet
+    </servlet-name>
+    <servlet-class>
+      org.pente.gameServer.client.web.ChangeEmailPreferenceServlet
+    </servlet-class>
+  </servlet>
+
+  <servlet>
+    <servlet-name>
       DonationServlet
     </servlet-name>
     <servlet-class>
@@ -685,6 +694,11 @@
   <servlet-mapping>
     <servlet-name>TournamentServlet</servlet-name>
     <url-pattern>/gameServer/tournament</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>ChangeEmailPreferenceServlet</servlet-name>
+    <url-pattern>/gameServer/changeEmailPreference</url-pattern>
   </servlet-mapping>
 
   <session-config>
