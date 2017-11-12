@@ -69,6 +69,7 @@ for (Iterator<WhosOnlineRoom> iterator = rooms.iterator(); iterator.hasNext();) 
 DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
 DSGPlayerData dsgPlayerData = dsgPlayerStorer.loadPlayer(name);
 long myPID = dsgPlayerData.getPlayerID();
+List<DSGPlayerPreference> prefs = dsgPlayerStorer.loadPlayerPreferences(myPID);
 TourneyStorer tourneyStorer = resources.getTourneyStorer();
 List<Tourney> currentTournies = (List<Tourney>) tourneyStorer.getCurrentTournies();
 final CacheKOTHStorer  kothStorer = resources.getKOTHStorer();
@@ -329,11 +330,18 @@ No Ads
 
 EndOfSettingsParameters
 <%
+boolean emailMe = true;
+for (DSGPlayerPreference pref : prefs) {
+    if ("emailDsgMessages".equals(pref.getName())) {
+        emailMe = ((Boolean) pref.getValue()).booleanValue();
+        break;
+    }
+}
 boolean subscriber = dsgPlayerData.hasPlayerDonated(); 
 boolean dbAccess = subscriber || dsgPlayerData.getRegisterDate().getTime() > System.currentTimeMillis() - 1000L*3600*24*30;
 dbAccess = true;
 %>
-<%=dsgPlayerData.getName().toLowerCase() + ";" + (subscriber?dsgPlayerData.getNameColorRGB():0) + ";" + (dsgPlayerData.showAds()?"ShowAds":"NoAds") + ";" + (subscriber?"subscriber":"freeloader") + ";" + livePlayers + ";" + (dbAccess?"dbAccessGranted":"dbAccessDenied")%>
+<%=dsgPlayerData.getName().toLowerCase() + ";" + (subscriber?dsgPlayerData.getNameColorRGB():0) + ";" + (dsgPlayerData.showAds()?"ShowAds":"NoAds") + ";" + (subscriber?"subscriber":"freeloader") + ";" + livePlayers + ";" + (dbAccess?"dbAccessGranted":"dbAccessDenied") + ";" + (emailMe?"emailMe":"noEmail")%>
 
 King of the Hill<%
 Hill hill;

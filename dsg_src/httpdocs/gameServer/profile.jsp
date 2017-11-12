@@ -28,16 +28,15 @@ DSGPlayerData dsgPlayerData = (DSGPlayerData) request.getAttribute("dsgPlayerDat
 if (dsgPlayerData != null){
     conditionalHeading = "Player Profile";
 }
-
-  Resources resources = (Resources) application.getAttribute(
-   Resources.class.getName());
-
 %>
 
 <% pageContext.setAttribute("title", conditionalHeading); %>
 <%@ include file="begin.jsp" %>
 
 <%
+Resources resources = (Resources) application.getAttribute(
+   Resources.class.getName());
+
 int hoursDiff2 = 0;
 DateFormat profileDateFormat = null;
 TimeZone playerTimeZone = null;

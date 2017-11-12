@@ -48,6 +48,8 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
     private Hashtable<Long, DSGPlayerData> cacheByID;
     private Hashtable<String, DSGPlayerData> cacheByName;
 
+    private HashMap<Long, List<DSGPlayerPreference>> cachedPrefs;
+    
     private Map<Long, List<DSGIgnoreData>> ignoreData;
     
     private List<PlayerDataChangeListener> listeners;
@@ -77,6 +79,8 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         checkSubscribersTimer = new Timer();
         checkSubscribersTimer.scheduleAtFixedRate(
                 new CheckSubscriptionsRunnable(), 1000000, 24L * 3600 * 1000);
+        
+        cachedPrefs = new HashMap<>();
     }
 
     public synchronized void addPlayerDataChangeListener(
@@ -349,15 +353,21 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         return basePlayerStorer.getNumPlayers(game, showProvisional, showInactive, playerType);
     }
 
-    // no great need to cache these i don't think
+    // no great need to cache these i don't think, I think now yes
     public List<DSGPlayerPreference> loadPlayerPreferences(long playerID)
         throws DSGPlayerStoreException {
-        
-        return basePlayerStorer.loadPlayerPreferences(playerID);
+        List<DSGPlayerPreference> prefs = cachedPrefs.get(playerID); 
+        if (prefs != null) {
+            return prefs;
+        }
+        prefs = basePlayerStorer.loadPlayerPreferences(playerID);
+        cachedPrefs.put(playerID, prefs);
+        return prefs;
     }
     public void storePlayerPreference(long playerID, DSGPlayerPreference pref)
         throws DSGPlayerStoreException {
         basePlayerStorer.storePlayerPreference(playerID, pref);
+        cachedPrefs.remove(playerID);
     }
     public List<java.util.Date> loadVacationDays(long playerID) throws DSGPlayerStoreException {
         return basePlayerStorer.loadVacationDays(playerID);
