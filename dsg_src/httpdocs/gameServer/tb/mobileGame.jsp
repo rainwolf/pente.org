@@ -252,17 +252,8 @@ function changeHidden() {
     <br>
     <br>
 <label><input id="cycleCheck" name="cycleCheck" type="checkbox" onclick="changeCycle()" /> check this to cycle to the next game after submitting</label>
-<% if (meData.hasPlayerDonated()) { 
-      if (game.canHide(meData.getPlayerID()) || game.canUnHide(meData.getPlayerID())) { %>
+<%   } %>
 <br>
-<label><input id="hideCheck" name="hideCheck" type="checkbox" onclick="changeHidden()" <%=(game.isHidden()?"checked":"")%>/> hide this game from public view</label>
-<%      
-      }
-   } %>
-<br>
-<%
-}
-%>
 
 
     <div class="buttonwrapper" style="margin-top:5px; width:580px;">
@@ -300,7 +291,14 @@ function changeHidden() {
 }
 %>
     </div>
-
+<% if (!"false".equals(myTurn) && meData.hasPlayerDonated()) { 
+      if (game.canHide(meData.getPlayerID()) || game.canUnHide(meData.getPlayerID())) { %>
+<br>
+<label><input id="hideCheck" name="hideCheck" type="checkbox" onclick="changeHidden()" <%=(game.isHidden()?"checked":"")%>/> hide this game from public view</label>
+<%      
+      }
+    }
+%>
 </td>
 
 <td valign="top">

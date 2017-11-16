@@ -365,7 +365,19 @@ if (dsgPlayerData != null) {
          <%}%>
 
     <% } %>
-<% if ("rainwolf".equals(name)) { %>
+<% if ("rainwolf".equals(name)) { 
+int weekend[]=new int[] { 7, 1 };
+List prefs = dsgPlayerStorer.loadPlayerPreferences(dsgPlayerData.getPlayerID());
+if (prefs != null) {
+  for (Iterator it = prefs.iterator(); it.hasNext();) {
+    DSGPlayerPreference p = (DSGPlayerPreference) it.next();
+    if ("weekend".equals(p.getName())) {
+      weekend = (int[]) p.getValue();
+    }
+  }
+}
+%>
+<!-- weekend: <%=""+weekend[0]%> <%=""+weekend[1]%> -->
         <input type="button" value="Refresh Player Cache"
          onclick="javascript:window.location='/gameServer/admin/refreshPlayer.jsp?name=<%= dsgPlayerData.getName() %>';">
         <input type="button" value="View TB Cache"
