@@ -1,0 +1,13 @@
+  for i in `seq 1 8`;
+        do
+			rgb=$((255-($i-1)*255/26))
+            # echo "convert kothcrown.png -fill 'rgb(${rgb},${rgb},${rgb})' -opaque white kothcrown$i.png"
+			convert kothcrown.png -fill "rgb(${rgb},${rgb},${rgb})" -opaque white kothcrown${i}.png
+        done  
+
+  for i in `seq 8 27`;
+        do
+			rgb=$((255-($i-1)*255/26))
+            # echo "convert kothcrown.png -fill 'rgb(${rgb},${rgb},${rgb})' -opaque white kothcrown$i.png"
+			convert kothcrownWhitedots.png -fill "rgb(${rgb},${rgb},${rgb})" -opaque red kothcrown${i}.png
+        done  
