@@ -200,16 +200,16 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 				tbGame.setUndoRequested(false);
 				((MySQLTBGameStorer)baseStorer).undoLastMove(gid);
 			}
-			long newTimeout = Utilities.calculateNewTimeout(
-					tbGame, dsgPlayerStorer);
-
-			tbGame.setTimeoutDate(new Date(newTimeout));
-
-			try {
-				baseStorer.updateGameAfterMove(tbGame);
-			} catch (TBStoreException e) {
-				e.printStackTrace();
-			}
+//			long newTimeout = Utilities.calculateNewTimeout(
+//					tbGame, dsgPlayerStorer);
+//
+//			tbGame.setTimeoutDate(new Date(newTimeout));
+//
+//			try {
+//				baseStorer.updateGameAfterMove(tbGame);
+//			} catch (TBStoreException e) {
+//				e.printStackTrace();
+//			}
 		}
 	}
 
@@ -219,10 +219,10 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 			try {
 				((MySQLTBGameStorer)baseStorer).storeNewMove(gid, tbGame.getNumMoves(), -1);
 				tbGame.setUndoRequested(true);
-				long newTimeout = Utilities.calculateNewTimeout(
-						tbGame, dsgPlayerStorer);
-
-				tbGame.setTimeoutDate(new Date(newTimeout));
+//				long newTimeout = Utilities.calculateNewTimeout(
+//						tbGame, dsgPlayerStorer);
+//
+//				tbGame.setTimeoutDate(new Date(newTimeout));
 
 				baseStorer.updateGameAfterMove(tbGame);
 			} catch (TBStoreException e) {
