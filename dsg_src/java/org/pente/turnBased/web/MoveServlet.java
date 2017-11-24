@@ -478,10 +478,11 @@ public class MoveServlet extends HttpServlet {
 // log4j.debug("************current player pid " + game.getCurrentPlayer());
 
 
+				NotificationServer notificationServer = resources.getNotificationServer();
 				if (!game.isCompleted() || game.getPlayer1Pid() == 23000000020606L || game.getPlayer2Pid() == 23000000020606L) {
-					NotificationServer notificationServer = resources.getNotificationServer();
 					notificationServer.sendMoveNotification(playerData.getName(), game.getCurrentPlayer(), game.getGid(), GridStateFactory.getGameName(game.getGame()));
 				}
+				notificationServer.sendSilentNotification(game.getOpponent(game.getCurrentPlayer()));
 
 				game.setUndoRequested(false);
 

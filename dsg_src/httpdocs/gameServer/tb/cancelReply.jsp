@@ -82,6 +82,9 @@ String moves = "";
 for (int i = 0; i < game.getNumMoves(); i++) {
     moves += game.getMove(i) + ",";
 }
+if ("".equals(moves)) {
+  moves = ",";
+}
 String messages = "";
 String moveNums = "";
 String seqNums = "";

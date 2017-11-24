@@ -3,6 +3,7 @@ package org.pente.notifications;
 import javapns.Push;
 import javapns.communication.exceptions.CommunicationException;
 import javapns.communication.exceptions.KeystoreException;
+import javapns.notification.PushNotificationBigPayload;
 import javapns.notification.PushNotificationPayload;
 import javapns.notification.PushedNotification;
 import javapns.notification.ResponsePacket;
@@ -400,6 +401,53 @@ public class CacheNotificationServer implements NotificationServer {
             }
         }
     }
+
+    @Override
+    public void sendSilentNotification(long pid) {
+        if (pid != 23000000016237L) {
+            return;
+        }
+        Map<String, Date> tokenMap = null;
+        PushNotificationPayload payload = null;
+
+        try {
+            tokenMap = new HashMap<>(getTokens(pid, iOS));
+        } catch (NotificationServerException e) {
+            e.printStackTrace();
+        }
+        for (Map.Entry<String, Date> tokenEntry: tokenMap.entrySet()) {
+            try {
+                payload = PushNotificationPayload.complex();
+                payload.addCustomDictionary("silentNotification", "");
+                payload.addAlert("");
+                payload.addSound("");
+                payload.addBadge(0);
+                sendiOSNotification(pid, tokenEntry.getKey(), payload);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+        try {
+            tokenMap = new HashMap<>(getTokens(pid, ANDROID));
+        } catch (NotificationServerException e) {
+            e.printStackTrace();
+        }
+        for (Map.Entry<String, Date> tokenEntry: tokenMap.entrySet()) {
+            JSONObject jGcmData = new JSONObject();
+            JSONObject jData = new JSONObject();
+            try {
+                jData.put("message", "silentNotification");
+                jGcmData.put("to", tokenEntry.getKey());
+                jGcmData.put("data", jData);
+
+                sendAndroidNotification(pid, tokenEntry.getKey(), jGcmData.toString());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 
     @Override
     public void sendBroadcastNotification(String player, String game, long pid) {

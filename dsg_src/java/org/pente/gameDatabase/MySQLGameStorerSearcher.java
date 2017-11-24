@@ -366,15 +366,15 @@ System.out.println("move_num = " + (requestData.getNumMoves() - 1));
 				//indicates game ended at this point
 				//but still include in total game count
 
-System.out.println("move before rot, " + move);
+//System.out.println("move before rot, " + move);
                 if (requestData.getNumMoves() == 0) {
                     move = state.rotateFirstMove(move, rotation);
                 } else {
                     move = state.rotateMoveToLocalRotation(move, rotation);
                 }
 
-System.out.println("move after rot, " + move);
-System.out.println("rotation, " + rotation);
+//System.out.println("move after rot, " + move);
+//System.out.println("rotation, " + rotation);
 
                 if (winner != GameData.UNKNOWN) {
 
