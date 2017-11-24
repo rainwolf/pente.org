@@ -95,7 +95,7 @@ org.pente.game.*, java.text.*, java.util.*" %>
     } else {
         dbAccess = pdata.databaseAccess() || pdata.getRegisterDate().getTime() > System.currentTimeMillis() - 1000L*3600*24*30;
     }
-    dbAccess = true;
+    // dbAccess = true;
 %>
 
 <% String searchURL = request.getContextPath() + "/gameServer/controller/search?quick_start=1";

@@ -56,15 +56,18 @@ Resources resources = (Resources) application.getAttribute(
    Resources.class.getName());
 SessionListener sessionListener = (SessionListener) application.getAttribute(SessionListener.class.getName());
 List<WhosOnlineRoom> rooms = WhosOnline.getPlayers(resources, sessionListener);
+List<String> onlinePlayerNames = new ArrayList<>();
 int livePlayers = 0;
 for (Iterator<WhosOnlineRoom> iterator = rooms.iterator(); iterator.hasNext();) {
     WhosOnlineRoom r = iterator.next();
+    for (DSGPlayerData d : r.getPlayers()) {
+        onlinePlayerNames.add(d.getName());
+    }
     if ("web".equals(r.getName()) || "Mobile".equals(r.getName())) {
         continue;
     }
     livePlayers += r.getPlayers().size();
 }
-
 
 DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
 DSGPlayerData dsgPlayerData = dsgPlayerStorer.loadPlayer(name);
@@ -339,7 +342,7 @@ for (DSGPlayerPreference pref : prefs) {
 }
 boolean subscriber = dsgPlayerData.hasPlayerDonated(); 
 boolean dbAccess = subscriber || dsgPlayerData.getRegisterDate().getTime() > System.currentTimeMillis() - 1000L*3600*24*30;
-dbAccess = true;
+// dbAccess = true;
 %>
 <%=dsgPlayerData.getName().toLowerCase() + ";" + (subscriber?dsgPlayerData.getNameColorRGB():0) + ";" + (dsgPlayerData.showAds()?"ShowAds":"NoAds") + ";" + (subscriber?"subscriber":"freeloader") + ";" + livePlayers + ";" + (dbAccess?"dbAccessGranted":"dbAccessDenied") + ";" + (emailMe?"emailMe":"noEmail")%>
 
@@ -656,6 +659,16 @@ for (Tourney tmpTourney : currentTournies) {
 <%=tourney.getName() + ";" + tourney.getEventID() + ";" + tourney.getNumRounds() + ";" + (tourney.isTurnBased()?"tb-":"") + GridStateFactory.getGameName(tourney.getGame()) + ";" + (tourney.getNumRounds()==0?"2":"3") + ";" + dateFormat.format(tourney.getStartDate()) %><%}
 %>
 
+<%
+String onlineOutStr = "";
+for (String playerName : onlinePlayerNames) {
+    if (onlineOutStr.length() > 1) {
+        onlineOutStr = onlineOutStr + ";";
+    }
+    onlineOutStr = onlineOutStr + playerName;
+}
+%>
+OnlinePlayers:<%=onlineOutStr%>
 
  <%
         }

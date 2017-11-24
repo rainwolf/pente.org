@@ -18,6 +18,7 @@ public interface NotificationServer {
     void sendInvitationNotification(String fromName, long pid, long setId, String gameName);
     void sendMessageNotification(String fromName, long pid, long messageId, String subject);
     void sendAdminNotification(String message);
+    void sendSilentNotification(long pid);
     void sendBroadcastNotification(String player, String game, long pid);
     boolean canBroadcast(long pid);
     void storeBroadcastDate(long pid);

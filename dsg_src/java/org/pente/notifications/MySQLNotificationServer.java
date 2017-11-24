@@ -179,6 +179,11 @@ public class MySQLNotificationServer implements NotificationServer {
         // no sql applicable
     }
 
+    @Override
+    public void sendSilentNotification(long pid) {
+        // no sql applicable
+    }
+
     public void removeOldTokens() throws NotificationServerException {
         Connection con = null;
         PreparedStatement stmt = null;
