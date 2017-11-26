@@ -482,7 +482,6 @@ public class MoveServlet extends HttpServlet {
 				if (!game.isCompleted() || game.getPlayer1Pid() == 23000000020606L || game.getPlayer2Pid() == 23000000020606L) {
 					notificationServer.sendMoveNotification(playerData.getName(), game.getCurrentPlayer(), game.getGid(), GridStateFactory.getGameName(game.getGame()));
 				}
-				notificationServer.sendSilentNotification(game.getOpponent(game.getCurrentPlayer()));
 
 				game.setUndoRequested(false);
 
@@ -511,6 +510,7 @@ public class MoveServlet extends HttpServlet {
 							}
 						}
 					}
+					notificationServer.sendSilentNotification(game.getOpponent(game.getCurrentPlayer()));
 
 					if (gameId != 0) {
 						String redirectPage = "/gameServer/tb/game?gid=" + gameId + "&command=load&mobile&cycle";

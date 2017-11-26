@@ -44,6 +44,8 @@ public class SimpleGameStorerSearchRequestFilterData implements GameStorerSearch
     private int     winner;
     private boolean searchNextMoves = true;
 
+    private int ratingAbove;
+
     //private static Category cat = Category.getInstance(SimpleGameStorerSearchRequestFilterData.class.getName());
 
 	
@@ -269,6 +271,8 @@ public class SimpleGameStorerSearchRequestFilterData implements GameStorerSearch
     public boolean doGetNextMoves() {
     	return searchNextMoves;
     }
-    
-    
+
+    public int getRatingAbove() { return ratingAbove; }
+    public void setRatingAbove(int ratingAbove) { this.ratingAbove = ratingAbove; }
+
 }

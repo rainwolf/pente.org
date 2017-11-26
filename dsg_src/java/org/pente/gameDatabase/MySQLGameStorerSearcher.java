@@ -233,6 +233,17 @@ log4j.debug("search time: " + totalTime);
             filterOptionsWhere.append("and m.winner = ? ");
             filterOptionsParams.addElement(new Integer(filterData.getWinner()));
         }
+        
+        if (filterData.getRatingAbove() > 0) {
+            if (!includeGameTable) {
+                addGameTable(filterOptionsFrom, filterOptionsWhere);
+                includeGameTable = true;
+            }
+            filterOptionsWhere.append("and g.player1_rating > ? ");
+            filterOptionsWhere.append("and g.player2_rating > ? ");
+            filterOptionsParams.addElement(new Integer(filterData.getRatingAbove()));
+            filterOptionsParams.addElement(new Integer(filterData.getRatingAbove()));
+        }
 		return includeGameTable;
     }
 
