@@ -1098,6 +1098,8 @@ function submitForm() {
     var afterDateValid = false;
     var beforeDateValid = false;
 
+    var aboveRating = document.filter_options_data.rating_above.value;
+
     if (isValidDate(afterDateStr)) {
         afterDate = getDate(afterDateStr);
         afterDateValid = true;
@@ -1131,6 +1133,9 @@ function submitForm() {
         filterData += "&" + "before_date=" + escape(getDateStr(beforeDate));
     }
 
+    if (aboveRating>0) {
+        filterData += "&" + "rating_above=" + aboveRating;
+    }
 
     filterData = "filter_data=" + escape(filterData);
 

@@ -79,6 +79,9 @@ public interface GameStorerSearchRequestFilterData extends Cloneable {
     
     public void setGetNextMoves(boolean nextMoves);
     public boolean doGetNextMoves();
-    
+
+    public int getRatingAbove();
+    public void setRatingAbove(int ratingAbove);
+
     public Object clone();
 }

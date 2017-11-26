@@ -470,7 +470,7 @@ var imagePath = "<%= request.getContextPath() %>/gameServer/images/";
         }
 
         String selectNames[] = new String[] { "Game", "Site", "Event", "Round", "Section" };
-        StringBuffer table[][] = new StringBuffer[5][4];
+        StringBuffer table[][] = new StringBuffer[6][4];
         for (int i = 0; i < table.length; i++) {
             for (int j = 0; j < table[i].length; j++) {
                 table[i][j] = new StringBuffer();
@@ -524,6 +524,21 @@ var imagePath = "<%= request.getContextPath() %>/gameServer/images/";
             table[4][3].append(">" + winnerSelectNames[i] + "</option>");
         }
         table[4][3].append("</select>");
+
+        table[5][0].append("&nbsp;");
+        table[5][1].append("&nbsp;");
+        table[5][2].append("<b><font color=\"white\">Rating above</font></b>");
+        table[5][3].append("<select name=\"" + SimpleGameStorerSearchRequestFilterFormat.RATING_PARAM + "\" tabindex=\"10\">");
+//        table[5][3].append("<select name=\"rating_above\" tabindex=\"10\">");
+        table[5][3].append("<option value=\"0\">0</option>");
+        for (int i = 1600; i < 2800; i += 100) {
+            table[5][3].append("<option value=\"" + i + "\"");
+            if (filterData.getRatingAbove() == i) {
+                table[5][3].append(" selected");
+            }
+            table[5][3].append(">" + i + "</option>");
+        }
+        table[5][3].append("</select>");
 %>
 
 <tr><td colspan="2">

@@ -50,6 +50,7 @@ public class SimpleGameStorerSearchRequestFilterFormat implements ObjectFormat {
     public static final String      AFTER_DATE_PARAM =      "after_date";
     public static final String      BEFORE_DATE_PARAM =     "before_date";
     public static final String      WINNER_PARAM =          "winner";
+    public static final String      RATING_PARAM =          "rating_above";
 
     public static final DateFormat  shortDateFormat = new SimpleDateFormat("MM/dd/yyyy");
     public static final DateFormat  longDateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
@@ -225,14 +226,19 @@ public class SimpleGameStorerSearchRequestFilterFormat implements ObjectFormat {
                     buffer.append(longDateFormat.format(filterData.getBeforeDate()));
                 }
             }
-    
+
             if (filterData.getWinner() != GameData.UNKNOWN) {
                 buffer.append(paramSeparator);
                 buffer.append(WINNER_PARAM);
                 buffer.append("=");
                 buffer.append(filterData.getWinner());
             }
-        
+
+            buffer.append(paramSeparator);
+            buffer.append(RATING_PARAM);
+            buffer.append("=");
+            buffer.append(filterData.getRatingAbove());
+
         } catch (UnsupportedEncodingException e) {
         }
 
@@ -332,13 +338,20 @@ public class SimpleGameStorerSearchRequestFilterFormat implements ObjectFormat {
                     filterData.setBeforeDate(longDateFormat.parse(beforeDateStr));
                 }
             }
-    
+
             String winnerStr = (String) params.get(WINNER_PARAM);
             if (winnerStr != null) {
                 filterData.setWinner(Integer.parseInt(winnerStr));
             }
             else {
                 filterData.setWinner(0);
+            }
+
+            String ratingStr = (String) params.get(RATING_PARAM);
+            if (ratingStr != null) {
+                filterData.setRatingAbove(Integer.parseInt(ratingStr));
+            } else {
+                filterData.setRatingAbove(0);
             }
 
         } catch (Exception ex) {
