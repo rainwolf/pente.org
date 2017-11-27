@@ -166,6 +166,9 @@ log4j.debug("search time: " + totalTime);
         if (filterData.getPlayer1Name() != null && filterData.getPlayer1Name().trim().length() > 0) {
             filterOptionsFrom.append(", player p1 ");
 
+            String pStr = filterData.getPlayer1Name().replace(" ", "");
+            String[] pStrArray = pStr.split(",");
+            
 			if (!includeGameTable) {
 				addGameTable(filterOptionsFrom, filterOptionsWhere);
 				includeGameTable = true;
@@ -180,15 +183,29 @@ log4j.debug("search time: " + totalTime);
 			if (siteData != null) {
 				filterOptionsWhere.append("and p1.site_id = " + siteData.getSiteID() + " ");
 			}
-			filterOptionsWhere.append("and p1.name_lower = ?  ");
+			
 			//filterOptionsWhere.append("and p1.name_lower = '" + 
 			//	filterData.getPlayer1Name().toLowerCase() + "' ");
 
-            filterOptionsParams.addElement(filterData.getPlayer1Name().toLowerCase());
+            filterOptionsWhere.append("and (");
+			boolean fst = true;
+            for(String s: pStrArray) {
+                if (fst) {
+                    fst = false;
+                } else {
+                    filterOptionsWhere.append("or  ");
+                }
+                filterOptionsWhere.append("p1.name_lower = ?  ");
+                filterOptionsParams.addElement(s.toLowerCase());
+            }
+            filterOptionsWhere.append(") ");
         }
         if (filterData.getPlayer2Name() != null && 
 			filterData.getPlayer2Name().trim().length() > 0) {
             filterOptionsFrom.append(", player p2 ");
+
+            String pStr = filterData.getPlayer2Name().replace(" ", "");
+            String[] pStrArray = pStr.split(",");
 
 			if (!includeGameTable) {
 				addGameTable(filterOptionsFrom, filterOptionsWhere);
@@ -205,11 +222,21 @@ log4j.debug("search time: " + totalTime);
 				filterOptionsWhere.append("and p2.site_id = " + siteData.getSiteID() + " ");
 			}
 			
-            filterOptionsWhere.append("and p2.name_lower = ? "); 
             //filterOptionsWhere.append("and p2.name_lower = '" + 
            	//	filterData.getPlayer2Name().toLowerCase() + "' ");
 
-            filterOptionsParams.addElement(filterData.getPlayer2Name().toLowerCase());
+            filterOptionsWhere.append("and (");
+            boolean fst = true;
+            for(String s: pStrArray) {
+                if (fst) {
+                    fst = false;
+                } else {
+                    filterOptionsWhere.append("or  ");
+                }
+                filterOptionsWhere.append("p2.name_lower = ?  ");
+                filterOptionsParams.addElement(s.toLowerCase());
+            }
+            filterOptionsWhere.append(") ");
         }
 
         if (filterData.getAfterDate() != null) {
@@ -334,7 +361,7 @@ log4j.debug("search time: " + totalTime);
 					filterOptionsWhere2.toString() + ") as d2 " +
 					") as main group by nextm, rot, win";
 			}
-			log4j.debug(qryString);
+			log4j.debug("queryString (getSearchResults) :" + qryString);
 
             stmt = con.prepareStatement(qryString);
 
@@ -361,7 +388,9 @@ System.out.println("move_num = " + (requestData.getNumMoves() - 1));
 
                 setFilterOptionsParams(stmt, filterOptionsParams2, i);
             }
-            
+
+            log4j.debug("queryString (getSearchResults) : " + stmt.toString());
+
             result = stmt.executeQuery();
 
 //System.out.println("results");
@@ -508,8 +537,8 @@ System.out.println("move_num = " + (requestData.getNumMoves() - 1));
 					") as main order by play_d desc " +
 					"limit " + limitStart + ", " + limitLen;
         	}
-			
-			log4j.debug(qryString);
+
+            log4j.debug("queryString (getMatchingGames) : " + qryString);
 
             stmt = con.prepareStatement(qryString);
 
@@ -526,7 +555,9 @@ log4j.debug("move_num="+ (requestData.getNumMoves() - 1));
                 i += filterOptionsParams.size();
                 setFilterOptionsParams(stmt, filterOptionsParams2, i++);
             }
-            
+
+            log4j.debug("queryString (getMatchingGames) : " + stmt.toString());
+
             results = stmt.executeQuery();
 
             int cnt = 0;
