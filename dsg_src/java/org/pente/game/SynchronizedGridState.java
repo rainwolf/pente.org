@@ -216,6 +216,17 @@ public class SynchronizedGridState implements GridState {
     public synchronized int rotateMoveToLocalRotation(int move, int newRotation) {
         return gridState.rotateMoveToLocalRotation(move, newRotation);
     }
+
+    @Override
+    public int getFirstMoveRotation(int move) {
+        return gridState.getFirstMoveRotation(move);
+    }
+
+    @Override
+    public int rotateFirstMove(int move, int rotation) {
+        return gridState.rotateFirstMove(move, rotation);
+    }
+
     public synchronized int[] getAllPossibleRotations(int move, int newRotation) {
     	return gridState.getAllPossibleRotations(move, newRotation);
     }

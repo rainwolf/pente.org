@@ -1,0 +1,16 @@
+<project default="compile">
+	<path id="3rd-party-classpath">
+	    <fileset dir="./dsg_Src/lib">
+	        <include name="*.jar" />
+	    </fileset>
+	</path>
+    <target name="compile">
+        <mkdir dir="deployClasses"/>
+        <javac srcdir="deploy" destdir="deployClasses" debug="true" debuglevel="lines,vars,source">
+        	<classpath refid="3rd-party-classpath" />
+        </javac>
+<!-- 	    <classpath>
+	      <pathelement path="./dsg_src/lib/"/>
+	    </classpath>
+ -->    </target>
+</project>
