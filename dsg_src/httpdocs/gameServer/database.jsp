@@ -499,16 +499,16 @@ var imagePath = "<%= request.getContextPath() %>/gameServer/images/";
         }
 
         table[0][2].append("<b><font color=\"white\">Player 1 Name</font></b></td>");
-        table[0][3].append("<input type=\"text\" name=\"" + SimpleGameStorerSearchRequestFilterFormat.PLAYER_1_NAME_PARAM +  "\" value=\"" + player1Name + "\" size=\"10\" tabindex=\"5\">");
+        table[0][3].append("<input type=\"text\" name=\"" + SimpleGameStorerSearchRequestFilterFormat.PLAYER_1_NAME_PARAM +  "\" value=\"" + player1Name + "\" placeholder=\"comma-separated list\" size=\"20\" tabindex=\"5\">");
 
         table[1][2].append("<b><font color=\"white\">Player 2 Name</font></b>");
-        table[1][3].append("<input type=\"text\" name=\"" + SimpleGameStorerSearchRequestFilterFormat.PLAYER_2_NAME_PARAM + "\" value=\"" + player2Name + "\" size=\"10\" tabindex=\"6\">");
+        table[1][3].append("<input type=\"text\" name=\"" + SimpleGameStorerSearchRequestFilterFormat.PLAYER_2_NAME_PARAM + "\" value=\"" + player2Name + "\" placeholder=\"comma-separated list\" size=\"20\" tabindex=\"6\">");
 
         table[2][2].append("<b><font color=\"white\">After Date</font></b>");
-        table[2][3].append("<input type=\"text\" name=\"" + SimpleGameStorerSearchRequestFilterFormat.AFTER_DATE_PARAM + "\" value=\"" + afterDate + "\" size=\"10\" maxlength=\"10\" tabindex=\"7\">");
+        table[2][3].append("<input type=\"text\" name=\"" + SimpleGameStorerSearchRequestFilterFormat.AFTER_DATE_PARAM + "\" value=\"" + afterDate + "\" placeholder=\"MM/dd/YYYY format\" size=\"20\" maxlength=\"10\" tabindex=\"7\">");
 
         table[3][2].append("<b><font color=\"white\">Before Date</font></b>");
-        table[3][3].append("<input type=\"text\" name=\"" + SimpleGameStorerSearchRequestFilterFormat.BEFORE_DATE_PARAM + "\" value=\"" + beforeDate + "\" size=\"10\" maxlength=\"10\" tabindex=\"8\">");
+        table[3][3].append("<input type=\"text\" name=\"" + SimpleGameStorerSearchRequestFilterFormat.BEFORE_DATE_PARAM + "\" value=\"" + beforeDate + "\" placeholder=\"MM/dd/YYYY format\" size=\"20\" maxlength=\"10\" tabindex=\"8\">");
 
         table[4][0].append("&nbsp;");
         table[4][1].append("&nbsp;");
