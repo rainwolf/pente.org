@@ -197,7 +197,7 @@ public class MySQLDSGMessageStorer implements DSGMessageStorer {
 				"from dsg_message " +
 				"where to_pid = ? " +
 				"and viewable = 'Y' " +
-				"order by creation_date desc");
+				"order by creation_date desc limit 50");
 			stmt.setLong(1, pid);
 			
 			result = stmt.executeQuery();
