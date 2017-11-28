@@ -130,8 +130,25 @@ public class CacheMessageStorer implements DSGMessageStorer {
 		log4j.debug("CacheMessageStorer.deleteMessage(" + mid + ")");
 		
 		baseStorer.deleteMessage(mid);
-		uncacheMessage(mid);
+		DSGMessage m = messages.get(mid);
+		if (m != null) {
+            long pid = m.getToPid();
+            unCacheMessagesForPlayer(pid);
+        }
+//		uncacheMessage(mid);
 	}
+	
+	private void unCacheMessagesForPlayer(long pid) {
+        synchronized (cacheLock) {
+            List<Integer> mids = playerMids.get(pid);
+            if (mids != null) {
+                for (Integer mid: mids) {
+                    messages.remove(mid);
+                }
+                playerMids.remove(pid);
+            }
+        }
+    }
 
 	public DSGMessage getMessage(int mid) throws DSGMessageStoreException {
 
