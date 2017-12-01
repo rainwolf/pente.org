@@ -242,6 +242,56 @@ public class ReplyInvitationServlet extends HttpServlet {
 
                         if (error == null) {
 							log4j.debug("ReplyInvitationServlet, accept");
+							TBSet clonedBeginnerSet = null;
+							if (set.getInvitationRestriction() == TBSet.BEGINNER) {
+                                TBGame beginnerGame1 = null;
+                                TBGame beginnerGame2 = null;
+                                long pid1 = 0, pid2 = 0;
+                                boolean rated = set.isTwoGameSet();
+                                int game = 51, daysPerMove = 7, playAs = 1;
+                                for (int i = 0; i < 2; i++) {
+                                    TBGame tbGame = set.getGames()[i];
+                                    if (tbGame == null) continue;
+                                    game = tbGame.getGame();
+                                    daysPerMove = tbGame.getDaysPerMove();
+                                    if (tbGame.getPlayer1Pid() == 0) {
+                                        playAs = 2;
+                                    } else {
+                                        playAs = 1;
+                                    }
+                                }
+                                try {
+                                    if (rated) {
+                                        beginnerGame1 = createGame(1, invitee, null,
+                                                game, daysPerMove, true);
+    
+                                        beginnerGame2 = createGame(2, invitee, null,
+                                                game, daysPerMove, rated);
+    
+                                        pid1 = invitee.getPlayerID();
+                                    } else {
+                                        beginnerGame1 = createGame(playAs, invitee, null,
+                                                game, daysPerMove, rated);
+    
+                                        if (playAs == 1) {
+                                            pid1 = invitee.getPlayerID();
+                                        }
+                                        else {
+                                            pid2 = invitee.getPlayerID();
+                                        }
+                                    }
+                                    clonedBeginnerSet = new TBSet(beginnerGame1, beginnerGame2);
+                                    clonedBeginnerSet.setPlayer1Pid(pid1);
+                                    clonedBeginnerSet.setPlayer2Pid(pid2);
+                                    clonedBeginnerSet.setInviterPid(invitee.getPlayerID());
+                                    clonedBeginnerSet.setPrivateGame(false);
+                                    clonedBeginnerSet.setInvitationRestriction(TBSet.BEGINNER);
+                                    tbGameStorer.createSet(clonedBeginnerSet);
+                                } catch (Throwable throwable) {
+                                    throwable.printStackTrace();
+                                }
+
+                            }
 							tbGameStorer.acceptInvite(set, invitee.getPlayerID());
 							if (inviteeMessage != null) {
 								TBMessage m = new TBMessage();
@@ -272,6 +322,7 @@ public class ReplyInvitationServlet extends HttpServlet {
 									notificationServer.sendMoveNotification(playerData.getName(), game.getCurrentPlayer(), game.getGid(), GridStateFactory.getGameName(game.getGame()));
 								}
 							}
+							
 
 
 							if (isMobile == null) {
@@ -389,5 +440,28 @@ public class ReplyInvitationServlet extends HttpServlet {
                 request, response);
 		}
 
+    }
+    private TBGame createGame(int player, DSGPlayerData invitePlayer,
+                              DSGPlayerData inviteePlayer, int game, int daysPerMove, boolean rated) throws Throwable {
+
+        TBGame tbg = new TBGame();
+        tbg.setGame(game);
+        tbg.setDaysPerMove(daysPerMove);
+        tbg.setRated(rated);
+
+        if (player == 1) {
+            tbg.setPlayer1Pid(invitePlayer.getPlayerID());
+            if (inviteePlayer != null) {
+                tbg.setPlayer2Pid(inviteePlayer.getPlayerID());
+            }
+        }
+        else {
+            tbg.setPlayer2Pid(invitePlayer.getPlayerID());
+            if (inviteePlayer != null) {
+                tbg.setPlayer1Pid(inviteePlayer.getPlayerID());
+            }
+        }
+
+        return tbg;
     }
 }

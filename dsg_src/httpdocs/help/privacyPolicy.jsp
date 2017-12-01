@@ -26,7 +26,7 @@ In addition, pente.org serves advertisements to non-subscribers via the Google A
 and those users are additionally subject to <a href="https://www.google.com/intl/en/policies/privacy/">Google's privacy rules</a>.
 <br>
 <br>
-Currently, you can purchase pente.org subscription from our iOS app, Pente Live. Payment will be charged to your iTunes account, and your account will be charged for renewal within 24-hours prior to the end of the current period. Auto-renewal may be turned off at any time by going to your settings in the iTunes Store after purchase. Current subscription price is $7.99 USD/year and the subscription is valid for 1 year. Prices may vary in countries other than the U.S. and are subject to change without notice. No cancellation of the current subscription is allowed during the active subscription period. If you don’t choose to purchase a subscription you can simply continue playing for free.
+Currently, you can purchase pente.org subscription from our iOS app, Pente Live. Payment will be charged to your iTunes account, and your account will be charged for renewal within 24-hours prior to the end of the current period at the same cost. Auto-renewal may be turned off at any time by going to your settings in the iTunes Store after purchase. Current subscription price is $5.99 USD/year and the subscription is valid for 1 year. Prices may vary in countries other than the U.S. and are subject to change without notice. If you cancel during the active subscription period, the remainder of the subscription price for that year will be forfeited. If you don’t choose to purchase a subscription you can simply continue playing for free.
 <br>
 <br>
 <b><a href="helpWindow.jsp?file=register">&lt;&lt; Join</a>&nbsp;&nbsp;&nbsp;

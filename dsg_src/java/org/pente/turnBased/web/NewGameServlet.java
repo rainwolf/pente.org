@@ -183,6 +183,9 @@ public class NewGameServlet extends HttpServlet {
 			String invitationRestrictionString = request.getParameter("invitationRestriction");
 			if (invitationRestrictionString != null && invitationRestrictionString.length() > 0) {
 				invitationRestriction = invitationRestrictionString.charAt(0);
+				if (invitationRestriction == TBSet.BEGINNER && inviteePlayerData != null) {
+				    invitationRestriction = TBSet.ANY_RATING;
+                }
 			}
 		}
 

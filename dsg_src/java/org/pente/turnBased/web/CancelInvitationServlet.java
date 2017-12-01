@@ -96,9 +96,17 @@ public class CancelInvitationServlet extends HttpServlet {
 					loadRedirectPage);
 				return;
 		    }
-			
-			
-			// check that either invitation is open (no invitee) or that this
+
+            // beginner sets cannot be canceled
+            if (set.getInvitationRestriction() == 'B') {
+                log4j.error("Beginner sets cannot be canceled.");
+                handleError(request, response, "Beginner sets cannot be canceled.",
+                        loadRedirectPage);
+                return;
+            }
+
+
+            // check that either invitation is open (no invitee) or that this
 			// player is the invitee
 			if (set.getInviterPid() != inviter.getPlayerID()) {
 				log4j.error("CancelInvitationServlet, invalid player");

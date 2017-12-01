@@ -2,6 +2,6 @@
 
 rsync -v -u -r -t --exclude test --exclude opengl --stats --progress dsg_src/java/ deploy/
 ant
-rsync -vurt --stats --exclude .DS_Store --progress "deployClasses/" -e ssh "rainwolf@pente.org:~/tomcat/WEB-INF/classes/"
+rsync -vurt --checksum --stats --exclude .DS_Store --progress "deployClasses/" -e ssh "rainwolf@pente.org:~/tomcat/WEB-INF/classes/"
 ssh rainwolf@pente.org chown -R rainwolf:tomcat8 tomcat/WEB-INF/classes/
 ssh -t rainwolf@pente.org sudo ./restartTomcat.sh

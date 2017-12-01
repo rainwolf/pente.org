@@ -195,8 +195,14 @@ log4j.debug("search time: " + totalTime);
                 } else {
                     filterOptionsWhere.append("or  ");
                 }
-                filterOptionsWhere.append("p1.name_lower = ?  ");
-                filterOptionsParams.addElement(s.toLowerCase());
+                String sLower = s.toLowerCase();
+                if (sLower.contains("*")) {
+                    filterOptionsWhere.append("p1.name_lower like ?  ");
+                    filterOptionsParams.addElement(sLower.replace("*", "%"));
+                } else {
+                    filterOptionsWhere.append("p1.name_lower = ?  ");
+                    filterOptionsParams.addElement(sLower);
+                }
             }
             filterOptionsWhere.append(") ");
         }
@@ -233,8 +239,14 @@ log4j.debug("search time: " + totalTime);
                 } else {
                     filterOptionsWhere.append("or  ");
                 }
-                filterOptionsWhere.append("p2.name_lower = ?  ");
-                filterOptionsParams.addElement(s.toLowerCase());
+                String sLower = s.toLowerCase();
+                if (sLower.contains("*")) {
+                    filterOptionsWhere.append("p2.name_lower like ?  ");
+                    filterOptionsParams.addElement(sLower.replace("*", "%"));
+                } else {
+                    filterOptionsWhere.append("p2.name_lower = ?  ");
+                    filterOptionsParams.addElement(sLower);
+                }
             }
             filterOptionsWhere.append(") ");
         }
