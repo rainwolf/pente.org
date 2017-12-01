@@ -80,8 +80,14 @@ public interface GameStorerSearchRequestFilterData extends Cloneable {
     public void setGetNextMoves(boolean nextMoves);
     public boolean doGetNextMoves();
 
-    public int getRatingAbove();
-    public void setRatingAbove(int ratingAbove);
+    public int getRatingP1Above();
+    public void setRatingP1Above(int ratingP1Above);
+    public int getRatingP2Above();
+    public void setRatingP2Above(int ratingP2Above);
+    public boolean isExcludeTimeOuts();
+    public void setExcludeTimeOuts(boolean excludeTimeOuts);
+    public boolean isP1OrP2();
+    public void setP1OrP2(boolean p1OrP2);
 
     public Object clone();
 }

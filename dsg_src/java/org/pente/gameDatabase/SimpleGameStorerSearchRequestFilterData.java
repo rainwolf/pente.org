@@ -44,7 +44,10 @@ public class SimpleGameStorerSearchRequestFilterData implements GameStorerSearch
     private int     winner;
     private boolean searchNextMoves = true;
 
-    private int ratingAbove;
+    private int ratingP1Above;
+    private int ratingP2Above;
+    
+    private boolean excludeTimeOuts, p1OrP2;
 
     //private static Category cat = Category.getInstance(SimpleGameStorerSearchRequestFilterData.class.getName());
 
@@ -65,7 +68,11 @@ public class SimpleGameStorerSearchRequestFilterData implements GameStorerSearch
 		result = PRIME * result + ((round == null) ? 0 : round.hashCode());
 		result = PRIME * result + ((section == null) ? 0 : section.hashCode());
 		result = PRIME * result + ((site == null) ? 0 : site.hashCode());
-		result = PRIME * result + winner;
+        result = PRIME * result + winner;
+        result = PRIME * result + ratingP1Above;
+        result = PRIME * result + ratingP2Above;
+        result = PRIME * result + (excludeTimeOuts?1:0);
+        result = PRIME * result + (p1OrP2?1:0);
 		return result;
 	}
 
@@ -128,6 +135,15 @@ public class SimpleGameStorerSearchRequestFilterData implements GameStorerSearch
 			return false;
 		if (winner != other.winner)
 			return false;
+		if (ratingP1Above != other.ratingP1Above || ratingP2Above != other.ratingP2Above) {
+		    return false;
+        }
+        if (excludeTimeOuts != other.excludeTimeOuts) {
+		    return false;
+        }
+        if (p1OrP2 != other.p1OrP2) {
+		    return false;
+        }
 		return true;
 	}
 
@@ -272,7 +288,15 @@ public class SimpleGameStorerSearchRequestFilterData implements GameStorerSearch
     	return searchNextMoves;
     }
 
-    public int getRatingAbove() { return ratingAbove; }
-    public void setRatingAbove(int ratingAbove) { this.ratingAbove = ratingAbove; }
+
+    public int getRatingP1Above() { return ratingP1Above; }
+    public void setRatingP1Above(int ratingP1Above) { this.ratingP1Above = ratingP1Above; }
+    public int getRatingP2Above() { return ratingP2Above; }
+    public void setRatingP2Above(int ratingP2Above) { this.ratingP2Above = ratingP2Above; }
+    public boolean isExcludeTimeOuts() { return excludeTimeOuts; }
+    public void setExcludeTimeOuts(boolean excludeTimeOuts) { this.excludeTimeOuts = excludeTimeOuts; }
+    public boolean isP1OrP2() { return p1OrP2; }
+    public void setP1OrP2(boolean p1OrP2) { this.p1OrP2 = p1OrP2; }
+
 
 }

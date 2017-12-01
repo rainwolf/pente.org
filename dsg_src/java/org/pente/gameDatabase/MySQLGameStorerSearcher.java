@@ -162,12 +162,15 @@ log4j.debug("search time: " + totalTime);
             filterOptionsWhere.append("and g.section = ? ");
             filterOptionsParams.addElement(filterData.getSection());
         }
+        
+        boolean createOrPlayers = filterData.isP1OrP2() &&
+                (filterData.getPlayer1Name() != null && filterData.getPlayer1Name().trim().length() > 0) &&
+                (filterData.getPlayer2Name() != null && filterData.getPlayer2Name().trim().length() > 0);
 
         if (filterData.getPlayer1Name() != null && filterData.getPlayer1Name().trim().length() > 0) {
             filterOptionsFrom.append(", player p1 ");
 
             String pStr = filterData.getPlayer1Name().replace(" ", "");
-            String[] pStrArray = pStr.split(",");
             
 			if (!includeGameTable) {
 				addGameTable(filterOptionsFrom, filterOptionsWhere);
@@ -187,27 +190,29 @@ log4j.debug("search time: " + totalTime);
 			//filterOptionsWhere.append("and p1.name_lower = '" + 
 			//	filterData.getPlayer1Name().toLowerCase() + "' ");
 
-            filterOptionsWhere.append("and (");
-			boolean fst = true;
-            for(String s: pStrArray) {
-                if (fst) {
-                    fst = false;
-                } else {
-                    filterOptionsWhere.append("or  ");
+            if (!createOrPlayers) {
+                String[] pStrArray = pStr.split(",");
+                filterOptionsWhere.append("and (");
+                boolean fst = true;
+                for(String s: pStrArray) {
+                    if (fst) {
+                        fst = false;
+                    } else {
+                        filterOptionsWhere.append("or  ");
+                    }
+                    String sLower = s.toLowerCase();
+                    if (sLower.contains("*")) {
+                        filterOptionsWhere.append("p1.name_lower like ?  ");
+                        filterOptionsParams.addElement(sLower.replace("*", "%"));
+                    } else {
+                        filterOptionsWhere.append("p1.name_lower = ?  ");
+                        filterOptionsParams.addElement(sLower);
+                    }
                 }
-                String sLower = s.toLowerCase();
-                if (sLower.contains("*")) {
-                    filterOptionsWhere.append("p1.name_lower like ?  ");
-                    filterOptionsParams.addElement(sLower.replace("*", "%"));
-                } else {
-                    filterOptionsWhere.append("p1.name_lower = ?  ");
-                    filterOptionsParams.addElement(sLower);
-                }
+                filterOptionsWhere.append(") ");
             }
-            filterOptionsWhere.append(") ");
         }
-        if (filterData.getPlayer2Name() != null && 
-			filterData.getPlayer2Name().trim().length() > 0) {
+        if (filterData.getPlayer2Name() != null && filterData.getPlayer2Name().trim().length() > 0) {
             filterOptionsFrom.append(", player p2 ");
 
             String pStr = filterData.getPlayer2Name().replace(" ", "");
@@ -231,14 +236,51 @@ log4j.debug("search time: " + totalTime);
             //filterOptionsWhere.append("and p2.name_lower = '" + 
            	//	filterData.getPlayer2Name().toLowerCase() + "' ");
 
+            if (!createOrPlayers) {
+                filterOptionsWhere.append("and (");
+                boolean fst = true;
+                for(String s: pStrArray) {
+                    if (fst) {
+                        fst = false;
+                    } else {
+                        filterOptionsWhere.append("or  ");
+                    }
+                    String sLower = s.toLowerCase();
+                    if (sLower.contains("*")) {
+                        filterOptionsWhere.append("p2.name_lower like ?  ");
+                        filterOptionsParams.addElement(sLower.replace("*", "%"));
+                    } else {
+                        filterOptionsWhere.append("p2.name_lower = ?  ");
+                        filterOptionsParams.addElement(sLower);
+                    }
+                }
+                filterOptionsWhere.append(") ");
+            }
+        }
+        if (createOrPlayers) {
+            String p1Str = filterData.getPlayer1Name().replace(" ", "");
+            String[] p1StrArray = p1Str.split(",");
             filterOptionsWhere.append("and (");
             boolean fst = true;
-            for(String s: pStrArray) {
+            for(String s: p1StrArray) {
                 if (fst) {
                     fst = false;
                 } else {
                     filterOptionsWhere.append("or  ");
                 }
+                String sLower = s.toLowerCase();
+                if (sLower.contains("*")) {
+                    filterOptionsWhere.append("p1.name_lower like ?  ");
+                    filterOptionsParams.addElement(sLower.replace("*", "%"));
+                } else {
+                    filterOptionsWhere.append("p1.name_lower = ?  ");
+                    filterOptionsParams.addElement(sLower);
+                }
+            }
+            String p2Str = filterData.getPlayer2Name().replace(" ", "");
+            String[] p2StrArray = p2Str.split(",");
+            for(String s: p2StrArray) {
+                filterOptionsWhere.append("or  ");
                 String sLower = s.toLowerCase();
                 if (sLower.contains("*")) {
                     filterOptionsWhere.append("p2.name_lower like ?  ");
@@ -270,18 +312,32 @@ log4j.debug("search time: " + totalTime);
 
         if (filterData.getWinner() != GameData.UNKNOWN) {
             filterOptionsWhere.append("and m.winner = ? ");
-            filterOptionsParams.addElement(new Integer(filterData.getWinner()));
+            filterOptionsParams.addElement(filterData.getWinner());
         }
-        
-        if (filterData.getRatingAbove() > 0) {
+
+        if (filterData.getRatingP1Above() > 0) {
             if (!includeGameTable) {
                 addGameTable(filterOptionsFrom, filterOptionsWhere);
                 includeGameTable = true;
             }
             filterOptionsWhere.append("and g.player1_rating > ? ");
+            filterOptionsParams.addElement(filterData.getRatingP1Above());
+        }
+        if (filterData.getRatingP2Above() > 0) {
+            if (!includeGameTable) {
+                addGameTable(filterOptionsFrom, filterOptionsWhere);
+                includeGameTable = true;
+            }
             filterOptionsWhere.append("and g.player2_rating > ? ");
-            filterOptionsParams.addElement(new Integer(filterData.getRatingAbove()));
-            filterOptionsParams.addElement(new Integer(filterData.getRatingAbove()));
+            filterOptionsParams.addElement(filterData.getRatingP2Above());
+        }
+        
+        if (filterData.isExcludeTimeOuts()) {
+            if (!includeGameTable) {
+                addGameTable(filterOptionsFrom, filterOptionsWhere);
+                includeGameTable = true;
+            }
+            filterOptionsWhere.append("and (g.status is NULL or g.status != \'" + GameData.STATUS_TIMEOUT + "\') ");
         }
 		return includeGameTable;
     }

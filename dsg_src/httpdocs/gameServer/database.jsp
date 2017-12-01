@@ -499,22 +499,44 @@ var imagePath = "<%= request.getContextPath() %>/gameServer/images/";
             table[i][1].append("</select>");
         }
 
+        int tabIdx = selectNames.length+1;
+
         table[0][2].append("<b><font color=\"white\">Player 1 Name</font></b></td>");
-        table[0][3].append("<input type=\"text\" name=\"" + SimpleGameStorerSearchRequestFilterFormat.PLAYER_1_NAME_PARAM +  "\" value=\"" + player1Name + "\" placeholder=\"comma-separated list/wildcards\" size=\"25\" tabindex=\"5\">");
+        table[0][3].append("<input type=\"text\" name=\"" + SimpleGameStorerSearchRequestFilterFormat.PLAYER_1_NAME_PARAM +  "\" value=\"" + player1Name + "\" placeholder=\"comma-separated list/wildcards\" size=\"25\" tabindex=\""+(tabIdx++)+"\">");
+        table[0][3].append("&nbsp<select name=\"" + SimpleGameStorerSearchRequestFilterFormat.P1RATING_PARAM + "\" tabindex=\""+(tabIdx++)+"\">");
+        table[0][3].append("<option value=\"0\">0</option>");
+        for (int i = 1600; i < 2800; i += 100) {
+            table[0][3].append("<option value=\"" + i + "\"");
+            if (filterData.getRatingP1Above() == i) {
+                table[0][3].append(" selected");
+            }
+            table[0][3].append(">above " + i + "</option>");
+        }
+        table[0][3].append("</select>");
 
         table[1][2].append("<b><font color=\"white\">Player 2 Name</font></b>");
-        table[1][3].append("<input type=\"text\" name=\"" + SimpleGameStorerSearchRequestFilterFormat.PLAYER_2_NAME_PARAM + "\" value=\"" + player2Name + "\" placeholder=\"comma-separated list/wildcards\" size=\"25\" tabindex=\"6\">");
+        table[1][3].append("<input type=\"text\" name=\"" + SimpleGameStorerSearchRequestFilterFormat.PLAYER_2_NAME_PARAM + "\" value=\"" + player2Name + "\" placeholder=\"comma-separated list/wildcards\" size=\"25\" tabindex=\""+(tabIdx++)+"\">");
+        table[1][3].append("&nbsp<select name=\"" + SimpleGameStorerSearchRequestFilterFormat.P2RATING_PARAM + "\" tabindex=\""+(tabIdx++)+"\">");
+        table[1][3].append("<option value=\"0\">0</option>");
+        for (int i = 1600; i < 2800; i += 100) {
+            table[1][3].append("<option value=\"" + i + "\"");
+            if (filterData.getRatingP2Above() == i) {
+                table[1][3].append(" selected");
+            }
+            table[1][3].append(">above " + i + "</option>");
+        }
+        table[1][3].append("</select>");
 
         table[2][2].append("<b><font color=\"white\">After Date</font></b>");
-        table[2][3].append("<input type=\"text\" name=\"" + SimpleGameStorerSearchRequestFilterFormat.AFTER_DATE_PARAM + "\" value=\"" + afterDate + "\" placeholder=\"MM/dd/YYYY format\" size=\"25\" maxlength=\"10\" tabindex=\"7\">");
+        table[2][3].append("<input type=\"text\" name=\"" + SimpleGameStorerSearchRequestFilterFormat.AFTER_DATE_PARAM + "\" value=\"" + afterDate + "\" placeholder=\"MM/dd/YYYY format\" size=\"25\" maxlength=\"10\" tabindex=\""+(tabIdx++)+"\">");
 
         table[3][2].append("<b><font color=\"white\">Before Date</font></b>");
-        table[3][3].append("<input type=\"text\" name=\"" + SimpleGameStorerSearchRequestFilterFormat.BEFORE_DATE_PARAM + "\" value=\"" + beforeDate + "\" placeholder=\"MM/dd/YYYY format\" size=\"25\" maxlength=\"10\" tabindex=\"8\">");
+        table[3][3].append("<input type=\"text\" name=\"" + SimpleGameStorerSearchRequestFilterFormat.BEFORE_DATE_PARAM + "\" value=\"" + beforeDate + "\" placeholder=\"MM/dd/YYYY format\" size=\"25\" maxlength=\"10\" tabindex=\""+(tabIdx++)+"\">");
 
         table[4][0].append("&nbsp;");
         table[4][1].append("&nbsp;");
         table[4][2].append("<b><font color=\"white\">Winner</font></b>");
-        table[4][3].append("<select name=\"selectWinner\" tabindex=\"9\">");
+        table[4][3].append("<select name=\"selectWinner\" tabindex=\""+(tabIdx++)+"\">");
 
         String winnerSelectNames[] = new String[] { "Either player", "Player 1", "Player 2" };
         for (int i = 0; i < winnerSelectNames.length; i++) {
@@ -528,18 +550,8 @@ var imagePath = "<%= request.getContextPath() %>/gameServer/images/";
 
         table[5][0].append("&nbsp;");
         table[5][1].append("&nbsp;");
-        table[5][2].append("<b><font color=\"white\">Rating above</font></b>");
-        table[5][3].append("<select name=\"" + SimpleGameStorerSearchRequestFilterFormat.RATING_PARAM + "\" tabindex=\"10\">");
-//        table[5][3].append("<select name=\"rating_above\" tabindex=\"10\">");
-        table[5][3].append("<option value=\"0\">0</option>");
-        for (int i = 1600; i < 2800; i += 100) {
-            table[5][3].append("<option value=\"" + i + "\"");
-            if (filterData.getRatingAbove() == i) {
-                table[5][3].append(" selected");
-            }
-            table[5][3].append(">" + i + "</option>");
-        }
-        table[5][3].append("</select>");
+        table[5][2].append("<label><input id=\"exclude_timeouts\" name=\"exclude_timeouts\" type=\"checkbox\" "+(filterData.isExcludeTimeOuts()?"checked":"")+" tabindex=\""+(tabIdx++)+"\"/> <font color=\"white\">exclude timeouts</font></label>");
+        table[5][3].append("<label><input id=\"p1_or_p2\" name=\"p1_or_p2\" type=\"checkbox\" "+(filterData.isP1OrP2()?"checked":"")+" tabindex=\""+(tabIdx++)+"\"/> <font color=\"white\">match player 1 or player 2</font></label>");
 %>
 
 <tr><td colspan="2">

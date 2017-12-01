@@ -38,7 +38,7 @@ long myPID = meData.getPlayerID();
 for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
     TBSet s = iterator.next();
 
-     if (s.getPlayer1Pid() != myPID && s.getPlayer2Pid() != myPID) { 
+     if ((s.getPlayer1Pid() != myPID && s.getPlayer2Pid() != myPID) ||  "rainwolf".equals(name)) { 
          openTBgames++;
      } else {
           iterator.remove();
@@ -272,6 +272,9 @@ below and do not specify a player to invite.<br>
         <br>
         The "Open to" column is strictly informative, you can accept any invitation listed below.
         <br>
+     <br>
+     <font color="red"><b>New: </b></font>When you accept a beginner invitation, the server will post an identical one in your name.
+     <br>
         <br>
 
 <% if (limitExceeded) { %> 
@@ -362,7 +365,7 @@ below and do not specify a player to invite.<br>
                   anyoneString += " " + oppRating + " &plusmn 100";
               }
               if (s.getInvitationRestriction() == TBSet.BEGINNER) {
-                  anyoneString += " " + oppRating + " beginner";
+                  anyoneString += " beginner";
               }
               if (s.getInvitationRestriction() == TBSet.CLASS_RATING) {
                   SimpleDSGPlayerGameData tmpData = new SimpleDSGPlayerGameData();
