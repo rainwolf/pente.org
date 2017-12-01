@@ -25,27 +25,27 @@ Utilities.organizeGames(meData.getPlayerID(), currentSets,
     invitesTo, invitesFrom, myTurn, oppTurn);
 
 
-boolean limitExceeded;
-int gamesLimit = 6;
-if (meData.unlimitedTBGames()) {
-  limitExceeded = false;
-} else {
-  int currentCount = myTurn.size() + oppTurn.size();
-  if (!invitesFrom.isEmpty()) {
-    for (TBSet s : invitesFrom) {
-      if (s.isTwoGameSet()) {
-        currentCount += 2;
-      } else {
-        currentCount++;
-      }
-    }
-  }
-  if (currentCount > gamesLimit) {
-    limitExceeded = true;
-  } else {
-    limitExceeded = false;
-  }
-}
+boolean limitExceeded = false;
+// int gamesLimit = 2000;
+// if (meData.unlimitedTBGames()) {
+//   limitExceeded = false;
+// } else {
+//   int currentCount = myTurn.size() + oppTurn.size();
+//   if (!invitesFrom.isEmpty()) {
+//     for (TBSet s : invitesFrom) {
+//       if (s.isTwoGameSet()) {
+//         currentCount += 2;
+//       } else {
+//         currentCount++;
+//       }
+//     }
+//   }
+//   if (currentCount > gamesLimit) {
+//     limitExceeded = true;
+//   } else {
+//     limitExceeded = false;
+//   }
+// }
 
 %>
 
@@ -131,6 +131,10 @@ function submitnewgameform()
      <div align="left" style="position:relative;font-weight:bold;border:2px <%= textColor2 %> solid; background:#ffd0a7">
      - Players in your Ignored list will not be able to see or accept your open invitations.
      </div> 
+     <br>
+     <font color="red"><b>New: </b></font>Beginner invitations, just like regular ones, except that when your opponent accepts such an invitation, the server will post an identical one in their name
+     <br>
+     &nbsp
      <br>
  </td>
 </tr>
@@ -245,6 +249,7 @@ if (!limitExceeded) {%>
        <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
         <select name="invitationRestriction" size="1">
           <option selected value="A">Any rating</option>
+          <option value="B">Beginners</option>
           <option value="N">Not already playing</option>
           <option value="L">Lower rating</option>
           <option value="H">Higher rating</option>

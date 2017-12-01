@@ -32,7 +32,8 @@ public class TBSet implements java.io.Serializable {
 	public static final char LOWER_RATING = 'L';
 	public static final char HIGHER_RATING = 'H';
 	public static final char SIMILAR_RATING = 'S';
-	public static final char CLASS_RATING = 'C';
+    public static final char CLASS_RATING = 'C';
+    public static final char BEGINNER = 'B';
 	private char invitationRestriction;
 
 	public TBSet(long setId) {

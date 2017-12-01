@@ -90,19 +90,23 @@ TourneyStorer tourneyStorer = resources.getTourneyStorer();
        <tr bgcolor="<%= bgColor1 %>">
         <td><font color="white">TB Pente</font></td>
         <td><font color="white">TB Pente (below 1800)</font></td>
+        <td><font color="white">TB Pente (1800 and over)</font></td>
        </tr>
       </tr>
       <tr>
         <td>Remember, remember, <br>the 5th of November (2016)</td>
         <td>Summer Renaissance (2017)</td>
+        <td>Pente Masters (2017)</td>
       </tr>
       <tr>
         <td><a href="../profile?viewName=brf">brf</a> <img src="/gameServer/images/bcrown.gif"></td>
         <td><a href="../profile?viewName=wilmar">wilmar</a> <img src="/gameServer/images/bcrown.gif"></td>
+        <td><a href="../profile?viewName=lupulo">lupulo</a> <img src="/gameServer/images/scrown.gif"></td>
       </tr>
       <tr>
         <td><img src="/gameServer/avatar?name=brf" style="width:125px;height:125px;"></td>
         <td><img src="/gameServer/avatar?name=wilmar" style="width:125px;height:125px;"></td>
+        <td><img src="/gameServer/avatar?name=lupulo" style="width:125px;height:125px;"></td>
       </tr>
      </table>
      </td>

@@ -262,6 +262,12 @@ Collections.sort(waitingSets, new Comparator<TBSet>() {
   public int compare(TBSet o1, TBSet o2) {
       boolean o1KotH = (kothStorer.getEventId(o1.getGame1().getGame()) == o1.getGame1().getEventId());
       boolean o2KotH = (kothStorer.getEventId(o2.getGame1().getGame()) == o2.getGame1().getEventId());
+      boolean beginner1 = o1.getInvitationRestriction() == TBSet.BEGINNER, beginner2 = o2.getInvitationRestriction() == TBSet.BEGINNER;
+      if (beginner1 && !beginner2) {
+          return -1;
+      } else if (!beginner1 && beginner2) {
+        return 1;
+      }
       if (o1KotH && !o2KotH) {
           return -1;
       } else if (!o1KotH && o2KotH) {
@@ -489,6 +495,9 @@ Invitations sent<%
                 } else if (g.isRated()) {
                     ratedStr = "Rated";
                 }
+                if (s.getInvitationRestriction() == TBSet.BEGINNER) {
+                    ratedStr = ratedStr + ", beginner";
+                }
                  if (pid != 0) {
                      d = dsgPlayerStorer.loadPlayer(pid);
                      dsgPlayerGameData = d.getPlayerGameData(s.getGame1().getGame());
@@ -620,6 +629,9 @@ Open Invitation Games<%
                     ratedStr = "KotH";
                 } else if (s.isTwoGameSet()) {
                     ratedStr = "Rated";
+                }
+                if (s.getInvitationRestriction() == TBSet.BEGINNER) {
+                    ratedStr = ratedStr + ", beginner";
                 }
                  DSGPlayerData d = dsgPlayerStorer.loadPlayer(s.getInviterPid());
                  DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(s.getGame1().getGame());%>
