@@ -706,6 +706,10 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 				gameData.setTimed(true);
 				gameData.setPrivateGame(set.isPrivateGame());
 				
+				if (game.getState() == TBGame.STATE_COMPLETED_TO) {
+				    gameData.setStatus(GameData.STATUS_TIMEOUT);
+                }
+				
 				DSGPlayerData player1 = null;
 				DSGPlayerData player2 = null;
 	        
@@ -1110,12 +1114,23 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         if (set.getState() == TBSet.STATE_ACTIVE) {
             for (int i = 0; i < 2; i++) {
                 TBGame game = set.getGames()[i];
-				if (game == null || 
-						game.getGame() == GridStateFactory.TB_DPENTE || 
-						game.getGame() == GridStateFactory.TB_DKERYO) {
-					continue;
-				}
+                if (game == null) {
+                    continue;
+                }
+                if (game.getGame() == GridStateFactory.TB_DPENTE ||
+                        game.getGame() == GridStateFactory.TB_DKERYO) {
+
+                    long newTimeout = Utilities.calculateNewTimeout(
+                            game, dsgPlayerStorer);
+                    synchronized (cacheTbLock) {
+                        game.setTimeoutDate(new Date(newTimeout));
+                    }
+                    baseStorer.updateGameAfterMove(game);
+                    continue;
+
+                }
                 storeNewMove(game.getGid(), 0, 180);
+				
             }
         }
 	}

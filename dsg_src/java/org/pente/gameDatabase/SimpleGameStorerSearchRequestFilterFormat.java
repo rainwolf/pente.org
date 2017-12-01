@@ -50,7 +50,12 @@ public class SimpleGameStorerSearchRequestFilterFormat implements ObjectFormat {
     public static final String      AFTER_DATE_PARAM =      "after_date";
     public static final String      BEFORE_DATE_PARAM =     "before_date";
     public static final String      WINNER_PARAM =          "winner";
+
     public static final String      RATING_PARAM =          "rating_above";
+    public static final String      P1RATING_PARAM =          "p1_rating_above";
+    public static final String      P2RATING_PARAM =          "p2_rating_above";
+    public static final String      P1ORP2_PARAM =          "p1_or_p2";
+    public static final String      EXCLUDETIMEOUT_PARAM =          "exclude_timeout";
 
     public static final DateFormat  shortDateFormat = new SimpleDateFormat("MM/dd/yyyy");
     public static final DateFormat  longDateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
@@ -235,9 +240,23 @@ public class SimpleGameStorerSearchRequestFilterFormat implements ObjectFormat {
             }
 
             buffer.append(paramSeparator);
-            buffer.append(RATING_PARAM);
+            buffer.append(P1RATING_PARAM);
             buffer.append("=");
-            buffer.append(filterData.getRatingAbove());
+            buffer.append(filterData.getRatingP1Above());
+
+            buffer.append(paramSeparator);
+            buffer.append(P2RATING_PARAM);
+            buffer.append("=");
+            buffer.append(filterData.getRatingP2Above());
+
+            buffer.append(paramSeparator);
+            buffer.append(P1ORP2_PARAM);
+            buffer.append("=");
+            buffer.append(filterData.isP1OrP2());
+            buffer.append(paramSeparator);
+            buffer.append(EXCLUDETIMEOUT_PARAM);
+            buffer.append("=");
+            buffer.append(filterData.isExcludeTimeOuts());
 
         } catch (UnsupportedEncodingException e) {
         }
@@ -349,11 +368,36 @@ public class SimpleGameStorerSearchRequestFilterFormat implements ObjectFormat {
 
             String ratingStr = (String) params.get(RATING_PARAM);
             if (ratingStr != null) {
-                filterData.setRatingAbove(Integer.parseInt(ratingStr));
+                filterData.setRatingP1Above(Integer.parseInt(ratingStr));
+                filterData.setRatingP2Above(Integer.parseInt(ratingStr));
+            }
+            ratingStr = (String) params.get(P1RATING_PARAM);
+            if (ratingStr != null) {
+                filterData.setRatingP1Above(Integer.parseInt(ratingStr));
             } else {
-                filterData.setRatingAbove(0);
+                filterData.setRatingP1Above(0);
+            }
+            ratingStr = (String) params.get(P2RATING_PARAM);
+            if (ratingStr != null) {
+                filterData.setRatingP2Above(Integer.parseInt(ratingStr));
+            } else {
+                filterData.setRatingP2Above(0);
             }
 
+            String excludeTimeOutsStr = (String) params.get(EXCLUDETIMEOUT_PARAM);
+            if (excludeTimeOutsStr != null) {
+                filterData.setExcludeTimeOuts("true".equals(excludeTimeOutsStr));
+            } else {
+                filterData.setExcludeTimeOuts(false);
+            }
+            
+            String p1OrP2Str = (String) params.get(P1ORP2_PARAM);
+            if (p1OrP2Str != null) {
+                filterData.setP1OrP2("true".equals(p1OrP2Str));
+            } else {
+                filterData.setP1OrP2(false);
+            }
+            
         } catch (Exception ex) {
             //log4j.error("ParseException ", ex);
             throw new ParseException("ParseException using URLDecoder", 0);

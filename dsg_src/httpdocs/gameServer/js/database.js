@@ -1098,7 +1098,11 @@ function submitForm() {
     var afterDateValid = false;
     var beforeDateValid = false;
 
-    var aboveRating = document.filter_options_data.rating_above.value;
+    var aboveRatingP1 = document.filter_options_data.p1_rating_above.value;
+    var aboveRatingP2 = document.filter_options_data.p2_rating_above.value;
+
+    var excludeTimeouts = document.filter_options_data.exclude_timeouts.checked;
+    var p1OrP2 = document.filter_options_data.p1_or_p2.checked;
 
     if (isValidDate(afterDateStr)) {
         afterDate = getDate(afterDateStr);
@@ -1133,9 +1137,14 @@ function submitForm() {
         filterData += "&" + "before_date=" + escape(getDateStr(beforeDate));
     }
 
-    if (aboveRating>0) {
-        filterData += "&" + "rating_above=" + aboveRating;
+    if (aboveRatingP1>0) {
+        filterData += "&" + "p1_rating_above=" + aboveRatingP1;
     }
+    if (aboveRatingP2>0) {
+        filterData += "&" + "p2_rating_above=" + aboveRatingP2;
+    }
+    filterData += "&" + "exclude_timeout=" + excludeTimeouts;
+    filterData += "&" + "p1_or_p2=" + p1OrP2;
 
     filterData = "filter_data=" + escape(filterData);
 
