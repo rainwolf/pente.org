@@ -52,10 +52,10 @@ public class SimpleGameStorerSearchRequestFilterFormat implements ObjectFormat {
     public static final String      WINNER_PARAM =          "winner";
 
     public static final String      RATING_PARAM =          "rating_above";
-    public static final String      P1RATING_PARAM =          "p1_rating_above";
-    public static final String      P2RATING_PARAM =          "p2_rating_above";
+    public static final String      P1RATING_PARAM =        "p1_rating_above";
+    public static final String      P2RATING_PARAM =        "p2_rating_above";
     public static final String      P1ORP2_PARAM =          "p1_or_p2";
-    public static final String      EXCLUDETIMEOUT_PARAM =          "exclude_timeout";
+    public static final String      EXCLUDETIMEOUT_PARAM =  "exclude_timeout";
 
     public static final DateFormat  shortDateFormat = new SimpleDateFormat("MM/dd/yyyy");
     public static final DateFormat  longDateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
