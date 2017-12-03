@@ -170,7 +170,7 @@ log4j.debug("search time: " + totalTime);
         if (filterData.getPlayer1Name() != null && filterData.getPlayer1Name().trim().length() > 0) {
             filterOptionsFrom.append(", player p1 ");
 
-            String pStr = filterData.getPlayer1Name().replace(" ", "");
+            String pStr = filterData.getPlayer1Name().toLowerCase();
             
 			if (!includeGameTable) {
 				addGameTable(filterOptionsFrom, filterOptionsWhere);
@@ -200,13 +200,13 @@ log4j.debug("search time: " + totalTime);
                     } else {
                         filterOptionsWhere.append("or  ");
                     }
-                    String sLower = s.toLowerCase();
-                    if (sLower.contains("*")) {
+                    String strimmed = s.trim();
+                    if (strimmed.contains("*")) {
                         filterOptionsWhere.append("p1.name_lower like ?  ");
-                        filterOptionsParams.addElement(sLower.replace("*", "%"));
+                        filterOptionsParams.addElement(strimmed.replace("*", "%"));
                     } else {
                         filterOptionsWhere.append("p1.name_lower = ?  ");
-                        filterOptionsParams.addElement(sLower);
+                        filterOptionsParams.addElement(strimmed);
                     }
                 }
                 filterOptionsWhere.append(") ");
@@ -215,10 +215,9 @@ log4j.debug("search time: " + totalTime);
         if (filterData.getPlayer2Name() != null && filterData.getPlayer2Name().trim().length() > 0) {
             filterOptionsFrom.append(", player p2 ");
 
-            String pStr = filterData.getPlayer2Name().replace(" ", "");
-            String[] pStrArray = pStr.split(",");
+            String pStr = filterData.getPlayer2Name().toLowerCase();
 
-			if (!includeGameTable) {
+            if (!includeGameTable) {
 				addGameTable(filterOptionsFrom, filterOptionsWhere);
 				includeGameTable = true;
 			}
@@ -237,6 +236,7 @@ log4j.debug("search time: " + totalTime);
            	//	filterData.getPlayer2Name().toLowerCase() + "' ");
 
             if (!createOrPlayers) {
+                String[] pStrArray = pStr.split(",");
                 filterOptionsWhere.append("and (");
                 boolean fst = true;
                 for(String s: pStrArray) {
@@ -245,20 +245,20 @@ log4j.debug("search time: " + totalTime);
                     } else {
                         filterOptionsWhere.append("or  ");
                     }
-                    String sLower = s.toLowerCase();
-                    if (sLower.contains("*")) {
+                    String strimmed = s.trim();
+                    if (strimmed.contains("*")) {
                         filterOptionsWhere.append("p2.name_lower like ?  ");
-                        filterOptionsParams.addElement(sLower.replace("*", "%"));
+                        filterOptionsParams.addElement(strimmed.replace("*", "%"));
                     } else {
                         filterOptionsWhere.append("p2.name_lower = ?  ");
-                        filterOptionsParams.addElement(sLower);
+                        filterOptionsParams.addElement(strimmed);
                     }
                 }
                 filterOptionsWhere.append(") ");
             }
         }
         if (createOrPlayers) {
-            String p1Str = filterData.getPlayer1Name().replace(" ", "");
+            String p1Str = filterData.getPlayer1Name().toLowerCase();
             String[] p1StrArray = p1Str.split(",");
             filterOptionsWhere.append("and (");
             boolean fst = true;
@@ -268,26 +268,26 @@ log4j.debug("search time: " + totalTime);
                 } else {
                     filterOptionsWhere.append("or  ");
                 }
-                String sLower = s.toLowerCase();
-                if (sLower.contains("*")) {
+                String sTrimmed = s.trim();
+                if (sTrimmed.contains("*")) {
                     filterOptionsWhere.append("p1.name_lower like ?  ");
-                    filterOptionsParams.addElement(sLower.replace("*", "%"));
+                    filterOptionsParams.addElement(sTrimmed.replace("*", "%"));
                 } else {
                     filterOptionsWhere.append("p1.name_lower = ?  ");
-                    filterOptionsParams.addElement(sLower);
+                    filterOptionsParams.addElement(sTrimmed);
                 }
             }
-            String p2Str = filterData.getPlayer2Name().replace(" ", "");
+            String p2Str = filterData.getPlayer2Name().toLowerCase();
             String[] p2StrArray = p2Str.split(",");
             for(String s: p2StrArray) {
                 filterOptionsWhere.append("or  ");
-                String sLower = s.toLowerCase();
-                if (sLower.contains("*")) {
+                String sTrimmed = s.trim();
+                if (sTrimmed.contains("*")) {
                     filterOptionsWhere.append("p2.name_lower like ?  ");
-                    filterOptionsParams.addElement(sLower.replace("*", "%"));
+                    filterOptionsParams.addElement(sTrimmed.replace("*", "%"));
                 } else {
                     filterOptionsWhere.append("p2.name_lower = ?  ");
-                    filterOptionsParams.addElement(sLower);
+                    filterOptionsParams.addElement(sTrimmed);
                 }
             }
             filterOptionsWhere.append(") ");
