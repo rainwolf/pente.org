@@ -89,5 +89,10 @@ public interface GameStorerSearchRequestFilterData extends Cloneable {
     public boolean isP1OrP2();
     public void setP1OrP2(boolean p1OrP2);
 
+    public boolean isOnlyLive();
+    public void setOnlyLive(boolean onlyLive);
+    public boolean isOnlyTurnBased();
+    public void setOnlyTurnBased(boolean onlyTurnBased);
+
     public Object clone();
 }

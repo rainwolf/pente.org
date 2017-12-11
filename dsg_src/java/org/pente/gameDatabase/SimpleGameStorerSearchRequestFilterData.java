@@ -47,7 +47,10 @@ public class SimpleGameStorerSearchRequestFilterData implements GameStorerSearch
     private int ratingP1Above;
     private int ratingP2Above;
     
-    private boolean excludeTimeOuts, p1OrP2;
+    private boolean excludeTimeOuts;
+    private boolean p1OrP2;
+    private boolean onlyLive;
+    private boolean onlyTurnBased;
 
     //private static Category cat = Category.getInstance(SimpleGameStorerSearchRequestFilterData.class.getName());
 
@@ -73,6 +76,8 @@ public class SimpleGameStorerSearchRequestFilterData implements GameStorerSearch
         result = PRIME * result + ratingP2Above;
         result = PRIME * result + (excludeTimeOuts?1:0);
         result = PRIME * result + (p1OrP2?1:0);
+        result = PRIME * result + (onlyLive?1:0);
+        result = PRIME * result + (onlyTurnBased?1:0);
 		return result;
 	}
 
@@ -142,7 +147,13 @@ public class SimpleGameStorerSearchRequestFilterData implements GameStorerSearch
 		    return false;
         }
         if (p1OrP2 != other.p1OrP2) {
-		    return false;
+            return false;
+        }
+        if (onlyLive != other.onlyLive) {
+            return false;
+        }
+        if (onlyTurnBased != other.onlyTurnBased) {
+            return false;
         }
 		return true;
 	}
@@ -298,5 +309,9 @@ public class SimpleGameStorerSearchRequestFilterData implements GameStorerSearch
     public boolean isP1OrP2() { return p1OrP2; }
     public void setP1OrP2(boolean p1OrP2) { this.p1OrP2 = p1OrP2; }
 
+    public boolean isOnlyLive() { return onlyLive; }
+    public void setOnlyLive(boolean onlyLive) { this.onlyLive = onlyLive; }
+    public boolean isOnlyTurnBased() { return onlyTurnBased; }
+    public void setOnlyTurnBased(boolean onlyTurnBased) { this.onlyTurnBased = onlyTurnBased; }
 
 }

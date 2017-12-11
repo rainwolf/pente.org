@@ -1104,6 +1104,9 @@ function submitForm() {
     var excludeTimeouts = document.filter_options_data.exclude_timeouts.checked;
     var p1OrP2 = document.filter_options_data.p1_or_p2.checked;
 
+    var liveOnly = (document.filter_options_data.typeSelect.value == "live");
+    var tbOnly = (document.filter_options_data.typeSelect.value == "turn_based");
+
     if (isValidDate(afterDateStr)) {
         afterDate = getDate(afterDateStr);
         afterDateValid = true;
@@ -1145,6 +1148,12 @@ function submitForm() {
     }
     filterData += "&" + "exclude_timeout=" + excludeTimeouts;
     filterData += "&" + "p1_or_p2=" + p1OrP2;
+    if (liveOnly) {
+        filterData += "&only_live=yes";
+    }
+    if (tbOnly) {
+        filterData += "&only_turn_based=yes";
+    }
 
     filterData = "filter_data=" + escape(filterData);
 

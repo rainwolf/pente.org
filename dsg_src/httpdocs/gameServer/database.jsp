@@ -470,7 +470,7 @@ var imagePath = "<%= request.getContextPath() %>/gameServer/images/";
             beforeDate = SimpleGameStorerSearchRequestFilterFormat.shortDateFormat.format(filterData.getBeforeDate());
         }
 
-        String selectNames[] = new String[] { "Game", "Site", "Event", "Round", "Section" };
+        String selectNames[] = new String[] { "Game", "Site", "Event", "Round", "Section", "Type" };
         StringBuffer table[][] = new StringBuffer[6][4];
         for (int i = 0; i < table.length; i++) {
             for (int j = 0; j < table[i].length; j++) {
@@ -478,12 +478,12 @@ var imagePath = "<%= request.getContextPath() %>/gameServer/images/";
             }
         }
 
-        for (int i = 0; i < selectNames.length; i++) {
+        for (int i = 0; i < selectNames.length - 1; i++) {
 
             table[i][0].append("<b><font color=\"white\">");
             table[i][0].append(selectNames[i]);
             table[i][0].append("</font></b>");
-            table[i][1].append("<select name=\"");
+            table[i][1].append("<select style=\"width: 250px\" name=\"");
             table[i][1].append(selectNames[i].toLowerCase() + "Select");
             table[i][1].append("\" onchange=\"javascript:");
             table[i][1].append(selectNames[i].toLowerCase() + "SelectChange();\"");
@@ -498,6 +498,15 @@ var imagePath = "<%= request.getContextPath() %>/gameServer/images/";
             }
             table[i][1].append("</select>");
         }
+
+        table[5][0].append("<b><font color=\"white\">"+selectNames[5]+"</font></b>");
+        table[5][1].append("<select style=\"width: 250px\" name=\"");
+        table[5][1].append(selectNames[5].toLowerCase() + "Select\"");
+        table[5][1].append(" tabindex=\"" + selectNames.length + "\">\r\n");
+        table[5][1].append("<option value=\"all\">live and turn-based</option>");
+        table[5][1].append("<option value=\"live\" "+(filterData.isOnlyLive()?"selected":"")+">live only</option>");
+        table[5][1].append("<option value=\"turn_based\" "+(filterData.isOnlyTurnBased()?"selected":"")+">turn-based only</option>");
+        table[5][1].append("</select>");
 
         int tabIdx = selectNames.length+1;
 

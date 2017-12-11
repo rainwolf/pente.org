@@ -255,16 +255,13 @@ if (giftee != null) {
           the subscriber benefits, use the buttons above.
           <br>
           <br>
-             <a href="javascript:document.paypal_form.submit()"><img src="<%= request.getContextPath() %>/gameServer/images/paypal.gif" border="0"></a>
-          <form action="https://www.paypal.com/cgi-bin/webscr" name="paypal_form" method="post">
-            <input type="hidden" name="cmd" value="_xclick">
-            <input type="hidden" name="business" value="walied.othman@gmail.com">
-            <input type="hidden" name="item_name" value="Pente.org donation from <%= request.getAttribute("name") %>">
-            <input type="hidden" name="amount" value="10">
-            <input type="hidden" name="no_shipping" value="1">
-            <input type="hidden" name="return" value="http://www.pente.org/gameServer/donations?command=thanks">
-            <input type="hidden" name="cancel_return" value="http://www.pente.org/gameServer/donations">
-          </form>
+             <!-- <a href="javascript:document.paypal_form.submit()"><img src="<%= request.getContextPath() %>/gameServer/images/paypal.gif" border="0"></a> -->
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+<input type="hidden" name="cmd" value="_s-xclick">
+<input type="hidden" name="hosted_button_id" value="9BZK9BHQNATGA">
+<input type="image" src="https://www.paypalobjects.com/en_US/BE/i/btn/btn_donateCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+</form>
 
       
     </td>
