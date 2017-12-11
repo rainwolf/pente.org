@@ -1,6 +1,7 @@
 package org.pente.tools;
 
 import java.io.*;
+import java.util.*;
 
 import org.pente.game.*;
 import org.pente.database.*;
@@ -43,12 +44,18 @@ public class BrainkingImporter {
     }
 
     public void loadGames() throws Exception {
+        Scanner scan = new Scanner(System.in);
 
         String files[] = gameDir.list();
         for (int i = 0; i < files.length; i++) {
 
             if (new File(gameDir, files[i]).isFile()) {
                 GameData data = loadGame(files[i]);
+                
+                if (i%500 == 0) {
+                    System.out.println("Pausing... press enter to continue");
+                    scan.nextLine();
+                }
 
                 if (data != null) {
 

@@ -56,6 +56,8 @@ public class SimpleGameStorerSearchRequestFilterFormat implements ObjectFormat {
     public static final String      P2RATING_PARAM =        "p2_rating_above";
     public static final String      P1ORP2_PARAM =          "p1_or_p2";
     public static final String      EXCLUDETIMEOUT_PARAM =  "exclude_timeout";
+    public static final String      LIVE_ONLY_PARAM =  "only_live";
+    public static final String      TURN_BASED_ONLY_PARAM =  "only_turn_based";
 
     public static final DateFormat  shortDateFormat = new SimpleDateFormat("MM/dd/yyyy");
     public static final DateFormat  longDateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
@@ -258,6 +260,15 @@ public class SimpleGameStorerSearchRequestFilterFormat implements ObjectFormat {
             buffer.append("=");
             buffer.append(filterData.isExcludeTimeOuts());
 
+            buffer.append(paramSeparator);
+            buffer.append(LIVE_ONLY_PARAM);
+            buffer.append("=");
+            buffer.append(filterData.isOnlyLive());
+            buffer.append(paramSeparator);
+            buffer.append(TURN_BASED_ONLY_PARAM);
+            buffer.append("=");
+            buffer.append(filterData.isOnlyTurnBased());
+
         } catch (UnsupportedEncodingException e) {
         }
 
@@ -390,14 +401,27 @@ public class SimpleGameStorerSearchRequestFilterFormat implements ObjectFormat {
             } else {
                 filterData.setExcludeTimeOuts(false);
             }
-            
+
             String p1OrP2Str = (String) params.get(P1ORP2_PARAM);
             if (p1OrP2Str != null) {
                 filterData.setP1OrP2("true".equals(p1OrP2Str));
             } else {
                 filterData.setP1OrP2(false);
             }
-            
+
+            String onlyLiveStr = (String) params.get(LIVE_ONLY_PARAM);
+            if (onlyLiveStr != null) {
+                filterData.setOnlyLive("yes".equals(onlyLiveStr));
+            } else {
+                filterData.setOnlyLive(false);
+            }
+            String onlyTBStr = (String) params.get(TURN_BASED_ONLY_PARAM);
+            if (onlyTBStr != null) {
+                filterData.setOnlyTurnBased("yes".equals(onlyTBStr));
+            } else {
+                filterData.setOnlyTurnBased(false);
+            }
+
         } catch (Exception ex) {
             //log4j.error("ParseException ", ex);
             throw new ParseException("ParseException using URLDecoder", 0);

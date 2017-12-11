@@ -339,7 +339,24 @@ log4j.debug("search time: " + totalTime);
             }
             filterOptionsWhere.append("and (g.status is NULL or g.status != \'" + GameData.STATUS_TIMEOUT + "\') ");
         }
-		return includeGameTable;
+
+        if (filterData.isOnlyLive()) {
+            if (!includeGameTable) {
+                addGameTable(filterOptionsFrom, filterOptionsWhere);
+                includeGameTable = true;
+            }
+            filterOptionsWhere.append("and (g.site_id = 2 and g.gid < 50000000000000) ");
+        }
+
+        if (filterData.isOnlyTurnBased()) {
+            if (!includeGameTable) {
+                addGameTable(filterOptionsFrom, filterOptionsWhere);
+                includeGameTable = true;
+            }
+            filterOptionsWhere.append("and ((g.site_id = 2 and g.gid >= 50000000000000) or g.site_id != 2) ");
+        }
+
+        return includeGameTable;
     }
 
     protected void setFilterOptionsParams(PreparedStatement stmt, Vector filterOptionsParams, int startParam) throws SQLException {
