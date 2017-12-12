@@ -120,7 +120,34 @@ public class CacheTourneyStorer implements TourneyStorer {
         // used for speed-tournies to notify main room
         notifyListeners(new TourneyEvent(tourney.getEventID(),
             TourneyEvent.COMPLETE));
+
+        List<Tourney> completedDetails = new ArrayList<>();
+        for (Tourney d: getCompletedTournies()) {
+            completedDetails.add(getTourney(d.getEventID()));
+        }
+        Collections.sort(completedDetails, new Comparator<Tourney>() {
+            public int compare(Tourney o1, Tourney o2) {
+                return o2.getStartDate().compareTo(o1.getStartDate());
+            }
+        });
+        Tourney lastTourney = null;
+        int currentCrownInt = getCrownInt(tourney.getPrize());
+        for (Tourney t: completedDetails) {
+            if (t.getGame() == tourney.getGame() && currentCrownInt == getCrownInt(t.getPrize())) {
+                lastTourney = t;
+                break;
+            }
+        }
+
+        if (lastTourney != null) {
+            backingStorer.removeCrown(lastTourney.getEventID(), lastTourney.getGame(), lastTourney.getWinnerPid(), currentCrownInt);
+            dsgPlayerStorer.refreshPlayer(lastTourney.getWinner());
+            backingStorer.assignCrown(tourney.getEventID(), tourney.getGame(), tourney.getWinnerPid(), currentCrownInt);;
+            dsgPlayerStorer.refreshPlayer(tourney.getWinner());
+        }
+        
         completedTournies = null;
+        currentTournies = null;
     }
 
 
@@ -133,11 +160,8 @@ public class CacheTourneyStorer implements TourneyStorer {
         if (t != null) {
             log4j.debug("return cached copy");
         } else {
-            if (!tournies.containsKey(new Integer(eid))) {
-                log4j.debug("not cached, caching");
-                t = backingStorer.getTourney(eid);
-                tournies.put(new Integer(eid), t);
-            }
+            t = backingStorer.getTourney(eid);
+            tournies.put(new Integer(eid), t);
         }
         
         return t;
@@ -339,22 +363,27 @@ public class CacheTourneyStorer implements TourneyStorer {
             insertRound(newRound);
         }
     }
+    
+    private int getCrownInt(String prizeStr) {
+        int crownInt = 0;
+        if (prizeStr.contains("gold")) {
+            crownInt = DSGPlayerGameData.TOURNEY_WINNER_GOLD;
+        } else if (prizeStr.contains("silver")) {
+            crownInt = DSGPlayerGameData.TOURNEY_WINNER_SILVER;
+        } else if (prizeStr.contains("bronze")) {
+            crownInt = DSGPlayerGameData.TOURNEY_WINNER_BRONZE;
+        }
+        return crownInt;
+    }
 
     @Override
     public void assignCrown(int eid, int game, long pid, int crown) throws Throwable {
         Tourney tourney = getTourney(eid);
         if (tourney != null) {
             String prizeStr = tourney.getPrize().toLowerCase();
-            int crownInt = 0;
+            int crownInt = getCrownInt(prizeStr);
             int gameInt = tourney.getGame();
             long winner = tourney.getWinnerPid();
-            if (prizeStr.contains("gold")) {
-                crownInt = DSGPlayerGameData.TOURNEY_WINNER_GOLD;
-            } else if (prizeStr.contains("silver")) {
-                crownInt = DSGPlayerGameData.TOURNEY_WINNER_SILVER;
-            } else if (prizeStr.contains("bronze")) {
-                crownInt = DSGPlayerGameData.TOURNEY_WINNER_BRONZE;
-            }
             backingStorer.assignCrown(eid, gameInt, winner, crownInt);
             dsgPlayerStorer.refreshPlayer(tourney.getWinner());
         }
@@ -365,16 +394,9 @@ public class CacheTourneyStorer implements TourneyStorer {
         Tourney tourney = getTourney(eid);
         if (tourney != null) {
             String prizeStr = tourney.getPrize().toLowerCase();
-            int crownInt = 0;
+            int crownInt = getCrownInt(prizeStr);
             int gameInt = tourney.getGame();
             long winner = tourney.getWinnerPid();
-            if (prizeStr.contains("gold")) {
-                crownInt = DSGPlayerGameData.TOURNEY_WINNER_GOLD;
-            } else if (prizeStr.contains("silver")) {
-                crownInt = DSGPlayerGameData.TOURNEY_WINNER_SILVER;
-            } else if (prizeStr.contains("bronze")) {
-                crownInt = DSGPlayerGameData.TOURNEY_WINNER_BRONZE;
-            }
             backingStorer.removeCrown(eid, gameInt, winner, crownInt);
             dsgPlayerStorer.refreshPlayer(tourney.getWinner());
         }

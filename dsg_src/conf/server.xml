@@ -91,7 +91,7 @@
                maxThreads="150" scheme="https" secure="true"
                clientAuth="false" sslProtocol="TLS" />
     -->
-    <Connector port="443" protocol="org.apache.coyote.http11.Http11Protocol" SSLEnabled="true"
+    <Connector port="443" protocol="org.apache.coyote.http11.Http11NioProtocol" SSLEnabled="true"
                maxThreads="150" scheme="https" secure="true"
                clientAuth="false" sslProtocol="TLS"
 	      keystoreFile="/var/lib/tomcat8/webapps/MyDSKeyStore.jks" keystorePass="***REMOVED***"

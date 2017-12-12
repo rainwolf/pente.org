@@ -98,12 +98,12 @@ public class CancelInvitationServlet extends HttpServlet {
 		    }
 
             // beginner sets cannot be canceled
-            if (set.getInvitationRestriction() == 'B') {
-                log4j.error("Beginner sets cannot be canceled.");
-                handleError(request, response, "Beginner sets cannot be canceled.",
-                        loadRedirectPage);
-                return;
-            }
+//            if (set.getInvitationRestriction() == 'B') {
+//                log4j.error("Beginner sets cannot be canceled.");
+//                handleError(request, response, "Beginner sets cannot be canceled.",
+//                        loadRedirectPage);
+//                return;
+//            }
 
 
             // check that either invitation is open (no invitee) or that this

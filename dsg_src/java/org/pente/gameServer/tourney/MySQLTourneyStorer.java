@@ -182,32 +182,32 @@ public class MySQLTourneyStorer implements TourneyStorer {
 
             stmt.close();
 
-            int tw = -1;
-            if (tourney.getPrize() != null) {
-                if (tourney.getPrize().equals("gold")) tw = 1;
-                else if (tourney.getPrize().equals("silver")) tw = 2;
-            }
-            if (tw != -1) {
-                stmt  = con.prepareStatement(
-                        "update dsg_player_game " +
-                                "set tourney_winner = '0' " +
-                                "where game = ? " +
-                                "and tourney_winner = '" + tw + "'");
-                stmt.setInt(1, tourney.getGame());
-                stmt.executeUpdate();
-
-                stmt.close();
-
-                stmt  = con.prepareStatement(
-                        "update dsg_player_game " +
-                                "set tourney_winner = '" + tw + "' " +
-                                "where game = ? " +
-                                "and pid = ? " +
-                                "and computer = 'N'");
-                stmt.setInt(1, tourney.getGame());
-                stmt.setLong(2, tourney.getWinnerPid());
-                stmt.executeUpdate();
-            }
+//            int tw = -1;
+//            if (tourney.getPrize() != null) {
+//                if (tourney.getPrize().equals("gold")) tw = 1;
+//                else if (tourney.getPrize().equals("silver")) tw = 2;
+//            }
+//            if (tw != -1) {
+//                stmt  = con.prepareStatement(
+//                        "update dsg_player_game " +
+//                                "set tourney_winner = '0' " +
+//                                "where game = ? " +
+//                                "and tourney_winner = '" + tw + "'");
+//                stmt.setInt(1, tourney.getGame());
+//                stmt.executeUpdate();
+//
+//                stmt.close();
+//
+//                stmt  = con.prepareStatement(
+//                        "update dsg_player_game " +
+//                                "set tourney_winner = '" + tw + "' " +
+//                                "where game = ? " +
+//                                "and pid = ? " +
+//                                "and computer = 'N'");
+//                stmt.setInt(1, tourney.getGame());
+//                stmt.setLong(2, tourney.getWinnerPid());
+//                stmt.executeUpdate();
+//            }
 
         } finally {
 
