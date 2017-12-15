@@ -26,4 +26,18 @@ public class Restriction {
     public void setValue(int value) {
         this.value = value;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Restriction)) {
+            return false;
+        }
+        Restriction r = (Restriction) o;
+        return this.type == r.getType() && this.value == r.getValue();
+    }
+
+    @Override
+    public int hashCode() {
+        return type*value;
+    }
 }
