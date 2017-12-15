@@ -133,7 +133,8 @@ public class CacheTourneyStorer implements TourneyStorer {
         Tourney lastTourney = null;
         int currentCrownInt = getCrownInt(tourney.getPrize());
         for (Tourney t: completedDetails) {
-            if (t.getGame() == tourney.getGame() && currentCrownInt == getCrownInt(t.getPrize())) {
+            if (t.getGame() == tourney.getGame() && currentCrownInt == getCrownInt(t.getPrize())
+                    && compareRestrictions(t.getEventID(), tourney.getEventID())) {
                 lastTourney = t;
                 break;
             }
@@ -148,6 +149,25 @@ public class CacheTourneyStorer implements TourneyStorer {
         
         completedTournies = null;
         currentTournies = null;
+    }
+    
+    private boolean compareRestrictions(int eid1, int eid2) throws Throwable {
+        Tourney t1 = getTourney(eid1), t2 = getTourney(eid2);
+        List<Restriction> t1Restrictions = t1.getRestrictions(), t2Restrictions = t2.getRestrictions();
+        if (t1Restrictions == null || t2Restrictions == null) {
+            return t1Restrictions == t2Restrictions;
+        }
+        for (Restriction r: t1Restrictions) {
+            if (!t2Restrictions.contains(r)) {
+                return false;
+            }
+        }
+        for (Restriction r: t2Restrictions) {
+            if (!t1Restrictions.contains(r)) {
+                return false;
+            }
+        }
+        return true;
     }
 
 
