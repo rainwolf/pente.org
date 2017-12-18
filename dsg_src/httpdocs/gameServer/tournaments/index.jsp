@@ -11,6 +11,35 @@ List currentT = resources.getTourneyStorer().getCurrentTournies();
 List completed = resources.getTourneyStorer().getCompletedTournies();
 TourneyStorer tourneyStorer = resources.getTourneyStorer();
 
+List<Tourney> completedDetails = new ArrayList();
+for (Object d: completed) {
+  completedDetails.add(tourneyStorer.getTourney(((Tourney) d).getEventID()));
+}
+Collections.sort(completedDetails, new Comparator<Tourney>() {
+public int compare(Tourney o1, Tourney o2) {
+    return o2.getStartDate().compareTo(o1.getStartDate());
+}
+});         
+
+%>
+<%!
+private Tourney getLastTBTourney(List<Tourney> completedTournaments, int game) {
+    for (Tourney t: completedTournaments) {
+        if (t.getGame() == game) {
+            return t;
+        }
+    }
+    return null;  
+}
+%>
+
+<% 
+Tourney tbGomoku = getLastTBTourney(completedDetails, GridStateFactory.TB_GOMOKU);
+Tourney tbKeryo = getLastTBTourney(completedDetails, GridStateFactory.TB_KERYO);
+Tourney tbBoat = getLastTBTourney(completedDetails, GridStateFactory.TB_BOAT_PENTE);
+Tourney tbDPente = getLastTBTourney(completedDetails, GridStateFactory.TB_DPENTE);
+Tourney tbConnect6 = getLastTBTourney(completedDetails, GridStateFactory.TB_CONNECT6);
+Tourney tbPoof = getLastTBTourney(completedDetails, GridStateFactory.TB_POOF_PENTE);
 %>
 
 <%@ include file="../begin.jsp" %>
@@ -120,8 +149,8 @@ TourneyStorer tourneyStorer = resources.getTourneyStorer();
   <td>
      <table border="1" cellpadding="2" cellspacing="0" bordercolor="black">
        <tr bgcolor="<%= bgColor1 %>">
-        <td><font color="white">TB Boat-Pente</font></td>
         <td><font color="white">TB Gomoku</font></td>
+        <td><font color="white">TB Boat-Pente</font></td>
         <td><font color="white">TB Connect6</font></td>
         <td><font color="white">TB D-Pente</font></td>
         <td><font color="white">TB Poof-Pente</font></td>
@@ -129,28 +158,28 @@ TourneyStorer tourneyStorer = resources.getTourneyStorer();
        </tr>
       </tr>
       <tr>
-        <td>Fool's Boat (2017)</td>
-        <td>Fool's Gomoku (2017)</td>
-        <td>Fool's Connect6 (2017)</td>
-        <td>Fool's D (2017)</td>
-        <td>Fool's Poof (2017)</td>
-        <td>Fool's Keryo (2017)</td>
+        <td><a href="statusRound.jsp?eid=<%= tbGomoku.getEventID() %>&round=<%= tbGomoku.getNumRounds() %>"><%=tbGomoku.getName()%></a></td>
+        <td><a href="statusRound.jsp?eid=<%= tbBoat.getEventID() %>&round=<%= tbBoat.getNumRounds() %>"><%=tbBoat.getName()%></a></td>
+        <td><a href="statusRound.jsp?eid=<%= tbConnect6.getEventID() %>&round=<%= tbConnect6.getNumRounds() %>"><%=tbConnect6.getName()%></a></td>
+        <td><a href="statusRound.jsp?eid=<%= tbDPente.getEventID() %>&round=<%= tbDPente.getNumRounds() %>"><%=tbDPente.getName()%></a></td>
+        <td><a href="statusRound.jsp?eid=<%= tbPoof.getEventID() %>&round=<%= tbPoof.getNumRounds() %>"><%=tbPoof.getName()%></a></td>
+        <td><a href="statusRound.jsp?eid=<%= tbKeryo.getEventID() %>&round=<%= tbKeryo.getNumRounds() %>"><%=tbKeryo.getName()%></a></td>
       </tr>
       <tr>
-        <td><a href="../profile?viewName=pete77">pete777</a> <img src="/gameServer/images/bcrown.gif"></td>
-        <td><a href="../profile?viewName=myuym">myuym</a> <img src="/gameServer/images/bcrown.gif"></td>
-        <td><a href="../profile?viewName=ivans73">ivans73</a> <img src="/gameServer/images/bcrown.gif"></td>
-        <td><a href="../profile?viewName=ivans73">ivans73</a> <img src="/gameServer/images/bcrown.gif"></td>
-        <td><a href="../profile?viewName=watsu">watsu</a> <img src="/gameServer/images/bcrown.gif"></td>
-        <td><a href="../profile?viewName=ivans73">ivans73</a> <img src="/gameServer/images/bcrown.gif"></td>
+        <td><a href="../profile?viewName=<%=tbGomoku.getWinner()%>"><%=tbGomoku.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
+        <td><a href="../profile?viewName=<%=tbBoat.getWinner()%>"><%=tbBoat.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
+        <td><a href="../profile?viewName=<%=tbConnect6.getWinner()%>"><%=tbConnect6.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
+        <td><a href="../profile?viewName=<%=tbDPente.getWinner()%>"><%=tbDPente.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
+        <td><a href="../profile?viewName=<%=tbPoof.getWinner()%>"><%=tbPoof.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
+        <td><a href="../profile?viewName=<%=tbKeryo.getWinner()%>"><%=tbKeryo.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
       </tr>
       <tr>
-        <td><img src="/gameServer/avatar?name=pete777" style="width:125px;height:125px;"></td>
-        <td><img src="/gameServer/avatar?name=myuym" style="width:125px;height:125px;"></td>
-        <td><img src="/gameServer/avatar?name=ivans73" style="width:125px;height:125px;"></td>
-        <td><img src="/gameServer/avatar?name=ivans73" style="width:125px;height:125px;"></td>
-        <td><img src="/gameServer/avatar?name=watsu" style="width:125px;height:125px;"></td>
-        <td><img src="/gameServer/avatar?name=ivans73" style="width:125px;height:125px;"></td>
+        <td><img src="/gameServer/avatar?name=<%=tbGomoku.getWinner()%>" style="width:125px;height:125px;"></td>
+        <td><img src="/gameServer/avatar?name=<%=tbBoat.getWinner()%>" style="width:125px;height:125px;"></td>
+        <td><img src="/gameServer/avatar?name=<%=tbConnect6.getWinner()%>" style="width:125px;height:125px;"></td>
+        <td><img src="/gameServer/avatar?name=<%=tbDPente.getWinner()%>" style="width:125px;height:125px;"></td>
+        <td><img src="/gameServer/avatar?name=<%=tbPoof.getWinner()%>" style="width:125px;height:125px;"></td>
+        <td><img src="/gameServer/avatar?name=<%=tbKeryo.getWinner()%>" style="width:125px;height:125px;"></td>
       </tr>
      </table>
      </td>
@@ -214,15 +243,6 @@ TourneyStorer tourneyStorer = resources.getTourneyStorer();
       <% try 
          { 
          int year = 0;
-         List<Tourney> completedDetails = new ArrayList();
-         for (Object d: completed) {
-            completedDetails.add(tourneyStorer.getTourney(((Tourney) d).getEventID()));
-         }
-        Collections.sort(completedDetails, new Comparator<Tourney>() {
-          public int compare(Tourney o1, Tourney o2) {
-              return o2.getStartDate().compareTo(o1.getStartDate());
-          }
-        });         
           for (Iterator it = completedDetails.iterator(); it.hasNext();) {
              Tourney t = (Tourney) it.next(); 
 //             Tourney t = tourneyStorer.getTourney(d.getEventID());

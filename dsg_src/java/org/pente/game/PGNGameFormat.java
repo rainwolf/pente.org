@@ -307,6 +307,14 @@ public class PGNGameFormat implements GameFormat {
                     while (moveTokenizer.hasMoreTokens()) {
                         String move = moveTokenizer.nextToken();
                         if (tokenNum++ % 3 != 0) {
+                            if (move.equals("Resign")) {
+                                data.setStatus(GameData.STATUS_RESIGN);
+                                continue;
+                            } 
+                            if (move.equals("Forfeit")) {
+                                data.setStatus(GameData.STATUS_FORCE_RESIGN);
+                                continue;
+                            }
                             int moveInt = parseCoordinates(move);
                             if (moveInt != -1) {
                                 data.addMove(moveInt);
@@ -477,6 +485,9 @@ public class PGNGameFormat implements GameFormat {
 
         Date timeDate = data.getDate();
         Date dateDate = null;
+        if (date == null) {
+            date = "2001.12.16";
+        }
         try {
         	dateDate = dateFormat.parse(date);
         } catch (ParseException e) {
