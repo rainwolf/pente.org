@@ -30,7 +30,7 @@ DSGPlayerData meData = null;
     <td>Speed Tournament:</td>
     <td>Play whole tournament live!</td>
   <% }
-     else { %>
+     else if (tourney.getGame() < 50) { %>
     <td>Rounds last:</td>
     <td><%= tourney.getRoundLengthDays() %> Days</td>
   <% } %>
@@ -107,14 +107,15 @@ DSGPlayerData meData = null;
   <tr>
     <td>Prize:</td>
     <td>
+        <%= tourney.getPrize() %>
       <% if (tourney.getPrize() == null) { %>
         Respect
-      <% } else if (tourney.getPrize().equals("gold")) { %>
-        Gold crown <img src="/gameServer/images/crown.gif">
-      <% } else if (tourney.getPrize().equals("silver")) { %>
-        Silver crown <img src="/gameServer/images/scrown.gif">
-      <% } else { %>
-        <%= tourney.getPrize() %>
+      <% } else if (tourney.getPrize().contains("gold")) { %>
+        <img src="/gameServer/images/crown.gif">
+      <% } else if (tourney.getPrize().contains("silver")) { %>
+        <img src="/gameServer/images/scrown.gif">
+      <% } else if (tourney.getPrize().contains("bronze")) { %>
+        <img src="/gameServer/images/bcrown.gif">
       <% } %>
     </td>
   </tr>
