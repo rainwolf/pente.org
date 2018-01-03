@@ -40,6 +40,7 @@ Tourney tbBoat = getLastTBTourney(completedDetails, GridStateFactory.TB_BOAT_PEN
 Tourney tbDPente = getLastTBTourney(completedDetails, GridStateFactory.TB_DPENTE);
 Tourney tbConnect6 = getLastTBTourney(completedDetails, GridStateFactory.TB_CONNECT6);
 Tourney tbPoof = getLastTBTourney(completedDetails, GridStateFactory.TB_POOF_PENTE);
+Tourney tbDK = getLastTBTourney(completedDetails, GridStateFactory.TB_DKERYO);
 %>
 
 <%@ include file="../begin.jsp" %>
@@ -155,6 +156,7 @@ Tourney tbPoof = getLastTBTourney(completedDetails, GridStateFactory.TB_POOF_PEN
         <td><font color="white">TB D-Pente</font></td>
         <td><font color="white">TB Poof-Pente</font></td>
         <td><font color="white">TB Keryo-Pente</font></td>
+        <td><font color="white">TB DK-Pente</font></td>
        </tr>
       </tr>
       <tr>
@@ -164,6 +166,7 @@ Tourney tbPoof = getLastTBTourney(completedDetails, GridStateFactory.TB_POOF_PEN
         <td><a href="statusRound.jsp?eid=<%= tbDPente.getEventID() %>&round=<%= tbDPente.getNumRounds() %>"><%=tbDPente.getName()%></a></td>
         <td><a href="statusRound.jsp?eid=<%= tbPoof.getEventID() %>&round=<%= tbPoof.getNumRounds() %>"><%=tbPoof.getName()%></a></td>
         <td><a href="statusRound.jsp?eid=<%= tbKeryo.getEventID() %>&round=<%= tbKeryo.getNumRounds() %>"><%=tbKeryo.getName()%></a></td>
+        <td><a href="statusRound.jsp?eid=<%= tbDK.getEventID() %>&round=<%= tbDK.getNumRounds() %>"><%=tbDK.getName()%></a></td>
       </tr>
       <tr>
         <td><a href="../profile?viewName=<%=tbGomoku.getWinner()%>"><%=tbGomoku.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
@@ -172,6 +175,7 @@ Tourney tbPoof = getLastTBTourney(completedDetails, GridStateFactory.TB_POOF_PEN
         <td><a href="../profile?viewName=<%=tbDPente.getWinner()%>"><%=tbDPente.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
         <td><a href="../profile?viewName=<%=tbPoof.getWinner()%>"><%=tbPoof.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
         <td><a href="../profile?viewName=<%=tbKeryo.getWinner()%>"><%=tbKeryo.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
+        <td><a href="../profile?viewName=<%=tbDK.getWinner()%>"><%=tbDK.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
       </tr>
       <tr>
         <td><img src="/gameServer/avatar?name=<%=tbGomoku.getWinner()%>" style="width:125px;height:125px;"></td>
@@ -180,6 +184,7 @@ Tourney tbPoof = getLastTBTourney(completedDetails, GridStateFactory.TB_POOF_PEN
         <td><img src="/gameServer/avatar?name=<%=tbDPente.getWinner()%>" style="width:125px;height:125px;"></td>
         <td><img src="/gameServer/avatar?name=<%=tbPoof.getWinner()%>" style="width:125px;height:125px;"></td>
         <td><img src="/gameServer/avatar?name=<%=tbKeryo.getWinner()%>" style="width:125px;height:125px;"></td>
+        <td><img src="/gameServer/avatar?name=<%=tbDK.getWinner()%>" style="width:125px;height:125px;"></td>
       </tr>
      </table>
      </td>

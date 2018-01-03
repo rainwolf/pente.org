@@ -216,7 +216,7 @@ public class CacheKOTHStorer implements KOTHStorer {
         return hill.stepsBetween(pid1, pid2);
     }
 
-    private void adjustCrown(int game) {
+    public void adjustCrown(int game) {
         int hill_id = getEventId(game);
         if (hill_id == 0) {
             return;

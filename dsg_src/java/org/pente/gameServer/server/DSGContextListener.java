@@ -220,6 +220,8 @@ public class DSGContextListener implements ServletContextListener {
             tourneyStorer.addTourneyListener(tbGameStorer);
             ((CacheTourneyStorer) tourneyStorer).setTBStorer(tbGameStorer);
             ((CacheTourneyStorer) tourneyStorer).setDsgPlayerStorer(dsgPlayerStorer);
+            ((CacheTourneyStorer) tourneyStorer).setNotificationServer(notificationServer);
+            ((CacheTourneyStorer) tourneyStorer).setKothStorer(kothStorer);
             tbGameStorer.setTourneyStorer(tourneyStorer);
             log4j.info("contextInitialized(), created TourneyStorer");
 
