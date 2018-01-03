@@ -6,6 +6,10 @@ import com.jivesoftware.oro.util.Cache;
 import org.apache.log4j.*;
 
 import org.pente.game.*;
+import org.pente.kingOfTheHill.CacheKOTHStorer;
+import org.pente.kingOfTheHill.KOTHStorer;
+import org.pente.notifications.CacheNotificationServer;
+import org.pente.notifications.NotificationServer;
 import org.pente.turnBased.TBGame;
 import org.pente.turnBased.TBSet;
 import org.pente.turnBased.Utilities;
@@ -27,11 +31,16 @@ public class CacheTourneyStorer implements TourneyStorer {
 
     private CacheTBStorer tbStorer;
     private CacheDSGPlayerStorer dsgPlayerStorer;
+    private NotificationServer notificationServer;
+    private KOTHStorer kothStorer;
+
 
     public void setDsgPlayerStorer(CacheDSGPlayerStorer dsgPlayerStorer) { this.dsgPlayerStorer = dsgPlayerStorer; }
     public void setTBStorer(CacheTBStorer tbStorer) {
         this.tbStorer = tbStorer;
     }
+    public void setNotificationServer(NotificationServer notificationServer) { this.notificationServer = notificationServer; }
+    public void setKothStorer(KOTHStorer kothStorer) { this.kothStorer = kothStorer; }
 
     public CacheTourneyStorer(TourneyStorer backingStorer) {
         this.backingStorer = backingStorer;
@@ -142,6 +151,7 @@ public class CacheTourneyStorer implements TourneyStorer {
 
         if (lastTourney != null) {
             backingStorer.removeCrown(lastTourney.getEventID(), lastTourney.getGame(), lastTourney.getWinnerPid(), currentCrownInt);
+            ((CacheKOTHStorer)kothStorer).adjustCrown(lastTourney.getGame());
             dsgPlayerStorer.refreshPlayer(lastTourney.getWinner());
             backingStorer.assignCrown(tourney.getEventID(), tourney.getGame(), tourney.getWinnerPid(), currentCrownInt);;
             dsgPlayerStorer.refreshPlayer(tourney.getWinner());
@@ -376,11 +386,12 @@ public class CacheTourneyStorer implements TourneyStorer {
 
         if (t.isComplete()) {
             completeTourney(t);
-            
+            notificationServer.sendAdminNotification(t.getName() + " completed. Winner is " + t.getWinner());
         }
         else if (t.getLastRound().isComplete()) {
             TourneyRound newRound = t.createNextRound();
             insertRound(newRound);
+            notificationServer.sendAdminNotification("Round " + t.getNumRounds() + " started in " + t.getName());
         }
     }
     
@@ -418,6 +429,7 @@ public class CacheTourneyStorer implements TourneyStorer {
             int gameInt = tourney.getGame();
             long winner = tourney.getWinnerPid();
             backingStorer.removeCrown(eid, gameInt, winner, crownInt);
+            ((CacheKOTHStorer)kothStorer).adjustCrown(tourney.getGame());
             dsgPlayerStorer.refreshPlayer(tourney.getWinner());
         }
     }

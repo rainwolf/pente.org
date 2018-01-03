@@ -72,7 +72,8 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 	private Object cacheTbLock = new Object();
 
 	private Timer loadExpireSoonTimer;
-	private Timer checkTimeoutTimer;
+    private Timer checkTimeoutTimer;
+    private Timer stalePlayerTimer;
 	private Thread endGameThread;
 	private EndGameRunnable endGameRunnable = new EndGameRunnable();
 	
@@ -266,6 +267,8 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 		checkTimeoutTimer = new Timer();
 		checkTimeoutTimer.scheduleAtFixedRate(
 			new TimeoutCheckRunnable(), 5000, 60000);
+		stalePlayerTimer = new Timer();
+		stalePlayerTimer.scheduleAtFixedRate(new RemoveStalePlayersInvitations(), 6000, 1000L*60*60);
 		
 		endGameRunnable.reset();
 		endGameThread = new Thread(endGameRunnable);
@@ -281,6 +284,10 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 			checkTimeoutTimer.cancel();
 			checkTimeoutTimer = null;
 		}
+		if (stalePlayerTimer != null) {
+		    stalePlayerTimer.cancel();
+		    stalePlayerTimer = null;
+        }
 		if (endGameThread != null && endGameRunnable != null) {
 			endGameRunnable.kill();
 			endGameThread.interrupt();
@@ -293,7 +300,45 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 		stopTasks();
 	}
 
-	
+
+    private class RemoveStalePlayersInvitations extends TimerTask {
+
+        private static final int DELAY = 60;
+
+        public String getName() {
+            return "TB-RemoveStalePlayersInvitations";
+        }
+        public void run() {
+
+            log4j.debug(getName() + " run");
+                long now = System.currentTimeMillis();
+                long oneWeekAgo = now -
+                        1000L * 60 * 60 * 24 * 5;
+                Date oneWeekAgoDate = new Date(oneWeekAgo);
+                List<TBSet> sets = getWaitingSets();
+                log4j.debug(getName() + " loaded " + sets.size() + " sets");
+                synchronized (cacheTbLock) {
+                    for (TBSet s : sets) {
+                        if (s.isWaitingSet()) {
+                            if (s.getInviteePid() == 0) {
+                                try {
+                                    DSGPlayerData playerData = dsgPlayerStorer.loadPlayer(s.getInviterPid());
+                                    if (playerData.getLastLoginDate().before(oneWeekAgoDate)) {
+                                        try {
+                                            cancelSet(s);
+                                        } catch (TBStoreException tse) {
+                                            log4j.error("Error canceling set RemoveStalePlayersInvitations", tse);
+                                        }
+                                    }
+                                } catch (DSGPlayerStoreException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    }
+                }
+        }
+    }
 
 
 	// algorithm - load games that expire soon thread
