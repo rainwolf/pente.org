@@ -373,6 +373,7 @@ window.google_analytics_uacct = "UA-20529582-2";
             <br>
             Round 2: <a href="/gameServer/tournaments/statusRound.jsp?eid=1309&round=2">D-Pente</a>,
              <a href="/gameServer/tournaments/statusRound.jsp?eid=1311&round=2">Poof-Pente</a>,
+             <a href="/gameServer/tournaments/statusRound.jsp?eid=1315&round=2">Pente</a>,
              <a href="/gameServer/tournaments/statusRound.jsp?eid=1307&round=2">Keryo-Pente</a>
              <br>
             Final: <a href="/gameServer/tournaments/statusRound.jsp?eid=1313&round=2">Boat</a>, <a href="/gameServer/tournaments/statusRound.jsp?eid=1312&round=3">Connect6</a>
@@ -531,7 +532,7 @@ addLoadEvent(goJws);
 
 <%
 SessionListener sessionListener = (SessionListener) application.getAttribute(SessionListener.class.getName());
-List<WhosOnlineRoom> rooms = WhosOnline.getPlayers(globalResources, sessionListener);
+List<WhosOnlineRoom> rooms = WhosOnline.getPlayers(dsgPlayerData.getPlayerID(), globalResources, sessionListener);
 
 boolean inLiveGameRoom = false;
 for (int i = 0; i < rooms.size(); i++) {

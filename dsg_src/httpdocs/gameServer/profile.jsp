@@ -352,16 +352,16 @@ if (dsgPlayerData != null) {
   <% if (!dsgPlayerData.getName().equals(name)) { 
   DSGFollowerStorer followerStorer = resources.getFollowerStorer();
 %>
-        <input type="button" value="Send Message"
-         onclick="javascript:window.location='/gameServer/newMessage.jsp?to=<%= dsgPlayerData.getName() %>';">
-        <input type="button" value="Invite to Turn-based Game"
-         onclick="javascript:window.location='/gameServer/tb/new.jsp?invitee=<%= dsgPlayerData.getName() %>';">
+      <a class="boldbuttons" href="/gameServer/newMessage.jsp?to=<%= dsgPlayerData.getName() %>" 
+         style="margin-right:5px;"><span>Message</span></a>
+      <a class="boldbuttons" href="/gameServer/tb/new.jsp?invitee=<%= dsgPlayerData.getName() %>" 
+         style="margin-right:5px;"><span>Invite to TB game</span></a>
          <% if (!followerStorer.isFollower(dsgPlayerData.getPlayerID(), meData.getPlayerID())) { %>
-        <input type="button" value="follow"
-         onclick="javascript:window.location='/gameServer/social?follow=<%= dsgPlayerData.getName() %>';">
+      <a class="boldbuttons" href="/gameServer/social?follow=<%= dsgPlayerData.getName() %>" 
+         style="margin-right:5px;"><span>follow</span></a>
          <%} else {%>
-        <input type="button" value="unfollow"
-         onclick="javascript:window.location='/gameServer/social?unfollow=<%= dsgPlayerData.getName() %>';">
+      <a class="boldbuttons" href="/gameServer/social?unfollow=<%= dsgPlayerData.getName() %>" 
+         style="margin-right:5px;"><span>unfollow</span></a>
          <%}%>
 
     <% } %>

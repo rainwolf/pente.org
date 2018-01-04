@@ -81,7 +81,9 @@ public class CacheMessageStorer implements DSGMessageStorer {
 
 		baseStorer.createMessage(message);
 
-		cacheMessage(message);
+        unCacheMessagesForPlayer(message.getToPid());
+
+//		cacheMessage(message);
 		
 		if (emailEnabled) {
 			try {
