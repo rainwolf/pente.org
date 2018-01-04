@@ -17,8 +17,9 @@ String loggedInStr = (String) request.getAttribute("name");
    } %><%  
     ServletContext ctx = getServletContext();
     Resources globalResources = (Resources) ctx.getAttribute(Resources.class.getName());
+    DSGPlayerData meData = globalResources.getDsgPlayerStorer().loadPlayer(loggedInStr);
 SessionListener sessionListener = (SessionListener) application.getAttribute(SessionListener.class.getName());
-List<WhosOnlineRoom> rooms = new ArrayList(WhosOnline.getPlayers(globalResources, sessionListener));
+List<WhosOnlineRoom> rooms = new ArrayList(WhosOnline.getPlayers(meData.getPlayerID(), globalResources, sessionListener));
 WhosOnlineRoom webRoom = null;
 for (Iterator<WhosOnlineRoom> iterator = rooms.iterator(); iterator.hasNext();) {
     WhosOnlineRoom r = iterator.next();
