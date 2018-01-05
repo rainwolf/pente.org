@@ -378,6 +378,16 @@ public class NewGameServlet extends HttpServlet {
 						tbGameStorer.storeNewMessage(tbg2.getGid(), m);
 					}
 				}
+				
+				String rememberStr = request.getParameter("remember");
+				if (rememberStr != null && "yes".equals(rememberStr)) {
+                    DSGPlayerPreference pref = new DSGPlayerPreference("tbGame", new Integer(game));
+                    dsgPlayerStorer.storePlayerPreference(invitePlayerData.getPlayerID(), pref);
+                    pref.setName("tbTimeout"); pref.setValue(new Integer(daysPerMove));
+                    dsgPlayerStorer.storePlayerPreference(invitePlayerData.getPlayerID(), pref);
+                    pref.setName("tbRestriction"); pref.setValue(String.valueOf(invitationRestriction));
+                    dsgPlayerStorer.storePlayerPreference(invitePlayerData.getPlayerID(), pref);
+                }
 
 				
 			} catch (Throwable throwable) {

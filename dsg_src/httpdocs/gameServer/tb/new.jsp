@@ -14,6 +14,27 @@ Resources resources = (Resources) application.getAttribute(
 String name = (String) request.getAttribute("name");
 DSGPlayerData meData = dsgPlayerStorer.loadPlayer(name);
 
+String gameStr = request.getParameter("game");
+
+List<DSGPlayerPreference> prefs = dsgPlayerStorer.loadPlayerPreferences(meData.getPlayerID());
+int tbTimeout = 7;
+int tbGame = 51;
+if (gameStr != null) {
+  tbGame = Integer.parseInt(gameStr);
+}
+String tbRestriction = "A";
+for (DSGPlayerPreference pref: prefs) {
+  if ("tbTimeout".equals(pref.getName())) {
+    tbTimeout = (Integer) pref.getValue();
+  }
+  if (gameStr == null && "tbGame".equals(pref.getName())) {
+    tbGame = (Integer) pref.getValue();
+  }
+  if ("tbRestriction".equals(pref.getName())) {
+    tbRestriction = (String) pref.getValue();
+  }
+}
+
 TBGameStorer tbGameStorer = resources.getTbGameStorer();
 List<TBSet> waitingSets = tbGameStorer.loadWaitingSets();
 List<TBSet> currentSets = tbGameStorer.loadSets(meData.getPlayerID());
@@ -204,7 +225,7 @@ if (!limitExceeded) {%>
          <select size="1" id="game" name="game">
          <% Game games[] = GridStateFactory.getTbGames();
             for (int i = 0; i < games.length; i++) { %>
-               <option value="<%= games[i].getId() %>"><%= games[i].getName() %></option>
+               <option <%=(tbGame==games[i].getId()?"selected":"")%> value="<%= games[i].getId() %>"><%= games[i].getName() %></option>
 <%--
                <option <% if (i == 0) { %>selected <% } %>value="<%= games[i].getId() %>"><%= games[i].getName() %></option>
 --%>               
@@ -212,14 +233,7 @@ if (!limitExceeded) {%>
        </font>
        </select>
        
-    <script type="text/javascript">
-      <% if (request.getParameter("game") != null) { %>
-        SelectElement(<%=request.getParameter("game") %>);
-      <% } else { %>
-        SelectElement(51);
-        <% } %>
-    </script>
-       
+     
        
       </td>
      </tr>
@@ -233,7 +247,7 @@ if (!limitExceeded) {%>
        <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
         <select name="daysPerMove" size="1">
         <% for (int i = 1; i < 31; i++) { %>         
-         <option <% if (i == 7) { %>selected <% } %>value="<%= i %>"><%= i %> Days</option>
+         <option <%= (i == tbTimeout)?"selected":"" %> value="<%= i %>"><%= i %> Days</option>
         <% } %>
         </select>
        </font>
@@ -248,13 +262,13 @@ if (!limitExceeded) {%>
       <td>
        <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
         <select name="invitationRestriction" size="1">
-          <option selected value="A">Any rating</option>
-          <option value="B">Beginners</option>
-          <option value="N">Not already playing</option>
-          <option value="L">Lower rating</option>
-          <option value="H">Higher rating</option>
-          <option value="S">Similar rating (&plusmn 100)</option>
-          <option value="C">Same rating class</option>
+          <option <%= ("A".equals(tbRestriction)?"selected":"") %> value="A">Any rating</option>
+          <option <%= ("B".equals(tbRestriction)?"selected":"") %> value="B">Beginners</option>
+          <option <%= ("N".equals(tbRestriction)?"selected":"") %> value="N">Not already playing</option>
+          <option <%= ("L".equals(tbRestriction)?"selected":"") %> value="L">Lower rating</option>
+          <option <%= ("H".equals(tbRestriction)?"selected":"") %> value="H">Higher rating</option>
+          <option <%= ("S".equals(tbRestriction)?"selected":"") %> value="S">Similar rating (&plusmn 100)</option>
+          <option <%= ("C".equals(tbRestriction)?"selected":"") %> value="C">Same rating class</option>
         </select>
        </font> (This only affects open invitations)
       </td>
@@ -306,6 +320,11 @@ if (!limitExceeded) {%>
        </table>
        </div>
      </td>
+     </tr>
+     <tr>
+      <td colspan="2">
+      <label><input id="remember" name="remember" type="checkbox" value="yes"/> remember my settings </label>
+      </td>
      </tr>
    </table>
    <br>
