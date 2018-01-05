@@ -31,8 +31,8 @@ if (game.getNumMoves() == 0) {
 
 boolean turnBased = false;
 String timer = "";
-if (game.getEvent() != null && game.getEvent().equals("Turn-based Game") &&
-    tbGame != null) {
+// if (game.getEvent() != null && game.getEvent().equals("Turn-based Game") &&
+if (tbGame != null) {
     timer = game.getInitialTime() + " days/move";
     turnBased = true;
 }

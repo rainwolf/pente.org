@@ -311,32 +311,32 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         public void run() {
 
             log4j.debug(getName() + " run");
-                long now = System.currentTimeMillis();
-                long oneWeekAgo = now -
-                        1000L * 60 * 60 * 24 * 5;
-                Date oneWeekAgoDate = new Date(oneWeekAgo);
-                List<TBSet> sets = getWaitingSets();
-                log4j.debug(getName() + " loaded " + sets.size() + " sets");
-                synchronized (cacheTbLock) {
-                    for (TBSet s : sets) {
-                        if (s.isWaitingSet()) {
-                            if (s.getInviteePid() == 0) {
-                                try {
-                                    DSGPlayerData playerData = dsgPlayerStorer.loadPlayer(s.getInviterPid());
-                                    if (playerData.getLastLoginDate().before(oneWeekAgoDate)) {
-                                        try {
-                                            cancelSet(s);
-                                        } catch (TBStoreException tse) {
-                                            log4j.error("Error canceling set RemoveStalePlayersInvitations", tse);
-                                        }
+            long now = System.currentTimeMillis();
+            long oneWeekAgo = now -
+                    1000L * 60 * 60 * 24 * 5;
+            Date oneWeekAgoDate = new Date(oneWeekAgo);
+            List<TBSet> sets = getWaitingSets();
+            log4j.debug(getName() + " loaded " + sets.size() + " sets");
+            synchronized (cacheTbLock) {
+                for (TBSet s : sets) {
+                    if (s.isWaitingSet()) {
+                        if (s.getInviteePid() == 0) {
+                            try {
+                                DSGPlayerData playerData = dsgPlayerStorer.loadPlayer(s.getInviterPid());
+                                if (playerData.getLastLoginDate().before(oneWeekAgoDate)) {
+                                    try {
+                                        cancelSet(s);
+                                    } catch (TBStoreException tse) {
+                                        log4j.error("Error canceling set RemoveStalePlayersInvitations", tse);
                                     }
-                                } catch (DSGPlayerStoreException e) {
-                                    e.printStackTrace();
                                 }
+                            } catch (DSGPlayerStoreException e) {
+                                e.printStackTrace();
                             }
                         }
                     }
                 }
+            }
         }
     }
 
