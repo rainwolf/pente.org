@@ -50,7 +50,7 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 	private int dPenteState = DPENTE_STATE_START;
 	private boolean dPenteSwapped = false;
 	
-
+    
 	private TBSet tbSet;
 	
 	public void timeout() {
@@ -340,14 +340,14 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 	}
 
 
-	public int hashCode() {
-		return (int) gid;
-	}
-	public boolean equals(Object obj) {
-		if (!(obj instanceof TBGame)) return false;
-		TBGame g = (TBGame) obj;
-		return g.gid == gid;
-	}
+//	public int hashCode() {
+//		return (int) gid;
+//	}
+//	public boolean equals(Object obj) {
+//		if (!(obj instanceof TBGame)) return false;
+//		TBGame g = (TBGame) obj;
+//		return g.gid == gid;
+//	}
 	public TBSet getTbSet() {
 		return tbSet;
 	}
@@ -403,4 +403,35 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
         
         return gameData;
 	}
+
+    @Override
+    public boolean equals(Object o) {
+	    if (o == null) {
+	        return false;
+        }
+        if (!(o instanceof TBGame)) {
+            return false;
+        }
+        TBGame g = (TBGame) o;
+        return this.player1Pid == g.getPlayer1Pid() && 
+                this.player2Pid == g.getPlayer2Pid() && 
+                this.game == g.getGame() &&
+                this.state == STATE_NOT_STARTED &&
+                g.getState() == STATE_NOT_STARTED &&
+                this.daysPerMove == g.getDaysPerMove() &&
+                this.rated == g.isRated();
+    }
+
+    @Override
+    public int hashCode() {
+	    int PRIME = 97;
+	    int tmp = (int) player1Pid;
+	    tmp = (int) player2Pid + PRIME*tmp;
+        tmp = game + PRIME*tmp;
+        tmp = state + PRIME*tmp;
+        tmp = daysPerMove + PRIME*tmp;
+        tmp = (rated?1:0) + PRIME*tmp;
+        return tmp;
+//        return PRIME;
+    }
 }

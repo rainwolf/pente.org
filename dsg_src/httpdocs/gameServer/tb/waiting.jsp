@@ -12,7 +12,8 @@ String name = (String) request.getAttribute("name");
 DSGPlayerData meData = dsgPlayerStorer.loadPlayer(name);
 
 TBGameStorer tbGameStorer = resources.getTbGameStorer();
-List<TBSet> waitingSets = tbGameStorer.loadWaitingSets();
+// List<TBSet> waitingSets = tbGameStorer.loadWaitingSets();
+List<TBSet> waitingSets = ((CacheTBStorer)tbGameStorer).getWaitingSets();
 List<TBSet> currentSets = tbGameStorer.loadSets(meData.getPlayerID());
 List<TBSet> invitesTo = new ArrayList<TBSet>();
 List<TBSet> invitesFrom = new ArrayList<TBSet>();
