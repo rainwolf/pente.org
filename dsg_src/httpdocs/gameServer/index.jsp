@@ -86,7 +86,8 @@ if (dsgPlayerData.unlimitedTBGames()) {
   }
 }
 
-List<TBSet> waitingSets = tbGameStorer.loadWaitingSets();
+// List<TBSet> waitingSets = tbGameStorer.loadWaitingSets();
+List<TBSet> waitingSets = ((CacheTBStorer)tbGameStorer).getWaitingSets();
 int openTBgames = 0;
 // int concurrentPlayLimit = 2;
 DSGPlayerData meData = dsgPlayerData;
@@ -373,10 +374,10 @@ window.google_analytics_uacct = "UA-20529582-2";
             <br>
             Round 2: <a href="/gameServer/tournaments/statusRound.jsp?eid=1309&round=2">D-Pente</a>,
              <a href="/gameServer/tournaments/statusRound.jsp?eid=1311&round=2">Poof-Pente</a>,
-             <a href="/gameServer/tournaments/statusRound.jsp?eid=1315&round=2">Pente</a>,
-             <a href="/gameServer/tournaments/statusRound.jsp?eid=1307&round=2">Keryo-Pente</a>
+             <a href="/gameServer/tournaments/statusRound.jsp?eid=1315&round=2">Pente</a>
              <br>
-            Final: <a href="/gameServer/tournaments/statusRound.jsp?eid=1313&round=2">Boat</a>, <a href="/gameServer/tournaments/statusRound.jsp?eid=1312&round=3">Connect6</a>
+            Final: <a href="/gameServer/tournaments/statusRound.jsp?eid=1313&round=2">Boat</a>, <a href="/gameServer/tournaments/statusRound.jsp?eid=1312&round=3">Connect6</a>,
+             <a href="/gameServer/tournaments/statusRound.jsp?eid=1307&round=3">Keryo-Pente</a>
               </li>
 
 

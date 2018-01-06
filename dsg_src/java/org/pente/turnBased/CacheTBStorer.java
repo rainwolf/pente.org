@@ -141,7 +141,15 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
 	public List<TBSet> getWaitingSets() {
 		synchronized (cacheTbLock) {
-			return new ArrayList<TBSet>(waitingSets);
+		    if (!waitingSetsLoaded) {
+                try {
+                    loadWaitingSets();
+                } catch (TBStoreException e) {
+                    e.printStackTrace();
+                }
+            }
+		    HashSet<TBSet> tmp = new HashSet<TBSet>(waitingSets);
+			return new ArrayList<TBSet>(tmp);
 		}
 	}
 	/** end accessors */

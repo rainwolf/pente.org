@@ -216,4 +216,68 @@ public class TBSet implements java.io.Serializable {
 	public void setPrivateGame(boolean privateGame) {
 		this.privateGame = privateGame;
 	}
+
+
+    @Override
+    public boolean equals(Object o) {
+//	    return true;
+        if (o == null) {
+            return false;
+        }
+        if (!(o instanceof TBSet)) {
+            return false;
+        }
+        TBSet s = (TBSet) o;
+        boolean testGame1;
+        if (this.getGame1() == null) {
+            if (s.getGame1() != null) {
+                testGame1 = false;
+            } else {
+                testGame1 = true;
+            }
+        } else {
+            testGame1 = this.getGame1().equals(s.getGame1());
+        }
+        boolean testGame2;
+        if (this.getGame2() == null) {
+            if (s.getGame2() != null) {
+                testGame2 = false;
+            } else {
+                testGame2 = true;
+            }
+        } else {
+            testGame2 = this.getGame2().equals(s.getGame2());
+        }
+        return 
+                testGame1 && testGame2 &&
+                this.player1Pid == s.getPlayer1Pid() &&
+                this.player2Pid == s.getPlayer2Pid() &&
+                this.state == STATE_NOT_STARTED &&
+                s.getState() == STATE_NOT_STARTED &&
+                this.privateGame == s.isPrivateGame() &&
+                this.invitationRestriction == s.getInvitationRestriction() &&
+                this.inviterPid == s.getInviterPid() &&
+                this.getInviteePid() == s.getInviteePid();
+	}
+
+    @Override
+    public int hashCode() {
+        int PRIME = 97;
+        int tmp = (int) player1Pid;
+        tmp = (int) player2Pid + PRIME*tmp;
+        tmp = (int) inviterPid + PRIME*tmp;
+        tmp = (int) getInviteePid() + PRIME*tmp;
+        tmp = state + PRIME*tmp;
+        tmp = invitationRestriction + PRIME*tmp;
+        tmp = (privateGame?1:0) + PRIME*tmp;
+        if (getGame1() != null) {
+            tmp = getGame1().hashCode() + PRIME*tmp;
+        } else { tmp = PRIME*tmp; }
+        if (getGame2() != null) {
+            tmp = getGame2().hashCode() + PRIME*tmp;
+        } else { tmp = PRIME*tmp; }
+        return tmp;
+//        return PRIME;
+    }
+
 }

@@ -25,7 +25,14 @@ public class LeaderBoard {
 			nextUpdateTimes.put(g.getId(), 0L);
 		}
 	}
-	
+
+    public List<DSGPlayerData> getLeaders(String name, int game) throws DSGPlayerStoreException {
+        DSGPlayerPreference pref = new DSGPlayerPreference("leaderboardGame", new Integer(game));
+        long pid = dsgPlayerStorer.loadPlayer(name).getPlayerID();
+        dsgPlayerStorer.storePlayerPreference(pid, pref);
+        return getLeaders(game);
+    }
+
 	public List<DSGPlayerData> getLeaders(int game) throws DSGPlayerStoreException {
 		updateLeaders(game);
 		List<Long> ll = leaders.get(game);

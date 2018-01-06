@@ -32,7 +32,9 @@
       <tr <%= color %>><td></td><td colspan="3" style="text-align:center"><b><%= (room.getName().equals("web") ? "Browsing" : room.getName()) %></b></td></tr>
 
 <%       for (DSGPlayerData d : room.getPlayers()) {
-           DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(("Mobile".equals(room.getName())?GridStateFactory.TB_PENTE:GridStateFactory.PENTE)); %> 
+//           DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(("Mobile".equals(room.getName())?GridStateFactory.TB_PENTE:GridStateFactory.PENTE)); 
+           DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(game); 
+           %> 
            <tr <%= color %>>
             <td>&nbsp;&nbsp;</td>
             <td><%@ include file="playerLink.jspf" %>&nbsp;</td>
