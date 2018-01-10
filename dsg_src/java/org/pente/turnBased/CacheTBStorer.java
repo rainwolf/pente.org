@@ -455,12 +455,20 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 						if (tSet.isTwoGameSet()) {
 							TBGame otherGame = tSet.getOtherGame(t.getGid());
 							if (otherGame != null) {
-								if (gs.contains(otherGame) && (otherGame.getState() == TBGame.STATE_ACTIVE 
+								if (otherGame.getState() == TBGame.STATE_ACTIVE 
 										&& otherGame.getTimeoutDate() != null 
-										&& otherGame.getTimeoutDate().getTime() < now)) {
-									if (t.getGid() < otherGame.getGid()) {
-										continue;
-									}
+										&& otherGame.getTimeoutDate().getTime() < now
+                                        && t.getGid() < otherGame.getGid()) {
+                                    boolean found = false;
+                                    for (TBGame g : gs) {
+                                        if (g.getGid() == otherGame.getGid()) {
+                                            found = true;
+                                            break;
+                                        }
+                                    }
+                                    if (found) {
+                                        continue;
+                                    }
 								}
 							}
 						}
