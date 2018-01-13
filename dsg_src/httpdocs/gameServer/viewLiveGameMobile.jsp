@@ -446,9 +446,8 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
         var p2Name = "<%=game.getPlayer2Data().getUserIDName()%>";
         var rated = false;
 
+        var gridSize = 19;
         var boardSize = 500;
-        var boardCanvas = document.getElementById("board");
-        var boardContext = boardCanvas.getContext("2d");
         var indentWidth = (boardCanvas.width - boardSize) / 2;
         var indentHeight = (boardCanvas.height - boardSize) / 2;
         var stepX = boardSize / 18;
@@ -457,8 +456,6 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
         var radius = stepX * 95 / 200;
 
         var drawUntilMove;
-        var whiteCaptures = 0;
-        var blackCaptures = 0;
         var lastMove;
         var currentMove = -1;
 
@@ -474,7 +471,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                   replayGame(abstractBoard, moves, drawUntilMove);
                   boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
                   boardContext.fill();     
-                  drawGrid(boardContext, boardColor);
+                  drawGrid(boardContext, boardColor, gridSize);
                   drawGame();
                   lastMove = moves[drawUntilMove - 1];
                   drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
@@ -503,7 +500,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                     replayGame(abstractBoard, moves, drawUntilMove);
                     boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
                     boardContext.fill();     
-                    drawGrid(boardContext, boardColor);
+                    drawGrid(boardContext, boardColor, gridSize);
                     drawGame();
                     lastMove = moves[moves.length - 1];
                     drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
@@ -522,59 +519,6 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
 
 
 
-            function drawGrid(boardContext, boardColor) {
-              boardContext.save();
-                boardContext.beginPath();
-                boardContext.rect(indentWidth / 2, indentHeight / 2, boardSize + indentWidth, boardSize + indentHeight);
-                boardContext.lineWidth=0.5;
-                boardContext.fillStyle=boardColor;
-                boardContext.shadowColor = 'Black';
-                boardContext.shadowBlur = 5;
-                boardContext.shadowOffsetX = radius/4;
-                boardContext.shadowOffsetY = radius/4;
-                boardContext.fill();     
-                // boardContext.closePath();
-                boardContext.restore();
-
-                boardContext.font = "10px sans-serif";
-                boardContext.fillStyle='black';
-                boardContext.lineWidth=0.5;
-                for (var i = 0; i < 19; i++) {
-                    boardContext.moveTo(indentWidth + i*stepX, indentHeight);
-                    boardContext.lineTo(indentWidth + i*stepX, indentHeight + boardSize);
-                    boardContext.fillText(coordinateLetters[i], indentWidth + i*stepX - 2, indentHeight - 5);
-                    boardContext.fillText(coordinateLetters[i], indentWidth + i*stepX - 2, boardSize + indentHeight + 12);
-                }
-                for (var i = 0; i < 19; i++) {
-                    boardContext.moveTo(indentWidth, indentHeight + i*stepY);
-                    boardContext.lineTo(indentWidth + boardSize, indentHeight + i*stepY);
-                    boardContext.fillText("" + (19 - i), indentWidth - 15, indentHeight + i*stepX + 3);
-                    boardContext.fillText("" + (19 - i), boardSize + indentWidth + 6, indentHeight + i*stepX + 3);
-                }
-                // boardContext.strokeStyle = "#FFFFFF";
-                boardContext.stroke();
-                boardContext.closePath();
-                boardContext.beginPath();
-                boardContext.arc(indentWidth + 9*stepX, indentHeight + 9*stepY, stepX / 5, 0, Math.PI*2, true); 
-                boardContext.stroke();
-                boardContext.closePath();
-                boardContext.beginPath();
-                boardContext.arc(indentWidth + 6*stepX, indentHeight + 6*stepY, stepX / 5, 0, Math.PI*2, true); 
-                boardContext.stroke();
-                boardContext.closePath();
-                boardContext.beginPath();
-                boardContext.arc(indentWidth + 6*stepX, indentHeight + 12*stepY, stepX / 5, 0, Math.PI*2, true); 
-                boardContext.stroke();
-                boardContext.closePath();
-                boardContext.beginPath();
-                boardContext.arc(indentWidth + 12*stepX, indentHeight + 6*stepY, stepX / 5, 0, Math.PI*2, true); 
-                boardContext.stroke();
-                boardContext.closePath();
-                boardContext.beginPath();
-                boardContext.arc(indentWidth + 12*stepX, indentHeight + 12*stepY, stepX / 5, 0, Math.PI*2, true); 
-                boardContext.stroke();
-                boardContext.closePath();
-            }
             function replayGame(abstractBoard, movesList, until) {
                 whiteCaptures = 0;
                 blackCaptures = 0;
@@ -734,7 +678,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                     }
                     drawUntilMove = drawUntilMove - 1;
                     boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
-                    drawGrid(boardContext, boardColor);
+                    drawGrid(boardContext, boardColor, gridSize);
                     replayGame(abstractBoard, moves, drawUntilMove);
                     drawGame();
                     lastMove = moves[drawUntilMove - 1];
@@ -755,7 +699,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                         drawUntilMove = drawUntilMove + 1;
                     }
                     boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
-                    drawGrid(boardContext, boardColor);
+                    drawGrid(boardContext, boardColor, gridSize);
                     replayGame(abstractBoard, moves, drawUntilMove);
                     drawGame();
                     lastMove = moves[drawUntilMove - 1];
@@ -784,7 +728,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                     default: boardColor = penteColor; break;
                 }
                 boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
-                drawGrid(boardContext, boardColor);
+                drawGrid(boardContext, boardColor, gridSize);
                 boardCanvas.addEventListener("click", boardClick, false);
                 drawUntilMove = moves.length;
                 playedMove = -1;
@@ -817,7 +761,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
             boardContext.rect(0, 0, boardCanvas.width, boardCanvas.height);
             boardContext.fillStyle='white';
             boardContext.fill();     
-            drawGrid(boardContext, boardColor);
+            drawGrid(boardContext, boardColor, gridSize);
             drawGame();
             lastMove = moves[drawUntilMove - 1];
             drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
@@ -875,7 +819,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
 
         <script type="text/javascript">
             gameStr = "<%=(((gameId % 2) == 0)?"Speed ":"")+GridStateFactory.getGameName(gameId) %>";
-            coordinateAlphas = new Array("A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T");
+            coordinateAlphas = ["A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T"];
         </script>
 <script language="javascript" src="<%= request.getContextPath() %>/gameServer/js/database.js"></script>
     <a class="button" href="javascript:search2();" ><span style="color:white">Search the DB</span></a>
