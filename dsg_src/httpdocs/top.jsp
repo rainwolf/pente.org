@@ -29,7 +29,7 @@
   <title>Pente.org » <%= topTitle %></title>
   <meta name="description" content="Play Free Online Multiplayer Pente, Gomoku, Keryo-Pente, D-Pente Games With Other Players Around the World, or Play Against a Tough Pente Computer Opponent.">
   <meta name="keywords" content="play free pente game online multiplayer gomoku keryo d-pente g-pente poof-pente dweebo tournaments forums rankings ratings live five in row game database pente rules pente strategy">
-
+<!-- <meta name="viewport" content="width=device-width"> -->
 
 <script type="text/javascript">
 <!--

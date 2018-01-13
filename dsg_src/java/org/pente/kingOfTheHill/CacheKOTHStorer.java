@@ -135,10 +135,12 @@ public class CacheKOTHStorer implements KOTHStorer {
                                 for (int tbGame : tbGames) {
                                     if (hill.getHillID() == getEventId(tbGame)) {
                                         adjustCrown(tbGame);
-                                        fixTBinvitations(tbGame, pid);
                                         break;
                                     }
                                 }
+                            }
+                            if (game > 50) {
+                                fixTBinvitations(game, pid);
                             }
                         }
                     }
