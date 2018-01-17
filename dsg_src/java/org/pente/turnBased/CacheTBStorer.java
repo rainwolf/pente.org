@@ -69,7 +69,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 	private Map<Long, List<Long>> setsByPid = new HashMap<Long, List<Long>>();
 	
 	
-	private Object cacheTbLock = new Object();
+	private final Object cacheTbLock = new Object();
 
 	private Timer loadExpireSoonTimer;
     private Timer checkTimeoutTimer;
@@ -963,8 +963,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 						lossText += "\n\n" + ratingsChange;
                         drawGameWinSetText += "\n\n" + ratingsChange;
                         drawGameLoseSetText += "\n\n" + ratingsChange;
-					}
-					else {
+					} else {
 						String setMsg = "This set is not complete yet, once the " +
 							"other game is completed your rating will be updated.";
 						
@@ -1179,7 +1178,8 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                     continue;
                 }
                 if (game.getGame() == GridStateFactory.TB_DPENTE ||
-                        game.getGame() == GridStateFactory.TB_DKERYO) {
+                        game.getGame() == GridStateFactory.TB_DKERYO || 
+                        game.getGame() == GridStateFactory.TB_GO) {
 
                     long newTimeout = Utilities.calculateNewTimeout(
                             game, dsgPlayerStorer);
@@ -1505,7 +1505,9 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 					continue;
 				}
 				game.acceptInvite(pid, set.getInviterPid());
-				if (game.getGame() != GridStateFactory.TB_DPENTE && game.getGame() != GridStateFactory.TB_DKERYO) {
+				if (game.getGame() != GridStateFactory.TB_DPENTE 
+                        && game.getGame() != GridStateFactory.TB_DKERYO 
+                        && game.getGame() != GridStateFactory.TB_GO) {
 					game.addMove(180);
 				}
 			}
@@ -1536,7 +1538,9 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 			if (game == null) {
 				continue;
 			}
-			if (game.getGame() != GridStateFactory.TB_DPENTE && game.getGame() != GridStateFactory.TB_DKERYO) {
+			if (game.getGame() != GridStateFactory.TB_DPENTE 
+                    && game.getGame() != GridStateFactory.TB_DKERYO
+                    && game.getGame() != GridStateFactory.TB_GO) {
 				baseStorer.storeNewMove(game.getGid(), 0, 180);
 			}
 		}

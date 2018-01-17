@@ -588,6 +588,9 @@
                         case 67:
                             boardColor = dkeryoPenteColor;
                             break;
+                        case 69:
+                            boardColor = goColor;
+                            break;
                         default:
                             boardColor = penteColor;
                             break;
@@ -827,7 +830,7 @@
                     var offsetY = rect.top;
                     var i = Math.floor((e.clientX - indentWidth + stepX / 2 - offsetX) / stepX);
                     var j = Math.floor((e.clientY - indentHeight + stepY / 2 - offsetY) / stepY);
-                    if (i >= 0 && i < 19 && j >= 0 && j < 19) {
+                    if (i >= 0 && i < gridSize && j >= 0 && j < gridSize) {
                         if ((drawUntilMove !== moves.length)) {
                             resetAbstractBoard(abstractBoard);
                             drawUntilMove = moves.length;
@@ -875,6 +878,7 @@
                             newMoves.push(playedMove);
                             resetAbstractBoard(abstractBoard);
                             drawUntilMove = newMoves.length;
+                            // alert("peep");
                             replayGame(abstractBoard, newMoves, drawUntilMove);
                             boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
                             boardContext.fill();
@@ -882,7 +886,7 @@
                             drawGame();
                             lastMove = moves[moves.length - 1];
                             drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-                            if (game == 63 && moves.length > 1) {
+                            if (game === 63 && moves.length > 1) {
                                 lastMove = moves[moves.length - 2];
                                 drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
                             }
@@ -894,7 +898,7 @@
                             dPenteMove2 = -1;
                             dPenteMove3 = -1;
                             dPenteMove4 = -1;
-                            if (game == 63 && moves.length > 1) {
+                            if (game === 63 && moves.length > 1) {
                                 selectMove(drawUntilMove - 2);
                             } else {
                                 selectMove(drawUntilMove - 1);
@@ -904,12 +908,15 @@
                 }
 
                 function drawStone(i, j, color) {
+                    if (color < 1 || color > 2) {
+                        return;
+                    }
                     boardContext.save();
                     var centerX = indentWidth + stepX * (i);
                     var centerY = indentHeight + stepY * (j);
                     boardContext.beginPath();
                     boardContext.arc(centerX, centerY, radius, 0, Math.PI * 2, true);
-                    if (color === true) {
+                    if (color === 2) {
                         boardContext.fillStyle = 'black';
                     } else {
                         boardContext.fillStyle = 'white';
@@ -920,13 +927,13 @@
                     boardContext.shadowBlur = 1;
                     boardContext.shadowOffsetX = radius / 8;
                     boardContext.shadowOffsetY = radius / 8;
-                    if (color) {
+                    if (color === 2) {
                         var gradient = boardContext.createRadialGradient(centerX, centerY, radius / 8, centerX, centerY, radius);
                         gradient.addColorStop(0, 'Grey');
                         gradient.addColorStop(1, 'Black');
                         boardContext.fillStyle = gradient;
                     } else {
-                        var gradient = boardContext.createRadialGradient(centerX, centerY, 2 * radius / 4, centerX, centerY, radius);
+                        gradient = boardContext.createRadialGradient(centerX, centerY, 2 * radius / 4, centerX, centerY, radius);
                         gradient.addColorStop(0, 'White');
                         gradient.addColorStop(1, 'Gainsboro');
                         boardContext.fillStyle = gradient;
@@ -959,7 +966,7 @@
                     stoneContext.closePath();
                     stoneContext.beginPath();
                     stoneContext.arc(centerX, centerY, iRadius, 0, Math.PI * 2, true);
-                    if (color == true) {
+                    if (color === true) {
                         stoneContext.fillStyle = 'black';
                     } else {
                         stoneContext.fillStyle = 'white';
@@ -976,7 +983,7 @@
                         gradient.addColorStop(1, 'Black');
                         stoneContext.fillStyle = gradient;
                     } else {
-                        var gradient = stoneContext.createRadialGradient(centerX, centerY, 2 * iRadius / 4, centerX, centerY, iRadius);
+                        gradient = stoneContext.createRadialGradient(centerX, centerY, 2 * iRadius / 4, centerX, centerY, iRadius);
                         gradient.addColorStop(0, 'White');
                         gradient.addColorStop(1, 'Gainsboro');
                         stoneContext.fillStyle = gradient;
@@ -1032,6 +1039,9 @@
                             break;
                         case 67:
                             replayKeryoPenteGame(abstractBoard, movesList, until);
+                            break;
+                        case 69:
+                            replayGoGame(abstractBoard, movesList, until);
                             break;
                     }
                     // document.getElementById("messageBox").innerHTML = "message";

@@ -7,6 +7,8 @@ var poofPenteColor = "#EDA3FD";
 var connect6Color = "#EDA3FD";
 var boatPenteColor = "#25BAFF";
 var dkeryoPenteColor = "#FFA500";
+var goColor = "#477EFF";
+
 var abstractBoard = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -33,18 +35,19 @@ var coordinateLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 
         var boardCanvas = document.getElementById("board");
         var boardContext = boardCanvas.getContext("2d");
         var stoneCanvas = document.getElementById("stone");
-        var stoneContext = stone.getContext("2d");
+        var stoneContext = stoneCanvas.getContext("2d");
         var interactionCanvas = document.getElementById("interactionLayer");
         var interactionContext = interactionCanvas.getContext("2d");
 
         var goGroupsByPlayerAndID = {1: {}, 2: {}}, goStoneGroupIDsByPlayer = {1: {}, 2: {}};
         var koMove = -1;
+        var suicideAllowed = false;
 
 function drawGame() {
     for (var i = 0; i < 19; i++) {
         for (var j = 0; j < 19; j++) {
             if (abstractBoard[i][j] > 0) {
-                drawStone(i, j, (abstractBoard[i][j] === 2));
+                drawStone(i, j, abstractBoard[i][j]);
             } 
         }
     }
@@ -52,27 +55,56 @@ function drawGame() {
 }
 
 
+function replayGoGame(abstractBoard, movesList, until) {
+    resetAbstractBoard(abstractBoard);
+    goGroupsByPlayerAndID = {1: {}, 2: {}}; 
+    goStoneGroupIDsByPlayer = {1: {}, 2: {}};
+    koMove = -1;
+    for (var i = 0; i < Math.min(movesList.length, until); i++) {
+        var color = 2 - (i%2);
+        var move = movesList[i];
+        abstractBoard[move % 19][Math.floor(move / 19)] = color;
+        addGoMove(move, 3-color);
+    }
+    // console.log(goGroupsByPlayerAndID[1]);
+    // console.log(goGroupsByPlayerAndID[2]);
+    // console.log(goStoneGroupIDsByPlayer[1]);
+    // console.log(goStoneGroupIDsByPlayer[2]);
+}
 
-function addGoMove(move) {
-    var currentPlayer = (moves.length % 2) + 1, opponent = 3 - currentPlayer;
-    var groupsByID = goGroupsByPlayerAndID[currentPlayer], stoneGroupIDs = goStoneGroupIDsByPlayer[currentPlayer];
+function addGoMove(move, currentPlayer) {
+    var opponent = 3 - currentPlayer;
+    // console.log(goStoneGroupIDsByPlayer);
+    var groupsByID = goGroupsByPlayerAndID[currentPlayer];
+    var stoneGroupIDs = goStoneGroupIDsByPlayer[currentPlayer];
+    // console.log("currentPlayer: " + currentPlayer);
+    // console.log(groupsByID);
+    // console.log(stoneGroupIDs);
+    
     settleGroups(move, groupsByID, stoneGroupIDs);
-    groupsByID = goStoneGroupIDsByPlayer[opponent];
+    groupsByID = goGroupsByPlayerAndID[opponent];
     stoneGroupIDs = goStoneGroupIDsByPlayer[opponent];
-    makeCaptures(move, groupsByID, stoneGroupIDs);
+    makeCaptures(move, groupsByID, stoneGroupIDs, opponent);
 
-    if (suicideAllowed) {
+    if (suicideAllowed === true) {
         groupsByID = goGroupsByPlayerAndID[currentPlayer];
         stoneGroupIDs = goStoneGroupIDsByPlayer[currentPlayer];
         var moveGroupID = stoneGroupIDs[move];
         var moveGroup = groupsByID[moveGroupID];
         if (!groupHasLiberties(moveGroup)) {
+            if (currentPlayer !== 1) {
+                whiteCaptures += moveGroup.size();
+            } else {
+                blackCaptures += moveGroup.size();
+            }
             captureGroup(moveGroupID, groupsByID, stoneGroupIDs);
         }
     }
+    
+    // console.log(abstractBoard);
 }
 
-function makeCaptures(move, groupsByID, stoneGroupIDs) {
+function makeCaptures(move, groupsByID, stoneGroupIDs, colorToCapture) {
     var captures = 0;
     if (move%gridSize !== 0) {
         var neighborStone = move - 1;
@@ -97,20 +129,32 @@ function makeCaptures(move, groupsByID, stoneGroupIDs) {
     if (captures !== 1) {
         koMove = -1;
     }
+    if (colorToCapture === 1) {
+        blackCaptures += captures;
+    } else {
+        whiteCaptures += captures;
+    }
 }
 
 function getCaptures(move, groupsByID, stoneGroupIDs, captures, neighborStone, neighborStoneGroupID) {
-    if (neighborStoneGroupID !== undefined) {
-        var neighborStoneGroup = groupsByID[neighborStoneGroupID];
-        if (!groupHasLiberties(neighborStoneGroup)) {
+    if (neighborStoneGroupID === undefined) {
+        return captures;
+    }
+    var newCaptures = captures;
+    var neighborStoneGroup = groupsByID[neighborStoneGroupID];
+    // console.log(getMoveCoord(move));
+    // console.log(groupsByID);
+    if (neighborStoneGroup !== undefined) {
+        if (groupHasLiberties(neighborStoneGroup) === false) {
+            // console.log("capture");
             if (koMove < 0 && neighborStoneGroup.length === 1 && checkKo(move)) {
                 koMove = neighborStone;
             }
-            captures += neighborStoneGroup.length();
+            newCaptures = captures + neighborStoneGroup.length;
             captureGroup(neighborStoneGroupID, groupsByID, stoneGroupIDs);
         }
     }
-    return captures;
+    return newCaptures;
 }
 function checkKo(move) {
     var position = getPosition(move);
@@ -144,7 +188,7 @@ function checkKo(move) {
     }
     return true;
 }
-function captureGroup(neighborStoneGroupID, groupsByID, stoneGroupIDs) {
+function captureGroup(groupID, groupsByID, stoneGroupIDs) {
     var group = groupsByID[groupID];
     for(var i = 0; i < group.length; ++i) {
         setPosition(group[i], 0);
@@ -154,7 +198,7 @@ function captureGroup(neighborStoneGroupID, groupsByID, stoneGroupIDs) {
 }
 function groupHasLiberties(group) {
     for (var i = 0; i < group.length; i++) {
-        if (stoneHasLiberties(group[i])) {
+        if (stoneHasLiberties(group[i]) === true) {
             return true;
         }
     }
@@ -190,9 +234,15 @@ function stoneHasLiberties(stone) {
             return true;
         }
     }
+    // console.log("no liberties for " + getMoveCoord(stone));
     return false;
 }
 
+function getMoveCoord(move) {
+    var letter = coordinateLetters[move%gridSize];
+    var number = gridSize-Math.floor(move/gridSize);
+    return letter + number;
+}
 function getPosition(move) {
     return abstractBoard[move%gridSize][Math.floor(move/gridSize)];
 }
@@ -249,11 +299,11 @@ function mergeGroups(group1, group2, groupsByID, stoneGroupIDs) {
         oldGroupID = group2;
         newGroupID = group1;
     }
-    delete groupsByID[oldGroupID];
-    for(i = 0; i < oldGroup.length; ++i) {
+    for(var i = 0; i < oldGroup.length; ++i) {
         newGroup.push(oldGroup[i]);
         stoneGroupIDs[oldGroup[i]] = newGroupID;
     }
+    delete groupsByID[oldGroupID];
 }
 
 
@@ -287,7 +337,7 @@ function mergeGroups(group1, group2, groupsByID, stoneGroupIDs) {
                     boardContext.fillText(coordinateLetters[i], indentWidth + i*stepX - 2, indentHeight - 5);
                     boardContext.fillText(coordinateLetters[i], indentWidth + i*stepX - 2, boardSize + indentHeight + 12);
                 }
-                for (var i = 0; i < gridSize; i++) {
+                for (i = 0; i < gridSize; i++) {
                     boardContext.moveTo(indentWidth, indentHeight + i*stepY);
                     boardContext.lineTo(indentWidth + boardSize, indentHeight + i*stepY);
                     boardContext.fillText("" + (gridSize - i), indentWidth - 15, indentHeight + i*stepX + 3);
@@ -317,8 +367,44 @@ function mergeGroups(group1, group2, groupsByID, stoneGroupIDs) {
                     boardContext.arc(indentWidth + 12*stepX, indentHeight + 12*stepY, stepX / 5, 0, Math.PI*2, true);
                     boardContext.stroke();
                     boardContext.closePath();
-                } else {
-                    
+                } else if (game === 69) {
+                    var r = stepX / 8;
+                    boardContext.beginPath();
+                    boardContext.arc(indentWidth + 9*stepX, indentHeight + 9*stepY, r, 0, Math.PI*2, true);
+                    boardContext.fill();
+                    boardContext.closePath();
+                    boardContext.beginPath();
+                    boardContext.arc(indentWidth + 3*stepX, indentHeight + 9*stepY, r, 0, Math.PI*2, true);
+                    boardContext.fill();
+                    boardContext.closePath();
+                    boardContext.beginPath();
+                    boardContext.arc(indentWidth + 9*stepX, indentHeight + 3*stepY, r, 0, Math.PI*2, true);
+                    boardContext.fill();
+                    boardContext.closePath();
+                    boardContext.beginPath();
+                    boardContext.arc(indentWidth + 15*stepX, indentHeight + 9*stepY, r, 0, Math.PI*2, true);
+                    boardContext.fill();
+                    boardContext.closePath();
+                    boardContext.beginPath();
+                    boardContext.arc(indentWidth + 9*stepX, indentHeight + 15*stepY, r, 0, Math.PI*2, true);
+                    boardContext.fill();
+                    boardContext.closePath();
+                    boardContext.beginPath();
+                    boardContext.arc(indentWidth + 3*stepX, indentHeight + 3*stepY, r, 0, Math.PI*2, true);
+                    boardContext.fill();
+                    boardContext.closePath();
+                    boardContext.beginPath();
+                    boardContext.arc(indentWidth + 3*stepX, indentHeight + 15*stepY, r, 0, Math.PI*2, true);
+                    boardContext.fill();
+                    boardContext.closePath();
+                    boardContext.beginPath();
+                    boardContext.arc(indentWidth + 15*stepX, indentHeight + 3*stepY, r, 0, Math.PI*2, true);
+                    boardContext.fill();
+                    boardContext.closePath();
+                    boardContext.beginPath();
+                    boardContext.arc(indentWidth + 15*stepX, indentHeight + 15*stepY, r, 0, Math.PI*2, true);
+                    boardContext.fill();
+                    boardContext.closePath();
                 }
             }
 
