@@ -464,7 +464,8 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
     private boolean firstMoveCanBeOffCenter(int gameId) {
         return (gameId == GridStateFactory.DPENTE || gameId == GridStateFactory.SPEED_DPENTE ||
                 gameId == GridStateFactory.DKERYO || gameId == GridStateFactory.SPEED_DKERYO ||
-                gameId == GridStateFactory.TB_DPENTE || gameId == GridStateFactory.TB_DKERYO);
+                gameId == GridStateFactory.TB_DPENTE || gameId == GridStateFactory.TB_DKERYO ||
+                gameId == GridStateFactory.GO || gameId == GridStateFactory.SPEED_GO || gameId == GridStateFactory.TB_GO);
     }
     
     /** Gets the current number of moves stored for a game

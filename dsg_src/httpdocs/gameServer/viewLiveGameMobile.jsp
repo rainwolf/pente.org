@@ -615,7 +615,10 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                 }
             }
             function drawStone(i, j, color) {
-              boardContext.save();
+                if (color < 1 || color > 2) {
+                    return;
+                }
+                boardContext.save();
                 var centerX = indentWidth + stepX*(i);
                 var centerY = indentHeight + stepY*(j);
                 boardContext.beginPath();
@@ -631,7 +634,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                 boardContext.shadowBlur = 1;
                 boardContext.shadowOffsetX = radius/8;
                 boardContext.shadowOffsetY = radius/8;
-                if (color) {
+                if (color === 2) {
                     var gradient = boardContext.createRadialGradient(centerX, centerY, radius / 8, centerX, centerY, radius);
                     gradient.addColorStop(0, 'Grey');
                     gradient.addColorStop(1, 'Black');

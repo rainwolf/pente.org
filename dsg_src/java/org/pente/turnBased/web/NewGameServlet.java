@@ -327,8 +327,14 @@ public class NewGameServlet extends HttpServlet {
 					if (inviteePlayerData != null) {
 						pid2 = inviteePlayerData.getPlayerID();
 					}
-				}
-				else {
+					
+					if (game == GridStateFactory.TB_GO) {
+                        if (playAs == 2) {
+                            tbg = tbg2;
+                        }
+                        tbg2 = null;
+                    }
+				} else {
 					tbg = createGame(playAs, invitePlayerData, inviteePlayerData,
 						game, daysPerMove, rated);
 					

@@ -1,6 +1,7 @@
 package org.pente.turnBased.web;
 
 import java.io.*;
+import java.util.List;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
@@ -97,13 +98,25 @@ public class CancelInvitationServlet extends HttpServlet {
 				return;
 		    }
 
-            // beginner sets cannot be canceled
-//            if (set.getInvitationRestriction() == 'B') {
-//                log4j.error("Beginner sets cannot be canceled.");
-//                handleError(request, response, "Beginner sets cannot be canceled.",
-//                        loadRedirectPage);
-//                return;
-//            }
+//             beginner sets cannot be canceled
+            if (set.getInvitationRestriction() == TBSet.BEGINNER) {
+                List<TBSet> waitingSets = tbGameStorer.loadWaitingSets();
+                int total = 0, thisGame = 0;
+                for (TBSet s: waitingSets) {
+                    if (s.getInvitationRestriction() == TBSet.BEGINNER) {
+                        total++;
+                        if (s.getGame1() != null && set.getGame1() != null && s.getGame1().getGame() == set.getGame1().getGame()) {
+                            thisGame++;
+                        }
+                    }
+                }
+                if (thisGame < total/2) {
+                    log4j.error("Beginner sets cannot be canceled.");
+                    handleError(request, response, "Beginner sets cannot be canceled.",
+                            loadRedirectPage);
+                    return;
+                }
+            }
 
 
             // check that either invitation is open (no invitee) or that this
