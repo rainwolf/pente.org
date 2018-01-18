@@ -326,6 +326,9 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
         var p2Name = "<%=game.getPlayer2Data().getUserIDName()%>";
         var rated = false;
 
+        var boardCanvas = document.getElementById("board");
+        var boardContext = boardCanvas.getContext("2d");
+
         var gridSize = 19;
         var boardSize = 420;
         var indentWidth = (boardCanvas.width - boardSize) / 2;
@@ -351,7 +354,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                   replayGame(abstractBoard, moves, drawUntilMove);
                   boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
                   boardContext.fill();     
-                  drawGrid(boardContext, boardColor, gridSize);
+                  drawGrid(boardContext, boardColor, gridSize, true);
                   drawGame();
                   lastMove = moves[drawUntilMove - 1];
                   drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
@@ -380,7 +383,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                     replayGame(abstractBoard, moves, drawUntilMove);
                     boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
                     boardContext.fill();     
-                    drawGrid(boardContext, boardColor, gridSize);
+                    drawGrid(boardContext, boardColor, gridSize, true);
                     drawGame();
                     lastMove = moves[moves.length - 1];
                     drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
@@ -539,7 +542,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                     }
                     drawUntilMove = drawUntilMove - 1;
                     boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
-                    drawGrid(boardContext, boardColor, gridSize);
+                    drawGrid(boardContext, boardColor, gridSize, true);
                     replayGame(abstractBoard, moves, drawUntilMove);
                     drawGame();
                     lastMove = moves[drawUntilMove - 1];
@@ -560,7 +563,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                         drawUntilMove = drawUntilMove + 1;
                     }
                     boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
-                    drawGrid(boardContext, boardColor, gridSize);
+                    drawGrid(boardContext, boardColor, gridSize, true);
                     replayGame(abstractBoard, moves, drawUntilMove);
                     drawGame();
                     lastMove = moves[drawUntilMove - 1];
@@ -589,7 +592,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                     default: boardColor = penteColor; break;
                 }
                 boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
-                drawGrid(boardContext, boardColor, gridSize);
+                drawGrid(boardContext, boardColor, gridSize, true);
                 boardCanvas.addEventListener("click", boardClick, false);
                 drawUntilMove = moves.length;
                 playedMove = -1;

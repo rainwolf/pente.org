@@ -377,8 +377,7 @@ window.google_analytics_uacct = "UA-20529582-2";
              <a href="/gameServer/tournaments/statusRound.jsp?eid=1310&round=2">G-Pente</a>,
              <a href="/gameServer/tournaments/statusRound.jsp?eid=1315&round=2">Pente</a>
              <br>
-            Final: <a href="/gameServer/tournaments/statusRound.jsp?eid=1313&round=2">Boat</a>, <a href="/gameServer/tournaments/statusRound.jsp?eid=1312&round=3">Connect6</a>,
-             <a href="/gameServer/tournaments/statusRound.jsp?eid=1307&round=3">Keryo-Pente</a>
+            Final: <a href="/gameServer/tournaments/statusRound.jsp?eid=1313&round=2">Boat</a>, <a href="/gameServer/tournaments/statusRound.jsp?eid=1312&round=3">Connect6</a>
               </li>
 
 

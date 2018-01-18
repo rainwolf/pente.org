@@ -158,6 +158,8 @@ window.google_analytics_uacct = "UA-20529582-2";
         var stepY = boardSize / 18;
         var boardColor;
         var radius = stepX * 95 / 200;
+        
+        var gridSize = 19;
 
 
         var drawUntilMove;
@@ -195,7 +197,7 @@ window.google_analytics_uacct = "UA-20529582-2";
                 }
                 boardCanvas.addEventListener("click", boardClick, false);
                 boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
-                drawGrid(boardContext, boardColor);
+                drawGrid(boardContext, boardColor, gridSize, false);
 
                 drawUntilMove = moves.length;
                 playedMove = -1;
@@ -208,67 +210,67 @@ window.google_analytics_uacct = "UA-20529582-2";
             }
 
 
-            function drawGrid(boardContext, boardColor) {
-              boardContext.save();
-                boardContext.beginPath();
-                boardContext.rect(indentWidth / 2, indentHeight / 2, boardSize + indentWidth, boardSize + indentHeight);
-                boardContext.lineWidth=0.5;
-                boardContext.fillStyle=boardColor;
-                boardContext.shadowColor = 'Black';
-                boardContext.shadowBlur = 5;
-                boardContext.shadowOffsetX = radius/4;
-                boardContext.shadowOffsetY = radius/4;
-                boardContext.fill();     
-                // boardContext.closePath();
-                boardContext.restore();
-
-                // boardContext.beginPath();
-                boardContext.font = "10px sans-serif";
-                boardContext.fillStyle='black';
-                boardContext.lineWidth=0.2;
-                for (var i = 0; i < 19; i++) {
-                    boardContext.moveTo(indentWidth + i*stepX, indentHeight);
-                    boardContext.lineTo(indentWidth + i*stepX, indentHeight + boardSize);
-                    // boardContext.fillText(coordinateLetters[i], indentWidth + i*stepX - 2, indentHeight - 5);
-                    // boardContext.fillText(coordinateLetters[i], indentWidth + i*stepX - 2, boardSize + indentHeight + 12);
-                }
-                for (var i = 0; i < 19; i++) {
-                    boardContext.moveTo(indentWidth, indentHeight + i*stepY);
-                    boardContext.lineTo(indentWidth + boardSize, indentHeight + i*stepY);
-                    // boardContext.fillText("" + (19 - i), indentWidth - 15, indentHeight + i*stepX + 3);
-                    // boardContext.fillText("" + (19 - i), boardSize + indentWidth + 6, indentHeight + i*stepX + 3);
-                }
-                // boardContext.strokeStyle = "#FFFFFF";
-                boardContext.stroke();
-                boardContext.closePath();
-                boardContext.beginPath();
-                boardContext.arc(indentWidth + 9*stepX, indentHeight + 9*stepY, stepX / 10, 0, Math.PI*2, true); 
-                boardContext.stroke();
-                boardContext.closePath();
-                boardContext.beginPath();
-                boardContext.arc(indentWidth + 6*stepX, indentHeight + 6*stepY, stepX / 10, 0, Math.PI*2, true); 
-                boardContext.stroke();
-                boardContext.closePath();
-                boardContext.beginPath();
-                boardContext.arc(indentWidth + 6*stepX, indentHeight + 12*stepY, stepX / 10, 0, Math.PI*2, true); 
-                boardContext.stroke();
-                boardContext.closePath();
-                boardContext.beginPath();
-                boardContext.arc(indentWidth + 12*stepX, indentHeight + 6*stepY, stepX / 10, 0, Math.PI*2, true); 
-                boardContext.stroke();
-                boardContext.closePath();
-                boardContext.beginPath();
-                boardContext.arc(indentWidth + 12*stepX, indentHeight + 12*stepY, stepX / 10, 0, Math.PI*2, true); 
-                boardContext.stroke();
-                boardContext.closePath();
-            }
+            // function drawGrid(boardContext, boardColor) {
+            //   boardContext.save();
+            //     boardContext.beginPath();
+            //     boardContext.rect(indentWidth / 2, indentHeight / 2, boardSize + indentWidth, boardSize + indentHeight);
+            //     boardContext.lineWidth=0.5;
+            //     boardContext.fillStyle=boardColor;
+            //     boardContext.shadowColor = 'Black';
+            //     boardContext.shadowBlur = 5;
+            //     boardContext.shadowOffsetX = radius/4;
+            //     boardContext.shadowOffsetY = radius/4;
+            //     boardContext.fill();     
+            //     // boardContext.closePath();
+            //     boardContext.restore();
+            //
+            //     // boardContext.beginPath();
+            //     boardContext.font = "10px sans-serif";
+            //     boardContext.fillStyle='black';
+            //     boardContext.lineWidth=0.2;
+            //     for (var i = 0; i < 19; i++) {
+            //         boardContext.moveTo(indentWidth + i*stepX, indentHeight);
+            //         boardContext.lineTo(indentWidth + i*stepX, indentHeight + boardSize);
+            //         // boardContext.fillText(coordinateLetters[i], indentWidth + i*stepX - 2, indentHeight - 5);
+            //         // boardContext.fillText(coordinateLetters[i], indentWidth + i*stepX - 2, boardSize + indentHeight + 12);
+            //     }
+            //     for (var i = 0; i < 19; i++) {
+            //         boardContext.moveTo(indentWidth, indentHeight + i*stepY);
+            //         boardContext.lineTo(indentWidth + boardSize, indentHeight + i*stepY);
+            //         // boardContext.fillText("" + (19 - i), indentWidth - 15, indentHeight + i*stepX + 3);
+            //         // boardContext.fillText("" + (19 - i), boardSize + indentWidth + 6, indentHeight + i*stepX + 3);
+            //     }
+            //     // boardContext.strokeStyle = "#FFFFFF";
+            //     boardContext.stroke();
+            //     boardContext.closePath();
+            //     boardContext.beginPath();
+            //     boardContext.arc(indentWidth + 9*stepX, indentHeight + 9*stepY, stepX / 10, 0, Math.PI*2, true); 
+            //     boardContext.stroke();
+            //     boardContext.closePath();
+            //     boardContext.beginPath();
+            //     boardContext.arc(indentWidth + 6*stepX, indentHeight + 6*stepY, stepX / 10, 0, Math.PI*2, true); 
+            //     boardContext.stroke();
+            //     boardContext.closePath();
+            //     boardContext.beginPath();
+            //     boardContext.arc(indentWidth + 6*stepX, indentHeight + 12*stepY, stepX / 10, 0, Math.PI*2, true); 
+            //     boardContext.stroke();
+            //     boardContext.closePath();
+            //     boardContext.beginPath();
+            //     boardContext.arc(indentWidth + 12*stepX, indentHeight + 6*stepY, stepX / 10, 0, Math.PI*2, true); 
+            //     boardContext.stroke();
+            //     boardContext.closePath();
+            //     boardContext.beginPath();
+            //     boardContext.arc(indentWidth + 12*stepX, indentHeight + 12*stepY, stepX / 10, 0, Math.PI*2, true); 
+            //     boardContext.stroke();
+            //     boardContext.closePath();
+            // }
             function drawStone(i, j, color) {
               boardContext.save();
                 var centerX = indentWidth + stepX*(i);
                 var centerY = indentHeight + stepY*(j);
                 boardContext.beginPath();
                 boardContext.arc(centerX, centerY, radius , 0, Math.PI*2, true); 
-                if (color == true) {
+                if (color === 2) {
                     boardContext.fillStyle = 'black';
                 } else {
                     boardContext.fillStyle = 'white';
@@ -279,7 +281,7 @@ window.google_analytics_uacct = "UA-20529582-2";
                 boardContext.shadowBlur = 1;
                 boardContext.shadowOffsetX = radius/8;
                 boardContext.shadowOffsetY = radius/8;
-                if (color) {
+                if (color === 2) {
                     var gradient = boardContext.createRadialGradient(centerX, centerY, radius / 8, centerX, centerY, radius);
                     gradient.addColorStop(0, 'Grey');
                     gradient.addColorStop(1, 'Black');

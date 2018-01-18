@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.pente.game.ZobristUtil.rand;
+
 /**
  * Created by waliedothman on 16/05/2017.
  */
@@ -31,6 +33,7 @@ public class GoState extends GridStateDecorator
     private int passMove;
     private int handicapPass;
 
+    private List<Long> positionHashes;
     
 
     public GoState(GridState gridState) {
@@ -71,34 +74,37 @@ public class GoState extends GridStateDecorator
         
         passMove = getGridSizeX() * getGridSizeY();
         handicapPass = passMove + 1;
+        
+        positionHashes = new ArrayList<>();
+        positionHashes.add(0L);
     }
 
 
     public void addMove(int move) {
-        int currentPlayer = getCurrentPlayer();
 
         gridState.addMove(move);
-        Map<Integer, List<Integer>> groupsByID = getGroupsByPlayerAndID().get(currentPlayer);
-        Map<Integer, Integer> stoneGroupIDs = getStoneGroupIDsByPlayer().get(currentPlayer);
-        settleGroups(move, groupsByID, stoneGroupIDs);
 
-        int opponent = getCurrentPlayer();
-        groupsByID = getGroupsByPlayerAndID().get(opponent);
-        stoneGroupIDs = getStoneGroupIDsByPlayer().get(opponent);
-        makeCaptures(move, groupsByID, stoneGroupIDs, currentPlayer);
-        
-        if (isSuicideAllowed()) {
-            groupsByID = getGroupsByPlayerAndID().get(currentPlayer);
-            stoneGroupIDs = getStoneGroupIDsByPlayer().get(currentPlayer);
-            int moveGroupID = stoneGroupIDs.get(move);
-            List<Integer> moveGroup = groupsByID.get(moveGroupID);
-            if (!groupHasLiberties(moveGroup)) {
-                if (currentPlayer != 1) {
-                    whiteCaptures += moveGroup.size();
-                } else {
-                    blackCaptures += moveGroup.size();
+        if (0 <= move && move < passMove) {
+            int currentPlayer = getCurrentPlayer();
+            positionHashes.add(positionHashes.get(positionHashes.size()-1) ^ rand[currentPlayer-1][move]);
+
+            Map<Integer, List<Integer>> groupsByID = getGroupsByPlayerAndID().get(currentPlayer);
+            Map<Integer, Integer> stoneGroupIDs = getStoneGroupIDsByPlayer().get(currentPlayer);
+            settleGroups(move, groupsByID, stoneGroupIDs);
+
+            int opponent = getCurrentPlayer();
+            groupsByID = getGroupsByPlayerAndID().get(opponent);
+            stoneGroupIDs = getStoneGroupIDsByPlayer().get(opponent);
+            makeCaptures(move, groupsByID, stoneGroupIDs);
+
+            if (isSuicideAllowed()) {
+                groupsByID = getGroupsByPlayerAndID().get(currentPlayer);
+                stoneGroupIDs = getStoneGroupIDsByPlayer().get(currentPlayer);
+                int moveGroupID = stoneGroupIDs.get(move);
+                List<Integer> moveGroup = groupsByID.get(moveGroupID);
+                if (!groupHasLiberties(moveGroup)) {
+                    captureGroup(moveGroupID, groupsByID, stoneGroupIDs);
                 }
-                captureGroup(moveGroupID, groupsByID, stoneGroupIDs);
             }
         }
 
@@ -109,7 +115,7 @@ public class GoState extends GridStateDecorator
     
     
     
-    private void makeCaptures(int move, Map<Integer, List<Integer>> groupsByID, Map<Integer, Integer> stoneGroupIDs, int capturer) {
+    private void makeCaptures(int move, Map<Integer, List<Integer>> groupsByID, Map<Integer, Integer> stoneGroupIDs) {
         int captures = 0;
         if (move%getGridSizeX() != 0) {
             int neighborStone = move - 1;
@@ -372,7 +378,12 @@ public class GoState extends GridStateDecorator
 
 //        TODO check for Super-Ko
         if (!isRepetitionAllowed()) {
-            
+            addMove(move);
+            if (positionHashes.indexOf(positionHashes.get(positionHashes.size()-1)) < positionHashes.size()-1) {
+                undoMove();
+                return false;
+            }
+            undoMove();
         }
 
         return true;
@@ -413,7 +424,7 @@ public class GoState extends GridStateDecorator
 
     @Override
     public long calcHash(long cHash, int p, int move, int rot) {
-        cHash ^= ZobristUtil.rand[p-1][rotateMove(move, rot)];
+        cHash ^= rand[p-1][rotateMove(move, rot)];
 
         int op = 3 - p;
 
@@ -424,16 +435,16 @@ public class GoState extends GridStateDecorator
             }
             else if (capturedAt[p][i] == getNumMoves() - 1) {
                 int capMove = rotateMove(capturedMoves[p][i], rot);
-                cHash ^= ZobristUtil.rand[op-1][capMove];
+                cHash ^= rand[op-1][capMove];
             }
         }
 
         // now XOR in number captures for each player
         if (captures[1] > 0) {
-            cHash ^= ZobristUtil.rand[2][captures[1]];
+            cHash ^= rand[2][captures[1]];
         }
         if (captures[2] > 0) {
-            cHash ^= ZobristUtil.rand[3][captures[2]];
+            cHash ^= rand[3][captures[2]];
         }
 
         return cHash;
@@ -456,27 +467,17 @@ public class GoState extends GridStateDecorator
                 gridState.getNumMoves() - 1;
         capturedMoves[capturePlayer][this.captures[capturePlayer]] = move;
         this.captures[capturePlayer]++;
+        Long last = positionHashes.get(positionHashes.size()-1);
+        positionHashes.remove(positionHashes.size()-1);
+        positionHashes.add(last ^ rand[3-capturePlayer-1][move]);
     }
     public void undoMove() {
-
-        gridState.undoMove();
-
-        int currentPlayer = getCurrentPlayer();
-        int otherPlayer = 3 - currentPlayer;
-
-        while (captures[currentPlayer] > 0 &&
-                capturedAt[currentPlayer][captures[currentPlayer] - 1] == gridState.getNumMoves()) {
-
-            int move = capturedMoves[currentPlayer][captures[currentPlayer] - 1];
-
-            gridState.setPosition(move, otherPlayer);
-
-            capturedAt[currentPlayer][captures[currentPlayer] - 1] = 0;
-            capturedMoves[currentPlayer][captures[currentPlayer] - 1] = 0;
-            captures[currentPlayer]--;
+        gridState.clear();
+        
+        init();
+        for (int move: gridState.getMoves()) {
+            addMove(move);
         }
-
-        updateHash(this);
     }
 
 }
