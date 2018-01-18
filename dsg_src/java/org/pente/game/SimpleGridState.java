@@ -155,6 +155,8 @@ public class SimpleGridState implements GridState {
             }
             moves.addElement(new Integer(move));
             setPosition(move, currentPlayer);
+        } else if (allowNonBoardMoves) {
+            moves.addElement(new Integer(move));
         }
     }
 

@@ -37,11 +37,11 @@ var viewingSearchResults = 1;
 
 var statisticsShowing = 1;
 
-coordinateAlphas = new Array("A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T");
+coordinateAlphas = ["A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T"];
 
 var ns4 = (document.layers) ? true : false;
 var ie4 = (document.all) ? true : false;
-var ns6 = ((navigator.vendor) && (navigator.vendor.indexOf("Netscape6"))) != -1;
+var ns6 = ((navigator.vendor) && (navigator.vendor.indexOf("Netscape6"))) !== -1;
 
 var highlightedMove = "";
 
@@ -67,15 +67,15 @@ var currentNumMatchedGames = 0;
 //POOF PENTE 11
 //SPEED POOF PENTE 12
 function gameHasCaptures() {
-  return (game != 5 && game != 6 && game != 13 && game != 14);
+  return (game !== 5 && game !== 6 && game !== 13 && game !== 14);
 }
 function gameHasTripleCaptures() {
-  return (game == 3 || game == 4 || game == 17 || game == 18);
+  return (game === 3 || game === 4 || game === 17 || game === 18);
 }
 
 function initializeGame() {
 
-    game = document.data_form.game.value;
+    game = parseInt(document.data_form.game.value);
     var filter_data = getFilterData();
     currentNumMatchedGames = 100;
     setGame(document.data_form.moves.value);
@@ -100,19 +100,19 @@ function resetGame() {
 }
 
 function isConnect6(game) {
-    if (game == 13 || game == 14) {
+    if (game === 13 || game === 14) {
         return true;
     }
     return false;
 }
 function isPoofPente(game) {
-    if (game == 11 || game == 12) {
+    if (game === 11 || game === 12) {
         return true;
     }
     return false;
 }
 function isDPente(game) {
-    if (game == 17 || game == 18 || game == 7 || game == 8) {
+    if (game === 17 || game === 18 || game === 7 || game === 8 || game === 19 || game === 20) {
         return true;
     }
     return false;
@@ -146,8 +146,8 @@ function setGame(moveStr) {
     for (var i = 0; i < 19; i++) {
         for (var j = 0; j < 19; j++) {
 
-            if (board[i][j] == 1 ||
-                board[i][j] == 2) {
+            if (board[i][j] === 1 ||
+                board[i][j] === 2) {
                 clearMove(getStrMove(j * 19 + i));
             }
             board[i][j] = 0;
@@ -164,12 +164,12 @@ function setGame(moveStr) {
 
     while (stillMovesLeft) {
 
-        if (currentMove != 0) {
+        if (currentMove !== 0) {
             startMove = moveStr.indexOf(",", startMove + 1);
         }
 
         endMove = moveStr.indexOf(",", startMove + 1);
-        if (endMove == (moveStr.length - 1)) {
+        if (endMove === (moveStr.length - 1)) {
             stillMovesLeft = false;
         }
 
@@ -194,11 +194,11 @@ function getCurrentMoveStr() {
 
 function highlightMove(move) {
 
-    if (document[move].src == statisticImage.src) {
+    if (document[move].src === statisticImage.src) {
 
         var currentPlayer = currentMove % 2;
         if (isConnect6(game)) {
-            currentPlayer = parseInt((currentMove + 1)/2)%2;
+            currentPlayer = Math.floor((currentMove + 1)/2)%2;
         }
         document[move].src = moveImages[currentPlayer].src;
 
@@ -208,9 +208,9 @@ function highlightMove(move) {
 
 function unHighlightMove(move) {
 
-    if (highlightedMove == move &&
-        (document[move].src == moveImages[0].src ||
-         document[move].src == moveImages[1].src)) {
+    if (highlightedMove === move &&
+        (document[move].src === moveImages[0].src ||
+         document[move].src === moveImages[1].src)) {
 
         document[move].src = statisticImage.src;
         highlightedMove = "";
@@ -239,19 +239,19 @@ function addMoveInternal(intMove) {
 
     // put move on internal board
     var x = intMove % 19;
-    var y = parseInt(intMove / 19);
+    var y = Math.floor(intMove / 19);
     var currentPlayer = currentMove % 2 + 1;
         if (isConnect6(game)) {
-            currentPlayer = parseInt((currentMove+4)/2)%2 + 1;
+            currentPlayer = Math.floor((currentMove+4)/2)%2 + 1;
         }
     board[x][y] = currentPlayer;
 }
 
 function addMove(move) {
 
-    if (highlightedMove == move ||
-        (document[move].src != moveImages[0].src &&
-         document[move].src != moveImages[1].src))
+    if (highlightedMove === move ||
+        (document[move].src !== moveImages[0].src &&
+         document[move].src !== moveImages[1].src))
     {
 
         hideStatistics();
@@ -262,7 +262,7 @@ function addMove(move) {
         // put move on image board
         var currentPlayer = currentMove++ % 2;
         if (isConnect6(game)) {
-            currentPlayer = parseInt((currentMove + 4)/2)%2;
+            currentPlayer = Math.floor((currentMove + 4)/2)%2;
         }
         document[move].src = moveImages[currentPlayer].src;
 
@@ -306,11 +306,11 @@ function removeCaptures(intMove, internal) {
 
    var currentPlayer = (currentMove - 1) % 2 + 1;
         // if (isConnect6(game)) {
-        //     currentPlayer = parseInt((currentMove - 1)/2)%2 + 1;
+        //     currentPlayer = Math.floor((currentMove - 1)/2)%2 + 1;
         // }
    var otherPlayer = 3 - currentPlayer;
    var x = intMove % 19;
-   var y = parseInt(intMove / 19);
+   var y = Math.floor(intMove / 19);
 
    for (var d = 0; d < 8; d++) {
        var c1 = x + dx[d];
@@ -324,9 +324,9 @@ function removeCaptures(intMove, internal) {
 
        if (c5 >= 0 && c5 < 19 && c6 >= 0 && c6 < 19) {
 
-           if (board[c1][c2] == otherPlayer &&
-               board[c3][c4] == otherPlayer &&
-               board[c5][c6] == currentPlayer) {
+           if (board[c1][c2] === otherPlayer &&
+               board[c3][c4] === otherPlayer &&
+               board[c5][c6] === currentPlayer) {
 
                capturedAt[currentPlayer]
                          [numCaptures[currentPlayer]] = (currentMove - 1);
@@ -363,10 +363,10 @@ function removeCaptures(intMove, internal) {
        if (gameHasTripleCaptures() &&
            c7 >= 0 && c7 < 19 && c8 >= 0 && c8 < 19) {
            
-           if (board[c1][c2] == otherPlayer &&
-               board[c3][c4] == otherPlayer &&
-               board[c5][c6] == otherPlayer &&
-               board[c7][c8] == currentPlayer) {
+           if (board[c1][c2] === otherPlayer &&
+               board[c3][c4] === otherPlayer &&
+               board[c5][c6] === otherPlayer &&
+               board[c7][c8] === currentPlayer) {
            
                capturedAt[currentPlayer]
                          [numCaptures[currentPlayer]] = (currentMove - 1);
@@ -418,16 +418,16 @@ function putBackCaptures() {
 
     var currentPlayer = currentMove  % 2 + 1;
         // if (isConnect6(game)) {
-        //     currentPlayer = parseInt((currentMove - 1)/2)%2 + 1;
+        //     currentPlayer = Math.floor((currentMove - 1)/2)%2 + 1;
         // }
     var otherPlayer = 3 - currentPlayer;
 
-    while (capturedAt[currentPlayer][numCaptures[currentPlayer] - 1] == currentMove) {
+    while (capturedAt[currentPlayer][numCaptures[currentPlayer] - 1] === currentMove) {
 
         var back = capturedMoves[currentPlayer][(numCaptures[currentPlayer] - 1)];
 
         var x = back % 19;
-        var y = parseInt(back / 19);
+        var y = Math.floor(back / 19);
         board[x][y] = otherPlayer;
 
         document[getStrMove(back)].src = moveImages[otherPlayer - 1].src;
@@ -443,12 +443,12 @@ function putBackCaptures() {
 
     if (isPoofPente(game)) {
       var first = true;
-      while (capturedAt[otherPlayer][numCaptures[otherPlayer] - 1] == currentMove) {
+      while (capturedAt[otherPlayer][numCaptures[otherPlayer] - 1] === currentMove) {
 
           var back = capturedMoves[otherPlayer][(numCaptures[otherPlayer] - 1)];
 
           var x = back % 19;
-          var y = parseInt(back / 19);
+          var y = Math.floor(back / 19);
           if (!first) {
             board[x][y] = currentPlayer;
             document[getStrMove(back)].src = moveImages[currentPlayer - 1].src;
@@ -471,12 +471,12 @@ function detectPoofCapture(intMove, internal) {
    var myColor = (currentMove - 1) % 2 + 1;
    var opponentColor = 3 - myColor;
    var i = intMove % 19;
-   var j = parseInt(intMove / 19);
+   var j = Math.floor(intMove / 19);
 
     var poofed = false;
     if (((i-2) > -1) && ((i+1) < 19)) {
-        if (board[i-1][j] == myColor) {
-            if ((board[i-2][j] == opponentColor) && (board[i+1][j] == opponentColor)) {
+        if (board[i-1][j] === myColor) {
+            if ((board[i-2][j] === opponentColor) && (board[i+1][j] === opponentColor)) {
                 board[i-1][j] = 0;
                 board[i][j] = 0;
 
@@ -501,8 +501,8 @@ function detectPoofCapture(intMove, internal) {
         }
     }
     if (((i-2) > -1) && ((j-2) > -1) && ((i+1) < 19) && ((j+1) < 19)) {
-        if (board[i-1][j-1] == myColor) {
-            if ((board[i-2][j-2] == opponentColor) && (board[i+1][j+1] == opponentColor)) {
+        if (board[i-1][j-1] === myColor) {
+            if ((board[i-2][j-2] === opponentColor) && (board[i+1][j+1] === opponentColor)) {
                 board[i-1][j-1] = 0;
                 board[i][j] = 0;
 
@@ -527,8 +527,8 @@ function detectPoofCapture(intMove, internal) {
         }
     }
     if (((j-2) > -1) && ((j+1) < 19)) {
-        if (board[i][j-1] == myColor) {
-            if ((board[i][j-2] == opponentColor) && (board[i][j+1] == opponentColor)) {
+        if (board[i][j-1] === myColor) {
+            if ((board[i][j-2] === opponentColor) && (board[i][j+1] === opponentColor)) {
                 board[i][j-1] = 0;
                 board[i][j] = 0;
 
@@ -553,8 +553,8 @@ function detectPoofCapture(intMove, internal) {
         }
     }
     if (((i-1) > -1) && ((j-2) > -1) && ((i+2) < 19) && ((j+1) < 19)) {
-        if (board[i+1][j-1] == myColor) {
-            if ((board[i-1][j+1] == opponentColor) && (board[i+2][j-2] == opponentColor)) {
+        if (board[i+1][j-1] === myColor) {
+            if ((board[i-1][j+1] === opponentColor) && (board[i+2][j-2] === opponentColor)) {
                 board[i+1][j-1] = 0;
                 board[i][j] = 0;
 
@@ -579,8 +579,8 @@ function detectPoofCapture(intMove, internal) {
         }
     }
     if (((i+2) < 19) && ((i-1) > -1)) {
-        if (board[i+1][j] == myColor) {
-            if ((board[i+2][j] == opponentColor) && (board[i-1][j] == opponentColor)) {
+        if (board[i+1][j] === myColor) {
+            if ((board[i+2][j] === opponentColor) && (board[i-1][j] === opponentColor)) {
                 board[i+1][j] = 0;
                 board[i][j] = 0;
 
@@ -605,8 +605,8 @@ function detectPoofCapture(intMove, internal) {
         }
     }
     if (((i-1) > -1) && ((j-1) > -1) && ((i+2) < 19) && ((j+2) < 19)) {
-        if (board[i+1][j+1] == myColor) {
-            if ((board[i-1][j-1] == opponentColor) && (board[i+2][j+2] == opponentColor)) {
+        if (board[i+1][j+1] === myColor) {
+            if ((board[i-1][j-1] === opponentColor) && (board[i+2][j+2] === opponentColor)) {
                 board[i+1][j+1] = 0;
                 board[i][j] = 0;
 
@@ -631,8 +631,8 @@ function detectPoofCapture(intMove, internal) {
         }
     }
     if (((j+2) < 19) && ((j-1) > -1)) {
-        if (board[i][j+1] == myColor) {
-            if ((board[i][j-1] == opponentColor) && (board[i][j+2] == opponentColor)) {
+        if (board[i][j+1] === myColor) {
+            if ((board[i][j-1] === opponentColor) && (board[i][j+2] === opponentColor)) {
                 board[i][j+1] = 0;
                 board[i][j] = 0;
 
@@ -657,8 +657,8 @@ function detectPoofCapture(intMove, internal) {
         }
     }
     if (((i-2) > -1) && ((j-1) > -1) && ((i+1) < 19) && ((j+2) < 19)) {
-        if (board[i-1][j+1] == myColor) {
-            if ((board[i+1][j-1] == opponentColor) && (board[i-2][j+2] == opponentColor)) {
+        if (board[i-1][j+1] === myColor) {
+            if ((board[i+1][j-1] === opponentColor) && (board[i-2][j+2] === opponentColor)) {
                 board[i-1][j+1] = 0;
                 board[i][j] = 0;
 
@@ -709,7 +709,7 @@ function getIntMove(move) {
     var y = 0;
 
     for (var i = 0; i < coordinateAlphas.length; i++) {
-        if (alpha == coordinateAlphas[i]) {
+        if (alpha === coordinateAlphas[i]) {
             x = i;
             break;
         }
@@ -723,20 +723,20 @@ function getIntMove(move) {
 function getStrMove(move) {
 
     var x = move % 19;
-    var y = 19 - parseInt(move / 19);
+    var y = 19 - Math.floor(move / 19);
 
     return coordinateAlphas[x] + y;
 }
 
 function backMove() {
 
-    if (currentMove != 1 || (isDPente(game) && currentMove > 0)) {
+    if (currentMove !== 1 || (isDPente(game) && currentMove > 0)) {
 
         hideStatistics();
 
         var intMove = moves[--currentMove];
         var x = intMove % 19;
-        var y = parseInt(intMove / 19);
+        var y = Math.floor(intMove / 19);
         board[x][y] = 0;
 
         clearMove(getStrMove(intMove));
@@ -762,12 +762,12 @@ function forwardMove() {
 
         var currentPlayer = currentMove++ % 2;
         if (isConnect6(game)) {
-            currentPlayer = parseInt((currentMove + 4)/2)%2;
+            currentPlayer = Math.floor((currentMove + 4)/2)%2;
         }
         document[getStrMove(intMove)].src = moveImages[currentPlayer].src;
 
         var x = intMove % 19;
-        var y = parseInt(intMove / 19);
+        var y = Math.floor(intMove / 19);
         board[x][y] = currentPlayer + 1;
 
         if (isPoofPente(game)) {
@@ -806,7 +806,7 @@ function hideStatistics() {
 
         for (var i = 0; i < numResults * 3; i++) {
  
-            if (i == 0) {
+            if (i === 0) {
                 startMove = -1;
             }
             else {
@@ -814,11 +814,11 @@ function hideStatistics() {
             }
 
             endMove = results.indexOf(",", startMove + 1);
-            if (endMove == -1) {
+            if (endMove === -1) {
                 endMove = results.length;
             }
 
-            if (i % 3 == 0) {
+            if (i % 3 === 0) {
                 var move = results.substring(startMove + 1, endMove);
                 clearMove(move);
             }
@@ -836,7 +836,7 @@ function shouldShowSearchStats() {
 
     if (!statisticsShowing && 
         viewingSearchResults &&
-        currentMove == startMoves) {
+        currentMove === startMoves) {
 
         var startMove = -1, endMove = 0;
         var stillMovesLeft = true;
@@ -845,18 +845,18 @@ function shouldShowSearchStats() {
 
         while (stillMovesLeft) {
 
-            if (i++ != 0) {
+            if (i++ !== 0) {
                 startMove = moveStr.indexOf(",", startMove + 1);
             }
 
             endMove = moveStr.indexOf(",", startMove + 1);
-            if (endMove == (moveStr.length - 1)) {
+            if (endMove === (moveStr.length - 1)) {
                 stillMovesLeft = false;
             }
 
             var move = moveStr.substring(startMove + 1, endMove);
 
-            if (move != getStrMove(moves[i - 1])) {
+            if (move !== getStrMove(moves[i - 1])) {
                 at = false;
                 break;
             }
@@ -879,7 +879,7 @@ function showStatistics() {
 
     for (var i = 0; i < numResults * 3; i++) {
  
-        if (i == 0) {
+        if (i === 0) {
             startMove = -1;
         }
         else {
@@ -887,11 +887,11 @@ function showStatistics() {
         }
 
         endMove = results.indexOf(",", startMove + 1);
-        if (endMove == -1) {
+        if (endMove === -1) {
             endMove = results.length;
         }
 
-        if (i % 3 == 0) {
+        if (i % 3 === 0) {
             var move = results.substring(startMove + 1, endMove);
             resetMove(move);
         }
@@ -910,7 +910,7 @@ function resetMove(move) {
 
 function clearMove(move) {
 
-    if (move == 'G7' || move == 'G13' || move == 'N7' || move == 'N13') {
+    if (move === 'G7' || move === 'G13' || move === 'N7' || move === 'N13') {
         document[move].src = dotImage.src;
     }
     else {
@@ -987,7 +987,7 @@ function changeNumMatchedGames() {
     var filter_data = getFilterData();
     newNumMatchedGames = 100;
 
-    if (newNumMatchedGames != currentNumMatchedGames) {
+    if (newNumMatchedGames !== currentNumMatchedGames) {
         submitForm();
     }
 }
@@ -1034,7 +1034,7 @@ function submitForm2() {
 
     var startGameNum = "start_game_num=" + filter_data.startGameNum.value;
     var endGameNum = 100;
-    endGameNum += parseInt(filter_data.startGameNum.value);
+    endGameNum += Math.floor(filter_data.startGameNum.value);
     endGameNum = "end_game_num=" + endGameNum;
 
     var game = "game=" + escape(gameStr);
@@ -1076,7 +1076,7 @@ function submitForm() {
 
     var startGameNum = "start_game_num=" + filter_data.startGameNum.value;
     var endGameNum = 100;
-    endGameNum += parseInt(filter_data.startGameNum.value);
+    endGameNum += Math.floor(filter_data.startGameNum.value);
     endGameNum = "end_game_num=" + endGameNum;
 
     var game = "game=" + escape(getSelectValue(GAME_NAME));
@@ -1104,8 +1104,8 @@ function submitForm() {
     var excludeTimeouts = document.filter_options_data.exclude_timeouts.checked;
     var p1OrP2 = document.filter_options_data.p1_or_p2.checked;
 
-    var liveOnly = (document.filter_options_data.typeSelect.value == "live");
-    var tbOnly = (document.filter_options_data.typeSelect.value == "turn_based");
+    var liveOnly = (document.filter_options_data.typeSelect.value === "live");
+    var tbOnly = (document.filter_options_data.typeSelect.value === "turn_based");
 
     if (isValidDate(afterDateStr)) {
         afterDate = getDate(afterDateStr);
@@ -1121,11 +1121,11 @@ function submitForm() {
         return false;
     }
 
-    if (afterDate != null && afterDateValid) {
+    if (afterDate !== null && afterDateValid) {
         afterDate.setDate(afterDate.getDate() + 1);
     }
 
-    if (afterDate != null && beforeDate != null && afterDate >= beforeDate) {
+    if (afterDate !== null && beforeDate !== null && afterDate >= beforeDate) {
         alert("After date must be before the before date");
         return false;
     }
@@ -1133,10 +1133,10 @@ function submitForm() {
     var filterData = startGameNum + "&" + endGameNum + "&" + player1Name + "&" + player2Name + "&" +
                      game + "&" + site + "&" + event + "&" + round + "&" + section + "&" + winner;
 
-    if (afterDate != null) {
+    if (afterDate !== null) {
         filterData += "&" + "after_date=" + escape(getDateStr(afterDate));
     }
-    if (beforeDate != null) {
+    if (beforeDate !== null) {
         filterData += "&" + "before_date=" + escape(getDateStr(beforeDate));
     }
 
@@ -1168,7 +1168,7 @@ function submitForm() {
 
 
 function isValidDate(dateStr) {
-    if (dateStr.length == 0) {
+    if (dateStr.length === 0) {
         return true;
     }
     else if (dateStr.length < 10) {
@@ -1176,7 +1176,7 @@ function isValidDate(dateStr) {
     }
     else {
         var date = getDate(dateStr);
-        return date != null;
+        return date !== null;
     }
 }
 
@@ -1186,7 +1186,7 @@ function getDate(dateStr) {
                         dateStr.substr(0, 2) - 1,
                         dateStr.substr(3, 2));
 
-    if (date == "NaN" || date == null) {
+    if (date === "NaN" || date === null) {
         return null;
     }
     var year = date.getYear();
@@ -1194,9 +1194,9 @@ function getDate(dateStr) {
         year += 1900;
     }
 
-    if (year == dateStr.substr(6) &&
-        date.getMonth() == (dateStr.substr(0, 2) - 1) &&
-        date.getDate() == dateStr.substr(3, 2)) {
+    if (year === dateStr.substr(6) &&
+        date.getMonth() === (dateStr.substr(0, 2) - 1) &&
+        date.getDate() === dateStr.substr(3, 2)) {
         return date;
     }
 
@@ -1205,7 +1205,7 @@ function getDate(dateStr) {
 
 function getDateStr(date) {
 
-   if (date == null || date == "NaN" || date == "undefined") {
+   if (date === null || date === "NaN" || date === "undefined") {
        return "";
    }
  
@@ -1224,7 +1224,7 @@ function nextGames() {
 
     var filter_data = getFilterData();
 
-    var startNumGames = parseInt(filter_data.startGameNum.value);
+    var startNumGames = Math.floor(filter_data.startGameNum.value);
     var numGames = 100; // no longer selectable
     startNumGames += numGames;
     filter_data.startGameNum.value = startNumGames;
@@ -1235,7 +1235,7 @@ function prevGames() {
 
     var filter_data = getFilterData();
 
-    var startNumGames = parseInt(filter_data.startGameNum.value);
+    var startNumGames = Math.floor(filter_data.startGameNum.value);
     var numGames = 100;
     startNumGames -= numGames;
     if (startNumGames < 0) {

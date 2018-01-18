@@ -32,8 +32,8 @@ var coordinateLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 
         
         var whiteCaptures = 0, blackCaptures = 0;
         var c6Move1 = -1, c6Move2 = -1, dPenteMove1 = -1, dPenteMove2 = -1, dPenteMove3 = -1, dPenteMove4 = -1;
-        var boardCanvas = document.getElementById("board");
-        var boardContext = boardCanvas.getContext("2d");
+        // var boardCanvas = document.getElementById("board");
+        // var boardContext = boardCanvas.getContext("2d");
         var stoneCanvas = document.getElementById("stone");
         var stoneContext = stoneCanvas.getContext("2d");
         var interactionCanvas = document.getElementById("interactionLayer");
@@ -313,7 +313,7 @@ function mergeGroups(group1, group2, groupsByID, stoneGroupIDs) {
 
 
 
-            function drawGrid(boardContext, boardColor, gridSize) {
+            function drawGrid(boardContext, boardColor, gridSize, drawAxis) {
               boardContext.save();
                 boardContext.beginPath();
                 boardContext.rect(indentWidth / 2, indentHeight / 2, boardSize + indentWidth, boardSize + indentHeight);
@@ -334,14 +334,18 @@ function mergeGroups(group1, group2, groupsByID, stoneGroupIDs) {
                 for (var i = 0; i < gridSize; i++) {
                     boardContext.moveTo(indentWidth + i*stepX, indentHeight);
                     boardContext.lineTo(indentWidth + i*stepX, indentHeight + boardSize);
-                    boardContext.fillText(coordinateLetters[i], indentWidth + i*stepX - 2, indentHeight - 5);
-                    boardContext.fillText(coordinateLetters[i], indentWidth + i*stepX - 2, boardSize + indentHeight + 12);
+                    if (drawAxis) {
+                        boardContext.fillText(coordinateLetters[i], indentWidth + i*stepX - 2, indentHeight - 5);
+                        boardContext.fillText(coordinateLetters[i], indentWidth + i*stepX - 2, boardSize + indentHeight + 12);
+                    }
                 }
                 for (i = 0; i < gridSize; i++) {
                     boardContext.moveTo(indentWidth, indentHeight + i*stepY);
                     boardContext.lineTo(indentWidth + boardSize, indentHeight + i*stepY);
-                    boardContext.fillText("" + (gridSize - i), indentWidth - 15, indentHeight + i*stepX + 3);
-                    boardContext.fillText("" + (gridSize - i), boardSize + indentWidth + 6, indentHeight + i*stepX + 3);
+                    if (drawAxis) {
+                        boardContext.fillText("" + (gridSize - i), indentWidth - 15, indentHeight + i*stepX + 3);
+                        boardContext.fillText("" + (gridSize - i), boardSize + indentWidth + 6, indentHeight + i*stepX + 3);
+                    }
                 }
                 // boardContext.strokeStyle = "#FFFFFF";
                 boardContext.stroke();

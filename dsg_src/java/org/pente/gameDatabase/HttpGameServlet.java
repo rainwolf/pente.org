@@ -288,7 +288,9 @@ public class HttpGameServlet extends HttpServlet {
                                     (requestData.getGameStorerSearchRequestFilterData().getGame() == GridStateFactory.DPENTE ||
                                             requestData.getGameStorerSearchRequestFilterData().getGame() == GridStateFactory.SPEED_DPENTE ||
                                             requestData.getGameStorerSearchRequestFilterData().getGame() == GridStateFactory.DKERYO ||
-                                            requestData.getGameStorerSearchRequestFilterData().getGame() == GridStateFactory.SPEED_DKERYO))) {
+                                            requestData.getGameStorerSearchRequestFilterData().getGame() == GridStateFactory.SPEED_DKERYO ||
+                                            requestData.getGameStorerSearchRequestFilterData().getGame() == GridStateFactory.GO ||
+                                            requestData.getGameStorerSearchRequestFilterData().getGame() == GridStateFactory.SPEED_GO))) {
 
                         gameStorerSearcher.search(requestData, responseData1);
 
