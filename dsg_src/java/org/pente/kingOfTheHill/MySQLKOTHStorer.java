@@ -199,13 +199,13 @@ public class MySQLKOTHStorer implements KOTHStorer {
                 stmt.executeUpdate();
 
                 if (pid != 0) {
-                    stmt = con.prepareStatement("select * from dsg_player_game where tourney_winner != '0' and computer = 'N' and game = ? and pid = ?");
+                    stmt = con.prepareStatement("select * from dsg_player_game where (tourney_winner != '0' AND tourney_winner != '') and computer = 'N' and game = ? and pid = ?");
                     stmt.setInt(1, game);
                     stmt.setLong(2, pid);
                     result = stmt.executeQuery();
 
                     if (!result.next()) {
-                        stmt = con.prepareStatement("update dsg_player_game set tourney_winner='4' where game = ?  and tourney_winner='0' and computer = 'N' and pid = ?");
+                        stmt = con.prepareStatement("update dsg_player_game set tourney_winner='4' where game = ?  and (tourney_winner='0' OR tourney_winner ='') and computer = 'N' and pid = ?");
                         stmt.setInt(1, game);
                         stmt.setLong(2, pid);
                         stmt.executeUpdate();

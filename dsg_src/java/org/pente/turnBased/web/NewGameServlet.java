@@ -308,7 +308,10 @@ public class NewGameServlet extends HttpServlet {
 			    	((CacheTBStorer) tbGameStorer).createAISet(game, pid1, pid2, daysPerMove, rated, difficulty);
 	    		}
     		}
-		} else if (error == null) {
+        } else if (inviteePlayerData == null && game == GridStateFactory.TB_GO) {
+            log4j.error("No open Go invitations yet");
+            error = "Error: open invitations for Go are not yet allowed.";
+        } else if (error == null) {
 			try {
 				
 				TBGame tbg = null;
