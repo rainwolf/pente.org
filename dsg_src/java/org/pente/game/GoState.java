@@ -82,17 +82,18 @@ public class GoState extends GridStateDecorator
 
     public void addMove(int move) {
 
+        int currentPlayer = getCurrentPlayer();
+
         gridState.addMove(move);
 
         if (0 <= move && move < passMove) {
-            int currentPlayer = getCurrentPlayer();
             positionHashes.add(positionHashes.get(positionHashes.size()-1) ^ rand[currentPlayer-1][move]);
 
             Map<Integer, List<Integer>> groupsByID = getGroupsByPlayerAndID().get(currentPlayer);
             Map<Integer, Integer> stoneGroupIDs = getStoneGroupIDsByPlayer().get(currentPlayer);
             settleGroups(move, groupsByID, stoneGroupIDs);
 
-            int opponent = getCurrentPlayer();
+            int opponent = 3 - currentPlayer;
             groupsByID = getGroupsByPlayerAndID().get(opponent);
             stoneGroupIDs = getStoneGroupIDsByPlayer().get(opponent);
             makeCaptures(move, groupsByID, stoneGroupIDs);
@@ -281,6 +282,9 @@ public class GoState extends GridStateDecorator
     }
     
     private void mergeGroups(int group1, int group2, Map<Integer, List<Integer>> groupsByID, Map<Integer, Integer> stoneGroupIDs) {
+        if (group1 == group2) {
+            return;
+        }
         List<Integer> oldGroup, newGroup;
         int oldGroupID, newGroupID;
         if (group1 < group2) {
@@ -356,35 +360,38 @@ public class GoState extends GridStateDecorator
         }
 
         if (getPosition(move) != 0) {
+//            System.out.println("hmm not empty "+getPosition(move));
             return false;
         }
         
         if (move == koMove) {
+//            System.out.println("hmm ko");
             return false;
         }
 
-        if (!isSuicideAllowed()) {
-            if (!stoneHasLiberties(move)) {
-                setPosition(move, player);
-                if (!groupHasLiberties(getGroupWithoutMerge(move, groupsByPlayerAndID.get(player), stoneGroupIDsByPlayer.get(player)))) {
-                    setPosition(move, 0);
+        boolean suicide = false, repetition = false;
+        
+        
+        if (!isSuicideAllowed() || !isRepetitionAllowed()) {
+            addMove(move);
+
+            if (!isSuicideAllowed() && !groupHasLiberties(groupsByPlayerAndID.get(player).get(stoneGroupIDsByPlayer.get(player).get(move)))) {
+                undoMove();
+                return false;
+            }
+
+//       check for Super-Ko
+            if (!isRepetitionAllowed()) {
+                if (positionHashes.indexOf(positionHashes.get(positionHashes.size()-1)) < positionHashes.size()-1) {
+                    undoMove();
                     return false;
                 }
-                setPosition(move, 0);
             }
+            undoMove();
         }
         
         
 
-//        TODO check for Super-Ko
-        if (!isRepetitionAllowed()) {
-            addMove(move);
-            if (positionHashes.indexOf(positionHashes.get(positionHashes.size()-1)) < positionHashes.size()-1) {
-                undoMove();
-                return false;
-            }
-            undoMove();
-        }
 
         return true;
     }
@@ -462,7 +469,7 @@ public class GoState extends GridStateDecorator
     public void setStoneGroupIDsByPlayer(Map<Integer, Map<Integer, Integer>> stoneGroupIDsByPlayer) { this.stoneGroupIDsByPlayer = stoneGroupIDsByPlayer; }
 
     protected void captureMove(int move, int capturePlayer) {
-        gridState.setPosition(move, 0);
+        setPosition(move, 0);
         capturedAt[capturePlayer][this.captures[capturePlayer]] =
                 gridState.getNumMoves() - 1;
         capturedMoves[capturePlayer][this.captures[capturePlayer]] = move;
@@ -479,5 +486,67 @@ public class GoState extends GridStateDecorator
             addMove(move);
         }
     }
+    
+    private int getEmptyNeighbour(int move) {
+        if (move%getGridSizeX() != 0) {
+            int neighborStone = move - 1;
+            if (getPosition(neighborStone) == 0) {
+//            if (getPosition(neighborStone) != 1 && getPosition(neighborStone) != 2) {
+                return neighborStone;
+            }
+        }
+        if (move%getGridSizeX() != getGridSizeX() - 1) {
+            int neighborStone = move - 1;
+            if (getPosition(neighborStone) == 0) {
+//            if (getPosition(neighborStone) != 1 && getPosition(neighborStone) != 2) {
+                return neighborStone;
+            }
+        }
+        if (move/getGridSizeX() != 0) {
+            int neighborStone = move - 1;
+            if (getPosition(neighborStone) == 0) {
+//            if (getPosition(neighborStone) != 1 && getPosition(neighborStone) != 2) {
+                return neighborStone;
+            }
+        }
+        if (move/getGridSizeX() != getGridSizeX() - 1) {
+            int neighborStone = move - 1;
+            if (getPosition(neighborStone) == 0) {
+//            if (getPosition(neighborStone) != 1 && getPosition(neighborStone) != 2) {
+                return neighborStone;
+            }
+        }
+        return -1;
+    }
+    private void floodFillWorker(int move, int value) {
+        setPosition(move, value);
+        int neighbourStone = getEmptyNeighbour(move);
+        while (neighbourStone != -1) {
+            floodFillWorker(neighbourStone, value);
+            neighbourStone = getEmptyNeighbour(move);
+        }
+    }
+    private List<Integer> floodFill(int player) {
+        Map<Integer, List<Integer>> groupsByID = getGroupsByPlayerAndID().get(player);
+        for (List<Integer> group: groupsByID.values()) {
+            for (int move: group) {
+                int neighbourStone = getEmptyNeighbour(move);
+                while (neighbourStone != -1) {
+                    floodFillWorker(neighbourStone, player + 2);
+                    neighbourStone = getEmptyNeighbour(move);
+                }
+            }
+        }
+        List<Integer> floodedTerritory = new ArrayList<>();
+        for (int i = 0; i < passMove; i++) {
+            int val = getPosition(i);
+            if (val == player + 2) {
+                floodedTerritory.add(i);
+            }
+        }
+        return floodedTerritory;
+    }
+    
+    
 
 }

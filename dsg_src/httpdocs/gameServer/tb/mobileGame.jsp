@@ -267,7 +267,10 @@
                             <% if (!"false".equals(myTurn) && (game.getDPenteState() != 2)) { %>
                             <a class="boldbuttons" href="javascript:submit();"
                                style="margin-right:5px;"><span>Submit</span></a>
-                            <%
+                            <% if (game.getGame() == 69) { %>
+                            <a class="boldbuttons" href="javascript:drawTerritories();"
+                               style="margin-right:5px;"><span>Draw territory</span></a>
+                            <%  }
                             } else if ((game.getPlayer1Pid() == meData.getPlayerID() || game.getPlayer2Pid() == meData.getPlayerID()) && game.isUndoRequested()) {
                             %>
                             <b>Undo requested</b>
@@ -293,7 +296,7 @@
                             <a class="boldbuttons" href="javascript:resign();"
                                style="margin-left:235px;"><span>Resign</span></a>
                             <a class="boldbuttons" href="javascript:requestCancel();"
-                               style="margin-left:5px;"><span>Request Set Cancellation</span></a>
+                               style="margin-left:5px;"><span>Cancel Set</span></a>
                             <%
                                 }
                             %>

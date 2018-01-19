@@ -50,8 +50,15 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 	private int dPenteState = DPENTE_STATE_START;
 	private boolean dPenteSwapped = false;
 	
-    
-	private TBSet tbSet;
+	public static final int GO_PLAY = 1;
+	public static final int GO_MARK_DEAD_STONES = 2;
+	public static final int GO_EVALUATE_DEAD_STONES = 3;
+	private int goState;
+
+    public int getGoState() { return goState; }
+    public void setGoState(int goState) { this.goState = goState; }
+
+    private TBSet tbSet;
 	
 	public void timeout() {
 		completionDate = new Date();

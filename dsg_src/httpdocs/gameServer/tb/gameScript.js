@@ -42,6 +42,7 @@ var coordinateLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 
         var goGroupsByPlayerAndID = {1: {}, 2: {}}, goStoneGroupIDsByPlayer = {1: {}, 2: {}};
         var koMove = -1;
         var suicideAllowed = false;
+        var goTerritoryByPlayer = {1: [], 2: []};
 
 function drawGame() {
     for (var i = 0; i < 19; i++) {
@@ -51,7 +52,51 @@ function drawGame() {
             } 
         }
     }
-    drawCaptures();
+    if (game === 69) {
+        drawGoCaptures();
+    } else {
+        drawCaptures();
+    }
+}
+
+function drawTerritorySquare(move, color) {
+    if (color < 1 || color > 2) {
+        return;
+    }
+    var i = move % gridSize, j = Math.floor(move/gridSize);
+    boardContext.save();
+    var width = 2*radius/3
+    var centerX = indentWidth + stepX * i - width/2;
+    var centerY = indentHeight + stepY * j - width/2;
+    if (color === 1) {
+        boardContext.fillStyle = 'black';
+    } else {
+        boardContext.fillStyle = 'white';
+    }
+    boardContext.beginPath();
+    boardContext.rect(centerX, centerY, width, width);
+    boardContext.fill();
+    boardContext.closePath();
+    // centerX -= radius / 8;
+    // centerY -= radius / 8;
+    // boardContext.shadowColor = 'DimGray';
+    // boardContext.shadowBlur = 1;
+    // boardContext.shadowOffsetX = radius / 8;
+    // boardContext.shadowOffsetY = radius / 8;
+    // if (color === 2) {
+    //     var gradient = boardContext.createRadialGradient(centerX, centerY, radius / 8, centerX, centerY, radius);
+    //     gradient.addColorStop(0, 'Grey');
+    //     gradient.addColorStop(1, 'Black');
+    //     boardContext.fillStyle = gradient;
+    // } else {
+    //     gradient = boardContext.createRadialGradient(centerX, centerY, 2 * radius / 4, centerX, centerY, radius);
+    //     gradient.addColorStop(0, 'White');
+    //     gradient.addColorStop(1, 'Gainsboro');
+    //     boardContext.fillStyle = gradient;
+    // }
+    // boardContext.fill();
+    // boardContext.closePath();
+    boardContext.restore();
 }
 
 
@@ -66,10 +111,6 @@ function replayGoGame(abstractBoard, movesList, until) {
         abstractBoard[move % 19][Math.floor(move / 19)] = color;
         addGoMove(move, 3-color);
     }
-    // console.log(goGroupsByPlayerAndID[1]);
-    // console.log(goGroupsByPlayerAndID[2]);
-    // console.log(goStoneGroupIDsByPlayer[1]);
-    // console.log(goStoneGroupIDsByPlayer[2]);
 }
 
 function addGoMove(move, currentPlayer) {
@@ -286,6 +327,9 @@ function settleGroups(move, groupsByID, stoneGroupIDs) {
     }    
 }
 function mergeGroups(group1, group2, groupsByID, stoneGroupIDs) {
+    if (group1 === group2) {
+        return;
+    }
     var oldGroup, newGroup;
     var oldGroupID, newGroupID;
     if (group1 < group2) {
@@ -306,6 +350,212 @@ function mergeGroups(group1, group2, groupsByID, stoneGroupIDs) {
     delete groupsByID[oldGroupID];
 }
 
+function getEmptyNeighbour(move) {
+    if (move%gridSize !== 0) {
+        var neighborStone = move - 1;
+        if (getPosition(neighborStone) === 0) {
+            return neighborStone;
+        }
+    }
+    if (move%gridSize !== gridSize - 1) {
+        neighborStone = move + 1;
+        if (getPosition(neighborStone) === 0) {
+            return neighborStone;
+        }
+    }
+    if (Math.floor(move/gridSize) !== 0) {
+        neighborStone = move - gridSize;
+        if (getPosition(neighborStone) === 0) {
+            return neighborStone;
+        }
+    }
+    if (Math.floor(move/gridSize) !== gridSize - 1) {
+        neighborStone = move + gridSize;
+        if (getPosition(neighborStone) === 0) {
+            return neighborStone;
+        }
+    }
+    return -1;
+}
+
+function floodFillWorker(move, value) {
+    setPosition(move, value);
+    var neighbourStone = getEmptyNeighbour(move);
+    while (neighbourStone !== -1) {
+        floodFillWorker(neighbourStone, value);
+        neighbourStone = getEmptyNeighbour(move);
+    }
+}
+function resetGoBeforeFlood() {
+    for (var i = 0; i < gridSize; i++ ) {
+        for (var j = 0; j < gridSize; j++ ) {
+            if (abstractBoard[i][j] !== 1 && abstractBoard[i][j] !== 2) {
+                abstractBoard[i][j] = 0;                
+            }
+        }
+    }
+}
+function floodPlayer(player) {
+    var groups = goGroupsByPlayerAndID[player];
+    for (var groupID in groups) {
+        var group = groups[groupID];
+        for (var i = 0; i < group.length; i++) {
+            var move = group[i];
+            var neighbourStone = getEmptyNeighbour(move);
+            while (neighbourStone > -1) {
+                floodFillWorker(neighbourStone, player + 2);
+                neighbourStone = getEmptyNeighbour(move);
+            }
+        }
+    }
+}
+function getMovesForValue(value) {
+    var result = [];
+    for (var j = 0; j < gridSize; j++ ) {
+        for (var i = 0; i < gridSize; i++ ) {
+            if (abstractBoard[i][j] === value) {
+                result.push(j*gridSize+i);
+            }
+        }
+    }
+    return result;
+}
+function getTerritories() {
+    goTerritoryByPlayer = {1: [], 2: []};
+    floodPlayer(1);
+    var p1Territory = getMovesForValue(3);
+    resetGoBeforeFlood();
+    floodPlayer(2);
+    var p2Territory = getMovesForValue(4);
+    resetGoBeforeFlood();
+    var i = 0, j = 0;
+    while (i < p1Territory.length && j < p2Territory.length) {
+        var p1Stone = p1Territory[i], p2Stone = p2Territory[j];
+        if (p1Stone === p2Stone) {
+            // console.log('before '+p1Territory.length+' '+p2Territory.length);
+            p1Territory.splice(i, 1);
+            p2Territory.splice(j, 1);
+            // console.log('after '+p1Territory.length+' '+p2Territory.length);
+        } else {
+            if (p1Stone < p2Stone) {
+                i += 1;
+            } else {
+                j += 1;
+            }
+        }
+    }
+    goTerritoryByPlayer[1] = p1Territory;
+    goTerritoryByPlayer[2] = p2Territory;
+}
+
+function drawTerritories() {
+    getTerritories();
+    var p1Territory = goTerritoryByPlayer[1], p2Territory = goTerritoryByPlayer[2];
+    for (var i = 0; i < p1Territory.length; i++) {
+        drawTerritorySquare(p1Territory[i], 1);
+    }
+    for (i = 0; i < p2Territory.length; i++) {
+        drawTerritorySquare(p2Territory[i], 2);
+    }
+}
+
+function drawGoCaptures() {
+    if (whiteCaptures > 0) {
+        var digits = 1;
+        if (whiteCaptures > 9) {
+            digits = 2;
+        }
+        if (whiteCaptures > 99) {
+            digits = 3;
+        }
+        for (var i = 0; i < digits; i++) {
+            boardContext.beginPath();
+            boardContext.arc(indentWidth + i * stepX * 2 / 3, boardSize + indentHeight + stepY, stepX / 3, 0, Math.PI * 2, true);
+            boardContext.fillStyle = 'white';
+            boardContext.fill();
+            boardContext.stroke();
+            boardContext.closePath();
+        }
+        var digit = 0;
+        if (whiteCaptures > 9) {
+            digit = Math.floor(whiteCaptures / 10);
+            if (whiteCaptures > 99) {
+                digit = Math.floor(whiteCaptures / 100);
+            } 
+        } else {
+            digit = whiteCaptures % 10;
+        }
+        boardContext.beginPath();
+        boardContext.font = "14px bold sans-serif";
+        boardContext.fillStyle = 'black';
+        boardContext.fillText("" + digit, indentWidth - 4, boardSize + indentHeight + stepY + 4);
+        boardContext.stroke();
+        boardContext.closePath();
+        if (whiteCaptures > 9) {
+            digit = whiteCaptures % 10;
+            if (whiteCaptures > 99) {
+                digit = Math.floor(whiteCaptures/10) % 10;
+            }
+            boardContext.beginPath();
+            boardContext.font = "14px bold sans-serif";
+            boardContext.fillStyle = 'black';
+            boardContext.fillText("" + digit, indentWidth + stepX * 2 / 3 - 4, boardSize + indentHeight + stepY + 4);
+            boardContext.stroke();
+            boardContext.closePath();
+            if (whiteCaptures > 99) {
+                digit = whiteCaptures % 10;
+                boardContext.beginPath();
+                boardContext.font = "14px bold sans-serif";
+                boardContext.fillStyle = 'black';
+                boardContext.fillText("" + digit, indentWidth + 2* stepX * 2 / 3 - 4, boardSize + indentHeight + stepY + 4);
+                boardContext.stroke();
+                boardContext.closePath();
+            }
+        }
+    }
+    if (blackCaptures > 0) {
+        digits = 1;
+        if (blackCaptures > 9) {
+            digits = 2;
+        }
+        if (blackCaptures > 99) {
+            digits = 3;
+        }
+        for (var i = 0; i < digits; i++) {
+            boardContext.beginPath();
+            boardContext.arc(boardSize + indentWidth - i * stepX * 2 / 3, indentHeight - stepY, stepX / 3, 0, Math.PI * 2, true);
+            boardContext.fillStyle = 'black';
+            boardContext.fill();
+            boardContext.stroke();
+            boardContext.closePath();
+        }
+        var digit = blackCaptures % 10;
+        boardContext.beginPath();
+        boardContext.font = "14px bold sans-serif";
+        boardContext.fillStyle = 'white';
+        boardContext.fillText("" + digit, boardSize + indentWidth - 4, indentHeight - stepY + 4);
+        boardContext.stroke();
+        boardContext.closePath();
+        if (blackCaptures > 9) {
+            digit = Math.floor(blackCaptures / 10) % 10;
+            boardContext.beginPath();
+            boardContext.font = "14px bold sans-serif";
+            boardContext.fillStyle = 'white';
+            boardContext.fillText("" + digit, boardSize + indentWidth - stepX * 2 / 3 - 4, indentHeight - stepY + 4);
+            boardContext.stroke();
+            boardContext.closePath();
+            if (blackCaptures > 90) {
+                digit = Math.floor(blackCaptures / 100);
+                boardContext.beginPath();
+                boardContext.font = "14px bold sans-serif";
+                boardContext.fillStyle = 'white';
+                boardContext.fillText("" + digit, boardSize + indentWidth - 2*stepX * 2 / 3 - 4, indentHeight - stepY + 4);
+                boardContext.stroke();
+                boardContext.closePath();
+            }
+        }
+    }
+}
 
 
 
