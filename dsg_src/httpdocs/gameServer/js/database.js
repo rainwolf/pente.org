@@ -1194,9 +1194,9 @@ function getDate(dateStr) {
         year += 1900;
     }
 
-    if (year === dateStr.substr(6) &&
-        date.getMonth() === (dateStr.substr(0, 2) - 1) &&
-        date.getDate() === dateStr.substr(3, 2)) {
+    if (year == dateStr.substr(6) &&
+        date.getMonth() == (dateStr.substr(0, 2) - 1) &&
+        date.getDate() == dateStr.substr(3, 2)) {
         return date;
     }
 

@@ -328,23 +328,26 @@ public class ServerTable {
     }
 
 	private void broadcastTable(DSGEvent dsgEvent) {
-		
-		for (int i = 0; i < playersInTable.size(); i++) {
+		for (int i = playersInTable.size()-1; i > -1 ; i--) {
 			DSGPlayerData data = (DSGPlayerData) playersInTable.elementAt(i);
 			if (data != null) {
 				String name = data.getName();
 				dsgEventRouter.routeEvent(dsgEvent, name);
-			}
+			} else {
+			    playersInTable.remove(i);
+            }
 		}
 	}
 
 	private void broadcastMainRoom(DSGEvent dsgEvent) {
-		for (int i = 0; i < playersInMainRoom.size(); i++) {
+        for (int i = playersInMainRoom.size()-1; i > -1 ; i--) {
 			DSGPlayerData data = (DSGPlayerData) playersInMainRoom.elementAt(i);
 			if (data != null) {
 				String name = data.getName();
 				dsgEventRouter.routeEvent(dsgEvent, name);
-			}
+			} else {
+			    playersInMainRoom.remove(i);
+            }
 		}
 	}
 
@@ -596,7 +599,6 @@ public class ServerTable {
 	}
 	
 	public void handleMainRoomExit(String player) {
-		
         for (Iterator it = playersInMainRoom.iterator(); it.hasNext();) {
             DSGPlayerData data = (DSGPlayerData) it.next();
             if (data.getName().equals(player)) {
@@ -611,14 +613,15 @@ public class ServerTable {
 	}
 
 	private void sendPlayerList(String toPlayer) {
-		for (int i = 0; i < playersInTable.size(); i++) {
+        for (int i = playersInTable.size()-1; i > -1; i--) {
             DSGPlayerData data = (DSGPlayerData) playersInTable.elementAt(i);
-            if (data == null) {
-            	continue;
-			}
-			dsgEventRouter.routeEvent(
-				new DSGJoinTableEvent(data.getName(), tableNum),
-				toPlayer);
+            if (data != null) {
+                dsgEventRouter.routeEvent(
+                        new DSGJoinTableEvent(data.getName(), tableNum),
+                        toPlayer);
+			} else {
+                playersInTable.remove(i);                
+            }
 		}
 	}
     private DSGChangeStateTableEvent getTableState() {
@@ -923,9 +926,11 @@ public class ServerTable {
     }
 
     private boolean noHumanPlayersInTable() {
-        for (Iterator it = playersInTable.iterator(); it.hasNext();) {
-			DSGPlayerData data = (DSGPlayerData) it.next();
-            if (data != null && data.isHuman()) {
+	    for (int i = playersInTable.size()-1; i > -1; i--) {
+			DSGPlayerData data = (DSGPlayerData) playersInTable.elementAt(i);
+			if (data == null) {
+			    playersInTable.remove(i);
+            } else if (data.isHuman()) {
                 return false;
             }
         }
@@ -1355,9 +1360,11 @@ public class ServerTable {
 			return null;
 		}
 		else {
-            for (Iterator it = playersInTable.iterator(); it.hasNext();) {
-                DSGPlayerData d = (DSGPlayerData) it.next();
-                if (d != null && d.isHuman()) {
+		    for (int i = playersInTable.size()-1; i>-1; i--) {
+                DSGPlayerData d = (DSGPlayerData) playersInTable.elementAt(i);
+                if (d == null) {
+                    playersInTable.remove(i);
+                } else if (d.isHuman()) {
                     return d.getName();
                 }
             }
@@ -1927,23 +1934,32 @@ public class ServerTable {
             }
 		}
         
+		for (int i = playersInTable.size()-1; i>-1; i--) {
+		    if (playersInTable.elementAt(i) == null) {
+		        playersInTable.remove(i);
+            }
+        }
         if (playersInTable.isEmpty()) {
             server.removeTable(tableNum);
         }
 	}
 
     private void removePlayer(String name) {
-        for (int i = 0; i < playersInTable.size(); i++) {
+        for (int i = playersInTable.size()-1; i>-1; i--) {
             DSGPlayerData data = (DSGPlayerData) playersInTable.elementAt(i);
-            if (data != null && data.getName().equals(name)) {
+            if (data == null) {
+                playersInTable.remove(i);
+            } else if (data.getName().equals(name)) {
                 playersInTable.remove(i);
             }
         }
     }
     private DSGPlayerData getPlayerInTable(String name) {
-        for (int i = 0; i < playersInTable.size(); i++) {
+        for (int i = playersInTable.size()-1; i>-1; i--) {
             DSGPlayerData data = (DSGPlayerData) playersInTable.elementAt(i);
-            if (data != null && name.equals(data.getName())) {
+            if (data == null) {
+                playersInTable.remove(i);
+            } else if (name.equals(data.getName())) {
                 return data;
             }
         }
