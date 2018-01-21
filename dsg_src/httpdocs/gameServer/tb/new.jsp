@@ -246,7 +246,7 @@ if (!limitExceeded) {%>
       <td>
        <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
         <select name="daysPerMove" size="1">
-        <% for (int i = 1; i < 31; i++) { %>         
+        <% for (int i = 1; i < 31; i++) { %>
          <option <%= (i == tbTimeout)?"selected":"" %> value="<%= i %>"><%= i %> Days</option>
         <% } %>
         </select>

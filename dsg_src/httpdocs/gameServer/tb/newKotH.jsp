@@ -13,6 +13,17 @@ Resources resources = (Resources) application.getAttribute(
 
 String name = (String) request.getAttribute("name");
 DSGPlayerData meData = dsgPlayerStorer.loadPlayer(name);
+    List<DSGPlayerPreference> prefs = dsgPlayerStorer.loadPlayerPreferences(meData.getPlayerID());
+    int tbTimeout = 7;
+    String tbRestriction = "A";
+    for (DSGPlayerPreference pref: prefs) {
+        if ("tbKotHTimeout".equals(pref.getName())) {
+            tbTimeout = (Integer) pref.getValue();
+        }
+        if ("tbKotHRestriction".equals(pref.getName())) {
+            tbRestriction = (String) pref.getValue();
+        }
+    }
 
 
 %>
@@ -163,8 +174,8 @@ function submitnewgameform()
       <td>
        <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
         <select name="daysPerMove" size="1">
-        <% for (int i = 1; i < 31; i++) { %>         
-         <option <% if (i == 7) { %>selected <% } %>value="<%= i %>"><%= i %> Days</option>
+        <% for (int i = 1; i < 31; i++) { %>
+            <option <%= (i == tbTimeout)?"selected":"" %> value="<%= i %>"><%= i %> Days</option>
         <% } %>
         </select>
        </font>
@@ -194,12 +205,13 @@ function submitnewgameform()
       <td>
        <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
         <select name="invitationRestriction" size="1">
-          <option selected value="A">of any rating</option>
-          <option value="N">not already playing</option>
-          <option value="L">of lower rating</option>
-          <option value="H">of higher rating</option>
-          <option value="S">of similar rating (&plusmn 100)</option>
-          <option value="C">of same rating class</option>
+            <option <%= ("A".equals(tbRestriction)?"selected":"") %> value="A">Any rating</option>
+            <option <%= ("B".equals(tbRestriction)?"selected":"") %> value="B">Beginners</option>
+            <option <%= ("N".equals(tbRestriction)?"selected":"") %> value="N">Not already playing</option>
+            <option <%= ("L".equals(tbRestriction)?"selected":"") %> value="L">Lower rating</option>
+            <option <%= ("H".equals(tbRestriction)?"selected":"") %> value="H">Higher rating</option>
+            <option <%= ("S".equals(tbRestriction)?"selected":"") %> value="S">Similar rating (&plusmn 100)</option>
+            <option <%= ("C".equals(tbRestriction)?"selected":"") %> value="C">Same rating class</option>
         </select>
        </font>
       </td>
@@ -240,6 +252,11 @@ function submitnewgameform()
        </div>
      </td>
      </tr>
+       <tr>
+           <td colspan="2">
+               <label><input id="remember" name="remember" type="checkbox" value="yes"/> remember my settings </label>
+           </td>
+       </tr>
    </table>
    <br>
 
