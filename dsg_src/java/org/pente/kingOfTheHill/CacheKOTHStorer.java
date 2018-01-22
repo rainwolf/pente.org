@@ -40,12 +40,12 @@ public class CacheKOTHStorer implements KOTHStorer {
 
         loadHills();
 
-        for (int g: liveGames) {
-            adjustCrown(g);
-        }
-        for (int g: tbGames) {
-            adjustCrown(g);
-        }
+//        for (int g: liveGames) {
+//            adjustCrown(g);
+//        }
+//        for (int g: tbGames) {
+//            adjustCrown(g);
+//        }
 
         removeStalePlayersTimer = new Timer();
         removeStalePlayersTimer.scheduleAtFixedRate(
