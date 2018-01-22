@@ -391,16 +391,16 @@ public class NewGameServlet extends HttpServlet {
 				String rememberStr = request.getParameter("remember");
 				if (rememberStr != null && "yes".equals(rememberStr)) {
 				    if (koth) {
+                        DSGPlayerPreference pref = new DSGPlayerPreference("tbKotHTimeout", new Integer(daysPerMove));
+                        dsgPlayerStorer.storePlayerPreference(invitePlayerData.getPlayerID(), pref);
+                        pref.setName("tbKotHRestriction"); pref.setValue(String.valueOf(invitationRestriction));
+                        dsgPlayerStorer.storePlayerPreference(invitePlayerData.getPlayerID(), pref);
+                    } else {
                         DSGPlayerPreference pref = new DSGPlayerPreference("tbGame", new Integer(game));
                         dsgPlayerStorer.storePlayerPreference(invitePlayerData.getPlayerID(), pref);
                         pref.setName("tbTimeout"); pref.setValue(new Integer(daysPerMove));
                         dsgPlayerStorer.storePlayerPreference(invitePlayerData.getPlayerID(), pref);
                         pref.setName("tbRestriction"); pref.setValue(String.valueOf(invitationRestriction));
-                        dsgPlayerStorer.storePlayerPreference(invitePlayerData.getPlayerID(), pref);
-                    } else {
-                        DSGPlayerPreference pref = new DSGPlayerPreference("tbKotHTimeout", new Integer(daysPerMove));
-                        dsgPlayerStorer.storePlayerPreference(invitePlayerData.getPlayerID(), pref);
-                        pref.setName("tbKotHRestriction"); pref.setValue(String.valueOf(invitationRestriction));
                         dsgPlayerStorer.storePlayerPreference(invitePlayerData.getPlayerID(), pref);
                     }
                 }

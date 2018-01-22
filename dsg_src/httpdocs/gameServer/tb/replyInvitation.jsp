@@ -183,10 +183,14 @@ if (dsgPlayerData.unlimitedTBGames()) {
        <td>
            <% if (set.isTwoGameSet()) { %>
              White, Black (2 game set)
-           <% } else if (set.getInviterPid() == set.getPlayer1Pid()) { %>
-             Black (player 2)
-           <% } else { %>
-             White (player 1)
+           <% } else if (set.getInviterPid() == set.getPlayer1Pid() && game.getGame() != GridStateFactory.TB_GO) { %>
+           Black (player 2)
+           <% } else if (set.getInviterPid() != set.getPlayer1Pid() && game.getGame() != GridStateFactory.TB_GO) { %>
+           White (player 1)
+           <% } else if (set.getInviterPid() == set.getPlayer1Pid() && game.getGame() == GridStateFactory.TB_GO) { %>
+           White (player 2)
+           <% } else if (set.getInviterPid() != set.getPlayer1Pid() && game.getGame() == GridStateFactory.TB_GO) { %>
+           Black (player 1)
            <% } %>
        </td>
      </tr>
