@@ -26,8 +26,11 @@ public class MoveServlet extends HttpServlet {
 	private static final String moveRedirectPage = "/gameServer/index.jsp";
 	private static final String cancelRedirectPage = "/gameServer/tb/cancelReply.jsp";
 	private static final String undoRedirectPage = "/gameServer/tb/undoReply.jsp";
-	private static final String mobileRedirectPage = "/gameServer/mobile/empty.jsp";
-    
+    private static final String mobileRedirectPage = "/gameServer/mobile/empty.jsp";
+
+    private static final String goMarkDeadRedirectPage = "/gameServer/tb/deadGo.jsp";
+    private static final String goFinalStepRedirectPage = "/gameServer/tb/finalGo.jsp";
+
 	private Resources resources;
 	
     public void init(ServletConfig config) throws ServletException {
@@ -176,6 +179,24 @@ public class MoveServlet extends HttpServlet {
 				}
 
 
+				if (game.getGame() == GridStateFactory.TB_GO) {
+				    if (game.getGoState() == TBGame.GO_MARK_DEAD_STONES) {
+                        log4j.debug("forward to Go mark dead stones page");
+
+                        request.setAttribute("set", set);
+                        getServletContext().getRequestDispatcher(goMarkDeadRedirectPage).forward(
+                                request, response);
+                        return;
+                    } else if (game.getGoState() == TBGame.GO_EVALUATE_DEAD_STONES) {
+                        log4j.debug("forward to Go final page");
+
+                        request.setAttribute("set", set);
+                        getServletContext().getRequestDispatcher(goFinalStepRedirectPage).forward(
+                                request, response);
+                        return;
+                    }
+                }
+				
 				// if player prefers to make moves attached or not
 				List prefs = dsgPlayerStorer.loadPlayerPreferences(
 					playerData.getPlayerID());
@@ -458,8 +479,35 @@ public class MoveServlet extends HttpServlet {
 						message.setMoveNum(game.getNumMoves());
 						tbGameStorer.storeNewMessage(game.getGid(), message);
 					}
-				}
-				else {
+                } else if (game.getGame() == GridStateFactory.TB_GO && game.getGoState() == TBGame.GO_MARK_DEAD_STONES) {
+                    if (moves.length < 1) {
+                        log4j.error("MoveServlet, not enough moves GO_MARK_DEAD_STONES for " + game.getGid());
+                        handleError(request, response, "Invalid move, not enough moves.");
+                        return;
+                    }
+				    
+				    for (int move: moves) {
+                        tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(),
+                                move);
+                    }
+
+                    if (message != null) {
+                        message.setMoveNum(game.getNumMoves());
+                        tbGameStorer.storeNewMessage(game.getGid(), message);
+                    }
+
+                } else if (game.getGame() == GridStateFactory.TB_GO && game.getGoState() == TBGame.GO_EVALUATE_DEAD_STONES) {
+                    if (moves.length < 1) {
+                        log4j.error("MoveServlet, not enough moves GO_EVALUATE_DEAD_STONES for " + game.getGid());
+                        handleError(request, response, "Invalid move, not enough moves.");
+                        return;
+                    }
+				    if (moves[0] == 1) {
+                        tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(), 19*19);
+                    } else {
+                        ((CacheTBStorer) tbGameStorer).continueGoGame(gid);
+                    }
+				} else {
 					log4j.debug("MoveServlet, store move " + moves[0]);
 					if (moves.length != 1) {
 						log4j.error("MoveServlet, more moves received than, " +

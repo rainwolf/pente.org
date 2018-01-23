@@ -55,9 +55,65 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 	public static final int GO_EVALUATE_DEAD_STONES = 3;
 	private int goState;
 
-    public int getGoState() { return goState; }
+    private int passMove = 361;
+//	private boolean doublePass() {
+//        return moves != null && 
+//                moves.size() > 1 && 
+//                moves.get(moves.size() - 1) == passMove && 
+//                moves.get(moves.size() - 2) == passMove;
+//    }
+//    private boolean triplePass() {
+//        return moves != null && 
+//                moves.size() > 2 && 
+//                moves.get(moves.size() - 1) == passMove && 
+//                moves.get(moves.size() - 2) == passMove && 
+//                moves.get(moves.size() - 3) == passMove;
+//    }
+    public int containsDoublePass() {
+	    boolean hasPass = false;
+	    for (int i = 0; i < moves.size(); i++) {
+	        int move = moves.get(i);
+	        if (move == passMove) {
+	            if (hasPass) {
+	                return i;
+                } else {
+	                hasPass = true;
+                }
+            } else {
+	            hasPass = false;
+            }
+        }
+        return -1;
+    }    
+    public int getGoState() {
+        goState = TBGame.GO_PLAY;
+        int dp = containsDoublePass();
+        if (getNumMoves() > 0 && dp == moves.size() - 1) {
+            goState = TBGame.GO_MARK_DEAD_STONES;
+        } else if (dp > - 1) {
+            goState = TBGame.GO_EVALUATE_DEAD_STONES;
+        }
+        return goState; 
+    }
     public void setGoState(int goState) { this.goState = goState; }
 
+    public String getGoDeadStones() {
+        int i = containsDoublePass();
+        String deadStr = "";
+        if (i > -1) {
+            for (int j = i + 1; j < moves.size() - 1; j++) {
+                int move = moves.get(j);
+                if (move < passMove) {
+                    if ("".equals(deadStr)) {
+                        deadStr += move;
+                    } else {
+                        deadStr += "," + move;
+                    }
+                }
+            }
+        }
+        return deadStr;
+    }
     private TBSet tbSet;
 	
 	public void timeout() {
@@ -174,7 +230,21 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 	public long getCurrentPlayer() {
 //TODO why couldn't i just instantiate a gridstate and use that?
 		int cp = 0;
-		if ((game == GridStateFactory.TB_DPENTE || game == GridStateFactory.TB_DKERYO) &&
+		
+		if (game == GridStateFactory.TB_GO) {
+		    
+		    
+		    int dp = containsDoublePass();
+		    if (dp == -1) {
+                cp = moves.size() % 2 + 1;
+            } else if (dp < moves.size() - 1) {
+                cp = 1 + dp % 2;
+            } else {
+                cp = 2 - dp % 2;
+            }
+            
+            
+        } else if ((game == GridStateFactory.TB_DPENTE || game == GridStateFactory.TB_DKERYO) &&
 			dPenteState != DPENTE_STATE_DECIDED) {
 			if (dPenteState == DPENTE_STATE_START) {
 				cp = 1;
@@ -189,6 +259,7 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 		} else {
 			cp = moves.size() % 2 + 1;
 		}
+		
 		if (cp == 1) {
 			return player1Pid;
 		} else if (cp == 2) {

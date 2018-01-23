@@ -43,10 +43,14 @@ var coordinateLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 
         var koMove = -1;
         var suicideAllowed = false;
         var goTerritoryByPlayer = {1: [], 2: []};
+        var territoryDrawn = false;
+        var passMove = gridSize*gridSize, handicapPass = passMove + 1;
+
+        var goDeadStonesByPlayer = {1: [], 2: []};
 
 function drawGame() {
-    for (var i = 0; i < 19; i++) {
-        for (var j = 0; j < 19; j++) {
+    for (var i = 0; i < gridSize; i++) {
+        for (var j = 0; j < gridSize; j++) {
             if (abstractBoard[i][j] > 0) {
                 drawStone(i, j, abstractBoard[i][j]);
             } 
@@ -54,6 +58,14 @@ function drawGame() {
     }
     if (game === 69) {
         drawGoCaptures();
+        var p1DeadStones = goDeadStonesByPlayer[1];
+        for ( var i = 0; i < p1DeadStones.length; i++ ) {
+            drawDeadStone(p1DeadStones[i], 2);
+        }
+        var p2DeadStones = goDeadStonesByPlayer[2];
+        for ( i = 0; i < p2DeadStones.length; i++ ) {
+            drawDeadStone(p2DeadStones[i], 1);
+        }
     } else {
         drawCaptures();
     }
@@ -77,25 +89,6 @@ function drawTerritorySquare(move, color) {
     boardContext.rect(centerX, centerY, width, width);
     boardContext.fill();
     boardContext.closePath();
-    // centerX -= radius / 8;
-    // centerY -= radius / 8;
-    // boardContext.shadowColor = 'DimGray';
-    // boardContext.shadowBlur = 1;
-    // boardContext.shadowOffsetX = radius / 8;
-    // boardContext.shadowOffsetY = radius / 8;
-    // if (color === 2) {
-    //     var gradient = boardContext.createRadialGradient(centerX, centerY, radius / 8, centerX, centerY, radius);
-    //     gradient.addColorStop(0, 'Grey');
-    //     gradient.addColorStop(1, 'Black');
-    //     boardContext.fillStyle = gradient;
-    // } else {
-    //     gradient = boardContext.createRadialGradient(centerX, centerY, 2 * radius / 4, centerX, centerY, radius);
-    //     gradient.addColorStop(0, 'White');
-    //     gradient.addColorStop(1, 'Gainsboro');
-    //     boardContext.fillStyle = gradient;
-    // }
-    // boardContext.fill();
-    // boardContext.closePath();
     boardContext.restore();
 }
 
@@ -105,15 +98,28 @@ function replayGoGame(abstractBoard, movesList, until) {
     goGroupsByPlayerAndID = {1: {}, 2: {}}; 
     goStoneGroupIDsByPlayer = {1: {}, 2: {}};
     koMove = -1;
+    var hasPass = false;
     for (var i = 0; i < Math.min(movesList.length, until); i++) {
-        var color = 2 - (i%2);
         var move = movesList[i];
+        if (move === passMove) {
+            if (hasPass) {
+                break;
+            } else {
+                hasPass = true;
+            }
+        } else {
+            hasPass = false;
+        }
+        var color = 2 - (i%2);
         abstractBoard[move % 19][Math.floor(move / 19)] = color;
         addGoMove(move, 3-color);
     }
 }
 
 function addGoMove(move, currentPlayer) {
+    if (move >= passMove) {
+        return;
+    }
     var opponent = 3 - currentPlayer;
     // console.log(goStoneGroupIDsByPlayer);
     var groupsByID = goGroupsByPlayerAndID[currentPlayer];
@@ -399,12 +405,15 @@ function floodPlayer(player) {
     var groups = goGroupsByPlayerAndID[player];
     for (var groupID in groups) {
         var group = groups[groupID];
+        var pDeadStones = goDeadStonesByPlayer[player];
         for (var i = 0; i < group.length; i++) {
             var move = group[i];
-            var neighbourStone = getEmptyNeighbour(move);
-            while (neighbourStone > -1) {
-                floodFillWorker(neighbourStone, player + 2);
-                neighbourStone = getEmptyNeighbour(move);
+            if (pDeadStones.indexOf(move) == -1) {
+                var neighbourStone = getEmptyNeighbour(move);
+                while (neighbourStone > -1) {
+                    floodFillWorker(neighbourStone, player + 2);
+                    neighbourStone = getEmptyNeighbour(move);
+                }
             }
         }
     }
@@ -422,6 +431,7 @@ function getMovesForValue(value) {
 }
 function getTerritories() {
     goTerritoryByPlayer = {1: [], 2: []};
+    resetGoBeforeFlood();
     floodPlayer(1);
     var p1Territory = getMovesForValue(3);
     resetGoBeforeFlood();
@@ -432,10 +442,8 @@ function getTerritories() {
     while (i < p1Territory.length && j < p2Territory.length) {
         var p1Stone = p1Territory[i], p2Stone = p2Territory[j];
         if (p1Stone === p2Stone) {
-            // console.log('before '+p1Territory.length+' '+p2Territory.length);
             p1Territory.splice(i, 1);
             p2Territory.splice(j, 1);
-            // console.log('after '+p1Territory.length+' '+p2Territory.length);
         } else {
             if (p1Stone < p2Stone) {
                 i += 1;
@@ -449,6 +457,23 @@ function getTerritories() {
 }
 
 function drawTerritories() {
+    if (territoryDrawn) {
+        drawGrid(boardContext, boardColor, gridSize, true);
+        drawGame();
+        territoryDrawn = false;
+    } else {
+        getTerritories();
+        var p1Territory = goTerritoryByPlayer[1], p2Territory = goTerritoryByPlayer[2];
+        for (var i = 0; i < p1Territory.length; i++) {
+            drawTerritorySquare(p1Territory[i], 1);
+        }
+        for (i = 0; i < p2Territory.length; i++) {
+            drawTerritorySquare(p2Territory[i], 2);
+        }
+        territoryDrawn = true;
+    }
+}
+function reDrawTerritories() {
     getTerritories();
     var p1Territory = goTerritoryByPlayer[1], p2Territory = goTerritoryByPlayer[2];
     for (var i = 0; i < p1Territory.length; i++) {
@@ -564,6 +589,9 @@ function drawGoCaptures() {
 
 
             function drawGrid(boardContext, boardColor, gridSize, drawAxis) {
+                // boardContext.beginPath();
+                boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
+                // boardContext.closePath();
               boardContext.save();
                 boardContext.beginPath();
                 boardContext.rect(indentWidth / 2, indentHeight / 2, boardSize + indentWidth, boardSize + indentHeight);
