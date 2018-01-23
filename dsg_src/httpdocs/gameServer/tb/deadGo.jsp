@@ -178,32 +178,6 @@
             <script type='text/javascript'>
                 var currentMove = -1;
 
-                function selectMove(newMove) {
-                    // alert("cell " + newMove);
-                    var cell = document.getElementById('' + newMove);
-                    cell.style.background = '#AAF';
-                    resetAbstractBoard(abstractBoard);
-                    drawUntilMove = newMove + 1;
-                    if (game === 63 && drawUntilMove !== 1) {
-                        drawUntilMove += 1;
-                    }
-                    replayGame(abstractBoard, moves, drawUntilMove);
-                    boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
-                    boardContext.fill();
-                    drawGrid(boardContext, boardColor, gridSize, true);
-                    drawGame();
-                    lastMove = moves[drawUntilMove - 1];
-                    drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-                    if (game === 63 && moves.length > 1) {
-                        lastMove = moves[drawUntilMove - 2];
-                        drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-                    }
-                    if (currentMove !== -1) {
-                        var cell = document.getElementById('' + currentMove);
-                        cell.style.background = '#FFF';
-                    }
-                    currentMove = newMove;
-                }
 
                 function changeCycle() {
                     if (document.getElementById('cycleCheck').checked) {
@@ -267,15 +241,7 @@
                             <% if (!"false".equals(myTurn) && (game.getDPenteState() != 2)) { %>
                             <a class="boldbuttons" href="javascript:submit();"
                                style="margin-right:5px;"><span>Submit</span></a>
-                            <% if (game.getGame() == GridStateFactory.TB_GO) { %>
-                            <a class="boldbuttons" href="javascript:submitPass();"
-                               style="margin-right:5px;"><span>Pass</span></a>
-                            <a class="boldbuttons" href="javascript:drawTerritories();"
-                               style="margin-right:5px;"><span>Draw territory</span></a>
-                        <%--</div>--%>
-                        <%--<div class="buttonwrapper" style="margin-top:5px; width:580px;">--%>
-                            
-                            <%  }
+                            <% 
                             } else if ((game.getPlayer1Pid() == meData.getPlayerID() || game.getPlayer2Pid() == meData.getPlayerID()) && game.isUndoRequested()) {
                             %>
                             <b>Undo requested</b>
@@ -414,27 +380,7 @@
                                     </div>
                                 </td>
                             </tr>
-                            <% if (game.getDPenteState() != 2) { %>
-                            <tr>
-                                <td>
-                                    <table align="right" width="250px">
-                                        <tr>
-                                            <td width="50%" align="center">
-                                                <a class="boldbuttons" href="javascript:goBack();"
-                                                   style="width:110px;"><span>back</span></a>
-                                            </td>
-                                            <td align="center">
-                                                <a class="boldbuttons" href="javascript:goForward();"
-                                                   style="width:110px;"><span>forward</span></a>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-
-                            <%
-                                }
-                            %>
+ 
                             <tr>
                                 <td>
                                     <table align="right" border=1 width="250px">
@@ -526,6 +472,9 @@
                 window.google_analytics_uacct = "UA-20529582-2";
             </script>
 
+            <script type="text/javascript">
+                var gridSize = 19;
+            </script>
 
             <script src="/gameServer/tb/gameScript.js"></script>
 
@@ -543,7 +492,6 @@
 
                 var boardSize = 500;
                 
-                var gridSize = 19;
                 var boardCanvas = document.getElementById("board");
                 var boardContext = boardCanvas.getContext("2d");
                 var indentWidth = (boardCanvas.width - boardSize) / 2;
@@ -569,42 +517,9 @@
                 var hideStr = "";
 
 
+
                 function init() {
-                    switch (game) {
-                        case 51:
-                            boardColor = penteColor;
-                            break;
-                        case 53:
-                            boardColor = keryPenteColor;
-                            break;
-                        case 55:
-                            boardColor = gomokuColor;
-                            break;
-                        case 57:
-                            boardColor = dPenteColor;
-                            break;
-                        case 59:
-                            boardColor = gPenteColor;
-                            break;
-                        case 61:
-                            boardColor = poofPenteColor;
-                            break;
-                        case 63:
-                            boardColor = connect6Color;
-                            break;
-                        case 65:
-                            boardColor = boatPenteColor;
-                            break;
-                        case 67:
-                            boardColor = dkeryoPenteColor;
-                            break;
-                        case 69:
-                            boardColor = goColor;
-                            break;
-                        default:
-                            boardColor = penteColor;
-                            break;
-                    }
+                    boardColor = goColor;
                     boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
                     interactionContext.clearRect(0, 0, interactionCanvas.width, interactionCanvas.height);
                     drawGrid(boardContext, boardColor, gridSize, true);
@@ -632,41 +547,6 @@
                     } else {
                         stoneColor = ((moves.length % 2) === 1);
                     }
-                    if ((drawUntilMove !== moves.length)) {
-                        var newMoves = moves.slice(0);
-                        if (game === 63) {
-                            if (c6Move1 > -1) {
-                                newMoves.push(c6Move1);
-                            }
-                        }
-                        if ((game === 57 || game === 67) && moves.length === 1) {
-                            if (dPenteMove1 === -1) {
-                            } else if (dPenteMove2 == -1) {
-                                newMoves.push(dPenteMove1);
-                            } else {
-                                newMoves.push(dPenteMove1);
-                                newMoves.push(dPenteMove2);
-                            }
-                        }
-                        if (game === 63) {
-                            stoneColor = (((moves.length - 1) % 4) === 0);
-                        } else {
-                            stoneColor = ((newMoves.length % 2) === 1);
-                        }
-                        resetAbstractBoard(abstractBoard);
-                        drawUntilMove = newMoves.length;
-                        replayGame(abstractBoard, newMoves, drawUntilMove);
-                        boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
-                        boardContext.fill();
-                        drawGrid(boardContext, boardColor, gridSize, true);
-                        drawGame();
-                        lastMove = moves[moves.length - 1];
-                        drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-                        if (game === 63 && moves.length > 1) {
-                            lastMove = moves[moves.length - 2];
-                            drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-                        }
-                    }
 
                     var rect = boardCanvas.getBoundingClientRect();
                     var offsetX = rect.left;
@@ -679,16 +559,6 @@
 
                     var x = touch.clientX - offsetX;
                     var y = touch.clientY - offsetY;
-
-                    // if (i >= 0 && i < 19 && j >= 0 && j < 19) {
-                    //   evt.preventDefault();
-                    //   interactionContext.drawImage(boardCanvas, -x/2 , -y/2);
-                    // } else {
-                    //   interactionContext.clearRect(0, 0, interactionCanvas.width, interactionCanvas.height);
-                    // }
-
-
-                    // document.getElementById("messageBox").innerHTML = "Started X = " + (touch.clientX - offsetX) + " Y = " + (touch.clientY - offsetY);
 
                 }
 
@@ -722,14 +592,6 @@
 
                 function touchCancel(evt) {
                     interactionContext.clearRect(0, 0, interactionCanvas.width, interactionCanvas.height);
-                    playedMove = -1;
-                    c6Move2 = -1;
-                    dPenteMove3 = -1;
-                    if (game === 63 && moves.length > 1) {
-                        selectMove(drawUntilMove - 2);
-                    } else {
-                        selectMove(drawUntilMove - 1);
-                    }
                 }
 
                 function touchEnd(evt) {
@@ -749,28 +611,6 @@
                         if (abstractBoard[i][j] === 0 && active === true) {
                             var newMoves = moves.slice(0);
                             playedMove = j * 19 + i;
-                            if (game === 63) {
-                                if (c6Move1 > -1) {
-                                    newMoves.push(c6Move1);
-                                    c6Move2 = playedMove;
-                                } else {
-                                    c6Move1 = playedMove;
-                                }
-                            }
-                            if ((game === 57 || game === 67) && moves.length === 0) {
-                                if (dPenteMove1 === -1) {
-                                    dPenteMove1 = playedMove;
-                                } else if (dPenteMove2 === -1) {
-                                    newMoves.push(dPenteMove1);
-                                    dPenteMove2 = playedMove;
-                                } else if (dPenteMove3 === -1) {
-                                    newMoves.push(dPenteMove2);
-                                    dPenteMove3 = playedMove;
-                                } else {
-                                    newMoves.push(dPenteMove3);
-                                    dPenteMove4 = playedMove;
-                                }
-                            }
                             newMoves.push(playedMove);
                             resetAbstractBoard(abstractBoard);
                             drawUntilMove = newMoves.length;
@@ -780,19 +620,8 @@
                             drawGrid(boardContext, boardColor, gridSize, true);
                             drawGame();
                             lastMove = moves[moves.length - 1];
-                            drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-                            if (game == 63 && moves.length > 1) {
-                                lastMove = moves[moves.length - 2];
-                                drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-                            }
                         } else {
                             playedMove = -1;
-                            c6Move1 = -1;
-                            c6Move2 = -1;
-                            dPenteMove1 = -1;
-                            dPenteMove2 = -1;
-                            dPenteMove3 = -1;
-                            dPenteMove4 = -1;
 
                             resetAbstractBoard(abstractBoard);
                             drawUntilMove = moves.length;
@@ -802,16 +631,6 @@
                             drawGrid(boardContext, boardColor, gridSize, true);
                             drawGame();
                             lastMove = moves[moves.length - 1];
-                            drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-                            if (game === 63 && moves.length > 1) {
-                                lastMove = moves[moves.length - 2];
-                                drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-                            }
-                            if (game === 63 && moves.length > 1) {
-                                selectMove(drawUntilMove - 2);
-                            } else {
-                                selectMove(drawUntilMove - 1);
-                            }
                         }
 
                         // document.getElementById("messageBox").innerHTML = "Recorded X = " + i + " Y = " + j;
@@ -830,90 +649,35 @@
                 }
 
                 function boardClick(e) {
-                    if (currentMove !== -1) {
-                        var cell = document.getElementById('' + currentMove);
-                        cell.style.background = '#FFF';
-                    }
-                    currentMove = -1;
                     var rect = boardCanvas.getBoundingClientRect();
                     var offsetX = rect.left;
                     var offsetY = rect.top;
                     var i = Math.floor((e.clientX - indentWidth + stepX / 2 - offsetX) / stepX);
                     var j = Math.floor((e.clientY - indentHeight + stepY / 2 - offsetY) / stepY);
                     if (i >= 0 && i < gridSize && j >= 0 && j < gridSize) {
-                        if ((drawUntilMove !== moves.length)) {
-                            resetAbstractBoard(abstractBoard);
-                            drawUntilMove = moves.length;
-                            replayGame(abstractBoard, moves, drawUntilMove);
-                            boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
-                            boardContext.fill();
-                            drawGrid(boardContext, boardColor, gridSize, true);
-                            drawGame();
-                            lastMove = moves[moves.length - 1];
-                            drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-                            if (game === 63 && moves.length > 1) {
-                                lastMove = moves[moves.length - 2];
-                                drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-                            }
-                            document.getElementById("movesTable").scrollTop = document.getElementById("movesTable").scrollHeight;
-                        }
                         playedMove = j * 19 + i;
-                        if (abstractBoard[i][j] === 0 && active === true && playedMove !== dPenteMove1 && playedMove !== dPenteMove2 && playedMove !== dPenteMove3 && playedMove !== dPenteMove4) {
-                            var newMoves = moves.slice(0);
-                            if (game === 63) {
-                                if (c6Move1 > -1) {
-                                    newMoves.push(c6Move1);
-                                    c6Move2 = playedMove;
-                                } else {
-                                    c6Move1 = playedMove;
-                                }
+                        var p1DeadStones = goDeadStonesByPlayer[1], p2DeadStones = goDeadStonesByPlayer[2];
+                        if (abstractBoard[i][j] === 0 && active === true) {
+                            var idx = p1DeadStones.indexOf(playedMove);
+                            if (idx > -1) {
+                                p1DeadStones.splice(idx, 1);
+                                abstractBoard[i][j] = 2;
                             }
-                            if ((game === 57 || game === 67) && moves.length === 0) {
-                                if (dPenteMove1 === -1) {
-                                    dPenteMove1 = playedMove;
-                                } else if (dPenteMove2 === -1) {
-                                    newMoves.push(dPenteMove1);
-                                    dPenteMove2 = playedMove;
-                                } else if (dPenteMove3 === -1) {
-                                    newMoves.push(dPenteMove1);
-                                    newMoves.push(dPenteMove2);
-                                    dPenteMove3 = playedMove;
-                                } else {
-                                    newMoves.push(dPenteMove1);
-                                    newMoves.push(dPenteMove2);
-                                    newMoves.push(dPenteMove3);
-                                    dPenteMove4 = playedMove;
-                                }
+                            idx = p2DeadStones.indexOf(playedMove);
+                            if (idx > -1) {
+                                p2DeadStones.splice(idx, 1);
+                                abstractBoard[i][j] = 1;
                             }
-                            newMoves.push(playedMove);
-                            resetAbstractBoard(abstractBoard);
-                            drawUntilMove = newMoves.length;
-                            // alert("peep");
-                            replayGame(abstractBoard, newMoves, drawUntilMove);
-                            boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
-                            boardContext.fill();
-                            drawGrid(boardContext, boardColor, gridSize, true);
-                            drawGame();
-                            lastMove = moves[moves.length - 1];
-                            drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-                            if (game === 63 && moves.length > 1) {
-                                lastMove = moves[moves.length - 2];
-                                drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-                            }
-                        } else {
-                            playedMove = -1;
-                            c6Move1 = -1;
-                            c6Move2 = -1;
-                            dPenteMove1 = -1;
-                            dPenteMove2 = -1;
-                            dPenteMove3 = -1;
-                            dPenteMove4 = -1;
-                            if (game === 63 && moves.length > 1) {
-                                selectMove(drawUntilMove - 2);
-                            } else {
-                                selectMove(drawUntilMove - 1);
-                            }
+                        } else if (abstractBoard[i][j] === 2 && active === true) {
+                            p1DeadStones.push(playedMove);
+                            abstractBoard[i][j] = 0;
+                        } else if (abstractBoard[i][j] === 1 && active === true) {
+                            p2DeadStones.push(playedMove);
+                            abstractBoard[i][j] = 0;
                         }
+                        drawGrid(boardContext, boardColor, gridSize, true);
+                        drawGame();
+                        reDrawTerritories();
                     }
                 }
 
@@ -955,6 +719,47 @@
                     boardContext.closePath();
                     boardContext.restore();
                 }
+                function drawDeadStone(move, color) {
+                    if (color < 1 || color > 2) {
+                        return;
+                    }
+                    var i = move%gridSize, j = Math.floor(move/gridSize);
+                    boardContext.save();
+                    var centerX = indentWidth + stepX * (i);
+                    var centerY = indentHeight + stepY * (j);
+                    boardContext.globalAlpha = 0.5;
+                    boardContext.beginPath();
+                    if (color === 2) {
+                        boardContext.fillStyle = 'black';
+                    } else {
+                        boardContext.fillStyle = 'white';
+                    }
+                    boardContext.arc(centerX, centerY, radius, 0, Math.PI * 2, true);
+                    centerX -= radius / 8;
+                    centerY -= radius / 8;
+                    boardContext.shadowColor = 'DimGray';
+                    boardContext.shadowBlur = 1;
+                    boardContext.shadowOffsetX = radius / 8;
+                    boardContext.shadowOffsetY = radius / 8;
+                    if (color === 2) {
+                        var gradient = boardContext.createRadialGradient(centerX, centerY, radius / 8, centerX, centerY, radius);
+                        gradient.addColorStop(0, 'Grey');
+                        gradient.addColorStop(1, 'Black');
+                        boardContext.fillStyle = gradient;
+                    } else {
+                        gradient = boardContext.createRadialGradient(centerX, centerY, 2 * radius / 4, centerX, centerY, radius);
+                        gradient.addColorStop(0, 'White');
+                        gradient.addColorStop(1, 'Gainsboro');
+                        boardContext.fillStyle = gradient;
+                    }
+                    boardContext.fill();
+                    // boardContext.lineWidth = 5;
+                    // boardContext.strokeStyle = '#003300';
+                    // boardContext.stroke();
+                    boardContext.closePath();
+                    boardContext.restore();
+                    boardContext.globalAlpha = 1;
+                }
 
                 function drawInteractionStone(i, j, color) {
                     trackingI = i;
@@ -976,11 +781,7 @@
                     stoneContext.closePath();
                     stoneContext.beginPath();
                     stoneContext.arc(centerX, centerY, iRadius, 0, Math.PI * 2, true);
-                    if (color === true) {
-                        stoneContext.fillStyle = 'black';
-                    } else {
-                        stoneContext.fillStyle = 'white';
-                    }
+                    stoneContext.fillStyle = 'red';
                     centerX -= iRadius / 8;
                     centerY -= iRadius / 8;
                     stoneContext.shadowColor = 'DimGray';
@@ -1025,38 +826,8 @@
                 function replayGame(abstractBoard, movesList, until) {
                     whiteCaptures = 0;
                     blackCaptures = 0;
-                    switch (game) {
-                        case 51:
-                            replayPenteGame(abstractBoard, movesList, until);
-                            break;
-                        case 53:
-                            replayKeryoPenteGame(abstractBoard, movesList, until);
-                            break;
-                        case 55:
-                            replayGomokuGame(abstractBoard, movesList, until);
-                            break;
-                        case 57:
-                            replayPenteGame(abstractBoard, movesList, until);
-                            break;
-                        case 59:
-                            replayGPenteGame(abstractBoard, movesList, until);
-                            break;
-                        case 61:
-                            replayPoofPenteGame(abstractBoard, movesList, until);
-                            break;
-                        case 63:
-                            replayConnect6Game(abstractBoard, movesList, until);
-                            break;
-                        case 65:
-                            replayPenteGame(abstractBoard, movesList, until);
-                            break;
-                        case 67:
-                            replayKeryoPenteGame(abstractBoard, movesList, until);
-                            break;
-                        case 69:
-                            replayGoGame(abstractBoard, movesList, until);
-                            break;
-                    }
+                    replayGoGame(abstractBoard, movesList, until);
+
                     // document.getElementById("messageBox").innerHTML = "message";
                     if (until <= moves.length) {
                         if (messageMoveNums.indexOf(until) !== -1) {
@@ -1088,171 +859,42 @@
                         }
                     }
                 }
-
-                function drawCaptures() {
-                    if (whiteCaptures > 0) {
-                        for (var i = 0; i < whiteCaptures; i++) {
-                            boardContext.beginPath();
-                            boardContext.arc(indentWidth + i * stepX * 2 / 3, boardSize + indentHeight + stepY, stepX / 3, 0, Math.PI * 2, true);
-                            boardContext.fillStyle = 'white';
-                            boardContext.fill();
-                            boardContext.stroke();
-                            boardContext.closePath();
-                        }
-                        var digit = 0;
-                        if (whiteCaptures > 9) {
-                            digit = Math.floor(whiteCaptures / 10);
+                
+                function getDeadStones() {
+                    var deadStr = '';
+                    var p1DeadStones = goDeadStonesByPlayer[1];
+                    for ( var i = 0; i < p1DeadStones.length; i++ ) {
+                        if (deadStr === '') {
+                            deadStr = '' + p1DeadStones[i];
                         } else {
-                            digit = whiteCaptures % 10;
-                        }
-                        boardContext.beginPath();
-                        boardContext.font = "14px bold sans-serif";
-                        boardContext.fillStyle = 'black';
-                        boardContext.fillText("" + digit, indentWidth - 4, boardSize + indentHeight + stepY + 4);
-                        boardContext.stroke();
-                        boardContext.closePath();
-                        if (whiteCaptures > 9) {
-                            digit = whiteCaptures % 10;
-                            boardContext.beginPath();
-                            boardContext.font = "14px bold sans-serif";
-                            boardContext.fillStyle = 'black';
-                            boardContext.fillText("" + digit, indentWidth + stepX * 2 / 3 - 4, boardSize + indentHeight + stepY + 4);
-                            boardContext.stroke();
-                            boardContext.closePath();
+                            deadStr += ',' + p1DeadStones[i];
                         }
                     }
-                    if (blackCaptures > 0) {
-                        for (var i = 0; i < blackCaptures; i++) {
-                            boardContext.beginPath();
-                            boardContext.arc(boardSize + indentWidth - i * stepX * 2 / 3, indentHeight - stepY, stepX / 3, 0, Math.PI * 2, true);
-                            boardContext.fillStyle = 'black';
-                            boardContext.fill();
-                            boardContext.stroke();
-                            boardContext.closePath();
-                        }
-                        var digit = blackCaptures % 10;
-                        boardContext.beginPath();
-                        boardContext.font = "14px bold sans-serif";
-                        boardContext.fillStyle = 'white';
-                        boardContext.fillText("" + digit, boardSize + indentWidth - 4, indentHeight - stepY + 4);
-                        boardContext.stroke();
-                        boardContext.closePath();
-                        if (blackCaptures > 9) {
-                            digit = Math.floor(blackCaptures / 10);
-                            boardContext.beginPath();
-                            boardContext.font = "14px bold sans-serif";
-                            boardContext.fillStyle = 'white';
-                            boardContext.fillText("" + digit, boardSize + indentWidth - stepX * 2 / 3 - 4, indentHeight - stepY + 4);
-                            boardContext.stroke();
-                            boardContext.closePath();
+                    var p2DeadStones = goDeadStonesByPlayer[2];
+                    for ( i = 0; i < p2DeadStones.length; i++ ) {
+                        if (deadStr === '') {
+                            deadStr = '' + p2DeadStones[i];
+                        } else {
+                            deadStr += ',' + p2DeadStones[i];
                         }
                     }
+                    if (deadStr === '') {
+                        deadStr = '' + passMove;
+                    } else {
+                        deadStr += ',' + passMove;
+                    }
+                    return deadStr;
                 }
 
-                function goBack() {
-                    if (drawUntilMove > 1) {
-                        if (game === 63 && drawUntilMove > 1) {
-                            if ((drawUntilMove % 2) === 1) {
-                                drawUntilMove = drawUntilMove - 1;
-                            }
-                            c6Move1 = -1;
-                            c6Move2 = -1;
-                        }
-                        if ((game === 57 || game === 67) && moves.length === 0) {
-                            drawUntilMove = 2;
-                            dPenteMove4 = -1;
-                            dPenteMove3 = -1;
-                            dPenteMove2 = -1;
-                            dPenteMove1 = -1;
-                        }
-                        drawUntilMove = drawUntilMove - 1;
-                        boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
-                        drawGrid(boardContext, boardColor, gridSize, true);
-                        replayGame(abstractBoard, moves, drawUntilMove);
-                        drawGame();
-                        lastMove = moves[drawUntilMove - 1];
-                        drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-                        if (game == 63 && drawUntilMove > 1) {
-                            lastMove = moves[drawUntilMove - 2];
-                            drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-                            selectMove(drawUntilMove - 2);
-                        } else {
-                            selectMove(drawUntilMove - 1);
-                        }
-                    }
-                }
 
-                function goForward() {
-                    if (drawUntilMove < moves.length) {
-                        drawUntilMove = drawUntilMove + 1;
-                        if (game === 63 && drawUntilMove > 1) {
-                            drawUntilMove = drawUntilMove + 1;
-                        }
-                        boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
-                        drawGrid(boardContext, boardColor, gridSize, true);
-                        replayGame(abstractBoard, moves, drawUntilMove);
-                        drawGame();
-                        lastMove = moves[drawUntilMove - 1];
-                        drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-                        if (game === 63 && drawUntilMove > 1) {
-                            lastMove = moves[drawUntilMove - 2];
-                            drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-                            selectMove(drawUntilMove - 2);
-                        } else {
-                            selectMove(drawUntilMove - 1);
-                        }
-                    }
-                }
 
                 function submit() {
-
-                    if (playedMove === -1) {
-                        alert("No move played yet");
-                    } else if (game === 63 && c6Move2 < 0) {
-                        alert("You have to place 2 stones for Connect6");
-                    } else if (game === 63 && c6Move2 > -1) {
-                        if ((c6Move1 > -1) && (c6Move1 < 361) && (c6Move2 > -1) && (c6Move2 < 361) && (moves.indexOf(c6Move1) == -1) && (moves.indexOf(c6Move2) == -1) && (c6Move1 != c6Move2)) {
-                            window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+
-                            cycleStr + hideStr + "&moves=" + c6Move1 + "," + c6Move2 + "&message=" + encodeURIComponent(document.getElementById('message').value), "_self");
-                        } else {
-                            alert("Invalid Connect6 moves detected, please (reload and) try again");
-                        }
-                    } else if ((game === 57 || game === 67) && moves.length === 0 && (dPenteMove1 === -1 || dPenteMove2 === -1 || dPenteMove3 === -1 || dPenteMove4 === -1)) {
-                        alert("You have to place 4 stones for D-Pente");
-                    } else if ((game === 57 || game === 67) && moves.length === 0) {
-                        if ((dPenteMove1 !== dPenteMove2) && (dPenteMove2 !== dPenteMove3) && (dPenteMove3 !== dPenteMove1)) {
-                            window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+
-                            cycleStr + hideStr + "&moves=" + dPenteMove1 + "," + dPenteMove2 + "," + dPenteMove3 + "," + dPenteMove4 + "&message=" + encodeURIComponent(document.getElementById('message').value), "_self");
-
-                        } else {
-                            alert("Invalid D-Pente moves detected, please (reload and) try again");
-                        }
-                    } else {
-                        window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+
-                        cycleStr + hideStr + "&moves=" + playedMove + "&message=" + encodeURIComponent(document.getElementById('message').value), "_self");
-                    }
+                    window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+
+                    cycleStr + hideStr + "&moves=" + getDeadStones() + "&message=" + encodeURIComponent(document.getElementById('message').value), "_self");
                 }
                 function submitPass() {
                     window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+
                     cycleStr + hideStr + "&moves=" + (gridSize*gridSize) + "&message=" + encodeURIComponent(document.getElementById('message').value), "_self");
-                }
-
-                function dPentePlayAsP1() {
-                    if (playedMove === -1) {
-                        alert("You have to place a stone if you choose to play as P1.");
-                    } else {
-                        window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+
-                        cycleStr + hideStr + "&moves=1," + playedMove + "&message=" + encodeURIComponent(document.getElementById('message').value), "_self");
-                    }
-                }
-
-                function dPentePlayAsP2() {
-                    if (playedMove > -1) {
-                        alert("You placed a stone. Remove it first if you choose to play as P2.");
-                    } else {
-                        window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+
-                        cycleStr + hideStr + "&moves=0&message=" + encodeURIComponent(document.getElementById('message').value), "_self");
-                    }
                 }
 
                 function resign() {
@@ -1272,15 +914,7 @@
                 init();
                 replayGame(abstractBoard, moves, moves.length);
                 drawGame();
-                lastMove = moves[drawUntilMove - 1];
-                drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-                if (game === 63 && moves.length > 1) {
-                    lastMove = moves[drawUntilMove - 2];
-                    drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-                    selectMove(drawUntilMove - 2);
-                } else {
-                    selectMove(drawUntilMove - 1);
-                }
+                reDrawTerritories();
                 document.getElementById("movesTable").scrollTop = document.getElementById("movesTable").scrollHeight;
             </script>
 

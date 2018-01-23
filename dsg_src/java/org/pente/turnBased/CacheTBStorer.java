@@ -239,6 +239,25 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 			}
 		}
 	}
+	
+	public void continueGoGame(long gid) {
+        TBGame tbGame = getGame(gid);
+        undoLastMove(gid, tbGame.getNumMoves() - tbGame.containsDoublePass() + 1);
+
+        long toPid = tbGame.getCurrentPlayer(), fromPid = tbGame.getOpponent(toPid);
+        DSGMessage message = new DSGMessage();
+        message.setFromPid(fromPid);
+        message.setToPid(toPid);
+        message.setSubject("Dead stones");
+        message.setBody("Your dead stones suggestion was declined. \n\nGame continues. \n\n");
+        message.setCreationDate(new java.util.Date());
+        try {
+            dsgMessageStorer.createMessage(message, false);
+        } catch (DSGMessageStoreException e) {
+            e.printStackTrace();
+        }
+        notificationServer.sendMessageNotification("pente.org", message.getToPid(), message.getMid(), message.getSubject());
+    }
 
 	public void hideGame(long gid, byte hiddenBy) {
 		synchronized (cacheTbLock) {

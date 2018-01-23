@@ -535,7 +535,10 @@ public class SimpleGridState implements GridState {
         long maxHash = Long.MIN_VALUE;
         int maxRotation = 0;
         int move = getMove(moves.size() - 1);
-        int p = getPosition(move);
+        int p = 0;
+        if (!outOfBounds(move)) {
+            p = getPosition(move);
+        }
         numPossibleRotations = 0;
         
         // for each possible rotation of this move
