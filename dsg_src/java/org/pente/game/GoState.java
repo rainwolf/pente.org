@@ -1,9 +1,6 @@
 package org.pente.game;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.pente.game.ZobristUtil.rand;
 
@@ -24,7 +21,7 @@ public class GoState extends GridStateDecorator
     private Map<Integer,Map<Integer, List<Integer>>> groupsByPlayerAndID;
     private Map<Integer,Map<Integer, Integer>> stoneGroupIDsByPlayer;
     
-    private int koMove, whiteCaptures, blackCaptures;
+    private int koMove;
 
     private int capturedAt[][];
     private int capturedMoves[][];
@@ -34,6 +31,9 @@ public class GoState extends GridStateDecorator
     private int handicapPass;
 
     private List<Long> positionHashes;
+    private List<Integer> deadStones;
+    
+    private Map<Integer, List<Integer>> goTerritoryByPlayer;
     
 
     public GoState(GridState gridState) {
@@ -66,8 +66,6 @@ public class GoState extends GridStateDecorator
         this.stoneGroupIDsByPlayer.put(1, new HashMap<>());
         this.stoneGroupIDsByPlayer.put(2, new HashMap<>());
         this.koMove = -1;
-        this.whiteCaptures = 0;
-        this.blackCaptures = 0;
         captures = new int[3];
         capturedAt = new int[3][361];
         capturedMoves = new int[3][361];
@@ -77,36 +75,49 @@ public class GoState extends GridStateDecorator
         
         positionHashes = new ArrayList<>();
         positionHashes.add(0L);
+        
+        deadStones = new ArrayList<>();
     }
 
 
     public void addMove(int move) {
 
-        int currentPlayer = getCurrentPlayer();
+        if (containsDoublePass() > -1) {
+            
+            deadStones.add(move);
+            ((SimpleGridState)gridState).setAllowOccupiedMoves(true);
+            gridState.addMove(move);
+            
+        } else {
+            
+            int currentPlayer = getCurrentPlayer();
 
-        gridState.addMove(move);
+            ((SimpleGridState)gridState).setAllowOccupiedMoves(false);
+            gridState.addMove(move);
 
-        if (0 <= move && move < passMove) {
-            positionHashes.add(positionHashes.get(positionHashes.size()-1) ^ rand[currentPlayer-1][move]);
+            if (0 <= move && move < passMove) {
+                positionHashes.add(positionHashes.get(positionHashes.size()-1) ^ rand[currentPlayer-1][move]);
 
-            Map<Integer, List<Integer>> groupsByID = getGroupsByPlayerAndID().get(currentPlayer);
-            Map<Integer, Integer> stoneGroupIDs = getStoneGroupIDsByPlayer().get(currentPlayer);
-            settleGroups(move, groupsByID, stoneGroupIDs);
+                Map<Integer, List<Integer>> groupsByID = getGroupsByPlayerAndID().get(currentPlayer);
+                Map<Integer, Integer> stoneGroupIDs = getStoneGroupIDsByPlayer().get(currentPlayer);
+                settleGroups(move, groupsByID, stoneGroupIDs);
 
-            int opponent = 3 - currentPlayer;
-            groupsByID = getGroupsByPlayerAndID().get(opponent);
-            stoneGroupIDs = getStoneGroupIDsByPlayer().get(opponent);
-            makeCaptures(move, groupsByID, stoneGroupIDs);
+                int opponent = 3 - currentPlayer;
+                groupsByID = getGroupsByPlayerAndID().get(opponent);
+                stoneGroupIDs = getStoneGroupIDsByPlayer().get(opponent);
+                makeCaptures(move, groupsByID, stoneGroupIDs);
 
-            if (isSuicideAllowed()) {
-                groupsByID = getGroupsByPlayerAndID().get(currentPlayer);
-                stoneGroupIDs = getStoneGroupIDsByPlayer().get(currentPlayer);
-                int moveGroupID = stoneGroupIDs.get(move);
-                List<Integer> moveGroup = groupsByID.get(moveGroupID);
-                if (!groupHasLiberties(moveGroup)) {
-                    captureGroup(moveGroupID, groupsByID, stoneGroupIDs);
+                if (isSuicideAllowed()) {
+                    groupsByID = getGroupsByPlayerAndID().get(currentPlayer);
+                    stoneGroupIDs = getStoneGroupIDsByPlayer().get(currentPlayer);
+                    int moveGroupID = stoneGroupIDs.get(move);
+                    List<Integer> moveGroup = groupsByID.get(moveGroupID);
+                    if (!groupHasLiberties(moveGroup)) {
+                        captureGroup(moveGroupID, groupsByID, stoneGroupIDs);
+                    }
                 }
             }
+            
         }
 
         updateHash(this);
@@ -358,14 +369,16 @@ public class GoState extends GridStateDecorator
         } catch (IllegalArgumentException e) {
             return false;
         }
+        
+        if (containsDoublePass()>-1 && move != passMove && getPosition(move) != 0) {
+            return true;
+        }
 
         if (getPosition(move) != 0) {
-//            System.out.println("hmm not empty "+getPosition(move));
             return false;
         }
         
         if (move == koMove) {
-//            System.out.println("hmm ko");
             return false;
         }
 
@@ -397,7 +410,16 @@ public class GoState extends GridStateDecorator
     }
 
     public int getCurrentPlayer() {
-        return super.getCurrentPlayer();
+        int cp = 0;
+        int dp = containsDoublePass();
+        if (dp == -1) {
+            cp = getMoves().length % 2 + 1;
+        } else if (dp < getMoves().length - 1) {
+            cp = 2 - dp % 2;
+        } else {
+            cp = dp % 2 + 1;
+        }
+        return cp;
     }
 
 
@@ -412,26 +434,110 @@ public class GoState extends GridStateDecorator
         }
     }
 
+    private boolean doublePass() {
+        int moves[] = getMoves();
+        return moves != null &&
+                moves.length > 1 &&
+                moves[moves.length - 1] == passMove &&
+                moves[moves.length - 2] == passMove;
+    }
+    private int containsDoublePass() {
+        boolean hasPass = false;
+        for (int i = 0; i < getMoves().length; i++) {
+            int move = getMoves()[i];
+            if (move == passMove) {
+                if (hasPass) {
+                    return i;
+                } else {
+                    hasPass = true;
+                }
+            } else {
+                hasPass = false;
+            }
+        }
+        return -1;
+    }
+    
+    
     public boolean isGameOver() {
         int numMoves = gridState.getNumMoves();
-        if (numMoves < 2) {
-            return false;
-        }
-        if (gridState.getMove(numMoves - 1) == passMove && gridState.getMove(numMoves - 2) == passMove) {
+        if (doublePass() && deadStones != null && deadStones.size() > 1 
+                && deadStones.get(deadStones.size() - 1) == passMove
+                && deadStones.get(deadStones.size() - 2) == passMove) {
             return true;
-        }
+        }         
         return false;
     }
     
     public int getWinner() {
-        return gridState.getWinner();
+//        List<Integer> deadStones = getDeadStones();
+        for (int dead: deadStones) {
+            if (dead < passMove) {
+                setPosition(dead, 0);
+            }
+        }
+        getTerritories();
+        List<Integer> p1Territory = goTerritoryByPlayer.get(1), p2Territory = goTerritoryByPlayer.get(2);
+        int p1Count = p1Territory.size();
+//        for (List<Integer> group: groupsByPlayerAndID.get(1).values()) {
+//            p1Count += group.size();
+//        }
+        int p2Count = p2Territory.size() + getMovesForValue(2).size();
+//        for (List<Integer> group: groupsByPlayerAndID.get(2).values()) {
+//            p2Count += group.size();
+//        }
+        for (int i = 0; i < getGridSizeX(); i++) {
+            for (int j = 0; j < getGridSizeY(); j++) {
+                if (getPosition(i,j) == 1) {
+                    p1Count += 1;
+                } else if (getPosition(i,j) == 1) {
+                    p2Count += 1;
+                }
+            }
+        }
+        System.out.println(" p1 count ============ " + p1Count);
+        System.out.println(" p2 count ============ " + p2Count);
+        if (p1Count > p2Count + 7) {
+            return 1;
+        } else {
+            return 2;
+        }
     }
+    
+//    private List<Integer> getDeadStones() {
+//        List<Integer> deadStones = new ArrayList<>();
+//        boolean hasPass = false, doublePass = false;
+//        for (int move: getMoves()) {
+//            if (doublePass) {
+//                deadStones.add(move);
+//                continue;
+//            }
+//            if (move == passMove) {
+//                if (hasPass) {
+//                    doublePass = true;
+//                } else {
+//                    hasPass = true;
+//                }
+//            } else {
+//                hasPass = false;
+//            }
+//        }
+//        return deadStones;
+//    }
 
     
 
     @Override
     public long calcHash(long cHash, int p, int move, int rot) {
-        cHash ^= rand[p-1][rotateMove(move, rot)];
+        if (p == 0) {
+            p = 3 - getCurrentPlayer(); // since we already moved
+        }
+        
+        if (move >= getGridSizeX()*getGridSizeY()) {
+            cHash ^= rand[p-1][move];
+        } else {
+            cHash ^= rand[p-1][rotateMove(move, rot)];
+        }
 
         int op = 3 - p;
 
@@ -468,7 +574,7 @@ public class GoState extends GridStateDecorator
     public Map<Integer, Map<Integer, Integer>> getStoneGroupIDsByPlayer() { return stoneGroupIDsByPlayer; }
     public void setStoneGroupIDsByPlayer(Map<Integer, Map<Integer, Integer>> stoneGroupIDsByPlayer) { this.stoneGroupIDsByPlayer = stoneGroupIDsByPlayer; }
 
-    protected void captureMove(int move, int capturePlayer) {
+    private void captureMove(int move, int capturePlayer) {
         setPosition(move, 0);
         capturedAt[capturePlayer][this.captures[capturePlayer]] =
                 gridState.getNumMoves() - 1;
@@ -491,28 +597,24 @@ public class GoState extends GridStateDecorator
         if (move%getGridSizeX() != 0) {
             int neighborStone = move - 1;
             if (getPosition(neighborStone) == 0) {
-//            if (getPosition(neighborStone) != 1 && getPosition(neighborStone) != 2) {
                 return neighborStone;
             }
         }
         if (move%getGridSizeX() != getGridSizeX() - 1) {
-            int neighborStone = move - 1;
+            int neighborStone = move + 1;
             if (getPosition(neighborStone) == 0) {
-//            if (getPosition(neighborStone) != 1 && getPosition(neighborStone) != 2) {
                 return neighborStone;
             }
         }
         if (move/getGridSizeX() != 0) {
-            int neighborStone = move - 1;
+            int neighborStone = move - getGridSizeX();
             if (getPosition(neighborStone) == 0) {
-//            if (getPosition(neighborStone) != 1 && getPosition(neighborStone) != 2) {
                 return neighborStone;
             }
         }
         if (move/getGridSizeX() != getGridSizeX() - 1) {
-            int neighborStone = move - 1;
+            int neighborStone = move + getGridSizeY();
             if (getPosition(neighborStone) == 0) {
-//            if (getPosition(neighborStone) != 1 && getPosition(neighborStone) != 2) {
                 return neighborStone;
             }
         }
@@ -546,7 +648,55 @@ public class GoState extends GridStateDecorator
         }
         return floodedTerritory;
     }
-    
+    private void resetGoBeforeFlood() {
+        for (int i = 0; i < getGridSizeX(); i++ ) {
+            for (int j = 0; j < getGridSizeY(); j++ ) {
+                int pos = getPosition(i,j);
+                if (pos != 1 && pos != 2) {
+                    setPosition(i,j,0);
+                }
+            }
+        }
+    }
+    private List<Integer> getMovesForValue(int val) {
+        List<Integer> results = new ArrayList<>();
+        for (int j = 0; j < getGridSizeY(); j++) {
+            for (int i = 0; i < getGridSizeX(); i++) {
+                if (getPosition(i,j) == val) {
+                    results.add(j*19+i);
+                }
+            }
+        }
+        return results;
+    }
+    private void getTerritories() {
+        goTerritoryByPlayer = new HashMap<>();
+        floodFill(1);
+        List<Integer> p1Territory = getMovesForValue(3);
+        resetGoBeforeFlood();
+        floodFill(2);
+        List<Integer> p2Territory = getMovesForValue(4);
+        resetGoBeforeFlood();
+        
+        int i = p1Territory.size()-1, j = p2Territory.size()-1;
+        
+        while (i>-1 && j>-1) {
+            int p1Stone = p1Territory.get(i), p2Stone = p2Territory.get(j);
+            if (p1Stone == p2Stone) {
+                p1Territory.remove(i);
+                p2Territory.remove(j);
+                --i;
+                --j;
+            } else if (p1Stone>p2Stone) {
+                --i;
+            } else {
+                --j;
+            }
+        }
+        
+        goTerritoryByPlayer.put(1, p1Territory);
+        goTerritoryByPlayer.put(2, p2Territory);
+    }
     
 
 }
