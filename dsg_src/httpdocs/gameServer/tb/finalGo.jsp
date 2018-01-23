@@ -750,8 +750,6 @@
                         }
                         setPosition(move, 0);
                     }
-                    console.log(p1DeadStones);
-                    console.log(p2DeadStones);
                 }
 
                 function accept() {

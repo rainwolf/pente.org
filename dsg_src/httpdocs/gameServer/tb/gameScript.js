@@ -32,8 +32,7 @@ var coordinateLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 
         
         var whiteCaptures = 0, blackCaptures = 0;
         var c6Move1 = -1, c6Move2 = -1, dPenteMove1 = -1, dPenteMove2 = -1, dPenteMove3 = -1, dPenteMove4 = -1;
-        // var boardCanvas = document.getElementById("board");
-        // var boardContext = boardCanvas.getContext("2d");
+
         var stoneCanvas = document.getElementById("stone");
         var stoneContext = stoneCanvas.getContext("2d");
         var interactionCanvas = document.getElementById("interactionLayer");
@@ -44,7 +43,8 @@ var coordinateLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 
         var suicideAllowed = false;
         var goTerritoryByPlayer = {1: [], 2: []};
         var territoryDrawn = false;
-        var passMove = gridSize*gridSize, handicapPass = passMove + 1;
+        var passMove = gridSize*gridSize;
+        var handicapPass = passMove + 1;
 
         var goDeadStonesByPlayer = {1: [], 2: []};
 
@@ -71,6 +71,100 @@ function drawGame() {
     }
 }
 
+function drawRedDot(i, j) {
+    if (i>=gridSize || j>=gridSize) {
+        return;
+    }
+    var centerX = indentWidth + stepX * (i);
+    var centerY = indentHeight + stepY * (j);
+    boardContext.beginPath();
+    boardContext.arc(centerX, centerY, stepX / 7, 0, Math.PI * 2, true);
+    boardContext.fillStyle = 'red';
+    boardContext.fill();
+    boardContext.closePath();
+}
+function drawStone(i, j, color) {
+    if (color < 1 || color > 2) {
+        return;
+    }
+    boardContext.save();
+    var centerX = indentWidth + stepX*(i);
+    var centerY = indentHeight + stepY*(j);
+    boardContext.beginPath();
+    boardContext.arc(centerX, centerY, radius , 0, Math.PI*2, true);
+    if (color == true) {
+        boardContext.fillStyle = 'black';
+    } else {
+        boardContext.fillStyle = 'white';
+    }
+    centerX -= radius/8;
+    centerY -= radius/8;
+    boardContext.shadowColor = 'DimGray';
+    boardContext.shadowBlur = 1;
+    boardContext.shadowOffsetX = radius/8;
+    boardContext.shadowOffsetY = radius/8;
+    if (color === 2) {
+        var gradient = boardContext.createRadialGradient(centerX, centerY, radius / 8, centerX, centerY, radius);
+        gradient.addColorStop(0, 'Grey');
+        gradient.addColorStop(1, 'Black');
+        boardContext.fillStyle = gradient;
+    } else {
+        var gradient = boardContext.createRadialGradient(centerX, centerY, 2*radius / 4, centerX, centerY, radius);
+        gradient.addColorStop(0, 'White');
+        gradient.addColorStop(1, 'Gainsboro');
+        boardContext.fillStyle = gradient;
+    }
+    boardContext.fill();
+    // boardContext.lineWidth = 5;
+    // boardContext.strokeStyle = '#003300';
+    // boardContext.stroke();
+    boardContext.closePath();
+    boardContext.restore();
+}
+
+function drawDeadStone(move, color) {
+    if (color < 1 || color > 2) {
+        return;
+    }
+    var i = move%gridSize, j = Math.floor(move/gridSize);
+    boardContext.save();
+    var centerX = indentWidth + stepX * (i);
+    var centerY = indentHeight + stepY * (j);
+    boardContext.globalAlpha = 0.5;
+    boardContext.beginPath();
+    if (color === 2) {
+        boardContext.fillStyle = 'black';
+    } else {
+        boardContext.fillStyle = 'white';
+    }
+    boardContext.arc(centerX, centerY, radius, 0, Math.PI * 2, true);
+    centerX -= radius / 8;
+    centerY -= radius / 8;
+    boardContext.shadowColor = 'DimGray';
+    boardContext.shadowBlur = 1;
+    boardContext.shadowOffsetX = radius / 8;
+    boardContext.shadowOffsetY = radius / 8;
+    if (color === 2) {
+        var gradient = boardContext.createRadialGradient(centerX, centerY, radius / 8, centerX, centerY, radius);
+        gradient.addColorStop(0, 'Grey');
+        gradient.addColorStop(1, 'Black');
+        boardContext.fillStyle = gradient;
+    } else {
+        gradient = boardContext.createRadialGradient(centerX, centerY, 2 * radius / 4, centerX, centerY, radius);
+        gradient.addColorStop(0, 'White');
+        gradient.addColorStop(1, 'Gainsboro');
+        boardContext.fillStyle = gradient;
+    }
+    boardContext.fill();
+    // boardContext.lineWidth = 5;
+    // boardContext.strokeStyle = '#003300';
+    // boardContext.stroke();
+    boardContext.closePath();
+    boardContext.restore();
+    boardContext.globalAlpha = 1;
+}
+
+
 function drawTerritorySquare(move, color) {
     if (color < 1 || color > 2) {
         return;
@@ -94,25 +188,38 @@ function drawTerritorySquare(move, color) {
 
 
 function replayGoGame(abstractBoard, movesList, until) {
+    passMove = gridSize*gridSize;
     resetAbstractBoard(abstractBoard);
     goGroupsByPlayerAndID = {1: {}, 2: {}}; 
     goStoneGroupIDsByPlayer = {1: {}, 2: {}};
+    goDeadStonesByPlayer = {1: [], 2: []};
+    var p1DeadStones = goDeadStonesByPlayer[1], p2DeadStones = goDeadStonesByPlayer[2];
     koMove = -1;
-    var hasPass = false;
+    var hasPass = false, doublePass = false;
     for (var i = 0; i < Math.min(movesList.length, until); i++) {
         var move = movesList[i];
         if (move === passMove) {
             if (hasPass) {
-                break;
+                doublePass = true;
             } else {
                 hasPass = true;
             }
         } else {
             hasPass = false;
         }
-        var color = 2 - (i%2);
-        abstractBoard[move % 19][Math.floor(move / 19)] = color;
-        addGoMove(move, 3-color);
+        if (move !== passMove && !doublePass) {
+            var color = 2 - (i%2);
+            abstractBoard[move % 19][Math.floor(move / 19)] = color;
+            addGoMove(move, 3-color);
+        } else if (doublePass && move !== passMove) {
+            var pos = getPosition(move);
+            if (pos === 1) {
+                p2DeadStones.push(move);
+            } else if (pos === 2) {
+                p1DeadStones.push(move);
+            }
+            setPosition(move, 0);
+        }
     }
 }
 

@@ -44,6 +44,11 @@ public class SimpleGridState implements GridState {
     public boolean allowNonBoardMoves() { return allowNonBoardMoves; }
     public void setAllowNonBoardMoves(boolean allowNonBoardMoves) { this.allowNonBoardMoves = allowNonBoardMoves; }
 
+    private boolean allowOccupiedMoves;
+    public boolean isAllowOccupiedMoves() { return allowOccupiedMoves; }
+    public void setAllowOccupiedMoves(boolean allowOccupiedMoves) { this.allowOccupiedMoves = allowOccupiedMoves; }
+
+    
     /** Create a new grid state with a specified size
      *  @param boardSize The size of the board
      */
@@ -96,7 +101,7 @@ public class SimpleGridState implements GridState {
             if (!allowNonBoardMoves) {
                 return false;
             }
-        } else if (getPosition(move) != 0) {
+        } else if (getPosition(move) != 0 && !allowOccupiedMoves) {
             return false;
         }
 
@@ -116,7 +121,7 @@ public class SimpleGridState implements GridState {
     public void undoMove() {
 
         if (moves.size() > 0) {
-            int move = ((Integer) moves.elementAt(moves.size() - 1)).intValue();
+            int move = (Integer) moves.elementAt(moves.size() - 1);
             moves.removeElementAt(moves.size() - 1);
             if (!outOfBounds(move)) {
                 setPosition(move, 0);
@@ -150,13 +155,16 @@ public class SimpleGridState implements GridState {
     public void addMove(int move) {
         if (!outOfBounds(move)) {
             int currentPlayer = getCurrentColor();
-            if (getPosition(move) != 0) {
+            int pos = getPosition(move);
+            if (pos != 0 && !allowOccupiedMoves) {
                 throw new IllegalArgumentException("position already filled " + move);
             }
-            moves.addElement(new Integer(move));
-            setPosition(move, currentPlayer);
+            moves.addElement(move);
+            if (pos == 0) {
+                setPosition(move, currentPlayer);
+            }
         } else if (allowNonBoardMoves) {
-            moves.addElement(new Integer(move));
+            moves.addElement(move);
         }
     }
 
@@ -361,6 +369,9 @@ public class SimpleGridState implements GridState {
     static final int rotf[] = new int[] { 0, 1,  0,  1,  0,  1,  0,  1 };
 
     public int rotateMove(int move, int rotationIndex) {
+        if (outOfBounds(move)) {
+            return move;
+        }
         int xoff = - (boardSizeX/2);
         int yoff = - (boardSizeY/2);
 

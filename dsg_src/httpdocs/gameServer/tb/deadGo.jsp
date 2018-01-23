@@ -719,47 +719,6 @@
                     boardContext.closePath();
                     boardContext.restore();
                 }
-                function drawDeadStone(move, color) {
-                    if (color < 1 || color > 2) {
-                        return;
-                    }
-                    var i = move%gridSize, j = Math.floor(move/gridSize);
-                    boardContext.save();
-                    var centerX = indentWidth + stepX * (i);
-                    var centerY = indentHeight + stepY * (j);
-                    boardContext.globalAlpha = 0.5;
-                    boardContext.beginPath();
-                    if (color === 2) {
-                        boardContext.fillStyle = 'black';
-                    } else {
-                        boardContext.fillStyle = 'white';
-                    }
-                    boardContext.arc(centerX, centerY, radius, 0, Math.PI * 2, true);
-                    centerX -= radius / 8;
-                    centerY -= radius / 8;
-                    boardContext.shadowColor = 'DimGray';
-                    boardContext.shadowBlur = 1;
-                    boardContext.shadowOffsetX = radius / 8;
-                    boardContext.shadowOffsetY = radius / 8;
-                    if (color === 2) {
-                        var gradient = boardContext.createRadialGradient(centerX, centerY, radius / 8, centerX, centerY, radius);
-                        gradient.addColorStop(0, 'Grey');
-                        gradient.addColorStop(1, 'Black');
-                        boardContext.fillStyle = gradient;
-                    } else {
-                        gradient = boardContext.createRadialGradient(centerX, centerY, 2 * radius / 4, centerX, centerY, radius);
-                        gradient.addColorStop(0, 'White');
-                        gradient.addColorStop(1, 'Gainsboro');
-                        boardContext.fillStyle = gradient;
-                    }
-                    boardContext.fill();
-                    // boardContext.lineWidth = 5;
-                    // boardContext.strokeStyle = '#003300';
-                    // boardContext.stroke();
-                    boardContext.closePath();
-                    boardContext.restore();
-                    boardContext.globalAlpha = 1;
-                }
 
                 function drawInteractionStone(i, j, color) {
                     trackingI = i;

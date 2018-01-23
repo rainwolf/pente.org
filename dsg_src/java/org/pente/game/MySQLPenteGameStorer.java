@@ -675,11 +675,18 @@ log4j.debug("select data complete");
                 gameData.setGame(GridStateFactory.getGameName(game));
 
 				log4j.debug("get moves");
-                moveStmt = con.prepareStatement("select next_move, move_num " +
-                                                "from " + MOVE_TABLE + " " +
-                                                "where gid = ? " +
-                                                "and next_move != 361 " +
-                                                "order by move_num");
+				if (game == GridStateFactory.GO) {
+                    moveStmt = con.prepareStatement("select next_move, move_num " +
+                            "from " + MOVE_TABLE + " " +
+                            "where gid = ? " +
+                            "order by move_num");
+                } else {
+                    moveStmt = con.prepareStatement("select next_move, move_num " +
+                            "from " + MOVE_TABLE + " " +
+                            "where gid = ? " +
+                            "and next_move != 361 " +
+                            "order by move_num");
+                }
                 moveStmt.setLong(1, gameID);
 
                 moveResult = moveStmt.executeQuery();
