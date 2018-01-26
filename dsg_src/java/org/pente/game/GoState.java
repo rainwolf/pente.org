@@ -161,6 +161,8 @@ public class GoState extends GridStateDecorator
             if (!groupHasLiberties(neighborStoneGroup)) {
                 if (koMove < 0 && neighborStoneGroup.size() == 1 && checkKo(move)) {
                     koMove = neighborStone;
+                } else {
+                    koMove = -1;
                 }
                 captures += neighborStoneGroup.size();
                 captureGroup(neighborStoneGroupID, groupsByID, stoneGroupIDs);
@@ -379,6 +381,7 @@ public class GoState extends GridStateDecorator
         }
         
         if (move == koMove) {
+            System.out.println("ko move "+koMove);
             return false;
         }
 
@@ -573,7 +576,7 @@ public class GoState extends GridStateDecorator
     public void setGroupsByPlayerAndID(Map<Integer, Map<Integer, List<Integer>>> groupsByPlayerAndID) { this.groupsByPlayerAndID = groupsByPlayerAndID; }
     public Map<Integer, Map<Integer, Integer>> getStoneGroupIDsByPlayer() { return stoneGroupIDsByPlayer; }
     public void setStoneGroupIDsByPlayer(Map<Integer, Map<Integer, Integer>> stoneGroupIDsByPlayer) { this.stoneGroupIDsByPlayer = stoneGroupIDsByPlayer; }
-
+    
     private void captureMove(int move, int capturePlayer) {
         setPosition(move, 0);
         capturedAt[capturePlayer][this.captures[capturePlayer]] =

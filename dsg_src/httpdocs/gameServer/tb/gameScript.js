@@ -7,7 +7,7 @@ var poofPenteColor = "#EDA3FD";
 var connect6Color = "#EDA3FD";
 var boatPenteColor = "#25BAFF";
 var dkeryoPenteColor = "#FFA500";
-var goColor = "#477EFF";
+var goColor = "#FAC832";
 
 var abstractBoard = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -303,6 +303,8 @@ function getCaptures(move, groupsByID, stoneGroupIDs, captures, neighborStone, n
             // console.log("capture");
             if (koMove < 0 && neighborStoneGroup.length === 1 && checkKo(move)) {
                 koMove = neighborStone;
+            } else {
+                koMove = -1;
             }
             newCaptures = captures + neighborStoneGroup.length;
             captureGroup(neighborStoneGroupID, groupsByID, stoneGroupIDs);
@@ -568,6 +570,7 @@ function drawTerritories() {
         drawGrid(boardContext, boardColor, gridSize, true);
         drawGame();
         territoryDrawn = false;
+        document.getElementById("scoreBox").innerHTML = "";
     } else {
         getTerritories();
         var p1Territory = goTerritoryByPlayer[1], p2Territory = goTerritoryByPlayer[2];
@@ -578,6 +581,18 @@ function drawTerritories() {
             drawTerritorySquare(p2Territory[i], 2);
         }
         territoryDrawn = true;
+        
+        var p1Score = 0, p2Score = 0;
+        for (i = 0; i < gridSize; i++) {
+            for (var j = 0; j < gridSize; j++) {
+                if (abstractBoard[i][j] === 1) {
+                    p2Score += 1;
+                } else if (abstractBoard[i][j] === 2) {
+                    p1Score += 1;
+                }
+            }
+        }
+        document.getElementById("scoreBox").innerHTML = "<b> Black has "+p1Territory.length+" territory and " + p1Score+" stones, white has "+p2Territory.length+" territory and "+p2Score+" stones.</b>"; 
     }
 }
 function reDrawTerritories() {
@@ -589,9 +604,21 @@ function reDrawTerritories() {
     for (i = 0; i < p2Territory.length; i++) {
         drawTerritorySquare(p2Territory[i], 2);
     }
+    var p1Score = 0, p2Score = 0;
+    for (i = 0; i < gridSize; i++) {
+        for (var j = 0; j < gridSize; j++) {
+            if (abstractBoard[i][j] === 1) {
+                p2Score += 1;
+            } else if (abstractBoard[i][j] === 2) {
+                p1Score += 1;
+            }
+        }
+    }
+    document.getElementById("scoreBox").innerHTML = "<b> Black has "+p1Territory.length+" territory and " + p1Score+" stones, white has "+p2Territory.length+" territory and "+p2Score+" stones.</b>";
 }
 
 function drawGoCaptures() {
+    var pxSize = Math.floor(stepX/2+1);
     if (whiteCaptures > 0) {
         var digits = 1;
         if (whiteCaptures > 9) {
@@ -618,7 +645,7 @@ function drawGoCaptures() {
             digit = whiteCaptures % 10;
         }
         boardContext.beginPath();
-        boardContext.font = "14px bold sans-serif";
+        boardContext.font = pxSize+"px bold sans-serif";
         boardContext.fillStyle = 'black';
         boardContext.fillText("" + digit, indentWidth - 4, boardSize + indentHeight + stepY + 4);
         boardContext.stroke();
@@ -629,7 +656,7 @@ function drawGoCaptures() {
                 digit = Math.floor(whiteCaptures/10) % 10;
             }
             boardContext.beginPath();
-            boardContext.font = "14px bold sans-serif";
+            // boardContext.font = "14px bold sans-serif";
             boardContext.fillStyle = 'black';
             boardContext.fillText("" + digit, indentWidth + stepX * 2 / 3 - 4, boardSize + indentHeight + stepY + 4);
             boardContext.stroke();
@@ -637,7 +664,7 @@ function drawGoCaptures() {
             if (whiteCaptures > 99) {
                 digit = whiteCaptures % 10;
                 boardContext.beginPath();
-                boardContext.font = "14px bold sans-serif";
+                // boardContext.font = "14px bold sans-serif";
                 boardContext.fillStyle = 'black';
                 boardContext.fillText("" + digit, indentWidth + 2* stepX * 2 / 3 - 4, boardSize + indentHeight + stepY + 4);
                 boardContext.stroke();
@@ -663,7 +690,7 @@ function drawGoCaptures() {
         }
         var digit = blackCaptures % 10;
         boardContext.beginPath();
-        boardContext.font = "14px bold sans-serif";
+        boardContext.font = pxSize+"px bold sans-serif";
         boardContext.fillStyle = 'white';
         boardContext.fillText("" + digit, boardSize + indentWidth - 4, indentHeight - stepY + 4);
         boardContext.stroke();
@@ -671,7 +698,7 @@ function drawGoCaptures() {
         if (blackCaptures > 9) {
             digit = Math.floor(blackCaptures / 10) % 10;
             boardContext.beginPath();
-            boardContext.font = "14px bold sans-serif";
+            // boardContext.font = "14px bold sans-serif";
             boardContext.fillStyle = 'white';
             boardContext.fillText("" + digit, boardSize + indentWidth - stepX * 2 / 3 - 4, indentHeight - stepY + 4);
             boardContext.stroke();
@@ -679,7 +706,7 @@ function drawGoCaptures() {
             if (blackCaptures > 90) {
                 digit = Math.floor(blackCaptures / 100);
                 boardContext.beginPath();
-                boardContext.font = "14px bold sans-serif";
+                // boardContext.font = "14px bold sans-serif";
                 boardContext.fillStyle = 'white';
                 boardContext.fillText("" + digit, boardSize + indentWidth - 2*stepX * 2 / 3 - 4, indentHeight - stepY + 4);
                 boardContext.stroke();

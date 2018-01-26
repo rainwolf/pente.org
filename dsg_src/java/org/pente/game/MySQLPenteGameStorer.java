@@ -675,7 +675,7 @@ log4j.debug("select data complete");
                 gameData.setGame(GridStateFactory.getGameName(game));
 
 				log4j.debug("get moves");
-				if (game == GridStateFactory.GO) {
+				if (game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO) {
                     moveStmt = con.prepareStatement("select next_move, move_num " +
                             "from " + MOVE_TABLE + " " +
                             "where gid = ? " +

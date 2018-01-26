@@ -553,7 +553,7 @@ Invitations sent<%
 %>
 Active Games - My Turn<%
         for (TBGame g : myTurn) {
-                String color =  myPID == g.getPlayer1Pid() ?
+                String color =  myPID == g.getPlayer1Pid() && g.getGame() != GridStateFactory.TB_GO?
                  "white (p1)" : "black (p2)";
                 boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
                 boolean tourney = false;
@@ -585,7 +585,7 @@ Active Games - My Turn<%
 %>
 Active Games - Opponents Turn<%
         for (TBGame g : oppTurn) {
-                String color =  myPID == g.getPlayer1Pid() ?
+                String color =  myPID == g.getPlayer1Pid() && g.getGame() != GridStateFactory.TB_GO?
                  "white (p1)" : "black (p2)";
                 boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
                 boolean tourney = false;

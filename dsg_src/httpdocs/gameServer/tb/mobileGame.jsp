@@ -251,6 +251,9 @@
 
 
                         <br>
+                        <div id="scoreBox" style="width:550px; height:auto; "></div>
+                        <br>
+                        <br>
                         <div id="messageBox" style="width:550px; height:auto; background: #cf9;"></div>
                         <br>
                         <% if (!"false".equals(myTurn)) { %>
@@ -746,9 +749,9 @@
                     var y = touch.clientY - offsetY;
 
                     if (i >= 0 && i < 19 && j >= 0 && j < 19) {
-                        if (abstractBoard[i][j] === 0 && active === true) {
+                        playedMove = j * 19 + i;
+                        if (abstractBoard[i][j] === 0 && active === true && playedMove !== koMove) {
                             var newMoves = moves.slice(0);
-                            playedMove = j * 19 + i;
                             if (game === 63) {
                                 if (c6Move1 > -1) {
                                     newMoves.push(c6Move1);
