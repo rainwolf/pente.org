@@ -104,6 +104,7 @@ if (!"".equals(messages)) {
 }
 
 %>messages=<%=messages%>
+current_player=<%=(tbGame.getCurrentPlayer()==player1.getPlayerID()?player1.getName():player2.getName())%>
 <%
 
 if (!"".equals(moveNums)) {
@@ -129,12 +130,13 @@ if (set.getCancelPid() != 0) {
 
 <% }
 %><%="state="+(tbGame.getState()==TBGame.STATE_ACTIVE?"active":"blub")%>
+<%=(tbGame.getGoState()==TBGame.GO_MARK_DEAD_STONES)?"Go=MARK_DEAD_STONES":""%>
+<%=(tbGame.getGoState()==TBGame.GO_EVALUATE_DEAD_STONES)?"Go=EVALUATE_DEAD_STONES":""%>
 <%
 
 if (!tbGame.isCompleted() && (tbGame.getGame() == GridStateFactory.TB_DPENTE || tbGame.getGame() == GridStateFactory.TB_DKERYO)) {
 %>dPenteState=<%=tbGame.getDPenteState()%>
 <%
-
 }
         
     } else {

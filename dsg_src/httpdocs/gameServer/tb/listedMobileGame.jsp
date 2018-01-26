@@ -193,6 +193,7 @@ window.google_analytics_uacct = "UA-20529582-2";
                     case 63: boardColor = connect6Color; break;
                     case 65: boardColor = boatPenteColor; break;
                     case 67: boardColor = dkeryoPenteColor; break;
+                    case 69: boardColor = goColor; break;
                     default: boardColor = penteColor; break;
                 }
                 boardCanvas.addEventListener("click", boardClick, false);
@@ -299,15 +300,15 @@ window.google_analytics_uacct = "UA-20529582-2";
                 boardContext.closePath();
               boardContext.restore();
             }
-            function drawRedDot(i, j) {
-                var centerX = indentWidth + stepX*(i);
-                var centerY = indentHeight + stepY*(j);
-                boardContext.beginPath();
-                boardContext.arc(centerX, centerY, stepX / 7 , 0, Math.PI*2, true); 
-                boardContext.fillStyle = 'red';
-                boardContext.fill();
-                boardContext.closePath();
-            }
+            // function drawRedDot(i, j) {
+            //     var centerX = indentWidth + stepX*(i);
+            //     var centerY = indentHeight + stepY*(j);
+            //     boardContext.beginPath();
+            //     boardContext.arc(centerX, centerY, stepX / 7 , 0, Math.PI*2, true); 
+            //     boardContext.fillStyle = 'red';
+            //     boardContext.fill();
+            //     boardContext.closePath();
+            // }
             function replayGame(abstractBoard, movesList, until) {
                 whiteCaptures = 0;
                 blackCaptures = 0;
@@ -321,6 +322,7 @@ window.google_analytics_uacct = "UA-20529582-2";
                     case 63: replayConnect6Game(abstractBoard, movesList, until); break;
                     case 65: replayPenteGame(abstractBoard, movesList, until); break;
                     case 67: replayKeryoPenteGame(abstractBoard, movesList, until); break;
+                    case 69: replayGoGame(abstractBoard, movesList, until); break;
                 }
             }
 

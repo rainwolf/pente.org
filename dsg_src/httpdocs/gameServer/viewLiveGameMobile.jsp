@@ -187,6 +187,9 @@ if (color == null) {
 <canvas id="board" width="600" height="600"></canvas>
 
     <br>
+    <div id="scoreBox" style="width:550px; height:auto; "></div>
+    <br>
+    <br>
     <div id="messageBox" style="width:550px; height:auto; background: #cf9;"></div>
     <br>
     <% if (gameId == GridStateFactory.TB_GO) { %>
