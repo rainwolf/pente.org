@@ -245,7 +245,7 @@
                             <a class="boldbuttons" href="javascript:accept();"
                                style="margin-right:5px;"><span>Accept</span></a>
                             <a class="boldbuttons" href="javascript:decline();"
-                               style="margin-right:5px;"><span>Decline</span></a>
+                               style="margin-right:5px;"><span>Reject</span></a>
                             <%
                             } else if ((game.getPlayer1Pid() == meData.getPlayerID() || game.getPlayer2Pid() == meData.getPlayerID()) && game.isUndoRequested()) {
                             %>

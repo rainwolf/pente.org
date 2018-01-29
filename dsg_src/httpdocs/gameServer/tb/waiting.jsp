@@ -308,7 +308,7 @@ below and do not specify a player to invite.<br>
         for (TBSet s : waitingSets) {
             if (s.getInvitationRestriction() == TBSet.BEGINNER) {
               beginnerList.add(s);
-            } else if (s.isTwoGameSet() && kothStorer.getEventId(s.getGame1().getGame()) == s.getGame1().getEventId()) {
+            } else if (kothStorer.getEventId(s.getGame1().getGame()) == s.getGame1().getEventId()) {
                kothList.add(s);
             } else {
                restList.add(s);

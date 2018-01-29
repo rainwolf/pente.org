@@ -171,7 +171,7 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
         continue;
     }
 
-    if (s.isTwoGameSet()) {
+//    if (s.isTwoGameSet()) {
         int game = s.getGame1().getGame();
         if (kothStorer.getEventId(game) == s.getGame1().getEventId()) {
             Hill hill = kothStorer.getHill(game);
@@ -196,7 +196,7 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
                     }
                 }
             }
-        }
+//        }
     }
 
 
@@ -437,7 +437,7 @@ Invitations received<%
                  if (s.isTwoGameSet()) {
                      color = "whiteblack";
                  }
-                 else if (myPID == s.getPlayer1Pid()) {
+                 else if ((myPID == s.getPlayer1Pid()) == (s.getGame1().getGame()!=GridStateFactory.TB_GO)) {
                      color = "white (p1)";
                  }
                  else {
@@ -474,10 +474,9 @@ Invitations sent<%
                  if (s.isTwoGameSet()) {
                      color = "whiteblack";
                  }
-                 else if (myPID == s.getPlayer1Pid()) {
+                 else if ((myPID == s.getPlayer1Pid()) == (s.getGame1().getGame()!=GridStateFactory.TB_GO)) {
                      color = "white (p1)";
-                 }
-                 else {
+                 } else {
                      color = "black (p2)";
                  }
                  long pid = s.getInviteePid();
@@ -553,7 +552,7 @@ Invitations sent<%
 %>
 Active Games - My Turn<%
         for (TBGame g : myTurn) {
-                String color =  myPID == g.getPlayer1Pid() && g.getGame() != GridStateFactory.TB_GO?
+                String color =  (myPID == g.getPlayer1Pid()) == (g.getGame()!=GridStateFactory.TB_GO)?
                  "white (p1)" : "black (p2)";
                 boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
                 boolean tourney = false;
@@ -585,7 +584,7 @@ Active Games - My Turn<%
 %>
 Active Games - Opponents Turn<%
         for (TBGame g : oppTurn) {
-                String color =  myPID == g.getPlayer1Pid() && g.getGame() != GridStateFactory.TB_GO?
+                String color =  (myPID == g.getPlayer1Pid()) == (g.getGame()!=GridStateFactory.TB_GO)?
                  "white (p1)" : "black (p2)";
                 boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
                 boolean tourney = false;
