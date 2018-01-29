@@ -130,7 +130,7 @@ function drawDeadStone(move, color) {
     boardContext.save();
     var centerX = indentWidth + stepX * (i);
     var centerY = indentHeight + stepY * (j);
-    boardContext.globalAlpha = 0.5;
+    boardContext.globalAlpha = 0.75;
     boardContext.beginPath();
     if (color === 2) {
         boardContext.fillStyle = 'black';
@@ -140,10 +140,10 @@ function drawDeadStone(move, color) {
     boardContext.arc(centerX, centerY, radius, 0, Math.PI * 2, true);
     centerX -= radius / 8;
     centerY -= radius / 8;
-    boardContext.shadowColor = 'DimGray';
-    boardContext.shadowBlur = 1;
-    boardContext.shadowOffsetX = radius / 8;
-    boardContext.shadowOffsetY = radius / 8;
+    // boardContext.shadowColor = 'DimGray';
+    // boardContext.shadowBlur = 1;
+    // boardContext.shadowOffsetX = radius / 8;
+    // boardContext.shadowOffsetY = radius / 8;
     if (color === 2) {
         var gradient = boardContext.createRadialGradient(centerX, centerY, radius / 8, centerX, centerY, radius);
         gradient.addColorStop(0, 'Grey');
@@ -592,7 +592,8 @@ function drawTerritories() {
                 }
             }
         }
-        document.getElementById("scoreBox").innerHTML = "<b> Black has "+p1Territory.length+" territory and " + p1Score+" stones, white has "+p2Territory.length+" territory and "+p2Score+" stones.</b>"; 
+        document.getElementById("scoreBox").innerHTML = "<b> Black has "+p1Territory.length+" territory and " + p1Score+" stones, total is " +(p1Territory.length+p1Score) +
+            "<br> white has "+p2Territory.length+" territory and "+p2Score+" stones, total is " +(p2Territory.length+p2Score+7) +".5</b>"; 
     }
 }
 function reDrawTerritories() {
@@ -614,7 +615,8 @@ function reDrawTerritories() {
             }
         }
     }
-    document.getElementById("scoreBox").innerHTML = "<b> Black has "+p1Territory.length+" territory and " + p1Score+" stones, white has "+p2Territory.length+" territory and "+p2Score+" stones.</b>";
+    document.getElementById("scoreBox").innerHTML = "<b> Black has "+p1Territory.length+" territory and " + p1Score+" stones, total is " +(p1Territory.length+p1Score) +
+        "<br> white has "+p2Territory.length+" territory and "+p2Score+" stones, total is " +(p2Territory.length+p2Score+7) +".5</b>";
 }
 
 function drawGoCaptures() {
@@ -762,7 +764,7 @@ function drawGoCaptures() {
                 // boardContext.strokeStyle = "#FFFFFF";
                 boardContext.stroke();
                 boardContext.closePath();
-                if (game < 67) {
+                if (game < 69) {
                     boardContext.beginPath();
                     boardContext.arc(indentWidth + 9*stepX, indentHeight + 9*stepY, stepX / 5, 0, Math.PI*2, true);
                     boardContext.stroke();

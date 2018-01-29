@@ -267,6 +267,11 @@
 
 
                         <div class="buttonwrapper" style="margin-top:5px; width:500px;">
+                            <% if ("false".equals(myTurn) && game.getGame() == GridStateFactory.TB_GO) { %>
+                            <a class="boldbuttons" href="javascript:drawTerritories();"
+                               style="margin-right:5px;"><span>Draw territory</span></a>
+
+                            <%  }%>
                             <% if (!"false".equals(myTurn) && (game.getDPenteState() != 2)) { %>
                             <a class="boldbuttons" href="javascript:submit();"
                                style="margin-right:5px;"><span>Submit</span></a>
@@ -287,8 +292,7 @@
                             %>
                             <a class="boldbuttons" href="javascript:requestUndo();"
                                style="margin-right:5px;"><span>Request undo</span></a>
-                            <%
-                                }
+                            <%  }
                             %>
                             <% if (game.getDPenteState() == 2 && !"false".equals(myTurn)) { %>
                             <a class="boldbuttons" href="javascript:dPentePlayAsP1();"

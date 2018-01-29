@@ -306,8 +306,6 @@ if (hill != null && iAmMember && game > 50 && (dsgPlayerData.hasPlayerDonated() 
 
 <% 
 	} else { 
-%>
-<% 
 	}
 %>
 
@@ -315,7 +313,27 @@ if (hill != null && iAmMember && game > 50 && (dsgPlayerData.hasPlayerDonated() 
 
 <%
 
-}
+} else {
+%>
+    
+    <ul>
+        <li>On Januari 29th, 2018, dmitrikng won all 27 KotH crown. </li>
+    </ul>
+    
+    <br>
+    <br>
+    
+    <table border="1" cellpadding="2" cellspacing="0" bordercolor="black">
+        <tr>
+            <td><a href="../profile?viewName=dmitriking">dmitriking</a> <img src="/gameServer/images/kothcrown27.png"></td>
+        </tr>
+        <tr>
+            <td><img src="/gameServer/avatar?name=dmitriking" style="width:125px;height:125px;"></td>
+        </tr>
+    </table>
+    <%
+
+    }
 %>
 
 </center>      

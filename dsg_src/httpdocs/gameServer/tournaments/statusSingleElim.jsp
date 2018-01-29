@@ -3,7 +3,7 @@
 
 <br>
 <a href="javascript:submitToDatabase('<%= gameName %>', 'Pente.org',
-   '<%= tourney.getName() %>', '<%= round.getRound() %>', '1');">View Games in Games History</a></b>
+'<%= tourney.getName().replace("\'","\\\'") %>', '<%= round.getRound() %>', '1');">View Games in Games History</a></b>
 <br>
 <br>
 <table width="100%" border="1" cellspacing="0" cellpadding="1" bordercolor="black">
