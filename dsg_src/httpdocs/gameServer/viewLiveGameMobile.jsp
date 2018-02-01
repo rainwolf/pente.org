@@ -227,12 +227,16 @@ if (color == null) {
 </tr>
 <tr>
 <td width="10%"></td>
-   <td width="45%" align="center">
- <b>   <%=game.getPlayer1Data().getUserIDName()%> </b>
-   </td>
-   <td align="center" bgcolor="#000000">
- <b><font color="white">    <%=game.getPlayer2Data().getUserIDName()%> </font>
-</b>
+    <td width="45%" align="center" bgcolor="#<%=(gameId!=GridStateFactory.TB_GO?"FFFFFF":"000000")%>">
+        <b><font color="<%=(gameId!=GridStateFactory.TB_GO?"black":"white")%>"><%=game.getPlayer1Data().getUserIDName()%>
+        </font>
+        </b>
+    </td>
+    <td align="center" bgcolor="#<%=(gameId==GridStateFactory.TB_GO?"FFFFFF":"000000")%>">
+        <b><font color="<%=(gameId==GridStateFactory.TB_GO?"black":"white")%>"><%=game.getPlayer2Data().getUserIDName()%>
+        </font>
+        </b>
+
    </td>
 </tr>
 </table>

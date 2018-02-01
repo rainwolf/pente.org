@@ -100,18 +100,20 @@ String cancelRequested="false";
         <br>
              <table align="center" width="100%" border=1>
             <tr>
-               <td align="center" width="50%">
-             <b>   <%=p1.getName()%> </b>
+               <td align="center" width="50%" bgcolor="#<%=(game.getGame()!=GridStateFactory.TB_GO?"FFFFFF":"000000")%>">
+                    <b><font color="<%=(game.getGame()!=GridStateFactory.TB_GO?"black":"white")%>"><%=p1.getName()%>
+                    </b>
              <br>
                <%
                      DSGPlayerData d = p1;
                      DSGPlayerGameData dsgPlayerGameData = p1GameData;
                  %>
                  <% if (dsgPlayerGameData != null) { %><%@ include file="../ratings.jspf" %><% } %>
+                   </font>
                </td>
-               <td align="center" bgcolor="#000000">
-             <font color="white"> <b>  <%=p2.getName()%>
-            </b>
+                <td align="center" bgcolor="#<%=(game.getGame()==GridStateFactory.TB_GO?"FFFFFF":"000000")%>">
+                    <b><font color="<%=(game.getGame()==GridStateFactory.TB_GO?"black":"white")%>"><%=p2.getName()%>
+                    </b>
             <br>
                <%
                      d = p2;

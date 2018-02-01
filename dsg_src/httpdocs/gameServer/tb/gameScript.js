@@ -49,6 +49,7 @@ var coordinateLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 
         var goDeadStonesByPlayer = {1: [], 2: []};
 
 function drawGame() {
+    gridSize = 19;
     for (var i = 0; i < gridSize; i++) {
         for (var j = 0; j < gridSize; j++) {
             if (abstractBoard[i][j] > 0) {
@@ -92,7 +93,7 @@ function drawStone(i, j, color) {
     var centerY = indentHeight + stepY*(j);
     boardContext.beginPath();
     boardContext.arc(centerX, centerY, radius , 0, Math.PI*2, true);
-    if (color == true) {
+    if (color === 2) {
         boardContext.fillStyle = 'black';
     } else {
         boardContext.fillStyle = 'white';
@@ -109,7 +110,7 @@ function drawStone(i, j, color) {
         gradient.addColorStop(1, 'Black');
         boardContext.fillStyle = gradient;
     } else {
-        var gradient = boardContext.createRadialGradient(centerX, centerY, 2*radius / 4, centerX, centerY, radius);
+        gradient = boardContext.createRadialGradient(centerX, centerY, 2*radius / 4, centerX, centerY, radius);
         gradient.addColorStop(0, 'White');
         gradient.addColorStop(1, 'Gainsboro');
         boardContext.fillStyle = gradient;

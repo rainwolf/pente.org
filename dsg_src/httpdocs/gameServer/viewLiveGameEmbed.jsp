@@ -313,7 +313,9 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
 </table>
 
 
-
+ <script type="text/javascript">
+     var gridSize = 19;
+ </script>
 
     <script src="/gameServer/tb/gameScript.js"></script>
 
@@ -329,7 +331,6 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
         var boardCanvas = document.getElementById("board");
         var boardContext = boardCanvas.getContext("2d");
 
-        var gridSize = 19;
         var boardSize = 420;
         var indentWidth = (boardCanvas.width - boardSize) / 2;
         var indentHeight = (boardCanvas.height - boardSize) / 2;
@@ -348,7 +349,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                cell.style.background='Yellow';
                   resetAbstractBoard(abstractBoard);
                   drawUntilMove = newMove + 1;
-                  if (game == 63 && drawUntilMove != 1) {
+                  if (game === 63 && drawUntilMove !== 1) {
                       drawUntilMove += 1;
                   }
                   replayGame(abstractBoard, moves, drawUntilMove);
@@ -358,18 +359,18 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                   drawGame();
                   lastMove = moves[drawUntilMove - 1];
                   drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-                  if (game == 63 && moves.length > 1) {
+                  if (game === 63 && moves.length > 1) {
                       lastMove = moves[drawUntilMove - 2];
                       drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
                   }
-               if(currentMove!=-1) {
+               if(currentMove!==-1) {
                    var cell=document.getElementById(''+currentMove);
                    cell.style.background='<%=color%>';
                }
                currentMove=newMove;
             }
             function boardClick(e) {
-               if(currentMove != -1) {
+               if(currentMove !== -1) {
                    var cell=document.getElementById(''+currentMove);
                    cell.style.background='<%=color%>';
                }
@@ -377,7 +378,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                 var rect = boardCanvas.getBoundingClientRect();
                 var offsetX = rect.left;
                 var offsetY = rect.top;
-                if ((drawUntilMove != moves.length)) {
+                if ((drawUntilMove !== moves.length)) {
                     resetAbstractBoard(abstractBoard);
                     drawUntilMove = moves.length;
                     replayGame(abstractBoard, moves, drawUntilMove);
@@ -387,13 +388,13 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                     drawGame();
                     lastMove = moves[moves.length - 1];
                     drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-                    if (game == 63 && moves.length > 1) {
+                    if (game === 63 && moves.length > 1) {
                         lastMove = moves[moves.length - 2];
                         drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
                     }
                     document.getElementById("movesTable").scrollTop = document.getElementById("movesTable").scrollHeight;
                 }
-                if (game == 63 && moves.length > 1) {
+                if (game === 63 && moves.length > 1) {
                     selectMove(drawUntilMove - 2);
                 } else {
                   selectMove(drawUntilMove - 1);
@@ -414,6 +415,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                     case 63: replayConnect6Game(abstractBoard, movesList, until); break;
                     case 65: replayPenteGame(abstractBoard, movesList, until); break;
                     case 67: replayKeryoPenteGame(abstractBoard, movesList, until); break;
+                    case 69: replayGoGame(abstractBoard, movesList, until); break;
                 }
             }
             function drawCaptures () {
@@ -475,44 +477,6 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                     }
                 }
             }
-            function drawStone(i, j, color) {
-                if (color < 1 || color > 2) {
-                    return;
-                }
-              boardContext.save();
-                var centerX = indentWidth + stepX*(i);
-                var centerY = indentHeight + stepY*(j);
-                boardContext.beginPath();
-                boardContext.arc(centerX, centerY, radius , 0, Math.PI*2, true); 
-                if (color == true) {
-                    boardContext.fillStyle = 'black';
-                } else {
-                    boardContext.fillStyle = 'white';
-                }
-                centerX -= radius/8;
-                centerY -= radius/8;
-                boardContext.shadowColor = 'DimGray';
-                boardContext.shadowBlur = 1;
-                boardContext.shadowOffsetX = radius/8;
-                boardContext.shadowOffsetY = radius/8;
-                if (color === 2) {
-                    var gradient = boardContext.createRadialGradient(centerX, centerY, radius / 8, centerX, centerY, radius);
-                    gradient.addColorStop(0, 'Grey');
-                    gradient.addColorStop(1, 'Black');
-                    boardContext.fillStyle = gradient; 
-                } else {
-                    var gradient = boardContext.createRadialGradient(centerX, centerY, 2*radius / 4, centerX, centerY, radius);
-                    gradient.addColorStop(0, 'White');
-                    gradient.addColorStop(1, 'Gainsboro');
-                    boardContext.fillStyle = gradient; 
-                }
-                boardContext.fill();
-                // boardContext.lineWidth = 5;
-                // boardContext.strokeStyle = '#003300';
-                // boardContext.stroke();
-                boardContext.closePath();
-              boardContext.restore();
-            }
             function drawRedDot(i, j) {
                 var centerX = indentWidth + stepX*(i);
                 var centerY = indentHeight + stepY*(j);
@@ -527,14 +491,14 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
             }
             function goBack() {
                 if (drawUntilMove > 1) {
-                    if (game == 63 && drawUntilMove > 1) {
-                        if ((drawUntilMove % 2) == 1) {
+                    if (game === 63 && drawUntilMove > 1) {
+                        if ((drawUntilMove % 2) === 1) {
                             drawUntilMove = drawUntilMove - 1;
                         }
                         c6Move1 = -1;
                         c6Move2 = -1;
                     }
-                    if (game == 57 && moves.length == 1) {
+                    if (game === 57 && moves.length === 1) {
                         drawUntilMove = 2;
                         dPenteMove3 = -1;
                         dPenteMove2 = -1;
@@ -547,7 +511,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                     drawGame();
                     lastMove = moves[drawUntilMove - 1];
                     drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-                    if (game == 63 && drawUntilMove > 1) {
+                    if (game === 63 && drawUntilMove > 1) {
                         lastMove = moves[drawUntilMove - 2];
                         drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
                         selectMove(drawUntilMove - 2);
@@ -559,7 +523,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
             function goForward() {
                 if (drawUntilMove < moves.length) {
                     drawUntilMove = drawUntilMove + 1;
-                    if (game == 63 && drawUntilMove > 1) {
+                    if (game === 63 && drawUntilMove > 1) {
                         drawUntilMove = drawUntilMove + 1;
                     }
                     boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
@@ -568,7 +532,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                     drawGame();
                     lastMove = moves[drawUntilMove - 1];
                     drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-                    if (game == 63 && drawUntilMove > 1) {
+                    if (game === 63 && drawUntilMove > 1) {
                         lastMove = moves[drawUntilMove - 2];
                         drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
                         selectMove(drawUntilMove - 2);
@@ -589,6 +553,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                     case 63: boardColor = connect6Color; break;
                     case 65: boardColor = boatPenteColor; break;
                     case 67: boardColor = dkeryoPenteColor; break;
+                    case 69: boardColor = goColor; break;
                     default: boardColor = penteColor; break;
                 }
                 boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
@@ -605,7 +570,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
         drawGame();
         lastMove = moves[drawUntilMove - 1];
         drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-        if (game == 63 && moves.length > 1) {
+        if (game === 63 && moves.length > 1) {
             lastMove = moves[drawUntilMove - 2];
             drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
             selectMove(drawUntilMove - 2);

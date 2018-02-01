@@ -190,6 +190,8 @@ for( int i = 0; i < gameMoves.size(); i++ ) {
         var p2Name = "<%=blackName%>";
         var rated = false;
 
+        var gridSize = 19; 
+        
         var boardSize = 420;
         var boardCanvas = document.getElementById("board");
         var boardContext = boardCanvas.getContext("2d");
@@ -217,8 +219,8 @@ for( int i = 0; i < gameMoves.size(); i++ ) {
                   }
                   replayGame(abstractBoard, moves, drawUntilMove);
                   boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
-                  boardContext.fill();     
-                  drawGrid(boardContext, boardColor);
+                  boardContext.fill();
+                  drawGrid(boardContext, boardColor, gridSize, true);
                   drawGame();
                   lastMove = moves[drawUntilMove - 1];
                   drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
@@ -246,8 +248,8 @@ for( int i = 0; i < gameMoves.size(); i++ ) {
                     drawUntilMove = moves.length;
                     replayGame(abstractBoard, moves, drawUntilMove);
                     boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
-                    boardContext.fill();     
-                    drawGrid(boardContext, boardColor);
+                    boardContext.fill();
+                    drawGrid(boardContext, boardColor, gridSize, true);
                     drawGame();
                     lastMove = moves[moves.length - 1];
                     drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
@@ -266,59 +268,59 @@ for( int i = 0; i < gameMoves.size(); i++ ) {
 
 
 
-            function drawGrid(boardContext, boardColor) {
-              boardContext.save();
-                boardContext.beginPath();
-                boardContext.rect(indentWidth / 2, indentHeight / 2, boardSize + indentWidth, boardSize + indentHeight);
-                boardContext.lineWidth=0.5;
-                boardContext.fillStyle=boardColor;
-                boardContext.shadowColor = 'Black';
-                boardContext.shadowBlur = 5;
-                boardContext.shadowOffsetX = radius/4;
-                boardContext.shadowOffsetY = radius/4;
-                boardContext.fill();     
-                // boardContext.closePath();
-                boardContext.restore();
-
-                boardContext.font = "10px sans-serif";
-                boardContext.fillStyle='black';
-                boardContext.lineWidth=0.5;
-                for (var i = 0; i < 19; i++) {
-                    boardContext.moveTo(indentWidth + i*stepX, indentHeight);
-                    boardContext.lineTo(indentWidth + i*stepX, indentHeight + boardSize);
-                    boardContext.fillText(coordinateLetters[i], indentWidth + i*stepX - 2, indentHeight - 5);
-                    boardContext.fillText(coordinateLetters[i], indentWidth + i*stepX - 2, boardSize + indentHeight + 12);
-                }
-                for (var i = 0; i < 19; i++) {
-                    boardContext.moveTo(indentWidth, indentHeight + i*stepY);
-                    boardContext.lineTo(indentWidth + boardSize, indentHeight + i*stepY);
-                    boardContext.fillText("" + (19 - i), indentWidth - 15, indentHeight + i*stepX + 3);
-                    boardContext.fillText("" + (19 - i), boardSize + indentWidth + 6, indentHeight + i*stepX + 3);
-                }
-                // boardContext.strokeStyle = "#FFFFFF";
-                boardContext.stroke();
-                boardContext.closePath();
-                boardContext.beginPath();
-                boardContext.arc(indentWidth + 9*stepX, indentHeight + 9*stepY, stepX / 5, 0, Math.PI*2, true); 
-                boardContext.stroke();
-                boardContext.closePath();
-                boardContext.beginPath();
-                boardContext.arc(indentWidth + 6*stepX, indentHeight + 6*stepY, stepX / 5, 0, Math.PI*2, true); 
-                boardContext.stroke();
-                boardContext.closePath();
-                boardContext.beginPath();
-                boardContext.arc(indentWidth + 6*stepX, indentHeight + 12*stepY, stepX / 5, 0, Math.PI*2, true); 
-                boardContext.stroke();
-                boardContext.closePath();
-                boardContext.beginPath();
-                boardContext.arc(indentWidth + 12*stepX, indentHeight + 6*stepY, stepX / 5, 0, Math.PI*2, true); 
-                boardContext.stroke();
-                boardContext.closePath();
-                boardContext.beginPath();
-                boardContext.arc(indentWidth + 12*stepX, indentHeight + 12*stepY, stepX / 5, 0, Math.PI*2, true); 
-                boardContext.stroke();
-                boardContext.closePath();
-            }
+            // function drawGrid(boardContext, boardColor) {
+            //   boardContext.save();
+            //     boardContext.beginPath();
+            //     boardContext.rect(indentWidth / 2, indentHeight / 2, boardSize + indentWidth, boardSize + indentHeight);
+            //     boardContext.lineWidth=0.5;
+            //     boardContext.fillStyle=boardColor;
+            //     boardContext.shadowColor = 'Black';
+            //     boardContext.shadowBlur = 5;
+            //     boardContext.shadowOffsetX = radius/4;
+            //     boardContext.shadowOffsetY = radius/4;
+            //     boardContext.fill();     
+            //     // boardContext.closePath();
+            //     boardContext.restore();
+            //
+            //     boardContext.font = "10px sans-serif";
+            //     boardContext.fillStyle='black';
+            //     boardContext.lineWidth=0.5;
+            //     for (var i = 0; i < 19; i++) {
+            //         boardContext.moveTo(indentWidth + i*stepX, indentHeight);
+            //         boardContext.lineTo(indentWidth + i*stepX, indentHeight + boardSize);
+            //         boardContext.fillText(coordinateLetters[i], indentWidth + i*stepX - 2, indentHeight - 5);
+            //         boardContext.fillText(coordinateLetters[i], indentWidth + i*stepX - 2, boardSize + indentHeight + 12);
+            //     }
+            //     for (var i = 0; i < 19; i++) {
+            //         boardContext.moveTo(indentWidth, indentHeight + i*stepY);
+            //         boardContext.lineTo(indentWidth + boardSize, indentHeight + i*stepY);
+            //         boardContext.fillText("" + (19 - i), indentWidth - 15, indentHeight + i*stepX + 3);
+            //         boardContext.fillText("" + (19 - i), boardSize + indentWidth + 6, indentHeight + i*stepX + 3);
+            //     }
+            //     // boardContext.strokeStyle = "#FFFFFF";
+            //     boardContext.stroke();
+            //     boardContext.closePath();
+            //     boardContext.beginPath();
+            //     boardContext.arc(indentWidth + 9*stepX, indentHeight + 9*stepY, stepX / 5, 0, Math.PI*2, true); 
+            //     boardContext.stroke();
+            //     boardContext.closePath();
+            //     boardContext.beginPath();
+            //     boardContext.arc(indentWidth + 6*stepX, indentHeight + 6*stepY, stepX / 5, 0, Math.PI*2, true); 
+            //     boardContext.stroke();
+            //     boardContext.closePath();
+            //     boardContext.beginPath();
+            //     boardContext.arc(indentWidth + 6*stepX, indentHeight + 12*stepY, stepX / 5, 0, Math.PI*2, true); 
+            //     boardContext.stroke();
+            //     boardContext.closePath();
+            //     boardContext.beginPath();
+            //     boardContext.arc(indentWidth + 12*stepX, indentHeight + 6*stepY, stepX / 5, 0, Math.PI*2, true); 
+            //     boardContext.stroke();
+            //     boardContext.closePath();
+            //     boardContext.beginPath();
+            //     boardContext.arc(indentWidth + 12*stepX, indentHeight + 12*stepY, stepX / 5, 0, Math.PI*2, true); 
+            //     boardContext.stroke();
+            //     boardContext.closePath();
+            // }
             function replayGame(abstractBoard, movesList, until) {
                 whiteCaptures = 0;
                 blackCaptures = 0;
@@ -332,6 +334,7 @@ for( int i = 0; i < gameMoves.size(); i++ ) {
                     case 63: replayConnect6Game(abstractBoard, movesList, until); break;
                     case 65: replayPenteGame(abstractBoard, movesList, until); break;
                     case 67: replayKeryoPenteGame(abstractBoard, movesList, until); break;
+                    case 69: replayGoGame(abstractBoard, movesList, until); break;
                 }
             }
             function drawCaptures () {
@@ -393,41 +396,41 @@ for( int i = 0; i < gameMoves.size(); i++ ) {
                     }
                 }
             }
-            function drawStone(i, j, color) {
-              boardContext.save();
-                var centerX = indentWidth + stepX*(i);
-                var centerY = indentHeight + stepY*(j);
-                boardContext.beginPath();
-                boardContext.arc(centerX, centerY, radius , 0, Math.PI*2, true); 
-                if (color == true) {
-                    boardContext.fillStyle = 'black';
-                } else {
-                    boardContext.fillStyle = 'white';
-                }
-                centerX -= radius/8;
-                centerY -= radius/8;
-                boardContext.shadowColor = 'DimGray';
-                boardContext.shadowBlur = 1;
-                boardContext.shadowOffsetX = radius/8;
-                boardContext.shadowOffsetY = radius/8;
-                if (color) {
-                    var gradient = boardContext.createRadialGradient(centerX, centerY, radius / 8, centerX, centerY, radius);
-                    gradient.addColorStop(0, 'Grey');
-                    gradient.addColorStop(1, 'Black');
-                    boardContext.fillStyle = gradient; 
-                } else {
-                    var gradient = boardContext.createRadialGradient(centerX, centerY, 2*radius / 4, centerX, centerY, radius);
-                    gradient.addColorStop(0, 'White');
-                    gradient.addColorStop(1, 'Gainsboro');
-                    boardContext.fillStyle = gradient; 
-                }
-                boardContext.fill();
-                // boardContext.lineWidth = 5;
-                // boardContext.strokeStyle = '#003300';
-                // boardContext.stroke();
-                boardContext.closePath();
-              boardContext.restore();
-            }
+            // function drawStone(i, j, color) {
+            //   boardContext.save();
+            //     var centerX = indentWidth + stepX*(i);
+            //     var centerY = indentHeight + stepY*(j);
+            //     boardContext.beginPath();
+            //     boardContext.arc(centerX, centerY, radius , 0, Math.PI*2, true); 
+            //     if (color == true) {
+            //         boardContext.fillStyle = 'black';
+            //     } else {
+            //         boardContext.fillStyle = 'white';
+            //     }
+            //     centerX -= radius/8;
+            //     centerY -= radius/8;
+            //     boardContext.shadowColor = 'DimGray';
+            //     boardContext.shadowBlur = 1;
+            //     boardContext.shadowOffsetX = radius/8;
+            //     boardContext.shadowOffsetY = radius/8;
+            //     if (color) {
+            //         var gradient = boardContext.createRadialGradient(centerX, centerY, radius / 8, centerX, centerY, radius);
+            //         gradient.addColorStop(0, 'Grey');
+            //         gradient.addColorStop(1, 'Black');
+            //         boardContext.fillStyle = gradient; 
+            //     } else {
+            //         var gradient = boardContext.createRadialGradient(centerX, centerY, 2*radius / 4, centerX, centerY, radius);
+            //         gradient.addColorStop(0, 'White');
+            //         gradient.addColorStop(1, 'Gainsboro');
+            //         boardContext.fillStyle = gradient; 
+            //     }
+            //     boardContext.fill();
+            //     // boardContext.lineWidth = 5;
+            //     // boardContext.strokeStyle = '#003300';
+            //     // boardContext.stroke();
+            //     boardContext.closePath();
+            //   boardContext.restore();
+            // }
             function drawRedDot(i, j) {
                 var centerX = indentWidth + stepX*(i);
                 var centerY = indentHeight + stepY*(j);
@@ -457,7 +460,7 @@ for( int i = 0; i < gameMoves.size(); i++ ) {
                     }
                     drawUntilMove = drawUntilMove - 1;
                     boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
-                    drawGrid(boardContext, boardColor);
+                    drawGrid(boardContext, boardColor, gridSize, true);
                     replayGame(abstractBoard, moves, drawUntilMove);
                     drawGame();
                     lastMove = moves[drawUntilMove - 1];
@@ -478,7 +481,7 @@ for( int i = 0; i < gameMoves.size(); i++ ) {
                         drawUntilMove = drawUntilMove + 1;
                     }
                     boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
-                    drawGrid(boardContext, boardColor);
+                    drawGrid(boardContext, boardColor, gridSize, true);
                     replayGame(abstractBoard, moves, drawUntilMove);
                     drawGame();
                     lastMove = moves[drawUntilMove - 1];
@@ -504,10 +507,11 @@ for( int i = 0; i < gameMoves.size(); i++ ) {
                     case 63: boardColor = connect6Color; break;
                     case 65: boardColor = boatPenteColor; break;
                     case 67: boardColor = dkeryoPenteColor; break;
+                    case 69: boardColor = goColor; break;
                     default: boardColor = penteColor; break;
                 }
                 boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
-                drawGrid(boardContext, boardColor);
+                drawGrid(boardContext, boardColor, gridSize, true);
                 boardCanvas.addEventListener("click", boardClick, false);
                 drawUntilMove = moves.length;
                 playedMove = -1;
@@ -520,7 +524,7 @@ for( int i = 0; i < gameMoves.size(); i++ ) {
         drawGame();
         lastMove = moves[drawUntilMove - 1];
         drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-        if (game == 63 && moves.length > 1) {
+        if (game === 63 && moves.length > 1) {
             lastMove = moves[drawUntilMove - 2];
             drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
             selectMove(drawUntilMove - 2);
