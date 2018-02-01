@@ -349,12 +349,13 @@
                                         </tr>
                                         <tr>
                                             <td width="10%"></td>
-                                            <td width="45%" align="center">
-                                                <b><%=p1.getName()%>
+                                            <td width="45%" align="center" bgcolor="#<%=(game.getGame()!=GridStateFactory.TB_GO?"FFFFFF":"000000")%>">
+                                                <b><font color="<%=(game.getGame()!=GridStateFactory.TB_GO?"black":"white")%>"><%=p1.getName()%>
+                                                </font>
                                                 </b>
                                             </td>
-                                            <td align="center" bgcolor="#000000">
-                                                <b><font color="white"><%=p2.getName()%>
+                                            <td align="center" bgcolor="#<%=(game.getGame()==GridStateFactory.TB_GO?"FFFFFF":"000000")%>">
+                                                <b><font color="<%=(game.getGame()==GridStateFactory.TB_GO?"black":"white")%>"><%=p2.getName()%>
                                                 </font>
                                                 </b>
                                             </td>
@@ -391,11 +392,11 @@
                                                     %>
                                                     <td onclick='selectMove(<%=i%>)' id='<%=i%>' width="45%"
                                                         align="center">
-                                                        <%=" " + (game.getMove(i)>-1&&game.getMove(i)<361?coordinateLetters[(game.getMove(i) % 19)] + (19 - (game.getMove(i) / 19)):"PASS")%>
+                                                        <%=" " + (i<game.getNumMoves()&&game.getMove(i)>-1&&game.getMove(i)<361?coordinateLetters[(game.getMove(i) % 19)] + (19 - (game.getMove(i) / 19)):"PASS")%>
                                                         <%
                                                             //      if ((game.getGame() == 63) && (i != 0) && (i + 1 < game.getNumMoves())) {
                                                             if ((game.getGame() == 63) && (i != 0)) {
-                                                                ++i;
+                                                                if (i<game.getNumMoves()-2) ++i;
                                                         %>
                                                         - <%="" + coordinateLetters[(game.getMove(i) % 19)] + (19 - (game.getMove(i) / 19))%>
                                                         <%

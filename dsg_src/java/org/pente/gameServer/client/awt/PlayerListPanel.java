@@ -919,7 +919,7 @@ public class PlayerListPanel extends Panel
         if (type <= DSGPlayerGameData.KINGOFTHEHILL_WINNER) {
             g.setColor(CROWN_COLORS[type]);
         } else {
-            int rgb = (27 + 3 - type)*255/27;
+            int rgb = (30 + 3 - type)*255/30;
             g.setColor(new Color(rgb, rgb, rgb));
         }
         g.fillPolygon(p);
