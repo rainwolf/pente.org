@@ -271,14 +271,14 @@ Collections.sort(waitingSets, new Comparator<TBSet>() {
       boolean o1KotH = (kothStorer.getEventId(o1.getGame1().getGame()) == o1.getGame1().getEventId());
       boolean o2KotH = (kothStorer.getEventId(o2.getGame1().getGame()) == o2.getGame1().getEventId());
       boolean beginner1 = o1.getInvitationRestriction() == TBSet.BEGINNER, beginner2 = o2.getInvitationRestriction() == TBSet.BEGINNER;
-      if (beginner1 && !beginner2) {
-          return -1;
-      } else if (!beginner1 && beginner2) {
-        return 1;
-      }
       if (o1KotH && !o2KotH) {
           return -1;
       } else if (!o1KotH && o2KotH) {
+        return 1;
+      }
+      if (beginner1 && !beginner2) {
+          return -1;
+      } else if (!beginner1 && beginner2) {
         return 1;
       }
       return o2.getCreationDate().compareTo(o1.getCreationDate());

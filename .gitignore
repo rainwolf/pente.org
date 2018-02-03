@@ -4,4 +4,10 @@ deploy
 deployClasses
 letsencrypt
 tmpTools
+liveGameRoom
+renewSSL
+updateDevelopment
+updateDevelopmentHTMLjs
+updateProduction
+updateProductiontHTMLjs
 

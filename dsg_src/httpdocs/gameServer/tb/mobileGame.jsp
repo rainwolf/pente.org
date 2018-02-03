@@ -392,11 +392,11 @@
                                                     %>
                                                     <td onclick='selectMove(<%=i%>)' id='<%=i%>' width="45%"
                                                         align="center">
-                                                        <%=" " + (i<game.getNumMoves()&&game.getMove(i)>-1&&game.getMove(i)<361?coordinateLetters[(game.getMove(i) % 19)] + (19 - (game.getMove(i) / 19)):"PASS")%>
+                                                        <%=" " + (game.getMove(i)>-1&&game.getMove(i)<361?coordinateLetters[(game.getMove(i) % 19)] + (19 - (game.getMove(i) / 19)):"PASS")%>
                                                         <%
                                                             //      if ((game.getGame() == 63) && (i != 0) && (i + 1 < game.getNumMoves())) {
                                                             if ((game.getGame() == 63) && (i != 0)) {
-                                                                if (i<game.getNumMoves()-2) ++i;
+                                                                ++i;
                                                         %>
                                                         - <%="" + coordinateLetters[(game.getMove(i) % 19)] + (19 - (game.getMove(i) / 19))%>
                                                         <%

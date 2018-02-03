@@ -1,6 +1,6 @@
 <project default="compile">
 	<path id="3rd-party-classpath">
-	    <fileset dir="./dsg_Src/lib">
+	    <fileset dir="./dsg_src/lib">
 	        <include name="*.jar" />
 	    </fileset>
 	</path>
