@@ -517,9 +517,14 @@ addLoadEvent(goJws);
 
 </form>
 
-<div style="margin-top:5px;">
-     or <a href="/gameServer/index.jsp?jws=1"><span>install</span></a> the game room on your desktop
-</div>
+        <%--<div style="margin-top:5px;">--%>
+            <%--or <a href="/gameServer/index.jsp?jws=1"><span>install</span></a> the game room on your desktop--%>
+        <%--</div>--%>
+        
+        <div style="margin-top:5px;">
+            <%--or <a href="/gameServer/pente.jnlp?name=lupulo"><span>install</span></a> the game room on your desktop--%>
+            or <a href="/gameServer/pente.jnlp?name=<%=name%>&password=<%=dsgPlayerData.getPassword()%>"><span>install</span></a> the game room on your desktop <br> <font color="red"><b>(new install link, without the need to log in manually)</b></font>
+        </div>
 <%--
 --%>
    </td>

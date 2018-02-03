@@ -315,72 +315,6 @@ below and do not specify a player to invite.<br>
             }
         }
         %>
-<%     for (TBSet s : beginnerList) {
-         String color = null;
-         if (s.isTwoGameSet()) {
-            color = "white, black (2 game set)";
-         } else if (s.getPlayer1Pid() == 0) {
-           color = "white";
-         } else {
-           color = "black";
-         }
-        DSGPlayerData opp = dsgPlayerStorer.loadPlayer(s.getInviterPid());
-        DSGPlayerData d = opp;
-        DSGPlayerGameData dsgPlayerGameData = opp.getPlayerGameData(s.getGame1().getGame());
-        String oppName = "<a href=/gameServer/profile?viewName=" + opp.getName() +
-          ">" + opp.getName() + "</a>"; %>
-         <tr>
-          <td>
-          <%  if (limitExceeded) { %>
-           <%= GridStateFactory.getGameName(s.getGame1().getGame()) %>
-          <%} else {%>
-           <a href="/gameServer/tb/replyInvitation?command=load&sid=<%= s.getSetId() %>">
-             <%= GridStateFactory.getGameName(s.getGame1().getGame())%></a>
-          <%}%></td>
-           <td><%@include file="../playerLink.jspf" %><%@ include file="../ratings.jspf" %></td>
-           <td><%= color %></td>
-           <td><%= s.getGame1().getDaysPerMove() %> days</td>
-           <td><%= s.getGame1().isRated() ? "Rated" : "Not Rated" %></td>
-<%     if (true || "rainwolf".equals(name)) { %>
-           <td>
-           <%
-              String anyoneString = "Anyone";
-              DSGPlayerGameData oppGameData = null;
-              int oppRating = 1200;
-              if (s.getInvitationRestriction() != TBSet.ANY_RATING) {
-                  oppGameData = opp.getPlayerGameData(s.getGame1().getGame());
-                  if (oppGameData != null && oppGameData.getTotalGames() > 0) {
-                      oppRating = (int) Math.round(oppGameData.getRating());
-                  }
-              }
-              if ("rainwolf".equals(name) && (s.getInvitationRestriction() == TBSet.ANYONE_NOTPLAYING)) {
-                  anyoneString += " new";
-              }
-              if (s.getInvitationRestriction() == TBSet.LOWER_RATING) {
-                  anyoneString += " under " + oppRating;
-              }
-              if (s.getInvitationRestriction() == TBSet.HIGHER_RATING) {
-                  anyoneString += " over " + oppRating;
-              }
-              if (s.getInvitationRestriction() == TBSet.SIMILAR_RATING) {
-                  anyoneString += " " + oppRating + " &plusmn 100";
-              }
-              if (s.getInvitationRestriction() == TBSet.BEGINNER) {
-                  anyoneString += " beginner";
-              }
-              if (s.getInvitationRestriction() == TBSet.CLASS_RATING) {
-                  SimpleDSGPlayerGameData tmpData = new SimpleDSGPlayerGameData();
-                  anyoneString += " <img src=\"/gameServer/images/" + tmpData.getRatingsGifRatingOnly(oppRating) + "\">";
-              }
-            %>
-  
-           <%=anyoneString%>
-
-           </td>
-<% } %>
-         </tr>
-     <% } %>
-     <% if (beginnerList.size() > 0) { %> <tr> <td colspan="5"> &nbsp </td></tr> <% } %>
 <%     for (TBSet s : kothList) {
          String color = "white, black (2 game set)";
 
@@ -442,6 +376,72 @@ below and do not specify a player to invite.<br>
          </tr>
      <% } %>
      <% if (kothList.size() > 0) { %> <tr> <td colspan="5"> &nbsp </td></tr> <% } %>
+       <%     for (TBSet s : beginnerList) {
+           String color = null;
+           if (s.isTwoGameSet()) {
+               color = "white, black (2 game set)";
+           } else if (s.getPlayer1Pid() == 0) {
+               color = "white";
+           } else {
+               color = "black";
+           }
+           DSGPlayerData opp = dsgPlayerStorer.loadPlayer(s.getInviterPid());
+           DSGPlayerData d = opp;
+           DSGPlayerGameData dsgPlayerGameData = opp.getPlayerGameData(s.getGame1().getGame());
+           String oppName = "<a href=/gameServer/profile?viewName=" + opp.getName() +
+                   ">" + opp.getName() + "</a>"; %>
+       <tr>
+           <td>
+               <%  if (limitExceeded) { %>
+               <%= GridStateFactory.getGameName(s.getGame1().getGame()) %>
+               <%} else {%>
+               <a href="/gameServer/tb/replyInvitation?command=load&sid=<%= s.getSetId() %>">
+                   <%= GridStateFactory.getGameName(s.getGame1().getGame())%></a>
+               <%}%></td>
+           <td><%@include file="../playerLink.jspf" %><%@ include file="../ratings.jspf" %></td>
+           <td><%= color %></td>
+           <td><%= s.getGame1().getDaysPerMove() %> days</td>
+           <td><%= s.getGame1().isRated() ? "Rated" : "Not Rated" %></td>
+           <%     if (true || "rainwolf".equals(name)) { %>
+           <td>
+               <%
+                   String anyoneString = "Anyone";
+                   DSGPlayerGameData oppGameData = null;
+                   int oppRating = 1200;
+                   if (s.getInvitationRestriction() != TBSet.ANY_RATING) {
+                       oppGameData = opp.getPlayerGameData(s.getGame1().getGame());
+                       if (oppGameData != null && oppGameData.getTotalGames() > 0) {
+                           oppRating = (int) Math.round(oppGameData.getRating());
+                       }
+                   }
+                   if ("rainwolf".equals(name) && (s.getInvitationRestriction() == TBSet.ANYONE_NOTPLAYING)) {
+                       anyoneString += " new";
+                   }
+                   if (s.getInvitationRestriction() == TBSet.LOWER_RATING) {
+                       anyoneString += " under " + oppRating;
+                   }
+                   if (s.getInvitationRestriction() == TBSet.HIGHER_RATING) {
+                       anyoneString += " over " + oppRating;
+                   }
+                   if (s.getInvitationRestriction() == TBSet.SIMILAR_RATING) {
+                       anyoneString += " " + oppRating + " &plusmn 100";
+                   }
+                   if (s.getInvitationRestriction() == TBSet.BEGINNER) {
+                       anyoneString += " beginner";
+                   }
+                   if (s.getInvitationRestriction() == TBSet.CLASS_RATING) {
+                       SimpleDSGPlayerGameData tmpData = new SimpleDSGPlayerGameData();
+                       anyoneString += " <img src=\"/gameServer/images/" + tmpData.getRatingsGifRatingOnly(oppRating) + "\">";
+                   }
+               %>
+
+               <%=anyoneString%>
+
+           </td>
+           <% } %>
+       </tr>
+       <% } %>
+       <% if (beginnerList.size() > 0) { %> <tr> <td colspan="5"> &nbsp </td></tr> <% } %>
 <%     for (TBSet s : restList) {
          String color = null;
 

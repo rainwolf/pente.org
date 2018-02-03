@@ -111,7 +111,7 @@ count could end up as 10-10. My current implementation keeps the game going in
 this case until one player has an advantage (i.e., gets more captured stones
 or gets five-in-a-row). There are no draws right now in Poof-Pente.<br>
 <center><img src="../gameServer/images/poofExample.png"></center>
-For example, when black plays into the opening of the line of stones, the 2 white stones on the right will becaptured, and poof the 2 black stones on the left will be poofed.
+For example, when black plays into the opening of the line of stones, the 2 white stones on the right will be captured, and the 2 black stones on the left will be poofed.
 <br>
 <br>
 <a name="boat-pente"><u>Boat-Pente</u></a><br>
