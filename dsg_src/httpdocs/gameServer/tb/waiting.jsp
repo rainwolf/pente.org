@@ -316,7 +316,14 @@ below and do not specify a player to invite.<br>
         }
         %>
 <%     for (TBSet s : kothList) {
-         String color = "white, black (2 game set)";
+         String color = null;
+        if (s.isTwoGameSet()) {
+            color = "white, black (2 game set)";
+        } else if ((s.getPlayer1Pid() == 0) == (s.getGame1().getGame() != GridStateFactory.TB_GO)) {
+            color = "white";
+        } else {
+            color = "black";
+        }
 
         DSGPlayerData opp = dsgPlayerStorer.loadPlayer(s.getInviterPid());
         DSGPlayerData d = opp;
@@ -380,7 +387,7 @@ below and do not specify a player to invite.<br>
            String color = null;
            if (s.isTwoGameSet()) {
                color = "white, black (2 game set)";
-           } else if (s.getPlayer1Pid() == 0) {
+           } else if ((s.getPlayer1Pid() == 0) == (s.getGame1().getGame() != GridStateFactory.TB_GO)) {
                color = "white";
            } else {
                color = "black";
@@ -447,8 +454,7 @@ below and do not specify a player to invite.<br>
 
          if (s.isTwoGameSet()) {
             color = "white, black (2 game set)";
-         }
-         else if (s.getPlayer1Pid() == 0) {
+        } else if ((s.getPlayer1Pid() == 0) == (s.getGame1().getGame() != GridStateFactory.TB_GO)) {
            color = "white";
          } else {
            color = "black";

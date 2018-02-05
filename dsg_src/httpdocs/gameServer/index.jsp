@@ -711,10 +711,15 @@ if (inLiveGameRoom) {
              color = "white,black (2 game set)";
          }
          else if ((myPID == s.getPlayer1Pid()) == (s.getGame1().getGame()!=GridStateFactory.TB_GO)) {
-             color = "white (p1)";
+             color = "white";
          }
          else {
-             color = "black (p2)";
+             color = "black";
+         }
+         if ("white".equals(color)) {
+             color += ((s.getGame1().getGame()!=GridStateFactory.TB_GO)?" (p1)":" (p2)");
+         } else if ("black".equals(color)) {
+             color += ((s.getGame1().getGame()==GridStateFactory.TB_GO)?" (p1)":" (p2)");
          }
          TBGame g = s.getGame1();
          boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
@@ -771,10 +776,15 @@ if (inLiveGameRoom) {
              color = "white,black (2 game set)";
          }
          else if ((myPID == s.getPlayer1Pid()) == (s.getGame1().getGame()!=GridStateFactory.TB_GO)) {
-             color = "white (p1)";
+             color = "white";
          }
          else {
-             color = "black (p2)";
+             color = "black";
+         }
+         if ("white".equals(color)) {
+             color += ((s.getGame1().getGame()!=GridStateFactory.TB_GO)?" (p1)":" (p2)");
+         } else if ("black".equals(color)) {
+             color += ((s.getGame1().getGame()==GridStateFactory.TB_GO)?" (p1)":" (p2)");
          }
          long pid = s.getInviteePid();
          DSGPlayerGameData dsgPlayerGameData = null;
@@ -855,7 +865,12 @@ if (inLiveGameRoom) {
        </tr>
      <% for (TBGame g : myTurn) {
          String color =  ((myPID == g.getPlayer1Pid()) == (g.getGame()!=GridStateFactory.TB_GO)) ?
-             "white (p1)" : "black (p2)";
+             "white" : "black";
+         if ("white".equals(color)) {
+             color += ((g.getGame()!=GridStateFactory.TB_GO)?" (p1)":" (p2)");
+         } else {
+             color += ((g.getGame()==GridStateFactory.TB_GO)?" (p1)":" (p2)");
+         }
          long oppPid = dsgPlayerData.getPlayerID() == g.getPlayer1Pid() ?
              g.getPlayer2Pid() : g.getPlayer1Pid();
         boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
@@ -919,7 +934,12 @@ if (inLiveGameRoom) {
        </tr>
      <% for (TBGame g : oppTurn) {
          String color =  ((myPID == g.getPlayer1Pid()) == (g.getGame()!=GridStateFactory.TB_GO)) ?
-             "white (p1)" : "black (p2)";
+             "white" : "black";
+         if ("white".equals(color)) {
+             color += ((g.getGame()!=GridStateFactory.TB_GO)?" (p1)":" (p2)");
+         } else {
+             color += ((g.getGame()==GridStateFactory.TB_GO)?" (p1)":" (p2)");
+         }
          long oppPid = dsgPlayerData.getPlayerID() == g.getPlayer1Pid() ?
              g.getPlayer2Pid() : g.getPlayer1Pid();
         boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
