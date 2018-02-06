@@ -512,18 +512,12 @@ function resetGoBeforeFlood() {
     }
 }
 function floodPlayer(player) {
-    var groups = goGroupsByPlayerAndID[player];
-    for (var groupID in groups) {
-        var group = groups[groupID];
-        var pDeadStones = goDeadStonesByPlayer[player];
-        for (var i = 0; i < group.length; i++) {
-            var move = group[i];
-            if (pDeadStones.indexOf(move) == -1) {
-                var neighbourStone = getEmptyNeighbour(move);
-                while (neighbourStone > -1) {
-                    floodFillWorker(neighbourStone, player + 2);
-                    neighbourStone = getEmptyNeighbour(move);
-                }
+    for (var move = 0; move < gridSize*gridSize; move++) {
+        if (getPosition(move) === 3-player) {
+            var neighbourStone = getEmptyNeighbour(move);
+            while (neighbourStone > -1) {
+                floodFillWorker(neighbourStone, player + 2);
+                neighbourStone = getEmptyNeighbour(move);
             }
         }
     }

@@ -26,6 +26,9 @@ List<WhosOnlineRoom> rooms = new ArrayList(WhosOnline.getPlayers(globalResources
             String serverAndPlayers = "";
             ServerData data = (ServerData) it.next();
             String serverName = data.getName();
+            if ("Go".equals(serverName)) {
+                continue;
+            }
             boolean empty = true;
             for (WhosOnlineRoom room : rooms) {
                 if (serverName.equals(room.getName())) {

@@ -6,7 +6,7 @@
                  java.util.*,
                  org.pente.jive.*,
                  com.jivesoftware.base.*,
-                 com.jivesoftware.forum.*;" %>
+                 com.jivesoftware.forum.*" %>
 
 <%! private static Category log4j = 
         Category.getInstance("org.pente.gameServer.web.client.jsp"); %>
