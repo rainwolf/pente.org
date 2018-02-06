@@ -222,8 +222,12 @@
                             <canvas id="interactionLayer" width="600" height="600"
                                     style="position: absolute; left: 0; top: 0; z-index: 1;  "></canvas>
                         </div>
-
-
+                        <% if (!"false".equals(myTurn)) { %>
+                        <div>
+                            <b><font color="#8b0000">Your opponent has made a pass as well, mark the stones you think are dead and/or press submit.</font> </b>
+                        </div>
+                        <% } %>
+                        <br>
                         <br>
                         <div id="scoreBox" style="width:550px; height:auto; "></div>
                         <br>

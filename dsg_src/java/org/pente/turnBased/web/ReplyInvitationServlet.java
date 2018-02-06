@@ -205,7 +205,7 @@ public class ReplyInvitationServlet extends HttpServlet {
 //							error = "Free account games limit exceeded.";
 //						} else {
 
-                        if (set.isTwoGameSet()) {
+                        if (set.getGame1().isRated()) {
                             CacheKOTHStorer kothStorer = (CacheKOTHStorer) resources.getKOTHStorer();
                             int game = set.getGame1().getGame();
                             if (kothStorer.getEventId(game) == set.getGame1().getEventId()) {
@@ -264,9 +264,10 @@ public class ReplyInvitationServlet extends HttpServlet {
                                     if (rated) {
                                         beginnerGame1 = createGame(1, invitee, null,
                                                 game, daysPerMove, true);
-    
-                                        beginnerGame2 = createGame(2, invitee, null,
-                                                game, daysPerMove, rated);
+                                        if (game != GridStateFactory.TB_GO) {
+                                            beginnerGame2 = createGame(2, invitee, null,
+                                                    game, daysPerMove, rated);
+                                        }
     
                                         pid1 = invitee.getPlayerID();
                                     } else {

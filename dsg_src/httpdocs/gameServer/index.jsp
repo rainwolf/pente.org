@@ -373,8 +373,9 @@ window.google_analytics_uacct = "UA-20529582-2";
  -->          <li>New turn-based tournaments: <a href="/gameServer/tournaments">Winter's Coming!</a>
             <br>
             Round 2: <a href="/gameServer/tournaments/statusRound.jsp?eid=1309&round=2">D-Pente</a>,
-             <a href="/gameServer/tournaments/statusRound.jsp?eid=1311&round=2">Poof-Pente</a>,
-             <a href="/gameServer/tournaments/statusRound.jsp?eid=1315&round=3">Pente</a>
+             <a href="/gameServer/tournaments/statusRound.jsp?eid=1311&round=2">Poof-Pente</a>
+            <br>
+            Round 4: <a href="/gameServer/tournaments/statusRound.jsp?eid=1315&round=4">Pente</a>
              <br>
             Final: <a href="/gameServer/tournaments/statusRound.jsp?eid=1313&round=2">Boat</a>, <a href="/gameServer/tournaments/statusRound.jsp?eid=1312&round=3">Connect6</a>
               </li>

@@ -60,6 +60,10 @@ public class BackgroundMailer extends BackgroundWorker {
 
 		    DSGPlayerData fromData = dsgPlayerStorer.loadPlayer(m.getFromPid());
 		    DSGPlayerData toData = dsgPlayerStorer.loadPlayer(m.getToPid());
+		    
+		    if (!toData.isActive()) {
+		        return;
+            }
 
 	        message.setFrom(new InternetAddress(smtpUser, fromData.getName()));
 	        message.addRecipient(Message.RecipientType.TO, 

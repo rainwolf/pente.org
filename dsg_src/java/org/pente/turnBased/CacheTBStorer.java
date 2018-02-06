@@ -1414,7 +1414,8 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 			game.getGame(), game);
 		if (game.getGame() == GridStateFactory.TB_PENTE ||
 			game.getGame() == GridStateFactory.TB_KERYO ||
-			game.getGame() == GridStateFactory.TB_BOAT_PENTE) {
+			game.getGame() == GridStateFactory.TB_BOAT_PENTE ||
+                game.getGame() == GridStateFactory.TB_POOF_PENTE) {
 			((PenteState) state).setTournamentRule(game.isRated());
 		}
 		if (!state.isValidMove(move, state.getCurrentPlayer())) {
