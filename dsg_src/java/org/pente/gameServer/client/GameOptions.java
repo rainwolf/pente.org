@@ -28,6 +28,8 @@ public interface GameOptions extends java.io.Serializable {
     public static final int BLUE = 5;
     public static final int GREEN = 6;
     public static final int PURPLE = 7;
+    public static final int TRANSPARENT_WHITE = 8;
+    public static final int TRANSPARENT_BLACK = 9;
 
     public int getPlayerColor(int playerNum);
     public void setPlayerColor(int color, int playerNum);

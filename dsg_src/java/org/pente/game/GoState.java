@@ -18,23 +18,37 @@ public class GoState extends GridStateDecorator
     public boolean isRepetitionAllowed() { return allowRepetition; }
     public void setAllowRepetition(boolean allowRepetition) { this.allowRepetition = allowRepetition; }
 
-    private Map<Integer,Map<Integer, List<Integer>>> groupsByPlayerAndID;
-    private Map<Integer,Map<Integer, Integer>> stoneGroupIDsByPlayer;
+    protected Map<Integer,Map<Integer, List<Integer>>> groupsByPlayerAndID;
+    protected Map<Integer,Map<Integer, Integer>> stoneGroupIDsByPlayer;
+
+
+    protected int koMove;
+    public int getKoMove() { return koMove; }
+
+    public int capturedAt[][];
+    public int capturedMoves[][];
+    public int captures[];
+
+    protected int passMove;
+    protected int handicapPass;
+
+
+    protected boolean markStones = false;
+    protected boolean evaluateStones = false;
+    public boolean isMarkStones() { return markStones; }
+    public boolean isEvaluateStones() { return evaluateStones; }
     
-    private int koMove;
+    protected List<Long> positionHashes;
+    public List<Long> getPositionHashes() { return positionHashes; }
 
-    private int capturedAt[][];
-    private int capturedMoves[][];
-    private int captures[];
-
-    private int passMove;
-    private int handicapPass;
-
-    private List<Long> positionHashes;
-    private List<Integer> deadStones;
+    protected List<Integer> deadStones;
+    public List<Integer> getDeadStones() { return deadStones; }
     
+    HashMap<Integer, List<Integer>> deadStonesByPlayer;
+
     private Map<Integer, List<Integer>> goTerritoryByPlayer;
     
+    public SimpleGridState getGridState() { return (SimpleGridState) this.gridState; } 
 
     public GoState(GridState gridState) {
         super(gridState);
@@ -58,7 +72,7 @@ public class GoState extends GridStateDecorator
         return goState;
     }
 
-    private void init() {
+    protected void init() {
         this.groupsByPlayerAndID = new HashMap<>();
         this.groupsByPlayerAndID.put(1, new HashMap<>());
         this.groupsByPlayerAndID.put(2, new HashMap<>());
@@ -77,24 +91,46 @@ public class GoState extends GridStateDecorator
         positionHashes.add(0L);
         
         deadStones = new ArrayList<>();
+        deadStonesByPlayer = new HashMap<>();
+        deadStonesByPlayer.put(1, new ArrayList<>());
+        deadStonesByPlayer.put(2, new ArrayList<>());
+        
+        
+        hasPass = false;
+        markStones = false;
+        evaluateStones = false;
     }
 
+    
+    private boolean hasPass;
+    public synchronized void addMove(int move) {
 
-    public void addMove(int move) {
-
-        if (containsDoublePass() > -1) {
-            
-            deadStones.add(move);
+        if (evaluateStones) {
+            if (move == passMove) {
+                addDeadStone(move);
+            }
+        } else if (markStones) {
             ((SimpleGridState)gridState).setAllowOccupiedMoves(true);
-            gridState.addMove(move);
-            
+            if (move == passMove) {
+                evaluateStones = true;
+            }
+            addDeadStone(move);
         } else {
-            
+
             int currentPlayer = getCurrentPlayer();
 
             ((SimpleGridState)gridState).setAllowOccupiedMoves(false);
             gridState.addMove(move);
 
+            if (move == passMove) {
+                if (hasPass) {
+                    markStones = true;
+                } else {
+                    hasPass = true;
+                }
+            } else {
+                hasPass = false;
+            }
             if (0 <= move && move < passMove) {
                 positionHashes.add(positionHashes.get(positionHashes.size()-1) ^ rand[currentPlayer-1][move]);
 
@@ -117,17 +153,18 @@ public class GoState extends GridStateDecorator
                     }
                 }
             }
-            
+
         }
 
         updateHash(this);
+        
 
         //        printBoard();
     }
     
     
     
-    private void makeCaptures(int move, Map<Integer, List<Integer>> groupsByID, Map<Integer, Integer> stoneGroupIDs) {
+    private synchronized void makeCaptures(int move, Map<Integer, List<Integer>> groupsByID, Map<Integer, Integer> stoneGroupIDs) {
         int captures = 0;
         if (move%getGridSizeX() != 0) {
             int neighborStone = move - 1;
@@ -152,10 +189,9 @@ public class GoState extends GridStateDecorator
         if (captures != 1) {
             koMove = -1;
         }
-//        this.captures[capturer] += captures;
     }
 
-    private int getCaptures(int move, Map<Integer, List<Integer>> groupsByID, Map<Integer, Integer> stoneGroupIDs, int captures, int neighborStone, Integer neighborStoneGroupID) {
+    private synchronized int getCaptures(int move, Map<Integer, List<Integer>> groupsByID, Map<Integer, Integer> stoneGroupIDs, int captures, int neighborStone, Integer neighborStoneGroupID) {
         if (neighborStoneGroupID != null) {
             List<Integer> neighborStoneGroup = groupsByID.get(neighborStoneGroupID);
             if (!groupHasLiberties(neighborStoneGroup)) {
@@ -171,7 +207,7 @@ public class GoState extends GridStateDecorator
         return captures;
     }
 
-    private boolean checkKo(int move) {
+    private synchronized boolean checkKo(int move) {
         int position = getPosition(move);
         if (move%getGridSizeX() != 0) {
             int neighborStone = move - 1;
@@ -205,7 +241,7 @@ public class GoState extends GridStateDecorator
     }
 
 
-    private void captureGroup(int groupID, Map<Integer, List<Integer>> groupsByID, Map<Integer, Integer> stoneGroupIDs) {
+    private synchronized void captureGroup(int groupID, Map<Integer, List<Integer>> groupsByID, Map<Integer, Integer> stoneGroupIDs) {
         List<Integer> group = groupsByID.get(groupID);
         int capturer = 0;
         if (group.size() > 0) {
@@ -219,7 +255,7 @@ public class GoState extends GridStateDecorator
         groupsByID.remove(groupID);
     }
 
-    private boolean groupHasLiberties(List<Integer> group) {
+    protected synchronized boolean groupHasLiberties(List<Integer> group) {
         for (int stone: group) {
             if (stoneHasLiberties(stone)) {
                 return true;
@@ -227,7 +263,7 @@ public class GoState extends GridStateDecorator
         }
         return false;
     }
-    private boolean stoneHasLiberties(int stone) {
+    private synchronized boolean stoneHasLiberties(int stone) {
         if (stone%getGridSizeX() != 0) {
             int neighborStone = stone - 1;
             int position = getPosition(neighborStone);
@@ -259,7 +295,7 @@ public class GoState extends GridStateDecorator
         return false;
     }
     
-    private void settleGroups(int move, Map<Integer, List<Integer>> groupsByID, Map<Integer, Integer> stoneGroupIDs) {
+    private synchronized void settleGroups(int move, Map<Integer, List<Integer>> groupsByID, Map<Integer, Integer> stoneGroupIDs) {
         List<Integer> newGroup = new ArrayList<>();
         newGroup.add(move);
         groupsByID.put(move, newGroup);
@@ -294,7 +330,7 @@ public class GoState extends GridStateDecorator
         }
     }
     
-    private void mergeGroups(int group1, int group2, Map<Integer, List<Integer>> groupsByID, Map<Integer, Integer> stoneGroupIDs) {
+    private synchronized void mergeGroups(int group1, int group2, Map<Integer, List<Integer>> groupsByID, Map<Integer, Integer> stoneGroupIDs) {
         if (group1 == group2) {
             return;
         }
@@ -311,8 +347,8 @@ public class GoState extends GridStateDecorator
             oldGroupID = group2;
             newGroupID = group1;
         }
-        groupsByID.remove(oldGroupID);
         newGroup.addAll(oldGroup);
+        groupsByID.remove(oldGroupID);
         for (int oldStone: oldGroup) {
             stoneGroupIDs.replace(oldStone, newGroupID);
         }
@@ -352,9 +388,19 @@ public class GoState extends GridStateDecorator
         return newGroup;
     }
 
-    public boolean isValidMove(int move, int player) {
+    public boolean canPlayerUndo(int player) {
+        if (markStones && !evaluateStones) {
+            return getMove(getNumMoves() - 1) != passMove && player == getCurrentPlayer();
+        }
+        return getNumMoves() > 0 && player != getCurrentPlayer();
+    }
+    
+    public synchronized boolean isValidMove(int move, int player) {
+        
+//        System.out.println("isValidMove " + player + " " + move);
 
         if (player != getCurrentPlayer()) {
+//            System.out.println("isValidMove getCurrentPlayer " + getCurrentPlayer() + " player = " + player);
             return false;
         }
 
@@ -362,37 +408,47 @@ public class GoState extends GridStateDecorator
             return true;
         }
         
-        if (move == handicapPass && getNumMoves() < 18) {
-            return true;
+        if (evaluateStones) {
+            return false;
         }
+
+//        if (move == handicapPass && getNumMoves() < 18) {
+//            return true;
+//        }
 
         try {
             checkOutOfBounds(move);
         } catch (IllegalArgumentException e) {
             return false;
         }
-        
-        if (containsDoublePass()>-1 && move != passMove && getPosition(move) != 0) {
-            return true;
+
+        if (markStones) {
+            if (getPosition(move) != 0) {
+                return true;
+            } else {
+                return false;
+            }
         }
 
         if (getPosition(move) != 0) {
+//            System.out.println("isValidMove getPosition");
             return false;
         }
-        
+
         if (move == koMove) {
-            System.out.println("ko move "+koMove);
+//            System.out.println("ko move "+koMove);
             return false;
         }
 
         boolean suicide = false, repetition = false;
-        
-        
+
+
         if (!isSuicideAllowed() || !isRepetitionAllowed()) {
             addMove(move);
 
             if (!isSuicideAllowed() && !groupHasLiberties(groupsByPlayerAndID.get(player).get(stoneGroupIDsByPlayer.get(player).get(move)))) {
                 undoMove();
+//                System.out.println("isValidMove isSuicideAllowed");
                 return false;
             }
 
@@ -400,54 +456,59 @@ public class GoState extends GridStateDecorator
             if (!isRepetitionAllowed()) {
                 if (positionHashes.indexOf(positionHashes.get(positionHashes.size()-1)) < positionHashes.size()-1) {
                     undoMove();
+//                    System.out.println("isValidMove isRepetitionAllowed");
                     return false;
                 }
             }
             undoMove();
         }
-        
-        
 
 
         return true;
     }
 
-    public int getCurrentPlayer() {
+    public synchronized int getCurrentPlayer() {
         int cp = 0;
         int dp = containsDoublePass();
-        if (dp == -1) {
-            cp = getMoves().length % 2 + 1;
-        } else if (dp < getMoves().length - 1) {
+        if (evaluateStones) {
+            cp = dp % 2 + 1;
+        } else if (markStones) {
             cp = 2 - dp % 2;
         } else {
-            cp = dp % 2 + 1;
+            cp = gridState.getCurrentPlayer();
         }
         return cp;
     }
+    
+    public void clear() {
+        gridState.clear();
+        init();
+    }
 
 
 
-    public void checkOutOfBounds(int move) {
+    public synchronized void checkOutOfBounds(int move) {
         Coord p = convertMove(move);
         checkOutOfBounds(p.x, p.y);
     }
-    public void checkOutOfBounds(int x, int y) {
+    public synchronized void checkOutOfBounds(int x, int y) {
         if (x < 0 || x >= getGridSizeX() || y < 0 || y >= getGridSizeY()) {
             throw new IllegalArgumentException("Out of bounds");
         }
     }
 
-    private boolean doublePass() {
-        int moves[] = getMoves();
+    public synchronized boolean doublePass() {
+        Vector<Integer> moves = ((SimpleGridState)gridState).getMovesVector();
         return moves != null &&
-                moves.length > 1 &&
-                moves[moves.length - 1] == passMove &&
-                moves[moves.length - 2] == passMove;
+                moves.size() > 1 &&
+                moves.get(moves.size() - 1) == passMove &&
+                moves.get(moves.size() - 2) == passMove;
     }
-    private int containsDoublePass() {
+    protected synchronized int containsDoublePass() {
         boolean hasPass = false;
-        for (int i = 0; i < getMoves().length; i++) {
-            int move = getMoves()[i];
+        Vector<Integer> moves = ((SimpleGridState)gridState).getMovesVector();
+        for (int i = 0; i < moves.size(); i++) {
+            int move = moves.get(i);
             if (move == passMove) {
                 if (hasPass) {
                     return i;
@@ -462,9 +523,9 @@ public class GoState extends GridStateDecorator
     }
     
     
-    public boolean isGameOver() {
+    public synchronized boolean isGameOver() {
         int numMoves = gridState.getNumMoves();
-        if (doublePass() && deadStones != null && deadStones.size() > 1 
+        if (containsDoublePass() < numMoves - 1 && deadStones != null && deadStones.size() > 1 
                 && deadStones.get(deadStones.size() - 1) == passMove
                 && deadStones.get(deadStones.size() - 2) == passMove) {
             return true;
@@ -472,8 +533,7 @@ public class GoState extends GridStateDecorator
         return false;
     }
     
-    public int getWinner() {
-//        List<Integer> deadStones = getDeadStones();
+    public synchronized int getWinner() {
         for (int dead: deadStones) {
             if (dead < passMove) {
                 setPosition(dead, 0);
@@ -482,24 +542,18 @@ public class GoState extends GridStateDecorator
         getTerritories();
         List<Integer> p1Territory = goTerritoryByPlayer.get(1), p2Territory = goTerritoryByPlayer.get(2);
         int p1Count = p1Territory.size();
-//        for (List<Integer> group: groupsByPlayerAndID.get(1).values()) {
-//            p1Count += group.size();
-//        }
-        int p2Count = p2Territory.size() + getMovesForValue(2).size();
-//        for (List<Integer> group: groupsByPlayerAndID.get(2).values()) {
-//            p2Count += group.size();
-//        }
+        int p2Count = p2Territory.size();
         for (int i = 0; i < getGridSizeX(); i++) {
             for (int j = 0; j < getGridSizeY(); j++) {
                 if (getPosition(i,j) == 1) {
                     p1Count += 1;
-                } else if (getPosition(i,j) == 1) {
+                } else if (getPosition(i,j) == 2) {
                     p2Count += 1;
                 }
             }
         }
-        System.out.println(" p1 count ============ " + p1Count);
-        System.out.println(" p2 count ============ " + p2Count);
+//        System.out.println(" p1 count ============ " + p1Count);
+//        System.out.println(" p2 count ============ " + p2Count);
         if (p1Count > p2Count + 7) {
             return 1;
         } else {
@@ -507,28 +561,22 @@ public class GoState extends GridStateDecorator
         }
     }
     
-//    private List<Integer> getDeadStones() {
-//        List<Integer> deadStones = new ArrayList<>();
-//        boolean hasPass = false, doublePass = false;
-//        for (int move: getMoves()) {
-//            if (doublePass) {
-//                deadStones.add(move);
-//                continue;
-//            }
-//            if (move == passMove) {
-//                if (hasPass) {
-//                    doublePass = true;
-//                } else {
-//                    hasPass = true;
-//                }
-//            } else {
-//                hasPass = false;
-//            }
-//        }
-//        return deadStones;
-//    }
-
-    
+    public String getScoreMessage() {
+        List<Integer> p1Territory = goTerritoryByPlayer.get(1), p2Territory = goTerritoryByPlayer.get(2);
+        int p1Count = p1Territory.size();
+        int p2Count = p2Territory.size();
+        for (int i = 0; i < getGridSizeX(); i++) {
+            for (int j = 0; j < getGridSizeY(); j++) {
+                if (getPosition(i,j) == 1) {
+                    p1Count += 1;
+                } else if (getPosition(i,j) == 2) {
+                    p2Count += 1;
+                }
+            }
+        }
+        return "P1 score is "+p1Count+", and P2 score is "+(p2Count+7)+".5";
+    }
+   
 
     @Override
     public long calcHash(long cHash, int p, int move, int rot) {
@@ -571,13 +619,14 @@ public class GoState extends GridStateDecorator
         ((SimpleGridState) gridState).printBoard();
     }
 
-
     public Map<Integer, Map<Integer, List<Integer>>> getGroupsByPlayerAndID() { return groupsByPlayerAndID; }
     public void setGroupsByPlayerAndID(Map<Integer, Map<Integer, List<Integer>>> groupsByPlayerAndID) { this.groupsByPlayerAndID = groupsByPlayerAndID; }
     public Map<Integer, Map<Integer, Integer>> getStoneGroupIDsByPlayer() { return stoneGroupIDsByPlayer; }
     public void setStoneGroupIDsByPlayer(Map<Integer, Map<Integer, Integer>> stoneGroupIDsByPlayer) { this.stoneGroupIDsByPlayer = stoneGroupIDsByPlayer; }
-    
-    private void captureMove(int move, int capturePlayer) {
+    public HashMap<Integer, List<Integer>> getDeadStonesByPlayer() { return deadStonesByPlayer; }
+    public void setDeadStonesByPlayer(HashMap<Integer, List<Integer>> deadStonesByPlayer) { this.deadStonesByPlayer = deadStonesByPlayer; }
+
+    protected synchronized void captureMove(int move, int capturePlayer) {
         setPosition(move, 0);
         capturedAt[capturePlayer][this.captures[capturePlayer]] =
                 gridState.getNumMoves() - 1;
@@ -587,16 +636,32 @@ public class GoState extends GridStateDecorator
         positionHashes.remove(positionHashes.size()-1);
         positionHashes.add(last ^ rand[3-capturePlayer-1][move]);
     }
-    public void undoMove() {
+    public synchronized void undoMove() {
+        Vector<Integer> oldMoves = new Vector<Integer>(((SimpleGridState)gridState).getMovesVector());
+        oldMoves.remove(oldMoves.size()-1);
         gridState.clear();
-        
+
         init();
-        for (int move: gridState.getMoves()) {
+        for (int move: oldMoves) {
+            addMove(move);
+        }
+    }
+    public synchronized void rejectAndContinue() {
+        Vector<Integer> oldMoves = new Vector<>();
+        int l = containsDoublePass() - 1;
+        for (int i = 0; i < l; i++) {
+            oldMoves.add((Integer) ((SimpleGridState)gridState).getMovesVector().get(i));
+        }
+        
+        gridState.clear();
+
+        init();
+        for (int move: oldMoves) {
             addMove(move);
         }
     }
     
-    private int getEmptyNeighbour(int move) {
+    private synchronized int getEmptyNeighbour(int move) {
         if (move%getGridSizeX() != 0) {
             int neighborStone = move - 1;
             if (getPosition(neighborStone) == 0) {
@@ -623,7 +688,7 @@ public class GoState extends GridStateDecorator
         }
         return -1;
     }
-    private void floodFillWorker(int move, int value) {
+    private synchronized void floodFillWorker(int move, int value) {
         setPosition(move, value);
         int neighbourStone = getEmptyNeighbour(move);
         while (neighbourStone != -1) {
@@ -631,10 +696,10 @@ public class GoState extends GridStateDecorator
             neighbourStone = getEmptyNeighbour(move);
         }
     }
-    private List<Integer> floodFill(int player) {
-        Map<Integer, List<Integer>> groupsByID = getGroupsByPlayerAndID().get(player);
-        for (List<Integer> group: groupsByID.values()) {
-            for (int move: group) {
+    private synchronized List<Integer> floodFill(int player) {
+        for (int move = 0; move < passMove; move++) {
+            int pos = getPosition(move);
+            if (pos == player) {
                 int neighbourStone = getEmptyNeighbour(move);
                 while (neighbourStone != -1) {
                     floodFillWorker(neighbourStone, player + 2);
@@ -651,7 +716,7 @@ public class GoState extends GridStateDecorator
         }
         return floodedTerritory;
     }
-    private void resetGoBeforeFlood() {
+    private synchronized void resetGoBeforeFlood() {
         for (int i = 0; i < getGridSizeX(); i++ ) {
             for (int j = 0; j < getGridSizeY(); j++ ) {
                 int pos = getPosition(i,j);
@@ -661,7 +726,7 @@ public class GoState extends GridStateDecorator
             }
         }
     }
-    private List<Integer> getMovesForValue(int val) {
+    private synchronized List<Integer> getMovesForValue(int val) {
         List<Integer> results = new ArrayList<>();
         for (int j = 0; j < getGridSizeY(); j++) {
             for (int i = 0; i < getGridSizeX(); i++) {
@@ -672,7 +737,7 @@ public class GoState extends GridStateDecorator
         }
         return results;
     }
-    private void getTerritories() {
+    public synchronized Map<Integer, List<Integer>> getTerritories() {
         goTerritoryByPlayer = new HashMap<>();
         floodFill(1);
         List<Integer> p1Territory = getMovesForValue(3);
@@ -699,6 +764,19 @@ public class GoState extends GridStateDecorator
         
         goTerritoryByPlayer.put(1, p1Territory);
         goTerritoryByPlayer.put(2, p2Territory);
+        return goTerritoryByPlayer;
+    }
+    
+    protected void addDeadStone(int deadStone) {
+        gridState.addMove(deadStone);
+        deadStones.add(deadStone);
+        if (deadStone < passMove) {
+            int player = getPosition(deadStone);
+            if (player == 1 || player == 2) {
+                deadStonesByPlayer.get(player).add(deadStone);
+                setPosition(deadStone, 0);
+            }
+        }
     }
     
 

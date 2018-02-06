@@ -97,6 +97,9 @@ public class GameBoardFrame extends Frame implements TableComponent,
 
     private static final String RATED = "Rated";
 
+    private static final String PASS = "PASS";
+    private static final String SCORE = "Score";
+
 
     private DSGDialog undoDialog;
     private DSGDialog cancelDialog;
@@ -104,7 +107,8 @@ public class GameBoardFrame extends Frame implements TableComponent,
     private DSGDialog resignDialog;
     private DSGDialog swapDialog;
     private MiddleSetDialog middleSetDialog;
-
+    private DSGDialog acceptGoStateDialog;
+    
     private GameOptions gameOptions;
 
     private Checkbox ratedCheck;
@@ -196,6 +200,10 @@ public class GameBoardFrame extends Frame implements TableComponent,
             emailButton.setEnabled(false);
         }
 
+        final Button passButton = gameStyle.createDSGButton(PASS);
+        passButton.addActionListener(this);
+        final Button scoreButton = gameStyle.createDSGButton(SCORE);
+        scoreButton.addActionListener(this);
 
         sit1Button = gameStyle.createDSGButton(SIT1);
         sit1Button.addActionListener(this);
@@ -407,6 +415,11 @@ public class GameBoardFrame extends Frame implements TableComponent,
         gamePanel.add(playButton, gamePanelConstraints);
 
         gamePanelConstraints.gridy++;
+        gamePanel.add(passButton, gamePanelConstraints);
+        gamePanelConstraints.gridy++;
+        gamePanel.add(scoreButton, gamePanelConstraints);
+
+        gamePanelConstraints.gridy++;
         gamePanel.add(undoButton, gamePanelConstraints);
 
         gamePanelConstraints.gridy++;
@@ -448,19 +461,26 @@ public class GameBoardFrame extends Frame implements TableComponent,
 
         // setup game options
         if (preferenceHandler.getPref("gameOptions") == null) {
-            gameOptions = new SimpleGameOptions(2);
+            gameOptions = new SimpleGameOptions(5);
             gameOptions.setPlayerColor(GameOptions.WHITE, 1);
             gameOptions.setPlayerColor(GameOptions.BLACK, 2);
+            gameOptions.setPlayerColor(GameOptions.RED, 3);
+            gameOptions.setPlayerColor(GameOptions.TRANSPARENT_WHITE, 4);
+            gameOptions.setPlayerColor(GameOptions.TRANSPARENT_BLACK, 5);
+            
             gameOptions.setDraw3DPieces(true);
             gameOptions.setPlaySound(true);
             gameOptions.setShowLastMove(true);
         } else if (preferenceHandler.getPref("gameOptions") instanceof com.google.gson.internal.LinkedTreeMap) {
             com.google.gson.internal.LinkedTreeMap pref = (com.google.gson.internal.LinkedTreeMap) preferenceHandler.getPref("gameOptions");
-            gameOptions = new SimpleGameOptions(2);
+            gameOptions = new SimpleGameOptions(5);
             ArrayList colors = (ArrayList) pref.get("colors");
             for ( int i = 0; i < 3; i++ ) {
                 gameOptions.setPlayerColor(((Double) colors.get(i)).intValue(), i);
             }
+            gameOptions.setPlayerColor(GameOptions.RED, 3);
+            gameOptions.setPlayerColor(GameOptions.TRANSPARENT_WHITE, 4);
+            gameOptions.setPlayerColor(GameOptions.TRANSPARENT_BLACK, 5);
             gameOptions.setDraw3DPieces((boolean) pref.get("draw3DPieces"));
             gameOptions.setPlaySound((boolean) pref.get("playSound"));
             gameOptions.setShowLastMove((boolean) pref.get("showLastMove"));
@@ -630,6 +650,26 @@ public class GameBoardFrame extends Frame implements TableComponent,
                 updateMessage();
             }
         }
+        else if (event.getActionCommand().equals(PASS)) {
+            if ((game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO) &&
+                    playerType != PLAYERTYPE_NOT_SITTING &&
+                    gameBoard.getGridState().getCurrentPlayer() == playerType &&
+                    state == DSGGameStateTableEvent.GAME_IN_PROGRESS) {
+                dsgEventListener.eventOccurred(new DSGMoveTableEvent(playerName, tableNum, 361));
+            }
+        }
+        else if (event.getActionCommand().equals(SCORE)) {
+            if ((game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO) &&
+                    (gameBoard.getGridState() instanceof GoState)
+//                    playerType != PLAYERTYPE_NOT_SITTING &&
+//                    gameBoard.getGridState().getCurrentPlayer() == playerType &&
+//                    state == DSGGameStateTableEvent.GAME_IN_PROGRESS
+                    ) {
+                GoState s = (GoState) gameBoard.getGridState(); 
+                gameBoard.getGridBoardComponent().setTerritory(s.getTerritories());
+                gameBoard.getGridBoardComponent().setMessage(s.getScoreMessage());
+            }
+        }
         else if (event.getActionCommand().equals(UNDO)) {
             if (playerType != PLAYERTYPE_NOT_SITTING &&
                     gameBoard.getGridState().canPlayerUndo(playerType)) {
@@ -761,6 +801,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
                         gameBoard.getGridBoard().getGridWidth() + x;
                 gameBoard.getGridBoard().setThinkingPieceVisible(
                         gameBoard.getGridState().isValidMove(move, playerType));
+//                gameBoard.getGridBoard().setThinkingPieceVisible(true);
             }
         }
 
@@ -769,9 +810,11 @@ public class GameBoardFrame extends Frame implements TableComponent,
             if (state != DSGGameStateTableEvent.GAME_IN_PROGRESS) {
                 return;
             }
+//            System.out.println("clicked");
             int move = (gameBoard.getGridBoard().getGridHeight() - y - 1) *
                     gameBoard.getGridBoard().getGridWidth() + x;
             if (!gameBoard.getGridState().isValidMove(move, playerType)) {
+//                System.out.println("clicked and not valid");
                 return;
             }
 
@@ -830,6 +873,9 @@ public class GameBoardFrame extends Frame implements TableComponent,
         }
         if (addAIDialog != null) {
             addAIDialog.dispose();
+        }
+        if (acceptGoStateDialog != null) {
+            acceptGoStateDialog.dispose();
         }
 
         if (chatArea != null) {
@@ -943,6 +989,16 @@ public class GameBoardFrame extends Frame implements TableComponent,
         bootList.setGame(game);
         inviteList.setGame(game);
         coordinatesList.setGame(game);
+        if (game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO) {
+            gameBoard.getGridBoard().setDrawInnerCircles(false);
+            gameBoard.getGridBoard().setDrawGoDots(true);
+            gameBoard.getGridBoard().setThinkingPiecePlayer(2);
+        } else {
+            gameBoard.getGridBoard().setDrawInnerCircles(true);
+            gameBoard.getGridBoard().setDrawGoDots(false);
+            gameBoard.getGridBoard().setThinkingPiecePlayer(1);
+        }
+
 
         if (owner) {
             updatePlayAIControls();
@@ -1032,6 +1088,9 @@ public class GameBoardFrame extends Frame implements TableComponent,
                     playerGameTimers[1].go();
                 }
             }
+            if (game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO) {
+                gameBoard.getGridBoard().setThinkingPiecePlayer(2);
+            }
 
         }
         // just joined a room that is waiting for a player to return
@@ -1113,6 +1172,10 @@ public class GameBoardFrame extends Frame implements TableComponent,
                 middleSetDialog.dispose();
                 middleSetDialog = null;
             }
+            if (acceptGoStateDialog != null) {
+                acceptGoStateDialog.dispose();
+                acceptGoStateDialog = null;
+            }
 
             if (sitting &&
                     state == DSGGameStateTableEvent.WAIT_GAME_TWO_OF_SET) {
@@ -1152,6 +1215,10 @@ public class GameBoardFrame extends Frame implements TableComponent,
                 if (swapDialog != null) {
                     swapDialog.dispose();
                 }
+                if (acceptGoStateDialog != null) {
+                    acceptGoStateDialog.dispose();
+                    acceptGoStateDialog = null;
+                }
                 if (undoDialog != null) {
                     undoDialog.dispose();
                 }
@@ -1173,6 +1240,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
             // could be that player 1 is returning to game after 1st 4 moves
             // of d-pente and player 2 still needs to decide to swap
             showSwapDialog();
+            showGoStateDialog();
         }
         else if (state == DSGGameStateTableEvent.WAIT_GAME_TWO_OF_SET &&
                 stateEvent.getState() == DSGGameStateTableEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN) {
@@ -1322,6 +1390,22 @@ public class GameBoardFrame extends Frame implements TableComponent,
         }
 
         showSwapDialog();
+        showGoStateDialog();
+        showGoMessage();
+    }
+
+    public void receiveRejectGoStateEvent(DSGRejectGoStateEvent dsgEvent) {
+//        System.out.println("receiveRejectGoStateEvent");
+        if (acceptGoStateDialog != null) {
+            acceptGoStateDialog.dispose();
+            acceptGoStateDialog = null;
+        }
+        if (gameBoard.getGridState() instanceof GoStatePieceCollectionAdapter) {
+            ((GoStatePieceCollectionAdapter)gameBoard.getGridState()).rejectAndContinue();
+            gameBoard.getGridBoardComponent().setThinkingPiecePlayer(gameBoard.getGridState().getCurrentColor());
+            switchTimers();
+        }
+        chatArea.newSystemMessage("The dead stones were rejected, play continues.");
     }
 
     /** Checks if it's time to show the swap dialog and does so */
@@ -1363,6 +1447,47 @@ public class GameBoardFrame extends Frame implements TableComponent,
                         " to decide whether to swap seats or not");
             }
         }
+    }
+    
+    private void showGoStateDialog() {
+//        System.out.println("showGoStateDialog before show");
+        if ((game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO) && 
+                ((GoState)gameBoard.getGridState()).isEvaluateStones() &&
+                gameBoard.getGridState().getCurrentPlayer() == playerType &&
+                !gameBoard.getGridState().isGameOver()) {
+            if (acceptGoStateDialog != null) {
+                acceptGoStateDialog.dispose();
+            }
+            String txt = ((GoState)gameBoard.getGridState()).getScoreMessage();
+            acceptGoStateDialog = DSGDialogFactory.createGoStateDialog(this, gameStyle, txt);
+            acceptGoStateDialog.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+//                    System.out.println("showGoStateDialog action "+e.getActionCommand());
+                    if (e.getActionCommand().equals("Accept")) {
+                        dsgEventListener.eventOccurred(new DSGMoveTableEvent(playerName, tableNum, 361));
+                    }
+                    else if (e.getActionCommand().equals("Reject")) {
+//                        System.out.println("showGoStateDialog action reject ");
+                        dsgEventListener.eventOccurred(new DSGRejectGoStateEvent(playerName, tableNum));
+                    }
+                }
+            });
+//            System.out.println("showGoStateDialog show");
+            acceptGoStateDialog.setVisible(true);
+        }
+    }
+    
+    private void showGoMessage() {
+        if ((game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO) 
+                && (gameBoard.getGridState() instanceof GoState) 
+                && gameBoard.getGridState().getCurrentPlayer() == playerType) {
+            GoState s = (GoState) gameBoard.getGridState();
+            if (!s.isEvaluateStones() && s.isMarkStones() && s.doublePass()) {
+                chatArea.newSystemMessage("Your opponent has made a pass. Mark the dead stones and end with a pass.");
+            }
+        }
+        
     }
 
     public void receiveTimerChange(DSGTimerChangeTableEvent timerChangeEvent) {

@@ -57,9 +57,12 @@ public class GameBoard extends Container implements GridCoordinatesChangeListene
 
 	private GameOptions getDefaultGameOptions() {
 
-        GameOptions gameOptions = new SimpleGameOptions(3);
+        GameOptions gameOptions = new SimpleGameOptions(5);
         gameOptions.setPlayerColor(GameOptions.WHITE, 1);
         gameOptions.setPlayerColor(GameOptions.BLACK, 2);
+        gameOptions.setPlayerColor(GameOptions.RED, 3);
+        gameOptions.setPlayerColor(GameOptions.TRANSPARENT_WHITE, 4);
+        gameOptions.setPlayerColor(GameOptions.TRANSPARENT_BLACK, 5);
         gameOptions.setDraw3DPieces(true);
         gameOptions.setShowLastMove(true);
 		return gameOptions;
@@ -144,6 +147,9 @@ public class GameBoard extends Container implements GridCoordinatesChangeListene
 		dkeryoState.setCaptureLengths(new int[] {2, 3});
 		dkeryoState.setCapturesToWin(15);
 		dkeryoState.addOrderedPieceCollectionListener(gridBoard);
+		
+		GoStatePieceCollectionAdapter goState = new GoStatePieceCollectionAdapter(19,19);
+		goState.addOrderedPieceCollectionListener(gridBoard);
 	    
 		if (coordinatesList != null) {	    
 			penteState.addOrderedPieceCollectionListener(coordinatesList);
@@ -155,6 +161,7 @@ public class GameBoard extends Container implements GridCoordinatesChangeListene
 			connect6State.addOrderedPieceCollectionListener(coordinatesList);
 			boatPenteState.addOrderedPieceCollectionListener(coordinatesList);
 			dkeryoState.addOrderedPieceCollectionListener(coordinatesList);
+			goState.addOrderedPieceCollectionListener(coordinatesList);
 		}
 		
 	    gridStates = new GridState[] { new SynchronizedPenteState(penteState),
@@ -165,7 +172,8 @@ public class GameBoard extends Container implements GridCoordinatesChangeListene
 	                                   poofPenteState,
 	                                   connect6State,
 	                                   boatPenteState,
-										new SynchronizedPenteState(dkeryoState)
+										new SynchronizedPenteState(dkeryoState),
+                                        goState
 	                                   };
 	    gridState = gridStates[0]; // PENTE
 	    gridBoard.setGameName(GridStateFactory.getGameName(GridStateFactory.PENTE));
@@ -188,7 +196,8 @@ public class GameBoard extends Container implements GridCoordinatesChangeListene
 		new Color(237, 163, 253).getRGB(),
 		new Color(237, 163, 253).getRGB(),
 		new Color(37, 186, 255).getRGB(),
-			new Color(255, 165, 0).getRGB()
+            new Color(255, 165, 0).getRGB(),
+            new Color(250, 200, 50).getRGB()
 	};
 	
 	//only used by tbapplet right now

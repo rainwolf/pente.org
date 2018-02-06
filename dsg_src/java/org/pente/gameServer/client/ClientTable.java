@@ -116,9 +116,12 @@ public class ClientTable implements DSGEventListener {
 					tableComponent.receiveInviteResponse((DSGInviteResponseTableEvent) dsgEvent);
                 }
                 else if (dsgEvent instanceof DSGStartSetTimerEvent) {
-					tableComponent.receiveStartSetTimerEvent((DSGStartSetTimerEvent) dsgEvent);
+                    tableComponent.receiveStartSetTimerEvent((DSGStartSetTimerEvent) dsgEvent);
+                } else if (dsgEvent instanceof DSGRejectGoStateEvent) {
+                    tableComponent.receiveRejectGoStateEvent((DSGRejectGoStateEvent) dsgEvent);
                 }
-			}
+
+            }
 		}
         else if (dsgEvent instanceof DSGJoinMainRoomEvent) {
             tableComponent.receivePlayerJoinMainRoom((DSGJoinMainRoomEvent) dsgEvent);

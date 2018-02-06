@@ -52,6 +52,7 @@ public class DSGEventWrapper {
     private DSGPlayTableErrorEvent dsgPlayTableErrorEvent;
     private DSGPlayTableEvent dsgPlayTableEvent;
     private DSGPreferenceEvent dsgPreferenceEvent;
+    private DSGRejectGoStateEvent dsgRejectGoStateEvent;
     private DSGResignTableErrorEvent dsgResignTableErrorEvent;
     private DSGResignTableEvent dsgResignTableEvent;
     private DSGServerStatsEvent dsgServerStatsEvent;
@@ -419,6 +420,9 @@ public class DSGEventWrapper {
     public void setDsgPreferenceEvent(DSGPreferenceEvent dsgPreferenceEvent) {
         this.dsgPreferenceEvent = dsgPreferenceEvent;
     }
+
+    public DSGRejectGoStateEvent getDsgRejectGoStateEvent() { return dsgRejectGoStateEvent; }
+    public void setDsgRejectGoStateEvent(DSGRejectGoStateEvent dsgRejectGoStateEvent) { this.dsgRejectGoStateEvent = dsgRejectGoStateEvent; }
 
     public DSGResignTableErrorEvent getDsgResignTableErrorEvent() {
         return dsgResignTableErrorEvent;

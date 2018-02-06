@@ -19,6 +19,8 @@
 package org.pente.gameServer.client;
 
 import java.awt.*;
+import java.util.List;
+import java.util.Map;
 
 import org.pente.gameServer.core.*;
 
@@ -39,6 +41,8 @@ public interface GridBoardComponent extends PieceCollection {
     public void setGameNameColor(int color);
     
     public void setGameName(String name);
+    
+    public void setTerritory(Map<Integer, List<Integer>> territory);
 
     public void setHighlightPiece(GridPiece gridPiece);
 
@@ -48,6 +52,7 @@ public interface GridBoardComponent extends PieceCollection {
     public void setNewMovesAvailable(boolean available);
 
     public void setDrawInnerCircles(boolean drawInnerCircles);
+    public void setDrawGoDots(boolean drawGoDots);
     public void setDrawCoordinates(boolean drawCoordinates);
     
     public void setBoardInsets(int l, int t, int r, int b);

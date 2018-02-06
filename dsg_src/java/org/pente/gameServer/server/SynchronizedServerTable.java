@@ -190,6 +190,8 @@ public class SynchronizedServerTable implements DSGEventListener {
                 }
                 else if (dsgEvent instanceof DSGSwapSeatsTableEvent) {
                     serverTable.handleSwap((DSGSwapSeatsTableEvent) dsgEvent);
+                } else if (dsgEvent instanceof DSGRejectGoStateEvent) {
+                        serverTable.handleRejectGoState((DSGRejectGoStateEvent) dsgEvent);
                 }
 			}
 			else {
