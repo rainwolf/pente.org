@@ -43,5 +43,10 @@ public class DSGDialogFactory {
             "Do you want to play this game as player 1 or player 2?",
             null, "Player 1", "Player 2", false);
     }
+    public static DSGDialog createGoStateDialog(Frame f, GameStyles gameStyles, String txt) {
+        return new DSGDialog(f, "Evaluate board", gameStyles,
+                "Do you accept the marked dead stones and current score?",
+                txt, "Accept", "Reject", false);
+    }
 }
 

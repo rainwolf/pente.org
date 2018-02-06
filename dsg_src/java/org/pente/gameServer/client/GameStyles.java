@@ -25,6 +25,7 @@ import java.awt.*;
  */
 public class GameStyles {
 
+    public static int transparency = 80;
     public static Color white[] =       { new Color(220, 220, 220), new Color(240, 240, 240) };
     public static Color black[] =       { new Color(0,   0,   0),   new Color(32,  32,  32)  };
     public static Color red[] =         { new Color(255, 0,   0),   new Color(255, 50,  50)  };
@@ -33,7 +34,9 @@ public class GameStyles {
     public static Color blue[] =        { new Color(0,   3,   126), new Color(0,   5,   160) };
     public static Color green[] =       { new Color(0,   82,  0),   new Color(0,   105, 0)   };
     public static Color purple[] =      { new Color(107, 2,   108), new Color(142, 0,   144) };
-    public static Color colors[][] =    { white, black, red, orange, yellow, blue, green, purple };
+    public static Color transparentWhite[] =       { new Color(220,220,220, transparency), new Color(240, 240, 240, transparency) };
+    public static Color transparentBlack[] =       { new Color(0,   0,   0, transparency),   new Color(32,  32,  32, transparency) };
+    public static Color colors[][] =    { white, black, red, orange, yellow, blue, green, purple, transparentWhite, transparentBlack };
 
     /**
      * The color of the background.

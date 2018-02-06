@@ -93,7 +93,7 @@ public class GameOptionsDialog extends Dialog {
 
         class UpdateGameOptions implements ActionListener {
             public void actionPerformed(ActionEvent e) {
-
+    
                 gameOptions.setPlayerColor(player1Colors.getSelectedIndex(), 1);
                 gameOptions.setPlayerColor(player2Colors.getSelectedIndex(), 2);
                 gameOptions.setDraw3DPieces(draw3DCheck.getState());

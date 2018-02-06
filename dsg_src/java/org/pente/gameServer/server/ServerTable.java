@@ -590,6 +590,12 @@ public class ServerTable {
 //                        " on main room join.", e);
 //            return;
 //        }
+        
+        if (playersInTable != null && playersInTable.size() == 0) {
+            server.removeTable(tableNum);
+            return;
+        }
+        
 		playersInMainRoom.addElement(mainRoomEvent.getDSGPlayerData());
 		
 		String player = mainRoomEvent.getDSGPlayerData().getName();
@@ -627,6 +633,15 @@ public class ServerTable {
     private DSGChangeStateTableEvent getTableState() {
 
         DSGChangeStateTableEvent changeStateEvent = new DSGChangeStateTableEvent("system", tableNum);
+        if ("Go".equals(server.getServerData().getName())) {
+            if (!(game.getId() == GridStateFactory.GO || game.getId() == GridStateFactory.SPEED_GO)) {
+                game = GridStateFactory.getGame(GridStateFactory.GO);
+            } 
+        } else {
+            if (game.getId() == GridStateFactory.GO || game.getId() == GridStateFactory.SPEED_GO) {
+                game = GridStateFactory.getGame(GridStateFactory.PENTE);
+            }
+        }
         changeStateEvent.setGame(game.getId());
         changeStateEvent.setInitialMinutes(initialMinutes);
         changeStateEvent.setIncrementalSeconds(incrementalSeconds);
@@ -786,7 +801,22 @@ public class ServerTable {
                 if (game.getId() != newGame.getId()) {
                     log4j.debug(psid() + "gameChanged");
                     
-                    game = newGame;
+//                    game = newGame;
+                    if ("Go".equals(server.getServerData().getName())) {
+                        if (newGame.getId() == GridStateFactory.GO || newGame.getId() == GridStateFactory.SPEED_GO) {
+                            game = newGame;
+                        } else if (!(game.getId() == GridStateFactory.GO || game.getId() == GridStateFactory.SPEED_GO)) {
+                            game = GridStateFactory.getGame(GridStateFactory.GO);
+                            changeStateEvent.setGame(GridStateFactory.GO);
+                        }
+                    } else {
+                        if (newGame.getId() == GridStateFactory.GO || newGame.getId() == GridStateFactory.SPEED_GO) {
+                            game = GridStateFactory.getGame(GridStateFactory.PENTE);
+                            changeStateEvent.setGame(GridStateFactory.PENTE);
+                        } else {
+                            game = newGame;
+                        }
+                    }
 
                     // if the game is changed, remove all computer players since
                     // they might not know how to play the different game
@@ -838,7 +868,8 @@ public class ServerTable {
         initialMinutes = changeStateEvent.getInitialMinutes();
         incrementalSeconds = changeStateEvent.getIncrementalSeconds();
         timed = changeStateEvent.getTimed();
-        game = GridStateFactory.getGame(changeStateEvent.getGame());
+        Game newGame = GridStateFactory.getGame(changeStateEvent.getGame());
+        game = newGame;
         rated = changeStateEvent.getRated();
 
         for (int i = 1; i < timers.length; i++) {
@@ -1005,6 +1036,40 @@ public class ServerTable {
 				player);
 		}
 	}
+	
+	public void handleRejectGoState(DSGRejectGoStateEvent dsgEvent) {
+        int error = NO_ERROR;
+        if (!isPlayerInTable(dsgEvent.getPlayer())) {
+            error = DSGTableErrorEvent.NOT_IN_TABLE;
+        } else {
+            if (gridState instanceof GoState) {
+                int seat = getPlayerSeat(dsgEvent.getPlayer());
+                if (seat != gridState.getCurrentPlayer()) {
+                    error = DSGTableErrorEvent.NOT_SITTING;
+                }
+                else if (state != DSGGameStateTableEvent.GAME_IN_PROGRESS) {
+                    error = DSGTableErrorEvent.NO_GAME_IN_PROGRESS;
+                } else {
+
+                    if (timed) {
+                        timers[gridState.getCurrentPlayer()].stop();
+                        timers[gridState.getCurrentPlayer()].incrementMillis(
+                                (int) pingManager.getPingTime(dsgEvent.getPlayer()));
+                    }
+
+                    ((GoState)gridState).rejectAndContinue();
+
+                    if (timed) {
+                        timers[gridState.getCurrentPlayer()].go();
+                    }
+                    broadcastTable(dsgEvent);
+                }
+            }
+        }
+        if (error != NO_ERROR) {
+            log4j.info(psid() + "DSGRejectGoStateEvent error: " + error);
+        }
+    }
 
     public void handleSwap(DSGSwapSeatsTableEvent swapEvent) {
         int error = NO_ERROR;
@@ -1289,7 +1354,9 @@ public class ServerTable {
             game == GridStateFactory.KERYO_GAME ||
             game == GridStateFactory.SPEED_KERYO_GAME ||
             game == GridStateFactory.BOAT_PENTE_GAME ||
-            game == GridStateFactory.SPEED_BOAT_PENTE_GAME) {
+            game == GridStateFactory.SPEED_BOAT_PENTE_GAME ||
+                game == GridStateFactory.POOF_PENTE_GAME ||
+                game == GridStateFactory.SPEED_POOF_PENTE_GAME) {
             ((PenteState) gridState).setTournamentRule(rated);
         }
 
@@ -1327,7 +1394,8 @@ public class ServerTable {
         
         // handle 1st move
 		if (game != GridStateFactory.DPENTE_GAME && game != GridStateFactory.SPEED_DPENTE_GAME && 
-				game != GridStateFactory.DKERYO_GAME && game != GridStateFactory.SPEED_DKERYO_GAME) {
+				game != GridStateFactory.DKERYO_GAME && game != GridStateFactory.SPEED_DKERYO_GAME &&
+                game != GridStateFactory.GO_GAME && game != GridStateFactory.SPEED_GO_GAME) {
 			handleMove(playingPlayers[1].getName(), 180);
 		} else if (timed) {
 			timers[gridState.getCurrentPlayer()].go();
@@ -1360,11 +1428,18 @@ public class ServerTable {
 			return null;
 		}
 		else {
-		    for (int i = playersInTable.size()-1; i>-1; i--) {
+//		    for (int i = playersInTable.size()-1; i>-1; i--) {
+//                DSGPlayerData d = (DSGPlayerData) playersInTable.elementAt(i);
+//                if (d == null) {
+//                    playersInTable.remove(i);
+//                } else if (d.isHuman()) {
+//                    return d.getName();
+//                }
+//            }
+//            return null;
+            for (int i = 0; i<playersInTable.size(); i++) {
                 DSGPlayerData d = (DSGPlayerData) playersInTable.elementAt(i);
-                if (d == null) {
-                    playersInTable.remove(i);
-                } else if (d.isHuman()) {
+                if (d != null && d.isHuman()) {
                     return d.getName();
                 }
             }
@@ -1403,10 +1478,16 @@ public class ServerTable {
                 int oldCurrentPlayer = gridState.getCurrentPlayer();
                 gridState.addMove(move);
                 int newCurrentPlayer = gridState.getCurrentPlayer();
-                
+
+                boolean go = false;
+                if (gridState instanceof GoState) {
+                    if (((GoState)gridState).isMarkStones()) {
+                        go = true;
+                    }
+                }
 				if (timed) {
 					// don't stop/start timers if same players
-					if (oldCurrentPlayer != newCurrentPlayer) {
+					if (oldCurrentPlayer != newCurrentPlayer || go) {
 						timers[oldCurrentPlayer].stop();
 
 	                    // in D-pente, after 4th move, p2 has to decide to swap or
@@ -1451,7 +1532,7 @@ public class ServerTable {
 				broadcastTable(new DSGMoveTableEvent(player, tableNum, move));
 				
 				if (gridState.getNumMoves() != 1 && timed &&
-					oldCurrentPlayer != newCurrentPlayer) {
+                        (oldCurrentPlayer != newCurrentPlayer || go)) {
 					broadcastTable(
 						new DSGTimerChangeTableEvent(
 							player, tableNum, 
@@ -1476,7 +1557,7 @@ public class ServerTable {
 					gameOver(gridState.getWinner() == 0, winner, loser, false, false, false);
 				}
 				else if (timed) {
-					if (oldCurrentPlayer != newCurrentPlayer) {
+					if (oldCurrentPlayer != newCurrentPlayer || go) {
 						timers[newCurrentPlayer].go();
 					}
 					// if playing d-pente, start timer for p1 after 1st move
@@ -2044,8 +2125,10 @@ public class ServerTable {
 			gameStatus = GameData.STATUS_FORCE_RESIGN;
 		}
 		
+		boolean go = (game.getId() == GridStateFactory.GO || game.getId() == GridStateFactory.SPEED_GO);
+		
         if (rated && set != null) {
-        	if (set.getG1Gid() == 0) {
+        	if (set.getG1Gid() == 0 && !go) {
         		
         		// if not all sitting and 
         		// resign or force resign means one player disconnected
@@ -2066,7 +2149,17 @@ public class ServerTable {
         			set.setStatus(LiveSet.STATUS_ONE_GAME_COMPLETED);
         			gameInSet = 1;
         		}
-        	}
+        	} else if (go) {
+
+
+                set.setWinner(winner);
+                set.setStatus(LiveSet.STATUS_COMPLETED);
+                set.setCompletionDate(new Date());
+    
+                newStatus = DSGGameStateTableEvent.NO_GAME_IN_PROGRESS;
+                gameInSet = 0;
+        	    
+            }
         	else {
         		
         		long g2WinnerPid = playingPlayers[getPlayingPlayerSeat(winnerPlayer)].getPlayerID();
@@ -2899,6 +2992,9 @@ public class ServerTable {
         if (gameData.getRated() && localSet != null) {
         	if (localSet.getG1Gid() == 0) {
         		localSet.setG1(gameData);
+        		if (game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO) {
+        		    updateRatings = true;
+                }
         	}
         	else {
         		localSet.setG2(gameData);

@@ -54,12 +54,21 @@ public class AlphaNumericGridCoordinates implements GridCoordinates {
     }
 
 	public String getCoordinate(int move) {
+        if (move == 361) {
+            return "PASS";
+        }
 		int x = move % letters.length;
 		int y = letters.length - 1 - move / letters.length;
 		
 		return getCoordinate(x, y);
 	}
     public String getCoordinate(int x, int y) {
+        if (x == 19 && y == 19) {
+            return "PASS";
+        }
+        if (x == 0 && y == -1) {
+            return "PASS";
+        }
         return letters[x] + numbers[y];
     }
 

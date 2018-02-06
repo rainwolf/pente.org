@@ -38,8 +38,10 @@ public class SimpleGridState implements GridState {
     private int[][] board;
 
     /** The list of moves made on the board in order */
-    private Vector  moves;
-
+    private Vector<Integer>  moves;
+    public void setMoves(Vector<Integer> moves) { this.moves = new Vector<>(moves); }
+    public Vector<Integer> getMovesVector() { return moves; }
+    
     private boolean allowNonBoardMoves;
     public boolean allowNonBoardMoves() { return allowNonBoardMoves; }
     public void setAllowNonBoardMoves(boolean allowNonBoardMoves) { this.allowNonBoardMoves = allowNonBoardMoves; }

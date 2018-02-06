@@ -20,6 +20,7 @@ package org.pente.gameServer.client.awt;
 
 import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 import org.pente.gameServer.client.*;
 import org.pente.gameServer.core.*;
@@ -96,6 +97,11 @@ public class GridBoardOrderedPieceCollectionAdapter extends OrderedPieceCollecti
         gridBoardComponent.setGameName(gameName);
     }
 
+    @Override
+    public void setTerritory(Map<Integer, List<Integer>> territory) {
+        gridBoardComponent.setTerritory(territory);
+    }
+
     public void setHighlightPiece(GridPiece gridPiece) {
         gridBoardComponent.setHighlightPiece(gridPiece);
     }
@@ -118,6 +124,9 @@ public class GridBoardOrderedPieceCollectionAdapter extends OrderedPieceCollecti
 
     public void setDrawInnerCircles(boolean drawInnerCircles) {
         gridBoardComponent.setDrawInnerCircles(drawInnerCircles);
+    }
+    public void setDrawGoDots(boolean drawGoDots) {
+        gridBoardComponent.setDrawGoDots(drawGoDots);
     }
     public void setDrawCoordinates(boolean drawCoordinates) {
         gridBoardComponent.setDrawCoordinates(drawCoordinates);

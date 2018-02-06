@@ -21,6 +21,7 @@ package org.pente.gameServer.client.awt;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+import java.util.List;
 
 import org.pente.gameServer.core.*;
 import org.pente.gameServer.client.*;
@@ -58,6 +59,8 @@ public class GridBoardCanvas extends Canvas
     int             gridPieceSize;
 
 
+    private Map<Integer, List<Integer>> goTerritory;
+    
     private String          gameName;
     private Vector          gridPieces;
     private GridPiece       highlightPiece;
@@ -68,6 +71,7 @@ public class GridBoardCanvas extends Canvas
     private boolean         showNewMovesAvailable;
     private GameTimer       showNewMovesAvailableTimer;
     private boolean         drawInnerCircles;
+    private boolean         drawGoDots;
     private boolean         drawCoordinates = true;
 
     GameOptions             gameOptions;
@@ -75,7 +79,7 @@ public class GridBoardCanvas extends Canvas
 
     boolean                 boardDirty = true;
     boolean                 emptyBoardDirty = true;
-    Object                  drawLock = new Object();
+    final Object                  drawLock = new Object();
 
     private Dimension       currentSize;
 
@@ -89,6 +93,8 @@ public class GridBoardCanvas extends Canvas
     private Color           gameNameColor;
     private Color           highlightColor;
     private Color           shadowColor;
+    private Color           transparentHighlightColor;
+    private Color           transparentShadowColor;
 
     // move listeners
     private Vector          listeners;
@@ -110,7 +116,9 @@ public class GridBoardCanvas extends Canvas
         gameNameColor = new Color(234, 196, 136);
         gridColor = Color.gray;
         highlightColor = Color.yellow;
+        transparentHighlightColor = new Color(highlightColor.getRed(), highlightColor.getGreen(), highlightColor.getBlue(), GameStyles.transparency);
         shadowColor = new Color(60, 60, 60);
+        transparentShadowColor = new Color(shadowColor.getRed(), shadowColor.getGreen(), shadowColor.getBlue(), GameStyles.transparency);
 
         thinkingPiece = new SimpleGridPiece();
         thinkingPiece.setPlayer(1);
@@ -177,7 +185,15 @@ public class GridBoardCanvas extends Canvas
         this.gameNameColor = new Color(color);
     }
 
-	public void setMessage(String message) {
+    public void setTerritory(Map<Integer, List<Integer>> goTerritory) {
+        synchronized (drawLock) {
+            this.goTerritory = goTerritory;
+            boardDirty = true;
+        }
+        repaint();
+    }
+
+    public void setMessage(String message) {
         synchronized (drawLock) {
 			this.message = message;
         }
@@ -262,6 +278,7 @@ public class GridBoardCanvas extends Canvas
     public void setDrawInnerCircles(boolean drawInnerCircles) {
         this.drawInnerCircles = drawInnerCircles;
     }
+    public void setDrawGoDots(boolean drawGoDots) { this.drawGoDots = drawGoDots; }
     public void setDrawCoordinates(boolean drawCoordinates) {
         this.drawCoordinates = drawCoordinates;
     }
@@ -550,6 +567,8 @@ public class GridBoardCanvas extends Canvas
         drawEmptyBoardGrid(g);
         if (drawInnerCircles) {
             drawInnerCircles(g);
+        } else if (drawGoDots) {
+            drawGoDots(g);
         }
         if (drawCoordinates) {
             drawEmptyBoardCoordinates(g);
@@ -604,7 +623,7 @@ public class GridBoardCanvas extends Canvas
 //System.out.println("edgeLeftOvers="+edgeLeftOvers);
     }
 
-    void drawEmptyBoardBackground(Graphics g) {
+    private void drawEmptyBoardBackground(Graphics g) {
 //System.out.println("drawEmptyBoardBackground()");
         Dimension size = getSize();
 //System.out.println("size="+size);
@@ -620,7 +639,7 @@ public class GridBoardCanvas extends Canvas
         }
     }
 
-    void drawEmptyBoardGameName(Graphics g) {
+    private void drawEmptyBoardGameName(Graphics g) {
 
         int gridSizePx = gridPieceSize * (gridWidth - 1);
         int gridSizePy = gridPieceSize * (gridHeight - 1);
@@ -656,7 +675,7 @@ public class GridBoardCanvas extends Canvas
         g.drawString(gameName, x, y);
     }
 
-    void drawEmptyBoardGrid(Graphics g) {
+    private void drawEmptyBoardGrid(Graphics g) {
 
         Color middleColor = showNewMovesAvailable ? Color.red : Color.black;
         Color gridColor = showNewMovesAvailable ? Color.red : this.gridColor;
@@ -700,7 +719,7 @@ public class GridBoardCanvas extends Canvas
         }
     }
 
-    void drawInnerCircles(Graphics g) {
+    private void drawInnerCircles(Graphics g) {
 
         Color gridColor = showNewMovesAvailable ? Color.red : this.gridColor;
         g.setColor(gridColor);
@@ -725,7 +744,33 @@ public class GridBoardCanvas extends Canvas
         g.drawOval(x, y, halfGridPieceSize, halfGridPieceSize);
     }
 
-    void drawEmptyBoardCoordinates(Graphics g) {
+    private void drawGoDots(Graphics g) {
+
+        Color gridColor = showNewMovesAvailable ? Color.red : this.gridColor;
+        g.setColor(gridColor);
+
+        int distanceFromCenter = 6;
+        int halfGridPieceSize = gridPieceSize / 4;
+        int offsetFromX = (getGridWidth() / 2 - distanceFromCenter) * gridPieceSize - halfGridPieceSize / 2;
+        int offsetFromY = (getGridHeight() / 2 - distanceFromCenter) * gridPieceSize - halfGridPieceSize / 2;
+
+        int x = getStartX() + offsetFromX;
+        int y = getStartY() + offsetFromY;
+
+        g.fillOval(x, y, halfGridPieceSize, halfGridPieceSize);
+        g.fillOval(x + distanceFromCenter * gridPieceSize, y, halfGridPieceSize, halfGridPieceSize);
+        g.fillOval(x + distanceFromCenter * 2 * gridPieceSize, y, halfGridPieceSize, halfGridPieceSize);
+        y += distanceFromCenter * gridPieceSize;
+        g.fillOval(x, y, halfGridPieceSize, halfGridPieceSize);
+        g.fillOval(x + distanceFromCenter * gridPieceSize, y, halfGridPieceSize, halfGridPieceSize);
+        g.fillOval(x + distanceFromCenter * 2 * gridPieceSize, y, halfGridPieceSize, halfGridPieceSize);
+        y += distanceFromCenter * gridPieceSize;
+        g.fillOval(x, y, halfGridPieceSize, halfGridPieceSize);
+        g.fillOval(x + distanceFromCenter * gridPieceSize, y, halfGridPieceSize, halfGridPieceSize);
+        g.fillOval(x + distanceFromCenter * 2 * gridPieceSize, y, halfGridPieceSize, halfGridPieceSize);
+    }
+
+    private void drawEmptyBoardCoordinates(Graphics g) {
 
         int fontSize = 8;
         if (gridPieceSize > 14) {
@@ -813,6 +858,9 @@ public class GridBoardCanvas extends Canvas
         if (gameOptions.getShowLastMove()) {
             for (int i = gridPieces.size() - 1; i >= 0; i--) {
                 GridPiece piece = (GridPiece) gridPieces.elementAt(i);
+                if (piece.getX()<0 || piece.getY()<0 || piece.getX()>=gridWidth || piece.getY()>=gridWidth) {
+                    continue;
+                }
                 if (piece == highlightPiece) {
                     drawPiece(boardGraphics, piece);
                     break;
@@ -827,12 +875,33 @@ public class GridBoardCanvas extends Canvas
             if (gameOptions.getShowLastMove() && piece == highlightPiece) {
                 continue;
             }
+            if (piece.getX()<0 || piece.getY()<0 || piece.getX()>=gridWidth || piece.getY()>=gridWidth) {
+                continue;
+            }
 
             drawPiece(boardGraphics, piece);
         }
+        
+        if (goTerritory != null) {
+            List<Integer> territory = goTerritory.get(1);
+            int x, y;
+            if (territory != null) {
+                for (int pos: territory) {
+                    x = pos % gridWidth; y = pos/gridWidth;
+                    fillRect(boardGraphics, x, y, gridPieceSize/3, Color.BLACK);
+                }
+            }
+            territory = goTerritory.get(2);
+            if (territory != null) {
+                for (int pos: territory) {
+                    x = pos % gridWidth; y = pos/gridWidth;
+                    fillRect(boardGraphics, x, y, gridPieceSize/3, Color.WHITE);
+                }
+            }
+        }
     }
     
-    void drawBoard(Image emptyBoardImage, Graphics boardGraphics) {
+    private void drawBoard(Image emptyBoardImage, Graphics boardGraphics) {
 //System.out.println("drawBoard()");
         boardGraphics.drawImage(emptyBoardImage, 0, 0, this);
 
@@ -841,13 +910,17 @@ public class GridBoardCanvas extends Canvas
         boardDirty = false;
     }
 
-    void drawPiece(Graphics g, GridPiece p) {
+    private void drawPiece(Graphics g, GridPiece p) {
 
         Color c[] = GameStyles.colors[gameOptions.getPlayerColor(p.getPlayer())];
 
-        Color highlightColor = null;
+        Color localHighlightColor = null;
         if (gameOptions.getShowLastMove() && p == highlightPiece) {
-            highlightColor = Color.yellow;
+            if (c[0].getAlpha() != GameStyles.transparency) {
+                localHighlightColor = highlightColor;
+            } else {
+                localHighlightColor = transparentHighlightColor;
+            }
         }
 
         int x = getStartX() + p.getX() * gridPieceSize;
@@ -859,10 +932,10 @@ public class GridBoardCanvas extends Canvas
         }
 
         if (gameOptions.getDraw3DPieces()) {
-            draw3DPiece(g, new Point(x, y), c, highlightColor, gridPieceSize);
+            draw3DPiece(g, new Point(x, y), c, localHighlightColor, gridPieceSize);
         }
         else {
-            draw2DPiece(g, new Point(x, y), c[1], highlightColor, gridPieceSize);
+            draw2DPiece(g, new Point(x, y), c[1], localHighlightColor, gridPieceSize);
         }
     }
 
@@ -892,18 +965,29 @@ public class GridBoardCanvas extends Canvas
         int reflectionWidth = (darkWidth < 18) ? 4 : 6;
         int reflectionOffset = darkWidth / 4;
 
-        fillOval(g, p.x + 2, p.y + 2, darkWidth, shadowColor); // shadow
+        if (c[0].getAlpha() != GameStyles.transparency) {
+            fillOval(g, p.x + 2, p.y + 2, darkWidth, shadowColor); // shadow
+        } else {
+            fillOval(g, p.x + 2, p.y + 2, darkWidth, transparentShadowColor); // shadow
+        }
         fillOval(g, p.x, p.y, darkWidth, c[0]);  // dark
         fillOval(g, p.x + 1, p.y + 1, lightWidth, c[1]); // light
         fillOval(g, p.x + reflectionOffset, p.y + reflectionOffset, reflectionWidth, Color.white); // reflection
     }
 
-    void fillOval(Graphics g, int x, int y, int r, Color c) {
+    private void fillOval(Graphics g, int x, int y, int r, Color c) {
         g.setColor(c);
         g.fillOval(x, y, r, r);
     }
+    
+    private void fillRect(Graphics g, int x, int y, int w, Color c) {
+        g.setColor(c);
+        x = getStartX() + x * gridPieceSize - w/2;
+        y = getStartY() + y * gridPieceSize - w/2;
+        g.fillRect(x,y,w,w);
+    }
 
-    Point getGridMove(int x, int y) {
+    private Point getGridMove(int x, int y) {
         x -= getStartX();
         y -= getStartY();
         y += gridPieceSize;

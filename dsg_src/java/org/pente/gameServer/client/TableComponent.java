@@ -52,6 +52,8 @@ public interface TableComponent {
     
     public void receiveStartSetTimerEvent(DSGStartSetTimerEvent timerEvent);
     
+    public void receiveRejectGoStateEvent(DSGRejectGoStateEvent goStateEvent);
+    
     public java.awt.Dimension getNewTableSizePref();
 }
 
