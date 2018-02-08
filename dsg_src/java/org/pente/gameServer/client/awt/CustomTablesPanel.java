@@ -481,12 +481,13 @@ public class CustomTablesPanel extends Panel
         g.drawString(timedString, s1 + X_OFF + secondWidth1, h + Y_OFF + secondHeight * 3);
 
 
+        boolean go = normalGame.getId() == GridStateFactory.GO;
         // draw third section - players
         boolean bothPlayersSitting = true;
         g.setFont(midFont);
         if (data.getPlayerAtSeat(1) != null) {
             draw3DPiece(g, new Point(s2 + X_OFF, h + Y_OFF + 3),
-                GameStyles.colors[0], 17);
+                GameStyles.colors[(go?1:0)], 17);
             g.setColor(Color.black);
             g.drawString(data.getPlayerAtSeat(1), s2 + X_OFF + 20, s3 - Y_OFF);
         } else {
@@ -494,7 +495,7 @@ public class CustomTablesPanel extends Panel
         }
         if (data.getPlayerAtSeat(2) != null) {
             draw3DPiece(g, new Point(width - 2 * X_OFF - 20, h + Y_OFF + 3),
-                GameStyles.colors[1], 17);
+                GameStyles.colors[(go?0:1)], 17);
             g.setColor(Color.black);
             int secondPlayerWidth = fontMetrics.stringWidth(data.getPlayerAtSeat(2));
             g.drawString(data.getPlayerAtSeat(2), width - 2 * X_OFF - 24 - secondPlayerWidth, s3 - Y_OFF);
