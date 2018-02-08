@@ -39,7 +39,7 @@ $$codebase, $$name are expanded by the JNLPDownloadServlet at runtime -->
     </security>
     <resources>
         <j2se version="1.2+"/>
-        <jar href="lib/jws/pente.jar" version="4.3.0.13" />
+        <jar href="lib/jws/pente.jar" version="4.4.0.0" />
     </resources>
     <applet-desc
             documentBase="lib/jws"

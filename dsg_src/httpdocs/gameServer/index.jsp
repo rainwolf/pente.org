@@ -487,45 +487,52 @@ addLoadEvent(goJws);
   <tr>
     <td style="width: 72%;">
       
- <form name="mainPlayForm" method="post" action="" style="margin:0;padding:0;">
-<div class="buttonwrapper">
+ <%--<form name="mainPlayForm" method="post" action="" style="margin:0;padding:0;">--%>
+<%--<div class="buttonwrapper">--%>
 
-    <a class="boldbuttons" href="javascript:void(0);" 
-       style="float:left;margin-right:5px;" 
-       onClick="javascript:play();"><span>Join Game Room</span></a>
-       
-   <div style="margin-top:5px;">
-    
-    <%-- no sense making players choose when only one choice --%>
-    <% if (resources.getServerData().size() == 1) { %>
-      <input type="hidden" name="port" value="<%= ((ServerData) resources.getServerData().get(0)).getPort() %>">
-    <% } else { %>
-      <select name="lobbies">
-      <% for (Iterator it = resources.getServerData().iterator(); it.hasNext();) {
-             ServerData data = (ServerData) it.next(); %>
-             <option value="<%= data.getPort() %>"><%= data.getName() %></option>
-      <% } %>
-    <% } %>
-    </select>
-    <br>
-    Size: <select name="gameRoomSize">
-        <option value="640" <% if (grs.equals("640")) { %>selected<% } %>>640x480</option>
-        <option value="800" <% if (grs.equals("800")) { %>selected<% } %>>800x600</option>
-    </select>
+    <%--<a class="boldbuttons" href="javascript:void(0);" --%>
+       <%--style="float:left;margin-right:5px;" --%>
+       <%--onClick="javascript:play();"><span>Join Game Room</span></a>--%>
+       <%----%>
+   <%--<div style="margin-top:5px;">--%>
+    <%----%>
+    <%--&lt;%&ndash; no sense making players choose when only one choice &ndash;%&gt;--%>
+    <%--<% if (resources.getServerData().size() == 1) { %>--%>
+      <%--<input type="hidden" name="port" value="<%= ((ServerData) resources.getServerData().get(0)).getPort() %>">--%>
+    <%--<% } else { %>--%>
+      <%--<select name="lobbies">--%>
+      <%--<% for (Iterator it = resources.getServerData().iterator(); it.hasNext();) {--%>
+             <%--ServerData data = (ServerData) it.next(); %>--%>
+             <%--<option value="<%= data.getPort() %>"><%= data.getName() %></option>--%>
+      <%--<% } %>--%>
+    <%--<% } %>--%>
+    <%--</select>--%>
+    <%--<br>--%>
+    <%--Size: <select name="gameRoomSize">--%>
+        <%--<option value="640" <% if (grs.equals("640")) { %>selected<% } %>>640x480</option>--%>
+        <%--<option value="800" <% if (grs.equals("800")) { %>selected<% } %>>800x600</option>--%>
+    <%--</select>--%>
 
-   </div>
-</div>
+   <%--</div>--%>
+<%--</div>--%>
 
-</form>
+<%--</form>--%>
 
         <%--<div style="margin-top:5px;">--%>
             <%--or <a href="/gameServer/index.jsp?jws=1"><span>install</span></a> the game room on your desktop--%>
         <%--</div>--%>
+        <div class="buttonwrapper">
+
+            <a class="boldbuttons" href="/gameServer/pente.jnlp?name=<%=name%>&password=<%=dsgPlayerData.getPassword()%>"
+               style="float:left;margin-right:5px;""><span>Install Game Room </span></a> 
+            <div style="margin-top:5px;">
+                (on your desktop)
+                <%--<br> <font color="red"><b>(new install link, without the need to log in manually)</b></font>--%>
         
-        <div style="margin-top:5px;">
-            <%--or <a href="/gameServer/pente.jnlp?name=lupulo"><span>install</span></a> the game room on your desktop--%>
-            or <a href="/gameServer/pente.jnlp?name=<%=name%>&password=<%=dsgPlayerData.getPassword()%>"><span>install</span></a> the game room on your desktop <br> <font color="red"><b>(new install link, without the need to log in manually)</b></font>
-        </div>
+        <%--<div style="margin-top:5px;">--%>
+            <%--&lt;%&ndash;or <a href="/gameServer/pente.jnlp?name=lupulo"><span>install</span></a> the game room on your desktop&ndash;%&gt;--%>
+            <%--or <a href="/gameServer/pente.jnlp?name=<%=name%>&password=<%=dsgPlayerData.getPassword()%>"><span>install</span></a> the game room on your desktop <br> <font color="red"><b>(new install link, without the need to log in manually)</b></font>--%>
+        <%--</div>--%>
 <%--
 --%>
    </td>

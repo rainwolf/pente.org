@@ -73,7 +73,7 @@ for (Iterator<WhosOnlineRoom> iterator = rooms.iterator(); iterator.hasNext();) 
             onlineFollowing += 1;
         }
     }
-    if ("web".equals(r.getName()) || "Mobile".equals(r.getName())) {
+    if ("web".equals(r.getName()) || "Mobile".equals(r.getName()) || "Go".equals(r.getName())) {
         continue;
     }
     livePlayers += r.getPlayers().size();
@@ -621,9 +621,6 @@ Open Invitation Games<%
                 boolean koth = false;
                 if (s.isTwoGameSet()) {
                     color = "whiteblack";
-                    if (kothStorer.getEventId(s.getGame1().getGame()) == s.getGame1().getEventId()) {
-                        koth = true;
-                    }
                 }
                  else if (myPID == s.getPlayer1Pid()) {
                      color = "white (p1)";
@@ -631,6 +628,9 @@ Open Invitation Games<%
                  else {
                      color = "black (p2)";
                  }
+                if (kothStorer.getEventId(s.getGame1().getGame()) == s.getGame1().getEventId()) {
+                    koth = true;
+                }
                 String ratedStr = "Not Rated";
                 if (koth) {
                     ratedStr = "KotH";
