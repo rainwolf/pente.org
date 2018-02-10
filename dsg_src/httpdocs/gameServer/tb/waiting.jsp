@@ -105,7 +105,7 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
         continue;
     }
 
-    if (s.isTwoGameSet()) {
+    if (s.getGame1().isRated()) {
         int game = s.getGame1().getGame();
         if (kothStorer.getEventId(game) == s.getGame1().getEventId()) {
             Hill hill = kothStorer.getHill(game);
@@ -319,10 +319,10 @@ below and do not specify a player to invite.<br>
          String color = null;
         if (s.isTwoGameSet()) {
             color = "white, black (2 game set)";
-        } else if ((s.getPlayer1Pid() == 0) == (s.getGame1().getGame() != GridStateFactory.TB_GO)) {
-            color = "white";
+        } else if (s.getPlayer1Pid() == 0) {
+            color = (s.getGame1().getGame() == GridStateFactory.TB_GO)?"white":"black";
         } else {
-            color = "black";
+            color = (s.getGame1().getGame() != GridStateFactory.TB_GO)?"white":"black";
         }
 
         DSGPlayerData opp = dsgPlayerStorer.loadPlayer(s.getInviterPid());
@@ -389,10 +389,10 @@ below and do not specify a player to invite.<br>
 
            if (s.isTwoGameSet()) {
                color = "white, black (2 game set)";
-           } else if ((s.getPlayer1Pid() == 0) == (s.getGame1().getGame() != GridStateFactory.TB_GO)) {
-               color = "white";
+           } else if (s.getPlayer1Pid() == 0) {
+               color = (s.getGame1().getGame() == GridStateFactory.TB_GO)?"white":"black";
            } else {
-               color = "black";
+               color = (s.getGame1().getGame() != GridStateFactory.TB_GO)?"white":"black";
            }
            DSGPlayerData opp = dsgPlayerStorer.loadPlayer(s.getInviterPid());
            DSGPlayerData d = opp;
@@ -458,10 +458,10 @@ below and do not specify a player to invite.<br>
            String color = null;
            if (s.isTwoGameSet()) {
                color = "white, black (2 game set)";
-           } else if ((s.getPlayer1Pid() == 0) == (s.getGame1().getGame() != GridStateFactory.TB_GO)) {
-               color = "white";
+           } else if (s.getPlayer1Pid() == 0) {
+               color = (s.getGame1().getGame() == GridStateFactory.TB_GO)?"white":"black";
            } else {
-               color = "black";
+               color = (s.getGame1().getGame() != GridStateFactory.TB_GO)?"white":"black";
            }
            DSGPlayerData opp = dsgPlayerStorer.loadPlayer(s.getInviterPid());
            DSGPlayerData d = opp;

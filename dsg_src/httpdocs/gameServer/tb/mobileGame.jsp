@@ -302,7 +302,7 @@
                             <a class="boldbuttons" href="javascript:resign();"
                                style="margin-left:50px;"><span>Resign</span></a>
                             <a class="boldbuttons" href="javascript:requestCancel();"
-                               style="margin-left:5px;"><span>Request Set Cancellation</span></a>
+                               style="margin-left:5px;"><span>Cancel Set</span></a>
                             <%
                             } else if (!"false".equals(myTurn)) { %>
                             <a class="boldbuttons" href="javascript:resign();"

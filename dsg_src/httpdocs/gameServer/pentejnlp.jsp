@@ -46,7 +46,7 @@ $$codebase, $$name are expanded by the JNLPDownloadServlet at runtime -->
             <%--documentbase="<%=request.getScheme() + "://"+ request.getServerName() + request.getContextPath() + "/gameServer" %>"--%>
             name="pente"
             main-class="org.pente.gameServer.client.awt.PenteApplet"
-            width="800"
+            width="850"
             height="600">
         <param name="loadSounds" value="true" />
         <% if (hasParams) { %>
