@@ -425,6 +425,11 @@ public class SimpleDSGPlayerData implements DSGPlayerData, java.io.Serializable 
             if (lastUpdateDate != null) {
                 data.lastUpdateDate = new Date(lastUpdateDate.getTime());
             }
+            Vector<DSGPlayerGameData> newGameData = new Vector<>();
+            for(DSGPlayerGameData d: gameData) {
+                newGameData.add((DSGPlayerGameData) d.clone());
+            }
+            data.setPlayerGameData(newGameData);
 
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
