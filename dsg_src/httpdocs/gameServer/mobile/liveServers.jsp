@@ -12,6 +12,7 @@
                  java.util.*" 
 %><%@ page contentType="text/html; charset=UTF-8" %><%
 String loggedInStr = (String) request.getAttribute("name");
+boolean go = (request.getParameter("iPhone") != null);
  if (loggedInStr == null) {
     response.sendRedirect("../index.jsp");
    } %><%  
@@ -26,9 +27,9 @@ List<WhosOnlineRoom> rooms = new ArrayList(WhosOnline.getPlayers(globalResources
             String serverAndPlayers = "";
             ServerData data = (ServerData) it.next();
             String serverName = data.getName();
-            if ("Go".equals(serverName)) {
-                continue;
-            }
+//            if ("Go".equals(serverName) && !go) {
+//                continue;
+//            }
             boolean empty = true;
             for (WhosOnlineRoom room : rooms) {
                 if (serverName.equals(room.getName())) {

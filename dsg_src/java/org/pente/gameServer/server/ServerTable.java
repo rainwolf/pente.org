@@ -1476,99 +1476,122 @@ public class ServerTable {
 			else {
 				
                 int oldCurrentPlayer = gridState.getCurrentPlayer();
+
+//                boolean go = false;
+//                if (gridState instanceof GoState) {
+//                    if (((GoState)gridState).isMarkStones() && !((GoState)gridState).isEvaluateStones()) {
+//                        go = true;
+//                    }
+//                }
+
                 gridState.addMove(move);
                 int newCurrentPlayer = gridState.getCurrentPlayer();
 
-                boolean go = false;
-                if (gridState instanceof GoState) {
-                    if (((GoState)gridState).isMarkStones()) {
-                        go = true;
+                synchronized (this) {
+
+                    if (timed) {
+                        // don't stop/start timers if same players
+                        if (oldCurrentPlayer != newCurrentPlayer) {
+                            timers[oldCurrentPlayer].stop();
+
+                            // in D-pente, after 4th move, p2 has to decide to swap or
+                            // not. if p1 requests undo and accepted, reset p2's clock
+                            // to initial time
+                            if ((game == GridStateFactory.DPENTE_GAME ||
+                                    game == GridStateFactory.SPEED_DPENTE_GAME ||
+                                    game == GridStateFactory.DKERYO_GAME || game == GridStateFactory.SPEED_DKERYO_GAME) &&
+                                    gridState.getNumMoves() == 4) {
+                                Time newTime2 =
+                                        new Time(timers[newCurrentPlayer].getMinutes(),
+                                                timers[newCurrentPlayer].getSeconds());
+                                moveTimes.add(newTime2);
+                            }
+
+                            if (gridState.getNumMoves() != 1) {
+                                timers[oldCurrentPlayer].increment(
+                                        incrementalSeconds);
+                                // should also increment millis for d-pente but ignore
+                                // since timers aren't stopped
+                                timers[oldCurrentPlayer].incrementMillis(
+                                        (int) pingManager.getPingTime(player));
+                            }
+                            Time newTime =
+                                    new Time(timers[oldCurrentPlayer].getMinutes(),
+                                            timers[oldCurrentPlayer].getSeconds());
+
+                            moveTimes.add(newTime);
+                        } else {
+                            if (gridState.getNumMoves() != 1) {
+                                timers[oldCurrentPlayer].increment(
+                                        incrementalSeconds);
+                                // should also increment millis for d-pente but ignore
+                                // since timers aren't stopped
+                                timers[oldCurrentPlayer].incrementMillis(
+                                        (int) pingManager.getPingTime(player));
+                            }
+                            Time newTime =
+                                    new Time(timers[oldCurrentPlayer].getMinutes(),
+                                            timers[oldCurrentPlayer].getSeconds());
+
+                            moveTimes.add(newTime);
+                        }
                     }
-                }
-				if (timed) {
-					// don't stop/start timers if same players
-					if (oldCurrentPlayer != newCurrentPlayer || go) {
-						timers[oldCurrentPlayer].stop();
 
-	                    // in D-pente, after 4th move, p2 has to decide to swap or
-	                    // not. if p1 requests undo and accepted, reset p2's clock
-	                    // to initial time
-	                    if ((game == GridStateFactory.DPENTE_GAME ||
-	                         game == GridStateFactory.SPEED_DPENTE_GAME ||
-								game == GridStateFactory.DKERYO_GAME || game == GridStateFactory.SPEED_DKERYO_GAME) &&
-	                        gridState.getNumMoves() == 4) {
-	                        Time newTime2 =
-	                            new Time(timers[newCurrentPlayer].getMinutes(),
-	                                     timers[newCurrentPlayer].getSeconds());
-	                        moveTimes.add(newTime2);
-	                    }
-	                    
-						if (gridState.getNumMoves() != 1) {
-	                        timers[oldCurrentPlayer].increment(
-	                            incrementalSeconds);
-	                        // should also increment millis for d-pente but ignore
-	                        // since timers aren't stopped
-							timers[oldCurrentPlayer].incrementMillis(
-	                            (int) pingManager.getPingTime(player));
-						}
-	                    Time newTime = 
-	                        new Time(timers[oldCurrentPlayer].getMinutes(),
-	                                 timers[oldCurrentPlayer].getSeconds());
-	
-						moveTimes.add(newTime);
-					}
-				}
-
-				if (undoRequested) {
-					broadcastTable(new DSGUndoReplyTableEvent(player, tableNum, false));
-					undoRequested = false;
-				}
-				if (cancelRequested) {
-					broadcastTable(new DSGCancelReplyTableEvent(player, tableNum, false));
-					cancelRequested = false;
-					cancelRequestedBy = null;
-				}
-
-				broadcastTable(new DSGMoveTableEvent(player, tableNum, move));
-				
-				if (gridState.getNumMoves() != 1 && timed &&
-                        (oldCurrentPlayer != newCurrentPlayer || go)) {
-					broadcastTable(
-						new DSGTimerChangeTableEvent(
-							player, tableNum, 
-							timers[oldCurrentPlayer].getMinutes(),
-							timers[oldCurrentPlayer].getSeconds()));
-				}
-
-                activityLogger.updateGameState(sid, tableNum, gridState.getHash(),
-                    gridState.getMoves());
-				
-				if (gridState.isGameOver()) {
-                    String winner = null;
-                    String loser = null;
-                    if (gridState.getWinner() == 0) {
-                        winner = playingPlayers[1].getName();
-                        loser = playingPlayers[2].getName();
+                    if (undoRequested) {
+                        broadcastTable(new DSGUndoReplyTableEvent(player, tableNum, false));
+                        undoRequested = false;
                     }
-                    else {
-                        winner = playingPlayers[gridState.getWinner()].getName();
-                        loser = playingPlayers[3 - gridState.getWinner()].getName();
+                    if (cancelRequested) {
+                        broadcastTable(new DSGCancelReplyTableEvent(player, tableNum, false));
+                        cancelRequested = false;
+                        cancelRequestedBy = null;
                     }
-					gameOver(gridState.getWinner() == 0, winner, loser, false, false, false);
-				}
-				else if (timed) {
-					if (oldCurrentPlayer != newCurrentPlayer || go) {
-						timers[newCurrentPlayer].go();
-					}
-					// if playing d-pente, start timer for p1 after 1st move
-					// because it is still p1's turn
+
+                    broadcastTable(new DSGMoveTableEvent(player, tableNum, move));
+
+                    if (gridState.getNumMoves() != 1 && timed // && (oldCurrentPlayer != newCurrentPlayer)
+                            ) {
+                        broadcastTable(
+                                new DSGTimerChangeTableEvent(
+                                        player, tableNum,
+                                        timers[oldCurrentPlayer].getMinutes(),
+                                        timers[oldCurrentPlayer].getSeconds()));
+                    }
+
+                    activityLogger.updateGameState(sid, tableNum, gridState.getHash(),
+                            gridState.getMoves());
+
+                    if (gridState.isGameOver()) {
+                        String winner = null;
+                        String loser = null;
+                        if (gridState.getWinner() == 0) {
+                            winner = playingPlayers[1].getName();
+                            loser = playingPlayers[2].getName();
+                        }
+                        else {
+                            winner = playingPlayers[gridState.getWinner()].getName();
+                            loser = playingPlayers[3 - gridState.getWinner()].getName();
+                        }
+                        gameOver(gridState.getWinner() == 0, winner, loser, false, false, false);
+                    }
+                    else if (timed) {
+//                        if (oldCurrentPlayer != newCurrentPlayer || go) {
+                        if (oldCurrentPlayer != newCurrentPlayer) {
+                            timers[newCurrentPlayer].go();
+                        }
+                        // if playing d-pente, start timer for p1 after 1st move
+                        // because it is still p1's turn
 //					else if ((game == GridStateFactory.DPENTE_GAME ||
 //                              game == GridStateFactory.SPEED_DPENTE_GAME ||
 //					game == GridStateFactory.DKERYO_GAME || game == GridStateFactory.SPEED_DKERYO_GAME) &&
 //                             gridState.getNumMoves() == 0) {
 //						timers[newCurrentPlayer].go();
 //					}
-				}
+                    }
+
+                    
+                }
+				
 			}
 		}
 		
