@@ -320,9 +320,9 @@ below and do not specify a player to invite.<br>
         if (s.isTwoGameSet()) {
             color = "white, black (2 game set)";
         } else if (s.getPlayer1Pid() == 0) {
-            color = (s.getGame1().getGame() == GridStateFactory.TB_GO)?"white":"black";
-        } else {
             color = (s.getGame1().getGame() != GridStateFactory.TB_GO)?"white":"black";
+        } else {
+            color = (s.getGame1().getGame() == GridStateFactory.TB_GO)?"white":"black";
         }
 
         DSGPlayerData opp = dsgPlayerStorer.loadPlayer(s.getInviterPid());
@@ -390,9 +390,9 @@ below and do not specify a player to invite.<br>
            if (s.isTwoGameSet()) {
                color = "white, black (2 game set)";
            } else if (s.getPlayer1Pid() == 0) {
-               color = (s.getGame1().getGame() == GridStateFactory.TB_GO)?"white":"black";
-           } else {
                color = (s.getGame1().getGame() != GridStateFactory.TB_GO)?"white":"black";
+           } else {
+               color = (s.getGame1().getGame() == GridStateFactory.TB_GO)?"white":"black";
            }
            DSGPlayerData opp = dsgPlayerStorer.loadPlayer(s.getInviterPid());
            DSGPlayerData d = opp;
@@ -459,9 +459,9 @@ below and do not specify a player to invite.<br>
            if (s.isTwoGameSet()) {
                color = "white, black (2 game set)";
            } else if (s.getPlayer1Pid() == 0) {
-               color = (s.getGame1().getGame() == GridStateFactory.TB_GO)?"white":"black";
-           } else {
                color = (s.getGame1().getGame() != GridStateFactory.TB_GO)?"white":"black";
+           } else {
+               color = (s.getGame1().getGame() == GridStateFactory.TB_GO)?"white":"black";
            }
            DSGPlayerData opp = dsgPlayerStorer.loadPlayer(s.getInviterPid());
            DSGPlayerData d = opp;

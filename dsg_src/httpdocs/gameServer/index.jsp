@@ -718,7 +718,8 @@ if (inLiveGameRoom) {
          if (s.isTwoGameSet()) {
              color = "white,black (2 game set)";
          }
-         else if ((myPID == s.getPlayer1Pid()) == (s.getGame1().getGame()!=GridStateFactory.TB_GO)) {
+         else if ((myPID == s.getPlayer1Pid() && s.getGame1().getGame()!=GridStateFactory.TB_GO) ||
+                 (myPID == s.getPlayer2Pid() && s.getGame1().getGame()==GridStateFactory.TB_GO)) {
              color = "white";
          }
          else {
@@ -783,7 +784,8 @@ if (inLiveGameRoom) {
          if (s.isTwoGameSet()) {
              color = "white,black (2 game set)";
          }
-         else if ((myPID == s.getPlayer1Pid()) == (s.getGame1().getGame()!=GridStateFactory.TB_GO)) {
+         else if ((myPID == s.getPlayer1Pid() && s.getGame1().getGame()!=GridStateFactory.TB_GO) ||
+                 (myPID == s.getPlayer2Pid() && s.getGame1().getGame()==GridStateFactory.TB_GO)) {
              color = "white";
          }
          else {
@@ -872,7 +874,8 @@ if (inLiveGameRoom) {
          <td><b>Rated</b></td>
        </tr>
      <% for (TBGame g : myTurn) {
-         String color =  ((myPID == g.getPlayer1Pid()) == (g.getGame()!=GridStateFactory.TB_GO)) ?
+             String color =  ((myPID == g.getPlayer1Pid() && g.getGame()!=GridStateFactory.TB_GO) ||
+                     (myPID == g.getPlayer2Pid() && g.getGame()==GridStateFactory.TB_GO)) ?
              "white" : "black";
          if ("white".equals(color)) {
              color += ((g.getGame()!=GridStateFactory.TB_GO)?" (p1)":" (p2)");
@@ -941,7 +944,8 @@ if (inLiveGameRoom) {
          <td><b>Rated</b></td>
        </tr>
      <% for (TBGame g : oppTurn) {
-         String color =  ((myPID == g.getPlayer1Pid()) == (g.getGame()!=GridStateFactory.TB_GO)) ?
+         String color =  ((myPID == g.getPlayer1Pid() && g.getGame()!=GridStateFactory.TB_GO) ||
+                 (myPID == g.getPlayer2Pid() && g.getGame()==GridStateFactory.TB_GO)) ?
              "white" : "black";
          if ("white".equals(color)) {
              color += ((g.getGame()!=GridStateFactory.TB_GO)?" (p1)":" (p2)");

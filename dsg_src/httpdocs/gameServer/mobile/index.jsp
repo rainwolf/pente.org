@@ -73,7 +73,7 @@ for (Iterator<WhosOnlineRoom> iterator = rooms.iterator(); iterator.hasNext();) 
             onlineFollowing += 1;
         }
     }
-    if ("web".equals(r.getName()) || "Mobile".equals(r.getName()) || "Go".equals(r.getName())) {
+    if ("web".equals(r.getName()) || "Mobile".equals(r.getName())) {
         continue;
     }
     livePlayers += r.getPlayers().size();
@@ -436,7 +436,7 @@ Invitations received<%
                  boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
                  if (s.isTwoGameSet()) {
                      color = "whiteblack";
-        } else if (s.getPlayer1Pid() == myPID) {
+        } else if (s.getPlayer2Pid() == myPID) {
             color = (s.getGame1().getGame() == GridStateFactory.TB_GO)?"white (p2)":"black (p2)";
         } else {
             color = (s.getGame1().getGame() != GridStateFactory.TB_GO)?"white (p1)":"black (p1)";
@@ -471,7 +471,7 @@ Invitations sent<%
                  String color = null;
                  if (s.isTwoGameSet()) {
                      color = "whiteblack";
-        } else if (s.getPlayer1Pid() == myPID) {
+        } else if (s.getPlayer2Pid() == myPID) {
             color = (s.getGame1().getGame() == GridStateFactory.TB_GO)?"white (p2)":"black (p2)";
         } else {
             color = (s.getGame1().getGame() != GridStateFactory.TB_GO)?"white (p1)":"black (p1)";
@@ -626,7 +626,7 @@ Open Invitation Games<%
                 boolean koth = false;
                 if (s.isTwoGameSet()) {
                     color = "whiteblack";
-        } else if (s.getPlayer1Pid() == myPID) {
+        } else if (s.getPlayer2Pid() == 0) {
             color = (s.getGame1().getGame() == GridStateFactory.TB_GO)?"white (p2)":"black (p2)";
         } else {
             color = (s.getGame1().getGame() != GridStateFactory.TB_GO)?"white (p1)":"black (p1)";
