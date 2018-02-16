@@ -28,6 +28,15 @@ String gameStr = (String) request.getParameter("game");
 int gameInt = 51;
 if (gameStr != null) {
     gameInt = Integer.parseInt(gameStr);
+} else {
+    DSGPlayerData meData = dsgPlayerStorer.loadPlayer(name);
+    List<DSGPlayerPreference> prefs = dsgPlayerStorer.loadPlayerPreferences(meData.getPlayerID());
+    for (DSGPlayerPreference pref: prefs) {
+        if ("socialGame".equals(pref.getName())) {
+            gameInt = (Integer) pref.getValue();
+            break;
+        }
+    }
 }
 final int game = gameInt;
 List<DSGPlayerData> followersData = new ArrayList();

@@ -279,6 +279,7 @@ public class GridBoardCanvas extends Canvas
         this.drawInnerCircles = drawInnerCircles;
     }
     public void setDrawGoDots(boolean drawGoDots) { this.drawGoDots = drawGoDots; }
+    public boolean drawGoDots() { return drawGoDots; }
     public void setDrawCoordinates(boolean drawCoordinates) {
         this.drawCoordinates = drawCoordinates;
     }

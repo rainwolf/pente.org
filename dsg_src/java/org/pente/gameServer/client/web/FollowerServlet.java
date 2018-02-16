@@ -138,13 +138,21 @@ public class FollowerServlet extends HttpServlet {
             response.sendRedirect("/gameServer/profile?viewName="+followPlayerData.getName());
         } else {
             if (request.getParameter("social") != null) {
+                String game = request.getParameter("game");
                 try {
+                    if (game != null) {
+                        DSGPlayerPreference pref = new DSGPlayerPreference("socialGame", Integer.parseInt(game));
+                        dsgPlayerStorer.storePlayerPreference(playerData.getPlayerID(), pref);
+                    }
                     request.setAttribute("following", followerStorer.getFollowing(playerData.getPlayerID()));
                     request.setAttribute("followers", followerStorer.getFollowers(playerData.getPlayerID()));
                 } catch (DSGFollowerStoreException e) {
                     e.printStackTrace();
                     handleError(request, response, "database error, try again later");
                     return;
+                } catch (DSGPlayerStoreException e) {
+                    e.printStackTrace();
+                    handleError(request, response, "invalid game specified");
                 }
                 getServletContext().getRequestDispatcher("/gameServer/followersing.jsp").forward(request, response);
             } else if (unFollow != null) {
