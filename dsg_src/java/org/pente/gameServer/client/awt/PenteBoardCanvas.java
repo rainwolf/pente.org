@@ -108,7 +108,9 @@ public class PenteBoardCanvas extends GridBoardCanvas implements PenteBoardCompo
                 else {
                     draw2DPiece(boardGraphics, new Point(x + j * gridPieceSize, y + i * gridPieceSize), c[1], null, gridPieceSize);
                 }
+                if (drawGoDots()) { break; }
             }
+            if (drawGoDots()) { break; }
         }
 
         x = getStartX() + gridPieceSize * (gridWidth - 1) + coordinatesDimensions.width;
@@ -117,13 +119,16 @@ public class PenteBoardCanvas extends GridBoardCanvas implements PenteBoardCompo
         for (int i = 0; i < captures[2] / 2 + captures[2] % 2; i++) {
             int maxj = captures[2] >= 2 * (i + 1) ? 2 : 1;
             for (int j = 0; j < maxj; j++) {
+                if (drawGoDots()) { j = 1; }
                 if (gameOptions.getDraw3DPieces()) {
                     draw3DPiece(boardGraphics, new Point(x + j * gridPieceSize, y + i * gridPieceSize), c, null, gridPieceSize);
                 }
                 else {
                     draw2DPiece(boardGraphics, new Point(x + j * gridPieceSize, y + i * gridPieceSize), c[1], null, gridPieceSize);
                 }
+                if (drawGoDots()) { break; }
             }
+            if (drawGoDots()) { break; }
         }
         
     }

@@ -433,6 +433,8 @@ public class PlayerListPanel extends Panel
         if (playerName == null) {
             return;
         }
+        
+        String playerLowerCase = playerName.toLowerCase();
 
         boolean removeScrollbar = false;
 
@@ -441,7 +443,7 @@ public class PlayerListPanel extends Panel
             for (int i = 0; i < players.size(); i++) {
 
                 String existingPlayer = ((DSGPlayerData) players.elementAt(i)).getName();
-                if (existingPlayer.equals(playerName)) {
+                if (existingPlayer.equals(playerLowerCase)) {
                     players.removeElementAt(i);
                     if (existingPlayer.equals(selectedPlayer)) {
                         if (players.size() == 0) {
