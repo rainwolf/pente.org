@@ -179,7 +179,9 @@ public class MoveServlet extends HttpServlet {
 				}
 
 
-				if (game.getGame() == GridStateFactory.TB_GO) {
+				if (game.getGame() == GridStateFactory.TB_GO ||
+                        game.getGame() == GridStateFactory.TB_GO9 ||
+                        game.getGame() == GridStateFactory.TB_GO13) {
 				    if (game.getGoState() == TBGame.GO_MARK_DEAD_STONES) {
                         log4j.debug("forward to Go mark dead stones page");
 
@@ -203,7 +205,7 @@ public class MoveServlet extends HttpServlet {
             	for (Iterator it = prefs.iterator(); it.hasNext();) {
             		DSGPlayerPreference p = (DSGPlayerPreference) it.next();
             		if (p.getName().equals("attach")) {
-            			request.setAttribute("attach", p.getValue());
+            			request.setAttribute("attach", p.getValue());   
             		}
             	}
 				
@@ -479,7 +481,10 @@ public class MoveServlet extends HttpServlet {
 						message.setMoveNum(game.getNumMoves());
 						tbGameStorer.storeNewMessage(game.getGid(), message);
 					}
-                } else if (game.getGame() == GridStateFactory.TB_GO && game.getGoState() == TBGame.GO_MARK_DEAD_STONES) {
+                } else if ((game.getGame() == GridStateFactory.TB_GO ||
+                        game.getGame() == GridStateFactory.TB_GO9 ||
+                        game.getGame() == GridStateFactory.TB_GO13) && 
+                        game.getGoState() == TBGame.GO_MARK_DEAD_STONES) {
                     if (moves.length < 1) {
                         log4j.error("MoveServlet, not enough moves GO_MARK_DEAD_STONES for " + game.getGid());
                         handleError(request, response, "Invalid move, not enough moves.");
@@ -496,14 +501,23 @@ public class MoveServlet extends HttpServlet {
                         tbGameStorer.storeNewMessage(game.getGid(), message);
                     }
 
-                } else if (game.getGame() == GridStateFactory.TB_GO && game.getGoState() == TBGame.GO_EVALUATE_DEAD_STONES) {
+                } else if ((game.getGame() == GridStateFactory.TB_GO ||
+                        game.getGame() == GridStateFactory.TB_GO9 ||
+                        game.getGame() == GridStateFactory.TB_GO13) && 
+                        game.getGoState() == TBGame.GO_EVALUATE_DEAD_STONES) {
                     if (moves.length < 1) {
                         log4j.error("MoveServlet, not enough moves GO_EVALUATE_DEAD_STONES for " + game.getGid());
                         handleError(request, response, "Invalid move, not enough moves.");
                         return;
                     }
 				    if (moves[0] == 1) {
-                        tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(), 19*19);
+                        if (game.getGame() == GridStateFactory.TB_GO) {
+                            tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(), 19*19);
+                        } else if (game.getGame() == GridStateFactory.TB_GO9) {
+                            tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(), 9*9);
+                        } else if (game.getGame() == GridStateFactory.TB_GO13) {
+                            tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(), 13*13);
+                        }
                     } else {
                         ((CacheTBStorer) tbGameStorer).continueGoGame(gid);
                     }

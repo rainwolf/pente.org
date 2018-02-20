@@ -308,9 +308,9 @@ public class NewGameServlet extends HttpServlet {
 			    	((CacheTBStorer) tbGameStorer).createAISet(game, pid1, pid2, daysPerMove, rated, difficulty);
 	    		}
     		}
-//        } else if (inviteePlayerData == null && game == GridStateFactory.TB_GO) {
-//            log4j.error("No open Go invitations yet");
-//            error = "Error: open invitations for Go are not yet allowed.";
+        } else if (inviteePlayerData == null && (game == GridStateFactory.TB_GO9 || game == GridStateFactory.TB_GO13)) {
+            log4j.error("No open Go invitations yet");
+            error = "Error: open invitations for Go (9x9) or Go (13x13) are not yet allowed.";
         } else if (error == null) {
 			try {
 				
@@ -331,7 +331,9 @@ public class NewGameServlet extends HttpServlet {
 						pid2 = inviteePlayerData.getPlayerID();
 					}
 					
-					if (game == GridStateFactory.TB_GO) {
+					if (game == GridStateFactory.TB_GO || 
+                            game == GridStateFactory.TB_GO9 || 
+                            game == GridStateFactory.TB_GO13) {
                         if (playAs == 2) {
                             tbg = tbg2;
                         }

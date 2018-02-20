@@ -469,12 +469,15 @@ Invitations received<%
 Invitations sent<%
         for (TBSet s : invitesFrom) {
                  String color = null;
+                 boolean go = s.getGame1().getGame() == GridStateFactory.TB_GO || 
+                                s.getGame1().getGame() == GridStateFactory.TB_GO9 ||
+                                s.getGame1().getGame() == GridStateFactory.TB_GO13; 
                  if (s.isTwoGameSet()) {
                      color = "whiteblack";
         } else if (s.getPlayer2Pid() == myPID) {
-            color = (s.getGame1().getGame() == GridStateFactory.TB_GO)?"white (p2)":"black (p2)";
+            color = (go)?"white (p2)":"black (p2)";
         } else {
-            color = (s.getGame1().getGame() != GridStateFactory.TB_GO)?"white (p1)":"black (p1)";
+            color = (!go)?"white (p1)":"black (p1)";
         }
                  long pid = s.getInviteePid();
                  DSGPlayerGameData dsgPlayerGameData = null;
@@ -550,10 +553,13 @@ Invitations sent<%
 Active Games - My Turn<%
         for (TBGame g : myTurn) {
                 String color = "";
+                 boolean go = g.getGame() == GridStateFactory.TB_GO || 
+                                g.getGame() == GridStateFactory.TB_GO9 ||
+                                g.getGame() == GridStateFactory.TB_GO13; 
                 if (g.getPlayer1Pid() == myPID) {
-                    color = (g.getGame() != GridStateFactory.TB_GO)?"white (p1)":"black (p1)";
+                    color = (!go)?"white (p1)":"black (p1)";
                 } else {
-                    color = (g.getGame() == GridStateFactory.TB_GO)?"white (p2)":"black (p2)";
+                    color = (go)?"white (p2)":"black (p2)";
                 }
                 boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
                 boolean tourney = false;
@@ -586,10 +592,13 @@ Active Games - My Turn<%
 Active Games - Opponents Turn<%
         for (TBGame g : oppTurn) {
                 String color = "";
+                 boolean go = g.getGame() == GridStateFactory.TB_GO || 
+                                g.getGame() == GridStateFactory.TB_GO9 ||
+                                g.getGame() == GridStateFactory.TB_GO13; 
                 if (g.getPlayer1Pid() == myPID) {
-                    color = (g.getGame() != GridStateFactory.TB_GO)?"white (p1)":"black (p1)";
+                    color = (!go)?"white (p1)":"black (p1)";
                 } else {
-                    color = (g.getGame() == GridStateFactory.TB_GO)?"white (p2)":"black (p2)";
+                    color = (go)?"white (p2)":"black (p2)";
                 }
                 boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
                 boolean tourney = false;
@@ -623,13 +632,16 @@ Active Games - Opponents Turn<%
 Open Invitation Games<%
         for (TBSet s : waitingSets) {
                 String color = null;
+                 boolean go = s.getGame1().getGame() == GridStateFactory.TB_GO || 
+                                s.getGame1().getGame() == GridStateFactory.TB_GO9 ||
+                                s.getGame1().getGame() == GridStateFactory.TB_GO13; 
                 boolean koth = false;
                 if (s.isTwoGameSet()) {
                     color = "whiteblack";
         } else if (s.getPlayer2Pid() == 0) {
-            color = (s.getGame1().getGame() == GridStateFactory.TB_GO)?"white (p2)":"black (p2)";
+            color = (go)?"white (p2)":"black (p2)";
         } else {
-            color = (s.getGame1().getGame() != GridStateFactory.TB_GO)?"white (p1)":"black (p1)";
+            color = (!go)?"white (p1)":"black (p1)";
         }
                 if (kothStorer.getEventId(s.getGame1().getGame()) == s.getGame1().getEventId()) {
                     koth = true;

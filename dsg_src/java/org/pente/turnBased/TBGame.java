@@ -160,26 +160,21 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 		return game;
 	}
 	public void setGame(int game) {
-		this.game = game;
+		if (game == GridStateFactory.TB_GO) {
+		    passMove = 19*19;
+        } else if (game == GridStateFactory.TB_GO9) {
+		    passMove = 9*9;
+        } else if (game == GridStateFactory.TB_GO13) {
+		    passMove = 13*13;
+        }
+	    this.game = game;
 	}
-	public long getGid() {
-		return gid;
-	}
-	public void setGid(long gid) {
-		this.gid = gid;
-	}
-	public long getSetId() {
-		return setId;
-	}
-	public void setSetId(long setId) {
-		this.setId = setId;
-	}
-	public Date getLastMoveDate() {
-		return lastMoveDate;
-	}
-	public void setLastMoveDate(Date lastMoveDate) {
-		this.lastMoveDate = lastMoveDate;
-	}
+	public long getGid() { return gid;	}
+	public void setGid(long gid) { this.gid = gid;	}
+	public long getSetId() {		return setId;	}
+	public void setSetId(long setId) {		this.setId = setId;	}
+	public Date getLastMoveDate() {		return lastMoveDate;	}
+	public void setLastMoveDate(Date lastMoveDate) {		this.lastMoveDate = lastMoveDate;	}
 	
 	public List<TBMessage> getMessages() {
 		return messages;
@@ -231,7 +226,7 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 //TODO why couldn't i just instantiate a gridstate and use that?
 		int cp = 0;
 		
-		if (game == GridStateFactory.TB_GO) {
+		if (game == GridStateFactory.TB_GO || game == GridStateFactory.TB_GO9 || game == GridStateFactory.TB_GO13) {
 		    
 		    
 		    int dp = containsDoublePass();

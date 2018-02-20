@@ -810,7 +810,12 @@ public class ServerTable {
                             changeStateEvent.setGame(GridStateFactory.GO);
                         }
                     } else {
-                        if (newGame.getId() == GridStateFactory.GO || newGame.getId() == GridStateFactory.SPEED_GO) {
+                        if (newGame.getId() == GridStateFactory.GO ||
+                                newGame.getId() == GridStateFactory.SPEED_GO ||
+                                newGame.getId() == GridStateFactory.GO9 ||
+                                newGame.getId() == GridStateFactory.SPEED_GO9 ||
+                                newGame.getId() == GridStateFactory.GO13 ||
+                                newGame.getId() == GridStateFactory.SPEED_GO13) {
                             game = GridStateFactory.getGame(GridStateFactory.PENTE);
                             changeStateEvent.setGame(GridStateFactory.PENTE);
                         } else {

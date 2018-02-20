@@ -116,6 +116,14 @@
         }
     }
 
+    boolean isGo = game.getGame() == GridStateFactory.TB_GO || game.getGame() == GridStateFactory.TB_GO9 || game.getGame() == GridStateFactory.TB_GO13;
+ int gridSize = 19;
+    if (game.getGame() == GridStateFactory.TB_GO9) {
+        gridSize = 9;
+    } else if (game.getGame() == GridStateFactory.TB_GO13) {
+        gridSize = 13;
+    }
+
 %>
 
 <% pageContext.setAttribute("title", "Game"); %>
@@ -193,10 +201,10 @@
                     drawGrid(boardContext, boardColor, gridSize, true);
                     drawGame();
                     lastMove = moves[drawUntilMove - 1];
-                    drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+                    drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
                     if (game === 63 && moves.length > 1) {
                         lastMove = moves[drawUntilMove - 2];
-                        drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+                        drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
                     }
                     if (currentMove !== -1) {
                         var cell = document.getElementById('' + currentMove);
@@ -267,7 +275,7 @@
 
 
                         <div class="buttonwrapper" style="margin-top:5px; width:500px;">
-                            <% if ("false".equals(myTurn) && game.getGame() == GridStateFactory.TB_GO) { %>
+                            <% if ("false".equals(myTurn) && isGo) { %>
                             <a class="boldbuttons" href="javascript:drawTerritories();"
                                style="margin-right:5px;"><span>Draw territory</span></a>
 
@@ -275,7 +283,7 @@
                             <% if (!"false".equals(myTurn) && (game.getDPenteState() != 2)) { %>
                             <a class="boldbuttons" href="javascript:submit();"
                                style="margin-right:5px;"><span>Submit</span></a>
-                            <% if (game.getGame() == GridStateFactory.TB_GO) { %>
+                            <% if (isGo) { %>
                             <a class="boldbuttons" href="javascript:submitPass();"
                                style="margin-right:5px;"><span>Pass</span></a>
                             <a class="boldbuttons" href="javascript:drawTerritories();"
@@ -349,13 +357,13 @@
                                         </tr>
                                         <tr>
                                             <td width="10%"></td>
-                                            <td width="45%" align="center" bgcolor="#<%=(game.getGame()!=GridStateFactory.TB_GO?"FFFFFF":"000000")%>">
-                                                <b><font color="<%=(game.getGame()!=GridStateFactory.TB_GO?"black":"white")%>"><%=p1.getName()%>
+                                            <td width="45%" align="center" bgcolor="#<%=(!isGo?"FFFFFF":"000000")%>">
+                                                <b><font color="<%=(!isGo?"black":"white")%>"><%=p1.getName()%>
                                                 </font>
                                                 </b>
                                             </td>
-                                            <td align="center" bgcolor="#<%=(game.getGame()==GridStateFactory.TB_GO?"FFFFFF":"000000")%>">
-                                                <b><font color="<%=(game.getGame()==GridStateFactory.TB_GO?"black":"white")%>"><%=p2.getName()%>
+                                            <td align="center" bgcolor="#<%=(isGo?"FFFFFF":"000000")%>">
+                                                <b><font color="<%=(isGo?"black":"white")%>"><%=p2.getName()%>
                                                 </font>
                                                 </b>
                                             </td>
@@ -392,13 +400,13 @@
                                                     %>
                                                     <td onclick='selectMove(<%=i%>)' id='<%=i%>' width="45%"
                                                         align="center">
-                                                        <%=" " + (game.getMove(i)>-1&&game.getMove(i)<361?coordinateLetters[(game.getMove(i) % 19)] + (19 - (game.getMove(i) / 19)):"PASS")%>
+                                                        <%=" " + (game.getMove(i)>-1&&game.getMove(i)<gridSize*gridSize?coordinateLetters[(game.getMove(i) % gridSize)] + (gridSize - (game.getMove(i) / gridSize)):"PASS")%>
                                                         <%
                                                             //      if ((game.getGame() == 63) && (i != 0) && (i + 1 < game.getNumMoves())) {
                                                             if ((game.getGame() == 63) && (i != 0)) {
                                                                 ++i;
                                                         %>
-                                                        - <%="" + coordinateLetters[(game.getMove(i) % 19)] + (19 - (game.getMove(i) / 19))%>
+                                                        - <%="" + coordinateLetters[(game.getMove(i) % gridSize)] + (gridSize - (game.getMove(i) / gridSize))%>
                                                         <%
                                                             } %>
                                                     </td>
@@ -551,7 +559,7 @@
 
                 var boardSize = 500;
                 
-                var gridSize = 19;
+                var gridSize = <%=gridSize%>;
                 var boardCanvas = document.getElementById("board");
                 var boardContext = boardCanvas.getContext("2d");
                 var indentWidth = (boardCanvas.width - boardSize) / 2;
@@ -608,6 +616,8 @@
                             boardColor = dkeryoPenteColor;
                             break;
                         case 69:
+                        case 71:
+                        case 73:
                             boardColor = goColor;
                             break;
                         default:
@@ -670,10 +680,10 @@
                         drawGrid(boardContext, boardColor, gridSize, true);
                         drawGame();
                         lastMove = moves[moves.length - 1];
-                        drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+                        drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
                         if (game === 63 && moves.length > 1) {
                             lastMove = moves[moves.length - 2];
-                            drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+                            drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
                         }
                     }
 
@@ -689,7 +699,7 @@
                     var x = touch.clientX - offsetX;
                     var y = touch.clientY - offsetY;
 
-                    // if (i >= 0 && i < 19 && j >= 0 && j < 19) {
+                    // if (i >= 0 && i < gridSize && j >= 0 && j < gridSize) {
                     //   evt.preventDefault();
                     //   interactionContext.drawImage(boardCanvas, -x/2 , -y/2);
                     // } else {
@@ -716,7 +726,7 @@
                     var x = touch.clientX - offsetX;
                     var y = touch.clientY - offsetY;
 
-                    if (i >= 0 && i < 19 && j >= 0 && j < 19) {
+                    if (i >= 0 && i < gridSize && j >= 0 && j < gridSize) {
                         interactionContext.drawImage(boardCanvas, -x / 2, -y / 2);
                         if (abstractBoard[i][j] === 0 && active === true) {
                             if ((trackingI !== i) || (trackingJ !== j)) {
@@ -754,8 +764,8 @@
                     var x = touch.clientX - offsetX;
                     var y = touch.clientY - offsetY;
 
-                    if (i >= 0 && i < 19 && j >= 0 && j < 19) {
-                        playedMove = j * 19 + i;
+                    if (i >= 0 && i < gridSize && j >= 0 && j < gridSize) {
+                        playedMove = j * gridSize + i;
                         if (abstractBoard[i][j] === 0 && active === true && playedMove !== koMove) {
                             var newMoves = moves.slice(0);
                             if (game === 63) {
@@ -789,10 +799,10 @@
                             drawGrid(boardContext, boardColor, gridSize, true);
                             drawGame();
                             lastMove = moves[moves.length - 1];
-                            drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-                            if (game == 63 && moves.length > 1) {
+                            drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
+                            if (game === 63 && moves.length > 1) {
                                 lastMove = moves[moves.length - 2];
-                                drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+                                drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
                             }
                         } else {
                             playedMove = -1;
@@ -811,10 +821,10 @@
                             drawGrid(boardContext, boardColor, gridSize, true);
                             drawGame();
                             lastMove = moves[moves.length - 1];
-                            drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+                            drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
                             if (game === 63 && moves.length > 1) {
                                 lastMove = moves[moves.length - 2];
-                                drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+                                drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
                             }
                             if (game === 63 && moves.length > 1) {
                                 selectMove(drawUntilMove - 2);
@@ -859,14 +869,15 @@
                             drawGrid(boardContext, boardColor, gridSize, true);
                             drawGame();
                             lastMove = moves[moves.length - 1];
-                            drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+                            drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
                             if (game === 63 && moves.length > 1) {
                                 lastMove = moves[moves.length - 2];
-                                drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+                                drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
                             }
                             document.getElementById("movesTable").scrollTop = document.getElementById("movesTable").scrollHeight;
                         }
-                        playedMove = j * 19 + i;
+                        playedMove = j * gridSize + i;
+                        // alert("" + i + " and " + j + " and gridsize " + gridSize);
                         if (abstractBoard[i][j] === 0 && active === true && playedMove !== dPenteMove1 && playedMove !== dPenteMove2 && playedMove !== dPenteMove3 && playedMove !== dPenteMove4) {
                             var newMoves = moves.slice(0);
                             if (game === 63) {
@@ -904,10 +915,10 @@
                             drawGrid(boardContext, boardColor, gridSize, true);
                             drawGame();
                             lastMove = moves[moves.length - 1];
-                            drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+                            drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
                             if (game === 63 && moves.length > 1) {
                                 lastMove = moves[moves.length - 2];
-                                drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+                                drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
                             }
                         } else {
                             playedMove = -1;
@@ -1010,6 +1021,8 @@
                             replayKeryoPenteGame(abstractBoard, movesList, until);
                             break;
                         case 69:
+                        case 71:
+                        case 73:
                             replayGoGame(abstractBoard, movesList, until);
                             break;
                     }
@@ -1127,10 +1140,10 @@
                         replayGame(abstractBoard, moves, drawUntilMove);
                         drawGame();
                         lastMove = moves[drawUntilMove - 1];
-                        drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+                        drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
                         if (game == 63 && drawUntilMove > 1) {
                             lastMove = moves[drawUntilMove - 2];
-                            drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+                            drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
                             selectMove(drawUntilMove - 2);
                         } else {
                             selectMove(drawUntilMove - 1);
@@ -1149,10 +1162,10 @@
                         replayGame(abstractBoard, moves, drawUntilMove);
                         drawGame();
                         lastMove = moves[drawUntilMove - 1];
-                        drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+                        drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
                         if (game === 63 && drawUntilMove > 1) {
                             lastMove = moves[drawUntilMove - 2];
-                            drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+                            drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
                             selectMove(drawUntilMove - 2);
                         } else {
                             selectMove(drawUntilMove - 1);
@@ -1229,10 +1242,10 @@
                 replayGame(abstractBoard, moves, moves.length);
                 drawGame();
                 lastMove = moves[drawUntilMove - 1];
-                drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+                drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
                 if (game === 63 && moves.length > 1) {
                     lastMove = moves[drawUntilMove - 2];
-                    drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+                    drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
                     selectMove(drawUntilMove - 2);
                 } else {
                     selectMove(drawUntilMove - 1);

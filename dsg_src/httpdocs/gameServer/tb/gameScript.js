@@ -63,7 +63,7 @@ function leftRight(e) {
 }
 
 function drawGame() {
-    gridSize = 19;
+    // gridSize = 19;
     for (var i = 0; i < gridSize; i++) {
         for (var j = 0; j < gridSize; j++) {
             if (abstractBoard[i][j] > 0) {
@@ -71,7 +71,7 @@ function drawGame() {
             } 
         }
     }
-    if (game === 69) {
+    if (game === 69 || game === 71 || game === 73) {
         drawGoCaptures();
         var p1DeadStones = goDeadStonesByPlayer[1];
         for ( var i = 0; i < p1DeadStones.length; i++ ) {
@@ -224,7 +224,7 @@ function replayGoGame(abstractBoard, movesList, until) {
         }
         if (move !== passMove && !doublePass) {
             var color = 2 - (i%2);
-            abstractBoard[move % 19][Math.floor(move / 19)] = color;
+            abstractBoard[move % gridSize][Math.floor(move / gridSize)] = color;
             addGoMove(move, 3-color);
         } else if (doublePass && move !== passMove) {
             var pos = getPosition(move);
@@ -691,7 +691,7 @@ function drawGoCaptures() {
         if (blackCaptures > 99) {
             digits = 3;
         }
-        for (var i = 0; i < digits; i++) {
+        for (i = 0; i < digits; i++) {
             boardContext.beginPath();
             boardContext.arc(boardSize + indentWidth - i * stepX * 2 / 3, indentHeight - stepY, stepX / 3, 0, Math.PI * 2, true);
             boardContext.fillStyle = 'black';
@@ -699,7 +699,7 @@ function drawGoCaptures() {
             boardContext.stroke();
             boardContext.closePath();
         }
-        var digit = blackCaptures % 10;
+        digit = blackCaptures % 10;
         boardContext.beginPath();
         boardContext.font = pxSize+"px bold sans-serif";
         boardContext.fillStyle = 'white';
@@ -794,42 +794,68 @@ function drawGoCaptures() {
                     boardContext.arc(indentWidth + 12*stepX, indentHeight + 12*stepY, stepX / 5, 0, Math.PI*2, true);
                     boardContext.stroke();
                     boardContext.closePath();
-                } else if (game === 69) {
-                    var r = stepX / 8;
+                } else if (game === 69 || game === 73) {
+                    var rd = stepX / 8;
+                    var c = Math.floor(gridSize/2);
+                    var l = 3, r = gridSize - 1 - l;
                     boardContext.beginPath();
-                    boardContext.arc(indentWidth + 9*stepX, indentHeight + 9*stepY, r, 0, Math.PI*2, true);
+                    boardContext.arc(indentWidth + c*stepX, indentHeight + c*stepY, rd, 0, Math.PI*2, true);
                     boardContext.fill();
                     boardContext.closePath();
                     boardContext.beginPath();
-                    boardContext.arc(indentWidth + 3*stepX, indentHeight + 9*stepY, r, 0, Math.PI*2, true);
+                    boardContext.arc(indentWidth + l*stepX, indentHeight + c*stepY, rd, 0, Math.PI*2, true);
                     boardContext.fill();
                     boardContext.closePath();
                     boardContext.beginPath();
-                    boardContext.arc(indentWidth + 9*stepX, indentHeight + 3*stepY, r, 0, Math.PI*2, true);
+                    boardContext.arc(indentWidth + c*stepX, indentHeight + l*stepY, rd, 0, Math.PI*2, true);
                     boardContext.fill();
                     boardContext.closePath();
                     boardContext.beginPath();
-                    boardContext.arc(indentWidth + 15*stepX, indentHeight + 9*stepY, r, 0, Math.PI*2, true);
+                    boardContext.arc(indentWidth + r*stepX, indentHeight + c*stepY, rd, 0, Math.PI*2, true);
                     boardContext.fill();
                     boardContext.closePath();
                     boardContext.beginPath();
-                    boardContext.arc(indentWidth + 9*stepX, indentHeight + 15*stepY, r, 0, Math.PI*2, true);
+                    boardContext.arc(indentWidth + c*stepX, indentHeight + r*stepY, rd, 0, Math.PI*2, true);
                     boardContext.fill();
                     boardContext.closePath();
                     boardContext.beginPath();
-                    boardContext.arc(indentWidth + 3*stepX, indentHeight + 3*stepY, r, 0, Math.PI*2, true);
+                    boardContext.arc(indentWidth + l*stepX, indentHeight + l*stepY, rd, 0, Math.PI*2, true);
                     boardContext.fill();
                     boardContext.closePath();
                     boardContext.beginPath();
-                    boardContext.arc(indentWidth + 3*stepX, indentHeight + 15*stepY, r, 0, Math.PI*2, true);
+                    boardContext.arc(indentWidth + l*stepX, indentHeight + r*stepY, rd, 0, Math.PI*2, true);
                     boardContext.fill();
                     boardContext.closePath();
                     boardContext.beginPath();
-                    boardContext.arc(indentWidth + 15*stepX, indentHeight + 3*stepY, r, 0, Math.PI*2, true);
+                    boardContext.arc(indentWidth + r*stepX, indentHeight + l*stepY, rd, 0, Math.PI*2, true);
                     boardContext.fill();
                     boardContext.closePath();
                     boardContext.beginPath();
-                    boardContext.arc(indentWidth + 15*stepX, indentHeight + 15*stepY, r, 0, Math.PI*2, true);
+                    boardContext.arc(indentWidth + r*stepX, indentHeight + r*stepY, rd, 0, Math.PI*2, true);
+                    boardContext.fill();
+                    boardContext.closePath();
+                } else if (game === 71) {
+                    rd = stepX / 8;
+                    c = Math.floor(gridSize/2);
+                    l = 2, r = gridSize - 1 - l;
+                    boardContext.beginPath();
+                    boardContext.arc(indentWidth + c*stepX, indentHeight + c*stepY, rd, 0, Math.PI*2, true);
+                    boardContext.fill();
+                    boardContext.closePath();
+                    boardContext.beginPath();
+                    boardContext.arc(indentWidth + l*stepX, indentHeight + l*stepY, rd, 0, Math.PI*2, true);
+                    boardContext.fill();
+                    boardContext.closePath();
+                    boardContext.beginPath();
+                    boardContext.arc(indentWidth + l*stepX, indentHeight + r*stepY, rd, 0, Math.PI*2, true);
+                    boardContext.fill();
+                    boardContext.closePath();
+                    boardContext.beginPath();
+                    boardContext.arc(indentWidth + r*stepX, indentHeight + l*stepY, rd, 0, Math.PI*2, true);
+                    boardContext.fill();
+                    boardContext.closePath();
+                    boardContext.beginPath();
+                    boardContext.arc(indentWidth + r*stepX, indentHeight + r*stepY, rd, 0, Math.PI*2, true);
                     boardContext.fill();
                     boardContext.closePath();
                 }

@@ -115,6 +115,13 @@
         } catch (NumberFormatException n) {
         }
     }
+    boolean isGo = game.getGame() == GridStateFactory.TB_GO || game.getGame() == GridStateFactory.TB_GO9 || game.getGame() == GridStateFactory.TB_GO13;
+    int gridSize = 19;
+    if (game.getGame() == GridStateFactory.TB_GO9) {
+        gridSize = 9;
+    } else if (game.getGame() == GridStateFactory.TB_GO13) {
+        gridSize = 13;
+    }
 
 %>
 
@@ -302,12 +309,13 @@
                                         </tr>
                                         <tr>
                                             <td width="10%"></td>
-                                            <td width="45%" align="center">
-                                                <b><%=p1.getName()%>
+                                            <td width="45%" align="center" bgcolor="#<%=(!isGo?"FFFFFF":"000000")%>">
+                                                <b><font color="<%=(!isGo?"black":"white")%>"><%=p1.getName()%>
+                                                </font>
                                                 </b>
                                             </td>
-                                            <td align="center" bgcolor="#000000">
-                                                <b><font color="white"><%=p2.getName()%>
+                                            <td align="center" bgcolor="#<%=(isGo?"FFFFFF":"000000")%>">
+                                                <b><font color="<%=(isGo?"black":"white")%>"><%=p2.getName()%>
                                                 </font>
                                                 </b>
                                             </td>
@@ -344,13 +352,13 @@
                                                     %>
                                                     <td onclick='selectMove(<%=i%>)' id='<%=i%>' width="45%"
                                                         align="center">
-                                                        <%=" " + (game.getMove(i)>-1&&game.getMove(i)<361?coordinateLetters[(game.getMove(i) % 19)] + (19 - (game.getMove(i) / 19)):"PASS")%>
+                                                        <%=" " + (game.getMove(i)>-1&&game.getMove(i)<gridSize*gridSize?coordinateLetters[(game.getMove(i) % gridSize)] + (gridSize - (game.getMove(i) / gridSize)):"PASS")%>
                                                         <%
                                                             //      if ((game.getGame() == 63) && (i != 0) && (i + 1 < game.getNumMoves())) {
                                                             if ((game.getGame() == 63) && (i != 0)) {
                                                                 ++i;
                                                         %>
-                                                        - <%="" + coordinateLetters[(game.getMove(i) % 19)] + (19 - (game.getMove(i) / 19))%>
+                                                        - <%="" + coordinateLetters[(game.getMove(i) % gridSize)] + (gridSize - (game.getMove(i) / gridSize))%>
                                                         <%
                                                             } %>
                                                     </td>
@@ -485,6 +493,7 @@
                 var iAmP1 = <%=me.equals(p1.getName())%>;
 
                 var boardSize = 500;
+                var gridSize = <%=gridSize%>;
 
                 var boardCanvas = document.getElementById("board");
                 var boardContext = boardCanvas.getContext("2d");
@@ -537,147 +546,6 @@
                 }
 
 
-                function drawStone(i, j, color) {
-                    if (color < 1 || color > 2) {
-                        return;
-                    }
-                    boardContext.save();
-                    var centerX = indentWidth + stepX * (i);
-                    var centerY = indentHeight + stepY * (j);
-                    boardContext.beginPath();
-                    boardContext.arc(centerX, centerY, radius, 0, Math.PI * 2, true);
-                    if (color === 2) {
-                        boardContext.fillStyle = 'black';
-                    } else {
-                        boardContext.fillStyle = 'white';
-                    }
-                    centerX -= radius / 8;
-                    centerY -= radius / 8;
-                    boardContext.shadowColor = 'DimGray';
-                    boardContext.shadowBlur = 1;
-                    boardContext.shadowOffsetX = radius / 8;
-                    boardContext.shadowOffsetY = radius / 8;
-                    if (color === 2) {
-                        var gradient = boardContext.createRadialGradient(centerX, centerY, radius / 8, centerX, centerY, radius);
-                        gradient.addColorStop(0, 'Grey');
-                        gradient.addColorStop(1, 'Black');
-                        boardContext.fillStyle = gradient;
-                    } else {
-                        gradient = boardContext.createRadialGradient(centerX, centerY, 2 * radius / 4, centerX, centerY, radius);
-                        gradient.addColorStop(0, 'White');
-                        gradient.addColorStop(1, 'Gainsboro');
-                        boardContext.fillStyle = gradient;
-                    }
-                    boardContext.fill();
-                    // boardContext.lineWidth = 5;
-                    // boardContext.strokeStyle = '#003300';
-                    // boardContext.stroke();
-                    boardContext.closePath();
-                    boardContext.restore();
-                }
-                function drawDeadStone(move, color) {
-                    if (color < 1 || color > 2) {
-                        return;
-                    }
-                    var i = move%gridSize, j = Math.floor(move/gridSize);
-                    boardContext.save();
-                    var centerX = indentWidth + stepX * (i);
-                    var centerY = indentHeight + stepY * (j);
-                    boardContext.globalAlpha = 0.5;
-                    boardContext.beginPath();
-                    if (color === 2) {
-                        boardContext.fillStyle = 'black';
-                    } else {
-                        boardContext.fillStyle = 'white';
-                    }
-                    boardContext.arc(centerX, centerY, radius, 0, Math.PI * 2, true);
-                    centerX -= radius / 8;
-                    centerY -= radius / 8;
-                    boardContext.shadowColor = 'DimGray';
-                    boardContext.shadowBlur = 1;
-                    boardContext.shadowOffsetX = radius / 8;
-                    boardContext.shadowOffsetY = radius / 8;
-                    if (color === 2) {
-                        var gradient = boardContext.createRadialGradient(centerX, centerY, radius / 8, centerX, centerY, radius);
-                        gradient.addColorStop(0, 'Grey');
-                        gradient.addColorStop(1, 'Black');
-                        boardContext.fillStyle = gradient;
-                    } else {
-                        gradient = boardContext.createRadialGradient(centerX, centerY, 2 * radius / 4, centerX, centerY, radius);
-                        gradient.addColorStop(0, 'White');
-                        gradient.addColorStop(1, 'Gainsboro');
-                        boardContext.fillStyle = gradient;
-                    }
-                    boardContext.fill();
-                    // boardContext.lineWidth = 5;
-                    // boardContext.strokeStyle = '#003300';
-                    // boardContext.stroke();
-                    boardContext.closePath();
-                    boardContext.restore();
-                    boardContext.globalAlpha = 1;
-                }
-
-                function drawInteractionStone(i, j, color) {
-                    trackingI = i;
-                    trackingJ = j;
-                    stoneContext.clearRect(0, 0, stoneCanvas.width, stoneCanvas.height);
-                    var centerX = indentWidth + stepX * (i);
-                    var centerY = indentHeight + stepY * (j);
-                    stoneContext.save();
-                    stoneContext.beginPath();
-                    stoneContext.fillStyle = 'white';
-                    stoneContext.strokeStyle = "#FFF";
-                    stoneContext.lineWidth = 2;
-                    stoneContext.moveTo(0, centerY);
-                    stoneContext.lineTo(stoneCanvas.width, centerY);
-                    stoneContext.moveTo(centerX, 0);
-                    stoneContext.lineTo(centerX, stoneCanvas.height);
-                    stoneContext.stroke();
-                    // stoneContext.fill();
-                    stoneContext.closePath();
-                    stoneContext.beginPath();
-                    stoneContext.arc(centerX, centerY, iRadius, 0, Math.PI * 2, true);
-                    stoneContext.fillStyle = 'red';
-                    centerX -= iRadius / 8;
-                    centerY -= iRadius / 8;
-                    stoneContext.shadowColor = 'DimGray';
-                    stoneContext.shadowBlur = 1;
-                    stoneContext.shadowOffsetX = iRadius / 8;
-                    stoneContext.shadowOffsetY = iRadius / 8;
-                    if (color) {
-                        var gradient = stoneContext.createRadialGradient(centerX, centerY, iRadius / 8, centerX, centerY, iRadius);
-                        gradient.addColorStop(0, 'Grey');
-                        gradient.addColorStop(1, 'Black');
-                        stoneContext.fillStyle = gradient;
-                    } else {
-                        gradient = stoneContext.createRadialGradient(centerX, centerY, 2 * iRadius / 4, centerX, centerY, iRadius);
-                        gradient.addColorStop(0, 'White');
-                        gradient.addColorStop(1, 'Gainsboro');
-                        stoneContext.fillStyle = gradient;
-                    }
-                    stoneContext.fill();
-                    // boardContext.lineWidth = 5;
-                    // boardContext.strokeStyle = '#003300';
-                    // boardContext.stroke();
-                    stoneContext.closePath();
-                    stoneContext.restore();
-                }
-
-                function drawRedDot(i, j) {
-                    if (i>=gridSize || j>=gridSize) {
-                        return;
-                    }
-                    var centerX = indentWidth + stepX * (i);
-                    var centerY = indentHeight + stepY * (j);
-                    boardContext.beginPath();
-                    boardContext.arc(centerX, centerY, stepX / 7, 0, Math.PI * 2, true);
-                    boardContext.fillStyle = 'red';
-                    boardContext.fill();
-                    // boardContext.lineWidth = 5;
-                    // boardContext.strokeStyle = '#003300';
-                    // boardContext.stroke();
-                    boardContext.closePath();
-                }
 
                 function replayGame(abstractBoard, movesList, until) {
                     whiteCaptures = 0;
