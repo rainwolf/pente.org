@@ -116,6 +116,14 @@
         }
     }
 
+    boolean isGo = game.getGame() == GridStateFactory.TB_GO || game.getGame() == GridStateFactory.TB_GO9 || game.getGame() == GridStateFactory.TB_GO13;
+    int gridSize = 19;
+    if (game.getGame() == GridStateFactory.TB_GO9) {
+        gridSize = 9;
+    } else if (game.getGame() == GridStateFactory.TB_GO13) {
+        gridSize = 13;
+    }
+
 %>
 
 <% pageContext.setAttribute("title", "Game"); %>
@@ -315,12 +323,13 @@
                                         </tr>
                                         <tr>
                                             <td width="10%"></td>
-                                            <td width="45%" align="center">
-                                                <b><%=p1.getName()%>
+                                            <td width="45%" align="center" bgcolor="#<%=(!isGo?"FFFFFF":"000000")%>">
+                                                <b><font color="<%=(!isGo?"black":"white")%>"><%=p1.getName()%>
+                                                </font>
                                                 </b>
                                             </td>
-                                            <td align="center" bgcolor="#000000">
-                                                <b><font color="white"><%=p2.getName()%>
+                                            <td align="center" bgcolor="#<%=(isGo?"FFFFFF":"000000")%>">
+                                                <b><font color="<%=(isGo?"black":"white")%>"><%=p2.getName()%>
                                                 </font>
                                                 </b>
                                             </td>
@@ -357,13 +366,13 @@
                                                     %>
                                                     <td onclick='selectMove(<%=i%>)' id='<%=i%>' width="45%"
                                                         align="center">
-                                                        <%=" " + (game.getMove(i)>-1&&game.getMove(i)<361?coordinateLetters[(game.getMove(i) % 19)] + (19 - (game.getMove(i) / 19)):"PASS")%>
+                                                        <%=" " + (game.getMove(i)>-1&&game.getMove(i)<gridSize*gridSize?coordinateLetters[(game.getMove(i) % gridSize)] + (gridSize - (game.getMove(i) / gridSize)):"PASS")%>
                                                         <%
                                                             //      if ((game.getGame() == 63) && (i != 0) && (i + 1 < game.getNumMoves())) {
                                                             if ((game.getGame() == 63) && (i != 0)) {
                                                                 ++i;
                                                         %>
-                                                        - <%="" + coordinateLetters[(game.getMove(i) % 19)] + (19 - (game.getMove(i) / 19))%>
+                                                        - <%="" + coordinateLetters[(game.getMove(i) % gridSize)] + (gridSize - (game.getMove(i) / gridSize))%>
                                                         <%
                                                             } %>
                                                     </td>
@@ -479,9 +488,6 @@
                 window.google_analytics_uacct = "UA-20529582-2";
             </script>
 
-            <script type="text/javascript">
-                var gridSize = 19;
-            </script>
 
             <script src="/gameServer/tb/gameScript.js"></script>
 
@@ -498,7 +504,8 @@
                 var iAmP1 = <%=me.equals(p1.getName())%>;
 
                 var boardSize = 500;
-                
+
+                var gridSize = <%=gridSize%>;
                 var boardCanvas = document.getElementById("board");
                 var boardContext = boardCanvas.getContext("2d");
                 var indentWidth = (boardCanvas.width - boardSize) / 2;
@@ -663,7 +670,7 @@
                     var i = Math.floor((e.clientX - indentWidth + stepX / 2 - offsetX) / stepX);
                     var j = Math.floor((e.clientY - indentHeight + stepY / 2 - offsetY) / stepY);
                     if (i >= 0 && i < gridSize && j >= 0 && j < gridSize) {
-                        playedMove = j * 19 + i;
+                        playedMove = j * gridSize + i;
                         var p1DeadStones = goDeadStonesByPlayer[1], p2DeadStones = goDeadStonesByPlayer[2];
                         if (abstractBoard[i][j] === 0 && active === true) {
                             var idx = p1DeadStones.indexOf(playedMove);
@@ -829,6 +836,7 @@
                 
                 function getDeadStones() {
                     var deadStr = '';
+                    passMove = gridSize*gridSize;
                     var p1DeadStones = goDeadStonesByPlayer[1];
                     for ( var i = 0; i < p1DeadStones.length; i++ ) {
                         if (deadStr === '') {

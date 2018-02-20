@@ -731,7 +731,7 @@ public class GoState extends GridStateDecorator
         for (int j = 0; j < getGridSizeY(); j++) {
             for (int i = 0; i < getGridSizeX(); i++) {
                 if (getPosition(i,j) == val) {
-                    results.add(j*19+i);
+                    results.add(j*getGridSizeX()+i);
                 }
             }
         }
