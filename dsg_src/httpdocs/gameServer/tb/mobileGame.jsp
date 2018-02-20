@@ -576,8 +576,9 @@
                 var cycleStr = <%=((request.getParameter("cycle") != null)?"\"&cycle\"":"\"\"")%>;
                 var hideStr = "";
 
+                document.onkeydown = leftRight;
 
-                function init() {
+                    function init() {
                     switch (game) {
                         case 51:
                             boardColor = penteColor;

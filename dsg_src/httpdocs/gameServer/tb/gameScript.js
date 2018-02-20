@@ -47,6 +47,20 @@ var coordinateLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 
         var handicapPass = passMove + 1;
 
         var goDeadStonesByPlayer = {1: [], 2: []};
+        
+        
+function leftRight(e) {
+
+    e = e || window.event;
+    
+
+    if (e.keyCode == '37' && typeof goBack === "function") {
+        goBack();
+    } else if (e.keyCode == '39' && typeof goForward === "function") {
+        goForward();
+    }
+
+}
 
 function drawGame() {
     gridSize = 19;
