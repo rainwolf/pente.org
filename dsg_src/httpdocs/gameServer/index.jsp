@@ -523,7 +523,7 @@ addLoadEvent(goJws);
         <%--</div>--%>
         <div style="margin-top:5px;">
         or <a href="/gameServer/pente.jnlp?name=<%=name%>&password=<%=dsgPlayerData.getPassword()%>"><span>install</span></a> the game room on your desktop. 
-            <font color="red"><b>(new link, no manual login needed)</b></font>
+            <font color="red"><b>(new link, automagical login)</b></font>
         </div>
         <%--<div class="buttonwrapper">--%>
 

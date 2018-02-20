@@ -523,6 +523,7 @@
                 var cycleStr = <%=((request.getParameter("cycle") != null)?"\"&cycle\"":"\"\"")%>;
                 var hideStr = "";
 
+                document.onkeydown = leftRight;
 
 
                 function init() {

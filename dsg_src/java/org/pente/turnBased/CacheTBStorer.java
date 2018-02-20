@@ -1754,6 +1754,8 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
     public void createTournamentSet(int game, long player1PID, long player2PID, int daysPerMove, int eventID) {
         try {
+            Tourney tourney = tourneyStorer.getTourney(eventID);
+
 	        TBGame tbg1 = new TBGame();
 	        tbg1.setGame(game);
 	        tbg1.setDaysPerMove(daysPerMove);
@@ -1782,7 +1784,6 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 	        tbs.setInvitationRestriction(TBSet.ANY_RATING);
 	        createSet(tbs);
 
-	        Tourney tourney = tourneyStorer.getTourney(eventID);
 			DSGPlayerData toPlayer = dsgPlayerStorer.loadPlayer(player2PID);
 
             DSGMessage message = new DSGMessage();

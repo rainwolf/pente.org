@@ -513,7 +513,9 @@ public class CustomTablesPanel extends Panel
         watching += "[" + data.getNumWatching() + "] ";
         for (Enumeration e = data.getWatchingPlayers(); e.hasMoreElements();) {
             DSGPlayerData d = (DSGPlayerData) e.nextElement();
-            watching += d.getName() + " ";
+            if (d != null) {
+                watching += d.getName() + " ";
+            }
         }
         g.drawString(watching, s2 + X_OFF, h + tableHeight - Y_OFF);
     }
@@ -638,6 +640,7 @@ public class CustomTablesPanel extends Panel
         
 		if (playerData == null) {
             System.out.println("addPlayer is null!");
+            return;
         }
         synchronized (DRAW_LOCK) {
             CustomTableData d = getTable(tableNum);

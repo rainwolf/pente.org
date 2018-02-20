@@ -477,7 +477,9 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
         var lastMove;
         var currentMove = -1;
 
-            function selectMove(newMove) {
+        document.onkeydown = leftRight;
+
+        function selectMove(newMove) {
                                     // alert("cell " + newMove);
                var cell=document.getElementById(''+newMove);
                cell.style.background='#AAF';
