@@ -372,12 +372,11 @@ window.google_analytics_uacct = "UA-20529582-2";
 <!--           <li>Final: <a href="/gameServer/tournaments/statusRound.jsp?eid=1281&round=8">Pente Masters</a></li>
  -->          <li>New turn-based tournaments: <a href="/gameServer/tournaments">Winter's Coming!</a>
             <br>
-            Round 2: <a href="/gameServer/tournaments/statusRound.jsp?eid=1309&round=2">D-Pente</a>,
-             <a href="/gameServer/tournaments/statusRound.jsp?eid=1311&round=2">Poof-Pente</a>
+            Round 2: <a href="/gameServer/tournaments/statusRound.jsp?eid=1311&round=2">Poof-Pente</a>, <a href="/gameServer/tournaments/statusRound.jsp?eid=1309&round=2">D-Pente</a>
             <br>
             Round 4: <a href="/gameServer/tournaments/statusRound.jsp?eid=1315&round=4">Pente</a>
              <br>
-            Final: <a href="/gameServer/tournaments/statusRound.jsp?eid=1313&round=2">Boat</a>, <a href="/gameServer/tournaments/statusRound.jsp?eid=1312&round=3">Connect6</a>
+            Final:  <a href="/gameServer/tournaments/statusRound.jsp?eid=1313&round=2">Boat</a>, <a href="/gameServer/tournaments/statusRound.jsp?eid=1312&round=3">Connect6</a>
               </li>
 
 

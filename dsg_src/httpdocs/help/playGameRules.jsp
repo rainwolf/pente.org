@@ -17,7 +17,8 @@ also cover the rules of Pente with some helpful examples.<br>
   <li><a href="#poof-pente"><b>Poof-Pente Rules</b></a></li>
   <li><a href="#boat-pente"><b>Boat-Pente Rules</b></a></li>
   <li><a href="#connect6"><b>Connect6 Rules</b></a></li>
-  <li><a href="#dkeryo"><b>DK-Pente Rules</b></a></li>
+    <li><a href="#dkeryo"><b>DK-Pente Rules</b></a></li>
+    <li><a href="#go"><b>Go Rules</b></a></li>
   <li><a href="#speed"><b>Speed Games</b></a></li>
 </ul>
 <br>
@@ -149,6 +150,9 @@ More info at <a href="http://en.wikipedia.org/wiki/Connect6">http://en.wikipedia
 <a name="dkeryo"><u>DK-Pente</u></a><br>
 DK-Pente combines the rules of D-Pente and Keryo-Pente.
 <br>
+    <a name="go"><u>Go</u></a><br>
+    The rules of Go are a bit involved but a nice interactive tutorial can be found <a href="https://online-go.com/learn-to-play-go">here</a>.
+    <br>
 <a name="speed"><u>Speed Games</u></a><br>
 All of the above games can be played untimed, with a "normal" time limit, or
 as <b>Speed</b> games.  Speed games are played so differently that they are

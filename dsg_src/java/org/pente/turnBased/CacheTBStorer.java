@@ -190,6 +190,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 				((MySQLTBGameStorer)baseStorer).undoLastMove(gid);
 				tbGame.undoMove();
 			}
+			tbGame.setLastMoveDate(new Date());
 			long newTimeout = Utilities.calculateNewTimeout(
 					tbGame, dsgPlayerStorer);
 
