@@ -481,7 +481,9 @@ public class CustomTablesPanel extends Panel
         g.drawString(timedString, s1 + X_OFF + secondWidth1, h + Y_OFF + secondHeight * 3);
 
 
-        boolean go = normalGame.getId() == GridStateFactory.GO;
+        boolean go = normalGame.getId() == GridStateFactory.GO || 
+                normalGame.getId() == GridStateFactory.GO9 || 
+                normalGame.getId() == GridStateFactory.GO13;
         // draw third section - players
         boolean bothPlayersSitting = true;
         g.setFont(midFont);

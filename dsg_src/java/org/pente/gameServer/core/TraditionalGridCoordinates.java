@@ -24,6 +24,9 @@ public class TraditionalGridCoordinates implements GridCoordinates {
 
     private String  coordsX[];
     private String  coordsY[];
+    
+    private int gridSize = 19;
+
 
     public TraditionalGridCoordinates(int gridWidth, int gridHeight) {
         coordsX = new String[gridWidth];
@@ -56,16 +59,16 @@ public class TraditionalGridCoordinates implements GridCoordinates {
     }
 
 	public String getCoordinate(int move) {
-		int x = move % coordsX.length;
-		int y = coordsX.length - 1 - move / coordsX.length;
+		int x = move % gridSize;
+		int y = gridSize - 1 - move / gridSize;
 		
 		return getCoordinate(x, y);
 	}
     public String getCoordinate(int x, int y) {
 
         String move= "";
-        int	middleX = coordsX.length / 2;
-        int middleY = coordsY.length / 2;
+        int	middleX = gridSize / 2;
+        int middleY = gridSize / 2;
 
         if (x == middleX && y == middleY) {
             move = "0";
@@ -98,5 +101,10 @@ public class TraditionalGridCoordinates implements GridCoordinates {
         /**@todo: Implement this org.pente.gameServer.core.GridCoordinates method*/
         //throw new java.lang.UnsupportedOperationException("Method getPoint() not yet implemented.");
         return new Point(0, 0);
+    }
+
+    @Override
+    public void setGridSize(int gridSize) {
+        this.gridSize = gridSize;
     }
 }

@@ -151,6 +151,7 @@ public class GridBoardCanvas extends Canvas
     }
     public void setGridWidth(int width) {
         this.gridWidth = width;
+//        calculateGridSize();
     }
 
     public int getGridHeight() {
@@ -158,6 +159,7 @@ public class GridBoardCanvas extends Canvas
     }
     public void setGridHeight(int height) {
         this.gridHeight = height;
+//        calculateGridSize();
     }
 
     public boolean getOnGrid() {
@@ -468,7 +470,7 @@ public class GridBoardCanvas extends Canvas
 					
 					if (message != null && !hideMessage) {
 						int x = currentSize.width;
-						int y = getStartY() + 17 * gridPieceSize; 
+						int y = getStartY() + (gridHeight - 2) * gridPieceSize; 
 	
 						g.setFont(MESSAGE_FONT);
 						FontMetrics fm = g.getFontMetrics(MESSAGE_FONT);
@@ -501,7 +503,7 @@ public class GridBoardCanvas extends Canvas
     private Rectangle getMessageDimensions() {
 
 		int x = currentSize.width;
-		int y = getStartY() + 17 * gridPieceSize; 
+		int y = getStartY() + (gridHeight - 2) * gridPieceSize; 
 		FontMetrics fm = getFontMetrics(MESSAGE_FONT);
 		int mWidth = fm.stringWidth(message);
 		int mHeight = fm.getMaxAscent() +
@@ -585,7 +587,7 @@ public class GridBoardCanvas extends Canvas
         return insets.top + beveledEdge + coordinatesDimensions.height + edgeLeftOvers.height;
     }
 
-    void calculateGridSize() {
+    public void calculateGridSize() {
 
         Dimension size = getSize();
 //System.out.println("raw size = " + size);
@@ -751,6 +753,11 @@ public class GridBoardCanvas extends Canvas
         g.setColor(gridColor);
 
         int distanceFromCenter = 6;
+        if (gridWidth == 13) {
+            distanceFromCenter = 3;
+        } else if (gridWidth == 9) {
+            distanceFromCenter = 2;
+        }
         int halfGridPieceSize = gridPieceSize / 4;
         int offsetFromX = (getGridWidth() / 2 - distanceFromCenter) * gridPieceSize - halfGridPieceSize / 2;
         int offsetFromY = (getGridHeight() / 2 - distanceFromCenter) * gridPieceSize - halfGridPieceSize / 2;
@@ -759,15 +766,23 @@ public class GridBoardCanvas extends Canvas
         int y = getStartY() + offsetFromY;
 
         g.fillOval(x, y, halfGridPieceSize, halfGridPieceSize);
-        g.fillOval(x + distanceFromCenter * gridPieceSize, y, halfGridPieceSize, halfGridPieceSize);
+        if (gridWidth != 9) {
+            g.fillOval(x + distanceFromCenter * gridPieceSize, y, halfGridPieceSize, halfGridPieceSize);
+        }
         g.fillOval(x + distanceFromCenter * 2 * gridPieceSize, y, halfGridPieceSize, halfGridPieceSize);
+
+        y += distanceFromCenter * gridPieceSize;
+        g.fillOval(x + distanceFromCenter * gridPieceSize, y, halfGridPieceSize, halfGridPieceSize);
+        if (gridWidth != 9) {
+            g.fillOval(x, y, halfGridPieceSize, halfGridPieceSize);
+            g.fillOval(x + distanceFromCenter * 2 * gridPieceSize, y, halfGridPieceSize, halfGridPieceSize);
+        }
+
         y += distanceFromCenter * gridPieceSize;
         g.fillOval(x, y, halfGridPieceSize, halfGridPieceSize);
-        g.fillOval(x + distanceFromCenter * gridPieceSize, y, halfGridPieceSize, halfGridPieceSize);
-        g.fillOval(x + distanceFromCenter * 2 * gridPieceSize, y, halfGridPieceSize, halfGridPieceSize);
-        y += distanceFromCenter * gridPieceSize;
-        g.fillOval(x, y, halfGridPieceSize, halfGridPieceSize);
-        g.fillOval(x + distanceFromCenter * gridPieceSize, y, halfGridPieceSize, halfGridPieceSize);
+        if (gridWidth != 9) {
+            g.fillOval(x + distanceFromCenter * gridPieceSize, y, halfGridPieceSize, halfGridPieceSize);
+        }
         g.fillOval(x + distanceFromCenter * 2 * gridPieceSize, y, halfGridPieceSize, halfGridPieceSize);
     }
 
@@ -795,7 +810,8 @@ public class GridBoardCanvas extends Canvas
 
         String coordsX[] = gridCoordinates.getXCoordinates();
         for (int j = 0; j < 2; j++) {
-            for (int i = 0; i < coordsX.length; i++) {
+//            for (int i = 0; i < coordsX.length; i++) {
+            for (int i = 0; i < gridWidth; i++) {
 
                 String h = coordsX[i];
                 int x2 = x + gridPieceSize * i;
@@ -822,10 +838,11 @@ public class GridBoardCanvas extends Canvas
 
         String coordsY[] = gridCoordinates.getYCoordinates();
         for (int j = 0; j < 2; j++) {
-            for (int i = 0; i < coordsY.length; i++) {
+//            for (int i = 0; i < coordsY.length; i++) {
+            for (int i = 0; i < gridHeight; i++) {
 
                 String v = coordsY[i];
-                int y2 = y + gridPieceSize * (coordsY.length - i - 1);
+                int y2 = y + gridPieceSize * (gridHeight - i - 1);
 
                 if (piecesOnGrid) {
                     if (i == gridHeight - 1) {

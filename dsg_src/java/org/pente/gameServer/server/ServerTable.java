@@ -634,11 +634,15 @@ public class ServerTable {
 
         DSGChangeStateTableEvent changeStateEvent = new DSGChangeStateTableEvent("system", tableNum);
         if ("Go".equals(server.getServerData().getName())) {
-            if (!(game.getId() == GridStateFactory.GO || game.getId() == GridStateFactory.SPEED_GO)) {
+            if (!(game.getId() == GridStateFactory.GO || game.getId() == GridStateFactory.SPEED_GO
+                    || game.getId() == GridStateFactory.GO9 || game.getId() == GridStateFactory.SPEED_GO9
+                    || game.getId() == GridStateFactory.GO13 || game.getId() == GridStateFactory.SPEED_GO13)) {
                 game = GridStateFactory.getGame(GridStateFactory.GO);
             } 
         } else {
-            if (game.getId() == GridStateFactory.GO || game.getId() == GridStateFactory.SPEED_GO) {
+            if (game.getId() == GridStateFactory.GO || game.getId() == GridStateFactory.SPEED_GO
+                    || game.getId() == GridStateFactory.GO9 || game.getId() == GridStateFactory.SPEED_GO9
+                    || game.getId() == GridStateFactory.GO13 || game.getId() == GridStateFactory.SPEED_GO13) {
                 game = GridStateFactory.getGame(GridStateFactory.PENTE);
             }
         }
@@ -803,9 +807,12 @@ public class ServerTable {
                     
 //                    game = newGame;
                     if ("Go".equals(server.getServerData().getName())) {
-                        if (newGame.getId() == GridStateFactory.GO || newGame.getId() == GridStateFactory.SPEED_GO) {
+                        if (newGame.getId() == GridStateFactory.GO || newGame.getId() == GridStateFactory.SPEED_GO
+                                || newGame.getId() == GridStateFactory.GO9 || newGame.getId() == GridStateFactory.SPEED_GO9
+                                || newGame.getId() == GridStateFactory.GO13 || newGame.getId() == GridStateFactory.SPEED_GO13
+                                ) {
                             game = newGame;
-                        } else if (!(game.getId() == GridStateFactory.GO || game.getId() == GridStateFactory.SPEED_GO)) {
+                        } else {
                             game = GridStateFactory.getGame(GridStateFactory.GO);
                             changeStateEvent.setGame(GridStateFactory.GO);
                         }
@@ -1400,7 +1407,9 @@ public class ServerTable {
         // handle 1st move
 		if (game != GridStateFactory.DPENTE_GAME && game != GridStateFactory.SPEED_DPENTE_GAME && 
 				game != GridStateFactory.DKERYO_GAME && game != GridStateFactory.SPEED_DKERYO_GAME &&
-                game != GridStateFactory.GO_GAME && game != GridStateFactory.SPEED_GO_GAME) {
+                game != GridStateFactory.GO_GAME && game != GridStateFactory.SPEED_GO_GAME &&
+                game != GridStateFactory.GO9_GAME && game != GridStateFactory.SPEED_GO9_GAME &&
+                game != GridStateFactory.GO13_GAME && game != GridStateFactory.SPEED_GO13_GAME) {
 			handleMove(playingPlayers[1].getName(), 180);
 		} else if (timed) {
 			timers[gridState.getCurrentPlayer()].go();
@@ -2153,7 +2162,9 @@ public class ServerTable {
 			gameStatus = GameData.STATUS_FORCE_RESIGN;
 		}
 		
-		boolean go = (game.getId() == GridStateFactory.GO || game.getId() == GridStateFactory.SPEED_GO);
+		boolean go = (game.getId() == GridStateFactory.GO || game.getId() == GridStateFactory.SPEED_GO
+                    || game.getId() == GridStateFactory.GO9 || game.getId() == GridStateFactory.SPEED_GO9
+                    || game.getId() == GridStateFactory.GO13 || game.getId() == GridStateFactory.SPEED_GO13);
 		
         if (rated && set != null) {
         	if (set.getG1Gid() == 0 && !go) {
@@ -3020,7 +3031,9 @@ public class ServerTable {
         if (gameData.getRated() && localSet != null) {
         	if (localSet.getG1Gid() == 0) {
         		localSet.setG1(gameData);
-        		if (game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO) {
+        		if (game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO
+                        || game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9
+                        || game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13) {
         		    updateRatings = true;
                 }
         	}
