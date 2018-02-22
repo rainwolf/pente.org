@@ -58,6 +58,13 @@ if (request.getParameter("h") != null) {
 if (request.getParameter("w") != null) {
     try { width = Integer.parseInt(request.getParameter("w")); } catch (NumberFormatException n) {}
 }
+    boolean isGo = game.getGame() == GridStateFactory.TB_GO || game.getGame() == GridStateFactory.TB_GO9 || game.getGame() == GridStateFactory.TB_GO13;
+    int gridSize = 19;
+    if (game.getGame() == GridStateFactory.TB_GO9) {
+        gridSize = 9;
+    } else if (game.getGame() == GridStateFactory.TB_GO13) {
+        gridSize = 13;
+    }
 
 %>
 
@@ -100,8 +107,8 @@ String cancelRequested="false";
         <br>
              <table align="center" width="100%" border=1>
             <tr>
-               <td align="center" width="50%" bgcolor="#<%=(game.getGame()!=GridStateFactory.TB_GO?"FFFFFF":"000000")%>">
-                    <b><font color="<%=(game.getGame()!=GridStateFactory.TB_GO?"black":"white")%>"><%=p1.getName()%>
+               <td align="center" width="50%" bgcolor="#<%=(!isGo?"FFFFFF":"000000")%>">
+                    <b><font color="<%=(!isGo?"black":"white")%>"><%=p1.getName()%>
                     </b>
              <br>
                <%
@@ -111,8 +118,8 @@ String cancelRequested="false";
                  <% if (dsgPlayerGameData != null) { %><%@ include file="../ratings.jspf" %><% } %>
                    </font>
                </td>
-                <td align="center" bgcolor="#<%=(game.getGame()==GridStateFactory.TB_GO?"FFFFFF":"000000")%>">
-                    <b><font color="<%=(game.getGame()==GridStateFactory.TB_GO?"black":"white")%>"><%=p2.getName()%>
+                <td align="center" bgcolor="#<%=(isGo?"FFFFFF":"000000")%>">
+                    <b><font color="<%=(isGo?"black":"white")%>"><%=p2.getName()%>
                     </b>
             <br>
                <%
@@ -143,25 +150,21 @@ window.google_analytics_uacct = "UA-20529582-2";
 
     <script type="text/javascript">
         var moves = [<%=moves.substring(0, moves.length() - 1)%>];
-        var active = <%=!"false".equals(myTurn)%>;
         var game = <%= game.getGame() %>;
-        var myName = "<%= me %>";
-        var p1Name = "<%=p1.getName()%>";
-        var p2Name = "<%=p2.getName()%>";
-        var opponentName = "<%= (me.equals(p1.getName())?p2.getName():p1.getName()) %>";
-        var iAmP1 = <%=me.equals(p1.getName())%>;
 
         var boardSize = 200;
         var boardCanvas = document.getElementById("<%=game.getGid()+"board"%>");
         var boardContext = boardCanvas.getContext("2d");
         var indentWidth = (boardCanvas.width - boardSize) / 2;
         var indentHeight = (boardCanvas.height - boardSize) / 2;
-        var stepX = boardSize / 18;
-        var stepY = boardSize / 18;
+
+        var gridSize = <%=gridSize%>;
+        var stepX = boardSize / (gridSize - 1);
+        var stepY = boardSize / (gridSize - 1);
         var boardColor;
+        var rated = <%= game.isRated()%>;
         var radius = stepX * 95 / 200;
         
-        var gridSize = 19;
 
 
         var drawUntilMove;
@@ -169,20 +172,6 @@ window.google_analytics_uacct = "UA-20529582-2";
         var whiteCaptures = 0;
         var blackCaptures = 0;
         var lastMove;
-        var rated = <%= game.isRated()%>;
-        var c6Move1 = -1;
-        var c6Move2 = -1;
-        var dPenteMove1 = -1;
-        var dPenteMove2 = -1;
-        var dPenteMove3 = -1;
-        var dPenteChoice = <%= game.getDPenteState() == 2 %>;
-        var dPenteSwap = <%= game.didDPenteSwap()%>;
-
-        var stoneColor = true;
-        var trackingI = -1, trackingJ = -1;
-        var iRadius = 6*radius/4;
-
-        var currentMove = -1;
 
             function init() {
                 switch (game) {
@@ -195,7 +184,10 @@ window.google_analytics_uacct = "UA-20529582-2";
                     case 63: boardColor = connect6Color; break;
                     case 65: boardColor = boatPenteColor; break;
                     case 67: boardColor = dkeryoPenteColor; break;
-                    case 69: boardColor = goColor; break;
+                    case 69:
+                    case 71:
+                    case 73:
+                        boardColor = goColor; break;
                     default: boardColor = penteColor; break;
                 }
                 boardCanvas.addEventListener("click", boardClick, false);
@@ -213,104 +205,7 @@ window.google_analytics_uacct = "UA-20529582-2";
             }
 
 
-            // function drawGrid(boardContext, boardColor) {
-            //   boardContext.save();
-            //     boardContext.beginPath();
-            //     boardContext.rect(indentWidth / 2, indentHeight / 2, boardSize + indentWidth, boardSize + indentHeight);
-            //     boardContext.lineWidth=0.5;
-            //     boardContext.fillStyle=boardColor;
-            //     boardContext.shadowColor = 'Black';
-            //     boardContext.shadowBlur = 5;
-            //     boardContext.shadowOffsetX = radius/4;
-            //     boardContext.shadowOffsetY = radius/4;
-            //     boardContext.fill();     
-            //     // boardContext.closePath();
-            //     boardContext.restore();
-            //
-            //     // boardContext.beginPath();
-            //     boardContext.font = "10px sans-serif";
-            //     boardContext.fillStyle='black';
-            //     boardContext.lineWidth=0.2;
-            //     for (var i = 0; i < 19; i++) {
-            //         boardContext.moveTo(indentWidth + i*stepX, indentHeight);
-            //         boardContext.lineTo(indentWidth + i*stepX, indentHeight + boardSize);
-            //         // boardContext.fillText(coordinateLetters[i], indentWidth + i*stepX - 2, indentHeight - 5);
-            //         // boardContext.fillText(coordinateLetters[i], indentWidth + i*stepX - 2, boardSize + indentHeight + 12);
-            //     }
-            //     for (var i = 0; i < 19; i++) {
-            //         boardContext.moveTo(indentWidth, indentHeight + i*stepY);
-            //         boardContext.lineTo(indentWidth + boardSize, indentHeight + i*stepY);
-            //         // boardContext.fillText("" + (19 - i), indentWidth - 15, indentHeight + i*stepX + 3);
-            //         // boardContext.fillText("" + (19 - i), boardSize + indentWidth + 6, indentHeight + i*stepX + 3);
-            //     }
-            //     // boardContext.strokeStyle = "#FFFFFF";
-            //     boardContext.stroke();
-            //     boardContext.closePath();
-            //     boardContext.beginPath();
-            //     boardContext.arc(indentWidth + 9*stepX, indentHeight + 9*stepY, stepX / 10, 0, Math.PI*2, true); 
-            //     boardContext.stroke();
-            //     boardContext.closePath();
-            //     boardContext.beginPath();
-            //     boardContext.arc(indentWidth + 6*stepX, indentHeight + 6*stepY, stepX / 10, 0, Math.PI*2, true); 
-            //     boardContext.stroke();
-            //     boardContext.closePath();
-            //     boardContext.beginPath();
-            //     boardContext.arc(indentWidth + 6*stepX, indentHeight + 12*stepY, stepX / 10, 0, Math.PI*2, true); 
-            //     boardContext.stroke();
-            //     boardContext.closePath();
-            //     boardContext.beginPath();
-            //     boardContext.arc(indentWidth + 12*stepX, indentHeight + 6*stepY, stepX / 10, 0, Math.PI*2, true); 
-            //     boardContext.stroke();
-            //     boardContext.closePath();
-            //     boardContext.beginPath();
-            //     boardContext.arc(indentWidth + 12*stepX, indentHeight + 12*stepY, stepX / 10, 0, Math.PI*2, true); 
-            //     boardContext.stroke();
-            //     boardContext.closePath();
-            // }
-            function drawStone(i, j, color) {
-              boardContext.save();
-                var centerX = indentWidth + stepX*(i);
-                var centerY = indentHeight + stepY*(j);
-                boardContext.beginPath();
-                boardContext.arc(centerX, centerY, radius , 0, Math.PI*2, true); 
-                if (color === 2) {
-                    boardContext.fillStyle = 'black';
-                } else {
-                    boardContext.fillStyle = 'white';
-                }
-                centerX -= radius/8;
-                centerY -= radius/8;
-                boardContext.shadowColor = 'DimGray';
-                boardContext.shadowBlur = 1;
-                boardContext.shadowOffsetX = radius/8;
-                boardContext.shadowOffsetY = radius/8;
-                if (color === 2) {
-                    var gradient = boardContext.createRadialGradient(centerX, centerY, radius / 8, centerX, centerY, radius);
-                    gradient.addColorStop(0, 'Grey');
-                    gradient.addColorStop(1, 'Black');
-                    boardContext.fillStyle = gradient; 
-                } else {
-                    var gradient = boardContext.createRadialGradient(centerX, centerY, 2*radius / 4, centerX, centerY, radius);
-                    gradient.addColorStop(0, 'White');
-                    gradient.addColorStop(1, 'Gainsboro');
-                    boardContext.fillStyle = gradient; 
-                }
-                boardContext.fill();
-                // boardContext.lineWidth = 5;
-                // boardContext.strokeStyle = '#003300';
-                // boardContext.stroke();
-                boardContext.closePath();
-              boardContext.restore();
-            }
-            // function drawRedDot(i, j) {
-            //     var centerX = indentWidth + stepX*(i);
-            //     var centerY = indentHeight + stepY*(j);
-            //     boardContext.beginPath();
-            //     boardContext.arc(centerX, centerY, stepX / 7 , 0, Math.PI*2, true); 
-            //     boardContext.fillStyle = 'red';
-            //     boardContext.fill();
-            //     boardContext.closePath();
-            // }
+
             function replayGame(abstractBoard, movesList, until) {
                 whiteCaptures = 0;
                 blackCaptures = 0;
@@ -324,7 +219,10 @@ window.google_analytics_uacct = "UA-20529582-2";
                     case 63: replayConnect6Game(abstractBoard, movesList, until); break;
                     case 65: replayPenteGame(abstractBoard, movesList, until); break;
                     case 67: replayKeryoPenteGame(abstractBoard, movesList, until); break;
-                    case 69: replayGoGame(abstractBoard, movesList, until); break;
+                    case 69:
+                    case 71:
+                    case 73:
+                        replayGoGame(abstractBoard, movesList, until); break;
                 }
             }
 

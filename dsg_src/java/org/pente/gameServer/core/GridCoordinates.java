@@ -26,4 +26,5 @@ public interface GridCoordinates {
     public String getCoordinate(int move);
     public String getCoordinate(int x, int y);
     public Point getPoint(String coordinate);
+    public void setGridSize(int gridSize);
 }

@@ -651,15 +651,20 @@ public class GameBoardFrame extends Frame implements TableComponent,
             }
         }
         else if (event.getActionCommand().equals(PASS)) {
-            if ((game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO) &&
+            if ((game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO ||
+                    game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9 ||
+                    game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13) &&
                     playerType != PLAYERTYPE_NOT_SITTING &&
                     gameBoard.getGridState().getCurrentPlayer() == playerType &&
                     state == DSGGameStateTableEvent.GAME_IN_PROGRESS) {
-                dsgEventListener.eventOccurred(new DSGMoveTableEvent(playerName, tableNum, 361));
+                int passMove = gameBoard.getGridBoardComponent().getGridWidth()*gameBoard.getGridBoardComponent().getGridWidth();
+                dsgEventListener.eventOccurred(new DSGMoveTableEvent(playerName, tableNum, passMove));
             }
         }
         else if (event.getActionCommand().equals(SCORE)) {
-            if ((game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO) &&
+            if ((game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO ||
+                    game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9 ||
+                    game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13) &&
                     (gameBoard.getGridState() instanceof GoState)
 //                    playerType != PLAYERTYPE_NOT_SITTING &&
 //                    gameBoard.getGridState().getCurrentPlayer() == playerType &&
@@ -989,14 +994,36 @@ public class GameBoardFrame extends Frame implements TableComponent,
         bootList.setGame(game);
         inviteList.setGame(game);
         coordinatesList.setGame(game);
-        if (game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO) {
+        if (game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO
+                || game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9
+                || game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13) {
+            if (game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9) {
+                gameBoard.getGridBoard().setGridHeight(9);
+                gameBoard.getGridBoard().setGridWidth(9);
+            } else if (game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13) {
+                gameBoard.getGridBoard().setGridHeight(13);
+                gameBoard.getGridBoard().setGridWidth(13);
+            } else {
+                gameBoard.getGridBoard().setGridHeight(19);
+                gameBoard.getGridBoard().setGridWidth(19);
+            }
             gameBoard.getGridBoard().setDrawInnerCircles(false);
             gameBoard.getGridBoard().setDrawGoDots(true);
             gameBoard.getGridBoard().setThinkingPiecePlayer(2);
+            ((GridBoardCanvas)gameBoard.getGridBoardComponent()).calculateGridSize();
+            for (GridCoordinates gc: coordinates) {
+                gc.setGridSize(gameBoard.getGridBoard().getGridWidth());
+            }
         } else {
+            gameBoard.getGridBoard().setGridHeight(19);
+            gameBoard.getGridBoard().setGridWidth(19);
             gameBoard.getGridBoard().setDrawInnerCircles(true);
             gameBoard.getGridBoard().setDrawGoDots(false);
             gameBoard.getGridBoard().setThinkingPiecePlayer(1);
+            ((GridBoardCanvas)gameBoard.getGridBoardComponent()).calculateGridSize();
+            for (GridCoordinates gc: coordinates) {
+                gc.setGridSize(gameBoard.getGridBoard().getGridWidth());
+            }
         }
 
 
@@ -1088,7 +1115,9 @@ public class GameBoardFrame extends Frame implements TableComponent,
                     playerGameTimers[1].go();
                 }
             }
-            if (game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO) {
+            if (game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO ||
+                    game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9 ||
+                    game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13) {
                 gameBoard.getGridBoard().setThinkingPiecePlayer(2);
             }
 
@@ -1451,7 +1480,9 @@ public class GameBoardFrame extends Frame implements TableComponent,
     
     private void showGoStateDialog() {
 //        System.out.println("showGoStateDialog before show");
-        if ((game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO) && 
+        if ((game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO ||
+                game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9 ||
+                game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13) && 
                 ((GoState)gameBoard.getGridState()).isEvaluateStones() &&
                 gameBoard.getGridState().getCurrentPlayer() == playerType &&
                 !gameBoard.getGridState().isGameOver()) {
@@ -1465,7 +1496,8 @@ public class GameBoardFrame extends Frame implements TableComponent,
                 public void actionPerformed(ActionEvent e) {
 //                    System.out.println("showGoStateDialog action "+e.getActionCommand());
                     if (e.getActionCommand().equals("Accept")) {
-                        dsgEventListener.eventOccurred(new DSGMoveTableEvent(playerName, tableNum, 361));
+                        int passMove = gameBoard.getGridState().getGridSizeX()*gameBoard.getGridState().getGridSizeX();
+                        dsgEventListener.eventOccurred(new DSGMoveTableEvent(playerName, tableNum, passMove));
                     }
                     else if (e.getActionCommand().equals("Reject")) {
 //                        System.out.println("showGoStateDialog action reject ");
@@ -1479,7 +1511,9 @@ public class GameBoardFrame extends Frame implements TableComponent,
     }
     
     private void showGoMessage() {
-        if ((game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO) 
+        if ((game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO ||
+                game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9 ||
+                game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13) 
                 && (gameBoard.getGridState() instanceof GoState) 
                 && gameBoard.getGridState().getCurrentPlayer() == playerType) {
             GoState s = (GoState) gameBoard.getGridState();

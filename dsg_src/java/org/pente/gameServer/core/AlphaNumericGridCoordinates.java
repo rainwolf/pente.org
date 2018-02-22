@@ -24,6 +24,8 @@ public class AlphaNumericGridCoordinates implements GridCoordinates {
 
     private String letters[];
     private String numbers[];
+    
+    private int gridSize = 19;
 
     public AlphaNumericGridCoordinates(int gridWidth, int gridHeight) {
 
@@ -54,16 +56,16 @@ public class AlphaNumericGridCoordinates implements GridCoordinates {
     }
 
 	public String getCoordinate(int move) {
-        if (move == 361) {
+        if (move == gridSize*gridSize) {
             return "PASS";
         }
-		int x = move % letters.length;
-		int y = letters.length - 1 - move / letters.length;
+		int x = move % gridSize;
+		int y = gridSize - 1 - move / gridSize;
 		
 		return getCoordinate(x, y);
 	}
     public String getCoordinate(int x, int y) {
-        if (x == 19 && y == 19) {
+        if (x == gridSize && y == gridSize) {
             return "PASS";
         }
         if (x == 0 && y == -1) {
@@ -82,5 +84,10 @@ public class AlphaNumericGridCoordinates implements GridCoordinates {
         int y = (Integer.parseInt(coordinate.substring(1)) - 1);
         
         return new Point(x, y);
+    }
+
+    @Override
+    public void setGridSize(int gridSize) {
+        this.gridSize = gridSize;
     }
 }
