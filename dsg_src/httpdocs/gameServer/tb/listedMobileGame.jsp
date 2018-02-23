@@ -253,10 +253,10 @@ window.google_analytics_uacct = "UA-20529582-2";
         replayGame(abstractBoard, moves, moves.length);
         drawGame();
         lastMove = moves[drawUntilMove - 1];
-        drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+        drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
         if (game == 63 && moves.length > 1) {
             lastMove = moves[drawUntilMove - 2];
-            drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+            drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
         }
     </script>
 

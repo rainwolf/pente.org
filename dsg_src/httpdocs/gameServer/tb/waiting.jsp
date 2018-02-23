@@ -317,13 +317,16 @@ below and do not specify a player to invite.<br>
         %>
 <%     for (TBSet s : kothList) {
          String color = null;
-        if (s.isTwoGameSet()) {
-            color = "white, black (2 game set)";
-        } else if (s.getPlayer1Pid() == 0) {
-            color = (s.getGame1().getGame() != GridStateFactory.TB_GO)?"white":"black";
-        } else {
-            color = (s.getGame1().getGame() == GridStateFactory.TB_GO)?"white":"black";
-        }
+    boolean isGo = s.getGame1().getGame()==GridStateFactory.TB_GO ||
+            s.getGame1().getGame()==GridStateFactory.TB_GO9 ||
+            s.getGame1().getGame()==GridStateFactory.TB_GO13;
+    if (s.isTwoGameSet()) {
+        color = "white, black (2 game set)";
+    } else if (s.getPlayer1Pid() == 0) {
+        color = !isGo?"white":"black";
+    } else {
+        color = isGo?"white":"black";
+    }
 
         DSGPlayerData opp = dsgPlayerStorer.loadPlayer(s.getInviterPid());
         DSGPlayerData d = opp;
@@ -386,13 +389,15 @@ below and do not specify a player to invite.<br>
 
        <%     for (TBSet s : restList) {
            String color = null;
-
+           boolean isGo = s.getGame1().getGame()==GridStateFactory.TB_GO ||
+                   s.getGame1().getGame()==GridStateFactory.TB_GO9 ||
+                   s.getGame1().getGame()==GridStateFactory.TB_GO13;
            if (s.isTwoGameSet()) {
                color = "white, black (2 game set)";
            } else if (s.getPlayer1Pid() == 0) {
-               color = (s.getGame1().getGame() != GridStateFactory.TB_GO)?"white":"black";
+               color = !isGo?"white":"black";
            } else {
-               color = (s.getGame1().getGame() == GridStateFactory.TB_GO)?"white":"black";
+               color = isGo?"white":"black";
            }
            DSGPlayerData opp = dsgPlayerStorer.loadPlayer(s.getInviterPid());
            DSGPlayerData d = opp;
@@ -456,12 +461,15 @@ below and do not specify a player to invite.<br>
        
        <%     for (TBSet s : beginnerList) {
            String color = null;
+           boolean isGo = s.getGame1().getGame()==GridStateFactory.TB_GO ||
+                   s.getGame1().getGame()==GridStateFactory.TB_GO9 ||
+                   s.getGame1().getGame()==GridStateFactory.TB_GO13;
            if (s.isTwoGameSet()) {
                color = "white, black (2 game set)";
            } else if (s.getPlayer1Pid() == 0) {
-               color = (s.getGame1().getGame() != GridStateFactory.TB_GO)?"white":"black";
+               color = !isGo?"white":"black";
            } else {
-               color = (s.getGame1().getGame() == GridStateFactory.TB_GO)?"white":"black";
+               color = isGo?"white":"black";
            }
            DSGPlayerData opp = dsgPlayerStorer.loadPlayer(s.getInviterPid());
            DSGPlayerData d = opp;

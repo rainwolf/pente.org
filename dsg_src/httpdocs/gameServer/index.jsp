@@ -717,11 +717,14 @@ if (inLiveGameRoom) {
        </tr>
      <% for (TBSet s : invitesTo) {
          String color = null;
+         boolean isGo = s.getGame1().getGame()==GridStateFactory.TB_GO ||
+                 s.getGame1().getGame()==GridStateFactory.TB_GO9 ||
+                 s.getGame1().getGame()==GridStateFactory.TB_GO13;
          if (s.isTwoGameSet()) {
              color = "white,black (2 game set)";
          }
-         else if ((myPID == s.getPlayer1Pid() && s.getGame1().getGame()!=GridStateFactory.TB_GO) ||
-                 (myPID == s.getPlayer2Pid() && s.getGame1().getGame()==GridStateFactory.TB_GO)) {
+         else if ((myPID == s.getPlayer1Pid() && !isGo) ||
+                 (myPID == s.getPlayer2Pid() && isGo)) {
              color = "white";
          }
          else {
@@ -783,11 +786,14 @@ if (inLiveGameRoom) {
        </tr>
      <% for (TBSet s : invitesFrom) {
          String color = null;
+         boolean isGo = s.getGame1().getGame()==GridStateFactory.TB_GO ||
+                 s.getGame1().getGame()==GridStateFactory.TB_GO9 ||
+                 s.getGame1().getGame()==GridStateFactory.TB_GO13;
          if (s.isTwoGameSet()) {
              color = "white,black (2 game set)";
          }
-         else if ((myPID == s.getPlayer1Pid() && s.getGame1().getGame()!=GridStateFactory.TB_GO) ||
-                 (myPID == s.getPlayer2Pid() && s.getGame1().getGame()==GridStateFactory.TB_GO)) {
+         else if ((myPID == s.getPlayer1Pid() && !isGo) ||
+                 (myPID == s.getPlayer2Pid() && isGo)) {
              color = "white";
          }
          else {
@@ -876,13 +882,16 @@ if (inLiveGameRoom) {
          <td><b>Rated</b></td>
        </tr>
      <% for (TBGame g : myTurn) {
-             String color =  ((myPID == g.getPlayer1Pid() && g.getGame()!=GridStateFactory.TB_GO) ||
-                     (myPID == g.getPlayer2Pid() && g.getGame()==GridStateFactory.TB_GO)) ?
+         boolean isGo = g.getGame()==GridStateFactory.TB_GO ||
+                 g.getGame()==GridStateFactory.TB_GO9 ||
+                 g.getGame()==GridStateFactory.TB_GO13;
+             String color =  ((myPID == g.getPlayer1Pid() && !isGo) ||
+                     (myPID == g.getPlayer2Pid() && isGo)) ?
              "white" : "black";
          if ("white".equals(color)) {
-             color += ((g.getGame()!=GridStateFactory.TB_GO)?" (p1)":" (p2)");
+             color += (!isGo?" (p1)":" (p2)");
          } else {
-             color += ((g.getGame()==GridStateFactory.TB_GO)?" (p1)":" (p2)");
+             color += (isGo?" (p1)":" (p2)");
          }
          long oppPid = dsgPlayerData.getPlayerID() == g.getPlayer1Pid() ?
              g.getPlayer2Pid() : g.getPlayer1Pid();
@@ -946,13 +955,16 @@ if (inLiveGameRoom) {
          <td><b>Rated</b></td>
        </tr>
      <% for (TBGame g : oppTurn) {
-         String color =  ((myPID == g.getPlayer1Pid() && g.getGame()!=GridStateFactory.TB_GO) ||
-                 (myPID == g.getPlayer2Pid() && g.getGame()==GridStateFactory.TB_GO)) ?
+         boolean isGo = g.getGame()==GridStateFactory.TB_GO ||
+                 g.getGame()==GridStateFactory.TB_GO9 ||
+                 g.getGame()==GridStateFactory.TB_GO13;
+         String color =  ((myPID == g.getPlayer1Pid() && !isGo) ||
+                 (myPID == g.getPlayer2Pid() && isGo)) ?
              "white" : "black";
          if ("white".equals(color)) {
-             color += ((g.getGame()!=GridStateFactory.TB_GO)?" (p1)":" (p2)");
+             color += (!isGo?" (p1)":" (p2)");
          } else {
-             color += ((g.getGame()==GridStateFactory.TB_GO)?" (p1)":" (p2)");
+             color += (isGo?" (p1)":" (p2)");
          }
          long oppPid = dsgPlayerData.getPlayerID() == g.getPlayer1Pid() ?
              g.getPlayer2Pid() : g.getPlayer1Pid();
