@@ -53,6 +53,9 @@ function leftRight(e) {
 
     e = e || window.event;
     
+    if (document.getElementById("message") === document.activeElement) {
+        return;
+    }
 
     if (e.keyCode == '37' && typeof goBack === "function") {
         goBack();

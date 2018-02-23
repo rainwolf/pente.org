@@ -54,7 +54,7 @@ they appear, if there are only 2 players on 2 steps, and the higher placed playe
 A few more rules
 <ul>
 	<li>The player on the top step is king of the hill and gets a <img src="/gameServer/images/kothcrown.gif"> if they occupy the top step alone, the more hills you conquer, the darker your crown becomes: 
-	<% for ( int i = 1; i < 28 ; i++ ) { %>
+	<% for ( int i = 1; i < 36 ; i++ ) { %>
 <img src="/gameServer/images/kothcrown<%=i%>.png">		
 	<%}%> </li>
 	<li>non-subscribers who don't play any King of the Hill games for 62 days are removed from the hill,</li>
