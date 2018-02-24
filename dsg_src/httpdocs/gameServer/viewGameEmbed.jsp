@@ -63,6 +63,14 @@ if (color == null) {
     color = "#FFFFFF";
 }
 
+    boolean isGo = gameId == GridStateFactory.TB_GO || gameId == GridStateFactory.TB_GO9 || gameId == GridStateFactory.TB_GO13;
+    int gridSize = 19;
+    if (gameId == GridStateFactory.TB_GO9) {
+        gridSize = 9;
+    } else if (gameId == GridStateFactory.TB_GO13) {
+        gridSize = 13;
+    }
+
 %>
 <html>
 
@@ -190,17 +198,19 @@ for( int i = 0; i < gameMoves.size(); i++ ) {
         var p2Name = "<%=blackName%>";
         var rated = false;
 
-        var gridSize = 19; 
-        
-        var boardSize = 420;
+        var gridSize = <%=gridSize%>;
         var boardCanvas = document.getElementById("board");
         var boardContext = boardCanvas.getContext("2d");
-        var indentWidth = (boardCanvas.width - boardSize) / 2;
-        var indentHeight = (boardCanvas.height - boardSize) / 2;
-        var stepX = boardSize / 18;
-        var stepY = boardSize / 18;
+        var indentWidth = (boardCanvas.width/(gridSize+3)) / 2;
+        var indentHeight = (boardCanvas.height/(gridSize+3)) / 2;
+        // var stepX = boardSize / (gridSize - 1);
+        // var stepY = boardSize / (gridSize - 1);
+        var stepX = 2*indentWidth;
+        var stepY = 2*indentHeight;
         var boardColor;
         var radius = stepX * 95 / 200;
+        var boardSize = boardCanvas.width - indentWidth*2;
+
 
         var drawUntilMove;
         var whiteCaptures = 0;
@@ -268,59 +278,6 @@ for( int i = 0; i < gameMoves.size(); i++ ) {
 
 
 
-            // function drawGrid(boardContext, boardColor) {
-            //   boardContext.save();
-            //     boardContext.beginPath();
-            //     boardContext.rect(indentWidth / 2, indentHeight / 2, boardSize + indentWidth, boardSize + indentHeight);
-            //     boardContext.lineWidth=0.5;
-            //     boardContext.fillStyle=boardColor;
-            //     boardContext.shadowColor = 'Black';
-            //     boardContext.shadowBlur = 5;
-            //     boardContext.shadowOffsetX = radius/4;
-            //     boardContext.shadowOffsetY = radius/4;
-            //     boardContext.fill();     
-            //     // boardContext.closePath();
-            //     boardContext.restore();
-            //
-            //     boardContext.font = "10px sans-serif";
-            //     boardContext.fillStyle='black';
-            //     boardContext.lineWidth=0.5;
-            //     for (var i = 0; i < 19; i++) {
-            //         boardContext.moveTo(indentWidth + i*stepX, indentHeight);
-            //         boardContext.lineTo(indentWidth + i*stepX, indentHeight + boardSize);
-            //         boardContext.fillText(coordinateLetters[i], indentWidth + i*stepX - 2, indentHeight - 5);
-            //         boardContext.fillText(coordinateLetters[i], indentWidth + i*stepX - 2, boardSize + indentHeight + 12);
-            //     }
-            //     for (var i = 0; i < 19; i++) {
-            //         boardContext.moveTo(indentWidth, indentHeight + i*stepY);
-            //         boardContext.lineTo(indentWidth + boardSize, indentHeight + i*stepY);
-            //         boardContext.fillText("" + (19 - i), indentWidth - 15, indentHeight + i*stepX + 3);
-            //         boardContext.fillText("" + (19 - i), boardSize + indentWidth + 6, indentHeight + i*stepX + 3);
-            //     }
-            //     // boardContext.strokeStyle = "#FFFFFF";
-            //     boardContext.stroke();
-            //     boardContext.closePath();
-            //     boardContext.beginPath();
-            //     boardContext.arc(indentWidth + 9*stepX, indentHeight + 9*stepY, stepX / 5, 0, Math.PI*2, true); 
-            //     boardContext.stroke();
-            //     boardContext.closePath();
-            //     boardContext.beginPath();
-            //     boardContext.arc(indentWidth + 6*stepX, indentHeight + 6*stepY, stepX / 5, 0, Math.PI*2, true); 
-            //     boardContext.stroke();
-            //     boardContext.closePath();
-            //     boardContext.beginPath();
-            //     boardContext.arc(indentWidth + 6*stepX, indentHeight + 12*stepY, stepX / 5, 0, Math.PI*2, true); 
-            //     boardContext.stroke();
-            //     boardContext.closePath();
-            //     boardContext.beginPath();
-            //     boardContext.arc(indentWidth + 12*stepX, indentHeight + 6*stepY, stepX / 5, 0, Math.PI*2, true); 
-            //     boardContext.stroke();
-            //     boardContext.closePath();
-            //     boardContext.beginPath();
-            //     boardContext.arc(indentWidth + 12*stepX, indentHeight + 12*stepY, stepX / 5, 0, Math.PI*2, true); 
-            //     boardContext.stroke();
-            //     boardContext.closePath();
-            // }
             function replayGame(abstractBoard, movesList, until) {
                 whiteCaptures = 0;
                 blackCaptures = 0;
@@ -337,112 +294,7 @@ for( int i = 0; i < gameMoves.size(); i++ ) {
                     case 69: replayGoGame(abstractBoard, movesList, until); break;
                 }
             }
-            function drawCaptures () {
-                if (whiteCaptures > 0) {
-                    for (var i = 0; i < whiteCaptures; i++) {
-                        boardContext.beginPath();
-                        boardContext.arc( indentWidth + i*stepX*2/3, boardSize + indentHeight + stepY, stepX / 3 , 0, Math.PI*2, true); 
-                        boardContext.fillStyle = 'white';
-                        boardContext.fill();
-                        boardContext.stroke();
-                        boardContext.closePath();
-                    }
-                    var digit = 0;
-                    if (whiteCaptures > 9) {
-                        digit = Math.floor(whiteCaptures / 10);
-                    } else {
-                        digit = whiteCaptures % 10;
-                    }
-                    boardContext.beginPath();
-                    boardContext.font = "14px bold sans-serif";
-                    boardContext.fillStyle='black';
-                    boardContext.fillText("" + digit, indentWidth - 4, boardSize + indentHeight + stepY + 4);
-                    boardContext.stroke();
-                    boardContext.closePath();
-                    if (whiteCaptures > 9) {
-                        digit = whiteCaptures % 10;
-                        boardContext.beginPath();
-                        boardContext.font = "14px bold sans-serif";
-                        boardContext.fillStyle='black';
-                        boardContext.fillText("" + digit, indentWidth + stepX*2/3 - 4, boardSize + indentHeight + stepY + 4);
-                        boardContext.stroke();
-                        boardContext.closePath();
-                    }
-                }
-                if (blackCaptures > 0) {
-                    for (var i = 0; i < blackCaptures; i++) {
-                        boardContext.beginPath();
-                        boardContext.arc( boardSize + indentWidth - i*stepX*2/3, indentHeight - stepY, stepX / 3 , 0, Math.PI*2, true); 
-                        boardContext.fillStyle = 'black';
-                        boardContext.fill();
-                        boardContext.stroke();
-                        boardContext.closePath();
-                    }
-                    var digit = blackCaptures % 10;
-                    boardContext.beginPath();
-                    boardContext.font = "14px bold sans-serif";
-                    boardContext.fillStyle='white';
-                    boardContext.fillText("" + digit, boardSize + indentWidth - 4, indentHeight - stepY + 4);
-                    boardContext.stroke();
-                    boardContext.closePath();
-                    if (blackCaptures > 9) {
-                        digit = Math.floor(blackCaptures / 10);
-                        boardContext.beginPath();
-                        boardContext.font = "14px bold sans-serif";
-                        boardContext.fillStyle='white';
-                        boardContext.fillText("" + digit, boardSize + indentWidth - stepX*2/3 - 4, indentHeight - stepY + 4);
-                        boardContext.stroke();
-                        boardContext.closePath();
-                    }
-                }
-            }
-            // function drawStone(i, j, color) {
-            //   boardContext.save();
-            //     var centerX = indentWidth + stepX*(i);
-            //     var centerY = indentHeight + stepY*(j);
-            //     boardContext.beginPath();
-            //     boardContext.arc(centerX, centerY, radius , 0, Math.PI*2, true); 
-            //     if (color == true) {
-            //         boardContext.fillStyle = 'black';
-            //     } else {
-            //         boardContext.fillStyle = 'white';
-            //     }
-            //     centerX -= radius/8;
-            //     centerY -= radius/8;
-            //     boardContext.shadowColor = 'DimGray';
-            //     boardContext.shadowBlur = 1;
-            //     boardContext.shadowOffsetX = radius/8;
-            //     boardContext.shadowOffsetY = radius/8;
-            //     if (color) {
-            //         var gradient = boardContext.createRadialGradient(centerX, centerY, radius / 8, centerX, centerY, radius);
-            //         gradient.addColorStop(0, 'Grey');
-            //         gradient.addColorStop(1, 'Black');
-            //         boardContext.fillStyle = gradient; 
-            //     } else {
-            //         var gradient = boardContext.createRadialGradient(centerX, centerY, 2*radius / 4, centerX, centerY, radius);
-            //         gradient.addColorStop(0, 'White');
-            //         gradient.addColorStop(1, 'Gainsboro');
-            //         boardContext.fillStyle = gradient; 
-            //     }
-            //     boardContext.fill();
-            //     // boardContext.lineWidth = 5;
-            //     // boardContext.strokeStyle = '#003300';
-            //     // boardContext.stroke();
-            //     boardContext.closePath();
-            //   boardContext.restore();
-            // }
-            function drawRedDot(i, j) {
-                var centerX = indentWidth + stepX*(i);
-                var centerY = indentHeight + stepY*(j);
-                boardContext.beginPath();
-                boardContext.arc(centerX, centerY, stepX / 7 , 0, Math.PI*2, true); 
-                boardContext.fillStyle = 'red';
-                boardContext.fill();
-                // boardContext.lineWidth = 5;
-                // boardContext.strokeStyle = '#003300';
-                // boardContext.stroke();
-                boardContext.closePath();
-            }
+
             function goBack() {
                 if (drawUntilMove > 1) {
                     if (game == 63 && drawUntilMove > 1) {

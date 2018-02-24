@@ -101,6 +101,15 @@ if (color == null) {
     color = "#FFFFFF";
 }
 
+    boolean isGo = gameId == GridStateFactory.TB_GO || gameId == GridStateFactory.TB_GO9 || gameId == GridStateFactory.TB_GO13;
+    int gridSize = 19;
+    if (gameId == GridStateFactory.TB_GO9) {
+        gridSize = 9;
+    } else if (gameId == GridStateFactory.TB_GO13) {
+        gridSize = 13;
+    }
+
+
 %>
 <html>
 <body>
@@ -328,16 +337,19 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
         var p2Name = "<%=game.getPlayer2Data().getUserIDName()%>";
         var rated = false;
 
+        var gridSize = <%=gridSize%>;
         var boardCanvas = document.getElementById("board");
         var boardContext = boardCanvas.getContext("2d");
-
-        var boardSize = 420;
-        var indentWidth = (boardCanvas.width - boardSize) / 2;
-        var indentHeight = (boardCanvas.height - boardSize) / 2;
-        var stepX = boardSize / 18;
-        var stepY = boardSize / 18;
+        var indentWidth = (boardCanvas.width/(gridSize+3)) / 2;
+        var indentHeight = (boardCanvas.height/(gridSize+3)) / 2;
+        // var stepX = boardSize / (gridSize - 1);
+        // var stepY = boardSize / (gridSize - 1);
+        var stepX = 2*indentWidth;
+        var stepY = 2*indentHeight;
         var boardColor;
         var radius = stepX * 95 / 200;
+        var boardSize = boardCanvas.width - indentWidth*2;
+
 
         var drawUntilMove;
         var lastMove;
@@ -417,77 +429,6 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                     case 67: replayKeryoPenteGame(abstractBoard, movesList, until); break;
                     case 69: replayGoGame(abstractBoard, movesList, until); break;
                 }
-            }
-            function drawCaptures () {
-                if (whiteCaptures > 0) {
-                    for (var i = 0; i < whiteCaptures; i++) {
-                        boardContext.beginPath();
-                        boardContext.arc( indentWidth + i*stepX*2/3, boardSize + indentHeight + stepY, stepX / 3 , 0, Math.PI*2, true); 
-                        boardContext.fillStyle = 'white';
-                        boardContext.fill();
-                        boardContext.stroke();
-                        boardContext.closePath();
-                    }
-                    var digit = 0;
-                    if (whiteCaptures > 9) {
-                        digit = Math.floor(whiteCaptures / 10);
-                    } else {
-                        digit = whiteCaptures % 10;
-                    }
-                    boardContext.beginPath();
-                    boardContext.font = "14px bold sans-serif";
-                    boardContext.fillStyle='black';
-                    boardContext.fillText("" + digit, indentWidth - 4, boardSize + indentHeight + stepY + 4);
-                    boardContext.stroke();
-                    boardContext.closePath();
-                    if (whiteCaptures > 9) {
-                        digit = whiteCaptures % 10;
-                        boardContext.beginPath();
-                        boardContext.font = "14px bold sans-serif";
-                        boardContext.fillStyle='black';
-                        boardContext.fillText("" + digit, indentWidth + stepX*2/3 - 4, boardSize + indentHeight + stepY + 4);
-                        boardContext.stroke();
-                        boardContext.closePath();
-                    }
-                }
-                if (blackCaptures > 0) {
-                    for (var i = 0; i < blackCaptures; i++) {
-                        boardContext.beginPath();
-                        boardContext.arc( boardSize + indentWidth - i*stepX*2/3, indentHeight - stepY, stepX / 3 , 0, Math.PI*2, true); 
-                        boardContext.fillStyle = 'black';
-                        boardContext.fill();
-                        boardContext.stroke();
-                        boardContext.closePath();
-                    }
-                    var digit = blackCaptures % 10;
-                    boardContext.beginPath();
-                    boardContext.font = "14px bold sans-serif";
-                    boardContext.fillStyle='white';
-                    boardContext.fillText("" + digit, boardSize + indentWidth - 4, indentHeight - stepY + 4);
-                    boardContext.stroke();
-                    boardContext.closePath();
-                    if (blackCaptures > 9) {
-                        digit = Math.floor(blackCaptures / 10);
-                        boardContext.beginPath();
-                        boardContext.font = "14px bold sans-serif";
-                        boardContext.fillStyle='white';
-                        boardContext.fillText("" + digit, boardSize + indentWidth - stepX*2/3 - 4, indentHeight - stepY + 4);
-                        boardContext.stroke();
-                        boardContext.closePath();
-                    }
-                }
-            }
-            function drawRedDot(i, j) {
-                var centerX = indentWidth + stepX*(i);
-                var centerY = indentHeight + stepY*(j);
-                boardContext.beginPath();
-                boardContext.arc(centerX, centerY, stepX / 7 , 0, Math.PI*2, true); 
-                boardContext.fillStyle = 'red';
-                boardContext.fill();
-                // boardContext.lineWidth = 5;
-                // boardContext.strokeStyle = '#003300';
-                // boardContext.stroke();
-                boardContext.closePath();
             }
             function goBack() {
                 if (drawUntilMove > 1) {
