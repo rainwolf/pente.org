@@ -89,120 +89,6 @@ function drawGame() {
     }
 }
 
-function drawRedDot(i, j) {
-    if (i>=gridSize || j>=gridSize) {
-        return;
-    }
-    var centerX = indentWidth + stepX * (i);
-    var centerY = indentHeight + stepY * (j);
-    boardContext.beginPath();
-    boardContext.arc(centerX, centerY, stepX / 7, 0, Math.PI * 2, true);
-    boardContext.fillStyle = 'red';
-    boardContext.fill();
-    boardContext.closePath();
-}
-function drawStone(i, j, color) {
-    if (color < 1 || color > 2) {
-        return;
-    }
-    boardContext.save();
-    var centerX = indentWidth + stepX*(i);
-    var centerY = indentHeight + stepY*(j);
-    boardContext.beginPath();
-    boardContext.arc(centerX, centerY, radius , 0, Math.PI*2, true);
-    if (color === 2) {
-        boardContext.fillStyle = 'black';
-    } else {
-        boardContext.fillStyle = 'white';
-    }
-    centerX -= radius/8;
-    centerY -= radius/8;
-    boardContext.shadowColor = 'DimGray';
-    boardContext.shadowBlur = 1;
-    boardContext.shadowOffsetX = radius/8;
-    boardContext.shadowOffsetY = radius/8;
-    if (color === 2) {
-        var gradient = boardContext.createRadialGradient(centerX, centerY, radius / 8, centerX, centerY, radius);
-        gradient.addColorStop(0, 'Grey');
-        gradient.addColorStop(1, 'Black');
-        boardContext.fillStyle = gradient;
-    } else {
-        gradient = boardContext.createRadialGradient(centerX, centerY, 2*radius / 4, centerX, centerY, radius);
-        gradient.addColorStop(0, 'White');
-        gradient.addColorStop(1, 'Gainsboro');
-        boardContext.fillStyle = gradient;
-    }
-    boardContext.fill();
-    // boardContext.lineWidth = 5;
-    // boardContext.strokeStyle = '#003300';
-    // boardContext.stroke();
-    boardContext.closePath();
-    boardContext.restore();
-}
-
-function drawDeadStone(move, color) {
-    if (color < 1 || color > 2) {
-        return;
-    }
-    var i = move%gridSize, j = Math.floor(move/gridSize);
-    boardContext.save();
-    var centerX = indentWidth + stepX * (i);
-    var centerY = indentHeight + stepY * (j);
-    boardContext.globalAlpha = 0.75;
-    boardContext.beginPath();
-    if (color === 2) {
-        boardContext.fillStyle = 'black';
-    } else {
-        boardContext.fillStyle = 'white';
-    }
-    boardContext.arc(centerX, centerY, radius, 0, Math.PI * 2, true);
-    centerX -= radius / 8;
-    centerY -= radius / 8;
-    // boardContext.shadowColor = 'DimGray';
-    // boardContext.shadowBlur = 1;
-    // boardContext.shadowOffsetX = radius / 8;
-    // boardContext.shadowOffsetY = radius / 8;
-    if (color === 2) {
-        var gradient = boardContext.createRadialGradient(centerX, centerY, radius / 8, centerX, centerY, radius);
-        gradient.addColorStop(0, 'Grey');
-        gradient.addColorStop(1, 'Black');
-        boardContext.fillStyle = gradient;
-    } else {
-        gradient = boardContext.createRadialGradient(centerX, centerY, 2 * radius / 4, centerX, centerY, radius);
-        gradient.addColorStop(0, 'White');
-        gradient.addColorStop(1, 'Gainsboro');
-        boardContext.fillStyle = gradient;
-    }
-    boardContext.fill();
-    // boardContext.lineWidth = 5;
-    // boardContext.strokeStyle = '#003300';
-    // boardContext.stroke();
-    boardContext.closePath();
-    boardContext.restore();
-    boardContext.globalAlpha = 1;
-}
-
-
-function drawTerritorySquare(move, color) {
-    if (color < 1 || color > 2) {
-        return;
-    }
-    var i = move % gridSize, j = Math.floor(move/gridSize);
-    boardContext.save();
-    var width = 2*radius/3
-    var centerX = indentWidth + stepX * i - width/2;
-    var centerY = indentHeight + stepY * j - width/2;
-    if (color === 1) {
-        boardContext.fillStyle = 'black';
-    } else {
-        boardContext.fillStyle = 'white';
-    }
-    boardContext.beginPath();
-    boardContext.rect(centerX, centerY, width, width);
-    boardContext.fill();
-    boardContext.closePath();
-    boardContext.restore();
-}
 
 
 function replayGoGame(abstractBoard, movesList, until) {
@@ -631,104 +517,6 @@ function reDrawTerritories() {
         "<br> white has "+p2Territory.length+" territory and "+p2Score+" stones, total is " +(p2Territory.length+p2Score+7) +".5</b>";
 }
 
-function drawGoCaptures() {
-    var pxSize = Math.floor(stepX/2+1);
-    if (whiteCaptures > 0) {
-        var digits = 1;
-        if (whiteCaptures > 9) {
-            digits = 2;
-        }
-        if (whiteCaptures > 99) {
-            digits = 3;
-        }
-        for (var i = 0; i < digits; i++) {
-            boardContext.beginPath();
-            boardContext.arc(indentWidth + i * stepX * 2 / 3, boardSize + indentHeight + stepY, stepX / 3, 0, Math.PI * 2, true);
-            boardContext.fillStyle = 'white';
-            boardContext.fill();
-            boardContext.stroke();
-            boardContext.closePath();
-        }
-        var digit = 0;
-        if (whiteCaptures > 9) {
-            digit = Math.floor(whiteCaptures / 10);
-            if (whiteCaptures > 99) {
-                digit = Math.floor(whiteCaptures / 100);
-            } 
-        } else {
-            digit = whiteCaptures % 10;
-        }
-        boardContext.beginPath();
-        boardContext.font = pxSize+"px bold sans-serif";
-        boardContext.fillStyle = 'black';
-        boardContext.fillText("" + digit, indentWidth - 4, boardSize + indentHeight + stepY + 4);
-        boardContext.stroke();
-        boardContext.closePath();
-        if (whiteCaptures > 9) {
-            digit = whiteCaptures % 10;
-            if (whiteCaptures > 99) {
-                digit = Math.floor(whiteCaptures/10) % 10;
-            }
-            boardContext.beginPath();
-            // boardContext.font = "14px bold sans-serif";
-            boardContext.fillStyle = 'black';
-            boardContext.fillText("" + digit, indentWidth + stepX * 2 / 3 - 4, boardSize + indentHeight + stepY + 4);
-            boardContext.stroke();
-            boardContext.closePath();
-            if (whiteCaptures > 99) {
-                digit = whiteCaptures % 10;
-                boardContext.beginPath();
-                // boardContext.font = "14px bold sans-serif";
-                boardContext.fillStyle = 'black';
-                boardContext.fillText("" + digit, indentWidth + 2* stepX * 2 / 3 - 4, boardSize + indentHeight + stepY + 4);
-                boardContext.stroke();
-                boardContext.closePath();
-            }
-        }
-    }
-    if (blackCaptures > 0) {
-        digits = 1;
-        if (blackCaptures > 9) {
-            digits = 2;
-        }
-        if (blackCaptures > 99) {
-            digits = 3;
-        }
-        for (i = 0; i < digits; i++) {
-            boardContext.beginPath();
-            boardContext.arc(boardSize + indentWidth - i * stepX * 2 / 3, indentHeight - stepY, stepX / 3, 0, Math.PI * 2, true);
-            boardContext.fillStyle = 'black';
-            boardContext.fill();
-            boardContext.stroke();
-            boardContext.closePath();
-        }
-        digit = blackCaptures % 10;
-        boardContext.beginPath();
-        boardContext.font = pxSize+"px bold sans-serif";
-        boardContext.fillStyle = 'white';
-        boardContext.fillText("" + digit, boardSize + indentWidth - 4, indentHeight - stepY + 4);
-        boardContext.stroke();
-        boardContext.closePath();
-        if (blackCaptures > 9) {
-            digit = Math.floor(blackCaptures / 10) % 10;
-            boardContext.beginPath();
-            // boardContext.font = "14px bold sans-serif";
-            boardContext.fillStyle = 'white';
-            boardContext.fillText("" + digit, boardSize + indentWidth - stepX * 2 / 3 - 4, indentHeight - stepY + 4);
-            boardContext.stroke();
-            boardContext.closePath();
-            if (blackCaptures > 90) {
-                digit = Math.floor(blackCaptures / 100);
-                boardContext.beginPath();
-                // boardContext.font = "14px bold sans-serif";
-                boardContext.fillStyle = 'white';
-                boardContext.fillText("" + digit, boardSize + indentWidth - 2*stepX * 2 / 3 - 4, indentHeight - stepY + 4);
-                boardContext.stroke();
-                boardContext.closePath();
-            }
-        }
-    }
-}
 
 
 
@@ -742,7 +530,7 @@ function drawGoCaptures() {
                 // boardContext.closePath();
               boardContext.save();
                 boardContext.beginPath();
-                boardContext.rect(indentWidth / 2, indentHeight / 2, boardSize + indentWidth, boardSize + indentHeight);
+                boardContext.rect(indentWidth + stepX/2, indentHeight +stepY/2 , boardSize - stepX , boardSize - stepY);
                 boardContext.lineWidth=0.5;
                 boardContext.fillStyle=boardColor;
                 boardContext.shadowColor = 'Black';
@@ -758,19 +546,19 @@ function drawGoCaptures() {
                 boardContext.fillStyle='black';
                 boardContext.lineWidth=0.5;
                 for (var i = 0; i < gridSize; i++) {
-                    boardContext.moveTo(indentWidth + i*stepX, indentHeight);
-                    boardContext.lineTo(indentWidth + i*stepX, indentHeight + boardSize);
+                    boardContext.moveTo(indentWidth + (i+1)*stepX + stepX/2, indentHeight + stepY + stepY/2);
+                    boardContext.lineTo(indentWidth + (i+1)*stepX + stepX/2, boardSize - stepY);
                     if (drawAxis) {
-                        boardContext.fillText(coordinateLetters[i], indentWidth + i*stepX - 2, indentHeight - 5);
-                        boardContext.fillText(coordinateLetters[i], indentWidth + i*stepX - 2, boardSize + indentHeight + 12);
+                        boardContext.fillText(coordinateLetters[i], indentWidth + (i+1)*stepX + stepX/2 - 2, indentHeight + stepY*3/2 - 5);
+                        boardContext.fillText(coordinateLetters[i], indentWidth + (i+1)*stepX + stepX/2 - 2, boardSize + indentHeight - stepY*3/2 + 12);
                     }
                 }
                 for (i = 0; i < gridSize; i++) {
-                    boardContext.moveTo(indentWidth, indentHeight + i*stepY);
-                    boardContext.lineTo(indentWidth + boardSize, indentHeight + i*stepY);
+                    boardContext.moveTo(indentWidth + 3*stepX/2, indentHeight + (i+1)*stepY + stepY/2);
+                    boardContext.lineTo(indentWidth + boardSize - 3*stepX/2, indentHeight + (i+1)*stepY + stepY/2);
                     if (drawAxis) {
-                        boardContext.fillText("" + (gridSize - i), indentWidth - 15, indentHeight + i*stepX + 3);
-                        boardContext.fillText("" + (gridSize - i), boardSize + indentWidth + 6, indentHeight + i*stepX + 3);
+                        boardContext.fillText("" + (gridSize - i), indentWidth + stepX*3/2 - 15, indentHeight + (i+1)*stepY + stepY/2 + 3);
+                        boardContext.fillText("" + (gridSize - i), boardSize + indentWidth - stepX*3/2 + 6, indentHeight + (i+1)*stepY + stepY/2 + 3);
                     }
                 }
                 // boardContext.strokeStyle = "#FFFFFF";
@@ -778,23 +566,23 @@ function drawGoCaptures() {
                 boardContext.closePath();
                 if (game < 69) {
                     boardContext.beginPath();
-                    boardContext.arc(indentWidth + 9*stepX, indentHeight + 9*stepY, stepX / 5, 0, Math.PI*2, true);
+                    boardContext.arc(indentWidth + 3*stepX/2 + 9*stepX, indentHeight + 3*stepY/2 + 9*stepY, stepX / 5, 0, Math.PI*2, true);
                     boardContext.stroke();
                     boardContext.closePath();
                     boardContext.beginPath();
-                    boardContext.arc(indentWidth + 6*stepX, indentHeight + 6*stepY, stepX / 5, 0, Math.PI*2, true);
+                    boardContext.arc(indentWidth + 3*stepX/2 + 6*stepX, indentHeight + 3*stepY/2 + 6*stepY, stepX / 5, 0, Math.PI*2, true);
                     boardContext.stroke();
                     boardContext.closePath();
                     boardContext.beginPath();
-                    boardContext.arc(indentWidth + 6*stepX, indentHeight + 12*stepY, stepX / 5, 0, Math.PI*2, true);
+                    boardContext.arc(indentWidth + 3*stepX/2 + 6*stepX, indentHeight + 3*stepY/2 + 12*stepY, stepX / 5, 0, Math.PI*2, true);
                     boardContext.stroke();
                     boardContext.closePath();
                     boardContext.beginPath();
-                    boardContext.arc(indentWidth + 12*stepX, indentHeight + 6*stepY, stepX / 5, 0, Math.PI*2, true);
+                    boardContext.arc(indentWidth + 3*stepX/2 + 12*stepX, indentHeight + 3*stepY/2 + 6*stepY, stepX / 5, 0, Math.PI*2, true);
                     boardContext.stroke();
                     boardContext.closePath();
                     boardContext.beginPath();
-                    boardContext.arc(indentWidth + 12*stepX, indentHeight + 12*stepY, stepX / 5, 0, Math.PI*2, true);
+                    boardContext.arc(indentWidth + 3*stepX/2 + 12*stepX, indentHeight + 3*stepY/2 + 12*stepY, stepX / 5, 0, Math.PI*2, true);
                     boardContext.stroke();
                     boardContext.closePath();
                 } else if (game === 69 || game === 73) {
@@ -802,39 +590,39 @@ function drawGoCaptures() {
                     var c = Math.floor(gridSize/2);
                     var l = 3, r = gridSize - 1 - l;
                     boardContext.beginPath();
-                    boardContext.arc(indentWidth + c*stepX, indentHeight + c*stepY, rd, 0, Math.PI*2, true);
+                    boardContext.arc(indentWidth + 3*stepX/2 + c*stepX, indentHeight + 3*stepY/2 + c*stepY, rd, 0, Math.PI*2, true);
                     boardContext.fill();
                     boardContext.closePath();
                     boardContext.beginPath();
-                    boardContext.arc(indentWidth + l*stepX, indentHeight + c*stepY, rd, 0, Math.PI*2, true);
+                    boardContext.arc(indentWidth + 3*stepX/2 + l*stepX, indentHeight + 3*stepY/2 + c*stepY, rd, 0, Math.PI*2, true);
                     boardContext.fill();
                     boardContext.closePath();
                     boardContext.beginPath();
-                    boardContext.arc(indentWidth + c*stepX, indentHeight + l*stepY, rd, 0, Math.PI*2, true);
+                    boardContext.arc(indentWidth + 3*stepX/2 + c*stepX, indentHeight + 3*stepY/2 + l*stepY, rd, 0, Math.PI*2, true);
                     boardContext.fill();
                     boardContext.closePath();
                     boardContext.beginPath();
-                    boardContext.arc(indentWidth + r*stepX, indentHeight + c*stepY, rd, 0, Math.PI*2, true);
+                    boardContext.arc(indentWidth + 3*stepX/2 + r*stepX, indentHeight + 3*stepY/2 + c*stepY, rd, 0, Math.PI*2, true);
                     boardContext.fill();
                     boardContext.closePath();
                     boardContext.beginPath();
-                    boardContext.arc(indentWidth + c*stepX, indentHeight + r*stepY, rd, 0, Math.PI*2, true);
+                    boardContext.arc(indentWidth + 3*stepX/2 + c*stepX, indentHeight + 3*stepY/2 + r*stepY, rd, 0, Math.PI*2, true);
                     boardContext.fill();
                     boardContext.closePath();
                     boardContext.beginPath();
-                    boardContext.arc(indentWidth + l*stepX, indentHeight + l*stepY, rd, 0, Math.PI*2, true);
+                    boardContext.arc(indentWidth + 3*stepX/2 + l*stepX, indentHeight + 3*stepY/2 + l*stepY, rd, 0, Math.PI*2, true);
                     boardContext.fill();
                     boardContext.closePath();
                     boardContext.beginPath();
-                    boardContext.arc(indentWidth + l*stepX, indentHeight + r*stepY, rd, 0, Math.PI*2, true);
+                    boardContext.arc(indentWidth + 3*stepX/2 + l*stepX, indentHeight + 3*stepY/2 + r*stepY, rd, 0, Math.PI*2, true);
                     boardContext.fill();
                     boardContext.closePath();
                     boardContext.beginPath();
-                    boardContext.arc(indentWidth + r*stepX, indentHeight + l*stepY, rd, 0, Math.PI*2, true);
+                    boardContext.arc(indentWidth + 3*stepX/2 + r*stepX, indentHeight + 3*stepY/2 + l*stepY, rd, 0, Math.PI*2, true);
                     boardContext.fill();
                     boardContext.closePath();
                     boardContext.beginPath();
-                    boardContext.arc(indentWidth + r*stepX, indentHeight + r*stepY, rd, 0, Math.PI*2, true);
+                    boardContext.arc(indentWidth + 3*stepX/2 + r*stepX, indentHeight + 3*stepY/2 + r*stepY, rd, 0, Math.PI*2, true);
                     boardContext.fill();
                     boardContext.closePath();
                 } else if (game === 71) {
@@ -842,27 +630,310 @@ function drawGoCaptures() {
                     c = Math.floor(gridSize/2);
                     l = 2, r = gridSize - 1 - l;
                     boardContext.beginPath();
-                    boardContext.arc(indentWidth + c*stepX, indentHeight + c*stepY, rd, 0, Math.PI*2, true);
+                    boardContext.arc(indentWidth + 3*stepX/2 + c*stepX, indentHeight + 3*stepY/2 + c*stepY, rd, 0, Math.PI*2, true);
                     boardContext.fill();
                     boardContext.closePath();
                     boardContext.beginPath();
-                    boardContext.arc(indentWidth + l*stepX, indentHeight + l*stepY, rd, 0, Math.PI*2, true);
+                    boardContext.arc(indentWidth + 3*stepX/2 + l*stepX, indentHeight + 3*stepY/2 + l*stepY, rd, 0, Math.PI*2, true);
                     boardContext.fill();
                     boardContext.closePath();
                     boardContext.beginPath();
-                    boardContext.arc(indentWidth + l*stepX, indentHeight + r*stepY, rd, 0, Math.PI*2, true);
+                    boardContext.arc(indentWidth + 3*stepX/2 + l*stepX, indentHeight + 3*stepY/2 + r*stepY, rd, 0, Math.PI*2, true);
                     boardContext.fill();
                     boardContext.closePath();
                     boardContext.beginPath();
-                    boardContext.arc(indentWidth + r*stepX, indentHeight + l*stepY, rd, 0, Math.PI*2, true);
+                    boardContext.arc(indentWidth + 3*stepX/2 + r*stepX, indentHeight + 3*stepY/2 + l*stepY, rd, 0, Math.PI*2, true);
                     boardContext.fill();
                     boardContext.closePath();
                     boardContext.beginPath();
-                    boardContext.arc(indentWidth + r*stepX, indentHeight + r*stepY, rd, 0, Math.PI*2, true);
+                    boardContext.arc(indentWidth + 3*stepX/2 + r*stepX, indentHeight + 3*stepY/2 + r*stepY, rd, 0, Math.PI*2, true);
                     boardContext.fill();
                     boardContext.closePath();
                 }
             }
+function drawRedDot(i, j) {
+    if (i>=gridSize || j>=gridSize) {
+        return;
+    }
+    var centerX = indentWidth + stepX * (i+1) + stepX/2;
+    var centerY = indentHeight + stepY * (j+1) + stepY/2;
+    boardContext.beginPath();
+    boardContext.arc(centerX, centerY, stepX / 7, 0, Math.PI * 2, true);
+    boardContext.fillStyle = 'red';
+    boardContext.fill();
+    boardContext.closePath();
+}
+function drawStone(i, j, color) {
+    if (color < 1 || color > 2) {
+        return;
+    }
+    boardContext.save();
+    var centerX = indentWidth + stepX*(i+1) + stepX/2;
+    var centerY = indentHeight + stepY*(j+1) + stepY/2;
+    boardContext.beginPath();
+    boardContext.arc(centerX, centerY, radius , 0, Math.PI*2, true);
+    if (color === 2) {
+        boardContext.fillStyle = 'black';
+    } else {
+        boardContext.fillStyle = 'white';
+    }
+    centerX -= radius/8;
+    centerY -= radius/8;
+    boardContext.shadowColor = 'DimGray';
+    boardContext.shadowBlur = 1;
+    boardContext.shadowOffsetX = radius/8;
+    boardContext.shadowOffsetY = radius/8;
+    if (color === 2) {
+        var gradient = boardContext.createRadialGradient(centerX, centerY, radius / 8, centerX, centerY, radius);
+        gradient.addColorStop(0, 'Grey');
+        gradient.addColorStop(1, 'Black');
+        boardContext.fillStyle = gradient;
+    } else {
+        gradient = boardContext.createRadialGradient(centerX, centerY, 2*radius / 4, centerX, centerY, radius);
+        gradient.addColorStop(0, 'White');
+        gradient.addColorStop(1, 'Gainsboro');
+        boardContext.fillStyle = gradient;
+    }
+    boardContext.fill();
+    // boardContext.lineWidth = 5;
+    // boardContext.strokeStyle = '#003300';
+    // boardContext.stroke();
+    boardContext.closePath();
+    boardContext.restore();
+}
+
+function drawDeadStone(move, color) {
+    if (color < 1 || color > 2) {
+        return;
+    }
+    var i = move%gridSize, j = Math.floor(move/gridSize);
+    boardContext.save();
+    var centerX = indentWidth + stepX*(i+1) + stepX/2;
+    var centerY = indentHeight + stepY*(j+1) + stepY/2;
+    boardContext.globalAlpha = 0.75;
+    boardContext.beginPath();
+    if (color === 2) {
+        boardContext.fillStyle = 'black';
+    } else {
+        boardContext.fillStyle = 'white';
+    }
+    boardContext.arc(centerX, centerY, radius, 0, Math.PI * 2, true);
+    centerX -= radius / 8;
+    centerY -= radius / 8;
+    // boardContext.shadowColor = 'DimGray';
+    // boardContext.shadowBlur = 1;
+    // boardContext.shadowOffsetX = radius / 8;
+    // boardContext.shadowOffsetY = radius / 8;
+    if (color === 2) {
+        var gradient = boardContext.createRadialGradient(centerX, centerY, radius / 8, centerX, centerY, radius);
+        gradient.addColorStop(0, 'Grey');
+        gradient.addColorStop(1, 'Black');
+        boardContext.fillStyle = gradient;
+    } else {
+        gradient = boardContext.createRadialGradient(centerX, centerY, 2 * radius / 4, centerX, centerY, radius);
+        gradient.addColorStop(0, 'White');
+        gradient.addColorStop(1, 'Gainsboro');
+        boardContext.fillStyle = gradient;
+    }
+    boardContext.fill();
+    // boardContext.lineWidth = 5;
+    // boardContext.strokeStyle = '#003300';
+    // boardContext.stroke();
+    boardContext.closePath();
+    boardContext.restore();
+    boardContext.globalAlpha = 1;
+}
+
+
+function drawTerritorySquare(move, color) {
+    if (color < 1 || color > 2) {
+        return;
+    }
+    var i = move % gridSize, j = Math.floor(move/gridSize);
+    boardContext.save();
+    var width = 2*radius/3
+    var centerX = indentWidth + stepX*(i+1) + stepX/2 - width/2;
+    var centerY = indentHeight + stepY*(j+1) + stepY/2 - width/2;
+    if (color === 1) {
+        boardContext.fillStyle = 'black';
+    } else {
+        boardContext.fillStyle = 'white';
+    }
+    boardContext.beginPath();
+    boardContext.rect(centerX, centerY, width, width);
+    boardContext.fill();
+    boardContext.closePath();
+    boardContext.restore();
+}
+
+
+function drawCaptures() {
+    if (whiteCaptures > 0) {
+        for (var i = 0; i < whiteCaptures; i++) {
+            boardContext.beginPath();
+            boardContext.arc(indentWidth + (i+2) * stepX * 4 / 5, boardSize + indentHeight-stepY/2, 2*stepX / 5, 0, Math.PI * 2, true);
+            boardContext.fillStyle = 'white';
+            boardContext.fill();
+            boardContext.stroke();
+            boardContext.closePath();
+        }
+        if (boardSize > 230) {
+            var digit = 0;
+            if (whiteCaptures > 9) {
+                digit = Math.floor(whiteCaptures / 10);
+            } else {
+                digit = whiteCaptures % 10;
+            }
+            boardContext.beginPath();
+            boardContext.font = Math.floor(stepX*3/5)+"px bold sans-serif";
+            boardContext.fillStyle = 'black';
+            boardContext.fillText("" + digit, indentWidth + 8*stepX/5 - 4, boardSize + indentHeight - stepY/2 + 4);
+            boardContext.stroke();
+            boardContext.closePath();
+            if (whiteCaptures > 9) {
+                digit = whiteCaptures % 10;
+                boardContext.beginPath();
+                boardContext.font = Math.floor(stepX*3/5)+"px bold sans-serif";
+                boardContext.fillStyle = 'black';
+                boardContext.fillText("" + digit, indentWidth + 12*stepX/5 - 4, boardSize + indentHeight - stepY/2 + 4);
+                boardContext.stroke();
+                boardContext.closePath();
+            }
+        }
+    }
+    if (blackCaptures > 0) {
+        for (i = 0; i < blackCaptures; i++) {
+            boardContext.beginPath();
+            boardContext.arc(boardSize + indentWidth - (i+2) * stepX * 4 / 5, indentHeight + stepY/2, 2*stepX / 5, 0, Math.PI * 2, true);
+            boardContext.fillStyle = 'black';
+            boardContext.fill();
+            boardContext.stroke();
+            boardContext.closePath();
+        }
+        if (boardSize > 230) {
+            digit = blackCaptures % 10;
+            boardContext.beginPath();
+            boardContext.font = Math.floor(stepX*3/5)+"px bold sans-serif";
+            boardContext.fillStyle = 'white';
+            boardContext.fillText("" + digit, boardSize + indentWidth - 8*stepX/5 - 4, indentHeight + stepY/2 + 4);
+            boardContext.stroke();
+            boardContext.closePath();
+            if (blackCaptures > 9) {
+                digit = Math.floor(blackCaptures / 10);
+                boardContext.beginPath();
+                boardContext.font = Math.floor(stepX*3/5)+"px bold sans-serif";
+                boardContext.fillStyle = 'white';
+                boardContext.fillText("" + digit, boardSize + indentWidth - 12*stepX / 5 - 4, indentHeight + stepY/2 + 4);
+                boardContext.stroke();
+                boardContext.closePath();
+            }
+        }
+    }
+}
+
+function drawGoCaptures() {
+    var pxSize = Math.floor(stepX/2+1);
+    if (whiteCaptures > 0) {
+        var digits = 1;
+        if (whiteCaptures > 9) {
+            digits = 2;
+        }
+        if (whiteCaptures > 99) {
+            digits = 3;
+        }
+        for (var i = 0; i < digits; i++) {
+            boardContext.beginPath();
+            boardContext.arc(indentWidth + (i+2) * stepX * 4 / 5, boardSize + indentHeight-stepY/2, 2*stepX / 5, 0, Math.PI * 2, true);
+            boardContext.fillStyle = 'white';
+            boardContext.fill();
+            boardContext.stroke();
+            boardContext.closePath();
+        }
+        if (boardSize > 230) {
+            var digit = 0;
+            if (whiteCaptures > 9) {
+                digit = Math.floor(whiteCaptures / 10);
+                if (whiteCaptures > 99) {
+                    digit = Math.floor(whiteCaptures / 100);
+                }
+            } else {
+                digit = whiteCaptures % 10;
+            }
+            boardContext.beginPath();
+            boardContext.font = pxSize+"px bold sans-serif";
+            boardContext.fillStyle = 'black';
+            boardContext.fillText("" + digit, indentWidth + 8*stepX/5 - 4, boardSize + indentHeight - stepY/2 + 4);
+            boardContext.stroke();
+            boardContext.closePath();
+            if (whiteCaptures > 9) {
+                digit = whiteCaptures % 10;
+                if (whiteCaptures > 99) {
+                    digit = Math.floor(whiteCaptures/10) % 10;
+                }
+                boardContext.beginPath();
+                // Math.floor(stepX*3/5)+"px bold sans-serif";
+                boardContext.fillStyle = 'black';
+                boardContext.fillText("" + digit, indentWidth + 12*stepX/5 - 4, boardSize + indentHeight - stepY/2 + 4);
+                boardContext.stroke();
+                boardContext.closePath();
+                if (whiteCaptures > 99) {
+                    digit = whiteCaptures % 10;
+                    boardContext.beginPath();
+                    // Math.floor(stepX*3/5)+"px bold sans-serif";
+                    boardContext.fillStyle = 'black';
+                    boardContext.fillText("" + digit, indentWidth + 16*stepX/5 - 4, boardSize + indentHeight - stepY/2 + 4);
+                    boardContext.stroke();
+                    boardContext.closePath();
+                }
+            }
+        }
+    }
+    if (blackCaptures > 0) {
+        digits = 1;
+        if (blackCaptures > 9) {
+            digits = 2;
+        }
+        if (blackCaptures > 99) {
+            digits = 3;
+        }
+        for (i = 0; i < digits; i++) {
+            boardContext.beginPath();
+            boardContext.arc(boardSize + indentWidth - (i+2) * stepX * 4 / 5, indentHeight + stepY/2, 2*stepX / 5, 0, Math.PI * 2, true);
+            boardContext.fillStyle = 'black';
+            boardContext.fill();
+            boardContext.stroke();
+            boardContext.closePath();
+        }
+        if (boardSize > 230) {
+            digit = blackCaptures % 10;
+            boardContext.beginPath();
+            boardContext.font = pxSize+"px bold sans-serif";
+            boardContext.fillStyle = 'white';
+            boardContext.fillText("" + digit, boardSize + indentWidth - 8*stepX/5 - 4, indentHeight + stepY/2 + 4);
+            boardContext.stroke();
+            boardContext.closePath();
+            if (blackCaptures > 9) {
+                digit = Math.floor(blackCaptures / 10) % 10;
+                boardContext.beginPath();
+                // Math.floor(stepX*3/5)+"px bold sans-serif";
+                boardContext.fillStyle = 'white';
+                boardContext.fillText("" + digit, boardSize + indentWidth - 12*stepX/5 - 4, indentHeight + stepY/2 + 4);
+                boardContext.stroke();
+                boardContext.closePath();
+                if (blackCaptures > 90) {
+                    digit = Math.floor(blackCaptures / 100);
+                    boardContext.beginPath();
+                    // Math.floor(stepX*3/5)+"px bold sans-serif";
+                    boardContext.fillStyle = 'white';
+                    boardContext.fillText("" + digit, boardSize + indentWidth - 16*stepX/5 - 4, indentHeight + stepY/2 + 4);
+                    boardContext.stroke();
+                    boardContext.closePath();
+                }
+            }
+        }
+    }
+}
+
 
 
 

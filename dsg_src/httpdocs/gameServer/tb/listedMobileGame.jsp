@@ -152,18 +152,21 @@ window.google_analytics_uacct = "UA-20529582-2";
         var moves = [<%=moves.substring(0, moves.length() - 1)%>];
         var game = <%= game.getGame() %>;
 
-        var boardSize = 200;
         var boardCanvas = document.getElementById("<%=game.getGid()+"board"%>");
         var boardContext = boardCanvas.getContext("2d");
-        var indentWidth = (boardCanvas.width - boardSize) / 2;
-        var indentHeight = (boardCanvas.height - boardSize) / 2;
 
         var gridSize = <%=gridSize%>;
-        var stepX = boardSize / (gridSize - 1);
-        var stepY = boardSize / (gridSize - 1);
+        var indentWidth = (boardCanvas.width/(gridSize+3)) / 2;
+        var indentHeight = (boardCanvas.height/(gridSize+3)) / 2;
+        // var stepX = boardSize / (gridSize - 1);
+        // var stepY = boardSize / (gridSize - 1);
+        var stepX = 2*indentWidth;
+        var stepY = 2*indentHeight;
         var boardColor;
-        var rated = <%= game.isRated()%>;
         var radius = stepX * 95 / 200;
+        var boardSize = boardCanvas.width - indentWidth*2;
+
+        var rated = <%= game.isRated()%>;
         
 
 
@@ -226,35 +229,12 @@ window.google_analytics_uacct = "UA-20529582-2";
                 }
             }
 
-            function drawCaptures () {
-                if (whiteCaptures > 0) {
-                    for (var i = 0; i < whiteCaptures; i++) {
-                        boardContext.beginPath();
-                        boardContext.arc( indentWidth + i*stepX*2/3, boardSize + indentHeight + stepY, stepX / 3 , 0, Math.PI*2, true); 
-                        boardContext.fillStyle = 'white';
-                        boardContext.fill();
-                        boardContext.stroke();
-                        boardContext.closePath();
-                    }
-                }
-                if (blackCaptures > 0) {
-                    for (var i = 0; i < blackCaptures; i++) {
-                        boardContext.beginPath();
-                        boardContext.arc( boardSize + indentWidth - i*stepX*2/3, indentHeight - stepY, stepX / 3 , 0, Math.PI*2, true); 
-                        boardContext.fillStyle = 'black';
-                        boardContext.fill();
-                        boardContext.stroke();
-                        boardContext.closePath();
-                    }
-                }
-            }
-
         init();
         replayGame(abstractBoard, moves, moves.length);
         drawGame();
         lastMove = moves[drawUntilMove - 1];
         drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
-        if (game == 63 && moves.length > 1) {
+        if (game === 63 && moves.length > 1) {
             lastMove = moves[drawUntilMove - 2];
             drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
         }

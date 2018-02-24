@@ -557,17 +557,20 @@
                 var opponentName = "<%= (me.equals(p1.getName())?p2.getName():p1.getName()) %>";
                 var iAmP1 = <%=me.equals(p1.getName())%>;
 
-                var boardSize = 500;
+                // var boardSize = 500;
                 
                 var gridSize = <%=gridSize%>;
                 var boardCanvas = document.getElementById("board");
                 var boardContext = boardCanvas.getContext("2d");
-                var indentWidth = (boardCanvas.width - boardSize) / 2;
-                var indentHeight = (boardCanvas.height - boardSize) / 2;
-                var stepX = boardSize / (gridSize - 1);
-                var stepY = boardSize / (gridSize - 1);
+                var indentWidth = (boardCanvas.width/(gridSize+3)) / 2;
+                var indentHeight = (boardCanvas.height/(gridSize+3)) / 2;
+                // var stepX = boardSize / (gridSize - 1);
+                // var stepY = boardSize / (gridSize - 1);
+                var stepX = 2*indentWidth;
+                var stepY = 2*indentHeight;
                 var boardColor;
                 var radius = stepX * 95 / 200;
+                var boardSize = boardCanvas.width - indentWidth*2;
 
 
                 var drawUntilMove;
@@ -857,8 +860,8 @@
                     var rect = boardCanvas.getBoundingClientRect();
                     var offsetX = rect.left;
                     var offsetY = rect.top;
-                    var i = Math.floor((e.clientX - indentWidth + stepX / 2 - offsetX) / stepX);
-                    var j = Math.floor((e.clientY - indentHeight + stepY / 2 - offsetY) / stepY);
+                    var i = Math.floor((e.clientX - indentWidth - 2*stepX / 2 - offsetX) / stepX);
+                    var j = Math.floor((e.clientY - indentHeight - 2*stepY / 2 - offsetY) / stepY);
                     if (i >= 0 && i < gridSize && j >= 0 && j < gridSize) {
                         if ((drawUntilMove !== moves.length)) {
                             resetAbstractBoard(abstractBoard);
@@ -1058,65 +1061,6 @@
                     }
                 }
 
-                function drawCaptures() {
-                    if (whiteCaptures > 0) {
-                        for (var i = 0; i < whiteCaptures; i++) {
-                            boardContext.beginPath();
-                            boardContext.arc(indentWidth + i * stepX * 2 / 3, boardSize + indentHeight + stepY, stepX / 3, 0, Math.PI * 2, true);
-                            boardContext.fillStyle = 'white';
-                            boardContext.fill();
-                            boardContext.stroke();
-                            boardContext.closePath();
-                        }
-                        var digit = 0;
-                        if (whiteCaptures > 9) {
-                            digit = Math.floor(whiteCaptures / 10);
-                        } else {
-                            digit = whiteCaptures % 10;
-                        }
-                        boardContext.beginPath();
-                        boardContext.font = "14px bold sans-serif";
-                        boardContext.fillStyle = 'black';
-                        boardContext.fillText("" + digit, indentWidth - 4, boardSize + indentHeight + stepY + 4);
-                        boardContext.stroke();
-                        boardContext.closePath();
-                        if (whiteCaptures > 9) {
-                            digit = whiteCaptures % 10;
-                            boardContext.beginPath();
-                            boardContext.font = "14px bold sans-serif";
-                            boardContext.fillStyle = 'black';
-                            boardContext.fillText("" + digit, indentWidth + stepX * 2 / 3 - 4, boardSize + indentHeight + stepY + 4);
-                            boardContext.stroke();
-                            boardContext.closePath();
-                        }
-                    }
-                    if (blackCaptures > 0) {
-                        for (var i = 0; i < blackCaptures; i++) {
-                            boardContext.beginPath();
-                            boardContext.arc(boardSize + indentWidth - i * stepX * 2 / 3, indentHeight - stepY, stepX / 3, 0, Math.PI * 2, true);
-                            boardContext.fillStyle = 'black';
-                            boardContext.fill();
-                            boardContext.stroke();
-                            boardContext.closePath();
-                        }
-                        var digit = blackCaptures % 10;
-                        boardContext.beginPath();
-                        boardContext.font = "14px bold sans-serif";
-                        boardContext.fillStyle = 'white';
-                        boardContext.fillText("" + digit, boardSize + indentWidth - 4, indentHeight - stepY + 4);
-                        boardContext.stroke();
-                        boardContext.closePath();
-                        if (blackCaptures > 9) {
-                            digit = Math.floor(blackCaptures / 10);
-                            boardContext.beginPath();
-                            boardContext.font = "14px bold sans-serif";
-                            boardContext.fillStyle = 'white';
-                            boardContext.fillText("" + digit, boardSize + indentWidth - stepX * 2 / 3 - 4, indentHeight - stepY + 4);
-                            boardContext.stroke();
-                            boardContext.closePath();
-                        }
-                    }
-                }
 
                 function goBack() {
                     if (drawUntilMove > 1) {
