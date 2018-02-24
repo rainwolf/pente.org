@@ -465,7 +465,9 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
         return (gameId == GridStateFactory.DPENTE || gameId == GridStateFactory.SPEED_DPENTE ||
                 gameId == GridStateFactory.DKERYO || gameId == GridStateFactory.SPEED_DKERYO ||
                 gameId == GridStateFactory.TB_DPENTE || gameId == GridStateFactory.TB_DKERYO ||
-                gameId == GridStateFactory.GO || gameId == GridStateFactory.SPEED_GO || gameId == GridStateFactory.TB_GO);
+                gameId == GridStateFactory.GO || gameId == GridStateFactory.SPEED_GO || gameId == GridStateFactory.TB_GO
+        || gameId == GridStateFactory.GO9 || gameId == GridStateFactory.SPEED_GO9 || gameId == GridStateFactory.TB_GO9
+        || gameId == GridStateFactory.GO13 || gameId == GridStateFactory.SPEED_GO13 || gameId == GridStateFactory.TB_GO13);
     }
     
     /** Gets the current number of moves stored for a game
