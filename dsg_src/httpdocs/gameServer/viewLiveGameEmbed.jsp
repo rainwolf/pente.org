@@ -172,11 +172,11 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
     }
     %> 
     <td onclick='selectMove(<%=i%>)' id='<%=i%>' width="40%" align="center">
-    <%=" " + coordinateLetters[(game.getMove(i) % 19)] + (19 - (game.getMove(i) / 19))%>
+    <%=" " + coordinateLetters[(game.getMove(i) % gridSize)] + (gridSize - (game.getMove(i) / gridSize))%>
     <% if ((gameId == 63) && (i != 0) && (i + 1 < game.getNumMoves())) {
         ++i;
         %>
-        - <%="" + coordinateLetters[(game.getMove(i) % 19)] + (19 - (game.getMove(i) / 19))%>
+        - <%="" + coordinateLetters[(game.getMove(i) % gridSize)] + (gridSize - (game.getMove(i) / gridSize))%>
         <%
     } %>
     </td>
@@ -322,10 +322,6 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
 </table>
 
 
- <script type="text/javascript">
-     var gridSize = 19;
- </script>
-
     <script src="/gameServer/tb/gameScript.js"></script>
 
     <script type="text/javascript">
@@ -370,10 +366,10 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                   drawGrid(boardContext, boardColor, gridSize, true);
                   drawGame();
                   lastMove = moves[drawUntilMove - 1];
-                  drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+                  drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
                   if (game === 63 && moves.length > 1) {
                       lastMove = moves[drawUntilMove - 2];
-                      drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+                      drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
                   }
                if(currentMove!==-1) {
                    var cell=document.getElementById(''+currentMove);
@@ -399,10 +395,10 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                     drawGrid(boardContext, boardColor, gridSize, true);
                     drawGame();
                     lastMove = moves[moves.length - 1];
-                    drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+                    drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
                     if (game === 63 && moves.length > 1) {
                         lastMove = moves[moves.length - 2];
-                        drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+                        drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
                     }
                     document.getElementById("movesTable").scrollTop = document.getElementById("movesTable").scrollHeight;
                 }
@@ -451,10 +447,10 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                     replayGame(abstractBoard, moves, drawUntilMove);
                     drawGame();
                     lastMove = moves[drawUntilMove - 1];
-                    drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+                    drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
                     if (game === 63 && drawUntilMove > 1) {
                         lastMove = moves[drawUntilMove - 2];
-                        drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+                        drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
                         selectMove(drawUntilMove - 2);
                     } else {
                       selectMove(drawUntilMove - 1);
@@ -472,10 +468,10 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                     replayGame(abstractBoard, moves, drawUntilMove);
                     drawGame();
                     lastMove = moves[drawUntilMove - 1];
-                    drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+                    drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
                     if (game === 63 && drawUntilMove > 1) {
                         lastMove = moves[drawUntilMove - 2];
-                        drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+                        drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
                         selectMove(drawUntilMove - 2);
                     } else {
                       selectMove(drawUntilMove - 1);
@@ -510,10 +506,10 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
         replayGame(abstractBoard, moves, moves.length);
         drawGame();
         lastMove = moves[drawUntilMove - 1];
-        drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+        drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
         if (game === 63 && moves.length > 1) {
             lastMove = moves[drawUntilMove - 2];
-            drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+            drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
             selectMove(drawUntilMove - 2);
         } else {
           selectMove(drawUntilMove - 1);

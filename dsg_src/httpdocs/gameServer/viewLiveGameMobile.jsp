@@ -233,20 +233,19 @@ if (color == null) {
    </font>
    </td>
 </tr>
-<tr>
-<td width="10%"></td>
-    <td width="45%" align="center" bgcolor="#<%=(gameId!=GridStateFactory.TB_GO?"FFFFFF":"000000")%>">
-        <b><font color="<%=(gameId!=GridStateFactory.TB_GO?"black":"white")%>"><%=game.getPlayer1Data().getUserIDName()%>
-        </font>
-        </b>
-    </td>
-    <td align="center" bgcolor="#<%=(gameId==GridStateFactory.TB_GO?"FFFFFF":"000000")%>">
-        <b><font color="<%=(gameId==GridStateFactory.TB_GO?"black":"white")%>"><%=game.getPlayer2Data().getUserIDName()%>
-        </font>
-        </b>
-
-   </td>
-</tr>
+     <tr>
+         <td width="10%"></td>
+         <td width="45%" align="center" bgcolor="#<%=(!isGo?"FFFFFF":"000000")%>">
+             <b><font color="<%=(!isGo?"black":"white")%>"><%=game.getPlayer1Data().getUserIDName()%>
+             </font>
+             </b>
+         </td>
+         <td align="center" bgcolor="#<%=(isGo?"FFFFFF":"000000")%>">
+             <b><font color="<%=(isGo?"black":"white")%>"><%=game.getPlayer2Data().getUserIDName()%>
+             </font>
+             </b>
+         </td>
+     </tr>
 </table>
 </td>
 </tr>
@@ -267,11 +266,11 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
     }
     %> 
     <td onclick='selectMove(<%=i%>)' id='<%=i%>' width="45%" align="center">
-    <%=" " + (game.getMove(i)>-1&&game.getMove(i)<361?coordinateLetters[(game.getMove(i) % 19)] + (19 - (game.getMove(i) / 19)):"PASS")%>
+    <%=" " + (game.getMove(i)>-1&&game.getMove(i)<gridSize*gridSize?coordinateLetters[(game.getMove(i) % gridSize)] + (gridSize - (game.getMove(i) / gridSize)):"PASS")%>
     <% if ((gameId == 63) && (i != 0) && (i + 1 < game.getNumMoves())) {
         ++i;
         %>
-        - <%="" + coordinateLetters[(game.getMove(i) % 19)] + (19 - (game.getMove(i) / 19))%>
+        - <%="" + coordinateLetters[(game.getMove(i) % gridSize)] + (gridSize - (game.getMove(i) / gridSize))%>
         <%
     } %>
     </td>
@@ -495,7 +494,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                cell.style.background='#AAF';
                   resetAbstractBoard(abstractBoard);
                   drawUntilMove = newMove + 1;
-                  if (game == 63 && drawUntilMove != 1) {
+                  if (game === 63 && drawUntilMove != 1) {
                       drawUntilMove += 1;
                   }
                   replayGame(abstractBoard, moves, drawUntilMove);
@@ -504,10 +503,10 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                   drawGrid(boardContext, boardColor, gridSize, true);
                   drawGame();
                   lastMove = moves[drawUntilMove - 1];
-                  drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-                  if (game == 63 && moves.length > 1) {
+                  drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
+                  if (game === 63 && moves.length > 1) {
                       lastMove = moves[drawUntilMove - 2];
-                      drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+                      drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
                   }
                if(currentMove!=-1) {
                    var cell=document.getElementById(''+currentMove);
@@ -533,14 +532,14 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                     drawGrid(boardContext, boardColor, gridSize, true);
                     drawGame();
                     lastMove = moves[moves.length - 1];
-                    drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-                    if (game == 63 && moves.length > 1) {
+                    drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
+                    if (game === 63 && moves.length > 1) {
                         lastMove = moves[moves.length - 2];
-                        drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+                        drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
                     }
                     document.getElementById("movesTable").scrollTop = document.getElementById("movesTable").scrollHeight;
                 }
-                if (game == 63 && moves.length > 1) {
+                if (game === 63 && moves.length > 1) {
                     selectMove(drawUntilMove - 2);
                 } else {
                   selectMove(drawUntilMove - 1);
@@ -570,13 +569,13 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                     if (messageMoveNums.indexOf(until) != -1) {
                         var encMessage = messages[messageMoveNums.indexOf(until)];
                         var msgr = "";
-                        if (((until + 1) % 2) == 0) {
+                        if (((until + 1) % 2) === 0) {
                             msgr = p1Name;
                         } else {
                             msgr = p2Name;
                         }
-                        if (game == 63) {
-                            if ((Math.floor((until - 1)/2) % 2) == 0) {
+                        if (game === 63) {
+                            if ((Math.floor((until - 1)/2) % 2) === 0) {
                                 msgr = p1Name;
                             } else {
                                 msgr = p2Name;
@@ -591,14 +590,14 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
 
             function goBack() {
                 if (drawUntilMove > 1) {
-                    if (game == 63 && drawUntilMove > 1) {
-                        if ((drawUntilMove % 2) == 1) {
+                    if (game === 63 && drawUntilMove > 1) {
+                        if ((drawUntilMove % 2) === 1) {
                             drawUntilMove = drawUntilMove - 1;
                         }
                         c6Move1 = -1;
                         c6Move2 = -1;
                     }
-                    if (game == 57 && moves.length == 1) {
+                    if (game === 57 && moves.length === 1) {
                         drawUntilMove = 2;
                         dPenteMove3 = -1;
                         dPenteMove2 = -1;
@@ -610,10 +609,10 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                     replayGame(abstractBoard, moves, drawUntilMove);
                     drawGame();
                     lastMove = moves[drawUntilMove - 1];
-                    drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-                    if (game == 63 && drawUntilMove > 1) {
+                    drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
+                    if (game === 63 && drawUntilMove > 1) {
                         lastMove = moves[drawUntilMove - 2];
-                        drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+                        drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
                         selectMove(drawUntilMove - 2);
                     } else {
                       selectMove(drawUntilMove - 1);
@@ -623,7 +622,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
             function goForward() {
                 if (drawUntilMove < moves.length) {
                     drawUntilMove = drawUntilMove + 1;
-                    if (game == 63 && drawUntilMove > 1) {
+                    if (game === 63 && drawUntilMove > 1) {
                         drawUntilMove = drawUntilMove + 1;
                     }
                     boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
@@ -631,10 +630,10 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                     replayGame(abstractBoard, moves, drawUntilMove);
                     drawGame();
                     lastMove = moves[drawUntilMove - 1];
-                    drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-                    if (game == 63 && drawUntilMove > 1) {
+                    drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
+                    if (game === 63 && drawUntilMove > 1) {
                         lastMove = moves[drawUntilMove - 2];
-                        drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+                        drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
                         selectMove(drawUntilMove - 2);
                     } else {
                       selectMove(drawUntilMove - 1);
@@ -671,10 +670,10 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
         replayGame(abstractBoard, moves, moves.length);
         drawGame();
         lastMove = moves[drawUntilMove - 1];
-        drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-        if (game == 63 && moves.length > 1) {
+        drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
+        if (game === 63 && moves.length > 1) {
             lastMove = moves[drawUntilMove - 2];
-            drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+            drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
             selectMove(drawUntilMove - 2);
         } else {
           selectMove(drawUntilMove - 1);
@@ -695,10 +694,10 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
             drawGrid(boardContext, boardColor, gridSize, true);
             drawGame();
             lastMove = moves[drawUntilMove - 1];
-            drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
-            if (game == 63 && moves.length > 1) {
+            drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
+            if (game === 63 && moves.length > 1) {
                 lastMove = moves[drawUntilMove - 2];
-                drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+                drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
             }
         }
 
@@ -707,14 +706,14 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
             encoder.setRepeat(1);
             encoder.setDelay(1000);
             encoder.start();
-            if (game == 63 && moves.length > 1) {
+            if (game === 63 && moves.length > 1) {
               drawBoardUntilMove(0);
               encoder.addFrame(boardContext);
               for ( var i = 1; i < moves.length/2; i++ ) {
                 drawBoardUntilMove(2*i - 1);
                 encoder.addFrame(boardContext);
               }
-              if (moves.length%2 == 0) {
+              if (moves.length%2 === 0) {
                 drawBoardUntilMove(moves.length - 1);
                 encoder.addFrame(boardContext);
               }
