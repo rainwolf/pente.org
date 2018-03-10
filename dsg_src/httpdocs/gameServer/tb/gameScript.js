@@ -43,7 +43,7 @@ var coordinateLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 
         var suicideAllowed = false;
         var goTerritoryByPlayer = {1: [], 2: []};
         var territoryDrawn = false;
-        var passMove = gridSize*gridSize;
+        var passMove = 361;
         var handicapPass = passMove + 1;
 
         var goDeadStonesByPlayer = {1: [], 2: []};
@@ -545,6 +545,7 @@ function reDrawTerritories() {
                 boardContext.font = "10px sans-serif";
                 boardContext.fillStyle='black';
                 boardContext.lineWidth=0.5;
+                // alert("piep" + gridSize);
                 for (var i = 0; i < gridSize; i++) {
                     boardContext.moveTo(indentWidth + (i+1)*stepX + stepX/2, indentHeight + stepY + stepY/2);
                     boardContext.lineTo(indentWidth + (i+1)*stepX + stepX/2, boardSize - stepY);

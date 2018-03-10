@@ -747,7 +747,9 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 							subject = "You lost";
 						}
 					}
-					body = subject + " your game of " + GridStateFactory.getGameName(game.getGame()) + " against computer";
+					body = subject + " your game of " + GridStateFactory.getGameName(game.getGame()) + " against computer." +
+                        "\n\nYou can temporarily review your game at http://www.pente.org/gameServer/tb/game?command=load&gid=" + 
+                        game.getGid() + " \n ";
 
 					DSGMessage message = new DSGMessage();
 					message.setFromPid(23000000020606L);
@@ -1776,22 +1778,25 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 	        tbg1.setState(TBGame.STATE_ACTIVE);
 	        tbg1.setLastMoveDate(new Date());
 	        tbg1.setStartDate(new Date());
-	        TBGame tbg2 = new TBGame();
-	        tbg2.setGame(game);
-	        tbg2.setDaysPerMove(daysPerMove);
-	        tbg2.setRated(true);
-	        tbg2.setPlayer2Pid(player1PID);
-	        tbg2.setPlayer1Pid(player2PID);
-	        tbg2.setEventId(eventID);
-	        tbg2.setState(TBGame.STATE_ACTIVE);
-	        tbg2.setLastMoveDate(new Date());
-	        tbg2.setStartDate(new Date());
-	        TBSet tbs = new TBSet(tbg1, tbg2);
-	        tbs.setPlayer1Pid(player1PID);
-	        tbs.setPlayer2Pid(player2PID);
-	        tbs.setPrivateGame(false);
-	        tbs.setState(TBSet.STATE_ACTIVE);
-	        tbs.setInvitationRestriction(TBSet.ANY_RATING);
+	        TBGame tbg2 = null;
+	        if (game < 69) {
+                tbg2 = new TBGame();
+                tbg2.setGame(game);
+                tbg2.setDaysPerMove(daysPerMove);
+                tbg2.setRated(true);
+                tbg2.setPlayer2Pid(player1PID);
+                tbg2.setPlayer1Pid(player2PID);
+                tbg2.setEventId(eventID);
+                tbg2.setState(TBGame.STATE_ACTIVE);
+                tbg2.setLastMoveDate(new Date());
+                tbg2.setStartDate(new Date());
+            }
+            TBSet tbs = new TBSet(tbg1, tbg2);
+            tbs.setPlayer1Pid(player1PID);
+            tbs.setPlayer2Pid(player2PID);
+            tbs.setPrivateGame(false);
+            tbs.setState(TBSet.STATE_ACTIVE);
+            tbs.setInvitationRestriction(TBSet.ANY_RATING);
 	        createSet(tbs);
 
 			DSGPlayerData toPlayer = dsgPlayerStorer.loadPlayer(player2PID);
