@@ -663,7 +663,7 @@
                         }
                         if ((game === 57 || game === 67) && moves.length === 1) {
                             if (dPenteMove1 === -1) {
-                            } else if (dPenteMove2 == -1) {
+                            } else if (dPenteMove2 === -1) {
                                 newMoves.push(dPenteMove1);
                             } else {
                                 newMoves.push(dPenteMove1);
@@ -690,17 +690,17 @@
                         }
                     }
 
-                    var rect = boardCanvas.getBoundingClientRect();
-                    var offsetX = rect.left;
-                    var offsetY = rect.top;
+                    // var rect = boardCanvas.getBoundingClientRect();
+                    // var offsetX = rect.left;
+                    // var offsetY = rect.top;
                     // evt.preventDefault();
                     var touch = evt.changedTouches[0];
 
-                    var i = Math.floor((touch.clientX - indentWidth + stepX / 2 - offsetX) / stepX);
-                    var j = Math.floor((touch.clientY - indentHeight + stepY / 2 - offsetY) / stepY);
-
-                    var x = touch.clientX - offsetX;
-                    var y = touch.clientY - offsetY;
+                    // var i = Math.floor((touch.clientX - indentWidth + stepX / 2 - offsetX) / stepX);
+                    // var j = Math.floor((touch.clientY - indentHeight + stepY / 2 - offsetY) / stepY);
+                    //
+                    // var x = touch.clientX - offsetX;
+                    // var y = touch.clientY - offsetY;
 
                     // if (i >= 0 && i < gridSize && j >= 0 && j < gridSize) {
                     //   evt.preventDefault();
@@ -716,8 +716,8 @@
 
                 function touchMove(evt) {
                     var rect = boardCanvas.getBoundingClientRect();
-                    var offsetX = rect.left;
-                    var offsetY = rect.top;
+                    var offsetX = rect.left + indentWidth + 2*stepX;
+                    var offsetY = rect.top + indentHeight + 2*stepY;
                     if (evt.touches.length > 1) {
                         return;
                     }
@@ -725,6 +725,9 @@
                     var touch = evt.changedTouches[0];
                     var i = Math.floor((touch.clientX - indentWidth + stepX / 2 - offsetX) / stepX);
                     var j = Math.floor((touch.clientY - indentHeight + stepY / 2 - offsetY) / stepY);
+
+                    // var i = Math.floor((touch.clientX - indentWidth - 2*stepX / 2 - offsetX) / stepX);
+                    // var j = Math.floor((touch.clientY - indentHeight - 2*stepY / 2 - offsetY) / stepY);
 
                     var x = touch.clientX - offsetX;
                     var y = touch.clientY - offsetY;
@@ -757,8 +760,8 @@
                 function touchEnd(evt) {
                     interactionContext.clearRect(0, 0, interactionCanvas.width, interactionCanvas.height);
                     var rect = boardCanvas.getBoundingClientRect();
-                    var offsetX = rect.left;
-                    var offsetY = rect.top;
+                    var offsetX = rect.left + indentWidth + 2*stepX;
+                    var offsetY = rect.top + indentHeight + 2*stepY;
                     // evt.preventDefault();
                     var touch = evt.changedTouches[0];
                     var i = Math.floor((touch.clientX - indentWidth + stepX / 2 - offsetX) / stepX);
@@ -945,8 +948,8 @@
                     trackingI = i;
                     trackingJ = j;
                     stoneContext.clearRect(0, 0, stoneCanvas.width, stoneCanvas.height);
-                    var centerX = indentWidth + stepX * (i);
-                    var centerY = indentHeight + stepY * (j);
+                    var centerX = indentWidth + stepX * (i+1) +stepX/2;
+                    var centerY = indentHeight + stepY * (j+1) + stepY/2;
                     stoneContext.save();
                     stoneContext.beginPath();
                     stoneContext.fillStyle = 'white';

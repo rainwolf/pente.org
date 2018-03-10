@@ -492,17 +492,18 @@
                 var opponentName = "<%= (me.equals(p1.getName())?p2.getName():p1.getName()) %>";
                 var iAmP1 = <%=me.equals(p1.getName())%>;
 
-                var boardSize = 500;
                 var gridSize = <%=gridSize%>;
-
                 var boardCanvas = document.getElementById("board");
                 var boardContext = boardCanvas.getContext("2d");
-                var indentWidth = (boardCanvas.width - boardSize) / 2;
-                var indentHeight = (boardCanvas.height - boardSize) / 2;
-                var stepX = boardSize / (gridSize - 1);
-                var stepY = boardSize / (gridSize - 1);
+                var indentWidth = (boardCanvas.width/(gridSize+3)) / 2;
+                var indentHeight = (boardCanvas.height/(gridSize+3)) / 2;
+                // var stepX = boardSize / (gridSize - 1);
+                // var stepY = boardSize / (gridSize - 1);
+                var stepX = 2*indentWidth;
+                var stepY = 2*indentHeight;
                 var boardColor;
                 var radius = stepX * 95 / 200;
+                var boardSize = boardCanvas.width - indentWidth*2;
 
 
                 var drawUntilMove;

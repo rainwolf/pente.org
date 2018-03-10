@@ -503,17 +503,18 @@
                 var opponentName = "<%= (me.equals(p1.getName())?p2.getName():p1.getName()) %>";
                 var iAmP1 = <%=me.equals(p1.getName())%>;
 
-                var boardSize = 500;
-
                 var gridSize = <%=gridSize%>;
                 var boardCanvas = document.getElementById("board");
                 var boardContext = boardCanvas.getContext("2d");
-                var indentWidth = (boardCanvas.width - boardSize) / 2;
-                var indentHeight = (boardCanvas.height - boardSize) / 2;
-                var stepX = boardSize / (gridSize - 1);
-                var stepY = boardSize / (gridSize - 1);
+                var indentWidth = (boardCanvas.width/(gridSize+3)) / 2;
+                var indentHeight = (boardCanvas.height/(gridSize+3)) / 2;
+                // var stepX = boardSize / (gridSize - 1);
+                // var stepY = boardSize / (gridSize - 1);
+                var stepX = 2*indentWidth;
+                var stepY = 2*indentHeight;
                 var boardColor;
                 var radius = stepX * 95 / 200;
+                var boardSize = boardCanvas.width - indentWidth*2;
 
 
                 var drawUntilMove;
@@ -667,8 +668,8 @@
                     var rect = boardCanvas.getBoundingClientRect();
                     var offsetX = rect.left;
                     var offsetY = rect.top;
-                    var i = Math.floor((e.clientX - indentWidth + stepX / 2 - offsetX) / stepX);
-                    var j = Math.floor((e.clientY - indentHeight + stepY / 2 - offsetY) / stepY);
+                    var i = Math.floor((e.clientX - indentWidth - 2*stepX / 2 - offsetX) / stepX);
+                    var j = Math.floor((e.clientY - indentHeight - 2*stepY / 2 - offsetY) / stepY);
                     if (i >= 0 && i < gridSize && j >= 0 && j < gridSize) {
                         playedMove = j * gridSize + i;
                         var p1DeadStones = goDeadStonesByPlayer[1], p2DeadStones = goDeadStonesByPlayer[2];
@@ -694,45 +695,6 @@
                         drawGame();
                         reDrawTerritories();
                     }
-                }
-
-                function drawStone(i, j, color) {
-                    if (color < 1 || color > 2) {
-                        return;
-                    }
-                    boardContext.save();
-                    var centerX = indentWidth + stepX * (i);
-                    var centerY = indentHeight + stepY * (j);
-                    boardContext.beginPath();
-                    boardContext.arc(centerX, centerY, radius, 0, Math.PI * 2, true);
-                    if (color === 2) {
-                        boardContext.fillStyle = 'black';
-                    } else {
-                        boardContext.fillStyle = 'white';
-                    }
-                    centerX -= radius / 8;
-                    centerY -= radius / 8;
-                    boardContext.shadowColor = 'DimGray';
-                    boardContext.shadowBlur = 1;
-                    boardContext.shadowOffsetX = radius / 8;
-                    boardContext.shadowOffsetY = radius / 8;
-                    if (color === 2) {
-                        var gradient = boardContext.createRadialGradient(centerX, centerY, radius / 8, centerX, centerY, radius);
-                        gradient.addColorStop(0, 'Grey');
-                        gradient.addColorStop(1, 'Black');
-                        boardContext.fillStyle = gradient;
-                    } else {
-                        gradient = boardContext.createRadialGradient(centerX, centerY, 2 * radius / 4, centerX, centerY, radius);
-                        gradient.addColorStop(0, 'White');
-                        gradient.addColorStop(1, 'Gainsboro');
-                        boardContext.fillStyle = gradient;
-                    }
-                    boardContext.fill();
-                    // boardContext.lineWidth = 5;
-                    // boardContext.strokeStyle = '#003300';
-                    // boardContext.stroke();
-                    boardContext.closePath();
-                    boardContext.restore();
                 }
 
                 function drawInteractionStone(i, j, color) {

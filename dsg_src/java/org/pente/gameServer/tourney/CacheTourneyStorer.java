@@ -312,8 +312,9 @@ public class CacheTourneyStorer implements TourneyStorer {
         if (t.getGame() > 50 && tourneyMatch.getPlayer1() != null && 
                 tourneyMatch.getPlayer1().getPlayerID() != 0 &&
                 tourneyMatch.getPlayer2() != null &&
-                tourneyMatch.getPlayer2().getPlayerID() != 0 &&
-                tourneyMatch.getPlayer1().getPlayerID() < tourneyMatch.getPlayer2().getPlayerID()) {
+                tourneyMatch.getPlayer2().getPlayerID() != 0 && ((
+                tourneyMatch.getPlayer1().getPlayerID() < tourneyMatch.getPlayer2().getPlayerID()) ||
+                t.getGame() == GridStateFactory.TB_GO || t.getGame() == GridStateFactory.TB_GO9 || t.getGame() == GridStateFactory.TB_GO13)) {
             this.tbStorer.createTournamentSet(t.getGame(), tourneyMatch.getPlayer1().getPlayerID(), tourneyMatch.getPlayer2().getPlayerID(), 
                                                 t.getInitialTime(), t.getEventID());
         }        

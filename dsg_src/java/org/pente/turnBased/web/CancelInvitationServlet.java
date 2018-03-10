@@ -110,7 +110,7 @@ public class CancelInvitationServlet extends HttpServlet {
                         }
                     }
                 }
-                if (thisGame < total/2) {
+                if (thisGame < 5 || thisGame < total/2) {
                     log4j.error("Beginner sets cannot be canceled.");
                     handleError(request, response, "Beginner sets cannot be canceled.",
                             loadRedirectPage);
