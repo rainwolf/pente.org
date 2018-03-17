@@ -649,7 +649,7 @@ Open Invitation Games<%
                 String ratedStr = "Not Rated";
                 if (koth) {
                     ratedStr = "KotH";
-                } else if (s.isTwoGameSet()) {
+                } else if (s.getGame1().isRated()) {
                     ratedStr = "Rated";
                 }
                 if (s.getInvitationRestriction() == TBSet.BEGINNER) {

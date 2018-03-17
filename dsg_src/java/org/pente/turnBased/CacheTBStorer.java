@@ -1779,7 +1779,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 	        tbg1.setLastMoveDate(new Date());
 	        tbg1.setStartDate(new Date());
 	        TBGame tbg2 = null;
-	        if (game < 69) {
+	        if (game < GridStateFactory.TB_GO) {
                 tbg2 = new TBGame();
                 tbg2.setGame(game);
                 tbg2.setDaysPerMove(daysPerMove);
