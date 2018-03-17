@@ -143,11 +143,15 @@ Player one plays one stone at the center of the board.  After that each player
 gets to place <b>two</b> stones on the board at a time.<br>
 More info at <a href="http://en.wikipedia.org/wiki/Connect6">http://en.wikipedia.org/wiki/Connect6</a>.<br>
 <br>
-<br>
-<a name="dkeryo"><u>DK-Pente</u></a><br>
-DK-Pente combines the rules of D-Pente and Keryo-Pente.
-<br>
+    <a name="dkeryo"><u>DK-Pente</u></a><br>
+    DK-Pente combines the rules of D-Pente and Keryo-Pente.
+    <br>
     <br>
     <a name="go"><u>Go</u></a><br>
     The rules of Go are a bit involved but a nice interactive tutorial can be found <a href="https://online-go.com/learn-to-play-go">here</a>.
+    <br>
+    Here at pente.org we use a komi of 7.5 for all board sizes. Play continues until both players pass consecutively. After which the first
+    player to pass gets to mark dead stones (stones of both sides they believe would have been captured eventually), and then the other player gets to accept the assessment of dead stones or reject it. In case of rejection,
+    the game resets to the move before the double pass, and play continues.
+    <br>
     <br>

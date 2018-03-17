@@ -374,7 +374,7 @@ window.google_analytics_uacct = "UA-20529582-2";
             <br>
             Round 2: <a href="/gameServer/tournaments/statusRound.jsp?eid=1309&round=2">D-Pente</a>
             <br>
-            Final:  <a href="/gameServer/tournaments/statusRound.jsp?eid=1315&round=5">Pente</a>, <a href="/gameServer/tournaments/statusRound.jsp?eid=1311&round=3">Poof-Pente</a>
+            Final:  <a href="/gameServer/tournaments/statusRound.jsp?eid=1315&round=5">Pente</a>
               </li>
 
 

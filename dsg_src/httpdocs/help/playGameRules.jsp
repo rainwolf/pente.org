@@ -150,9 +150,15 @@ More info at <a href="http://en.wikipedia.org/wiki/Connect6">http://en.wikipedia
 <a name="dkeryo"><u>DK-Pente</u></a><br>
 DK-Pente combines the rules of D-Pente and Keryo-Pente.
 <br>
-    <a name="go"><u>Go</u></a><br>
-    The rules of Go are a bit involved but a nice interactive tutorial can be found <a href="https://online-go.com/learn-to-play-go">here</a>.
-    <br>
+<br>
+<a name="go"><u>Go</u></a><br>
+The rules of Go are a bit involved but a nice interactive tutorial can be found <a href="https://online-go.com/learn-to-play-go">here</a>.
+<br>
+    Here at pente.org we use a komi of 7.5 for all board sizes. Play continues until both players pass consecutively. After which the first 
+    player to pass gets to mark dead stones (stones of both sides they believe would have been captured eventually), and then the other player gets to accept the assessment of dead stones or reject it. In case of rejection, 
+    the game resets to the move before the double pass, and play continues.
+<br>
+<br>
 <a name="speed"><u>Speed Games</u></a><br>
 All of the above games can be played untimed, with a "normal" time limit, or
 as <b>Speed</b> games.  Speed games are played so differently that they are
