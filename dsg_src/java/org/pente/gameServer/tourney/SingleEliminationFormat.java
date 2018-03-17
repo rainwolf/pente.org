@@ -102,14 +102,25 @@ public class SingleEliminationFormat extends AbstractTourneyFormat {
             section.addMatch(m);
             
             // now add match with players swapped
-            m = new TourneyMatch();
-            m.setEvent(tourney.getEventID());
-            m.setRound(rnd);
-            m.setSection(1);
-            m.setPlayer1(p2);
-            m.setPlayer2(p1);
-            m.setSeq(1);
-            section.addMatch(m);
+            
+            if (tourney.getGame() != GridStateFactory.GO &&
+                    tourney.getGame() != GridStateFactory.GO9 &&
+                    tourney.getGame() != GridStateFactory.GO13 &&
+                    tourney.getGame() != GridStateFactory.SPEED_GO &&
+                    tourney.getGame() != GridStateFactory.SPEED_GO9 &&
+                    tourney.getGame() != GridStateFactory.SPEED_GO13 &&
+                    tourney.getGame() != GridStateFactory.TB_GO &&
+                    tourney.getGame() != GridStateFactory.TB_GO9 &&
+                    tourney.getGame() != GridStateFactory.TB_GO13) {
+                m = new TourneyMatch();
+                m.setEvent(tourney.getEventID());
+                m.setRound(rnd);
+                m.setSection(1);
+                m.setPlayer1(p2);
+                m.setPlayer2(p1);
+                m.setSeq(1);
+                section.addMatch(m);
+            }
             
             // if (GridStateFactory.isTurnbasedGame(tourney.getGame())) {
                 
@@ -156,19 +167,32 @@ public class SingleEliminationFormat extends AbstractTourneyFormat {
     }
 
     public TourneyMatch[] createMoreMatchesAfterTie(TourneyMatch original) {
+        return createMoreMatchesAfterTie(original, false);
+    }
+
+    public TourneyMatch[] createMoreMatchesAfterTie(TourneyMatch original, boolean single) {
         TourneyMatch more[] = new TourneyMatch[2];
-        for (int i = 0; i < 2; i++) {
+        int matches = 2;
+        if (single) {
+            matches = 1;
+        }
+        for (int i = 0; i < matches; i++) {
             more[i] = new TourneyMatch();
             more[i].setEvent(original.getEvent());
             more[i].setRound(original.getRound());
             more[i].setSection(original.getSection());
             more[i].setSeq(original.getSeq() + 1);
         }
-        more[0].setPlayer1(original.getPlayer1());
-        more[0].setPlayer2(original.getPlayer2());
-        // then swap
-        more[1].setPlayer1(original.getPlayer2());
-        more[1].setPlayer2(original.getPlayer1());
+        if (single) {
+            more[0].setPlayer1(original.getPlayer2());
+            more[0].setPlayer2(original.getPlayer1());
+        } else {
+            more[0].setPlayer1(original.getPlayer1());
+            more[0].setPlayer2(original.getPlayer2());
+            // then swap
+            more[1].setPlayer1(original.getPlayer2());
+            more[1].setPlayer2(original.getPlayer1());
+        }
         
         return more;
     }
