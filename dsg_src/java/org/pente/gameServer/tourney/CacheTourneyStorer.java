@@ -376,9 +376,19 @@ public class CacheTourneyStorer implements TourneyStorer {
             if (m.getResult() == TourneyMatch.RESULT_TIE) {
                 TourneyMatch more[] = f.createMoreMatchesAfterTie(tourneyMatch);
                 insertMatch(more[0]);
-                insertMatch(more[1]);
                 s.addMatch(more[0]);
-                s.addMatch(more[1]);
+                if (t.getGame() != GridStateFactory.GO &&
+                        t.getGame() != GridStateFactory.GO9 &&
+                        t.getGame() != GridStateFactory.GO13 &&
+                        t.getGame() != GridStateFactory.SPEED_GO &&
+                        t.getGame() != GridStateFactory.SPEED_GO9 &&
+                        t.getGame() != GridStateFactory.SPEED_GO13 &&
+                        t.getGame() != GridStateFactory.TB_GO &&
+                        t.getGame() != GridStateFactory.TB_GO9 &&
+                        t.getGame() != GridStateFactory.TB_GO13) {
+                    insertMatch(more[1]);
+                    s.addMatch(more[1]);
+                }
             }
         }
     }

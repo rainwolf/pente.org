@@ -76,10 +76,11 @@ if (name != null) {
 		        
 		        <% boolean pass = true;
             if (game == null || game.getTotalGames() == 0) {
+                pass = false;
             %>
-              <font color="red">
+              <font color="red"><b>
                 Before you can sign up for this tournament, you have to play at least 1 rated set of <%= GridStateFactory.getDisplayName(tourney.getGame()) %>.
-              </font>
+              </b></font><br><br>
 
             <%
             } else {%>

@@ -49,30 +49,28 @@ for (Iterator it = matches.iterator(); it.hasNext();) {
           <% if (tourney.isTurnBased()) {
           TourneyMatch m1 = section.getUnplayedMatch(m.getPlayer1().getPlayerID(), m.getPlayer2().getPlayerID());
           TourneyMatch m2 = section.getUnplayedMatch(m.getPlayer2().getPlayerID(), m.getPlayer1().getPlayerID());
+//              TourneyMatch m1 = null;
+//              TourneyMatch m2 = null;
           if (m1 != null || m2 != null) { 
               List<TBSet> sets = tbStorer.loadSets(m.getPlayer1().getPlayerID());
               TBSet matchSet = null;
                for (TBSet s : sets) {
-                   if (s.isTwoGameSet() && s.getGame1().getEventId()==eid && s.getState() == TBSet.STATE_ACTIVE) {
+//                   if (s.isTwoGameSet() && s.getGame1().getEventId()==eid && s.getState() == TBSet.STATE_ACTIVE) {
+                   if (s.getGame1().getEventId()==eid && s.getState() == TBSet.STATE_ACTIVE) {
                         matchSet = s;
                         break;
                     }
                }
-              if (matchSet != null) { 
+              if (matchSet != null) {
               %>
               <% if (m1 != null || m2 != null) { %>
-<!--               <br>Match: 
-                        <a href="javascript:goWH('/gameServer/tb/game?gid=<%=matchSet.getGame1().getGid()%>&command=load&mobile');">game 1</a>
-               - 
-                        <a href="javascript:goWH('/gameServer/tb/game?gid=<%=matchSet.getGame2().getGid()%>&command=load&mobile');">game 2</a>
-
- -->                      </td>
+                    </td>
                     </tr>
                     <tr>
                       <td colspan="2" align="center">
                         <% if (true) { 
                         TBGame game = matchSet.getGame1(); 
-                        if (!game.isCompleted() && !game.isHidden()) {
+                        if (game != null && !game.isCompleted() && !game.isHidden()) {
                         %> 
                         <%@ include file="../tb/listedMobileGame.jsp" %>
                         <% } } %>
@@ -80,39 +78,12 @@ for (Iterator it = matches.iterator(); it.hasNext();) {
                       <td colspan="2" align="center">
                         <% if (true) { 
                         TBGame game = matchSet.getGame2();
-                        if (!game.isCompleted() && !game.isHidden()) {
+                        if (game != null && !game.isCompleted() && !game.isHidden()) {
                         %> 
                         <%@ include file="../tb/listedMobileGame.jsp" %>
                         <% } } %>
               <% } %>
-<!--               <% if (m1 != null) { %>
-                      <% if (matchSet.getGame1().getPlayer1Pid() == m.getPlayer1().getPlayerID()) { %>
-                        <a href="/gameServer/tb/game?command=load&mobile&gid=<%=matchSet.getGame1().getGid()%>">game 1</a>
-                      <% } else { %>
-                        <a href="/gameServer/tb/game?command=load&mobile&gid=<%=matchSet.getGame2().getGid()%>">game 1</a>
-                      <% } %>
-              <% } else { %>
-                      <% if (matchSet.getGame1().getPlayer1Pid() == m.getPlayer1().getPlayerID()) { %>
-                        <a href="/gameServer/viewLiveGame?mobile&g=<%=matchSet.getGame1().getGid()%>">game 1</a>
-                      <% } else { %>
-                        <a href="/gameServer/viewLiveGame?mobile&g=<%=matchSet.getGame2().getGid()%>">game 1</a>
-                      <% } %>
               <% } %>
-               - 
-              <% if (m2 != null) { %>
-                      <% if (matchSet.getGame1().getPlayer1Pid() == m.getPlayer1().getPlayerID()) { %>
-                        <a href="/gameServer/tb/game?command=load&mobile&gid=<%=matchSet.getGame2().getGid()%>">game 2</a>
-                      <% } else { %>
-                        <a href="/gameServer/tb/game?command=load&mobile&gid=<%=matchSet.getGame1().getGid()%>">game 2</a>
-                      <% } %>
-              <% } else { %>
-                      <% if (matchSet.getGame1().getPlayer1Pid() != m.getPlayer1().getPlayerID()) { %>
-                        <a href="/gameServer/viewLiveGame?mobile&g=<%=matchSet.getGame1().getGid()%>">game 2</a>
-                      <% } else { %>
-                        <a href="/gameServer/viewLiveGame?mobile&g=<%=matchSet.getGame2().getGid()%>">game 2</a>
-                      <% } %>
-              <% } %>
- -->              <% } %>
           <% } %>
           <% } %>
       </td>
