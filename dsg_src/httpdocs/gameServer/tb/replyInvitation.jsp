@@ -35,11 +35,15 @@ TBSet set = null;
 TBGame game = null;
 DSGPlayerData inviter = null;
 DSGPlayerGameData dsgPlayerGameData = null;
+    boolean isGo = false;
 if (error == null) {
 	set = (TBSet) request.getAttribute("set");
 	game = set.getGame1();
 	inviter = (DSGPlayerData) request.getAttribute("inviter");
 	dsgPlayerGameData = inviter.getPlayerGameData(game.getGame());
+    isGo = game.getGame()==GridStateFactory.TB_GO ||
+            game.getGame()==GridStateFactory.TB_GO9 ||
+            game.getGame()==GridStateFactory.TB_GO13;
 }
 
 
@@ -183,17 +187,31 @@ if (dsgPlayerData.unlimitedTBGames()) {
        <td>
            <% if (set.isTwoGameSet()) { %>
              White, Black (2 game set)
-           <% } else if (set.getInviterPid() == set.getPlayer1Pid() && game.getGame() != GridStateFactory.TB_GO) { %>
+           <% } else if (set.getInviterPid() == set.getPlayer1Pid() && !isGo) { %>
            Black (player 2)
-           <% } else if (set.getInviterPid() != set.getPlayer1Pid() && game.getGame() != GridStateFactory.TB_GO) { %>
+           <% } else if (set.getInviterPid() != set.getPlayer1Pid() && !isGo) { %>
            White (player 1)
-           <% } else if (set.getInviterPid() == set.getPlayer1Pid() && game.getGame() == GridStateFactory.TB_GO) { %>
+           <% } else if (set.getInviterPid() == set.getPlayer1Pid() && isGo) { %>
            White (player 2)
-           <% } else if (set.getInviterPid() != set.getPlayer1Pid() && game.getGame() == GridStateFactory.TB_GO) { %>
+           <% } else if (set.getInviterPid() != set.getPlayer1Pid() && isGo) { %>
            Black (player 1)
            <% } %>
        </td>
      </tr>
+       <%
+           if (set.getInvitationRestriction() == TBSet.BEGINNER) {
+       %>
+       <tr>
+           <td colspan="3">
+               <br>
+               <font color="red"><b>This is a beginner invitation, accepting it means the server will post an identical one in your name.</b></font>
+               <br>
+           </td>
+       </tr>
+       
+       <%
+           }
+       %>
      <tr>
       <td valign="top" colspan="2">
 

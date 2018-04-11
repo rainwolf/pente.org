@@ -373,7 +373,7 @@ public class CacheTourneyStorer implements TourneyStorer {
             // in this section
             SingleEliminationMatch m = s2.getSingleEliminationMatch(tourneyMatch);
             log4j.debug("get result of matches = " + m.getResult());
-            if (m.getResult() == TourneyMatch.RESULT_TIE) {
+            if (m.getResult() == TourneyMatch.RESULT_TIE && t.getNumRounds() == tourneyMatch.getRound()) {
                 TourneyMatch more[] = f.createMoreMatchesAfterTie(tourneyMatch);
                 insertMatch(more[0]);
                 s.addMatch(more[0]);

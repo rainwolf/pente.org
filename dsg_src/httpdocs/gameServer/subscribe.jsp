@@ -107,7 +107,7 @@ if (giftee != null) {
       <u> 1 Year</u> of unlimited turn-based games and no advertisements, including database access: 
   </td>
   <td align="center">
-     5,99 EUR 
+     4,99 EUR 
   </td>
   <td align="center">
     <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">

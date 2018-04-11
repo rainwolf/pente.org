@@ -378,7 +378,8 @@ public class MoveServlet extends HttpServlet {
 				}
 				
 				String hideStr = request.getParameter("hide");
-				if (hideStr != null) {
+//                if (hideStr != null && (game.getEventId() == tbGameStorer.getEventId(game.getGame()))) {
+                if (hideStr != null) {
 					if (playerData.hasPlayerDonated()) {
 						byte hiddenBy = 0;
 						if ("yes".equals(hideStr)) {
