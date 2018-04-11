@@ -123,7 +123,7 @@ public class CacheNotificationServer implements NotificationServer {
             public void run() {
                 try {
                     // Create connection to send GCM Message request.
-                    URL url = new URL("https://android.googleapis.com/gcm/send");
+                    URL url = new URL("https://fcm.googleapis.com/fcm/send");
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                     conn.setRequestProperty("Authorization", "key=" + penteLiveGCMkey);
                     conn.setRequestProperty("Content-Type", "application/json");
@@ -132,7 +132,7 @@ public class CacheNotificationServer implements NotificationServer {
 
                     // Send GCM message content.
                     OutputStream outputStream = conn.getOutputStream();
-                    outputStream.write(message.toString().getBytes());
+                    outputStream.write(message.getBytes("UTF-8"));
 
                     // Read GCM response.
                     InputStream inputStream = conn.getInputStream();
@@ -141,6 +141,7 @@ public class CacheNotificationServer implements NotificationServer {
                     if (resp.contains("InvalidRegistration") || resp.contains("NotRegistered")) {
                         removeInvalidToken(pid, token, ANDROID);
                     }
+//                    System.out.println("==============" + resp);
                 } catch (IOException e) {
                     log4j.error("Unable to send GCM message.");
                     log4j.error("Problem sending android notification for " + pid + " with token " + token);

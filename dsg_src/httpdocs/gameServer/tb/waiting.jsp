@@ -273,9 +273,6 @@ below and do not specify a player to invite.<br>
         <br>
         The "Open to" column is strictly informative, you can accept any invitation listed below.
         <br>
-     <br>
-     <font color="red"><b>New: </b></font>When you accept a beginner invitation, the server will post an identical one in your name.
-     <br>
         <br>
 
 <% if (limitExceeded) { %> 

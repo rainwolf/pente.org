@@ -23,9 +23,11 @@ private static final DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
     if (nm != null) {
         pdata = dsgPlayerStorer.loadPlayer(nm);
     }
-    if (pdata != null && pdata.databaseAccess()) { 
+    if (pdata != null && pdata.databaseAccess()) {    
+//    if (true) {
 
-     boolean showGames = true;
+
+        boolean showGames = true;
    if (request.getAttribute("blocked") != null) {
        showGames = false; %>
   <font color="red">
