@@ -69,6 +69,7 @@ src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
   })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
   ga('create', 'UA-20529582-2', 'pente.org');
+  ga('set', 'anonymizeIp', true);
   ga('send', 'pageview');
 
 </script>
