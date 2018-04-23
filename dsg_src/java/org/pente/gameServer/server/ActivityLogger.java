@@ -233,38 +233,39 @@ public class ActivityLogger {
     
     private void storeActivity(ActivityData activity) {
         
-        Connection con = null;
-        PreparedStatement stmt = null;
-        DSGPlayerData dsgPlayerData = null;
-        try {
-            dsgPlayerData = dsgPlayerStorer.loadPlayer(activity.getPlayerName());
-            
-        } catch (DSGPlayerStoreException e) {
-            log4j.error("Error loading player data for store activity.");
-            return;
-        }
-        
-        try {
-            con = dbHandler.getConnection();
-            stmt = con.prepareStatement(
-                "insert into dsg_ip(pid, ip, access_time) " +
-                "values(?, ?, sysdate())");
-            stmt.setLong(1, dsgPlayerData.getPlayerID());
-            stmt.setString(2, activity.getAddressStr());
-            stmt.execute();
-            
-        } catch (Exception e) {
-            log4j.error("Error saving activity to db.", e);
-        } finally {
-            try {
-                if (stmt != null) {
-                    stmt.close();
-                }
-                dbHandler.freeConnection(con);
-            } catch (Exception e) {
-                log4j.error("Error saving activity to db, release.", e);
-            }
-        }
+//        Connection con = null;
+//        PreparedStatement stmt = null;
+//        DSGPlayerData dsgPlayerData = null;
+//        try {
+//            dsgPlayerData = dsgPlayerStorer.loadPlayer(activity.getPlayerName());
+//            
+//        } catch (DSGPlayerStoreException e) {
+//            log4j.error("Error loading player data for store activity.");
+//            return;
+//        }
+//        
+//        try {
+//            con = dbHandler.getConnection();
+//            stmt = con.prepareStatement(
+//                "insert into dsg_ip(pid, ip, access_time) " +
+//                "values(?, ?, sysdate())");
+//            stmt.setLong(1, dsgPlayerData.getPlayerID());
+//            stmt.setString(2, "0.0.0.0");
+////            stmt.setString(2, activity.getAddressStr());
+//            stmt.execute();
+//            
+//        } catch (Exception e) {
+//            log4j.error("Error saving activity to db.", e);
+//        } finally {
+//            try {
+//                if (stmt != null) {
+//                    stmt.close();
+//                }
+//                dbHandler.freeConnection(con);
+//            } catch (Exception e) {
+//                log4j.error("Error saving activity to db, release.", e);
+//            }
+//        }
     }
     
     private boolean isBanned(ActivityData activity) {

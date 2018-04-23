@@ -134,7 +134,6 @@ a {text-decoration:none;}
         Email me site updates
       </td>
      </tr>
-
      <tr>
       <td colspan="2">
         <br>
@@ -186,8 +185,9 @@ That's it, and remember to have fun of course!</textarea>
      </tr>
      <tr>
        <td colspan="2">
-         <input type="checkbox" name="agreePolicy" value="Y"> I have read and
-         understand Pente.org's Policy for Playing Rated Games
+         <input type="checkbox" name="agreePolicy" value="Y"> I have read, 
+         understood, and accepted Pente.org's Policy for Playing Rated Games and Pente.org's
+           <a href="/help/helpWindow.jsp?file=privacyPolicy">privacy policy</a>
        </td>
      </tr>
      <tr>

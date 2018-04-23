@@ -66,14 +66,26 @@ function addLoadEvent(func) {
 <link href="/res/hack.css" media="all" rel="Stylesheet" type="text/css">
 
 
-<!-- Begin Cookie Consent plugin by Silktide - http://silktide.com/cookieconsent -->
-<%--<script type="text/javascript">--%>
-    <%--window.cookieconsent_options = {"message":"This website uses cookies to deliver ads from the Google Adsense Network","dismiss":"Got it!","learnMore":"More info","link":null,"theme":"dark-bottom"};--%>
-<%--</script>--%>
-
-<%--<script type="text/javascript" src="//s3.amazonaws.com/cc.silktide.com/cookieconsent.latest.min.js"></script>--%>
-<!-- End Cookie Consent plugin -->
-
+    <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.0.3/cookieconsent.min.css" />
+    <script src="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.0.3/cookieconsent.min.js"></script>
+    <script>
+        window.addEventListener("load", function(){
+            window.cookieconsent.initialise({
+                "palette": {
+                    "popup": {
+                        "background": "#000"
+                    },
+                    "button": {
+                        "background": "#f1d600"
+                    }
+                },
+                "theme": "classic",
+                "content": {
+                    "message": "Pente.org uses cookies to ensure you don't have to log in to every page. In addition, Google uses cookies for analytics and advertising. ",
+                    "href": "/help/helpWindow.jsp?file=privacyPolicy"
+                }
+            })});
+    </script>
 
 </head>
 <body>
