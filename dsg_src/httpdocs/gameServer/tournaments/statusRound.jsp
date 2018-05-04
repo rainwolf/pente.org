@@ -13,6 +13,9 @@ Resources resources = (Resources) application.getAttribute(
 TourneyStorer tourneyStorer = resources.getTourneyStorer();
 TBGameStorer tbStorer = resources.getTbGameStorer();
 Tourney tourney = tourneyStorer.getTourney(eid);
+boolean isTBGo = tourney.getGame() == GridStateFactory.TB_GO ||
+        tourney.getGame() == GridStateFactory.TB_GO9 ||
+        tourney.getGame() == GridStateFactory.TB_GO13;
 
 String roundStr = request.getParameter("round");
 int r = Integer.parseInt(roundStr);

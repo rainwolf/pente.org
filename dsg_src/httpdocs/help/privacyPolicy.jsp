@@ -34,6 +34,10 @@ the address provided in the following cases:<br>
     you navigate to a new page.
     <br>
     <br>
+    <font color="red">You must be at least 16 years old to be able to consent to this, otherwise consent 
+    from a parent or guardian is required.</font>
+    <br>
+    <br>
 In addition, pente.org serves advertisements to non-subscribers via the Google Adsense network, 
 and those users are additionally subject to <a href="https://www.google.com/intl/en/policies/privacy/">Google's privacy rules</a>. 
     We also make use of Google Analytics, however, with the privacy feature of anonymizing your IP-address turned on.
