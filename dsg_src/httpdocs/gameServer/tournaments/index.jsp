@@ -42,6 +42,9 @@ Tourney tbConnect6 = getLastTBTourney(completedDetails, GridStateFactory.TB_CONN
 Tourney tbPoof = getLastTBTourney(completedDetails, GridStateFactory.TB_POOF_PENTE);
 Tourney tbDK = getLastTBTourney(completedDetails, GridStateFactory.TB_DKERYO);
 Tourney tbGPente = getLastTBTourney(completedDetails, GridStateFactory.TB_GPENTE);
+Tourney tbGo = getLastTBTourney(completedDetails, GridStateFactory.TB_GO);
+Tourney tbGo9x9 = getLastTBTourney(completedDetails, GridStateFactory.TB_GO9);
+Tourney tbGo13x13 = getLastTBTourney(completedDetails, GridStateFactory.TB_GO13);
 %>
 
 <%@ include file="../begin.jsp" %>
@@ -125,7 +128,7 @@ Tourney tbGPente = getLastTBTourney(completedDetails, GridStateFactory.TB_GPENTE
        </tr>
       </tr>
       <tr>
-        <td>Remember, remember, <br>the 5th of November (2016)</td>
+        <td>Remember, remember, the 5th of November</td>
         <td>Summer Renaissance (2017)</td>
         <td>Pente Masters (2017)</td>
       </tr>
@@ -147,67 +150,98 @@ Tourney tbGPente = getLastTBTourney(completedDetails, GridStateFactory.TB_GPENTE
       &nbsp
     </td>
   </tr>
-  <tr>
-  <td>
-     <table border="1" cellpadding="2" cellspacing="0" bordercolor="black">
-         <tr bgcolor="<%= bgColor1 %>">
-             <td><font color="white">TB Gomoku</font></td>
-             <td><font color="white">TB Boat-Pente</font></td>
-             <td><font color="white">TB Connect6</font></td>
-             <td><font color="white">TB D-Pente</font></td>
-         </tr>
-         </tr>
-         <tr>
-             <td><a href="statusRound.jsp?eid=<%= tbGomoku.getEventID() %>&round=<%= tbGomoku.getNumRounds() %>"><%=tbGomoku.getName()%></a></td>
-             <td><a href="statusRound.jsp?eid=<%= tbBoat.getEventID() %>&round=<%= tbBoat.getNumRounds() %>"><%=tbBoat.getName()%></a></td>
-             <td><a href="statusRound.jsp?eid=<%= tbConnect6.getEventID() %>&round=<%= tbConnect6.getNumRounds() %>"><%=tbConnect6.getName()%></a></td>
-             <td><a href="statusRound.jsp?eid=<%= tbDPente.getEventID() %>&round=<%= tbDPente.getNumRounds() %>"><%=tbDPente.getName()%></a></td>
-         </tr>
-         <tr>
-             <td><a href="../profile?viewName=<%=tbGomoku.getWinner()%>"><%=tbGomoku.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
-             <td><a href="../profile?viewName=<%=tbBoat.getWinner()%>"><%=tbBoat.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
-             <td><a href="../profile?viewName=<%=tbConnect6.getWinner()%>"><%=tbConnect6.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
-             <td><a href="../profile?viewName=<%=tbDPente.getWinner()%>"><%=tbDPente.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
-         </tr>
-         <tr>
-             <td><img src="/gameServer/avatar?name=<%=tbGomoku.getWinner()%>" style="width:125px;height:125px;"></td>
-             <td><img src="/gameServer/avatar?name=<%=tbBoat.getWinner()%>" style="width:125px;height:125px;"></td>
-             <td><img src="/gameServer/avatar?name=<%=tbConnect6.getWinner()%>" style="width:125px;height:125px;"></td>
-             <td><img src="/gameServer/avatar?name=<%=tbDPente.getWinner()%>" style="width:125px;height:125px;"></td>
-         </tr>
-         <tr bgcolor="<%= bgColor1 %>">
-             <td><font color="white">TB Poof-Pente</font></td>
-             <td><font color="white">TB Keryo-Pente</font></td>
-             <td><font color="white">TB DK-Pente</font></td>
-             <td><font color="white">TB G-Pente</font></td>
-         </tr>
-         </tr>
-         <tr>
-             <td><a href="statusRound.jsp?eid=<%= tbPoof.getEventID() %>&round=<%= tbPoof.getNumRounds() %>"><%=tbPoof.getName()%></a></td>
-             <td><a href="statusRound.jsp?eid=<%= tbKeryo.getEventID() %>&round=<%= tbKeryo.getNumRounds() %>"><%=tbKeryo.getName()%></a></td>
-             <td><a href="statusRound.jsp?eid=<%= tbDK.getEventID() %>&round=<%= tbDK.getNumRounds() %>"><%=tbDK.getName()%></a></td>
-             <td><a href="statusRound.jsp?eid=<%= tbGPente.getEventID() %>&round=<%= tbGPente.getNumRounds() %>"><%=tbGPente.getName()%></a></td>
-         </tr>
-         <tr>
-             <td><a href="../profile?viewName=<%=tbPoof.getWinner()%>"><%=tbPoof.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
-             <td><a href="../profile?viewName=<%=tbKeryo.getWinner()%>"><%=tbKeryo.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
-             <td><a href="../profile?viewName=<%=tbDK.getWinner()%>"><%=tbDK.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
-             <td><a href="../profile?viewName=<%=tbGPente.getWinner()%>"><%=tbGPente.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
-         </tr>
-         <tr>
-             <td><img src="/gameServer/avatar?name=<%=tbPoof.getWinner()%>" style="width:125px;height:125px;"></td>
-             <td><img src="/gameServer/avatar?name=<%=tbKeryo.getWinner()%>" style="width:125px;height:125px;"></td>
-             <td><img src="/gameServer/avatar?name=<%=tbDK.getWinner()%>" style="width:125px;height:125px;"></td>
-             <td><img src="/gameServer/avatar?name=<%=tbGPente.getWinner()%>" style="width:125px;height:125px;"></td>
-         </tr>
-     </table>
-     </td>
-  </tr>
-  <tr>
-    <td>
-      &nbsp
-    </td>
-  </tr>
+    <tr>
+        <td>
+            <table border="1" cellpadding="2" cellspacing="0" bordercolor="black">
+                <tr bgcolor="<%= bgColor1 %>">
+                    <td><font color="white">TB Gomoku</font></td>
+                    <td><font color="white">TB Boat-Pente</font></td>
+                    <td><font color="white">TB Connect6</font></td>
+                    <td><font color="white">TB D-Pente</font></td>
+                </tr>
+                </tr>
+                <tr>
+                    <td><a href="statusRound.jsp?eid=<%= tbGomoku.getEventID() %>&round=<%= tbGomoku.getNumRounds() %>"><%=tbGomoku.getName()%></a></td>
+                    <td><a href="statusRound.jsp?eid=<%= tbBoat.getEventID() %>&round=<%= tbBoat.getNumRounds() %>"><%=tbBoat.getName()%></a></td>
+                    <td><a href="statusRound.jsp?eid=<%= tbConnect6.getEventID() %>&round=<%= tbConnect6.getNumRounds() %>"><%=tbConnect6.getName()%></a></td>
+                    <td><a href="statusRound.jsp?eid=<%= tbDPente.getEventID() %>&round=<%= tbDPente.getNumRounds() %>"><%=tbDPente.getName()%></a></td>
+                </tr>
+                <tr>
+                    <td><a href="../profile?viewName=<%=tbGomoku.getWinner()%>"><%=tbGomoku.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
+                    <td><a href="../profile?viewName=<%=tbBoat.getWinner()%>"><%=tbBoat.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
+                    <td><a href="../profile?viewName=<%=tbConnect6.getWinner()%>"><%=tbConnect6.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
+                    <td><a href="../profile?viewName=<%=tbDPente.getWinner()%>"><%=tbDPente.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
+                </tr>
+                <tr>
+                    <td><img src="/gameServer/avatar?name=<%=tbGomoku.getWinner()%>" style="width:125px;height:125px;"></td>
+                    <td><img src="/gameServer/avatar?name=<%=tbBoat.getWinner()%>" style="width:125px;height:125px;"></td>
+                    <td><img src="/gameServer/avatar?name=<%=tbConnect6.getWinner()%>" style="width:125px;height:125px;"></td>
+                    <td><img src="/gameServer/avatar?name=<%=tbDPente.getWinner()%>" style="width:125px;height:125px;"></td>
+                </tr>
+                <tr bgcolor="<%= bgColor1 %>">
+                    <td><font color="white">TB Poof-Pente</font></td>
+                    <td><font color="white">TB Keryo-Pente</font></td>
+                    <td><font color="white">TB DK-Pente</font></td>
+                    <td><font color="white">TB G-Pente</font></td>
+                </tr>
+                </tr>
+                <tr>
+                    <td><a href="statusRound.jsp?eid=<%= tbPoof.getEventID() %>&round=<%= tbPoof.getNumRounds() %>"><%=tbPoof.getName()%></a></td>
+                    <td><a href="statusRound.jsp?eid=<%= tbKeryo.getEventID() %>&round=<%= tbKeryo.getNumRounds() %>"><%=tbKeryo.getName()%></a></td>
+                    <td><a href="statusRound.jsp?eid=<%= tbDK.getEventID() %>&round=<%= tbDK.getNumRounds() %>"><%=tbDK.getName()%></a></td>
+                    <td><a href="statusRound.jsp?eid=<%= tbGPente.getEventID() %>&round=<%= tbGPente.getNumRounds() %>"><%=tbGPente.getName()%></a></td>
+                </tr>
+                <tr>
+                    <td><a href="../profile?viewName=<%=tbPoof.getWinner()%>"><%=tbPoof.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
+                    <td><a href="../profile?viewName=<%=tbKeryo.getWinner()%>"><%=tbKeryo.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
+                    <td><a href="../profile?viewName=<%=tbDK.getWinner()%>"><%=tbDK.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
+                    <td><a href="../profile?viewName=<%=tbGPente.getWinner()%>"><%=tbGPente.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
+                </tr>
+                <tr>
+                    <td><img src="/gameServer/avatar?name=<%=tbPoof.getWinner()%>" style="width:125px;height:125px;"></td>
+                    <td><img src="/gameServer/avatar?name=<%=tbKeryo.getWinner()%>" style="width:125px;height:125px;"></td>
+                    <td><img src="/gameServer/avatar?name=<%=tbDK.getWinner()%>" style="width:125px;height:125px;"></td>
+                    <td><img src="/gameServer/avatar?name=<%=tbGPente.getWinner()%>" style="width:125px;height:125px;"></td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <table border="1" cellpadding="2" cellspacing="0" bordercolor="black">
+                <tr bgcolor="<%= bgColor1 %>">
+                    <td><font color="white">TB Go</font></td>
+                    <td><font color="white">TB Go (9x9)</font></td>
+                    <td><font color="white">TB Go (13x13)</font></td>
+                </tr>
+                <tr>
+                    <td><a href="statusRound.jsp?eid=<%= tbGo.getEventID() %>&round=<%= tbGo.getNumRounds() %>"><%=tbGo.getName()%></a></td>
+                    <td><a href="statusRound.jsp?eid=<%= tbGo9x9.getEventID() %>&round=<%= tbGo9x9.getNumRounds() %>"><%=tbGo9x9.getName()%></a></td>
+                    <td><a href="statusRound.jsp?eid=<%= tbGo13x13.getEventID() %>&round=<%= tbGo13x13.getNumRounds() %>"><%=tbGo13x13.getName()%></a></td>
+                </tr>
+                <tr>
+                    <td><a href="../profile?viewName=<%=tbGo.getWinner()%>"><%=tbGo.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
+                    <td><a href="../profile?viewName=<%=tbGo9x9.getWinner()%>"><%=tbGo9x9.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
+                    <td><a href="../profile?viewName=<%=tbGo13x13.getWinner()%>"><%=tbGo13x13.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
+                </tr>
+                <tr>
+                    <td><img src="/gameServer/avatar?name=<%=tbGo.getWinner()%>" style="width:125px;height:125px;"></td>
+                    <td><img src="/gameServer/avatar?name=<%=tbGo9x9.getWinner()%>" style="width:125px;height:125px;"></td>
+                    <td><img src="/gameServer/avatar?name=<%=tbGo13x13.getWinner()%>" style="width:125px;height:125px;"></td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp
+        </td>
+    </tr>
   <tr>
   <td>
      <table border="1" cellpadding="2" cellspacing="0" bordercolor="black">
@@ -215,36 +249,28 @@ Tourney tbGPente = getLastTBTourney(completedDetails, GridStateFactory.TB_GPENTE
         <td><font color="white">Pente</font></td>
         <td><font color="white">D-Pente</font></td>
         <td><font color="white">Pente</font></td>
-        <td><font color="white">Pente</font></td>
         <td><font color="white">Speed-Pente</font></td>
-        <td><font color="white">Keryo-Pente</font></td>
         <td><font color="white">Connect6</font></td>
        </tr>
       </tr>
       <tr>
-        <td>Pente -  carson75's Pente Tournament</td>
+        <td>Pente - 16th Anniversary World Champion Tournament 2015</td>
         <td>D-Pente - Fall 2005</td>
-        <td>Summer 2007 Pente Open</td>
         <td>Pente - Winter 2007 Below 1700</td>
         <td>Speed 3:Hat trick?</td>
-        <td>Summer 2007 Keryo Open</td>
         <td>Summer 2007 C6 Open</td>
       </tr>
       <tr>
-        <td><a href="../profile?viewName=zoeyk">zoeyk</a> <img src="/gameServer/images/crown.gif"></td>
-        <td><a href="../profile?viewName=richardiii">richardiii</a> <img src="/gameServer/images/crown.gif"></td>
+        <td><a href="../profile?viewName=spavacz">spavacz</a> <img src="/gameServer/images/crown.gif"></td>
         <td><a href="../profile?viewName=richardiii">richardiii</a> <img src="/gameServer/images/crown.gif"></td>
         <td><a href="../profile?viewName=spifster">spifster</a> <img src="/gameServer/images/scrown.gif"></td>
-        <td><a href="../profile?viewName=karlw">karlw</a> <img src="/gameServer/images/crown.gif"></td>
         <td><a href="../profile?viewName=karlw">karlw</a> <img src="/gameServer/images/crown.gif"></td>
         <td><a href="../profile?viewName=zhangying">zhangying</a> <img src="/gameServer/images/crown.gif"></td>
       </tr>
       <tr>
-        <td><img src="/gameServer/avatar?name=zoeyk" style="width:125px;height:125px;"></td>
-        <td><img src="/gameServer/avatar?name=richardiii" style="width:125px;height:125px;"></td>
+        <td><img src="/gameServer/avatar?name=spavacz" style="width:125px;height:125px;"></td>
         <td><img src="/gameServer/avatar?name=richardiii" style="width:125px;height:125px;"></td>
         <td><img src="/gameServer/avatar?name=spifster" style="width:125px;height:125px;"></td>
-        <td><img src="/gameServer/avatar?name=karlw" style="width:125px;height:125px;"></td>
         <td><img src="/gameServer/avatar?name=karlw" style="width:125px;height:125px;"></td>
         <td>&nbsp;</td>
       </tr>

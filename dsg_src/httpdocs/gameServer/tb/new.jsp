@@ -143,7 +143,7 @@ function submitnewgameform()
        Pente.org turn-based games that are rated must be
      played in a set of two games to make the ratings system fair (most games give
      player 1 a slight advantage).  If you choose rated below Pente.org will create a
-     set of two games.<br>
+     set of two games, except for Go where the player 1 advantage is compensated with a komi of 7.5.<br>
      <br>
      If you play unrated, you can choose to play as white or black and choose
      to make the game private.

@@ -67,15 +67,17 @@ for (Iterator it = matches.iterator(); it.hasNext();) {
                     </td>
                     </tr>
                     <tr>
-                      <td colspan="2" align="center">
+                      <td colspan="<%=(isTBGo?"4":"2")%>" align="center">
                         <% if (true) { 
                         TBGame game = matchSet.getGame1(); 
                         if (game != null && !game.isCompleted() && !game.isHidden()) {
                         %> 
                         <%@ include file="../tb/listedMobileGame.jsp" %>
                         <% } } %>
+                          <% if (!isTBGo) { %>
                       </td>
                       <td colspan="2" align="center">
+                          <% } %>
                         <% if (true) { 
                         TBGame game = matchSet.getGame2();
                         if (game != null && !game.isCompleted() && !game.isHidden()) {
