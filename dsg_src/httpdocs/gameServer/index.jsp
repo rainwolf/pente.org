@@ -367,8 +367,7 @@ window.google_analytics_uacct = "UA-20529582-2";
 }
 %>
 
-<!--           <li>Final: <a href="/gameServer/tournaments/statusRound.jsp?eid=1281&round=8">Pente Masters</a></li>
- -->          <li>New turn-based tournaments: <a href="/gameServer/tournaments">Winter's Coming!<!--, Pente Masters, and Summer Renaissance series--></a>
+           <li>New turn-based tournaments: <a href="/gameServer/tournaments">Winter's Coming!<!--, Pente Masters, and Summer Renaissance series--></a>
             <br>
         Final:  <a href="/gameServer/tournaments/statusRound.jsp?eid=1315&round=5">Pente</a>
               </li>
