@@ -260,6 +260,8 @@ public class CacheKOTHStorer implements KOTHStorer {
         public void run() {
             Date lastMonth = new Date();
             lastMonth.setTime(lastMonth.getTime() - (31L*3600*24*1000));
+            Date hundredDays = new Date();
+            hundredDays.setTime(hundredDays.getTime() - (100L*3600*24*1000));
 //            boolean altered = false;
             synchronized (cacheKotHLock) {
                 for (int tbGame : tbGames) {
@@ -267,11 +269,10 @@ public class CacheKOTHStorer implements KOTHStorer {
                     if (hill != null) {
                         List<Player> players = hill.getMembers();
                         for (Player player : players) {
+                            boolean subscriber = false;
                             try {
                                 DSGPlayerData playerData = dsgPlayerStorer.loadPlayer(player.getPid());
-                                if (playerData.hasPlayerDonated() && playerData.getStatus() == DSGPlayerData.ACTIVE) {
-                                    continue;
-                                }
+                                subscriber = playerData.hasPlayerDonated() && playerData.getStatus() == DSGPlayerData.ACTIVE;
                             } catch (DSGPlayerStoreException | NullPointerException e) {
                                 e.printStackTrace();
                             }
@@ -279,11 +280,13 @@ public class CacheKOTHStorer implements KOTHStorer {
                                 continue;
                             }
                             Date lastDate = player.getLastGame();
-                            if (lastDate != null && lastDate.before(lastMonth)) {
+                            if (lastDate != null && (
+                                    (!subscriber && lastDate.before(lastMonth)) ||
+                                    (subscriber && lastDate.before(hundredDays)))) {
                                 removePlayer(tbGame, player.getPid());
 //                                baseStorer.removePlayerFromHill(hill.getHillID(), player.getPid());
 //                                hill.removePlayer(player.getPid());
-                                fixTBinvitations(tbGame, player.getPid());
+//                                fixTBinvitations(tbGame, player.getPid());
 //                                altered = true;
                             }
                         }
@@ -302,16 +305,18 @@ public class CacheKOTHStorer implements KOTHStorer {
                     if (hill != null) {
                         List<Player> players = hill.getMembers();
                         for (Player player : players) {
+                            boolean subscriber = false;
                             try {
-                                if (dsgPlayerStorer.loadPlayer(player.getPid()).hasPlayerDonated()) {
-                                    continue;
-                                }
+                                DSGPlayerData playerData = dsgPlayerStorer.loadPlayer(player.getPid());
+                                subscriber = playerData.hasPlayerDonated() && playerData.getStatus() == DSGPlayerData.ACTIVE;
                             } catch (DSGPlayerStoreException | NullPointerException e) {
                                 e.printStackTrace();
                             }
                             Date lastDate = player.getLastGame();
                             //                        Date lastDate = baseStorer.getLastGameDate(hill.getHillID(), pid);
-                            if (lastDate != null && lastDate.before(lastMonth)) {
+                            if (lastDate != null && (
+                                    (!subscriber && lastDate.before(lastMonth)) ||
+                                    (subscriber && lastDate.before(hundredDays)))) {
                                 removePlayer(liveGame, player.getPid());
 //                                baseStorer.removePlayerFromHill(hill.getHillID(), player.getPid());
 //                                hill.removePlayer(player.getPid());
@@ -398,7 +403,7 @@ public class CacheKOTHStorer implements KOTHStorer {
             List<TBSet> sets = tbStorer.loadSets(pid);
             int kothEventId = getEventId(game);
             for (TBSet set : sets) {
-                if (set.isTwoGameSet() && set.getState() == TBSet.STATE_NOT_STARTED && set.getGame1().getGame() == game && set.getGame1().getEventId() == kothEventId) {
+                if (set.getState() == TBSet.STATE_NOT_STARTED && set.getGame1().getGame() == game && set.getGame1().getEventId() == kothEventId) {
                     TBSet loadedSet = tbStorer.loadSet(set.getSetId());
                     for (int i = 0; i < 2; i++) {
                         TBGame g = loadedSet.getGames()[i];
@@ -421,7 +426,7 @@ public class CacheKOTHStorer implements KOTHStorer {
             List<TBSet> sets = tbStorer.loadSets(pid);
             int kothEventId = getEventId(game);
             for (TBSet set : sets) {
-                if (set.isTwoGameSet() && set.getState() == TBSet.STATE_ACTIVE && set.getGame1().getGame() == game && set.getGame1().getEventId() == kothEventId) {
+                if (set.getState() == TBSet.STATE_ACTIVE && set.getGame1().getGame() == game && set.getGame1().getEventId() == kothEventId) {
                     return true;
                 }
             }

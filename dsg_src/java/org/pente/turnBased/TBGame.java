@@ -492,7 +492,8 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
                 this.state == STATE_NOT_STARTED &&
                 g.getState() == STATE_NOT_STARTED &&
                 this.daysPerMove == g.getDaysPerMove() &&
-                this.rated == g.isRated();
+                this.rated == g.isRated() &&
+                this.eventId == g.getEventId();
     }
 
     @Override
@@ -504,6 +505,7 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
         tmp = state + PRIME*tmp;
         tmp = daysPerMove + PRIME*tmp;
         tmp = (rated?1:0) + PRIME*tmp;
+        tmp = eventId + PRIME*tmp;
         return tmp;
 //        return PRIME;
     }

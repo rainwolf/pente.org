@@ -57,7 +57,7 @@ A few more rules
 	<% for ( int i = 1; i < 36 ; i++ ) { %>
 <img src="/gameServer/images/kothcrown<%=i%>.png">		
 	<%}%> </li>
-	<li>non-subscribers who don't play any King of the Hill games for 62 days are removed from the hill,</li>
+	<li>non-subscribers who don't play any King of the Hill games for 62 days are removed from the hill, subscribers have 100 days leeway, </li>
 	<li>non-subscribers can only participate in one hill, <a href="https://pente.org/gameServer/subscriptions">subscribers</a> can participate in all hills,</li>
 	<li>live games must be played in the King of the Hill room and must be rated in order to count, games between players who are more than 2 steps apart are not considered.</li>
 </ul>
@@ -69,7 +69,7 @@ This is new code so there may still be bugs here and there, that's why this is a
 Turn-based King of the Hill have a few more rules to consider:
 <ul>
 	<li>non-subscribers can only play 2 sets at any given time, this includes active sets, sent invitations, and invitations you haven't responded to yet, </li>
-	<li>non-subscribers who don't play any King of the Hill games for 31 days are removed from the hill,</li>
+	<li>non-subscribers who don't play any King of the Hill games for 31 days are removed from the hill, for subscribers, this limit is set at 100 days, </li>
 	<li><a href="https://pente.org/gameServer/subscriptions">subscribers</a> can play unlimited KotH games, when <a href="https://pente.org/gameServer/subscriptions">subscribers</a> have 5 or more ongoing KotH sets, including waiting invitations, they cannot be challenged anymore, but can still send out challenges,</li>
 	<li>if your opponent leaves the hill before the set is over, the result still counts towards your hill position,</li>
 	<li>joining or leaving a hill, and challenging other players has to be done from this page or your mobile device,</li>
