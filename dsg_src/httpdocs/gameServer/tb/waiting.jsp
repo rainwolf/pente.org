@@ -213,7 +213,8 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
               } else if (!o1KotH && o2KotH) {
                 return 1;
               }
-              return o2.getCreationDate().compareTo(o1.getCreationDate());
+//              return o2.getCreationDate().compareTo(o1.getCreationDate());
+              return o1.getGame1().getGame() - o2.getGame1().getGame();
           }
       });
 

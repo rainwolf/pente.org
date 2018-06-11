@@ -77,8 +77,14 @@ public class CacheKOTHStorer implements KOTHStorer {
     public Hill getHill(int game) {
         int hill_id = getEventId(game);
         if (hill_id != 0) {
-            return hills.get(hill_id);
-        }
+            Hill hill = hills.get(hill_id);
+            if (hill == null && game > 50) {
+                hill = new Hill();
+                hill.setHillID(hill_id);
+                hills.put(hill_id, hill);
+            }
+            return hill;
+        } 
         return null;
     }
 

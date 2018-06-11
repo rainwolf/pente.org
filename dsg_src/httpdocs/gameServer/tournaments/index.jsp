@@ -128,17 +128,17 @@ Tourney tbGo13x13 = getLastTBTourney(completedDetails, GridStateFactory.TB_GO13)
        </tr>
       </tr>
       <tr>
-        <td>Remember, remember, the 5th of November</td>
+        <td>Winter's Coming!</td>
         <td>Summer Renaissance (2017)</td>
         <td>Pente Masters (2017)</td>
       </tr>
       <tr>
-        <td><a href="../profile?viewName=brf">brf</a> <img src="/gameServer/images/bcrown.gif"></td>
+        <td><a href="../profile?viewName=ksackett">ksackett</a> <img src="/gameServer/images/bcrown.gif"></td>
         <td><a href="../profile?viewName=wilmar">wilmar</a> <img src="/gameServer/images/bcrown.gif"></td>
         <td><a href="../profile?viewName=lupulo">lupulo</a> <img src="/gameServer/images/scrown.gif"></td>
       </tr>
       <tr>
-        <td><img src="/gameServer/avatar?name=brf" style="width:125px;height:125px;"></td>
+        <td><img src="/gameServer/avatar?name=ksackett" style="width:125px;height:125px;"></td>
         <td><img src="/gameServer/avatar?name=wilmar" style="width:125px;height:125px;"></td>
         <td><img src="/gameServer/avatar?name=lupulo" style="width:125px;height:125px;"></td>
       </tr>

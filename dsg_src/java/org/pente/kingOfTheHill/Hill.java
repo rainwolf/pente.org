@@ -11,6 +11,10 @@ public class Hill {
     private List<Step> steps;
     private int hillID;
 
+    public Hill() {
+        steps = new ArrayList<>();
+    }
+
     public List<Step> getSteps() {
         return steps;
     }
@@ -180,7 +184,7 @@ public class Hill {
     }
 
     public Player getKingPlayer() {
-        if (getSteps().size() > 0 && getSteps().get(getSteps().size() - 1).getPlayers().size() == 1) {
+        if (getSteps() != null && getSteps().size() > 0 && getSteps().get(getSteps().size() - 1).getPlayers().size() == 1) {
             return getSteps().get(getSteps().size() - 1).getPlayers().get(0);
         }
         return null;
