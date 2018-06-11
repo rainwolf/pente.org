@@ -279,9 +279,10 @@ Collections.sort(waitingSets, new Comparator<TBSet>() {
       if (beginner1 && !beginner2) {
           return -1;
       } else if (!beginner1 && beginner2) {
-        return 1;
+          return 1;
       }
-      return o2.getCreationDate().compareTo(o1.getCreationDate());
+//      return o2.getCreationDate().compareTo(o1.getCreationDate());
+      return o1.getGame1().getGame() - o2.getGame1().getGame();
   }
 });
 
