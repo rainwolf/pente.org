@@ -35,7 +35,7 @@
                    </td>
             <% for (int i = 0; i < players.size(); i++) { %>
                    <td align="center" colspan="2" width="<%= width %>%">
-                     <font color="#808080">
+                     <font color="#808080"> 
                        <%= ((TourneyPlayerData) players.get(i)).getName() %>
                    </font></td>
             <% } %>
@@ -114,3 +114,59 @@
               <% } %>
               <br>
          <% } %>
+
+<% if (tourney.isTurnBased()) { %>
+<center>
+<table width="100%" cellspacing="0" cellpadding="1"  >
+    <%
+    r = 0;
+    for (Iterator it = round.getSections().iterator(); it.hasNext();) {
+        RoundRobinSection section = (RoundRobinSection) it.next();
+        List<TourneyMatch> matches = section.getMatches();
+        for (TourneyMatch m : matches) {
+            TourneyMatch m1 = section.getUnplayedMatch(m.getPlayer1().getPlayerID(), m.getPlayer2().getPlayerID());
+            TourneyMatch m2 = section.getUnplayedMatch(m.getPlayer2().getPlayerID(), m.getPlayer1().getPlayerID());
+            if (m1 != null || m2 != null) {
+                List<TBSet> sets = tbStorer.loadSets(m.getPlayer1().getPlayerID());
+                for (TBSet s : sets) {
+                    if (s.getGame1().getEventId() == eid && 
+                            s.getState() == TBSet.STATE_ACTIVE &&
+                            s.getGame1().getPlayer2Pid() == m.getPlayer2().getPlayerID()) {
+                        if (r == 0) {
+                            %> <tr> <%
+                        }
+                        if (s.getGame1().getState() == TBGame.STATE_ACTIVE) {
+                            TBGame game = s.getGame1(); 
+                            %> <td width="50%" align="center"> 
+                            <%@ include file="../tb/listedMobileGame.jsp" %>
+                            </td> <%
+                            r++;
+                        }
+                        if (r == 2) {
+                            %> </tr> <%
+                            r = 0;
+                        }
+                        if (r == 0) {
+                            %> <tr> <%
+                        }
+                        if (s.getGame2().getState() == TBGame.STATE_ACTIVE) {
+                            TBGame game = s.getGame2();
+                            %> <td width="50%" align="center">
+                                <%@ include file="../tb/listedMobileGame.jsp" %>
+                            </td> <%
+                            r++;
+                        }
+                        if (r == 2) {
+                            %> </tr> <%
+                            r = 0;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    %>
+</table>
+</center>
+<% } %>
