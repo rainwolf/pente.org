@@ -12,7 +12,8 @@
             if a player will advance to the next round, they will be highlighted
             in yellow.  More than one player can advance if there is a tie.<br>
             <br>
-            
+
+<center>
          <% for (Iterator it = round.getSections().iterator(); it.hasNext();) {
                boolean forfeit = false;
                RoundRobinSection section = (RoundRobinSection) it.next(); %>
@@ -116,12 +117,14 @@
          <% } %>
 
 <% if (tourney.isTurnBased()) { %>
-<center>
-<table width="100%" cellspacing="0" cellpadding="1"  >
     <%
-    r = 0;
     for (Iterator it = round.getSections().iterator(); it.hasNext();) {
+        r = 0;
         RoundRobinSection section = (RoundRobinSection) it.next();
+        
+        %> <p> <br> <table width="100%" cellspacing="0" cellpadding="1">
+        <b>Section <%= section.getSection() %>
+        <%
         List<TourneyMatch> matches = section.getMatches();
         for (TourneyMatch m : matches) {
             TourneyMatch m1 = section.getUnplayedMatch(m.getPlayer1().getPlayerID(), m.getPlayer2().getPlayerID());
@@ -137,12 +140,12 @@
                         }
                         if (s.getGame1().getState() == TBGame.STATE_ACTIVE) {
                             TBGame game = s.getGame1(); 
-                            %> <td width="50%" align="center"> 
+                            %> <td width="33%" align="center"> 
                             <%@ include file="../tb/listedMobileGame.jsp" %>
                             </td> <%
                             r++;
                         }
-                        if (r == 2) {
+                        if (r == 3) {
                             %> </tr> <%
                             r = 0;
                         }
@@ -151,22 +154,24 @@
                         }
                         if (s.getGame2().getState() == TBGame.STATE_ACTIVE) {
                             TBGame game = s.getGame2();
-                            %> <td width="50%" align="center">
+                            %> <td width="33%" align="center">
                                 <%@ include file="../tb/listedMobileGame.jsp" %>
                             </td> <%
                             r++;
                         }
-                        if (r == 2) {
+                        if (r == 3) {
                             %> </tr> <%
                             r = 0;
                         }
-                        break;
+                        if (!it.hasNext()) {
+                            %> </tr> <%
+                        }
                     }
                 }
             }
         }
+        %> </table> <br> </p> <%
     }
     %>
-</table>
 </center>
 <% } %>

@@ -162,7 +162,7 @@ Tourney tbPenteMasters = getLastPenteMastersTBTourney(completedDetails);
   <td align="center">
      <table width="80%" border="1" cellpadding="2" cellspacing="0" bordercolor="black">
        <tr bgcolor="<%= bgColor1 %>">
-        <td align="center"><font color="white">TB Pente</font></td>
+        <td align="center"><font color="white">TB Pente Open</font></td>
         <td align="center"><font color="white">TB Pente (below 1800)</font></td>
         <td align="center"><font color="white">TB Pente (1800 and over)</font></td>
        </tr>
