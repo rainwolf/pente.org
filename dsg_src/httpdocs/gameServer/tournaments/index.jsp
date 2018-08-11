@@ -162,9 +162,9 @@ Tourney tbPenteMasters = getLastPenteMastersTBTourney(completedDetails);
   <td align="center">
      <table width="80%" border="1" cellpadding="2" cellspacing="0" bordercolor="black">
        <tr bgcolor="<%= bgColor1 %>">
-        <td align="center"><font color="white">TB Pente Open</font></td>
-        <td align="center"><font color="white">TB Pente (below 1800)</font></td>
-        <td align="center"><font color="white">TB Pente (1800 and over)</font></td>
+        <td align="center" width="33%"><font color="white">TB Pente Open</font></td>
+        <td align="center" width="33%"><font color="white">TB Pente (below 1800)</font></td>
+        <td align="center" width="33%"><font color="white">TB Pente (1800 and over)</font></td>
        </tr>
       </tr>
       <tr>
@@ -194,10 +194,10 @@ Tourney tbPenteMasters = getLastPenteMastersTBTourney(completedDetails);
         <td align="center">
             <table width="100%" border="1" cellpadding="2" cellspacing="0" bordercolor="black">
                 <tr bgcolor="<%= bgColor1 %>">
-                    <td align="center"><font color="white">TB Gomoku</font></td>
-                    <td align="center"><font color="white">TB Boat-Pente</font></td>
-                    <td align="center"><font color="white">TB Connect6</font></td>
-                    <td align="center"><font color="white">TB D-Pente</font></td>
+                    <td align="center" width="25%"><font color="white">TB Gomoku</font></td>
+                    <td align="center" width="25%"><font color="white">TB Boat-Pente</font></td>
+                    <td align="center" width="25%"><font color="white">TB Connect6</font></td>
+                    <td align="center" width="25%"><font color="white">TB D-Pente</font></td>
                 </tr>
                 </tr>
                 <tr>
@@ -255,9 +255,9 @@ Tourney tbPenteMasters = getLastPenteMastersTBTourney(completedDetails);
         <td align="center">
             <table width="80%" border="1" cellpadding="2" cellspacing="0" bordercolor="black">
                 <tr bgcolor="<%= bgColor1 %>">
-                    <td align="center"><font color="white">TB Go</font></td>
-                    <td align="center"><font color="white">TB Go (9x9)</font></td>
-                    <td align="center"><font color="white">TB Go (13x13)</font></td>
+                    <td align="center" width="33%"><font color="white">TB Go</font></td>
+                    <td align="center" width="33%"><font color="white">TB Go (9x9)</font></td>
+                    <td align="center" width="33%"><font color="white">TB Go (13x13)</font></td>
                 </tr>
                 <tr>
                     <td align="center"><a href="statusRound.jsp?eid=<%= tbGo.getEventID() %>&round=<%= tbGo.getNumRounds() %>"><%=tbGo.getName()%></a></td>
