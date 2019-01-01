@@ -70,7 +70,7 @@
                                   res += "*";
                               }
                               if (!res.equals("-") && !res.endsWith("*")) {
-                                  res = "<a href=/gameServer/viewLiveGame?g=" + results[i][j * 6 + 2] + ">" +
+                                  res = "<a href=/gameServer/viewLiveGame?mobile&g=" + results[i][j * 6 + 2] + ">" +
                                       res + "</a>";
                               }
                            %>
@@ -93,7 +93,7 @@
                               }
                               
                               if (!res.equals("-") && !res.endsWith("*")) {
-                                  res = "<a href=/gameServer/viewLiveGame?g=" + results[i][j * 6 + 5] + "><font color=white>" +
+                                  res = "<a href=/gameServer/viewLiveGame?mobile&g=" + results[i][j * 6 + 5] + "><font color=white>" +
                                       res + "</font></a>";
                               }
                            %>
@@ -126,6 +126,7 @@
         <b>Section <%= section.getSection() %>
         <%
         List<TourneyMatch> matches = section.getMatches();
+        %> <tr> <%
         for (TourneyMatch m : matches) {
             TourneyMatch m1 = section.getUnplayedMatch(m.getPlayer1().getPlayerID(), m.getPlayer2().getPlayerID());
             TourneyMatch m2 = section.getUnplayedMatch(m.getPlayer2().getPlayerID(), m.getPlayer1().getPlayerID());
@@ -135,9 +136,6 @@
                     if (s.getGame1().getEventId() == eid && 
                             s.getState() == TBSet.STATE_ACTIVE &&
                             s.getGame1().getPlayer2Pid() == m.getPlayer2().getPlayerID()) {
-                        if (r == 0) {
-                            %> <tr> <%
-                        }
                         if (s.getGame1().getState() == TBGame.STATE_ACTIVE) {
                             TBGame game = s.getGame1(); 
                             %> <td width="33%" align="center"> 
@@ -146,11 +144,8 @@
                             r++;
                         }
                         if (r == 3) {
-                            %> </tr> <%
+                            %> </tr> <tr> <%
                             r = 0;
-                        }
-                        if (r == 0) {
-                            %> <tr> <%
                         }
                         if (s.getGame2().getState() == TBGame.STATE_ACTIVE) {
                             TBGame game = s.getGame2();
@@ -160,16 +155,14 @@
                             r++;
                         }
                         if (r == 3) {
-                            %> </tr> <%
+                            %> </tr> <tr> <%
                             r = 0;
-                        }
-                        if (!it.hasNext()) {
-                            %> </tr> <%
                         }
                     }
                 }
             }
         }
+        %> </tr> <%
         %> </table> <br> </p> <%
     }
     %>

@@ -1280,7 +1280,7 @@ public class MySQLTBGameStorer implements TBGameStorer {
 		Connection con = null;
 		PreparedStatement stmt = null;
 		ResultSet result = null;
-		int hoursLeft = FLOATINGVACATIONDAYS*24;;
+		int hoursLeft = FLOATINGVACATIONDAYS*24;
 		Date lastPinchDate = null;
 		TBVacation vacation = new TBVacation();
 

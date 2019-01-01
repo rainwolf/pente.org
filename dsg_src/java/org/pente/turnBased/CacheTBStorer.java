@@ -15,6 +15,8 @@ import org.pente.kingOfTheHill.*;
 import org.apache.log4j.*;
 import org.pente.notifications.NotificationServer;
 
+import static org.pente.turnBased.MySQLTBGameStorer.FLOATINGVACATIONDAYS;
+
 public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
 	private Category log4j = Category.getInstance(CacheTBStorer.class.getName());
@@ -623,7 +625,18 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 		if (vacation == null) {
 			vacation = baseStorer.getTBVacation(pid);
 			this.vacationPerPlayer.put(pid, vacation);
-		}
+		} else {
+            Calendar now = Calendar.getInstance();
+            int currentYear = now.get(Calendar.YEAR);
+            Calendar storedLastPinch = Calendar.getInstance();
+            storedLastPinch.setTime(vacation.getLastPinched());
+            int lastPinchYear = storedLastPinch.get(Calendar.YEAR);
+            if (currentYear != lastPinchYear) {
+                vacation.setHoursLeft(MySQLTBGameStorer.FLOATINGVACATIONDAYS*24);
+                vacation.setLastPinched(now.getTime());
+                ((MySQLTBGameStorer) baseStorer).storeTBVacation(pid, vacation);
+            }
+        }
 		return vacation;
 	}
 	
