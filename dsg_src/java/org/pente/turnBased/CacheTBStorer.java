@@ -625,7 +625,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 		if (vacation == null) {
 			vacation = baseStorer.getTBVacation(pid);
 			this.vacationPerPlayer.put(pid, vacation);
-		} else {
+		} else if (vacation.getLastPinched() != null) {
             Calendar now = Calendar.getInstance();
             int currentYear = now.get(Calendar.YEAR);
             Calendar storedLastPinch = Calendar.getInstance();

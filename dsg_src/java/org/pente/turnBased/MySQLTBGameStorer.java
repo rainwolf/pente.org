@@ -1307,8 +1307,8 @@ public class MySQLTBGameStorer implements TBGameStorer {
 
 						if (lastPinchYear == currentYear) {
 							hoursLeft = result.getInt(1);
-							vacation.setLastPinched(lastPinchDate);
 						}
+                        vacation.setLastPinched(lastPinchDate);
 					}
 				}
 
