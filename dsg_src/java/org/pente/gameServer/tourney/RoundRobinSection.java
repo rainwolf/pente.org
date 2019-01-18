@@ -149,6 +149,31 @@ public class RoundRobinSection extends TourneySection {
             //if we made it here we have a winner
             winners[i] = true;
         }
+
+        if (round.getNumSections() == 1) {
+            boolean moreThanOneMaxScore = true;
+            long currentMaxWins = 0;
+            int maxIdx = -1;
+            for (int i = 0; i < getNumPlayers(); i++) {
+//                long score = results[i][results[i].length - 1];
+                long score = wins[i];
+                if (score > currentMaxWins) {
+                    currentMaxWins = score;
+                    moreThanOneMaxScore = false;
+                    maxIdx = i;
+                } else if (score == currentMaxWins) {
+                    currentMaxWins = score;
+                    moreThanOneMaxScore = true;
+                }
+            }
+            if (!moreThanOneMaxScore) {
+                for (int i = 0; i < winners.length; i++) {
+                    if (i != maxIdx) {
+                        winners[i] = false;
+                    }
+                }
+            }
+        }
     }
     
     public List getWinners() {
