@@ -380,7 +380,7 @@ amImember = hill.hasPlayer(myPID); %>
 for (int gameInt: CacheKOTHStorer.liveGames) {
 if (gameInt%2 == 0) { continue; }
 hill = kothStorer.getHill(gameInt);
-if (hill == null) {
+if (hill == null || hill.getMembers().size() == 0) {
     continue;
 }
 kingPid = hill.getKing();
@@ -391,7 +391,7 @@ amImember = hill.hasPlayer(myPID); %>
 for (int gameInt: CacheKOTHStorer.liveGames) {
 if (gameInt%2 == 1) { continue; }
 hill = kothStorer.getHill(gameInt);
-if (hill == null) {
+if (hill == null || hill.getMembers().size() == 0) {
     continue;
 }
 kingPid = hill.getKing();
