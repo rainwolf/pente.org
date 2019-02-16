@@ -82,11 +82,7 @@ D-Pente is a variation of Pente proposed by Don Banks. Again the reason
 for the variation is to make the game more fair for player 2. This variation is
 very different from the others however.<br>
 <br>
-Play starts with white's first move at
-the middle as always.  After that move however, player 1 continues to be in
-control and places the next stone for his/her opponent.  Player 1 continues to
-be in control and places the second move for each player. (So player 1 makes the
-first 4 moves of the game, but the stone colors still alternate).  At this point
+Player 1 places the 1st 4 moves on the board, 2 white stones, and 2 black stones.  At this point
 in the game player 2 gets control.  Player 2 decides to continue playing as
 player 2, or decides to <b>swap</b> seats and take over as player 1!  After that
 decision is made, play continues just as in Pente with whoever is now player 1

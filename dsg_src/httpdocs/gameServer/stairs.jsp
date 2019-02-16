@@ -379,8 +379,8 @@ if (hill != null && iAmMember && game > 50 && (dsgPlayerData.hasPlayerDonated() 
       <% for (int gameInt: CacheKOTHStorer.liveGames) {
       		if (gameInt%2 == 0) { continue; }
 			hill = kothStorer.getHill(gameInt);
-			if (hill != null) { 
-			color += 1;
+          if (hill != null && hill.getMembers().size()>0) {
+              color += 1;
 			%>
 			<tr <%=(color%2 == 0)?"bgcolor=\"#deecde\"":""%>>
             <td align="right">
@@ -403,7 +403,7 @@ if (hill != null && iAmMember && game > 50 && (dsgPlayerData.hasPlayerDonated() 
       <% for (int gameInt: CacheKOTHStorer.liveGames) {
       		if (gameInt%2 == 1) { continue; }
 			hill = kothStorer.getHill(gameInt);
-			if (hill != null) { 
+			if (hill != null && hill.getMembers().size()>0) { 
 			color += 1;
 			%>
 			<tr <%=(color%2 == 0)?"bgcolor=\"#deecde\"":""%>>
