@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.*;
+import javax.websocket.server.ServerContainer;
+import javax.websocket.server.ServerEndpointConfig;
 
 import org.apache.log4j.*;
 
@@ -33,6 +35,7 @@ import org.pente.game.*;
 import org.pente.gameDatabase.*;
 import org.pente.gameServer.core.*;
 import org.pente.gameServer.client.web.*;
+import org.pente.gameServer.event.WebSocketEndpoint;
 import org.pente.gameServer.tourney.*;
 import org.pente.notifications.CacheNotificationServer;
 import org.pente.notifications.MySQLNotificationServer;
@@ -241,11 +244,19 @@ public class DSGContextListener implements ServletContextListener {
             try {
                 List serverData = MySQLServerStorer.getActiveServers(
                     resources.getDbHandler(), resources.getGameVenueStorer());
+
+                ServerContainer serverContainer = (ServerContainer) ctx.getAttribute("javax.websocket.server.ServerContainer");
+
                 for (Iterator it = serverData.iterator(); it.hasNext();) {
                     ServerData data = (ServerData) it.next();
                     Server server = new Server(resources, data);
                     resources.addServer(server);
                     log4j.info("Server " + data + " started.");
+                    ServerEndpointConfig.Configurator configurator = new WebSocketConfigurator(server);
+                    ServerEndpointConfig sec = ServerEndpointConfig.Builder.
+                            create(WebSocketEndpoint.class, "/websocketServer/"+data.getName()).
+                            configurator(configurator).build();
+                    serverContainer.addEndpoint(sec);
                 }
                 
                 log4j.info("Servers ready.");
