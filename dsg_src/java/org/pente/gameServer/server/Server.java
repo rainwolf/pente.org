@@ -32,6 +32,8 @@ import org.pente.kingOfTheHill.*;
 
 import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLServerSocketFactory;
+import javax.websocket.Session;
+import javax.websocket.server.ServerContainer;
 
 
 /** A simple class to contain the necessary components that make up the server
@@ -78,6 +80,12 @@ public class Server {
 
     private CacheKOTHStorer kothStorer;
     
+    private ServerContainer serverContainer;
+
+    public void setServerContainer(ServerContainer serverContainer) {
+        this.serverContainer = serverContainer;
+    }
+
     public Server(Resources resources,
                   ServerData serverData) throws Throwable {
 
@@ -164,6 +172,8 @@ public class Server {
             }
         }, "DSG Server [" + name + "]");
         gameThread.start();
+
+
     }
 
     public boolean allowAccess(String player) {
@@ -187,6 +197,27 @@ public class Server {
         }
     }
 
+//    For WebSockets
+    public WebSocketDSGEventHandler addPlayerWebSocketSession(Session session) {
+        WebSocketDSGEventHandler socketDSGEventHandler = 
+                new WebSocketDSGEventHandler(session);
+        log4j.info("Websocket Connection from " + socketDSGEventHandler.getHostAddress());
+        ServerPlayer serverPlayer =
+                new ServerPlayer(this,
+                        dsgEventToPlayerRouter,
+                        socketDSGEventHandler,
+                        dsgPlayerStorer,
+                        loginHandler,
+                        pingManager,
+                        serverStatsHandler,
+                        aiDataCollection,
+                        passwordHelper,
+                        activityLogger);
+        socketDSGEventHandler.addListener(serverPlayer);
+        return socketDSGEventHandler;
+    }
+    
+//    For TCP sockets
     public void addPlayerSocket(Socket socket) {
 
         ServerSocketDSGEventHandler socketDSGEventHandler = 

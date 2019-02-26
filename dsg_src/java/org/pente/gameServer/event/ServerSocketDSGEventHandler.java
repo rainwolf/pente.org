@@ -55,6 +55,9 @@ public class ServerSocketDSGEventHandler extends SocketDSGEventHandler {
         super.go();
     }
 
+    public ServerSocketDSGEventHandler() {
+    }
+
     public void setPlayerName(String playerName) {
         this.playerName = playerName;
     }
