@@ -4,11 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.pente.gameServer.core.DSGPlayerData;
 import org.pente.gameServer.core.DSGPlayerGameData;
-import org.pente.gameServer.core.SynchronizedQueue;
 
 import javax.websocket.Session;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.Vector;
 
 public class WebSocketDSGEventHandler extends ServerSocketDSGEventHandler {
