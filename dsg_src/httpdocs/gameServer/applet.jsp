@@ -200,9 +200,13 @@ String appletFore="#C2E1CA";
 	    Your browser does not support java or is not configured properly to
 	    run java programs.<br>
 	    <br>
-	    <b><a href="javascript:helpWin('faqAppletTroubleShooting');">
-          Applet Troubleshooting</font></a></b>
 	  </font>
+        <center>
+            <h1>
+                To access the game room, please use the install link and not the "join game room" button.
+                <br>If you do not have Java installed, please download and install it from <a href="java.com">java.com</a> first.
+            </h1>
+        </center>
 	  
     </applet>
 
