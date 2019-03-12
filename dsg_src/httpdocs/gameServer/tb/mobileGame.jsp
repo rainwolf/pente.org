@@ -586,6 +586,8 @@
                 var cycleCheck = <%=((request.getParameter("cycle") != null)?"true":"false")%>;
                 var cycleStr = <%=((request.getParameter("cycle") != null)?"\"&cycle\"":"\"\"")%>;
                 var hideStr = "";
+                
+                var touching = false;
 
                 document.onkeydown = leftRight;
 
@@ -649,6 +651,7 @@
                 }
 
                 function touchStart(evt) {
+                    touching = true;
                     if (game === 63) {
                         stoneColor = (((moves.length - 1) % 4) === 0);
                     } else {
@@ -661,13 +664,17 @@
                                 newMoves.push(c6Move1);
                             }
                         }
-                        if ((game === 57 || game === 67) && moves.length === 1) {
+                        if ((game === 57 || game === 67) && moves.length === 0) {
                             if (dPenteMove1 === -1) {
                             } else if (dPenteMove2 === -1) {
                                 newMoves.push(dPenteMove1);
+                            } else if (dPenteMove3 === -1) {
+                                newMoves.push(dPenteMove1);
+                                newMoves.push(dPenteMove2);
                             } else {
                                 newMoves.push(dPenteMove1);
                                 newMoves.push(dPenteMove2);
+                                newMoves.push(dPenteMove3);
                             }
                         }
                         if (game === 63) {
@@ -783,15 +790,19 @@
                                 }
                             }
                             if ((game === 57 || game === 67) && moves.length === 0) {
+                                // alert("touch");
                                 if (dPenteMove1 === -1) {
                                     dPenteMove1 = playedMove;
                                 } else if (dPenteMove2 === -1) {
                                     newMoves.push(dPenteMove1);
                                     dPenteMove2 = playedMove;
                                 } else if (dPenteMove3 === -1) {
+                                    newMoves.push(dPenteMove1);
                                     newMoves.push(dPenteMove2);
                                     dPenteMove3 = playedMove;
                                 } else {
+                                    newMoves.push(dPenteMove1);
+                                    newMoves.push(dPenteMove2);
                                     newMoves.push(dPenteMove3);
                                     dPenteMove4 = playedMove;
                                 }
@@ -855,6 +866,9 @@
                 }
 
                 function boardClick(e) {
+                    if (touching) {
+                        return;
+                    }
                     if (currentMove !== -1) {
                         var cell = document.getElementById('' + currentMove);
                         cell.style.background = '#FFF';
@@ -895,6 +909,7 @@
                                 }
                             }
                             if ((game === 57 || game === 67) && moves.length === 0) {
+                                // alert("click");
                                 if (dPenteMove1 === -1) {
                                     dPenteMove1 = playedMove;
                                 } else if (dPenteMove2 === -1) {
