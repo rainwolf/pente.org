@@ -1,33 +1,62 @@
-.App {
-  text-align: center;
+.boardline {
+    stroke: #222bff;
+    stroke-width: 1px;
+    pointer-events: none;
 }
 
-.App-logo {
-  animation: App-logo-spin infinite 20s linear;
-  height: 40vmin;
-  pointer-events: none;
+.boardcircle {
+    stroke: #222bff;
+    stroke-width: 1px;
+    pointer-events: none;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.boarddot {
+    stroke: #222bff;
+    fill: #222bff;
+    stroke-width: 1px;
+    pointer-events: none;
 }
 
-.App-link {
-  color: #61dafb;
+.board {
+    user-drag: none;
+    user-select: none;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+#black-stone-gradient {
+    --color1: grey;
+    --color2: black;
+}
+#white-stone-gradient {
+    --color1: white;
+    --color2: gainsboro;
+}
+.pente {
+    fill: #FDDEA3;
+}
+.keryo-pente {
+    fill: #BAFDA3;
+}
+.gomoku {
+    fill: #A3FDEB;
+}
+.d-pente {
+    fill: #A3CDFD;
+}
+.g-pente {
+    fill: #AEA3FD;
+}
+.poof-pente {
+    fill: #EDA3FD;
+}
+.connect6 {
+    fill: #EDA3FD;
+}
+.boat-pente {
+    fill: #25BAFF;
+}
+.dk-pente {
+    fill: #FFA500;
+}
+.go {
+    fill: #FAC832;
 }
