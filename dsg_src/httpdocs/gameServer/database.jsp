@@ -514,7 +514,7 @@ var imagePath = "<%= request.getContextPath() %>/gameServer/images/";
         table[0][3].append("<input type=\"text\" name=\"" + SimpleGameStorerSearchRequestFilterFormat.PLAYER_1_NAME_PARAM +  "\" value=\"" + player1Name + "\" placeholder=\"comma-separated list/wildcards\" size=\"25\" tabindex=\""+(tabIdx++)+"\">");
         table[0][3].append("&nbsp<select name=\"" + SimpleGameStorerSearchRequestFilterFormat.P1RATING_PARAM + "\" tabindex=\""+(tabIdx++)+"\">");
         table[0][3].append("<option value=\"0\">0</option>");
-        for (int i = 1600; i < 2800; i += 100) {
+        for (int i = 1600; i < 3000; i += 100) {
             table[0][3].append("<option value=\"" + i + "\"");
             if (filterData.getRatingP1Above() == i) {
                 table[0][3].append(" selected");
@@ -527,7 +527,7 @@ var imagePath = "<%= request.getContextPath() %>/gameServer/images/";
         table[1][3].append("<input type=\"text\" name=\"" + SimpleGameStorerSearchRequestFilterFormat.PLAYER_2_NAME_PARAM + "\" value=\"" + player2Name + "\" placeholder=\"comma-separated list/wildcards\" size=\"25\" tabindex=\""+(tabIdx++)+"\">");
         table[1][3].append("&nbsp<select name=\"" + SimpleGameStorerSearchRequestFilterFormat.P2RATING_PARAM + "\" tabindex=\""+(tabIdx++)+"\">");
         table[1][3].append("<option value=\"0\">0</option>");
-        for (int i = 1600; i < 2800; i += 100) {
+        for (int i = 1600; i < 3000; i += 100) {
             table[1][3].append("<option value=\"" + i + "\"");
             if (filterData.getRatingP2Above() == i) {
                 table[1][3].append(" selected");
