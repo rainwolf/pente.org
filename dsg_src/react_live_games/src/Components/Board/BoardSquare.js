@@ -1,21 +1,17 @@
 import React, { Component } from 'react';
-
+import stone from './Stone';
 
 
 class BoardSquare extends Component {
     constructor(props) {
         super(props);
-        const gridsize = props.gridsize,
-            y = props.size*Math.floor(parseInt(props.id)/gridsize),
-            x = props.size*(parseInt(props.id)%gridsize);
         this.state = {
             showStone: false,
-            x: x,
-            y: y,
-            canInteract: props.canInteract,
-            mouseID: 'white-stone-gradient'
+            // mouseID: this.props.hover
         }
     }
+    
+    
     
     up(size, transform) {
         return (
@@ -37,7 +33,8 @@ class BoardSquare extends Component {
     upperrightcorner(size) { return ( [this.left(size), this.down(size)] ) }
     bottomleftcorner(size) { return ( [this.up(size), this.right(size)] ) }
     bottomrightcorner(size) { return ( [this.up(size), this.left(size)] ) }
-    crosscircle(size) { return ( [<circle className='boardcircle' key={this.props.id + 'circle'} cx={size/2} cy={size/2} r={size/6} />, 
+    crosscircle(size) { return ( [<circle className='boardcircle' key={this.props.id + 'circle'} 
+                                          cx={size/2} cy={size/2} r={size/5} fill='none'/>, 
         this.up(size), this.left(size), this.right(size), this.down(size)] ) }
     crossdot(size) { return ( [this.up(size), this.left(size), this.right(size), this.down(size), 
         <circle className='boarddot' key={this.props.id + 'dot'} cx={size/2} cy={size/2} r={size/8} />] ) }
@@ -57,43 +54,28 @@ class BoardSquare extends Component {
         }
     }
     enterExitHandler(e) {
-        if (! this.state.canInteract) { return; }
+        if (this.props.clickHandler === undefined) { return; }
         this.setState( { ...this.state, showStone: !this.state.showStone })
     }
     clickHandler(e) {
-        console.log(e.target.id)
-        const newState = this.state;
-        if (this.state.mouseID === 'white-stone-gradient') {
-            newState.mouseID = 'black-stone-gradient';
-        } else {
-            newState.mouseID = 'white-stone-gradient';            
-        }
-        this.setState(newState);
+        if (this.props.clickHandler === undefined) { return; }
+        this.props.clickHandler(e.target.id);
+        // const newState = this.state;
+        // if (this.state.mouseID === 'white-stone-gradient') {
+        //     newState.mouseID = 'black-stone-gradient';
+        // } else {
+        //     newState.mouseID = 'white-stone-gradient';            
+        // }
+        // this.setState(newState);
     }
 
-    mouseStone(size) {
-        let id = this.state.mouseID;
-        return (
-            <svg key={1} height={size*1.5} width={size*1.5}>
-                <radialGradient id={id} cx="33.33%" cy="33.33%" r="33.33%" fx="25%" fy="25%">
-                    <stop offset="0%" stopColor='var(--color1)' />
-                    <stop offset="100%" stopColor='var(--color2)' />
-                </radialGradient>
-                <filter id="f2" x="0" y="0" width="150%" height="150%">
-                    <feOffset result="offOut" in="SourceAlpha" dx={4} dy={4} />
-                    <feGaussianBlur result="blurOut" in="offOut" stdDeviation="3" />
-                    <feBlend in="SourceGraphic" in2="blurOut" mode="normal" />
-                </filter>
-                <circle cx={size/2} cy={size/2} r={size/2} 
-                        fill={"url(#"+id+")"} fillOpacity="0.60" 
-                        pointerEvents={'none'} filter={"url(#f2)"}/>
-            </svg>
-        );
-    }
     
     render () {
+        const gridsize = this.props.gridsize,
+            y = this.props.size*Math.floor(parseInt(this.props.id)/gridsize),
+            x = this.props.size*(parseInt(this.props.id)%gridsize);
         return (
-            <svg key={this.props.id} x={this.state.x} y={this.state.y} 
+            <svg key={this.props.id} x={x} y={y} 
                  height={this.props.size*1.5} width={this.props.size*1.5}
                  onMouseEnter={this.enterExitHandler.bind(this)}
                  onMouseLeave={this.enterExitHandler.bind(this)}
@@ -102,7 +84,7 @@ class BoardSquare extends Component {
                 <rect id={this.props.id} width={this.props.size+1} height={this.props.size+1}
                        fillOpacity={0.0} />
                 {this.boardpart(this.props.size)}
-                {this.state.showStone?this.mouseStone(this.props.size):""}
+                {this.state.showStone?stone({size: this.props.size, id: this.props.hover, opacity: 0.6}):""}
             </svg>
         )
     }
