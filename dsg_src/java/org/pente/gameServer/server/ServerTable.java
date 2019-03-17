@@ -111,7 +111,7 @@ public class ServerTable {
 	 *     number given by the time up timer.
 	 */
 	private int waitingForPlayerToReturnSeqNbr;
-	private static final int WAITING_FOR_PLAYER_TO_RETURN_TIMEOUT = 7;
+	private static final int WAITING_FOR_PLAYER_TO_RETURN_TIMEOUT = 1;
 	private boolean waitingForPlayerToReturnTimeUp;
 	private GameTimer waitingForPlayerToReturnTimer;
 

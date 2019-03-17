@@ -254,7 +254,7 @@ public class DSGContextListener implements ServletContextListener {
                     log4j.info("Server " + data + " started.");
                     ServerEndpointConfig.Configurator configurator = new WebSocketConfigurator(server);
                     ServerEndpointConfig sec = ServerEndpointConfig.Builder.
-                            create(WebSocketEndpoint.class, "/websocketServer/"+data.getName()).
+                            create(WebSocketEndpoint.class, "/websocketServer/"+data.getPort()).
                             configurator(configurator).build();
                     serverContainer.addEndpoint(sec);
                 }
