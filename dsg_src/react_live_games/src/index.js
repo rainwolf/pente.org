@@ -6,9 +6,20 @@ import { createStore, applyMiddleware } from 'redux';
 import { Provider } from 'react-redux';
 import * as serviceWorker from './serviceWorker';
 import liveGameApp from './redux_reducers/rootReducer';
-import websocket from '@giantmachines/redux-websocket';
+import websocket, { WEBSOCKET_MESSAGE, WEBSOCKET_SEND } from '@giantmachines/redux-websocket';
 
-const store = createStore(liveGameApp, applyMiddleware(websocket));
+// ping middleware to respond to pings
+const pinger = store => next => action => {
+    let result = next(action);
+    if (action.type === WEBSOCKET_MESSAGE && action.payload.data.indexOf('dsgPingEvent') > -1) {
+        const replyPing = { type: WEBSOCKET_SEND, payload: JSON.parse(action.payload.data) };
+        replyPing.type = WEBSOCKET_SEND;
+        store.dispatch(replyPing);
+    }
+    return result
+};
+
+const store = createStore(liveGameApp, applyMiddleware(websocket, pinger));
 
 ReactDOM.render(
     <Provider store={store}>
