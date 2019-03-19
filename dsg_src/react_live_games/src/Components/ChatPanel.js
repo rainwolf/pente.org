@@ -1,0 +1,52 @@
+import React from 'react';
+import PropTypes from 'prop-types';
+import { withStyles } from '@material-ui/core/styles';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import ListItemAvatar from '@material-ui/core/ListItemAvatar';
+import Avatar from '@material-ui/core/Avatar';
+// import Typography from '@material-ui/core/Typography';
+
+const styles = theme => ({
+    root: {
+        width: '100%',
+        maxWidth: 360,
+        backgroundColor: theme.palette.background.paper,
+    },
+    inline: {
+        display: 'inline',
+    },
+});
+
+function ChatPanel(props) {
+    const { classes, messages } = props;
+    return (
+        <List className={classes.root}>
+            {messages.map((message, i) => (
+                <ListItem key={i} alignItems="flex-start">
+                    <ListItemAvatar>
+                        <Avatar alt="Remy Sharp" src={message.player.avatar} />
+                    </ListItemAvatar>
+                    <ListItemText
+                        primary={message.player.userhtml}
+                        secondary={' - ' + message.message}
+                    />
+                </ListItem>
+
+            ))}
+        </List>
+    );
+}
+
+ChatPanel.propTypes = {
+    classes: PropTypes.object.isRequired,
+    messages: PropTypes.arrayOf(
+        PropTypes.shape({
+            message: PropTypes.string.isRequired,
+            // player: 
+        }).isRequired
+    ).isRequired
+};
+
+export default withStyles(styles)(ChatPanel);
