@@ -1,18 +1,23 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { send_message } from "../redux_actions/actionTypes";
+import PropTypes from 'prop-types';
+import ChatInput from '../Components/ChatInput';
+import ChatPanel from '../Components/ChatPanel';
+import PlayersList from '../Components/PlayersList';
 
 const mapStateToProps = state => {
-    return {
-        users: state.users,
-        connected: state.connected,
-        logged_in: state.logged_in
-    }
+        return {
+            users: state.users,
+            connected: state.connected,
+            logged_in: state.logged_in,
+            messages: state.room_messages
+        }
 };
 
 const mapDispatchToProps = dispatch => {
     return {
-        login: message => {
+        send_message: message => {
             dispatch(send_message(message));
         }
     }
@@ -22,30 +27,40 @@ const mapDispatchToProps = dispatch => {
 class UnconnectedRoom extends Component {
 
     componentDidUpdate() {
-        const {connected, logged_in, login} = this.props;
+        const {connected, logged_in, send_message} = this.props;
         // console.log("meep connected: " + connected + " logged in: "+ logged_in);
         if (connected && !logged_in) {
-            const json = JSON.parse('{"dsgLoginEvent":{"player":"rainwolf","password":"","guest":false,"time":0}}');
-            login(json);
+            // const json = JSON.parse('{"dsgLoginEvent":{"player":"rainwolf","password":"***REMOVED***","guest":false,"time":0}}');
+            // send_message(json);
+            send_message({dsgLoginEvent: {player: "rainwolf", password: "***REMOVED***", guest: false, time: 0}});
         }
     }
 
+    sendRoomText(event) {
+        const str = event.target.value;
+        if(event.key === 'Enter' && str !== '') {
+            // send_message({dsgJoinTableEvent: {table: -1, time: 0}});
+            this.props.send_message({dsgTextMainRoomEvent: {text: str, time: 0}});
+            event.target.value = "";
+        }
+    }
 
     render () {
-        const {users, connected, logged_in} = this.props;
+        const {users, connected, logged_in, messages} = this.props;
         if (logged_in) {
             return (
                 <div align="center">
                     <h1>Logged in... bloop</h1>
-                    <div>
-                        {Object.keys(users).map(user => users[user].name)}
-                    </div>
+                    <PlayersList players={users} />
+                    <ChatPanel messages={messages}/>
+                    <ChatInput sendHandler={this.sendRoomText.bind(this)}/>
                 </div>
             )
         } else if (connected) {
             return (
                 <div align="center">
-                    <h1>Connected... bleep</h1>
+                    <h1>Connected...</h1>
+                    (if you see this message longer than a few seconds, reload this page)
                 </div>
             )
         } else {
@@ -59,5 +74,21 @@ class UnconnectedRoom extends Component {
 }
 
 const Room = connect(mapStateToProps, mapDispatchToProps)(UnconnectedRoom);
+
+UnconnectedRoom.propTypes = {
+    users: PropTypes.objectOf(    
+        PropTypes.shape({
+            name: PropTypes.string.isRequired,
+            game_ratings: PropTypes.objectOf(PropTypes.number.isRequired).isRequired,
+            subscriber: PropTypes.bool.isRequired,
+            name_color: PropTypes.number.isRequired,
+            crown: PropTypes.number.isRequired
+        }).isRequired
+    ).isRequired,
+    // users: PropTypes.objectOf(PropTypes.string).isRequired,
+    connected: PropTypes.bool.isRequired,
+    logged_in: PropTypes.bool.isRequired,
+    messages: PropTypes.arrayOf(String).isRequired
+};
 
 export default Room;
