@@ -5,6 +5,7 @@
   "proxy": "https://development.pente.org",
   "dependencies": {
     "@giantmachines/redux-websocket": "^0.3.0",
+    "@material-ui/core": "^3.9.2",
     "http-proxy-middleware": "^0.19.1",
     "react": "^16.8.4",
     "react-dom": "^16.8.4",
