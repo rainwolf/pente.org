@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
@@ -11,31 +11,35 @@ import Avatar from '@material-ui/core/Avatar';
 const styles = theme => ({
     root: {
         width: '100%',
-        maxWidth: 360,
+        maxWidth: '100%',
         backgroundColor: theme.palette.background.paper,
-    },
-    inline: {
-        display: 'inline',
-    },
+    }
 });
 
 function ChatPanel(props) {
+    
+    // useEffect(() => {
+    //     let element = document.getElementById('chatdiv0');
+    //     element.scrollTop = element.scrollHeight;
+    // });
+    
     const { classes, messages } = props;
     return (
-        <List className={classes.root}>
-            {messages.map((message, i) => (
-                <ListItem key={i} alignItems="flex-start">
-                    <ListItemAvatar>
-                        <Avatar alt="Remy Sharp" src={message.player.avatar} />
-                    </ListItemAvatar>
-                    <ListItemText
-                        primary={message.player.userhtml}
-                        secondary={' - ' + message.message}
-                    />
-                </ListItem>
+            <List className={classes.root}>
+                {messages.map((message, i) => (
+                    <ListItem key={i} alignItems="flex-start">
+                        <ListItemAvatar>
+                            <Avatar alt="avatar" src={message.player.avatar} />
+                        </ListItemAvatar>
+                        <ListItemText
+                            primary={message.player.userhtml}
+                            secondary={' - ' + message.message}
+                            style={{wordWrap: 'break-word'}}
+                        />
+                    </ListItem>
 
-            ))}
-        </List>
+                ))}
+            </List>
     );
 }
 

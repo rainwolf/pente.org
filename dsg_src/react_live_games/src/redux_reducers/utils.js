@@ -108,7 +108,6 @@ export function addRoomMessage(data, state) {
 }
 
 export function exitUser(name, state) {
-    let users = { ...state.users }
-    delete users[name];
-    state.users = users;
+    let {[name]: value, ...rest} = state.users;
+    state.users = rest;
 }
