@@ -6,7 +6,7 @@ const ChatInput = (props) => (
     <TextField
         id="filled-full-width"
         label="Talk here!"
-        style={{ margin: 8 }}
+        // style={{ margin: 8}}
         placeholder="Press Enter to send"
         // helperText="Full width!"
         fullWidth

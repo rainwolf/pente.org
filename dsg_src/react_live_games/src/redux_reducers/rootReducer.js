@@ -46,7 +46,7 @@ function liveGameApp (state = initialState, action) {
             } else if (json.dsgTextMainRoomEvent) {
                 addRoomMessage(json.dsgTextMainRoomEvent, newState);
             } else if (json.dsgExitMainRoomEvent) {
-                exitUser(json.player, newState);
+                exitUser(json.dsgExitMainRoomEvent.player, newState);
             }
             // console.log(json);
             break;

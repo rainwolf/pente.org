@@ -2,9 +2,8 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { send_message } from "../redux_actions/actionTypes";
 import PropTypes from 'prop-types';
-import ChatInput from '../Components/ChatInput';
-import ChatPanel from '../Components/ChatPanel';
-import PlayersList from '../Components/PlayersList';
+import ChatComponent from '../Components/Chat/ChatComponent';
+
 
 const mapStateToProps = state => {
         return {
@@ -25,7 +24,6 @@ const mapDispatchToProps = dispatch => {
 
 
 class UnconnectedRoom extends Component {
-
     componentDidUpdate() {
         const {connected, logged_in, send_message} = this.props;
         // console.log("meep connected: " + connected + " logged in: "+ logged_in);
@@ -46,14 +44,12 @@ class UnconnectedRoom extends Component {
     }
 
     render () {
-        const {users, connected, logged_in, messages} = this.props;
+        const { classes, users, connected, logged_in, messages} = this.props;
+        // const { value } = this.state;
         if (logged_in) {
             return (
-                <div align="center">
-                    <h1>Logged in... bloop</h1>
-                    <PlayersList players={users} />
-                    <ChatPanel messages={messages}/>
-                    <ChatInput sendHandler={this.sendRoomText.bind(this)}/>
+                <div style={{width: '1000px', height: '600px'}}>
+                    <ChatComponent messages={messages} users={users} sendRoomText={this.sendRoomText.bind(this)}/>
                 </div>
             )
         } else if (connected) {
@@ -82,13 +78,28 @@ UnconnectedRoom.propTypes = {
             game_ratings: PropTypes.objectOf(PropTypes.number.isRequired).isRequired,
             subscriber: PropTypes.bool.isRequired,
             name_color: PropTypes.number.isRequired,
-            crown: PropTypes.number.isRequired
+            crown: PropTypes.number.isRequired,
+            avatar: PropTypes.string.isRequired,
+            rating: PropTypes.func.isRequired
         }).isRequired
     ).isRequired,
     // users: PropTypes.objectOf(PropTypes.string).isRequired,
     connected: PropTypes.bool.isRequired,
     logged_in: PropTypes.bool.isRequired,
-    messages: PropTypes.arrayOf(String).isRequired
+    messages: PropTypes.arrayOf(
+        PropTypes.shape({
+            message: PropTypes.string.isRequired,
+            player: PropTypes.shape({
+                name: PropTypes.string.isRequired,
+                game_ratings: PropTypes.objectOf(PropTypes.number.isRequired).isRequired,
+                subscriber: PropTypes.bool.isRequired,
+                name_color: PropTypes.number.isRequired,
+                crown: PropTypes.number.isRequired,
+                avatar: PropTypes.string.isRequired,
+                rating: PropTypes.func.isRequired
+            }).isRequired
+        }).isRequired
+    ).isRequired
 };
 
 export default Room;

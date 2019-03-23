@@ -13,35 +13,34 @@ const styles = theme => ({
         width: '100%',
         maxWidth: 360,
         backgroundColor: theme.palette.background.paper,
-    },
-    inline: {
-        display: 'inline',
-    },
+    }
 });
 
 function PlayersList(props) {
     const { classes, players, game } = props;
+    
+    const listhtml = Object.keys(players).map((name, i) => {
+        const player = players[name];
+        return (
+            <ListItem key={i} >
+                <ListItemAvatar>
+                    <Avatar alt="Remy Sharp" src={player.avatar} />
+                </ListItemAvatar>
+                <ListItemText
+                    primary={player.userhtml}
+                    secondary={player.rating(game)}
+                />
+            </ListItem>
+
+        )
+    });
+    // for (let i=0; i<15; i++) {
+    //     listhtml.push(listhtml[0]);
+    // }
+    
     return (
         <List className={classes.root}>
-            {Object.keys(players).map((name, i) => {
-                const player = players[name];
-                let gamerating = undefined;
-                if (game) {
-                    gamerating = "todo rating";
-                }
-                return (
-                    <ListItem key={i} >
-                        <ListItemAvatar>
-                            <Avatar alt="Remy Sharp" src={player.avatar} />
-                        </ListItemAvatar>
-                        <ListItemText
-                            primary={player.userhtml}
-                            secondary={player.rating(game)}
-                        />
-                    </ListItem>
-
-                )
-            })}
+            {listhtml}
         </List>
     );
 }
