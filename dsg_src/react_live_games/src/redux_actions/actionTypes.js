@@ -20,7 +20,7 @@ export function connectSocket(server) {
 }
 
 export function send_message(payload) {
-    console.log('send '+ JSON.stringify(payload));
+    // console.log('send '+ JSON.stringify(payload));
     return {
         type: WEBSOCKET_SEND,
         payload: payload
