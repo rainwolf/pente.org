@@ -7,6 +7,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Avatar from '@material-ui/core/Avatar';
 // import Typography from '@material-ui/core/Typography';
+import User from '../../redux_reducers/UserClass';
 
 const styles = theme => ({
     root: {
@@ -19,28 +20,43 @@ const styles = theme => ({
 function PlayersList(props) {
     const { classes, players, game } = props;
     
-    const listhtml = Object.keys(players).map((name, i) => {
-        const player = players[name];
-        return (
-            <ListItem key={i} >
-                <ListItemAvatar>
-                    <Avatar alt="Remy Sharp" src={player.avatar} />
-                </ListItemAvatar>
-                <ListItemText
-                    primary={player.userhtml}
-                    secondary={player.rating(game)}
-                />
-            </ListItem>
-
-        )
-    });
+    // const listhtml = Object.keys(players).map((name, i) => {
+    //     const player = players[name];
+    //     return (
+    //         <ListItem key={i} >
+    //             <ListItemAvatar>
+    //                 <Avatar alt="Remy Sharp" src={player.avatar} />
+    //             </ListItemAvatar>
+    //             <ListItemText
+    //                 primary={player.userhtml}
+    //                 secondary={player.rating(game)}
+    //             />
+    //         </ListItem>
+    //
+    //     )
+    // });
     // for (let i=0; i<15; i++) {
     //     listhtml.push(listhtml[0]);
     // }
     
     return (
         <List className={classes.root}>
-            {listhtml}
+            {Object.keys(players).map((name, i) => {
+                    const player = players[name];
+                    return (
+                        <ListItem key={i} >
+                            <ListItemAvatar>
+                                <Avatar alt="Remy Sharp" src={player.avatar} />
+                            </ListItemAvatar>
+                            <ListItemText
+                                primary={player.userhtml}
+                                secondary={player.rating(game)}
+                            />
+                        </ListItem>
+    
+                    )
+                })
+            }
         </List>
     );
 }
@@ -48,11 +64,7 @@ function PlayersList(props) {
 PlayersList.propTypes = {
     classes: PropTypes.object.isRequired,
     players: PropTypes.objectOf(
-        PropTypes.shape({
-            name: PropTypes.string.isRequired,
-            userhtml: PropTypes.node.isRequired,
-            avatar: PropTypes.node.isRequired
-        }).isRequired
+        PropTypes.instanceOf(User).isRequired
     ).isRequired
 };
 

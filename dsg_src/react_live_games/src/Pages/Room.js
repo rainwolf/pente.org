@@ -3,14 +3,19 @@ import { connect } from 'react-redux';
 import { send_message } from "../redux_actions/actionTypes";
 import PropTypes from 'prop-types';
 import ChatComponent from '../Components/Chat/ChatComponent';
-
+import User from '../redux_reducers/UserClass';
+import Table from '../redux_reducers/TableClass';
+import TableCard from '../Components/Table/TableCard';
+import Board from '../Components/Board/Board';
+import Grid from '@material-ui/core/Grid';
 
 const mapStateToProps = state => {
         return {
             users: state.users,
             connected: state.connected,
             logged_in: state.logged_in,
-            messages: state.room_messages
+            messages: state.room_messages,
+            tables: state.tables
         }
 };
 
@@ -44,12 +49,20 @@ class UnconnectedRoom extends Component {
     }
 
     render () {
-        const { classes, users, connected, logged_in, messages} = this.props;
+        const { classes, users, connected, logged_in, messages, tables} = this.props;
         // const { value } = this.state;
         if (logged_in) {
             return (
                 <div style={{width: '1000px', height: '600px'}}>
-                    <ChatComponent messages={messages} users={users} sendRoomText={this.sendRoomText.bind(this)}/>
+                    <Grid container direction={'row'} alignItems={'stretch'} wrap={'nowrap'} style={{width: '100%', height: '100%'}}>
+                        <Grid item style={{height:'100%', flex: '1', minWidth: '0px'}}>
+                            <ChatComponent messages={messages} users={users} sendRoomText={this.sendRoomText.bind(this)}/>
+                            {/*<Board size={400} game={1} clickHandler={this.sendRoomText} hover={'black-stone-gradient'}/>*/}
+                        </Grid>
+                        <Grid item style={{height: '100%'}}>
+                            {Object.keys(tables).map(table => <TableCard key={table} table={tables[table]} users={users}/>)}
+                        </Grid>
+                    </Grid>
                 </div>
             )
         } else if (connected) {
@@ -72,16 +85,8 @@ class UnconnectedRoom extends Component {
 const Room = connect(mapStateToProps, mapDispatchToProps)(UnconnectedRoom);
 
 UnconnectedRoom.propTypes = {
-    users: PropTypes.objectOf(    
-        PropTypes.shape({
-            name: PropTypes.string.isRequired,
-            game_ratings: PropTypes.objectOf(PropTypes.number.isRequired).isRequired,
-            subscriber: PropTypes.bool.isRequired,
-            name_color: PropTypes.number.isRequired,
-            crown: PropTypes.number.isRequired,
-            avatar: PropTypes.string.isRequired,
-            rating: PropTypes.func.isRequired
-        }).isRequired
+    users: PropTypes.objectOf(
+        PropTypes.instanceOf(User).isRequired
     ).isRequired,
     // users: PropTypes.objectOf(PropTypes.string).isRequired,
     connected: PropTypes.bool.isRequired,
@@ -89,17 +94,12 @@ UnconnectedRoom.propTypes = {
     messages: PropTypes.arrayOf(
         PropTypes.shape({
             message: PropTypes.string.isRequired,
-            player: PropTypes.shape({
-                name: PropTypes.string.isRequired,
-                game_ratings: PropTypes.objectOf(PropTypes.number.isRequired).isRequired,
-                subscriber: PropTypes.bool.isRequired,
-                name_color: PropTypes.number.isRequired,
-                crown: PropTypes.number.isRequired,
-                avatar: PropTypes.string.isRequired,
-                rating: PropTypes.func.isRequired
-            }).isRequired
+            player: PropTypes.instanceOf(User).isRequired
         }).isRequired
-    ).isRequired
+    ).isRequired,
+    tables: PropTypes.objectOf(
+        PropTypes.instanceOf(Table).isRequired
+    ).isRequired,
 };
 
 export default Room;
