@@ -19,7 +19,7 @@ function ChatComponent(props) {
             <Grid container direction={'row'} alignItems={'stretch'} wrap={'nowrap'} style={{width: '100%', height: '100%'}}>
                 <Grid item style={{height: '100%'}}>
                      <div style={{overflow: 'auto', maxHeight:'100%'}}>
-                         <PlayersList players={users} />
+                         <PlayersList players={users}/>
                      </div>
                 </Grid>
                 <Grid item style={{height:'100%', flex: '1', minWidth: '0px'}}>
