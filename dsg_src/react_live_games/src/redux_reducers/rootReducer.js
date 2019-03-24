@@ -2,12 +2,13 @@ import '../redux_actions/actionTypes';
 import { CONNECT_SERVER } from "../redux_actions/actionTypes";
 import { WEBSOCKET_OPEN, WEBSOCKET_CLOSED, WEBSOCKET_MESSAGE } from '@giantmachines/redux-websocket';
 import './utils';
-import {processUser, addRoomMessage, exitUser} from "./utils";
+import {processUser, addRoomMessage, exitUser, changeTableState,
+    joinTable, exitTable, sitTable, standTable} from "./utils";
 
 
 const initialState = {
     users: {},
-    tables: [],
+    tables: {},
     room_messages: [],
     connected: false,
     logged_in: false,
@@ -22,15 +23,11 @@ function liveGameApp (state = initialState, action) {
             break;
         case WEBSOCKET_OPEN:
             console.log('socket open');
-            newState.room = {};
             newState.connected = true;
             break;
         case WEBSOCKET_CLOSED:
             console.log('socket closed');
             return initialState;
-            // newState.room = {};
-            // newState.connected = false;
-            // break;
         case WEBSOCKET_MESSAGE:
             console.log(action.payload.data);
             const json = JSON.parse(action.payload.data);
@@ -42,11 +39,23 @@ function liveGameApp (state = initialState, action) {
             } else if (json.dsgPingEvent) {
                 console.log('ping: ' + action.payload.data)
             } else if (json.dsgJoinMainRoomEvent) {
-                processUser(json.dsgJoinMainRoomEvent, newState);
+                processUser(json.dsgJoinMainRoomEvent.dsgPlayerData, newState);
+            } else if (json.dsgUpdatePlayerDataEvent) {
+                processUser(json.dsgUpdatePlayerDataEvent.data, newState);
             } else if (json.dsgTextMainRoomEvent) {
                 addRoomMessage(json.dsgTextMainRoomEvent, newState);
             } else if (json.dsgExitMainRoomEvent) {
                 exitUser(json.dsgExitMainRoomEvent.player, newState);
+            } else if (json.dsgChangeStateTableEvent) {
+                changeTableState(json.dsgChangeStateTableEvent, newState);
+            } else if (json.dsgJoinTableEvent) {
+                joinTable(json.dsgJoinTableEvent, newState);
+            } else if (json.dsgExitTableEvent) {
+                exitTable(json.dsgExitTableEvent, newState);
+            } else if (json.dsgSitTableEvent) {
+                sitTable(json.dsgSitTableEvent, newState);
+            } else if (json.dsgStandTableEvent) {
+                standTable(json.dsgStandTableEvent, newState);
             }
             // console.log(json);
             break;
