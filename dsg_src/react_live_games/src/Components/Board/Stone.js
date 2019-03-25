@@ -1,6 +1,6 @@
 import React from 'react';
 
-function stone(props) {
+function Stone(props) {
     return (
         <svg key={1} height={props.size*1.5} width={props.size*1.5}>
             <radialGradient id={props.id} cx="40%" cy="40%" r="50%">
@@ -19,4 +19,4 @@ function stone(props) {
     );
 }
 
-export default stone;
+export default Stone;

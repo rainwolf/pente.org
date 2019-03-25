@@ -8,6 +8,7 @@ import Table from '../redux_reducers/TableClass';
 import TableCard from '../Components/Table/TableCard';
 import Board from '../Components/Board/Board';
 import Grid from '@material-ui/core/Grid';
+import Fab from '@material-ui/core/Fab';
 
 const mapStateToProps = state => {
         return {
@@ -31,22 +32,25 @@ const mapDispatchToProps = dispatch => {
 class UnconnectedRoom extends Component {
     componentDidUpdate() {
         const {connected, logged_in, send_message} = this.props;
-        // console.log("meep connected: " + connected + " logged in: "+ logged_in);
         if (connected && !logged_in) {
-            // const json = JSON.parse('{"dsgLoginEvent":{"player":"rainwolf","password":"nuria8a13b","guest":false,"time":0}}');
-            // send_message(json);
             send_message({dsgLoginEvent: {player: "rainwolf", password: "nuria8a13b", guest: false, time: 0}});
         }
     }
 
-    sendRoomText(event) {
+    sendRoomText = (event) => {
         const str = event.target.value;
         if(event.key === 'Enter' && str !== '') {
             // send_message({dsgJoinTableEvent: {table: -1, time: 0}});
             this.props.send_message({dsgTextMainRoomEvent: {text: str, time: 0}});
             event.target.value = "";
         }
-    }
+    };
+    
+    joinRoom = (table) => {
+        if (table === -1 || !this.props.tables[table].private()) {
+            this.props.send_message({dsgJoinTableEvent: {table: table, time: 0}});
+        } 
+    };
 
     render () {
         const { classes, users, connected, logged_in, messages, tables} = this.props;
@@ -56,11 +60,21 @@ class UnconnectedRoom extends Component {
                 <div style={{width: '1000px', height: '600px'}}>
                     <Grid container direction={'row'} alignItems={'stretch'} wrap={'nowrap'} style={{width: '100%', height: '100%'}}>
                         <Grid item style={{height:'100%', flex: '1', minWidth: '0px'}}>
-                            <ChatComponent messages={messages} users={users} sendRoomText={this.sendRoomText.bind(this)}/>
+                            <ChatComponent messages={messages} users={users} sendRoomText={this.sendRoomText}/>
                             {/*<Board size={400} game={1} clickHandler={this.sendRoomText} hover={'black-stone-gradient'}/>*/}
                         </Grid>
-                        <Grid item style={{height: '100%'}}>
-                            {Object.keys(tables).map(table => <TableCard key={table} table={tables[table]} users={users}/>)}
+                        <Grid item style={{height: '100%', overflow: 'auto', alignCenter: true}}>
+                            <Fab color="primary"  variant="extended" aria-label="Delete" 
+                                 style={{width: '100%'}} onClick={() => this.joinRoom(-1)}>
+                                {/*<NavigationIcon className={classes.extendedIcon} />*/}
+                                create new table
+                            </Fab>
+                            <br/>
+                            {Object.keys(tables).map(table => <TableCard 
+                                key={table} 
+                                table={tables[table]}
+                                joinRoom={this.joinRoom}
+                                users={users}/>)}
                         </Grid>
                     </Grid>
                 </div>

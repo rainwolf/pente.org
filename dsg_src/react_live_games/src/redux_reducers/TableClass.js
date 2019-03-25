@@ -1,11 +1,25 @@
 class Table {
     constructor(tableState) {
-        Object.assign(this, tableState);
         this.seats = [undefined, "", ""];
         this.players = [];
         this.clocks = [ { minutes: tableState.initialMinutes, seconds: 0 },
             { minutes: tableState.initialMinutes, seconds: 0 } ];
+        this.updateTable(tableState)
     }
+    
+    player_color = (p) => {
+        if (this.game > 18) {
+            p = 2 - p;
+        }
+        if (p === 1) {
+            return 'white-stone-gradient';
+        }
+        return 'black-stone-gradient';
+    };
+    
+    private = () => {
+        return this.tableType === 2;    
+    };
     
     table_color = () => {
         let style;
@@ -75,7 +89,7 @@ class Table {
     };
     
     removePlayer = (player) => {
-        this.players = this.players.splice(this.players.indexOf(player), 1);
+        this.players = this.players.filter(p => p !== player);
     };  
     
     watching = () => {
