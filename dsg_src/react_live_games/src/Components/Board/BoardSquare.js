@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import stone from './Stone';
+import Stone from './Stone';
 
 
 class BoardSquare extends Component {
@@ -84,7 +84,7 @@ class BoardSquare extends Component {
                 <rect id={this.props.id} width={this.props.size+1} height={this.props.size+1}
                        fillOpacity={0.0} />
                 {this.boardpart(this.props.size)}
-                {this.state.showStone?stone({size: this.props.size, id: this.props.hover, opacity: 0.6}):""}
+                {this.state.showStone?Stone({size: this.props.size, id: this.props.hover, opacity: 0.6}):""}
             </svg>
         )
     }

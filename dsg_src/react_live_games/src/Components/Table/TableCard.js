@@ -5,12 +5,12 @@ import User from '../../redux_reducers/UserClass';
 import Typography from '@material-ui/core/Typography';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
-
-import classNames from 'classnames';
+import SimpleStone from '../Board/SimpleStone';
+import HttpsIcon from '@material-ui/icons/Https';
 import { withStyles } from '@material-ui/core/styles';
 
 
-const styles = {
+const styles = theme => ({
     card: {
         minWidth: 275,
         backgroundColor: '#FDDEA3'
@@ -26,26 +26,50 @@ const styles = {
     pos: {
         marginBottom: 12,
     },
-};
+    icon: {
+        fontSize: 26,
+    }
+});
 
 const TableCard = (props) => {
     const { classes, table, users } = props;
+    const seated = table.seats[1] !== "" || table.seats[2] !== "";
     
     return (
-        <Card className={classes.card} style={{backgroundColor: table.table_color()}}>
+        <Card className={classes.card} style={{backgroundColor: table.table_color()}} onClick={() => props.joinRoom(table.table)}>
             <CardContent>
                 {/*<Typography className={classes.title} color="textSecondary" gutterBottom>*/}
                     {/*Word of the Day*/}
                 {/*</Typography>*/}
                 <Typography variant="h5" component="h2">
-                    {table.game_name()}
+                    {table.private()?(<span><HttpsIcon className={classes.icon} /> {table.game_name()}</span>):table.game_name()}
                 </Typography>
                 {/*<Typography className={classes.pos} color="textSecondary">*/}
                     {/*adjective*/}
                 {/*</Typography>*/}
-                {/*<Typography component="p">*/}
+                {seated &&
+                    <Typography component="p">
+                        {table.seats[1] !== "" &&
+                        <span key={1}>
+                                {users[table.seats[1]].userhtml} <SimpleStone size={15} id={table.player_color(1)}/>
+                            </span>
+                        } &nbsp; - &nbsp; 
+                        {table.seats[2] !== "" &&
+                        <span key={2}>
+                                {users[table.seats[2]].userhtml} <SimpleStone size={15} id={table.player_color(2)}/>
+                            </span>
+                        }
+                    </Typography>
+                }
+                <Typography component="p">
+                    rated: {table.rated?'yes':'no'}, timed: {table.timed?(table.initialMinutes+'/'+table.incrementalSeconds):'no'}
+                </Typography>
                 
-                {/*</Typography>*/}
+                {table.watching().length > 0 && 
+                    <Typography component="p">
+                        watching: {table.watching().map((player, i) => <span key={i}>{users[player].userhtml}, </span>)}
+                    </Typography>
+                }
             </CardContent>
         </Card>
     );
