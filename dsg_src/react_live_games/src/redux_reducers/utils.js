@@ -1,6 +1,6 @@
 import Table from './TableClass';
 import User from './UserClass';
-
+import Game from './GameClass';
 
 export function processUser(userdata, state) {
     let user;
@@ -34,6 +34,12 @@ export function changeTableState(tableState, state) {
     } else {
         tables[tableState.table] = new Table(tableState);
     }
+    if (state.table === tableState.table) {
+        state.game = new Game();
+        state.game.me = state.me;
+        state.game.setGame(tableState.game);
+        state.game.rated = tableState.rated;
+    } 
     state.tables = tables;
 }
 
