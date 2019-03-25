@@ -7,13 +7,13 @@ import Table from "./Pages/Table";
 
 const mapStateToProps = state => {
     return {
-        table_id: state.current_table_id,
+        table: state.table,
         room: state.server
     }
 };
 
-const UnconnectedApp = ({table_id, room}) => {
-    if (table_id) {
+const UnconnectedApp = ({table, room}) => {
+    if (table) {
         return <Table/>
     } else if (room) {
         return <Room/>

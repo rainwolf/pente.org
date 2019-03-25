@@ -12,7 +12,7 @@ const initialState = {
     room_messages: [],
     connected: false,
     logged_in: false,
-    table_id: undefined
+    table: undefined
 };
 
 function liveGameApp (state = initialState, action) {

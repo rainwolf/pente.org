@@ -44,6 +44,9 @@ export function joinTable(joinEvent, state) {
         table = new Table({table: joinEvent.table})
         tables[joinEvent.table] = table;
     }
+    if (joinEvent.player === state.me) {
+        state.table = joinEvent.table;
+    }
     table.addPlayer(joinEvent.player);
     state.tables = tables;
 }
@@ -55,6 +58,9 @@ export function exitTable(exitEvent, state) {
         table.removePlayer(exitEvent.player);
         if (table.players.length === 0) { delete tables[exitEvent.table]} 
     }
+    if (exitEvent.player === state.me) {
+        state.table = undefined;
+    } 
     state.tables = tables;
 }
 
