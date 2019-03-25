@@ -59,6 +59,7 @@ function liveGameApp (state = initialState, action) {
             }
             // console.log(json);
             break;
+        default: break;
     }
     return newState;
 }

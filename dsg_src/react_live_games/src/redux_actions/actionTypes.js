@@ -1,7 +1,7 @@
 import { WEBSOCKET_CONNECT, WEBSOCKET_SEND } from '@giantmachines/redux-websocket'
 
 export const CONNECT_SERVER = 'CONNECT_SERVER';
-export const SERVER_CONNECTED = 'SERVER_CONNECTED';
+// export const SERVER_CONNECTED = 'SERVER_CONNECTED';
 
 export function connectServer(server) {
     return {

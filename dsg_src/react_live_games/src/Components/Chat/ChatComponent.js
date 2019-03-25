@@ -5,6 +5,8 @@ import Grid from '@material-ui/core/Grid';
 import PlayersList from './PlayersList';
 import ChatInput from './ChatInput';
 import ChatPanel from './ChatPanel';
+// import Table from "../../redux_reducers/TableClass";
+import User from "../../redux_reducers/UserClass";
 
 function ChatComponent(props) {
 
@@ -37,5 +39,19 @@ function ChatComponent(props) {
             </Grid>
         );
 }
+
+ChatComponent.propTypes = {
+    users: PropTypes.objectOf(
+        PropTypes.instanceOf(User).isRequired
+    ).isRequired,
+    messages: PropTypes.arrayOf(
+        PropTypes.shape({
+            message: PropTypes.string.isRequired,
+            player: PropTypes.instanceOf(User).isRequired
+        }).isRequired
+    ).isRequired,
+    sendRoomText: PropTypes.func.isRequired,
+};
+
 
 export default ChatComponent;

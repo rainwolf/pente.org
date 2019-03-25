@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { WEBSOCKET_CONNECT } from '@giantmachines/redux-websocket';
+// import { WEBSOCKET_CONNECT } from '@giantmachines/redux-websocket';
 import { connect } from 'react-redux';
 import { connectServer, connectSocket } from '../redux_actions/actionTypes';
 

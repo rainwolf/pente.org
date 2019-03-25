@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React  from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
@@ -17,11 +17,6 @@ const styles = theme => ({
 });
 
 function ChatPanel(props) {
-    
-    // useEffect(() => {
-    //     let element = document.getElementById('chatdiv0');
-    //     element.scrollTop = element.scrollHeight;
-    // });
     
     const { classes, messages } = props;
     return (
