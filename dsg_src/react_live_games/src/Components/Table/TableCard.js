@@ -74,12 +74,6 @@ const TableCard = (props) => {
         </Card>
     );
 };
-    {/*<Paper style={{width: '100%', height: '100%'}}>*/}
-        {/*<Typography variant={'h1'} className={props.table.table_color()}>*/}
-            {/**/}
-        {/*</Typography>*/}
-    {/*</Paper>*/}
-{/*);*/}
 
 TableCard.propTypes = {
     classes: PropTypes.object.isRequired,

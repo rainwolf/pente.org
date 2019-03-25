@@ -6,7 +6,7 @@ import ChatComponent from '../Components/Chat/ChatComponent';
 import User from '../redux_reducers/UserClass';
 import Table from '../redux_reducers/TableClass';
 import TableCard from '../Components/Table/TableCard';
-import Board from '../Components/Board/Board';
+// import Board from '../Components/Board/Board';
 import Grid from '@material-ui/core/Grid';
 import Fab from '@material-ui/core/Fab';
 
@@ -53,8 +53,7 @@ class UnconnectedRoom extends Component {
     };
 
     render () {
-        const { classes, users, connected, logged_in, messages, tables} = this.props;
-        // const { value } = this.state;
+        const { users, connected, logged_in, messages, tables} = this.props;
         if (logged_in) {
             return (
                 <div style={{width: '1000px', height: '600px'}}>
