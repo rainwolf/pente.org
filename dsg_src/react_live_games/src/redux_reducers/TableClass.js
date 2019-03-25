@@ -1,3 +1,5 @@
+const PRIVATE_TABLE = 2;
+
 class Table {
     constructor(tableState) {
         this.seats = [undefined, "", ""];
@@ -18,7 +20,7 @@ class Table {
     };
     
     private = () => {
-        return this.tableType === 2;    
+        return this.tableType === PRIVATE_TABLE;    
     };
     
     table_color = () => {
