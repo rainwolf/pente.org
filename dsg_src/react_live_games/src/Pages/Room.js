@@ -40,7 +40,6 @@ class UnconnectedRoom extends Component {
     sendRoomText = (event) => {
         const str = event.target.value;
         if(event.key === 'Enter' && str !== '') {
-            // send_message({dsgJoinTableEvent: {table: -1, time: 0}});
             this.props.send_message({dsgTextMainRoomEvent: {text: str, time: 0}});
             event.target.value = "";
         }
@@ -59,8 +58,7 @@ class UnconnectedRoom extends Component {
                 <div style={{width: '1000px', height: '600px'}}>
                     <Grid container direction={'row'} alignItems={'stretch'} wrap={'nowrap'} style={{width: '100%', height: '100%'}}>
                         <Grid item style={{height:'100%', flex: '1', minWidth: '0px'}}>
-                            <ChatComponent messages={messages} users={users} sendRoomText={this.sendRoomText}/>
-                            {/*<Board size={400} game={1} clickHandler={this.sendRoomText} hover={'black-stone-gradient'}/>*/}
+                            <ChatComponent messages={messages} users={users} sendText={this.sendRoomText}/>
                         </Grid>
                         <Grid item style={{height: '100%', overflow: 'auto', alignCenter: true}}>
                             <Fab color="primary"  variant="extended" aria-label="Delete" 

@@ -3,7 +3,8 @@ import { CONNECT_SERVER } from "../redux_actions/actionTypes";
 import { WEBSOCKET_OPEN, WEBSOCKET_CLOSED, WEBSOCKET_MESSAGE } from '@giantmachines/redux-websocket';
 import './utils';
 import {processUser, addRoomMessage, exitUser, changeTableState,
-    joinTable, exitTable, sitTable, standTable} from "./utils";
+    joinTable, exitTable, sitTable, standTable, tableOwner,
+    addTableMessage} from "./utils";
 
 
 const initialState = {
@@ -12,7 +13,9 @@ const initialState = {
     room_messages: [],
     connected: false,
     logged_in: false,
-    table: undefined
+    table: undefined,
+    game: undefined,
+    table_messages: []
 };
 
 function liveGameApp (state = initialState, action) {
@@ -56,6 +59,10 @@ function liveGameApp (state = initialState, action) {
                 sitTable(json.dsgSitTableEvent, newState);
             } else if (json.dsgStandTableEvent) {
                 standTable(json.dsgStandTableEvent, newState);
+            } else if (json.dsgOwnerTableEvent) {
+                tableOwner(json.dsgOwnerTableEvent, newState);
+            } else if (json.dsgTextTableEvent) {
+                addTableMessage(json.dsgTextTableEvent, newState);
             }
             // console.log(json);
             break;

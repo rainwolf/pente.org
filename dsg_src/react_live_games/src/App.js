@@ -3,7 +3,8 @@ import './App.css';
 import Servers from './Pages/Servers';
 import Room from "./Pages/Room";
 import { connect } from 'react-redux';
-import Table from "./Pages/Table";
+import TableView from "./Pages/Table";
+import Test from "./test/Test";
 
 const mapStateToProps = state => {
     return {
@@ -13,8 +14,13 @@ const mapStateToProps = state => {
 };
 
 const UnconnectedApp = ({table, room}) => {
+    // return <Test/>;
     if (table) {
-        return <Table/>
+        return (
+            <div style={{width: '100vw', height: '100vh'}}>
+                <TableView/>
+            </div>
+        );
     } else if (room) {
         return <Room/>
     } else {
