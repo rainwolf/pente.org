@@ -53,6 +53,7 @@ const BoardSquare = (props) => {
     const clickHandler = (e) => {
         if (props.clickHandler === undefined) { return; }
         props.clickHandler(e.target.id);
+        toggleShow(false);
     };
 
     
@@ -61,7 +62,7 @@ const BoardSquare = (props) => {
         y = 10*Math.floor(parseInt(props.id)/gridsize),
         x = 10*(parseInt(props.id)%gridsize);
     return (
-        <svg key={props.id} viewBox={'0 0 15 15'} 
+        <g key={props.id} viewBox={'0 0 15 15'} 
              height={size*1.5} width={size*1.5}
              onMouseEnter={enterExitHandler}
              onMouseLeave={enterExitHandler}
@@ -71,8 +72,9 @@ const BoardSquare = (props) => {
             <rect id={props.id} width={size+1} height={size+1}
                    fillOpacity={0.0} />
             {boardpart(size)}
-            {showStone?Stone({size: 10, id: props.hover, opacity: 0.6}):""}
-        </svg>
+            {props.stone && Stone({size: 10, id: props.stone})}
+            {showStone && Stone({size: 10, id: props.hover, opacity: 0.6})}
+        </g>
     );
 };
 

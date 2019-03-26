@@ -3,68 +3,78 @@ import BoardSquare from './BoardSquare';
 
 
 const Board = (props) => {
-
+    
+    const game = props.gameObj;
+    const table = props.table;
+    
     const makeBoard = (gridsize) => {
+        if (game === undefined || table === undefined) { return [] };
         let board = [];
-        for(let i = 0; i < gridsize*gridsize; i++) {
-            let squaretype;
-            if (i === 0) {
-                squaretype = 1;
-            } else if (i === gridsize - 1) {
-                squaretype = 3;
-            } else if (i === gridsize*gridsize - 1) {
-                squaretype = 9;
-            } else if (i === gridsize*(gridsize - 1)) {
-                squaretype = 7;
-            } else if (Math.floor(i / gridsize) === 0) {
-                squaretype = 2;
-            } else if (Math.floor(i / gridsize) === gridsize - 1) {
-                squaretype = 8;
-            } else if (i % gridsize === 0) {
-                squaretype = 4;
-            } else if (i % gridsize === gridsize - 1) {
-                squaretype = 6;
-            } else {
-                squaretype = 5;
+        let player_colors = [undefined, 'white-stone-gradient', 'black-stone-gradient'];
+        if (game.isGo()) { player_colors = [undefined, 'black-stone-gradient', 'white-stone-gradient']; }
+        let hover = player_colors[game.currentColor()];
+        const myTurn = table.isMyTurn(game);
+        // console.log('my turn: ', myTurn)
+        for(let j = 0; j < gridsize; j++) {
+            for (let i = 0; i < gridsize; i++) {
+                const m = j*gridsize + i;
+                let squaretype;
+                if (m === 0) {
+                    squaretype = 1;
+                } else if (m === gridsize - 1) {
+                    squaretype = 3;
+                } else if (m === gridsize * gridsize - 1) {
+                    squaretype = 9;
+                } else if (m === gridsize * (gridsize - 1)) {
+                    squaretype = 7;
+                } else if (Math.floor(m / gridsize) === 0) {
+                    squaretype = 2;
+                } else if (Math.floor(m / gridsize) === gridsize - 1) {
+                    squaretype = 8;
+                } else if (m % gridsize === 0) {
+                    squaretype = 4;
+                } else if (m % gridsize === gridsize - 1) {
+                    squaretype = 6;
+                } else {
+                    squaretype = 5;
+                }
+
+                const stone = player_colors[game.abstractBoard[i][j]];
+                let clickHandler = undefined;
+                if (myTurn) {
+                    if (game.abstractBoard[i][j] === 0) {
+                        clickHandler = props.clickHandler;
+                    } 
+                    if (game.isGo() && game.doublePass) {
+                        if (clickHandler === undefined) {
+                            clickHandler = props.clickHandler;
+                        } else {
+                            clickHandler = undefined;
+                        } 
+                    }
+                }
+                board.push({ key: m, gridsize: gridsize, id: m,
+                            part: squaretype, stone: stone,
+                            clickHandler: clickHandler,
+                            hover: hover});
             }
-            board.push(<BoardSquare key={i} 
-                                    gridsize={gridsize} id={i} 
-                                    part={squaretype}
-                                    clickHandler={props.clickHandler} 
-                                    hover={props.hover}
-                        />);
         }
         if (props.game < 19) {
             const circles = [120, 126, 180, 234, 240];
-            circles.forEach(c => { board[c] = (<BoardSquare key={c}
-                                                            gridsize={gridsize}
-                                                            id={c} part={51}
-                                                            clickHandler={props.clickHandler}
-                                                            hover={props.hover}/>);})
-        } else if (props.game === 19 || props.game === 20) {
-            const dots = [60, 66, 72, 174, 180, 186, 288, 294, 300];
-            dots.forEach(d => { board[d] = (<BoardSquare key={d}
-                                                            gridsize={gridsize}
-                                                            id={d} part={52}
-                                                         clickHandler={props.clickHandler}
-                                                         hover={props.hover}/>);})
-        } else if (props.game === 21 || props.game === 22) {
-            const dots = [20, 24, 40, 56, 60];
-            dots.forEach(d => { board[d] = (<BoardSquare key={d}
-                                                         gridsize={gridsize}
-                                                         id={d} part={52}
-                                                         clickHandler={props.clickHandler}
-                                                         hover={props.hover}/>);})
-        } else if (props.game === 23 || props.game === 24) {
-            const dots = [42, 45, 48, 81, 84, 87, 120, 123, 126];
-            dots.forEach(d => { board[d] = (<BoardSquare key={d}
-                                                         gridsize={gridsize}
-                                                         id={d} part={52}
-                                                         clickHandler={props.clickHandler}
-                                                         hover={props.hover}/>);})
-        }
+            circles.forEach(c => { board[c].part = 51; });
+        } else {
+            let dots;
+            if (props.game === 19 || props.game === 20) {
+                dots = [60, 66, 72, 174, 180, 186, 288, 294, 300];
+            } else if (props.game === 21 || props.game === 22) {
+                dots = [20, 24, 40, 56, 60];
+            } else if (props.game === 23 || props.game === 24) {
+                dots = [42, 45, 48, 81, 84, 87, 120, 123, 126];
+            }
+            dots.forEach(d => { board[d].part = 52; });
+        } 
         
-        return board;
+        return board.map(p => BoardSquare(p));
     };
     const makeCoordinateBoundaries = (gridsize) => {
         const coordinateLetters =['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T'];
