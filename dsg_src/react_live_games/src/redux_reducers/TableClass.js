@@ -11,7 +11,7 @@ class Table {
     
     player_color = (p) => {
         if (this.game > 18) {
-            p = 2 - p;
+            p = 3 - p;
         }
         if (p === 1) {
             return 'white-stone-gradient';

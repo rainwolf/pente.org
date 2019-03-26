@@ -1,15 +1,17 @@
 .name a, .name a:visited { font-weight:normal; color:black; text-decoration: none; }
 .name a:hover { font-weight:normal; color:black; text-decoration: underline; }
 
+
+
 .boardline {
     stroke: #222bff;
-    stroke-width: 1px;
+    stroke-width: 0.5px;
     pointer-events: none;
 }
 
 .boardcircle {
     stroke: #222bff;
-    stroke-width: 1px;
+    stroke-width: 0.5px;
     pointer-events: none;
 }
 

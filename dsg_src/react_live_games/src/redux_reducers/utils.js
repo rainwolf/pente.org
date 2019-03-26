@@ -66,6 +66,8 @@ export function exitTable(exitEvent, state) {
     }
     if (exitEvent.player === state.me) {
         state.table = undefined;
+        state.game = undefined;
+        state.table_messages = [];
     } 
     state.tables = tables;
 }
@@ -84,3 +86,19 @@ export function standTable(standEvent, state) {
     state.tables = tables;
 }
 
+export function tableOwner(ownerEvent, state) {
+    const tables = { ...state.tables };
+    const table = tables[ownerEvent.table];
+    table.owner = ownerEvent.player === state.me;
+    state.tables = tables;
+}
+
+export function addTableMessage(data, state) {
+    const messages = [...state.table_messages];
+    const user = state.users[data.player];
+    messages.push( {
+        message: data.text,
+        player: user
+    });
+    state.table_messages = messages;
+}

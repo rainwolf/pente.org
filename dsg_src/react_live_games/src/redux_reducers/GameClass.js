@@ -2,7 +2,7 @@ class Game {
     constructor(gameState) {
         this.updateGameState(gameState);
         this.reset();
-        
+        this.rated = false;
     }
     
     updateGameState = (gameState) => {
@@ -51,7 +51,6 @@ class Game {
     };
     
     reset = () => {
-        this.rated = false;
         this.captures = [undefined, 0, 0];
         this.moves = [];
         this.goGroupsByPlayerAndID = {1: {}, 2: {}};
@@ -67,6 +66,40 @@ class Game {
             for (let j = 0; j < 19; j++) {
                 this.abstractBoard[i][j] = 0;
             }
+        }
+    };
+    
+    replayGame = (until) => {
+        if (until === undefined) {
+            until = this.moves.length;
+        }
+        let moves = this.moves;
+        this.reset();
+        this.moves = moves;
+        if (this.game < 3) {
+            this.#replayPenteGame(until);
+        } else if (this.game < 5) {
+            this.#replayKeryoPenteGame(until);
+        } else if (this.game < 7) {
+            this.#replayGomokuGame(until);
+        } else if (this.game < 9) {
+            let r = this.rated; this.rated = false;
+            this.#replayPenteGame(until);
+            this.rated = r;
+        } else if (this.game < 11) {
+            this.#replayGPenteGame(until);
+        } else if (this.game < 13) {
+            this.#replayPoofPenteGame(until);
+        } else if (this.game < 15) {
+            this.#replayConnect6Game(until);
+        } else if (this.game < 17) {
+            this.#replayPenteGame(until);
+        } else if (this.game < 19) {
+            let r = this.rated; this.rated = false;
+            this.#replayKeryoPenteGame(until);
+            this.rated = r;
+        } else if (this.game < 25) {
+            this.#replayGoGame(until);
         }
     };
     
