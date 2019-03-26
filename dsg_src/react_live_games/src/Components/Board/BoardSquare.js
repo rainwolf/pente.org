@@ -7,6 +7,7 @@ class BoardSquare extends Component {
         super(props);
         this.state = {
             showStone: false,
+            keepshowing: false
             // mouseID: this.props.hover
         }
     }
@@ -58,6 +59,7 @@ class BoardSquare extends Component {
         this.setState( { ...this.state, showStone: !this.state.showStone })
     }
     clickHandler(e) {
+        this.setState({keepshowing: true})
         if (this.props.clickHandler === undefined) { return; }
         this.props.clickHandler(e.target.id);
         // const newState = this.state;
@@ -72,19 +74,22 @@ class BoardSquare extends Component {
     
     render () {
         const gridsize = this.props.gridsize,
-            y = this.props.size*Math.floor(parseInt(this.props.id)/gridsize),
-            x = this.props.size*(parseInt(this.props.id)%gridsize);
+            // size = Math.floor(100/gridsize),
+            size = 10,
+            y = 10*Math.floor(parseInt(this.props.id)/gridsize),
+            x = 10*(parseInt(this.props.id)%gridsize);
         return (
-            <svg key={this.props.id} x={x} y={y} 
-                 height={this.props.size*1.5} width={this.props.size*1.5}
+            <svg key={this.props.id} viewBox={'0 0 15 15'} 
+                 height={size*1.5} width={size*1.5}
                  onMouseEnter={this.enterExitHandler.bind(this)}
                  onMouseLeave={this.enterExitHandler.bind(this)}
                  onClick={this.clickHandler.bind(this)}
+                 transform={'translate('+x+','+y+')'}
             >
-                <rect id={this.props.id} width={this.props.size+1} height={this.props.size+1}
+                <rect id={this.props.id} width={size+1} height={size+1}
                        fillOpacity={0.0} />
-                {this.boardpart(this.props.size)}
-                {this.state.showStone?Stone({size: this.props.size, id: this.props.hover, opacity: 0.6}):""}
+                {this.boardpart(size)}
+                {this.state.showStone || this.state.keepshowing?Stone({size: 10, id: this.props.hover, opacity: 0.6}):""}
             </svg>
         )
     }
