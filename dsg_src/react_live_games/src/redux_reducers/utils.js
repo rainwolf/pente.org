@@ -52,6 +52,10 @@ export function joinTable(joinEvent, state) {
     }
     if (joinEvent.player === state.me) {
         state.table = joinEvent.table;
+        table.me = state.me;
+        if (state.game === undefined) {
+            state.game = new Game();
+        } 
     }
     table.addPlayer(joinEvent.player);
     state.tables = tables;

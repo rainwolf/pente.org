@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React  from 'react';
 import BoardSquare from './BoardSquare';
 
 
@@ -110,7 +110,8 @@ const Board = (props) => {
     if (props.game === 21 || props.game === 22) { gridsize = 9; }
     if (props.game === 23 || props.game === 24) { gridsize = 13; }
     return (
-        <svg id="svgboard" height={'100%'} viewBox={'0 0 '+(10*(gridsize + 1))+' '+(10*(gridsize + 1))}>
+        <svg id="svgboard" height={'100%'} viewBox={'0 0 '+(10*(gridsize + 1))+' '+(10*(gridsize + 1))}
+             transform={'translate(25,25)'}>
             <g id="boardgroup" transform={'scale(0.95, 0.95) translate(5,5)'}>
                 <filter id="f3" x="0" y="0" width="150%" height="150%">
                     <feOffset result="offOut" in="SourceAlpha" dx={4} dy={4} />

@@ -43,6 +43,22 @@ const UnconnectedTable = (props) => {
             event.target.value = "";
         }
     };
+    const sendMove = (move) => {
+        props.send_message({dsgMoveTableEvent: {move: move, moves: [move], player: props.table.me, table: props.table.table, time: 0}});
+    };
+    const requestCancel = () => {
+        props.send_message({dsgCancelRequestTableEvent: {player: props.table.me, table: props.table.table, time: 0}});
+    };
+    const resign = () => {
+        props.send_message({dsgResignTableEvent: {player: props.table.me, table: props.table.table, time: 0}});
+    };
+    const requestUndo = () => {
+        props.send_message({dsgUndoRequestTableEvent: {player: props.table.me, table: props.table.table, time: 0}});
+    };
+    const forceCancelResign = (resign) => {
+        props.send_message({dsgForceCancelResignTableEvent: {action:(resign?2:1), player: props.table.me, table: props.table.table, time: 0}});
+    };
+    
     
     let table_users = {};
     props.table.players.forEach(player => {
@@ -52,10 +68,9 @@ const UnconnectedTable = (props) => {
     return (
         <Grid container direction={'row'} alignItems={'stretch'} wrap={'nowrap'} style={{width: '100%', height: '100%'}}>
             <Grid item style={{height: '100%'}}>
-                
                 <div ref={ref} style={{height: '100%', width: height}}>
-                    <Board game={props.table.game}
-                           clickHandler={() => {}} hover={'black-stone-gradient'}/>
+                    <Board game={props.table.game} gameObject={props.game}
+                           clickHandler={sendMove} hover={'black-stone-gradient'}/>
                 </div>
             </Grid>
             <Grid item style={{height:'100%', flex: '1', minWidth: '0px'}}>
@@ -65,7 +80,7 @@ const UnconnectedTable = (props) => {
                         <div style={{width: '100%', height: '100%', backgroundColor: '#ff00ff'}}>herro</div>
                     </Grid>
                     <Grid item style={{height: '40%'}}>
-                        <ChatComponent messages={props.messages} users={table_users} sendText={sendTableText}/>
+                        <ChatComponent messages={props.messages} game={props.table.game} users={table_users} sendText={sendTableText}/>
                     </Grid>
                 </Grid>
             </Grid>
@@ -84,8 +99,8 @@ UnconnectedTable.propTypes = {
         }).isRequired
     ).isRequired,
     table: PropTypes.instanceOf(Table).isRequired,
-    // game: PropTypes.instanceOf(Game).isRequired
-    game: PropTypes.instanceOf(Game)
+    game: PropTypes.instanceOf(Game).isRequired
+    // game: PropTypes.instanceOf(Game)
 };
 
 

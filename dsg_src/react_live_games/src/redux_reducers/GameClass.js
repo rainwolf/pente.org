@@ -33,12 +33,12 @@ class Game {
     currentColor = () => {
         if (this.#isConnect6()) {
             return (((this.moves.length % 4) === 0) || ((this.moves.length % 4) === 3)) ? 1 : 2;
-        } else if (this.#isDPente()) {
-            if (this.moves.length < 4) {
-                return 1;
-            }
+        } 
+        const currentColor = 1 + (this.moves.length % 2);
+        if (this.#isGo()) {
+            return 3 - currentColor;
         }
-        return 1 + (this.moves.length % 2);
+        return currentColor;
     };
     // #isPoofPente = () => {
     //     return this.game === 11 || this.game === 12;    
@@ -48,6 +48,9 @@ class Game {
     };
     #isConnect6 = () => {
         return this.game === 13 || this.game === 14;
+    };
+    #isGo = () => {
+        return this.game > 18;
     };
     
     reset = () => {
@@ -319,7 +322,7 @@ class Game {
                 this.abstractBoard[move % this.gridSize][Math.floor(move / this.gridSize)] = color;
                 this.#addGoMove(move, 3-color);
             } else if (doublePass && move !== passMove) {
-                let pos = this.#getPosition(move);
+                let pos = this.getPosition(move);
                 if (pos === 1) {
                     p2DeadStones.push(move);
                 } else if (pos === 2) {
@@ -424,31 +427,31 @@ class Game {
         return newCaptures;
     };
     #checkKo = (move) => {
-        let position = this.#getPosition(move);
+        let position = this.getPosition(move);
         if (move%this.gridSize !== 0) {
             let neighborStone = move - 1;
-            let neighborPosition = this.#getPosition(neighborStone);
+            let neighborPosition = this.getPosition(neighborStone);
             if (position !== 3 - neighborPosition) {
                 return false;
             }
         }
         if (move%this.gridSize !== this.gridSize - 1) {
             let neighborStone = move + 1;
-            let neighborPosition = this.#getPosition(neighborStone);
+            let neighborPosition = this.getPosition(neighborStone);
             if (position !== 3 - neighborPosition) {
                 return false;
             }
         }
         if (Math.floor(move/this.gridSize) !== 0) {
             let neighborStone = move - this.gridSize;
-            let neighborPosition = this.#getPosition(neighborStone);
+            let neighborPosition = this.getPosition(neighborStone);
             if (position !== 3 - neighborPosition) {
                 return false;
             }
         }
         if (Math.floor(move/this.gridSize) !== this.gridSize - 1) {
             let neighborStone = move + this.gridSize;
-            let neighborPosition = this.#getPosition(neighborStone);
+            let neighborPosition = this.getPosition(neighborStone);
             if (position !== 3 - neighborPosition) {
                 return false;
             }
@@ -475,28 +478,28 @@ class Game {
     #stoneHasLiberties = (stone) => {
         if (stone%this.gridSize !== 0) {
             let neighborStone = stone - 1;
-            let position = this.#getPosition(neighborStone);
+            let position = this.getPosition(neighborStone);
             if (position !== 1 && position !== 2) {
                 return true;
             }
         }
         if (stone%this.gridSize !== this.gridSize - 1) {
             let neighborStone = stone + 1;
-            let position = this.#getPosition(neighborStone);
+            let position = this.getPosition(neighborStone);
             if (position !== 1 && position !== 2) {
                 return true;
             }
         }
         if (Math.floor(stone/this.gridSize) !== 0) {
             let neighborStone = stone - this.gridSize;
-            let position = this.#getPosition(neighborStone);
+            let position = this.getPosition(neighborStone);
             if (position !== 1 && position !== 2) {
                 return true;
             }
         }
         if (Math.floor(stone/this.gridSize) !== this.gridSize - 1) {
             let neighborStone = stone + this.gridSize;
-            let position = this.#getPosition(neighborStone);
+            let position = this.getPosition(neighborStone);
             if (position !== 1 && position !== 2) {
                 return true;
             }
@@ -510,7 +513,7 @@ class Game {
     //     let number = this.gridSize-Math.floor(move/this.gridSize);
     //     return letter + number;
     // }
-    #getPosition = (move) => {
+    getPosition = (move) => {
         return this.abstractBoard[move%this.gridSize][Math.floor(move/this.gridSize)];
     };
     #setPosition = (move, val) => {
@@ -578,25 +581,25 @@ class Game {
     #getEmptyNeighbour = (move) => {
         if (move%this.gridSize !== 0) {
             let neighborStone = move - 1;
-            if (this.#getPosition(neighborStone) === 0) {
+            if (this.getPosition(neighborStone) === 0) {
                 return neighborStone;
             }
         }
         if (move%this.gridSize !== this.gridSize - 1) {
             let neighborStone = move + 1;
-            if (this.#getPosition(neighborStone) === 0) {
+            if (this.getPosition(neighborStone) === 0) {
                 return neighborStone;
             }
         }
         if (Math.floor(move/this.gridSize) !== 0) {
             let neighborStone = move - this.gridSize;
-            if (this.#getPosition(neighborStone) === 0) {
+            if (this.getPosition(neighborStone) === 0) {
                 return neighborStone;
             }
         }
         if (Math.floor(move/this.gridSize) !== this.gridSize - 1) {
             let neighborStone = move + this.gridSize;
-            if (this.#getPosition(neighborStone) === 0) {
+            if (this.getPosition(neighborStone) === 0) {
                 return neighborStone;
             }
         }
@@ -621,7 +624,7 @@ class Game {
     };
     #floodPlayer = (player) => {
         for (let move = 0; move < this.gridSize*this.gridSize; move++) {
-            if (this.#getPosition(move) === 3-player) {
+            if (this.getPosition(move) === 3-player) {
                 let neighbourStone = this.#getEmptyNeighbour(move);
                 while (neighbourStone > -1) {
                     this.#floodFillWorker(neighbourStone, player + 2);
