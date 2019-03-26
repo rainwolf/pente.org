@@ -19,6 +19,10 @@ class Table {
         return 'black-stone-gradient';
     };
     
+    isMyTurn = (game) => {
+        return this.me === this.seats[game.currentPlayer()];
+    };
+    
     private = () => {
         return this.tableType === PRIVATE_TABLE;    
     };

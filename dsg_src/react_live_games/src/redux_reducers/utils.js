@@ -35,10 +35,11 @@ export function changeTableState(tableState, state) {
         tables[tableState.table] = new Table(tableState);
     }
     if (state.table === tableState.table) {
-        state.game = new Game();
-        state.game.me = state.me;
-        state.game.setGame(tableState.game);
-        state.game.rated = tableState.rated;
+        let game = new Game();
+        game.me = state.me;
+        game.setGame(tableState.game);
+        game.rated = tableState.rated;
+        state.game = game;
     } 
     state.tables = tables;
 }
@@ -47,7 +48,7 @@ export function joinTable(joinEvent, state) {
     const tables = { ...state.tables };
     let table = tables[joinEvent.table];
     if (table === undefined) {  
-        table = new Table({table: joinEvent.table})
+        table = new Table({table: joinEvent.table});
         tables[joinEvent.table] = table;
     }
     if (joinEvent.player === state.me) {
@@ -105,4 +106,22 @@ export function addTableMessage(data, state) {
         player: user
     });
     state.table_messages = messages;
+}
+
+export function addMove(data, state) {
+    // let game = new Game();
+    // state.game.copyOnto(game);
+    let game =  Object.assign( Object.create( Object.getPrototypeOf(state.game)), state.game);
+    if (data.table === state.table) {
+        if (data.moves.length === 1 && data.move === data.moves[0]) {
+            game.addMove(data.move);
+        } else {
+            game.reset();
+            
+            for(let i = 0; i < data.moves.length; i++) {
+                game.addMove(data.moves[i]);
+            }
+        } 
+    }
+    state.game = game;
 }

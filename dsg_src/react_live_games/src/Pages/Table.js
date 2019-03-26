@@ -8,6 +8,7 @@ import Table from '../redux_reducers/TableClass';
 import Board from '../Components/Board/Board';
 import Grid from '@material-ui/core/Grid';
 import ChatComponent from '../Components/Chat/ChatComponent';
+import Button from '@material-ui/core/Button';
 
 const mapStateToProps = state => {
     return {
@@ -58,26 +59,67 @@ const UnconnectedTable = (props) => {
     const forceCancelResign = (resign) => {
         props.send_message({dsgForceCancelResignTableEvent: {action:(resign?2:1), player: props.table.me, table: props.table.table, time: 0}});
     };
-    
+    const play = () => {
+        props.send_message({dsgPlayTableEvent: {table: props.table.table, time: 0}});
+    };
+    const leave = () => {
+        props.send_message({dsgExitTableEvent: {forced: false, booted: false, table: props.table.table, time: 0}});
+    };
+    const sit = (seat) => {
+        props.send_message({dsgSitTableEvent: {seat: seat, table: props.table.table, time: 0}});
+    };
+    const stand = () => {
+        props.send_message({dsgStandTableEvent: {table: props.table.table, time: 0}});
+    };
+    const cancelReply = (accept) => {
+        props.send_message({dsgCancelReplyTableEvent: {accepted: accept, player: props.table.me, table: props.table.table, time: 0}});
+    };
+    const undoReply = (accept) => {
+        props.send_message({dsgUndoReplyTableEvent: {accepted: accept, player: props.table.me, table: props.table.table, time: 0}});
+    };
+    const rejectGoAssessment = () => {
+        props.send_message({dsgRejectGoStateEvent: {player: props.table.me, table: props.table.table, time: 0}});
+    };
+    const swapSeats = (swap) => {
+        props.send_message({dsgSwapSeatsTableEvent: {swap: swap, silent: false, player: props.table.me, table: props.table.table, time: 0}});
+    };
+    const bootPlayer = (player) => {
+        props.send_message({dsgBootTableEvent: {toBoot: player, player: props.table.me, table: props.table.table, time: 0}});
+    };
+    const invitePlayer = (player, message) => {
+        props.send_message({dsgBootTableEvent: {toInvite: player, inviteText: message, player: props.table.me, table: props.table.table, time: 0}});
+    };
     
     let table_users = {};
     props.table.players.forEach(player => {
-       table_users[player] = props.users[player]; 
+        if (props.users[player]) {
+            table_users[player] = props.users[player];
+        }
     });
     
     return (
         <Grid container direction={'row'} alignItems={'stretch'} wrap={'nowrap'} style={{width: '100%', height: '100%'}}>
             <Grid item style={{height: '100%'}}>
                 <div ref={ref} style={{height: '100%', width: height}}>
-                    <Board game={props.table.game} gameObject={props.game}
-                           clickHandler={sendMove} hover={'black-stone-gradient'}/>
+                    <Board game={props.table.game} gameObj={props.game} table={props.table}
+                           clickHandler={sendMove}/>
                 </div>
             </Grid>
             <Grid item style={{height:'100%', flex: '1', minWidth: '0px'}}>
                 <Grid container direction={'column'} alignItems={'stretch'}  wrap={'nowrap'}
                       style={{width: '100%', height: '100%'}}>
                     <Grid item style={{maxWidth: '100%', flex: '1 1 auto', overflow: 'auto', minHeight: '0px'}}>
-                        <div style={{width: '100%', height: '100%', backgroundColor: '#ff00ff'}}>herro</div>
+                        <div style={{width: '100%', height: '100%', backgroundColor: '#fffff'}}>
+                            <Button variant="contained" color="primary" onClick={play}>
+                                Play
+                            </Button>
+                            <Button variant="contained" color="primary" onClick={() => sit(1)}>
+                                Sit 1
+                            </Button>
+                            <Button variant="contained" color="primary" onClick={() => sit(2)}>
+                                Sit 2
+                            </Button>
+                        </div>
                     </Grid>
                     <Grid item style={{height: '40%'}}>
                         <ChatComponent messages={props.messages} game={props.table.game} users={table_users} sendText={sendTableText}/>

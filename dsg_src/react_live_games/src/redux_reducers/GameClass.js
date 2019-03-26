@@ -1,9 +1,47 @@
+'use strict';
+
 class Game {
     constructor(gameState) {
         this.updateGameState(gameState);
-        this.reset();
         this.rated = false;
+        this.abstractBoard = [[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        ];
+        this.reset();
     }
+    
+    copyOnto = (newGame) => {
+        newGame.captures = this.captures;
+        newGame.moves = this.moves;
+        newGame.goGroupsByPlayerAndID = this.goGroupsByPlayerAndID;
+        newGame.goStoneGroupIDsByPlayer = this.goStoneGroupIDsByPlayer;
+        newGame.koMove = this.koMove;
+        newGame.suicideAllowed = this.suicideAllowed;
+        newGame.goTerritoryByPlayer = this.goTerritoryByPlayer;
+        newGame.hasPass = this.hasPass; 
+        newGame.doublePass = this.doublePass;
+        newGame.goDeadStonesByPlayer = this.goDeadStonesByPlayer;
+        newGame.setGame(this.game);
+        newGame.rated = this.rated;
+        newGame.me = this.me;
+    };
     
     updateGameState = (gameState) => {
         Object.assign(this, gameState);
@@ -28,14 +66,14 @@ class Game {
                 return 1;
             } 
         }
-        return 1 + (this.moves.length % 2);
+        return (1 + (this.moves.length % 2));
     };
     currentColor = () => {
         if (this.#isConnect6()) {
             return (((this.moves.length % 4) === 0) || ((this.moves.length % 4) === 3)) ? 1 : 2;
         } 
         const currentColor = 1 + (this.moves.length % 2);
-        if (this.#isGo()) {
+        if (this.isGo()) {
             return 3 - currentColor;
         }
         return currentColor;
@@ -44,12 +82,12 @@ class Game {
     //     return this.game === 11 || this.game === 12;    
     // };
     #isDPente = () => {
-        return this.game === 11 || this.game === 12 || this.game === 17 || this.game === 18;
+        return this.game === 7 || this.game === 8 || this.game === 17 || this.game === 18;
     };
     #isConnect6 = () => {
         return this.game === 13 || this.game === 14;
     };
-    #isGo = () => {
+    isGo = () => {
         return this.game > 18;
     };
     
@@ -61,8 +99,9 @@ class Game {
         this.koMove = -1;
         this.suicideAllowed = false;
         this.goTerritoryByPlayer = {1: [], 2: []};
+        this.hasPass = false; this.doublePass = false;
         this.goDeadStonesByPlayer = {1: [], 2: []};
-        this.abstractBoard = new Array(19).fill(new Array(19).fill(0));
+        this.#resetAbstractBoard();
     };
     #resetAbstractBoard = () => {
         for (let i = 0; i < 19; i++) {
@@ -305,28 +344,28 @@ class Game {
         this.goDeadStonesByPlayer = {1: [], 2: []};
         let p1DeadStones = this.goDeadStonesByPlayer[1], p2DeadStones = this.goDeadStonesByPlayer[2];
         this.koMove = -1;
-        let hasPass = false, doublePass = false;
+        this.hasPass = false; this.doublePass = false;
         for (let i = 0; i < Math.min(this.moves.length, until); i++) {
             let move = this.moves[i];
             if (move === passMove) {
-                if (hasPass) {
-                    doublePass = true;
+                if (this.hasPass) {
+                    this.doublePass = true;
                 } else {
-                    hasPass = true;
+                    this.hasPass = true;
                 }
             } else {
-                hasPass = false;
+                this.hasPass = false;
             }
-            if (move !== passMove && !doublePass) {
-                let color = 2 - (i%2);
-                this.abstractBoard[move % this.gridSize][Math.floor(move / this.gridSize)] = color;
-                this.#addGoMove(move, 3-color);
-            } else if (doublePass && move !== passMove) {
+            if (move !== passMove && !this.doublePass) {
+                let player = 1 + (i%2);
+                this.abstractBoard[move % this.gridSize][Math.floor(move / this.gridSize)] = player;
+                this.#addGoMove(move, 3-player);
+            } else if (this.doublePass && move !== passMove) {
                 let pos = this.getPosition(move);
                 if (pos === 1) {
-                    p2DeadStones.push(move);
-                } else if (pos === 2) {
                     p1DeadStones.push(move);
+                } else if (pos === 2) {
+                    p2DeadStones.push(move);
                 }
                 this.#setPosition(move, 0);
             }
@@ -336,9 +375,23 @@ class Game {
 
     #addGoMove = (x, y, currentPlayer) => {
         const move = this.gridSize * y + x;
+        if (move === this.gridSize*this.gridSize) {
+            if (this.hasPass) {
+                this.doublePass = true;
+            } else {
+                this.hasPass = true;
+            }
+        } else {
+            this.hasPass = false;
+        }
         if (move >= this.gridSize*this.gridSize) {
             return;
         }
+        if (this.doublePass) {
+            let pos = this.getPosition(move);
+            this.goDeadStonesByPlayer[pos].push(move);
+            this.#setPosition(move, 0);
+        } 
         let opponent = 3 - currentPlayer;
         // console.log(goStoneGroupIDsByPlayer);
         let groupsByID = this.goGroupsByPlayerAndID[currentPlayer];
@@ -358,7 +411,7 @@ class Game {
             let moveGroupID = stoneGroupIDs[move];
             let moveGroup = groupsByID[moveGroupID];
             if (!this.#groupHasLiberties(moveGroup)) {
-                this.captures[2 - currentPlayer] += moveGroup.size();
+                this.captures[currentPlayer] += moveGroup.size();
                 // if (currentPlayer !== 1) {
                 //     whiteCaptures += moveGroup.size();
                 // } else {
