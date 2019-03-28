@@ -1,0 +1,3 @@
+[submodule "react-live-game-room"]
+	path = react-live-game-room
+	url = ./dsg_src/react-live-game-room/
