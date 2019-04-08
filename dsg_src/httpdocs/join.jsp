@@ -48,9 +48,8 @@ a {text-decoration:none;}
 			</div>
 
 			<div id="signupnow-button">
-				<a href="javascript:handlePlay('true','800','true')">Play as a Guest!</a>
+				<a href="/gameServer/live?guest" target="_blank" rel="noopener noreferrer">Play as a Guest!</a>
 			</div>
-      <p>Playing as a guest is only possible in browsers that support Java, sadly, these are a dying breed.</p>
 		</div>  
 	  
 	  

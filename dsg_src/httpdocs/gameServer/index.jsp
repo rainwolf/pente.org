@@ -574,14 +574,17 @@ if (inLiveGameRoom) {
     </div>
 </td>
 <%
-}
+} else {
 %>
-    <td style="width: 18%;" valign="top">
+    <td style="width: 28%;" valign="top">
     <div class="buttonwrapper">
-      <a class="boldbuttons" href="broadcast.jsp" 
-         style="margin-right:5px;"><span>Broadcast</span></a>
+      <a class="boldbuttons" href="/gameServer/live"  target="_blank" rel="noopener noreferrer" 
+         style="margin-right:5px;"><span>New (alpha) Game Room</span></a>
     </div>
 </td>
+      <%
+          }
+      %>
 
 
 
