@@ -2273,7 +2273,11 @@ public class ServerTable {
         		txt += ". " + setMsg;
         	}
         }
-		changeGameState(newStatus, txt, winnerPlayer, gameInSet);
+
+        sendTimers(winnerPlayer);
+        sendTimers(loserPlayer);
+        
+        changeGameState(newStatus, txt, winnerPlayer, gameInSet);
 		
         updateDatabaseAfterGameOverInSeparateThread(
         	winnerPlayer, loserPlayer, winner, set, gameStatus);
