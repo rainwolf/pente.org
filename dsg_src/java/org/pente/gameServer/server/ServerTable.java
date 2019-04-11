@@ -862,7 +862,7 @@ public class ServerTable {
             changeError.setTableType(tableType);
 			dsgEventRouter.routeEvent(changeError, changeStateEvent.getPlayer());
 		}
-		else {
+		else if (!actor.isGuest()) {
 
             try {
                 DSGPlayerPreference pref = new DSGPlayerPreference("gameState", changeStateEvent);
