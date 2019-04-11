@@ -579,7 +579,7 @@ if (inLiveGameRoom) {
     <td style="width: 28%;" valign="top">
     <div class="buttonwrapper">
       <a class="boldbuttons" href="/gameServer/live"  target="_blank" rel="noopener noreferrer" 
-         style="margin-right:5px;"><span>New (alpha) Game Room</span></a>
+         style="margin-right:5px;"><span>New Game Room (beta)</span></a>
     </div>
 </td>
       <%
