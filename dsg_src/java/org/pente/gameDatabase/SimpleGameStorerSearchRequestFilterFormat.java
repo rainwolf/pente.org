@@ -383,13 +383,13 @@ public class SimpleGameStorerSearchRequestFilterFormat implements ObjectFormat {
                 filterData.setRatingP2Above(Integer.parseInt(ratingStr));
             }
             ratingStr = (String) params.get(P1RATING_PARAM);
-            if (ratingStr != null) {
+            if (ratingStr != null && !ratingStr.equals("")) {
                 filterData.setRatingP1Above(Integer.parseInt(ratingStr));
             } else {
                 filterData.setRatingP1Above(0);
             }
             ratingStr = (String) params.get(P2RATING_PARAM);
-            if (ratingStr != null) {
+            if (ratingStr != null && !ratingStr.equals("")) {
                 filterData.setRatingP2Above(Integer.parseInt(ratingStr));
             } else {
                 filterData.setRatingP2Above(0);
