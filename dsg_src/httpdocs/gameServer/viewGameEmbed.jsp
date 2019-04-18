@@ -291,7 +291,11 @@ for( int i = 0; i < gameMoves.size(); i++ ) {
                     case 63: replayConnect6Game(abstractBoard, movesList, until); break;
                     case 65: replayPenteGame(abstractBoard, movesList, until); break;
                     case 67: replayKeryoPenteGame(abstractBoard, movesList, until); break;
-                    case 69: replayGoGame(abstractBoard, movesList, until); break;
+                    case 69:
+                    case 71:
+                    case 73:
+                        replayGoGame(abstractBoard, movesList, until); break;
+                    case 75: replayOPenteGame(abstractBoard, movesList, until); break;
                 }
             }
 
@@ -359,7 +363,11 @@ for( int i = 0; i < gameMoves.size(); i++ ) {
                     case 63: boardColor = connect6Color; break;
                     case 65: boardColor = boatPenteColor; break;
                     case 67: boardColor = dkeryoPenteColor; break;
-                    case 69: boardColor = goColor; break;
+                    case 69:
+                    case 71:
+                    case 73:
+                        boardColor = goColor; break;
+                    case 75: boardColor = oPenteColor; break;
                     default: boardColor = penteColor; break;
                 }
                 boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);

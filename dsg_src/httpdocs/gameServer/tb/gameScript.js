@@ -8,6 +8,7 @@ var connect6Color = "#EDA3FD";
 var boatPenteColor = "#25BAFF";
 var dkeryoPenteColor = "#FFA500";
 var goColor = "#FAC832";
+var oPenteColor = '#52be80 ';
 
 var abstractBoard = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -67,8 +68,8 @@ function leftRight(e) {
 
 function drawGame() {
     // gridSize = 19;
-    for (var i = 0; i < gridSize; i++) {
-        for (var j = 0; j < gridSize; j++) {
+    for (let i = 0; i < gridSize; i++) {
+        for (let j = 0; j < gridSize; j++) {
             if (abstractBoard[i][j] > 0) {
                 drawStone(i, j, abstractBoard[i][j]);
             } 
@@ -76,12 +77,12 @@ function drawGame() {
     }
     if (game === 69 || game === 71 || game === 73) {
         drawGoCaptures();
-        var p1DeadStones = goDeadStonesByPlayer[1];
-        for ( var i = 0; i < p1DeadStones.length; i++ ) {
+        let p1DeadStones = goDeadStonesByPlayer[1];
+        for ( let i = 0; i < p1DeadStones.length; i++ ) {
             drawDeadStone(p1DeadStones[i], 2);
         }
-        var p2DeadStones = goDeadStonesByPlayer[2];
-        for ( i = 0; i < p2DeadStones.length; i++ ) {
+        let p2DeadStones = goDeadStonesByPlayer[2];
+        for (let i = 0; i < p2DeadStones.length; i++ ) {
             drawDeadStone(p2DeadStones[i], 1);
         }
     } else {
@@ -97,11 +98,11 @@ function replayGoGame(abstractBoard, movesList, until) {
     goGroupsByPlayerAndID = {1: {}, 2: {}}; 
     goStoneGroupIDsByPlayer = {1: {}, 2: {}};
     goDeadStonesByPlayer = {1: [], 2: []};
-    var p1DeadStones = goDeadStonesByPlayer[1], p2DeadStones = goDeadStonesByPlayer[2];
+    let p1DeadStones = goDeadStonesByPlayer[1], p2DeadStones = goDeadStonesByPlayer[2];
     koMove = -1;
-    var hasPass = false, doublePass = false;
-    for (var i = 0; i < Math.min(movesList.length, until); i++) {
-        var move = movesList[i];
+    let hasPass = false, doublePass = false;
+    for (let i = 0; i < Math.min(movesList.length, until); i++) {
+        let move = movesList[i];
         if (move === passMove) {
             if (hasPass) {
                 doublePass = true;
@@ -112,11 +113,11 @@ function replayGoGame(abstractBoard, movesList, until) {
             hasPass = false;
         }
         if (move !== passMove && !doublePass) {
-            var color = 2 - (i%2);
+            let color = 2 - (i%2);
             abstractBoard[move % gridSize][Math.floor(move / gridSize)] = color;
             addGoMove(move, 3-color);
         } else if (doublePass && move !== passMove) {
-            var pos = getPosition(move);
+            let pos = getPosition(move);
             if (pos === 1) {
                 p2DeadStones.push(move);
             } else if (pos === 2) {
@@ -131,10 +132,10 @@ function addGoMove(move, currentPlayer) {
     if (move >= passMove) {
         return;
     }
-    var opponent = 3 - currentPlayer;
+    let opponent = 3 - currentPlayer;
     // console.log(goStoneGroupIDsByPlayer);
-    var groupsByID = goGroupsByPlayerAndID[currentPlayer];
-    var stoneGroupIDs = goStoneGroupIDsByPlayer[currentPlayer];
+    let groupsByID = goGroupsByPlayerAndID[currentPlayer];
+    let stoneGroupIDs = goStoneGroupIDsByPlayer[currentPlayer];
     // console.log("currentPlayer: " + currentPlayer);
     // console.log(groupsByID);
     // console.log(stoneGroupIDs);
@@ -147,8 +148,8 @@ function addGoMove(move, currentPlayer) {
     if (suicideAllowed === true) {
         groupsByID = goGroupsByPlayerAndID[currentPlayer];
         stoneGroupIDs = goStoneGroupIDsByPlayer[currentPlayer];
-        var moveGroupID = stoneGroupIDs[move];
-        var moveGroup = groupsByID[moveGroupID];
+        let moveGroupID = stoneGroupIDs[move];
+        let moveGroup = groupsByID[moveGroupID];
         if (!groupHasLiberties(moveGroup)) {
             if (currentPlayer !== 1) {
                 whiteCaptures += moveGroup.size();
@@ -163,7 +164,7 @@ function addGoMove(move, currentPlayer) {
 }
 
 function makeCaptures(move, groupsByID, stoneGroupIDs, colorToCapture) {
-    var captures = 0;
+    let captures = 0;
     if (move%gridSize !== 0) {
         var neighborStone = move - 1;
         var neighborStoneGroupID = stoneGroupIDs[neighborStone];
@@ -198,8 +199,8 @@ function getCaptures(move, groupsByID, stoneGroupIDs, captures, neighborStone, n
     if (neighborStoneGroupID === undefined) {
         return captures;
     }
-    var newCaptures = captures;
-    var neighborStoneGroup = groupsByID[neighborStoneGroupID];
+    let newCaptures = captures;
+    let neighborStoneGroup = groupsByID[neighborStoneGroupID];
     // console.log(getMoveCoord(move));
     // console.log(groupsByID);
     if (neighborStoneGroup !== undefined) {
@@ -217,7 +218,7 @@ function getCaptures(move, groupsByID, stoneGroupIDs, captures, neighborStone, n
     return newCaptures;
 }
 function checkKo(move) {
-    var position = getPosition(move);
+    let position = getPosition(move);
     if (move%gridSize !== 0) {
         var neighborStone = move - 1;
         var neighborPosition = getPosition(neighborStone);
@@ -249,15 +250,15 @@ function checkKo(move) {
     return true;
 }
 function captureGroup(groupID, groupsByID, stoneGroupIDs) {
-    var group = groupsByID[groupID];
-    for(var i = 0; i < group.length; ++i) {
+    let group = groupsByID[groupID];
+    for(let i = 0; i < group.length; ++i) {
         setPosition(group[i], 0);
         delete stoneGroupIDs[group[i]];
     }
     delete groupsByID[groupID];
 }
 function groupHasLiberties(group) {
-    for (var i = 0; i < group.length; i++) {
+    for (let i = 0; i < group.length; i++) {
         if (stoneHasLiberties(group[i]) === true) {
             return true;
         }
@@ -299,8 +300,8 @@ function stoneHasLiberties(stone) {
 }
 
 function getMoveCoord(move) {
-    var letter = coordinateLetters[move%gridSize];
-    var number = gridSize-Math.floor(move/gridSize);
+    let letter = coordinateLetters[move%gridSize];
+    let number = gridSize-Math.floor(move/gridSize);
     return letter + number;
 }
 function getPosition(move) {
@@ -311,7 +312,7 @@ function setPosition(move, val) {
 }
 
 function settleGroups(move, groupsByID, stoneGroupIDs) {
-    var newGroup = [];
+    let newGroup = [];
     newGroup.push(move);
     groupsByID[move] = newGroup;
     stoneGroupIDs[move] = move;
@@ -349,8 +350,8 @@ function mergeGroups(group1, group2, groupsByID, stoneGroupIDs) {
     if (group1 === group2) {
         return;
     }
-    var oldGroup, newGroup;
-    var oldGroupID, newGroupID;
+    let oldGroup, newGroup;
+    let oldGroupID, newGroupID;
     if (group1 < group2) {
         oldGroup = groupsByID[group1];
         newGroup = groupsByID[group2];
@@ -362,7 +363,7 @@ function mergeGroups(group1, group2, groupsByID, stoneGroupIDs) {
         oldGroupID = group2;
         newGroupID = group1;
     }
-    for(var i = 0; i < oldGroup.length; ++i) {
+    for(let i = 0; i < oldGroup.length; ++i) {
         newGroup.push(oldGroup[i]);
         stoneGroupIDs[oldGroup[i]] = newGroupID;
     }
@@ -399,15 +400,15 @@ function getEmptyNeighbour(move) {
 
 function floodFillWorker(move, value) {
     setPosition(move, value);
-    var neighbourStone = getEmptyNeighbour(move);
+    let neighbourStone = getEmptyNeighbour(move);
     while (neighbourStone !== -1) {
         floodFillWorker(neighbourStone, value);
         neighbourStone = getEmptyNeighbour(move);
     }
 }
 function resetGoBeforeFlood() {
-    for (var i = 0; i < gridSize; i++ ) {
-        for (var j = 0; j < gridSize; j++ ) {
+    for (let i = 0; i < gridSize; i++ ) {
+        for (let j = 0; j < gridSize; j++ ) {
             if (abstractBoard[i][j] !== 1 && abstractBoard[i][j] !== 2) {
                 abstractBoard[i][j] = 0;                
             }
@@ -415,9 +416,9 @@ function resetGoBeforeFlood() {
     }
 }
 function floodPlayer(player) {
-    for (var move = 0; move < gridSize*gridSize; move++) {
+    for (let move = 0; move < gridSize*gridSize; move++) {
         if (getPosition(move) === 3-player) {
-            var neighbourStone = getEmptyNeighbour(move);
+            let neighbourStone = getEmptyNeighbour(move);
             while (neighbourStone > -1) {
                 floodFillWorker(neighbourStone, player + 2);
                 neighbourStone = getEmptyNeighbour(move);
@@ -426,9 +427,9 @@ function floodPlayer(player) {
     }
 }
 function getMovesForValue(value) {
-    var result = [];
-    for (var j = 0; j < gridSize; j++ ) {
-        for (var i = 0; i < gridSize; i++ ) {
+    let result = [];
+    for (let j = 0; j < gridSize; j++ ) {
+        for (let i = 0; i < gridSize; i++ ) {
             if (abstractBoard[i][j] === value) {
                 result.push(j*gridSize+i);
             }
@@ -440,14 +441,14 @@ function getTerritories() {
     goTerritoryByPlayer = {1: [], 2: []};
     resetGoBeforeFlood();
     floodPlayer(1);
-    var p1Territory = getMovesForValue(3);
+    let p1Territory = getMovesForValue(3);
     resetGoBeforeFlood();
     floodPlayer(2);
-    var p2Territory = getMovesForValue(4);
+    let p2Territory = getMovesForValue(4);
     resetGoBeforeFlood();
-    var i = 0, j = 0;
+    let i = 0, j = 0;
     while (i < p1Territory.length && j < p2Territory.length) {
-        var p1Stone = p1Territory[i], p2Stone = p2Territory[j];
+        let p1Stone = p1Territory[i], p2Stone = p2Territory[j];
         if (p1Stone === p2Stone) {
             p1Territory.splice(i, 1);
             p2Territory.splice(j, 1);
@@ -471,18 +472,18 @@ function drawTerritories() {
         document.getElementById("scoreBox").innerHTML = "";
     } else {
         getTerritories();
-        var p1Territory = goTerritoryByPlayer[1], p2Territory = goTerritoryByPlayer[2];
-        for (var i = 0; i < p1Territory.length; i++) {
+        let p1Territory = goTerritoryByPlayer[1], p2Territory = goTerritoryByPlayer[2];
+        for (let i = 0; i < p1Territory.length; i++) {
             drawTerritorySquare(p1Territory[i], 1);
         }
-        for (i = 0; i < p2Territory.length; i++) {
+        for (let i = 0; i < p2Territory.length; i++) {
             drawTerritorySquare(p2Territory[i], 2);
         }
         territoryDrawn = true;
         
-        var p1Score = 0, p2Score = 0;
-        for (i = 0; i < gridSize; i++) {
-            for (var j = 0; j < gridSize; j++) {
+        let p1Score = 0, p2Score = 0;
+        for (let i = 0; i < gridSize; i++) {
+            for (let j = 0; j < gridSize; j++) {
                 if (abstractBoard[i][j] === 1) {
                     p2Score += 1;
                 } else if (abstractBoard[i][j] === 2) {
@@ -496,16 +497,16 @@ function drawTerritories() {
 }
 function reDrawTerritories() {
     getTerritories();
-    var p1Territory = goTerritoryByPlayer[1], p2Territory = goTerritoryByPlayer[2];
-    for (var i = 0; i < p1Territory.length; i++) {
+    let p1Territory = goTerritoryByPlayer[1], p2Territory = goTerritoryByPlayer[2];
+    for (let i = 0; i < p1Territory.length; i++) {
         drawTerritorySquare(p1Territory[i], 1);
     }
-    for (i = 0; i < p2Territory.length; i++) {
+    for (let i = 0; i < p2Territory.length; i++) {
         drawTerritorySquare(p2Territory[i], 2);
     }
-    var p1Score = 0, p2Score = 0;
-    for (i = 0; i < gridSize; i++) {
-        for (var j = 0; j < gridSize; j++) {
+    let p1Score = 0, p2Score = 0;
+    for (let i = 0; i < gridSize; i++) {
+        for (let j = 0; j < gridSize; j++) {
             if (abstractBoard[i][j] === 1) {
                 p2Score += 1;
             } else if (abstractBoard[i][j] === 2) {
@@ -565,7 +566,7 @@ function reDrawTerritories() {
                 // boardContext.strokeStyle = "#FFFFFF";
                 boardContext.stroke();
                 boardContext.closePath();
-                if (game < 69) {
+                if (game < 69 || game > 74) {
                     boardContext.beginPath();
                     boardContext.arc(indentWidth + 3*stepX/2 + 9*stepX, indentHeight + 3*stepY/2 + 9*stepY, stepX / 5, 0, Math.PI*2, true);
                     boardContext.stroke();
@@ -629,7 +630,7 @@ function reDrawTerritories() {
                 } else if (game === 71) {
                     rd = stepX / 8;
                     c = Math.floor(gridSize/2);
-                    l = 2, r = gridSize - 1 - l;
+                    l = 2; r = gridSize - 1 - l;
                     boardContext.beginPath();
                     boardContext.arc(indentWidth + 3*stepX/2 + c*stepX, indentHeight + 3*stepY/2 + c*stepY, rd, 0, Math.PI*2, true);
                     boardContext.fill();
@@ -656,8 +657,8 @@ function drawRedDot(i, j) {
     if (i>=gridSize || j>=gridSize) {
         return;
     }
-    var centerX = indentWidth + stepX * (i+1) + stepX/2;
-    var centerY = indentHeight + stepY * (j+1) + stepY/2;
+    let centerX = indentWidth + stepX * (i+1) + stepX/2;
+    let centerY = indentHeight + stepY * (j+1) + stepY/2;
     boardContext.beginPath();
     boardContext.arc(centerX, centerY, stepX / 7, 0, Math.PI * 2, true);
     boardContext.fillStyle = 'red';
@@ -669,8 +670,8 @@ function drawStone(i, j, color) {
         return;
     }
     boardContext.save();
-    var centerX = indentWidth + stepX*(i+1) + stepX/2;
-    var centerY = indentHeight + stepY*(j+1) + stepY/2;
+    let centerX = indentWidth + stepX*(i+1) + stepX/2;
+    let centerY = indentHeight + stepY*(j+1) + stepY/2;
     boardContext.beginPath();
     boardContext.arc(centerX, centerY, radius , 0, Math.PI*2, true);
     if (color === 2) {
@@ -707,10 +708,10 @@ function drawDeadStone(move, color) {
     if (color < 1 || color > 2) {
         return;
     }
-    var i = move%gridSize, j = Math.floor(move/gridSize);
+    let i = move%gridSize, j = Math.floor(move/gridSize);
     boardContext.save();
-    var centerX = indentWidth + stepX*(i+1) + stepX/2;
-    var centerY = indentHeight + stepY*(j+1) + stepY/2;
+    let centerX = indentWidth + stepX*(i+1) + stepX/2;
+    let centerY = indentHeight + stepY*(j+1) + stepY/2;
     boardContext.globalAlpha = 0.75;
     boardContext.beginPath();
     if (color === 2) {
@@ -750,11 +751,11 @@ function drawTerritorySquare(move, color) {
     if (color < 1 || color > 2) {
         return;
     }
-    var i = move % gridSize, j = Math.floor(move/gridSize);
+    let i = move % gridSize, j = Math.floor(move/gridSize);
     boardContext.save();
-    var width = 2*radius/3
-    var centerX = indentWidth + stepX*(i+1) + stepX/2 - width/2;
-    var centerY = indentHeight + stepY*(j+1) + stepY/2 - width/2;
+    let width = 2*radius/3
+    let centerX = indentWidth + stepX*(i+1) + stepX/2 - width/2;
+    let centerY = indentHeight + stepY*(j+1) + stepY/2 - width/2;
     if (color === 1) {
         boardContext.fillStyle = 'black';
     } else {
@@ -833,7 +834,7 @@ function drawCaptures() {
 }
 
 function drawGoCaptures() {
-    var pxSize = Math.floor(stepX/2+1);
+    let pxSize = Math.floor(stepX/2+1);
     if (whiteCaptures > 0) {
         var digits = 1;
         if (whiteCaptures > 9) {
@@ -939,7 +940,7 @@ function drawGoCaptures() {
 
 
 function detectPenteCapture(abstractBoard, i, j, myColor) {
-    var opponentColor = 1 + (myColor % 2);
+    let opponentColor = 1 + (myColor % 2);
     if ((i-3) > -1) {
         if (abstractBoard[i-3][j] === myColor) {
             if ((abstractBoard[i-1][j] === opponentColor) && (abstractBoard[i-2][j] === opponentColor)) {
@@ -1046,7 +1047,7 @@ function detectPenteCapture(abstractBoard, i, j, myColor) {
     }
 }
 function detectKeryoPenteCapture(abstractBoard, i, j, myColor) {
-    var opponentColor = 1 + (myColor % 2);
+    let opponentColor = 1 + (myColor % 2);
     if ((i-4) > -1) {
         if (abstractBoard[i-4][j] === myColor) {
             if ((abstractBoard[i-1][j] === opponentColor) && (abstractBoard[i-2][j] === opponentColor) && (abstractBoard[i-3][j] === opponentColor)) {
@@ -1161,8 +1162,8 @@ function detectKeryoPenteCapture(abstractBoard, i, j, myColor) {
     }
 }
 function detectPoof(abstractBoard, i, j, myColor) {
-    var opponentColor = 1 + (myColor % 2);
-    var poofed = false;
+    let opponentColor = 1 + (myColor % 2);
+    let poofed = false;
     if (((i-2) > -1) && ((i+1) < 19)) {
         if (abstractBoard[i-1][j] === myColor) {
             if ((abstractBoard[i-2][j] === opponentColor) && (abstractBoard[i+1][j] === opponentColor)) {
@@ -1275,7 +1276,7 @@ function detectPoof(abstractBoard, i, j, myColor) {
             }
         }
     }
-    
+
     if (poofed) {
         if (myColor === 1) {
             ++whiteCaptures;
@@ -1285,9 +1286,203 @@ function detectPoof(abstractBoard, i, j, myColor) {
     }
 
 }
+function detectKeryoPoof(abstractBoard, i, j, myColor) {
+    let opponentColor = 1 + (myColor % 2);
+    let poofed = false;
+    if (((i-3) > -1) && ((i+1) < 19)) { // left
+        if (abstractBoard[i-1][j] === myColor && abstractBoard[i-2][j] === myColor) {
+            if ((abstractBoard[i-3][j] === opponentColor) && (abstractBoard[i+1][j] === opponentColor)) {
+                abstractBoard[i-2][j] = 0;
+                abstractBoard[i-1][j] = 0;
+                abstractBoard[i][j] = 0;
+                if (myColor === 1) {
+                    whiteCaptures += 2;
+                } else {
+                    blackCaptures += 2;
+                }
+                poofed = true;
+            }
+        }
+    }
+    if (((i-3) > -1) && ((j-3) > -1) && ((i+1) < 19) && ((j+1) < 19)) { // up left
+        if (abstractBoard[i-1][j-1] === myColor && abstractBoard[i-2][j-2] === myColor) {
+            if ((abstractBoard[i-3][j-3] === opponentColor) && (abstractBoard[i+1][j+1] === opponentColor)) {
+                abstractBoard[i-2][j-2] = 0;
+                abstractBoard[i-1][j-1] = 0;
+                abstractBoard[i][j] = 0;
+                if (myColor === 1) {
+                    whiteCaptures += 2;
+                } else {
+                    blackCaptures += 2;
+                }
+                poofed = true;
+            }
+        }
+    }
+    if (((j-3) > -1) && ((j+1) < 19)) { // up
+        if (abstractBoard[i][j-1] === myColor && abstractBoard[i][j-2] === myColor) {
+            if ((abstractBoard[i][j-3] === opponentColor) && (abstractBoard[i][j+1] === opponentColor)) {
+                abstractBoard[i][j-2] = 0;
+                abstractBoard[i][j-1] = 0;
+                abstractBoard[i][j] = 0;
+                if (myColor === 1) {
+                    whiteCaptures += 2;
+                } else {
+                    blackCaptures += 2;
+                }
+                poofed = true;
+            }
+        }
+    }
+    if (((i-1) > -1) && ((j-3) > -1) && ((i+3) < 19) && ((j+1) < 19)) { // up right
+        if (abstractBoard[i+1][j-1] === myColor && abstractBoard[i+2][j-2] === myColor) {
+            if ((abstractBoard[i-1][j+1] === opponentColor) && (abstractBoard[i+3][j-3] === opponentColor)) {
+                abstractBoard[i+2][j-2] = 0;
+                abstractBoard[i+1][j-1] = 0;
+                abstractBoard[i][j] = 0;
+                if (myColor === 1) {
+                    whiteCaptures += 2;
+                } else {
+                    blackCaptures += 2;
+                }
+                poofed = true;
+            }
+        }
+    }
+    if (((i+3) < 19) && ((i-1) > -1)) { // right
+        if (abstractBoard[i+1][j] === myColor && abstractBoard[i+2][j] === myColor) {
+            if ((abstractBoard[i+3][j] === opponentColor) && (abstractBoard[i-1][j] === opponentColor)) {
+                abstractBoard[i+2][j] = 0;
+                abstractBoard[i+1][j] = 0;
+                abstractBoard[i][j] = 0;
+                if (myColor === 1) {
+                    whiteCaptures += 2;
+                } else {
+                    blackCaptures += 2;
+                }
+                poofed = true;
+            }
+        }
+    }
+    if (((i-1) > -1) && ((j-1) > -1) && ((i+3) < 19) && ((j+3) < 19)) { // down right
+        if (abstractBoard[i+1][j+1] === myColor && abstractBoard[i+2][j+2] === myColor) {
+            if ((abstractBoard[i-1][j-1] === opponentColor) && (abstractBoard[i+3][j+3] === opponentColor)) {
+                abstractBoard[i+2][j+2] = 0;
+                abstractBoard[i+1][j+1] = 0;
+                abstractBoard[i][j] = 0;
+                if (myColor === 1) {
+                    whiteCaptures += 2;
+                } else {
+                    blackCaptures += 2;
+                }
+                poofed = true;
+            }
+        }
+    }
+    if (((j+2) < 19) && ((j-1) > -1)) { // down
+        if (abstractBoard[i][j+1] === myColor && abstractBoard[i][j+2] === myColor) {
+            if ((abstractBoard[i][j-1] === opponentColor) && (abstractBoard[i][j+3] === opponentColor)) {
+                abstractBoard[i][j+1] = 0;
+                abstractBoard[i][j+2] = 0;
+                abstractBoard[i][j] = 0;
+                if (myColor === 1) {
+                    whiteCaptures += 2;
+                } else {
+                    blackCaptures += 2;
+                }
+                poofed = true;
+            }
+        }
+    }
+    if (((i-3) > -1) && ((j-1) > -1) && ((i+1) < 19) && ((j+3) < 19)) { // down left
+        if (abstractBoard[i-1][j+1] === myColor && abstractBoard[i-2][j+2] === myColor) {
+            if ((abstractBoard[i+1][j-1] === opponentColor) && (abstractBoard[i-3][j+3] === opponentColor)) {
+                abstractBoard[i-2][j+2] = 0;
+                abstractBoard[i-1][j+1] = 0;
+                abstractBoard[i][j] = 0;
+                if (myColor === 1) {
+                    whiteCaptures += 2;
+                } else {
+                    blackCaptures += 2;
+                }
+                poofed = true;
+            }
+        }
+    }
+    
+    // 4 directions with center of 3 stones placed to poof
+    if (((i-2) > -1) && ((i+2) < 19)) { // horizontal
+        if (abstractBoard[i-1][j] === myColor && abstractBoard[i+1][j] === myColor) {
+            if ((abstractBoard[i-2][j] === opponentColor) && (abstractBoard[i+2][j] === opponentColor)) {
+                abstractBoard[i+1][j] = 0;
+                abstractBoard[i-1][j] = 0;
+                abstractBoard[i][j] = 0;
+                if (myColor === 1) {
+                    whiteCaptures += 2;
+                } else {
+                    blackCaptures += 2;
+                }
+                poofed = true;
+            }
+        }
+    }
+    if (((i-2) > -1) && ((j-2) > -1) && ((i+2) < 19) && ((j+2) < 19)) { // up left
+        if (abstractBoard[i-1][j-1] === myColor && abstractBoard[i+1][j+1] === myColor) {
+            if ((abstractBoard[i-2][j-2] === opponentColor) && (abstractBoard[i+2][j+2] === opponentColor)) {
+                abstractBoard[i+1][j+1] = 0;
+                abstractBoard[i-1][j-1] = 0;
+                abstractBoard[i][j] = 0;
+                if (myColor === 1) {
+                    whiteCaptures += 2;
+                } else {
+                    blackCaptures += 2;
+                }
+                poofed = true;
+            }
+        }
+    }
+    if (((j-2) > -1) && ((j+2) < 19)) { // vertical
+        if (abstractBoard[i][j-1] === myColor && abstractBoard[i][j+1] === myColor) {
+            if ((abstractBoard[i][j-2] === opponentColor) && (abstractBoard[i][j+2] === opponentColor)) {
+                abstractBoard[i][j+1] = 0;
+                abstractBoard[i][j-1] = 0;
+                abstractBoard[i][j] = 0;
+                if (myColor === 1) {
+                    whiteCaptures += 2;
+                } else {
+                    blackCaptures += 2;
+                }
+                poofed = true;
+            }
+        }
+    }
+    if (((i-2) > -1) && ((j-2) > -1) && ((i+2) < 19) && ((j+2) < 19)) { // up right
+        if (abstractBoard[i+1][j-1] === myColor && abstractBoard[i+1][j-1] === myColor) {
+            if ((abstractBoard[i-2][j+2] === opponentColor) && (abstractBoard[i+2][j-2] === opponentColor)) {
+                abstractBoard[i+1][j-1] = 0;
+                abstractBoard[i-1][j+1] = 0;
+                abstractBoard[i][j] = 0;
+                if (myColor === 1) {
+                    whiteCaptures += 2;
+                } else {
+                    blackCaptures += 2;
+                }
+                poofed = true;
+            }
+        }
+    }
+
+    if (poofed) {
+        if (myColor === 1) {
+            ++whiteCaptures;
+        } else {
+            ++blackCaptures;
+        }
+    }
+}
 function resetAbstractBoard(abstractBoard) {
-    for (var i = 0; i < 19; i++) {
-        for (var j = 0; j < 19; j++) {
+    for (let i = 0; i < 19; i++) {
+        for (let j = 0; j < 19; j++) {
             abstractBoard[i][j] = 0;
         }
     }
@@ -1296,21 +1491,21 @@ function resetAbstractBoard(abstractBoard) {
 
 function replayGomokuGame(abstractBoard, movesList, until) {
     resetAbstractBoard(abstractBoard);
-    for (var i = 0; i < Math.min(movesList.length, until); i++) {
-        var color = 1 + (i%2);
+    for (let i = 0; i < Math.min(movesList.length, until); i++) {
+        let color = 1 + (i%2);
         abstractBoard[movesList[i] % 19][Math.floor(movesList[i] / 19)] = color;
     }
 }
 function replayPenteGame(abstractBoard, movesList, until) {
     resetAbstractBoard(abstractBoard);
-    for (var i = 0; i < Math.min(movesList.length, until); i++) {
-        var color = 1 + (i%2);
+    for (let i = 0; i < Math.min(movesList.length, until); i++) {
+        let color = 1 + (i%2);
         abstractBoard[movesList[i] % 19][Math.floor(movesList[i] / 19)] = color;
         detectPenteCapture(abstractBoard, movesList[i] % 19, Math.floor(movesList[i] / 19), color);
     }
     if (rated && (moves.length === 2)) {
-        for(i = 7; i < 12; ++i)
-            for(var j = 7; j < 12; ++j)
+        for(let i = 7; i < 12; ++i)
+            for(let j = 7; j < 12; ++j)
                 if (abstractBoard[i][j] === 0) {
                     abstractBoard[i][j] = -1;
                 }
@@ -1318,15 +1513,15 @@ function replayPenteGame(abstractBoard, movesList, until) {
 }
 function replayKeryoPenteGame(abstractBoard, movesList, until) {
     resetAbstractBoard(abstractBoard);
-    for (var i = 0; i < Math.min(movesList.length, until); i++) {
-        var color = 1 + (i%2);
+    for (let i = 0; i < Math.min(movesList.length, until); i++) {
+        let color = 1 + (i%2);
         abstractBoard[movesList[i] % 19][Math.floor(movesList[i] / 19)] = color;
         detectPenteCapture(abstractBoard, movesList[i] % 19, Math.floor(movesList[i] / 19), color);
         detectKeryoPenteCapture(abstractBoard, movesList[i] % 19, Math.floor(movesList[i] / 19), color);
     }
     if (rated && (moves.length === 2)) {
-        for(i = 7; i < 12; ++i) {
-            for(var j = 7; j < 12; ++j) {
+        for(let i = 7; i < 12; ++i) {
+            for(let j = 7; j < 12; ++j) {
                 if (abstractBoard[i][j] === 0) {
                     abstractBoard[i][j] = -1;
                 }
@@ -1336,21 +1531,21 @@ function replayKeryoPenteGame(abstractBoard, movesList, until) {
 }
 function replayConnect6Game(abstractBoard, movesList, until) {
     resetAbstractBoard(abstractBoard);
-    for (var i = 0; i < Math.min(movesList.length, until); i++) {
-        var color = (((i % 4) === 0) || ((i % 4) === 3)) ? 1 : 2;
+    for (let i = 0; i < Math.min(movesList.length, until); i++) {
+        let color = (((i % 4) === 0) || ((i % 4) === 3)) ? 1 : 2;
         abstractBoard[movesList[i] % 19][Math.floor(movesList[i] / 19)] = color;
     }
 }
 function replayGPenteGame(abstractBoard, movesList, until) {
     resetAbstractBoard(abstractBoard);
-    for (var i = 0; i < Math.min(movesList.length, until); i++) {
-        var color = 1 + (i%2);
+    for (let i = 0; i < Math.min(movesList.length, until); i++) {
+        let color = 1 + (i%2);
         abstractBoard[movesList[i] % 19][Math.floor(movesList[i] / 19)] = color;
         detectPenteCapture(abstractBoard, movesList[i] % 19, Math.floor(movesList[i] / 19), color);
     }
     if (moves.length === 2) {
-        for(i = 7; i < 12; i++) {
-            for(var j = 7; j < 12; j++) {
+        for(let i = 7; i < 12; i++) {
+            for(let j = 7; j < 12; j++) {
                 if (abstractBoard[i][j] === 0) {
                     abstractBoard[i][j] = -1;
                 }
@@ -1374,15 +1569,36 @@ function replayGPenteGame(abstractBoard, movesList, until) {
 }
 function replayPoofPenteGame(abstractBoard, movesList, until) {
     resetAbstractBoard(abstractBoard);
-    for (var i = 0; i < Math.min(movesList.length, until); i++) {
-        var color = 1 + (i%2);
+    for (let i = 0; i < Math.min(movesList.length, until); i++) {
+        let color = 1 + (i%2);
         abstractBoard[movesList[i] % 19][Math.floor(movesList[i] / 19)] = color;
         detectPoof(abstractBoard, movesList[i] % 19, Math.floor(movesList[i] / 19), color);
         detectPenteCapture(abstractBoard, movesList[i] % 19, Math.floor(movesList[i] / 19), color);
     }
     if (rated && (moves.length === 2)) {
-        for(i = 7; i < 12; ++i) {
-            for(var j = 7; j < 12; ++j) {
+        for(let i = 7; i < 12; ++i) {
+            for(let j = 7; j < 12; ++j) {
+                if (abstractBoard[i][j] === 0) {
+                    abstractBoard[i][j] = -1;
+                }
+            }
+        }
+    }
+}
+
+function replayOPenteGame(abstractBoard, movesList, until) {
+    resetAbstractBoard(abstractBoard);
+    for (let i = 0; i < Math.min(movesList.length, until); i++) {
+        let color = 1 + (i%2);
+        abstractBoard[movesList[i] % 19][Math.floor(movesList[i] / 19)] = color;
+        detectPoof(abstractBoard, movesList[i] % 19, Math.floor(movesList[i] / 19), color);
+        detectKeryoPoof(abstractBoard, movesList[i] % 19, Math.floor(movesList[i] / 19), color);
+        detectPenteCapture(abstractBoard, movesList[i] % 19, Math.floor(movesList[i] / 19), color);
+        detectKeryoPenteCapture(abstractBoard, movesList[i] % 19, Math.floor(movesList[i] / 19), color);
+    }
+    if (rated && (moves.length === 2)) {
+        for(let i = 7; i < 12; ++i) {
+            for(let j = 7; j < 12; ++j) {
                 if (abstractBoard[i][j] === 0) {
                     abstractBoard[i][j] = -1;
                 }

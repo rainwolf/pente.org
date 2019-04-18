@@ -625,6 +625,9 @@
                         case 73:
                             boardColor = goColor;
                             break;
+                        case 75:
+                            boardColor = oPenteColor;
+                            break;
                         default:
                             boardColor = penteColor;
                             break;
@@ -1045,6 +1048,9 @@
                         case 71:
                         case 73:
                             replayGoGame(abstractBoard, movesList, until);
+                            break;
+                        case 75: 
+                            replayOPenteGame(abstractBoard, movesList, until);
                             break;
                     }
                     // document.getElementById("messageBox").innerHTML = "message";

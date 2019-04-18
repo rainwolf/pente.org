@@ -19,6 +19,7 @@ also cover the rules of Pente with some helpful examples.<br>
   <li><a href="#connect6"><b>Connect6 Rules</b></a></li>
     <li><a href="#dkeryo"><b>DK-Pente Rules</b></a></li>
     <li><a href="#go"><b>Go Rules</b></a></li>
+    <li><a href="#opente"><b>O-Pente Rules</b></a></li>
   <li><a href="#speed"><b>Speed Games</b></a></li>
 </ul>
 <br>
@@ -154,6 +155,10 @@ The rules of Go are a bit involved but a nice interactive tutorial can be found 
     player to pass gets to mark dead stones (stones of both sides they believe would have been captured eventually), and then the other player gets to accept the assessment of dead stones or reject it. In case of rejection, 
     the game resets to the move before the double pass, and play continues.
 <br>
+    <br>
+    <a name="opente"><u>O-Pente</u></a><br>
+    O-Pente combines the rules of Keryo, Poof, and Boat Pente.
+    <br>
 <br>
 <a name="speed"><u>Speed Games</u></a><br>
 All of the above games can be played untimed, with a "normal" time limit, or

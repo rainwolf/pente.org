@@ -26,6 +26,9 @@ public class GridStateFactory {
     public static final int SPEED_GO9 = GO9 + 1;
     public static final int GO13 = 23;
     public static final int SPEED_GO13 = GO13 + 1;
+    public static final int OPENTE = 25;
+    public static final int SPEED_OPENTE = OPENTE + 1;
+    
     
 
 	// 50 + normal game for turn-based games
@@ -43,7 +46,8 @@ public class GridStateFactory {
     public static final int TB_GO = TB_START + GO;
     public static final int TB_GO9 = TB_START + GO9;
     public static final int TB_GO13 = TB_START + GO13;
-	
+    public static final int TB_OPENTE = TB_START + OPENTE;
+    
 	
     public static final Game PENTE_GAME = new Game(PENTE, "Pente", false);
     public static final Game SPEED_PENTE_GAME = new Game(SPEED_PENTE, "Speed Pente", true);
@@ -82,6 +86,10 @@ public class GridStateFactory {
     public static final Game GO13_GAME = new Game(GO13, "Go (13x13)", false);
     public static final Game SPEED_GO13_GAME = new Game(SPEED_GO13, "Speed Go (13x13)", true);
     public static final Game TB_GO13_GAME = new Game(TB_GO13, "Go (13x13)", false);
+
+    public static final Game OPENTE_GAME = new Game(OPENTE, "O-Pente", false);
+    public static final Game SPEED_OPENTE_GAME = new Game(SPEED_OPENTE, "Speed O-Pente", true);
+    public static final Game TB_OPENTE_GAME = new Game(TB_OPENTE, "O-Pente", false);
     
     private static final Game allGames[] = {
         null, PENTE_GAME, SPEED_PENTE_GAME, KERYO_GAME, SPEED_KERYO_GAME,
@@ -89,11 +97,12 @@ public class GridStateFactory {
         GPENTE_GAME, SPEED_GPENTE_GAME, POOF_PENTE_GAME, SPEED_POOF_PENTE_GAME,
         CONNECT6_GAME, SPEED_CONNECT6_GAME, BOAT_PENTE_GAME, SPEED_BOAT_PENTE_GAME,
             DKERYO_GAME, SPEED_DKERYO_GAME, GO_GAME, SPEED_GO_GAME,
-            GO9_GAME, SPEED_GO9_GAME, GO13_GAME, SPEED_GO13_GAME,
+            GO9_GAME, SPEED_GO9_GAME, GO13_GAME, SPEED_GO13_GAME, 
+            OPENTE_GAME, SPEED_OPENTE_GAME,
         TB_PENTE_GAME, TB_KERYO_GAME, TB_GOMOKU_GAME, TB_DPENTE_GAME,
         TB_GPENTE_GAME, TB_POOF_PENTE_GAME, TB_CONNECT6_GAME, 
             TB_BOAT_PENTE_GAME, TB_DKERYO_GAME, TB_GO_GAME,
-            TB_GO9_GAME, TB_GO13_GAME
+            TB_GO9_GAME, TB_GO13_GAME, TB_OPENTE_GAME
     };
 	private static final Game displaygames[] = {
 		PENTE_GAME, 
@@ -108,6 +117,7 @@ public class GridStateFactory {
             GO_GAME,
             GO9_GAME,
             GO13_GAME,
+            OPENTE_GAME,
 		new Game(TB_PENTE, "Turn-based Pente", false), 
 		new Game(TB_KERYO, "Turn-based Keryo-Pente", false), 
         new Game(TB_GOMOKU, "Turn-based Gomoku", false), 
@@ -120,6 +130,7 @@ public class GridStateFactory {
             new Game(TB_GO, "Turn-based Go", false),
             new Game(TB_GO9, "Turn-based Go (9x9)", false),
             new Game(TB_GO13, "Turn-based Go (13x13)", false),
+            new Game(TB_OPENTE, "Turn-based O-Pente", false),
         SPEED_PENTE_GAME, 
 		SPEED_KERYO_GAME,
         SPEED_GOMOKU_GAME, 
@@ -131,7 +142,8 @@ public class GridStateFactory {
         SPEED_DKERYO_GAME,
             SPEED_GO_GAME,
             SPEED_GO9_GAME,
-            SPEED_GO13_GAME
+            SPEED_GO13_GAME,
+            SPEED_OPENTE_GAME
 	};
 	
     private static final Game normalGames[] = {
@@ -140,7 +152,8 @@ public class GridStateFactory {
         GPENTE_GAME, POOF_PENTE_GAME,
         CONNECT6_GAME, BOAT_PENTE_GAME,
             DKERYO_GAME, 
-            GO_GAME, GO9_GAME, GO13_GAME
+            GO_GAME, GO9_GAME, GO13_GAME,
+            OPENTE_GAME
     };
     private static final Game speedGames[] = {
         SPEED_PENTE_GAME, SPEED_KERYO_GAME,
@@ -148,7 +161,8 @@ public class GridStateFactory {
         SPEED_GPENTE_GAME, SPEED_POOF_PENTE_GAME,
         SPEED_CONNECT6_GAME, SPEED_BOAT_PENTE_GAME,
             SPEED_DKERYO_GAME, 
-            SPEED_GO_GAME, SPEED_GO9_GAME, SPEED_GO13_GAME
+            SPEED_GO_GAME, SPEED_GO9_GAME, SPEED_GO13_GAME,
+            SPEED_OPENTE_GAME
     };
     private static final Game tbGames[] = {
         TB_PENTE_GAME, TB_KERYO_GAME,
@@ -156,7 +170,8 @@ public class GridStateFactory {
 		TB_GPENTE_GAME, TB_POOF_PENTE_GAME,
 		TB_CONNECT6_GAME, TB_BOAT_PENTE_GAME,
             TB_DKERYO_GAME, 
-            TB_GO_GAME, TB_GO9_GAME, TB_GO13_GAME
+            TB_GO_GAME, TB_GO9_GAME, TB_GO13_GAME,
+            TB_OPENTE_GAME
     };
     
     private static final GridState gridStates[] = new GridState[getNumGames() + 1];
@@ -261,6 +276,15 @@ public class GridStateFactory {
             case TB_GO13:
                 GoState go13State = new GoState(13,13);
                 return go13State;
+            case OPENTE:
+            case SPEED_OPENTE:
+            case TB_OPENTE:
+                gomoku.allowOverlines(true);
+                PenteState oPenteState = new OPenteState(gomoku);
+                oPenteState.setTournamentRule(true);
+                oPenteState.setCaptureLengths(new int[] { 2, 3 });
+                oPenteState.setCapturesToWin(15);
+                return oPenteState;
         }
         
         return null;
@@ -309,7 +333,7 @@ public class GridStateFactory {
         return allGames.length - 1;
     }
 	public static int getMaxGameId() {
-		return TB_GO13;
+		return TB_OPENTE;
 	}
 
     public static Game[] getAllGames() {
