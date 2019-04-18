@@ -191,6 +191,7 @@ window.google_analytics_uacct = "UA-20529582-2";
                     case 71:
                     case 73:
                         boardColor = goColor; break;
+                    case 75: boardColor = oPenteColor; break;
                     default: boardColor = penteColor; break;
                 }
                 boardCanvas.addEventListener("click", boardClick, false);
@@ -226,6 +227,7 @@ window.google_analytics_uacct = "UA-20529582-2";
                     case 71:
                     case 73:
                         replayGoGame(abstractBoard, movesList, until); break;
+                    case 75: replayOPenteGame(abstractBoard, movesList, until); break;
                 }
             }
 

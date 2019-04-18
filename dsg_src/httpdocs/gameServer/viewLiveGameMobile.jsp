@@ -564,6 +564,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                     case 69:
                     case 71:    
                     case 73: replayGoGame(abstractBoard, movesList, until); break;
+                    case 75: replayOPenteGame(abstractBoard, movesList, until); break;
                 }
                 if (until <= moves.length) {
                     if (messageMoveNums.indexOf(until) != -1) {
@@ -655,6 +656,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                     case 69: 
                     case 71: 
                     case 73: boardColor = goColor; break;
+                    case 75: boardColor = oPenteColor; break;
                     default: boardColor = penteColor; break;
                 }
                 boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);

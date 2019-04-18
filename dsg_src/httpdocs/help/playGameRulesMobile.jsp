@@ -16,6 +16,7 @@ and the strategy behind the games is hard to master.
     <li><a href="#connect6"><b>Connect6 Rules</b></a></li>
     <li><a href="#dkeryo"><b>DK-Pente Rules</b></a></li>
     <li><a href="#go"><b>Go Rules</b></a></li>
+    <li><a href="#opente"><b>O-Pente Rules</b></a></li>
 </ul>
 <br>
 
@@ -149,5 +150,9 @@ More info at <a href="http://en.wikipedia.org/wiki/Connect6">http://en.wikipedia
     Here at pente.org we use a komi of 7.5 for all board sizes. Play continues until both players pass consecutively. After which the first
     player to pass gets to mark dead stones (stones of both sides they believe would have been captured eventually), and then the other player gets to accept the assessment of dead stones or reject it. In case of rejection,
     the game resets to the move before the double pass, and play continues.
+    <br>
+    <br>
+    <a name="opente"><u>O-Pente</u></a><br>
+    O-Pente combines the rules of Keryo, Poof, and Boat Pente.
     <br>
     <br>
