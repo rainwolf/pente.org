@@ -1368,7 +1368,9 @@ public class ServerTable {
             game == GridStateFactory.BOAT_PENTE_GAME ||
             game == GridStateFactory.SPEED_BOAT_PENTE_GAME ||
                 game == GridStateFactory.POOF_PENTE_GAME ||
-                game == GridStateFactory.SPEED_POOF_PENTE_GAME) {
+                game == GridStateFactory.SPEED_POOF_PENTE_GAME ||
+                game == GridStateFactory.OPENTE_GAME ||
+                game == GridStateFactory.SPEED_OPENTE_GAME) {
             ((PenteState) gridState).setTournamentRule(rated);
         }
 
