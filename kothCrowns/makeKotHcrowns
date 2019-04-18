@@ -5,7 +5,7 @@
 			convert kothcrown.png -fill "rgb(${rgb},${rgb},${rgb})" -opaque white kothcrown${i}.png
         done  
 
-  for i in `seq 8 36`;
+  for i in `seq 8 39`;
         do
 			rgb=$((255-($i-1)*255/35))
             # echo "convert kothcrown.png -fill 'rgb(${rgb},${rgb},${rgb})' -opaque white kothcrown$i.png"
