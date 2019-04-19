@@ -476,11 +476,11 @@ function detectKeryoPoofCapture(intMove, internal) {
     let j = Math.floor(intMove / 19);
     let poofed = false;
     if (((i-3) > -1) && ((i+1) < 19)) { // left
-        if (this.abstractBoard[i-1][j] === myColor && this.abstractBoard[i-2][j] === myColor) {
-            if ((this.abstractBoard[i-3][j] === opponentColor) && (this.abstractBoard[i+1][j] === opponentColor)) {
-                this.abstractBoard[i-2][j] = 0;
-                this.abstractBoard[i-1][j] = 0;
-                this.abstractBoard[i][j] = 0;
+        if (board[i-1][j] === myColor && board[i-2][j] === myColor) {
+            if ((board[i-3][j] === opponentColor) && (board[i+1][j] === opponentColor)) {
+                board[i-2][j] = 0;
+                board[i-1][j] = 0;
+                board[i][j] = 0;
 
                 let x = i-1, y = j;
                 capturedAt[opponentColor]
@@ -493,6 +493,9 @@ function detectKeryoPoofCapture(intMove, internal) {
                     document[i1].src = moveCaptureImages[myColor - 1].src;
                 }
                 numCaptures[opponentColor]++;
+                if (!internal) {
+                    clearMove(getStrMove(x + y * 19));
+                }
                 x = i-2; y = j;
                 capturedAt[opponentColor]
                     [numCaptures[opponentColor]] = (currentMove - 1);
@@ -514,11 +517,11 @@ function detectKeryoPoofCapture(intMove, internal) {
         }
     }
     if (((i-3) > -1) && ((j-3) > -1) && ((i+1) < 19) && ((j+1) < 19)) { // up left
-        if (this.abstractBoard[i-1][j-1] === myColor && this.abstractBoard[i-2][j-2] === myColor) {
-            if ((this.abstractBoard[i-3][j-3] === opponentColor) && (this.abstractBoard[i+1][j+1] === opponentColor)) {
-                this.abstractBoard[i-2][j-2] = 0;
-                this.abstractBoard[i-1][j-1] = 0;
-                this.abstractBoard[i][j] = 0;
+        if (board[i-1][j-1] === myColor && board[i-2][j-2] === myColor) {
+            if ((board[i-3][j-3] === opponentColor) && (board[i+1][j+1] === opponentColor)) {
+                board[i-2][j-2] = 0;
+                board[i-1][j-1] = 0;
+                board[i][j] = 0;
 
                 let x = i-1, y = j-1;
                 capturedAt[opponentColor]
@@ -531,6 +534,9 @@ function detectKeryoPoofCapture(intMove, internal) {
                     document[i1].src = moveCaptureImages[myColor - 1].src;
                 }
                 numCaptures[opponentColor]++;
+                if (!internal) {
+                    clearMove(getStrMove(x + y * 19));
+                }
                 x = i-2; y = j-2;
                 capturedAt[opponentColor]
                     [numCaptures[opponentColor]] = (currentMove - 1);
@@ -552,11 +558,11 @@ function detectKeryoPoofCapture(intMove, internal) {
         }
     }
     if (((j-3) > -1) && ((j+1) < 19)) { // up
-        if (this.abstractBoard[i][j-1] === myColor && this.abstractBoard[i][j-2] === myColor) {
-            if ((this.abstractBoard[i][j-3] === opponentColor) && (this.abstractBoard[i][j+1] === opponentColor)) {
-                this.abstractBoard[i][j-2] = 0;
-                this.abstractBoard[i][j-1] = 0;
-                this.abstractBoard[i][j] = 0;
+        if (board[i][j-1] === myColor && board[i][j-2] === myColor) {
+            if ((board[i][j-3] === opponentColor) && (board[i][j+1] === opponentColor)) {
+                board[i][j-2] = 0;
+                board[i][j-1] = 0;
+                board[i][j] = 0;
 
                 let x = i, y = j-1;
                 capturedAt[opponentColor]
@@ -569,6 +575,9 @@ function detectKeryoPoofCapture(intMove, internal) {
                     document[i1].src = moveCaptureImages[myColor - 1].src;
                 }
                 numCaptures[opponentColor]++;
+                if (!internal) {
+                    clearMove(getStrMove(x + y * 19));
+                }
                 x = i; y = j-2;
                 capturedAt[opponentColor]
                     [numCaptures[opponentColor]] = (currentMove - 1);
@@ -590,11 +599,11 @@ function detectKeryoPoofCapture(intMove, internal) {
         }
     }
     if (((i-1) > -1) && ((j-3) > -1) && ((i+3) < 19) && ((j+1) < 19)) { // up right
-        if (this.abstractBoard[i+1][j-1] === myColor && this.abstractBoard[i+2][j-2] === myColor) {
-            if ((this.abstractBoard[i-1][j+1] === opponentColor) && (this.abstractBoard[i+3][j-3] === opponentColor)) {
-                this.abstractBoard[i+2][j-2] = 0;
-                this.abstractBoard[i+1][j-1] = 0;
-                this.abstractBoard[i][j] = 0;
+        if (board[i+1][j-1] === myColor && board[i+2][j-2] === myColor) {
+            if ((board[i-1][j+1] === opponentColor) && (board[i+3][j-3] === opponentColor)) {
+                board[i+2][j-2] = 0;
+                board[i+1][j-1] = 0;
+                board[i][j] = 0;
 
                 let x = i+1, y = j-1;
                 capturedAt[opponentColor]
@@ -607,6 +616,9 @@ function detectKeryoPoofCapture(intMove, internal) {
                     document[i1].src = moveCaptureImages[myColor - 1].src;
                 }
                 numCaptures[opponentColor]++;
+                if (!internal) {
+                    clearMove(getStrMove(x + y * 19));
+                }
                 x = i+2; y = j-2;
                 capturedAt[opponentColor]
                     [numCaptures[opponentColor]] = (currentMove - 1);
@@ -628,11 +640,11 @@ function detectKeryoPoofCapture(intMove, internal) {
         }
     }
     if (((i+3) < 19) && ((i-1) > -1)) { // right
-        if (this.abstractBoard[i+1][j] === myColor && this.abstractBoard[i+2][j] === myColor) {
-            if ((this.abstractBoard[i+3][j] === opponentColor) && (this.abstractBoard[i-1][j] === opponentColor)) {
-                this.abstractBoard[i+2][j] = 0;
-                this.abstractBoard[i+1][j] = 0;
-                this.abstractBoard[i][j] = 0;
+        if (board[i+1][j] === myColor && board[i+2][j] === myColor) {
+            if ((board[i+3][j] === opponentColor) && (board[i-1][j] === opponentColor)) {
+                board[i+2][j] = 0;
+                board[i+1][j] = 0;
+                board[i][j] = 0;
 
                 let x = i+1, y = j;
                 capturedAt[opponentColor]
@@ -645,6 +657,9 @@ function detectKeryoPoofCapture(intMove, internal) {
                     document[i1].src = moveCaptureImages[myColor - 1].src;
                 }
                 numCaptures[opponentColor]++;
+                if (!internal) {
+                    clearMove(getStrMove(x + y * 19));
+                }
                 x = i+2; y = j;
                 capturedAt[opponentColor]
                     [numCaptures[opponentColor]] = (currentMove - 1);
@@ -666,11 +681,11 @@ function detectKeryoPoofCapture(intMove, internal) {
         }
     }
     if (((i-1) > -1) && ((j-1) > -1) && ((i+3) < 19) && ((j+3) < 19)) { // down right
-        if (this.abstractBoard[i+1][j+1] === myColor && this.abstractBoard[i+2][j+2] === myColor) {
-            if ((this.abstractBoard[i-1][j-1] === opponentColor) && (this.abstractBoard[i+3][j+3] === opponentColor)) {
-                this.abstractBoard[i+2][j+2] = 0;
-                this.abstractBoard[i+1][j+1] = 0;
-                this.abstractBoard[i][j] = 0;
+        if (board[i+1][j+1] === myColor && board[i+2][j+2] === myColor) {
+            if ((board[i-1][j-1] === opponentColor) && (board[i+3][j+3] === opponentColor)) {
+                board[i+2][j+2] = 0;
+                board[i+1][j+1] = 0;
+                board[i][j] = 0;
 
                 let x = i+1, y = j+1;
                 capturedAt[opponentColor]
@@ -683,6 +698,9 @@ function detectKeryoPoofCapture(intMove, internal) {
                     document[i1].src = moveCaptureImages[myColor - 1].src;
                 }
                 numCaptures[opponentColor]++;
+                if (!internal) {
+                    clearMove(getStrMove(x + y * 19));
+                }
                 x = i+2; y = j+2;
                 capturedAt[opponentColor]
                     [numCaptures[opponentColor]] = (currentMove - 1);
@@ -704,11 +722,11 @@ function detectKeryoPoofCapture(intMove, internal) {
         }
     }
     if (((j+2) < 19) && ((j-1) > -1)) { // down
-        if (this.abstractBoard[i][j+1] === myColor && this.abstractBoard[i][j+2] === myColor) {
-            if ((this.abstractBoard[i][j-1] === opponentColor) && (this.abstractBoard[i][j+3] === opponentColor)) {
-                this.abstractBoard[i][j+1] = 0;
-                this.abstractBoard[i][j+2] = 0;
-                this.abstractBoard[i][j] = 0;
+        if (board[i][j+1] === myColor && board[i][j+2] === myColor) {
+            if ((board[i][j-1] === opponentColor) && (board[i][j+3] === opponentColor)) {
+                board[i][j+1] = 0;
+                board[i][j+2] = 0;
+                board[i][j] = 0;
                 
                 let x = i, y = j+1;
                 capturedAt[opponentColor]
@@ -721,6 +739,9 @@ function detectKeryoPoofCapture(intMove, internal) {
                     document[i1].src = moveCaptureImages[myColor - 1].src;
                 }
                 numCaptures[opponentColor]++;
+                if (!internal) {
+                    clearMove(getStrMove(x + y * 19));
+                }
                 x = i; y = j+2;
                 capturedAt[opponentColor]
                     [numCaptures[opponentColor]] = (currentMove - 1);
@@ -742,11 +763,11 @@ function detectKeryoPoofCapture(intMove, internal) {
         }
     }
     if (((i-3) > -1) && ((j-1) > -1) && ((i+1) < 19) && ((j+3) < 19)) { // down left
-        if (this.abstractBoard[i-1][j+1] === myColor && this.abstractBoard[i-2][j+2] === myColor) {
-            if ((this.abstractBoard[i+1][j-1] === opponentColor) && (this.abstractBoard[i-3][j+3] === opponentColor)) {
-                this.abstractBoard[i-2][j+2] = 0;
-                this.abstractBoard[i-1][j+1] = 0;
-                this.abstractBoard[i][j] = 0;
+        if (board[i-1][j+1] === myColor && board[i-2][j+2] === myColor) {
+            if ((board[i+1][j-1] === opponentColor) && (board[i-3][j+3] === opponentColor)) {
+                board[i-2][j+2] = 0;
+                board[i-1][j+1] = 0;
+                board[i][j] = 0;
 
                 let x = i-1, y = j+1;
                 capturedAt[opponentColor]
@@ -759,6 +780,9 @@ function detectKeryoPoofCapture(intMove, internal) {
                     document[i1].src = moveCaptureImages[myColor - 1].src;
                 }
                 numCaptures[opponentColor]++;
+                if (!internal) {
+                    clearMove(getStrMove(x + y * 19));
+                }
                 x = i-2; y = j+2;
                 capturedAt[opponentColor]
                     [numCaptures[opponentColor]] = (currentMove - 1);
@@ -782,11 +806,11 @@ function detectKeryoPoofCapture(intMove, internal) {
 
     // 4 directions with center of 3 stones placed to poof
     if (((i-2) > -1) && ((i+2) < 19)) { // horizontal
-        if (this.abstractBoard[i-1][j] === myColor && this.abstractBoard[i+1][j] === myColor) {
-            if ((this.abstractBoard[i-2][j] === opponentColor) && (this.abstractBoard[i+2][j] === opponentColor)) {
-                this.abstractBoard[i+1][j] = 0;
-                this.abstractBoard[i-1][j] = 0;
-                this.abstractBoard[i][j] = 0;
+        if (board[i-1][j] === myColor && board[i+1][j] === myColor) {
+            if ((board[i-2][j] === opponentColor) && (board[i+2][j] === opponentColor)) {
+                board[i+1][j] = 0;
+                board[i-1][j] = 0;
+                board[i][j] = 0;
 
                 let x = i-1, y = j;
                 capturedAt[opponentColor]
@@ -799,6 +823,9 @@ function detectKeryoPoofCapture(intMove, internal) {
                     document[i1].src = moveCaptureImages[myColor - 1].src;
                 }
                 numCaptures[opponentColor]++;
+                if (!internal) {
+                    clearMove(getStrMove(x + y * 19));
+                }
                 x = i+1; y = j;
                 capturedAt[opponentColor]
                     [numCaptures[opponentColor]] = (currentMove - 1);
@@ -820,11 +847,11 @@ function detectKeryoPoofCapture(intMove, internal) {
         }
     }
     if (((i-2) > -1) && ((j-2) > -1) && ((i+2) < 19) && ((j+2) < 19)) { // up left
-        if (this.abstractBoard[i-1][j-1] === myColor && this.abstractBoard[i+1][j+1] === myColor) {
-            if ((this.abstractBoard[i-2][j-2] === opponentColor) && (this.abstractBoard[i+2][j+2] === opponentColor)) {
-                this.abstractBoard[i+1][j+1] = 0;
-                this.abstractBoard[i-1][j-1] = 0;
-                this.abstractBoard[i][j] = 0;
+        if (board[i-1][j-1] === myColor && board[i+1][j+1] === myColor) {
+            if ((board[i-2][j-2] === opponentColor) && (board[i+2][j+2] === opponentColor)) {
+                board[i+1][j+1] = 0;
+                board[i-1][j-1] = 0;
+                board[i][j] = 0;
 
                 let x = i-1, y = j-1;
                 capturedAt[opponentColor]
@@ -837,6 +864,9 @@ function detectKeryoPoofCapture(intMove, internal) {
                     document[i1].src = moveCaptureImages[myColor - 1].src;
                 }
                 numCaptures[opponentColor]++;
+                if (!internal) {
+                    clearMove(getStrMove(x + y * 19));
+                }
                 x = i+1; y = j+1;
                 capturedAt[opponentColor]
                     [numCaptures[opponentColor]] = (currentMove - 1);
@@ -858,11 +888,11 @@ function detectKeryoPoofCapture(intMove, internal) {
         }
     }
     if (((j-2) > -1) && ((j+2) < 19)) { // vertical
-        if (this.abstractBoard[i][j-1] === myColor && this.abstractBoard[i][j+1] === myColor) {
-            if ((this.abstractBoard[i][j-2] === opponentColor) && (this.abstractBoard[i][j+2] === opponentColor)) {
-                this.abstractBoard[i][j+1] = 0;
-                this.abstractBoard[i][j-1] = 0;
-                this.abstractBoard[i][j] = 0;
+        if (board[i][j-1] === myColor && board[i][j+1] === myColor) {
+            if ((board[i][j-2] === opponentColor) && (board[i][j+2] === opponentColor)) {
+                board[i][j+1] = 0;
+                board[i][j-1] = 0;
+                board[i][j] = 0;
 
                 let x = i, y = j+1;
                 capturedAt[opponentColor]
@@ -875,6 +905,9 @@ function detectKeryoPoofCapture(intMove, internal) {
                     document[i1].src = moveCaptureImages[myColor - 1].src;
                 }
                 numCaptures[opponentColor]++;
+                if (!internal) {
+                    clearMove(getStrMove(x + y * 19));
+                }
                 x = i; y = j-1;
                 capturedAt[opponentColor]
                     [numCaptures[opponentColor]] = (currentMove - 1);
@@ -896,11 +929,11 @@ function detectKeryoPoofCapture(intMove, internal) {
         }
     }
     if (((i-2) > -1) && ((j-2) > -1) && ((i+2) < 19) && ((j+2) < 19)) { // up right
-        if (this.abstractBoard[i+1][j-1] === myColor && this.abstractBoard[i+1][j-1] === myColor) {
-            if ((this.abstractBoard[i-2][j+2] === opponentColor) && (this.abstractBoard[i+2][j-2] === opponentColor)) {
-                this.abstractBoard[i+1][j-1] = 0;
-                this.abstractBoard[i-1][j+1] = 0;
-                this.abstractBoard[i][j] = 0;
+        if (board[i+1][j-1] === myColor && board[i+1][j-1] === myColor) {
+            if ((board[i-2][j+2] === opponentColor) && (board[i+2][j-2] === opponentColor)) {
+                board[i+1][j-1] = 0;
+                board[i-1][j+1] = 0;    
+                board[i][j] = 0;
 
                 let x = i-1, y = j+1;
                 capturedAt[opponentColor]
@@ -913,6 +946,9 @@ function detectKeryoPoofCapture(intMove, internal) {
                     document[i1].src = moveCaptureImages[myColor - 1].src;
                 }
                 numCaptures[opponentColor]++;
+                if (!internal) {
+                    clearMove(getStrMove(x + y * 19));
+                }
                 x = i+1; y = j-1;
                 capturedAt[opponentColor]
                     [numCaptures[opponentColor]] = (currentMove - 1);
@@ -924,7 +960,6 @@ function detectKeryoPoofCapture(intMove, internal) {
                     document[i1].src = moveCaptureImages[myColor - 1].src;
                 }
                 numCaptures[opponentColor]++;
-
                 if (!internal) {
                     clearMove(getStrMove(x + y * 19));
                 }
