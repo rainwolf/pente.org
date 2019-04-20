@@ -521,7 +521,7 @@ if (inLiveGameRoom) {
          style="margin-right:5px;"><span>Live Game Room (beta)</span></a>
     </div>
         <div style="margin-top:5px;">
-            or <a href="/gameServer/pente.jnlp?name=<%=name%>&password=<%=dsgPlayerData.getPassword()%>"><span>install</span></a> the (deprecated) game room on your desktop.
+            or <a href="/gameServer/pente.jnlp?name=<%=name%>&password=<%=dsgPlayerData.getPassword()%>"><span>install</span></a> the (deprecated, unmaintained) game room on your desktop.
             <font color="red"><b>(automagical login)</b></font>
         </div>
 </td>
