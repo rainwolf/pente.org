@@ -232,7 +232,7 @@ public class DSGContextListener implements ServletContextListener {
                 dbHandlerRo, gameVenueStorer);
             resources.setDsgGameLookup(lookup);
             
-            DSGFollowerStorer followerStorer = new CacheDSGFollowerStorer(new MySQLDSGFollowerStorer(dbHandler));
+            DSGFollowerStorer followerStorer = new CacheDSGFollowerStorer(new MySQLDSGFollowerStorer(dbHandler), notificationServer, dsgPlayerStorer);
             resources.setFollowerStorer(followerStorer);
 
             ctx.setAttribute(Resources.class.getName(), resources);

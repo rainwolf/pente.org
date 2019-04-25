@@ -26,24 +26,27 @@ int followingLimit = Integer.parseInt(ctx.getInitParameter("NONSUBSCRIBERFOLLOWI
 
 String gameStr = (String) request.getParameter("game");
 int gameInt = 51;
-if (gameStr != null) {
-    gameInt = Integer.parseInt(gameStr);
-} else {
-    DSGPlayerData meData = dsgPlayerStorer.loadPlayer(name);
-    List<DSGPlayerPreference> prefs = dsgPlayerStorer.loadPlayerPreferences(meData.getPlayerID());
-    for (DSGPlayerPreference pref: prefs) {
-        if ("socialGame".equals(pref.getName())) {
-            gameInt = (Integer) pref.getValue();
-            break;
-        }
+boolean allow_followers_be_notified = false, allow_notification_online_from_following = false;
+DSGPlayerData meData = dsgPlayerStorer.loadPlayer(name);
+List<DSGPlayerPreference> prefs = dsgPlayerStorer.loadPlayerPreferences(meData.getPlayerID());
+for (DSGPlayerPreference pref: prefs) {
+    if ("socialGame".equals(pref.getName())) {
+        gameInt = (Integer) pref.getValue();
+    }
+    if ("allow_followers_be_notified".equals(pref.getName())) {
+        allow_followers_be_notified = ((Boolean) pref.getValue()).booleanValue();
+    }
+    if ("allow_notification_online_from_following".equals(pref.getName())) {
+        allow_notification_online_from_following = ((Boolean) pref.getValue()).booleanValue();
     }
 }
-final int game = gameInt;
-List<DSGPlayerData> followersData = new ArrayList();
+
+    final int game = gameInt;
+List<DSGPlayerData> followersData = new ArrayList<>();
 for (long pid: followers) {
     followersData.add(dsgPlayerStorer.loadPlayer(pid));
 }
-List<DSGPlayerData> followingData = new ArrayList();
+List<DSGPlayerData> followingData = new ArrayList<>();
 for (long pid: following) {
     followingData.add(dsgPlayerStorer.loadPlayer(pid));
 }
@@ -79,8 +82,18 @@ This page provides an overview of players you follow and players who follow you.
          <% } %>
          </select>
 <noscript><input type="submit" value="Submit"></noscript>
-<!-- <input name="submitbutton" type="submit" value="submit" /> -->
-</form>
+<br>
+       <label>
+           <input id="allow_followers_be_notified" <%=(allow_followers_be_notified?"checked":"")%> onchange="this.form.submit()" name="allow_followers_be_notified" type="checkbox" value="true"/> 
+           Allow followers be notified when I appear in a live game room. 
+       </label>
+       <br>
+       <label>
+           <input id="allow_notification_online_from_following" <%=(allow_notification_online_from_following?"checked":"")%> onchange="this.form.submit()" name="allow_notification_online_from_following" type="checkbox" value="true"/> 
+           Send me a notification when people I follow enter a live game room <br> (at most 1 notification per person per 10 minutes.) 
+       </label>
+       <br>
+   </form>
 <table width="50%" border="0" colspacing="0" colpadding="0">
 
 

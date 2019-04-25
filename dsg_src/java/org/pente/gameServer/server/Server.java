@@ -80,11 +80,13 @@ public class Server {
 
     private CacheKOTHStorer kothStorer;
     
-    private ServerContainer serverContainer;
-
-    public void setServerContainer(ServerContainer serverContainer) {
-        this.serverContainer = serverContainer;
-    }
+    private DSGFollowerStorer followerStorer;
+    
+//    private ServerContainer serverContainer;
+//
+//    public void setServerContainer(ServerContainer serverContainer) {
+//        this.serverContainer = serverContainer;
+//    }
 
     public Server(Resources resources,
                   ServerData serverData) throws Throwable {
@@ -102,6 +104,7 @@ public class Server {
         this.name = serverData.getName();
         this.port = serverData.getPort();
         this.kothStorer = resources.getKOTHStorer();
+        this.followerStorer = resources.getFollowerStorer();
 
         System.setProperty("javax.net.ssl.keyStore", "/var/lib/tomcat8/webapps/MyDSKeyStore.jks");
         System.setProperty("javax.net.ssl.keyStorePassword", "nuria8a13b");
