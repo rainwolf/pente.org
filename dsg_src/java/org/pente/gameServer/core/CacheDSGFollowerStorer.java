@@ -1,6 +1,7 @@
 package org.pente.gameServer.core;
 
 import org.apache.log4j.Category;
+import org.pente.notifications.NotificationServer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,12 +16,18 @@ public class CacheDSGFollowerStorer implements DSGFollowerStorer {
             Category.getInstance(CacheDSGFollowerStorer.class.getName());
 
     MySQLDSGFollowerStorer baseStorer;
+    NotificationServer notificationServer;
+    DSGPlayerStorer playerStorer;
 
     private Map<Long, List<Long>> followerGraph;
     private Map<Long, List<Long>> followingGraph;
 
-    public CacheDSGFollowerStorer(MySQLDSGFollowerStorer baseStorer) {
+    public CacheDSGFollowerStorer(MySQLDSGFollowerStorer baseStorer, 
+                                  NotificationServer notificationServer,
+                                  DSGPlayerStorer playerStorer) {
         this.baseStorer = baseStorer;
+        this.notificationServer = notificationServer;
+        this.playerStorer = playerStorer;
     }
     public Map<Long, List<Long>> getFollowerGraph() { return followerGraph; }
     public Map<Long, List<Long>> getFollowingGraph() { return followingGraph; }
@@ -96,5 +103,33 @@ public class CacheDSGFollowerStorer implements DSGFollowerStorer {
         List<Long> friends = new ArrayList<>(followerList);
         friends.retainAll(followingList);
         return friends;
+    }
+
+    boolean getPref(long pid, String prefName) {
+        try {
+            for (DSGPlayerPreference pref : playerStorer.loadPlayerPreferences(pid)) {
+                if (prefName.equals(pref.getName())) {
+                    return (Boolean) pref.getValue();
+                }
+            }
+        } catch (DSGPlayerStoreException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    @Override
+    public void notifyFollowers(long pid, String message) {
+//        if (getPref(pid, "allow_followers_be_notified")) {
+//            try {
+//                List<Long> followerList = getFollowers(pid);
+//                for (long follower_pid : followerList) {
+//                    if (getPref(follower_pid, "allow_notification_online_from_following")) {
+//                        notificationServer.
+//                    }
+//                }
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
     }
 }
