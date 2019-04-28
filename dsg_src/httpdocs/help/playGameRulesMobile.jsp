@@ -24,7 +24,8 @@ and the strategy behind the games is hard to master.
 All games are played on a 19x19 board of intersecting lines.  Each player places
 stones on the intersecting lines (not in between the lines).  Once a stone is
 played it can't be moved again (except if captured in certain games).  All games
-start with player 1's first move in the middle of the board.  Play then continues
+start with player 1's first move in the middle of the board, except for Go, D-Pente, and 
+    DK-Pente.  Play then continues
 by alternating turns until one player wins.<br>
 <br>
 <a name="gomoku"><u>Gomoku</u></a><br>

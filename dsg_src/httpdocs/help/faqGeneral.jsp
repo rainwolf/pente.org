@@ -28,13 +28,15 @@ for established players.
      r1 + K * ( w - ( ------------------------ ) )
 
                                  1 + 10 ^ ((r2-r1)/400))
-</font></strong></pre>
+</strong></font></pre>
 Where <strong>r1</strong> is your rating, and <strong>r2</strong> is
 your opponents rating.<br>
-<strong>w</strong> is 1 for a win, and 0 for a loss.<br>
+<strong>w</strong> is 1 for a win, 0 for a loss, and 0.5 for a draw.<br>
 <strong>K </strong>is the largest amount your rating can change
-for any game, this value is set to 32 when 2 established players
-are playing. When playing against a provisional player, <strong>K</strong>
+for any game, when playing single games like Go, this value is set to 32 
+    when 2 established players are playing, when playing sets, 
+    <strong>K</strong> equals 
+    64. When playing against a provisional player, <strong>K</strong>
 is scaled by <strong>n</strong> / 20, where <strong>n</strong> is
 equal to the number of games the provisional player has played.<br>
 The '^' symbol means to the power of.</p>
@@ -47,7 +49,7 @@ to</p>
       value = ( r1 + r2 ) / 2 + w * 200 + e * 200</font></strong>
 </pre>
 Where <strong>r1</strong> and <strong>r2</strong> are the same as defined above.<br>
-<strong>w</strong> is 1 for a win and -1 for a loss.<br>
+<strong>w</strong> is 1 for a win, -1 for a loss, and 0 for a draw.<br>
 <strong>e</strong> is 0 if your opponent is provisional, otherwise it equals w.<br>
 Then that value is incorporated into your new provisional rating by the following formula.<br>
 <pre>
@@ -57,7 +59,11 @@ Then that value is incorporated into your new provisional rating by the followin
 </pre>
 Where <b>total1</b> is the total games played <b>excluding</b> this game and
 <b>total2</b> is the total games played <b>including</b> this game.
-<br>
+    <br>
+    Established players also have rating floors, and is equal to 200 less than the highest rating 
+    achieved (after introduction of floors) and setting the last 2 digits to 0. Their ratings cannot 
+    drop below this number. (Rating floors were introduced in May 2019).
+    <br>
 <a name="provisional"><u>What does provisional mean?</u></a><br>
 When a player first starts playing, the player is provisional until
 he/she has completed 20 games. The purpose of having a provisional
