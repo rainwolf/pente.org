@@ -517,11 +517,10 @@ if (inLiveGameRoom) {
     <td style="width: 28%;" valign="top">
     <div class="buttonwrapper">
       <a class="boldbuttons" href="/gameServer/live"  target="_blank" rel="noopener noreferrer" 
-         style="margin-right:5px;"><span>Live Game Room (beta)</span></a>
+         style="margin-right:5px;"><span>Live Game Room</span></a>
     </div>
         <div style="margin-top:5px;">
-            or <a href="/gameServer/pente.jnlp?name=<%=name%>&password=<%=dsgPlayerData.getPassword()%>"><span>install</span></a> the (deprecated, unmaintained) game room on your desktop.
-            <font color="red"><b>(automagical login)</b></font>
+            or <a href="/gameServer/pente.jnlp?name=<%=name%>&password=<%=dsgPlayerData.getPassword()%>"><span>install</span></a> the (deprecated, unmaintained, old Java) game room on your desktop.
         </div>
 </td>
       <%
