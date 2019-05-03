@@ -43,6 +43,9 @@ public interface DSGPlayerGameData extends Cloneable {
     public void setRating(double rating);
     public double getRating();
     public String getRatingGif();
+    
+//    public void setRatingFloor(int ratingFloor);
+//    public int getRatingFloor();
 
     public void setStreak(int streak);
     public int getStreak();

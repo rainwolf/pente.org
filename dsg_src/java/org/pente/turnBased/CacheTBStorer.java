@@ -884,11 +884,14 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 				ratings[2] = loserData.getPlayerGameData(game.getGame()).getRating();
 
 				if (set.isCompleted() && game.isRated()) {
+                    double k = (game.getGame() == GridStateFactory.TB_GO ||
+                            game.getGame() == GridStateFactory.TB_GO13 ||
+                            game.getGame() == GridStateFactory.TB_GO9)?32:64;
 					GameOverUtilities.updateGameData(dsgPlayerStorer, winnerData,
 						winnerData.getPlayerGameData(game.getGame(), false),
 						loserData,
 						loserData.getPlayerGameData(game.getGame(), false),
-						set.isDraw(), 64);
+						set.isDraw(), k);
 				}
 				ratings[1] = winnerData.getPlayerGameData(game.getGame()).getRating();
 				ratings[3] = loserData.getPlayerGameData(game.getGame()).getRating();
@@ -1436,7 +1439,8 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 		if (game.getGame() == GridStateFactory.TB_PENTE ||
 			game.getGame() == GridStateFactory.TB_KERYO ||
 			game.getGame() == GridStateFactory.TB_BOAT_PENTE ||
-                game.getGame() == GridStateFactory.TB_POOF_PENTE) {
+                game.getGame() == GridStateFactory.TB_POOF_PENTE ||
+                game.getGame() == GridStateFactory.TB_OPENTE) {
 			((PenteState) state).setTournamentRule(game.isRated());
 		}
 		if (!state.isValidMove(move, state.getCurrentPlayer())) {
@@ -1792,7 +1796,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 	        tbg1.setLastMoveDate(new Date());
 	        tbg1.setStartDate(new Date());
 	        TBGame tbg2 = null;
-	        if (game < GridStateFactory.TB_GO) {
+	        if (game < GridStateFactory.TB_GO || game > GridStateFactory.TB_GO13) {
                 tbg2 = new TBGame();
                 tbg2.setGame(game);
                 tbg2.setDaysPerMove(daysPerMove);
