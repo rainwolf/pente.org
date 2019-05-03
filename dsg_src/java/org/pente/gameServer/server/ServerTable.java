@@ -239,7 +239,7 @@ public class ServerTable {
 
     private String psid() { return "[" + sid + "] "; };
     
-    private void resetTable(DSGJoinTableEvent joinEvent) {
+    protected void resetTable(DSGJoinTableEvent joinEvent) {
 
         if (gridState != null) {
             gridState.clear();
@@ -327,7 +327,7 @@ public class ServerTable {
         broadcastMainRoom(getTableState());
     }
 
-	private void broadcastTable(DSGEvent dsgEvent) {
+    protected void broadcastTable(DSGEvent dsgEvent) {
 		for (int i = playersInTable.size()-1; i > -1 ; i--) {
 			DSGPlayerData data = (DSGPlayerData) playersInTable.elementAt(i);
 			if (data != null) {
@@ -339,7 +339,7 @@ public class ServerTable {
 		}
 	}
 
-	private void broadcastMainRoom(DSGEvent dsgEvent) {
+    protected void broadcastMainRoom(DSGEvent dsgEvent) {
         for (int i = playersInMainRoom.size()-1; i > -1 ; i--) {
 			DSGPlayerData data = (DSGPlayerData) playersInMainRoom.elementAt(i);
 			if (data != null) {
@@ -533,7 +533,7 @@ public class ServerTable {
 		}
 	}
 
-	private void sendGameState(String toPlayer) {
+    protected void sendGameState(String toPlayer) {
 
 		String stateMessage = null;
 		if (state == DSGGameStateTableEvent.GAME_IN_PROGRESS) {
@@ -552,7 +552,7 @@ public class ServerTable {
 			toPlayer);
 	}
 
-	private void sendMoves(String toPlayer) {
+    protected void sendMoves(String toPlayer) {
 		if (gridState != null) {
             dsgEventRouter.routeEvent(
                 new DSGMoveTableEvent(tableNum, gridState.getMoves()),
@@ -560,7 +560,7 @@ public class ServerTable {
 		}
 	}
 
-	private void sendTimers(String toPlayer) {
+    protected void sendTimers(String toPlayer) {
 		for (int i = 1; i < timers.length; i++) {
 			dsgEventRouter.routeEvent(
 				new DSGTimerChangeTableEvent(
@@ -571,7 +571,7 @@ public class ServerTable {
 		}
 	}
 
-	private void stopTimers() {
+    protected void stopTimers() {
 		for (int i = 1; i < timers.length; i++) {
 			timers[i].stop();
 		}
@@ -689,14 +689,14 @@ public class ServerTable {
 		return null;
 	}
 
-	private boolean isPlayerInTable(String player) {
+    protected boolean isPlayerInTable(String player) {
         return getPlayerInTable(player) != null;
 	}
-    private boolean isPlayerInMainRoom(String player) {
+    protected boolean isPlayerInMainRoom(String player) {
         return getPlayerInMainRoom(player) != null;
     }
-	private static final int NOT_SITTING = -1;
-	private int getPlayerSeat(String player) {
+    protected static final int NOT_SITTING = -1;
+    protected int getPlayerSeat(String player) {
 		for (int i = 1; i < sittingPlayers.length; i++) {
 			if (sittingPlayers[i] != null && sittingPlayers[i].getName().equals(player)) {
 				return i;
@@ -704,7 +704,7 @@ public class ServerTable {
 		}
 		return NOT_SITTING;
 	}
-	private int getPlayingPlayerSeat(String player) {
+    protected int getPlayingPlayerSeat(String player) {
 		for (int i = 1; i < playingPlayers.length; i++) {
 			if (playingPlayers[i] != null && playingPlayers[i].getName().equals(player)) {
 				return i;
@@ -712,13 +712,13 @@ public class ServerTable {
 		}
 		return NOT_SITTING;
 	}
-	
-	private void resetClickedPlays() {
+
+    protected void resetClickedPlays() {
 		for (int i = 1; i < playerClickedPlay.length; i++) {
 			unClickPlay(i);
 		}
 	}
-	private void unClickPlay(int seat) {
+    protected void unClickPlay(int seat) {
 		// send out click play error so client resets its clickedplay
 		// flag and displays the correct board message
 		if (playerClickedPlay[seat] && sittingPlayers[seat] != null) {
@@ -1167,8 +1167,8 @@ public class ServerTable {
                 toPlayer);
         }
     }
-    
-	private boolean allPlayersSitting() {
+
+    protected boolean allPlayersSitting() {
 		for (int i = 1; i < sittingPlayers.length; i++) {
 			if (sittingPlayers[i] == null) {
 				return false;
@@ -1298,7 +1298,7 @@ public class ServerTable {
 		}
 	}
 
-	private void startSetTimeOut(String dp) {
+    protected void startSetTimeOut(String dp) {
 
 		if (noMoreTimerResets) return; // if both players already used up a chance, no more chances
 
@@ -1418,7 +1418,7 @@ public class ServerTable {
 		}
     }
 
-	private int getGameInSet() {
+    protected int getGameInSet() {
 		int gameInSet = 0;
         if (rated) {
         	if (set == null || set.getG1Gid() == 0 || 
@@ -1912,7 +1912,7 @@ public class ServerTable {
 	 *  the player returns before the time up.  The synchronization
 	 *  issues become to complex otherwise.
 	 */
-	private void startWaitingForPlayerToReturnTimer() {
+    protected void startWaitingForPlayerToReturnTimer() {
 
 		final int localSeqNbr = ++waitingForPlayerToReturnSeqNbr;
 		if (waitingForPlayerToReturnTimer != null) {
@@ -2074,7 +2074,7 @@ public class ServerTable {
             }
         }
     }
-    private DSGPlayerData getPlayerInTable(String name) {
+    protected DSGPlayerData getPlayerInTable(String name) {
         for (int i = playersInTable.size()-1; i>-1; i--) {
             DSGPlayerData data = (DSGPlayerData) playersInTable.elementAt(i);
             if (data == null) {
@@ -2086,7 +2086,7 @@ public class ServerTable {
         
         return null;
     }
-    private DSGPlayerData getPlayerInMainRoom(String name) {
+    protected DSGPlayerData getPlayerInMainRoom(String name) {
         for (int i = 0; i < playersInMainRoom.size(); i++) {
             DSGPlayerData data = (DSGPlayerData) playersInMainRoom.elementAt(i);
             if (data.getName().equals(name)) {
@@ -2106,8 +2106,8 @@ public class ServerTable {
 		broadcastTable(new DSGGameStateTableEvent(
 			null, tableNum, state, reason, winner, gameInSet));
 	}
-    
-    private void resetTableGameOver() {
+
+    protected void resetTableGameOver() {
 
         undoRequested = false;
         cancelRequested = false;
@@ -2142,7 +2142,7 @@ public class ServerTable {
 		changeGameState(DSGGameStateTableEvent.NO_GAME_IN_PROGRESS, txt, 0);
 	}
 	
-	private void gameOver(boolean draw, 
+	protected void gameOver(boolean draw, 
 		String winnerPlayer, String loserPlayer, boolean resign, boolean timeup,
 		boolean forceResign) {
 		
@@ -2839,8 +2839,8 @@ public class ServerTable {
 			return gameData;
 		}
 	}
-    
-    private void swapSeats() {
+
+    protected void swapSeats() {
         // only swap if both players still sitting
         // (if forced resign, don't swap)
         // (if d-pente and already swapped, don't swap back)
@@ -2865,7 +2865,7 @@ public class ServerTable {
     }
     
     
-    private class EndGameRunnable implements Runnable {
+    protected class EndGameRunnable implements Runnable {
 
 		class Data {
 			GameData gameData;
@@ -3101,11 +3101,14 @@ public class ServerTable {
                     loserPlayerData.getPlayerGameData(game, true);
 
 				try {
+                    double k = (game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO
+                            || game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9
+                            || game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13)?32:64;
 	                GameOverUtilities.updateGameData(
 						dsgPlayerStorer,
 	                    winnerPlayerData, winnerPlayerGameData,
 	                    loserPlayerData, loserPlayerGameData, 
-	                    localSet.getWinner() == 0, 64);
+	                    localSet.getWinner() == 0, k);
 				} catch (DSGPlayerStoreException dpse) {
 					log4j.error(psid() + "Error updating game data.", dpse);
 				}
@@ -3120,11 +3123,14 @@ public class ServerTable {
                 double loserRatingBefore = loserPlayerGameData.getRating();
 
 				try {
+                    double k = (game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO
+                            || game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9
+                            || game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13)?32:64;
 	                GameOverUtilities.updateGameData(
 						dsgPlayerStorer,
 	                    winnerPlayerData, winnerPlayerGameData,
 	                    loserPlayerData, loserPlayerGameData, 
-	                    localSet.getWinner() == 0, 64);
+	                    localSet.getWinner() == 0, k);
 				} catch (DSGPlayerStoreException dpse) {
 					log4j.error(psid() + "Error updating game data.", dpse);
 				}
@@ -3132,8 +3138,8 @@ public class ServerTable {
                 double winnerRatingAfter = winnerPlayerGameData.getRating();
                 double loserRatingAfter = loserPlayerGameData.getRating();
     
-                // don't send ratings change for drawn set
-                if (localSet.getWinner() != 0) {
+//                // don't send ratings change for drawn set
+//                if (localSet.getWinner() != 0) {
 	                // and send out a message with the rating changes
 	                String winnerString = winnerPlayerData.getName() + "'s rating has " +
 	                    "gone from " + 
@@ -3151,7 +3157,9 @@ public class ServerTable {
 	                    tableNum, loserString));
     
 
-                    if (serverData.getName() != null && serverData.getName().startsWith("King of the Hill")) {
+                    if (serverData.getName() != null && 
+                            serverData.getName().startsWith("King of the Hill") &&
+                            localSet.getWinner() != 0) {
 						Hill hill = kothStorer.getHill(game);
 						long oldKingPid = (hill!= null)?hill.getKing():0;
                         long winnerPid = winnerPlayerData.getPlayerID();
@@ -3184,7 +3192,7 @@ public class ServerTable {
                                 "KotH has not been updated, players are too far apart"));
                         }
                     }
-                }
+//                }
 				if (serverData.getName() != null && serverData.getName().startsWith("King of the Hill")) {
                     long winnerPid = winnerPlayerData.getPlayerID();
                     long loserPid = loserPlayerData.getPlayerID();
@@ -3211,11 +3219,14 @@ public class ServerTable {
                     loserPlayerData.getPlayerGameData(game, true);
 
 				try {
+                    double k = (game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO
+                            || game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9
+                            || game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13)?32:64;
 	                GameOverUtilities.updateGameData(
 						dsgPlayerStorer,
 	                    winnerPlayerData, winnerPlayerGameData,
 	                    loserPlayerData, loserPlayerGameData, 
-	                    localWinner == 0, 32);
+	                    localWinner == 0, k);
 				} catch (DSGPlayerStoreException dpse) {
 					log4j.error(psid() + "Error updating game data.", dpse);
 				}

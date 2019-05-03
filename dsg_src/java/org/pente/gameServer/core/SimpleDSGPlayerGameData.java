@@ -35,6 +35,17 @@ public class SimpleDSGPlayerGameData implements
     private Date    lastGameDate;
     private int tourneyWinner;
     private char    computer;
+//    private int ratingFloor;
+//
+//    @Override
+//    public int getRatingFloor() {
+//        return ratingFloor;
+//    }
+//
+//    @Override
+//    public void setRatingFloor(int ratingFloor) {
+//        this.ratingFloor = ratingFloor;
+//    }
 
     public SimpleDSGPlayerGameData() {
         rating = 1600;
@@ -160,39 +171,52 @@ public class SimpleDSGPlayerGameData implements
 
         lastGameDate = new Date();
     }
+    
+//    private void updateRatingFloor() {
+//        int newFloor = (((int) rating)/100 - 2)*100;
+//        if (newFloor > ratingFloor) {
+//            setRatingFloor(newFloor);
+//        }
+//    }
 
     public void updateRating(int gameResult, 
     	DSGPlayerGameData opponentPlayerGameData, double k) {
 
         double otherPlayerGames = (double) opponentPlayerGameData.getTotalGames();
+//        double otherPlayerGames = (double) (opponentPlayerGameData.getWins() + opponentPlayerGameData.getLosses());
 
         if (isProvisional()) {
             double gameValue = (opponentPlayerGameData.getRating() + rating) / 2;
+            int score = 0;
             if (gameResult == WIN) {
-                gameValue += 200;
-            }
-            else {
-                gameValue -= 200;
+                score = 200;
+            } else if (gameResult == LOSS) {
+                score = -200;
+//            } else { // DRAW
+//                score = 100;
             }
 
             if (!opponentPlayerGameData.isProvisional()) {
-                 if (gameResult == WIN) {
-                    gameValue += 200;
-                 }
-                 else {
-                    gameValue -= 200;
-                 }
+                score *= 2;
             }
+            
+            gameValue += score;
 
             double newRating = (rating * getTotalGames() + gameValue) / (getTotalGames() + 1);
             if ((gameResult == WIN && newRating > rating) ||
-            	(gameResult == LOSS && newRating < rating)) {
+            	(gameResult == LOSS && newRating < rating) 
+                    || gameResult == DRAW
+                    ) {
             	rating = newRating;
             }
         }
         else {
-
-            int w = gameResult == WIN ? 1 : 0;
+            double w = 1; // WIN
+            if (gameResult == LOSS) {
+                w = 0;
+            } else if (gameResult == DRAW) {
+                w = 0.5;
+            }
 
             if (opponentPlayerGameData.isProvisional()) {
                 k = k * (otherPlayerGames / 20);
@@ -203,14 +227,24 @@ public class SimpleDSGPlayerGameData implements
             // prevent the odd cases of losing and increasing in points
             // or winning and losing points
             if ((gameResult == WIN && diff > 0) ||
-            	 gameResult == LOSS && diff < 0) {
-            	rating += diff;
+                    (gameResult == LOSS && diff < 0) 
+                    || gameResult == DRAW
+                    ) {
+//                if (rating + diff < ratingFloor) {
+//                    rating = (double) ratingFloor;
+//                } else {
+                    rating += diff;
+//                }
             }
+
+//            updateRatingFloor();
+
         }
     }
 
     public boolean isProvisional() {
-        return (wins + losses) < 20;
+        return getTotalGames() < 20;
+//        return wins + losses < 20;
     }
 
     public DSGPlayerGameData getCopy() {
@@ -225,6 +259,7 @@ public class SimpleDSGPlayerGameData implements
         data.setStreak(streak);
         data.setWins(wins);
         data.setComputer(computer);
+//        data.setRatingFloor(ratingFloor);
 
         return data;
     }
@@ -304,6 +339,10 @@ public class SimpleDSGPlayerGameData implements
         if (data.isComputerScore() != isComputerScore()) {
             return false;
         }
+        
+//        if (data.getRatingFloor() != ratingFloor) {
+//            return false;
+//        }
 
         return true;
     }
@@ -322,7 +361,10 @@ public class SimpleDSGPlayerGameData implements
                ", Draws: " + draws +
                ", Streak: " + streak +
                ", Rating: " + rating +
-               ", Last Game: " + lastGameDate.getTime();
+                ", Last Game: " + lastGameDate.getTime() 
+                + ", Rating Floor: "
+//                + ratingFloor
+                ;
     }
 
 

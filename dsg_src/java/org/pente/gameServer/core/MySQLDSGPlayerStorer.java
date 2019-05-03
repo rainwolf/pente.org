@@ -785,7 +785,8 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                                             "draws = ?, " +
                                             "rating = ?, " +
                                             "streak = ?, " +
-                                            "last_game_date = ? " +
+                                            "last_game_date = ?, " +
+//                                            "rating_floor = ? " +
                                             "where pid = ? " +
                                             "and game = ? " +
                                             "and computer = ?");
@@ -795,6 +796,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                 stmt.setDouble(4, dsgPlayerGameData.getRating());
                 stmt.setInt(5, dsgPlayerGameData.getStreak());
                 stmt.setTimestamp(6, new Timestamp(dsgPlayerGameData.getLastGameDate().getTime()));
+//                stmt.setInt(7, dsgPlayerGameData.getRatingFloor());
                 stmt.setLong(7, dsgPlayerGameData.getPlayerID());
                 stmt.setInt(8, dsgPlayerGameData.getGame());
                 stmt.setString(9, new Character(dsgPlayerGameData.getComputer()).toString());
@@ -919,6 +921,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
 		dsgPlayerGameData.setLastGameDate(new java.util.Date(lastGameDate.getTime()));
         dsgPlayerGameData.setComputer(result.getString(9).charAt(0));
         dsgPlayerGameData.setTourneyWinner(result.getInt(10));
+//        dsgPlayerGameData.setRatingFloor(result.getInt(11));
 
 		return dsgPlayerGameData;
 	}
