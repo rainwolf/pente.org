@@ -204,8 +204,9 @@ public class SimpleDSGPlayerGameData implements
 
             double newRating = (rating * getTotalGames() + gameValue) / (getTotalGames() + 1);
             if ((gameResult == WIN && newRating > rating) ||
-            	(gameResult == LOSS && newRating < rating) 
-                    || gameResult == DRAW
+            	(gameResult == LOSS && newRating < rating)
+                    || (gameResult == DRAW && newRating > rating && opponentPlayerGameData.getRating() > rating)
+                    || (gameResult == DRAW && newRating < rating && opponentPlayerGameData.getRating() < rating)
                     ) {
             	rating = newRating;
             }
@@ -227,8 +228,9 @@ public class SimpleDSGPlayerGameData implements
             // prevent the odd cases of losing and increasing in points
             // or winning and losing points
             if ((gameResult == WIN && diff > 0) ||
-                    (gameResult == LOSS && diff < 0) 
-                    || gameResult == DRAW
+                    (gameResult == LOSS && diff < 0)
+                    || (gameResult == DRAW && diff > 0 && opponentPlayerGameData.getRating() > rating)
+                    || (gameResult == DRAW && diff < 0 && opponentPlayerGameData.getRating() < rating)
                     ) {
 //                if (rating + diff < ratingFloor) {
 //                    rating = (double) ratingFloor;
