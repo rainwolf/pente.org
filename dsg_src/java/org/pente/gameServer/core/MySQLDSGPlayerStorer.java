@@ -785,7 +785,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                                             "draws = ?, " +
                                             "rating = ?, " +
                                             "streak = ?, " +
-                                            "last_game_date = ?, " +
+                                            "last_game_date = ? " +
 //                                            "rating_floor = ? " +
                                             "where pid = ? " +
                                             "and game = ? " +
