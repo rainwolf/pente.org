@@ -138,9 +138,9 @@ public class SimpleDSGPlayerGameData implements
     	DSGPlayerGameData opponentPlayerGameData,
     	double k) {
 
-    	if (result != DRAW) {
+//    	if (result != DRAW) {
     		updateRating(result, opponentPlayerGameData, k);
-    	}
+//    	}
  
         switch (result) {
             case WIN:
