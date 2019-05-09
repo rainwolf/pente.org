@@ -519,6 +519,7 @@ if (inLiveGameRoom) {
       <a class="boldbuttons" href="/gameServer/live"  target="_blank" rel="noopener noreferrer" 
          style="margin-right:5px;"><span>Live Game Room</span></a>
     </div>
+        (best with Firefox or Chrome)
         <div style="margin-top:5px;">
             or <a href="/gameServer/pente.jnlp?name=<%=name%>&password=<%=dsgPlayerData.getPassword()%>"><span>install</span></a> the (deprecated, unmaintained, old Java) game room on your desktop.
         </div>
