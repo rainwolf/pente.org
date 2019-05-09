@@ -1463,7 +1463,9 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 		state.addMove(move);
 		if (state.isGameOver()) {
 			log4j.debug("CacheTbStorer.gameover, send to endGameRunnable");
-			synchronized (cacheTbLock) {
+//			System.out.println(" *************** \n");
+//            state.printBoard();
+            synchronized (cacheTbLock) {
 				game.end();
 				game.setWinner(state.getWinner());
 			}
