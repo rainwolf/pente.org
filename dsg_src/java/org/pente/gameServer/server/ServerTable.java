@@ -28,47 +28,44 @@ import org.pente.gameServer.client.*;
 import org.pente.gameServer.core.*;
 import org.pente.gameServer.event.*;
 import org.pente.gameServer.tourney.*;
-import org.pente.turnBased.TBGame;
-import org.pente.turnBased.TBSet;
-import org.pente.turnBased.TBStoreException;
 
 import org.pente.kingOfTheHill.*;
 
 public class ServerTable {
 
-    private static Category log4j = Category.getInstance(ServerTable.class.getName());
+    protected static Category log4j = Category.getInstance(ServerTable.class.getName());
 
-    private static final PGNGameFormat gameFormat = new PGNGameFormat();
-    private static final DateFormat dateFormat = new SimpleDateFormat("MM.dd.yyyy HH.mm.ss");
+    protected static final PGNGameFormat gameFormat = new PGNGameFormat();
+    protected static final DateFormat dateFormat = new SimpleDateFormat("MM.dd.yyyy HH.mm.ss");
 
-	private static final int MAX_PLAYERS = 2;
+	protected static final int MAX_PLAYERS = 2;
 	public static final int NO_ERROR = -1;
-	private static final String SYSTEM = "system_player";
+	protected static final String SYSTEM = "system_player";
 
-	private DSGPlayerData sittingPlayers[] = new DSGPlayerData[MAX_PLAYERS + 1];
+	protected DSGPlayerData sittingPlayers[] = new DSGPlayerData[MAX_PLAYERS + 1];
 	// playing players is set just for the game in case players
 	// get kicked off we still know who was playing
-	private DSGPlayerData playingPlayers[] = new DSGPlayerData[MAX_PLAYERS + 1];
-	private boolean playerClickedPlay[] = new boolean[MAX_PLAYERS + 1];
+	protected DSGPlayerData playingPlayers[] = new DSGPlayerData[MAX_PLAYERS + 1];
+	protected boolean playerClickedPlay[] = new boolean[MAX_PLAYERS + 1];
 
-	private Vector playersInTable = new Vector();
-	private Vector playersInMainRoom;
-    private List<String> playersInvited = new ArrayList<String>();
+	protected Vector playersInTable = new Vector();
+	protected Vector playersInMainRoom;
+    protected List<String> playersInvited = new ArrayList<String>();
 
-    private Map<String, Long> bootTimes = new HashMap<String, Long>();
+    protected Map<String, Long> bootTimes = new HashMap<String, Long>();
     
     // keeps track of which ignores the person sending chat has been told about
     // so we only tell them once per table that their chat is being ignored
-    private Map<Long, Long> chatIgnoredMsg = new HashMap<Long, Long>();
+    protected Map<Long, Long> chatIgnoredMsg = new HashMap<Long, Long>();
     
-	private int state;
-	private int prevState;
+	protected int state;
+	protected int prevState;
 
-	private boolean timed;
-	private boolean rated;
-	private int	initialMinutes;
-	private int incrementalSeconds;
-	private GameTimer timers[];
+	protected boolean timed;
+	protected boolean rated;
+	protected int	initialMinutes;
+	protected int incrementalSeconds;
+	protected GameTimer timers[];
 
 
     /** Move times keeps track of the timer times when players have finished
@@ -78,20 +75,20 @@ public class ServerTable {
      *  undo's and we need to get back to that time. In connect6 it is after 2
      *  moves.
      */  
-  	private List<Time> moveTimes = new ArrayList<Time>();
-    private Date gameTime;
-    private int tableType;
+  	protected List<Time> moveTimes = new ArrayList<Time>();
+    protected Date gameTime;
+    protected int tableType;
 
-	private Game game = GridStateFactory.PENTE_GAME;
-	private GridState gridState;
+	protected Game game = GridStateFactory.PENTE_GAME;
+	protected GridState gridState;
 
-	private GameData lastGame;
+	protected GameData lastGame;
 	
-	private boolean undoRequested;
-	private boolean cancelRequested;
-	private String cancelRequestedBy;
+	protected boolean undoRequested;
+	protected boolean cancelRequested;
+	protected String cancelRequestedBy;
 	
-	private int tableNum;
+	protected int tableNum;
 
 	/** This sequence number is needed for a very rare case that could occur.
 	 *  1. player 1 exits in middle of game, waiting timer is activated
@@ -110,10 +107,10 @@ public class ServerTable {
 	 *     that the current sequence number matches the sequence
 	 *     number given by the time up timer.
 	 */
-	private int waitingForPlayerToReturnSeqNbr;
-	private static final int WAITING_FOR_PLAYER_TO_RETURN_TIMEOUT = 1;
-	private boolean waitingForPlayerToReturnTimeUp;
-	private GameTimer waitingForPlayerToReturnTimer;
+	protected int waitingForPlayerToReturnSeqNbr;
+	protected static final int WAITING_FOR_PLAYER_TO_RETURN_TIMEOUT = 1;
+	protected boolean waitingForPlayerToReturnTimeUp;
+	protected GameTimer waitingForPlayerToReturnTimer;
 
 	/** this represents the player was disconnected
 	 *  in the middle of a set after game 1 and before game 2
@@ -121,41 +118,41 @@ public class ServerTable {
 	 *  gets disconnected, we want to give that player a full timeout clock as
 	 *  well
 	 */
-	private String disconnectedPlayer;
+	protected String disconnectedPlayer;
 	/** if both players have been disconnected at different times, don't allow
 	 *  any more timer rests
 	 */
-	private boolean noMoreTimerResets;
+	protected boolean noMoreTimerResets;
 	
-	private boolean gameStarted;
+	protected boolean gameStarted;
 	
-    private Server server;
-    private ServerData serverData;
-    private long sid;
-    private ServerAIController aiController;
-	private DSGEventToPlayerRouter dsgEventRouter;
-	private DSGEventListener synchronizedTableListener;
-    private DSGPlayerStorer dsgPlayerStorer;
-	private PingManager pingManager;
-    private GameStorer gameFileStorer;
-    private GameStorer gameDbStorer;
-    private PlayerStorer playerDbStorer;
-    private ServerStatsHandler serverStatsHandler;
-    private MySQLDSGReturnEmailStorer returnEmailStorer;
-    private ActivityLogger activityLogger;
+    protected Server server;
+    protected ServerData serverData;
+    protected long sid;
+    protected ServerAIController aiController;
+	protected DSGEventToPlayerRouter dsgEventRouter;
+	protected DSGEventListener synchronizedTableListener;
+    protected DSGPlayerStorer dsgPlayerStorer;
+	protected PingManager pingManager;
+    protected GameStorer gameFileStorer;
+    protected GameStorer gameDbStorer;
+    protected PlayerStorer playerDbStorer;
+    protected ServerStatsHandler serverStatsHandler;
+    protected MySQLDSGReturnEmailStorer returnEmailStorer;
+    protected ActivityLogger activityLogger;
     
-    private Resources resources;
-    private TourneyMatch tourneyMatch;
-    private int tourneyCurrentRound;
+    protected Resources resources;
+    protected TourneyMatch tourneyMatch;
+    protected int tourneyCurrentRound;
     
-    private LiveSet set;
+    protected LiveSet set;
     
-    private Thread gameOverThread;
-	private EndGameRunnable gameOverRunnable;
+    protected Thread gameOverThread;
+	protected EndGameRunnable gameOverRunnable;
     
-	private String creator;
+	protected String creator;
 
-    private CacheKOTHStorer kothStorer;
+    protected CacheKOTHStorer kothStorer;
 	
 	public ServerTable(final Server server,
                        final Resources resources,
@@ -204,7 +201,7 @@ public class ServerTable {
         resetTable(joinEvent);
 	}
 
-	private void startGameOverThread() {
+	protected void startGameOverThread() {
 		if (gameOverRunnable == null) {
 	        gameOverRunnable = new EndGameRunnable();
 		}
@@ -237,7 +234,7 @@ public class ServerTable {
 		}
 	}
 
-    private String psid() { return "[" + sid + "] "; };
+    protected String psid() { return "[" + sid + "] "; };
     
     protected void resetTable(DSGJoinTableEvent joinEvent) {
 
@@ -618,7 +615,7 @@ public class ServerTable {
 		}
 	}
 
-	private void sendPlayerList(String toPlayer) {
+    protected void sendPlayerList(String toPlayer) {
         for (int i = playersInTable.size()-1; i > -1; i--) {
             DSGPlayerData data = (DSGPlayerData) playersInTable.elementAt(i);
             if (data != null) {
@@ -630,7 +627,7 @@ public class ServerTable {
             }
 		}
 	}
-    private DSGChangeStateTableEvent getTableState() {
+    protected DSGChangeStateTableEvent getTableState() {
 
         DSGChangeStateTableEvent changeStateEvent = new DSGChangeStateTableEvent("system", tableNum);
 //        if ("Go".equals(server.getServerData().getName())) {
@@ -655,10 +652,10 @@ public class ServerTable {
         
         return changeStateEvent;
     }
-	private void sendTableState(String toPlayer) {
+    protected void sendTableState(String toPlayer) {
 		dsgEventRouter.routeEvent(getTableState(), toPlayer);
 	}
-	private void sendSittingPlayers(String toPlayer) {
+    protected void sendSittingPlayers(String toPlayer) {
 		for (int i = 1; i < sittingPlayers.length; i++) {
 			if (sittingPlayers[i] != null) {
 				dsgEventRouter.routeEvent(
@@ -669,8 +666,8 @@ public class ServerTable {
 	}
 	
 
-	private static final int NOT_PLAYING = -1;
-	private int getPlayerSeatReturningToGame(String player) {
+	protected static final int NOT_PLAYING = -1;
+	protected int getPlayerSeatReturningToGame(String player) {
 
 		for (int i = 1; i < playingPlayers.length; i++) {
 			if (playingPlayers[i].getName().equals(player)) {
@@ -680,7 +677,7 @@ public class ServerTable {
 		}
 		return NOT_PLAYING;
 	}
-	private String getPlayerNameReturningToGame() {
+	protected String getPlayerNameReturningToGame() {
 		for (int i = 1; i < playingPlayers.length; i++) {
 			if (sittingPlayers[i] == null) {
 				return playingPlayers[i].getName();
@@ -873,7 +870,7 @@ public class ServerTable {
 		}
 	}
 
-    private void changeTableState(DSGChangeStateTableEvent changeStateEvent) {
+    protected void changeTableState(DSGChangeStateTableEvent changeStateEvent) {
 
         resetClickedPlays();
         
@@ -939,7 +936,7 @@ public class ServerTable {
 		}
 	}
 
-    private boolean anyComputersSitting() {
+    protected boolean anyComputersSitting() {
         
         for (int i = 0; i < sittingPlayers.length; i++) {
             if (sittingPlayers[i] != null && sittingPlayers[i].isComputer()) {
@@ -949,7 +946,7 @@ public class ServerTable {
         
         return false;
     }
-    private boolean allComputersSitting() {
+    protected boolean allComputersSitting() {
         
         for (int i = 1; i < sittingPlayers.length; i++) {
             if (sittingPlayers[i] == null || !sittingPlayers[i].isComputer()) {
@@ -959,7 +956,7 @@ public class ServerTable {
         
         return true;
     }
-    private void removeAllComputers() {
+    protected void removeAllComputers() {
         for (Iterator it = playersInTable.iterator(); it.hasNext();) {
             DSGPlayerData data = (DSGPlayerData) it.next();
             if (data != null && data.isComputer()) {
@@ -968,7 +965,7 @@ public class ServerTable {
         }
     }
 
-    private boolean noHumanPlayersInTable() {
+    protected boolean noHumanPlayersInTable() {
 	    for (int i = playersInTable.size()-1; i > -1; i--) {
 			DSGPlayerData data = (DSGPlayerData) playersInTable.elementAt(i);
 			if (data == null) {
@@ -981,7 +978,7 @@ public class ServerTable {
         return true;
     }
 
-	private void sit(String player, int seat) {
+	protected void sit(String player, int seat) {
 		sittingPlayers[seat] = getPlayerInTable(player);
 
 		broadcastMainRoom(new DSGSitTableEvent(player, tableNum, seat));
@@ -1001,7 +998,7 @@ public class ServerTable {
             changeTableState(event);
         }
 	}
-	private void stand(String player, int seat) {
+	protected void stand(String player, int seat) {
 		sittingPlayers[seat] = null;
 
 		// if waiting for 2nd game and player disconnected
@@ -1151,7 +1148,7 @@ public class ServerTable {
         }
     }
 
-	private void copySittingPlayersToPlayingPlayers() {
+	protected void copySittingPlayersToPlayingPlayers() {
 		for (int i = 1; i < playingPlayers.length; i++) {
 			playingPlayers[i] = sittingPlayers[i];
             
@@ -1160,7 +1157,7 @@ public class ServerTable {
 		}
 	}
     
-    private void sendPlayingPlayers(String toPlayer) {
+    protected void sendPlayingPlayers(String toPlayer) {
         for (int i = 1; i < playingPlayers.length; i++) {
             dsgEventRouter.routeEvent(
                 new DSGSetPlayingPlayerTableEvent(playingPlayers[i].getName(), tableNum, i),
@@ -1180,7 +1177,7 @@ public class ServerTable {
     /** Determine if all players have agreed to start the game
      *  Assumes that computer opponents always want to play
      */
-	private boolean allPlayersClickedPlay() {
+	protected boolean allPlayersClickedPlay() {
 		for (int i = 1; i < playerClickedPlay.length; i++) {
             // if the player is a computer, or the player clicked play
 			if (!playerClickedPlay[i] && 
@@ -1317,7 +1314,7 @@ public class ServerTable {
 		broadcastTable(new DSGStartSetTimerEvent(null, tableNum, timeLeft));
 	}
 	
-    private boolean isValidTourneyMatch() {
+    protected boolean isValidTourneyMatch() {
 
         Tourney tourney = server.getTourney();
         boolean valid = false;
@@ -1338,7 +1335,7 @@ public class ServerTable {
         return valid;
     }
     
-    private void startGame() {
+    protected void startGame() {
 
         waitingForPlayerToReturnTimeUp = false;
 		if (waitingForPlayerToReturnTimer != null) {
@@ -1436,10 +1433,10 @@ public class ServerTable {
 		return gameInSet;
 	}
     
-	private boolean isPlayerOwner(String player) {
+	protected boolean isPlayerOwner(String player) {
         return player.equals(getOwner());
 	}
-	private String getOwner() {
+	protected String getOwner() {
 		if (playersInTable.isEmpty()) {
 			return null;
 		}
@@ -2010,7 +2007,7 @@ public class ServerTable {
 	/** This method assumes that all validation has already
 	 *  been done that it is ok to exit
 	 */
-	private void exit(String player, boolean booted) {
+	protected void exit(String player, boolean booted) {
 		boolean owner = isPlayerOwner(player);
 
 		int seat = getPlayerSeat(player);
@@ -2064,7 +2061,7 @@ public class ServerTable {
         }
 	}
 
-    private void removePlayer(String name) {
+    protected void removePlayer(String name) {
         for (int i = playersInTable.size()-1; i>-1; i--) {
             DSGPlayerData data = (DSGPlayerData) playersInTable.elementAt(i);
             if (data == null) {
@@ -2097,10 +2094,10 @@ public class ServerTable {
         return null;
     }
 
-	private void changeGameState(int newState, String reason, int gameInSet) {
+	protected void changeGameState(int newState, String reason, int gameInSet) {
 		changeGameState(newState, reason, null, gameInSet);
 	}
-	private void changeGameState(int newState, String reason, String winner, int gameInSet) {
+	protected void changeGameState(int newState, String reason, String winner, int gameInSet) {
 		prevState = state;
 		state = newState;
 		broadcastTable(new DSGGameStateTableEvent(
@@ -2123,7 +2120,7 @@ public class ServerTable {
             playingPlayers[2].getName());
     }
     
-	private void cancelGame(String setStatus) {
+	protected void cancelGame(String setStatus) {
 
 		resetTableGameOver();
 		gameStarted = false;
@@ -2719,7 +2716,7 @@ public class ServerTable {
         }
 	}
 
-    private GameEventData getGameEvent(int game) {
+    protected GameEventData getGameEvent(int game) {
         // set the event based on passed in game events and game played
         for (Iterator it = serverData.getGameEvents().iterator(); it.hasNext();) {
             GameEventData d = (GameEventData) it.next();
@@ -2888,8 +2885,8 @@ public class ServerTable {
 			return "GS-EndGame";
 		}
 
-		private volatile boolean alive = true;
-		private SynchronizedQueue queue = new SynchronizedQueue();
+		protected volatile boolean alive = true;
+		protected SynchronizedQueue queue = new SynchronizedQueue();
 		
 		public void endGame(GameData gameData, String winnerPlayer,
 				String loserPlayer, int game, int winner, LiveSet localSet) {
@@ -2931,7 +2928,7 @@ public class ServerTable {
 		}
     }
     
-    private void updateDatabaseAfterGameOverInSeparateThread(
+    protected void updateDatabaseAfterGameOverInSeparateThread(
         final String winnerPlayer, final String loserPlayer, int winner, 
         LiveSet localSet, String status) {
         
@@ -2976,7 +2973,7 @@ public class ServerTable {
     /** I suppose its possible that if a player finished 2 games at near
      *  the same time, one games stats updates could override the others
      */
-    private void updateDatabaseAfterGameOver
+    protected void updateDatabaseAfterGameOver
         (GameData gameData, String winnerPlayer, String loserPlayer, 
         int game, int localWinner, LiveSet localSet) {
 

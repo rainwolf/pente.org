@@ -249,7 +249,12 @@ public class DSGContextListener implements ServletContextListener {
 
                 for (Iterator it = serverData.iterator(); it.hasNext();) {
                     ServerData data = (ServerData) it.next();
-                    Server server = new Server(resources, data);
+                    Server server;
+                    if (data.isTournament()) {
+                        server = new TournamentServer(resources, data);
+                    } else {
+                        server = new Server(resources, data);
+                    }
                     resources.addServer(server);
                     log4j.info("Server " + data + " started.");
                     ServerEndpointConfig.Configurator configurator = new WebSocketConfigurator(server);

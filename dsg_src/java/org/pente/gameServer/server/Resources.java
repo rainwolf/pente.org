@@ -53,7 +53,7 @@ public class Resources {
         servers.add(s);
         serverData.add(s.getServerData());
     }
-    public Server removeServer(long id) {
+    public void removeServer(long id) {
         Server server = null;
         for (Iterator it = servers.iterator(); it.hasNext();) {
             Server s = (Server) it.next();
@@ -62,10 +62,14 @@ public class Resources {
                 break;
             }
         }
+        try {
+            MySQLServerStorer.removeServer(getDbHandler(), server.getServerData().getServerId());
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
         servers.remove(server);
         serverData.remove(server.getServerData());
-        
-        return server;
+        server.destroy();
     }
     public List getServers() {
         return servers;

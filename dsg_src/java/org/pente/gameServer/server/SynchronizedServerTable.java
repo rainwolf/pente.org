@@ -60,11 +60,19 @@ public class SynchronizedServerTable implements DSGEventListener {
         final CacheKOTHStorer kothStorer) throws Throwable {
 
         sid = server.getServerData().getServerId();
-		serverTable = new ServerTable(
-            server, resources, aiController, table, dsgEventRouter, this, dsgPlayerStorer,
-            pingManager, gameFileStorer, gameDbStorer, playerDbStorer,
-            serverStatsHandler, returnEmailStorer, playersInMainRoom,
-            activityLogger, joinEvent, kothStorer);
+        if (server.getServerData().isTournament()) {
+            serverTable = new TournamentServerTable(
+                    server, resources, aiController, table, dsgEventRouter, this, dsgPlayerStorer,
+                    pingManager, gameFileStorer, gameDbStorer, playerDbStorer,
+                    serverStatsHandler, returnEmailStorer, playersInMainRoom,
+                    activityLogger, joinEvent, kothStorer);
+        } else {
+            serverTable = new ServerTable(
+                    server, resources, aiController, table, dsgEventRouter, this, dsgPlayerStorer,
+                    pingManager, gameFileStorer, gameDbStorer, playerDbStorer,
+                    serverStatsHandler, returnEmailStorer, playersInMainRoom,
+                    activityLogger, joinEvent, kothStorer);
+        }
 		
 		synchronizedQueue = new SynchronizedQueue();
 		
