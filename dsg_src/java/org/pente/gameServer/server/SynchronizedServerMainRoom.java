@@ -49,7 +49,11 @@ public class SynchronizedServerMainRoom
         this.resources = resources;
         
         sid = server.getServerData().getServerId();
-		serverMainRoom = new ServerMainRoom(server, resources, dsgEventRouter);
+        if (server.getServerData().isTournament()) {
+            serverMainRoom = new TournamentServerMainRoom(server, resources, dsgEventRouter);
+        } else {
+            serverMainRoom = new ServerMainRoom(server, resources, dsgEventRouter);
+        }
 
         resources.getTourneyStorer().addTourneyListener(this);
         

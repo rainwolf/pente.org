@@ -65,17 +65,21 @@
        data.setPrivateServer(privateRoom);
        
        MySQLServerStorer.addServer(resources.getDbHandler(), data);
-	   
-       Server server = new Server(resources, data);
+       Server server;
+       if (tournament) {
+           server = new TournamentServer(resources, data);
+       } else {
+           server = new Server(resources, data);
+       }
        resources.addServer(server);
    }
    else if (action != null && action.equals("remove")) {
        long sid = Long.parseLong(request.getParameter("sid"));
 
-       MySQLServerStorer.removeServer(resources.getDbHandler(), sid);
+//       MySQLServerStorer.removeServer(resources.getDbHandler(), sid);
        
-       Server server = resources.removeServer(sid);
-       server.destroy();
+       resources.removeServer(sid);
+//       server.destroy();
    }
 
 %>

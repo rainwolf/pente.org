@@ -33,56 +33,55 @@ import org.pente.kingOfTheHill.*;
 import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.websocket.Session;
-import javax.websocket.server.ServerContainer;
 
 
 /** A simple class to contain the necessary components that make up the server
  */
 public class Server {
 
-    private static Category log4j = 
+    protected static Category log4j = 
         Category.getInstance(Server.class.getName());
 
-    private Resources resources;
-    private volatile boolean running = true;
+    protected Resources resources;
+    protected volatile boolean running = true;
 
-    private ServerData serverData;
-    private String name;
-    private int port;
-    private ServerSocket gameServerSocket;
-    private Thread gameThread;
+    protected ServerData serverData;
+    protected String name;
+    protected int port;
+    protected ServerSocket gameServerSocket;
+    protected Thread gameThread;
     
-    private DSGPlayerStorerLoginHandler loginHandler;
-    private RegisterHandler registerHandler;
-    private CacheDSGPlayerStorer dsgPlayerStorer;
-    private GameStorer fileGameStorer;
-    private GameStorer gameStorer;
-    private PlayerStorer playerStorer;
+    protected DSGPlayerStorerLoginHandler loginHandler;
+    protected RegisterHandler registerHandler;
+    protected CacheDSGPlayerStorer dsgPlayerStorer;
+    protected GameStorer fileGameStorer;
+    protected GameStorer gameStorer;
+    protected PlayerStorer playerStorer;
 
-    private DSGEventToPlayerRouter dsgEventToPlayerRouter;
+    protected DSGEventToPlayerRouter dsgEventToPlayerRouter;
 
-    private MySQLDSGReturnEmailStorer returnEmailStorer;
+    protected MySQLDSGReturnEmailStorer returnEmailStorer;
 
-    private List tables;
+    protected List tables;
     
-    private SynchronizedServerMainRoom mainRoom;
+    protected SynchronizedServerMainRoom mainRoom;
 
-    private PingManager pingManager;
-    private ServerStatsHandler serverStatsHandler;
+    protected PingManager pingManager;
+    protected ServerStatsHandler serverStatsHandler;
 
-    private ServerAIController aiController;
-    private Collection aiDataCollection;
+    protected ServerAIController aiController;
+    protected Collection aiDataCollection;
     
-    private PasswordHelper passwordHelper;
-    private ActivityLogger activityLogger;
+    protected PasswordHelper passwordHelper;
+    protected ActivityLogger activityLogger;
 
-    private GameEventData gameEvent;
+    protected GameEventData gameEvent;
 
-    private CacheKOTHStorer kothStorer;
+    protected CacheKOTHStorer kothStorer;
     
-    private DSGFollowerStorer followerStorer;
+    protected DSGFollowerStorer followerStorer;
     
-//    private ServerContainer serverContainer;
+//    protected ServerContainer serverContainer;
 //
 //    public void setServerContainer(ServerContainer serverContainer) {
 //        this.serverContainer = serverContainer;
