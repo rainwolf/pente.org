@@ -122,6 +122,7 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         
         List<DSGIgnoreData> ignore = basePlayerStorer.getIgnoreData(newData.getPlayerID());
         ignoreData.put(newData.getPlayerID(), ignore);
+        notifyListeners(newData);
     }
     
     public synchronized void insertPlayer(DSGPlayerData dsgPlayerData) throws DSGPlayerStoreException {
@@ -265,6 +266,7 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         else {
             dsgPlayerData.setPlayerGameData((DSGPlayerGameData) dsgPlayerGameData.clone());
         }
+        notifyListeners(dsgPlayerData);
     }
     public synchronized void updateGame(DSGPlayerGameData dsgPlayerGameData) throws DSGPlayerStoreException {
         log4j.debug("updateGame(" + dsgPlayerGameData.getPlayerID() + ", " + dsgPlayerGameData.getGame() + ", " + dsgPlayerGameData.isHumanScore() + ")");
