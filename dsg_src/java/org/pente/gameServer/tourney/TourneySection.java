@@ -30,7 +30,7 @@ public abstract class TourneySection {
         this.section = section;
     }
     public abstract int getNumPlayers();
-    public abstract List getPlayers();
+    public abstract List<TourneyPlayerData> getPlayers();
     
     public int getNumTotalMatches() {
         return getMatches().size();

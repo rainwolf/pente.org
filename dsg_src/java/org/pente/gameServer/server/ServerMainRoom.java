@@ -28,19 +28,19 @@ import org.pente.gameServer.tourney.*;
 
 public class ServerMainRoom {
 
-    private static Category log4j =
+    protected static Category log4j =
         Category.getInstance(ServerMainRoom.class.getName());
 
-    private Server server;
-    private Resources resources;
-	private DSGEventToPlayerRouter dsgEventRouter;
-    private CacheDSGPlayerStorer dsgPlayerStorer;
+    protected Server server;
+    protected Resources resources;
+    protected DSGEventToPlayerRouter dsgEventRouter;
+    protected CacheDSGPlayerStorer dsgPlayerStorer;
 
-	private Map<String, DSGPlayerData> playersInMainRoom = new HashMap<String, DSGPlayerData>(30);
+    protected Map<String, DSGPlayerData> playersInMainRoom = new HashMap<String, DSGPlayerData>(30);
 
     // keeps track of which ignores the person sending chat has been told about
     // so we only tell them once per table that their chat is being ignored
-    private Map<Long, Long> chatIgnoredMsg = new HashMap<Long, Long>();
+    protected Map<Long, Long> chatIgnoredMsg = new HashMap<Long, Long>();
     
 	public ServerMainRoom(
         Server server,
@@ -57,7 +57,7 @@ public class ServerMainRoom {
         return playersInMainRoom.values();
     }
 
-	private boolean isPlayerInMainRoom(String player) {
+    public boolean isPlayerInMainRoom(String player) {
 		return playersInMainRoom.containsKey(player);
 	}
 
@@ -151,7 +151,7 @@ public class ServerMainRoom {
 
 	}
 					
-	private void sendPlayerList(String toPlayer) {
+	protected void sendPlayerList(String toPlayer) {
 		for (Iterator i = playersInMainRoom.values().iterator(); i.hasNext();) {
 			DSGPlayerData d = (DSGPlayerData) i.next();
 			if (!toPlayer.equals(d.getName())) {

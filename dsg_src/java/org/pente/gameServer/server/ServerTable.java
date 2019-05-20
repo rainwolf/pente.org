@@ -48,7 +48,7 @@ public class ServerTable {
 	protected DSGPlayerData playingPlayers[] = new DSGPlayerData[MAX_PLAYERS + 1];
 	protected boolean playerClickedPlay[] = new boolean[MAX_PLAYERS + 1];
 
-	protected Vector playersInTable = new Vector();
+	protected Vector<DSGPlayerData> playersInTable = new Vector();
 	protected Vector playersInMainRoom;
     protected List<String> playersInvited = new ArrayList<String>();
 
@@ -234,7 +234,8 @@ public class ServerTable {
 		}
 	}
 
-    protected String psid() { return "[" + sid + "] "; };
+    protected String psid() { return "[" + sid + "] "; }
+    public void setTourneyMatch(TourneyMatch tourneyMatch) { this.tourneyMatch = tourneyMatch; }
     
     protected void resetTable(DSGJoinTableEvent joinEvent) {
 

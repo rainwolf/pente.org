@@ -103,6 +103,9 @@ public class SynchronizedServerMainRoom
     public synchronized Collection getPlayersInMainRoom() {
         return serverMainRoom.getPlayersInMainRoom();
     }
+    public boolean isPlayerInMainRoom(String player) {
+        return serverMainRoom.isPlayerInMainRoom(player);
+    }
 
     private String psid() { return "[" + sid + "] "; };
     

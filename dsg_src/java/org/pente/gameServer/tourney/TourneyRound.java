@@ -56,8 +56,8 @@ public class TourneyRound {
     public int getNumSections() {
         return sections.size();
     }
-    public List getPlayers() {
-        List players = new ArrayList();
+    public List<TourneyPlayerData> getPlayers() {
+        List<TourneyPlayerData> players = new ArrayList<>();
         for (Iterator sections = getSections().iterator(); sections.hasNext();) {
             TourneySection s = (TourneySection) sections.next();
             players.addAll(s.getPlayers());
