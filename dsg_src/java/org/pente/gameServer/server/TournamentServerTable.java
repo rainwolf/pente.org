@@ -158,8 +158,12 @@ public class TournamentServerTable extends ServerTable {
     
     // new TournamentServerTable stuff
     protected static final int WAIT_TO_CLOSE_TABLE = 30;
-    protected Timer closeTableTimer;
-    
+    protected static final int WAIT_TO_PRESS_PLAY = 30;
+    protected Timer closeTableTimer, pressPlayTimer;
+    protected boolean tableCanClose = false;
+    public void setTourneyMatch(TourneyMatch tourneyMatch) { this.tourneyMatch = tourneyMatch; }
+
+
 
     public TournamentServerTable(final Server server,
                        final Resources resources,
@@ -181,228 +185,88 @@ public class TournamentServerTable extends ServerTable {
 
 	    super(server, resources, aiController, tableNum, dsgEventRouter, synchronizedTableListener, dsgPlayerStorer, pingManager, gameFileStorer, gameDbStorer, playerDbStorer, serverStatsHandler, returnEmailStorer, namesInMainRoom, activityLogger, joinEvent, kothStorer);
 
-        this.server = server;
-        this.serverData = server.getServerData();
-        sid = serverData.getServerId();
-        this.resources = resources;
-        this.aiController = aiController;
-		this.tableNum = tableNum;
-		this.dsgEventRouter = dsgEventRouter;
-		this.synchronizedTableListener = synchronizedTableListener;
-        this.dsgPlayerStorer = dsgPlayerStorer;
-		this.pingManager = pingManager;
-        this.gameFileStorer = gameFileStorer;
-        this.gameDbStorer = gameDbStorer;
-        this.playerDbStorer = playerDbStorer;
-        this.serverStatsHandler = serverStatsHandler;
-        this.returnEmailStorer = returnEmailStorer;
-        this.activityLogger = activityLogger;
-        this.creator = joinEvent.getPlayer();
-
-        this.kothStorer = kothStorer;
-
-        this.playersInMainRoom = new Vector();
-        for (Iterator it = namesInMainRoom.iterator(); it.hasNext();) {
-            DSGPlayerData d = (DSGPlayerData) it.next();
-            playersInMainRoom.add(d);
-        }
-        startGameOverThread();
-        resetTable(joinEvent);
+//        this.server = server;
+//        this.serverData = server.getServerData();
+//        sid = serverData.getServerId();
+//        this.resources = resources;
+//        this.aiController = aiController;
+//		this.tableNum = tableNum;
+//		this.dsgEventRouter = dsgEventRouter;
+//		this.synchronizedTableListener = synchronizedTableListener;
+//        this.dsgPlayerStorer = dsgPlayerStorer;
+//		this.pingManager = pingManager;
+//        this.gameFileStorer = gameFileStorer;
+//        this.gameDbStorer = gameDbStorer;
+//        this.playerDbStorer = playerDbStorer;
+//        this.serverStatsHandler = serverStatsHandler;
+//        this.returnEmailStorer = returnEmailStorer;
+//        this.activityLogger = activityLogger;
+//        this.creator = joinEvent.getPlayer();
+//
+//        this.kothStorer = kothStorer;
+//
+//        this.playersInMainRoom = new Vector();
+//        for (Iterator it = namesInMainRoom.iterator(); it.hasNext();) {
+//            DSGPlayerData d = (DSGPlayerData) it.next();
+//            playersInMainRoom.add(d);
+//        }
+//        startGameOverThread();
+//        resetTable(joinEvent);
 	}
 
-	protected void startGameOverThread() {
-		if (gameOverRunnable == null) {
-	        gameOverRunnable = new EndGameRunnable();
-		}
-		if (gameOverThread == null || !gameOverThread.isAlive()) {
-			gameOverRunnable.reset();
-			gameOverThread = new Thread(gameOverRunnable);
-	        gameOverThread.start();
-		}
-	}
 	
 	public void destroy() {
+        
+        if (closeTableTimer != null) {
+            closeTableTimer.cancel();
+        }
+        if (pressPlayTimer != null) {
+            pressPlayTimer.cancel();
+        }
+        
+        if (!tourneyMatch.hasBeenPlayed()) {
+            determineAndUpdateForfeit();
+        } else {
+            TourneyMatch newMatch = null;
+            try {
+                newMatch = resources.getTourneyStorer().getUnplayedMatch(
+                        tourneyMatch.getPlayer2().getPlayerID(), tourneyMatch.getPlayer1().getPlayerID(),
+                        getGameEvent(game.getId()).getEventID());
+                tourneyMatch = newMatch;
+                if (tourneyMatch != null) {
+                    determineAndUpdateForfeit();
+                }
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
+        }
+
         super.destroy();
-        
-        
-//        removeAllComputers();
-//
-//        // destroy old timers
-//        if (timers != null) {
-//            for (int i = 0; i < timers.length; i++) {
-//                if (timers[i] != null) {
-//                    timers[i].destroy();
-//                }
-//            }
-//        }
-//		if (waitingForPlayerToReturnTimer != null) {
-//			waitingForPlayerToReturnTimer.destroy();
-//		}
-//        
-//		if (gameOverThread != null && gameOverRunnable != null) {
-//			gameOverRunnable.kill();
-//			gameOverThread.interrupt();
-//		}
 	}
-
-    protected String psid() { return "[" + sid + "] "; };
-    
-
-	public void handleJoin(String player) {
-
-        DSGPlayerData joinPlayerData = getPlayerInTable(player);
-        if (joinPlayerData != null) {
-            dsgEventRouter.routeEvent(
-                new DSGJoinTableErrorEvent(player, tableNum, DSGJoinTableErrorEvent.ALREADY_IN_TABLE), 
-                player);
-            return;
-        }
-        joinPlayerData = getPlayerInMainRoom(player);
-        
-        // determine if the player was kicked while playing and is now returning
-        boolean returningPlayer = false;
-        if (state == DSGGameStateTableEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN) {
-            int seat = getPlayerSeatReturningToGame(player);
-            if (seat != NOT_PLAYING) {
-                returningPlayer = true;
-            }
-        }
-
-        // if table is private and
-        // player isn't an admin and
-        // player wasn't invited and
-        // player is not returning to ongoing game
-        // don't allow access
-        if (joinPlayerData != null && !joinPlayerData.isAdmin() && 
-            tableType == DSGChangeStateTableEvent.TABLE_TYPE_PRIVATE &&
-            !playersInvited.contains(player) && 
-            !returningPlayer &&
-            !player.equals(creator)) {
-            
-            dsgEventRouter.routeEvent(
-                new DSGJoinTableErrorEvent(player, tableNum, DSGJoinTableErrorEvent.PRIVATE_TABLE),
-                player);
-        }
-        // player was booted and can't return for 5 minutes
-        else if (bootTimes.get(player) != null &&
-        	System.currentTimeMillis() < bootTimes.get(player)) {
-
-            dsgEventRouter.routeEvent(
-                new DSGJoinTableErrorEvent(player, tableNum, DSGJoinTableErrorEvent.BOOTED),
-                player);
-        }
-		else {
-            playersInvited.remove(player);
-			playersInTable.addElement(joinPlayerData);
-
-			broadcastMainRoom(new DSGJoinTableEvent(player, tableNum));
-
-			sendTableState(player);
-            
-            if (state != DSGGameStateTableEvent.NO_GAME_IN_PROGRESS) {
-                sendPlayingPlayers(player);
-            }
-
-			boolean restartedGame = false;
-			// check if player was playing game and got kicked off
-			if (state == DSGGameStateTableEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN) {
-				int seat = getPlayerSeatReturningToGame(player);
-				if (seat != NOT_PLAYING) {
-
-					sit(player, seat);
-
-					// reset requests in case player dropped out
-					// after request but before response
-					undoRequested = false;
-					cancelRequested = false;
-					cancelRequestedBy = null;
-					waitingForPlayerToReturnTimeUp = false;
-					
-					if (prevState == DSGGameStateTableEvent.WAIT_GAME_TWO_OF_SET) {
-						changeGameState(DSGGameStateTableEvent.WAIT_GAME_TWO_OF_SET,
-							"set can now restart", 1);
-
-						long timeLeft = 0;
-						if (waitingForPlayerToReturnTimer != null) {
-							timeLeft = (waitingForPlayerToReturnTimer.getMinutes() * 60 +
-							    waitingForPlayerToReturnTimer.getSeconds()) * 1000;
-						}
-						dsgEventRouter.routeEvent(
-							new DSGStartSetTimerEvent(player, tableNum, timeLeft), player);
-						
-						//TODO, timers?
-						//player still has to click play?
-						//what if player DID click play, then got disconnected
-						//before other player clicked play (other player still needs to click play then)
-					}
-					else if (allPlayersSitting()) {
-
-						if (waitingForPlayerToReturnTimer != null) {
-							waitingForPlayerToReturnTimer.stop();
-							waitingForPlayerToReturnTimer.destroy();
-							waitingForPlayerToReturnTimer = null;
-						}
-
-						restartedGame = true;
-
-                        if (timed) {
-						  timers[gridState.getCurrentPlayer()].go();
-                        }
-                        
-						changeGameState(DSGGameStateTableEvent.GAME_IN_PROGRESS, "game restarted", getGameInSet());
-					}
-				}
-			}
-			
-			if (!restartedGame) {
-				sendGameState(player);
-			}
-
-
-            // if playing d-pente at table, send swap decision 1st, before
-            // any moves made (currently this is ok because it's a "silent" swap             
-			if ((game == GridStateFactory.DPENTE_GAME || game == GridStateFactory.SPEED_DPENTE_GAME ||
-					game == GridStateFactory.DKERYO_GAME || game == GridStateFactory.SPEED_DKERYO_GAME) &&
-					gridState != null &&
-                ((PenteState) gridState).wasDPenteSwapDecisionMade()) {
-                dsgEventRouter.routeEvent(
-                    new DSGSwapSeatsTableEvent(null, tableNum,
-                    ((PenteState) gridState).didDPenteSwap(), true),
-                    player);
-            }
-
-			sendMoves(player);
-
-			if (timed && (state == DSGGameStateTableEvent.GAME_IN_PROGRESS || 
-				          state == DSGGameStateTableEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN)) {
-				sendTimers(player);
-			}
-
-			// send the current owner to the joining player
-			dsgEventRouter.routeEvent(
-				new DSGOwnerTableEvent(getOwner(), tableNum),
-				player);
-			
-			creator = null;
-		}
-	}
-
 
 	/** Just send out status of table to player
 	 */
+	@Override
 	public void handleMainRoomJoin(DSGJoinMainRoomEvent mainRoomEvent) {
-
-        if (playersInTable != null && playersInTable.size() == 0) {
-            server.removeTable(tableNum);
-            return;
+//        if (playersInTable != null && playersInTable.size() == 0) {
+//            server.removeTable(tableNum);
+//            return;
+//        }
+//        
+//		playersInMainRoom.addElement(mainRoomEvent.getDSGPlayerData());
+//		
+//		String player = mainRoomEvent.getDSGPlayerData().getName();
+//		sendPlayerList(player);
+//		sendTableState(player);
+//		sendSittingPlayers(player);
+		super.handleMainRoomJoin(mainRoomEvent);
+		if (tourneyMatch == null || tourneyMatch.hasBeenPlayed()) {
+		    return;
         }
-        
-		playersInMainRoom.addElement(mainRoomEvent.getDSGPlayerData());
-		
-		String player = mainRoomEvent.getDSGPlayerData().getName();
-		sendPlayerList(player);
-		sendTableState(player);
-		sendSittingPlayers(player);
+		if (tourneyMatch.getPlayer1().getPlayerID() == mainRoomEvent.getDSGPlayerData().getPlayerID() || 
+                tourneyMatch.getPlayer2().getPlayerID() == mainRoomEvent.getDSGPlayerData().getPlayerID()) {
+            handleJoin(mainRoomEvent.getPlayer());
+        }
 	}
 	
 	public void handleMainRoomExit(String player) {
@@ -420,61 +284,79 @@ public class TournamentServerTable extends ServerTable {
 	}
 
 
-	public void handleSit(String player, int seat) {
-
-		int error = NO_ERROR;
-		if (!isPlayerInTable(player)) {
-			error = DSGTableErrorEvent.NOT_IN_TABLE;
-		}
-		else if (getPlayerSeat(player) != NOT_SITTING) {
-			error = DSGTableErrorEvent.ALREADY_SITTING;
-		}
-		else if (state == DSGGameStateTableEvent.GAME_IN_PROGRESS) {
-			error = DSGTableErrorEvent.GAME_IN_PROGRESS;
-		}
-		//not really possible but just in case
-		else if (state == DSGGameStateTableEvent.WAIT_GAME_TWO_OF_SET) {
-			error = DSGTableErrorEvent.WAIT_GAME_TWO_OF_SET;
-		}
-		else if (state == DSGGameStateTableEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN) {
-			error = DSGTableErrorEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN;
-		}
-		else if (state == DSGGameStateTableEvent.NO_GAME_IN_PROGRESS) {
-			if (seat < 1 || seat > MAX_PLAYERS) {
-				error = DSGTableErrorEvent.UNKNOWN;
-			}
-			else if (sittingPlayers[seat] != null) {
-				error = DSGTableErrorEvent.SEAT_TAKEN;
-			}
-			else {
-				sit(player, seat);
-			}
-		}
-		
-		if (error != NO_ERROR) {
-			dsgEventRouter.routeEvent(
-				new DSGSitTableErrorEvent(player, tableNum, seat, error),
-				player);
-            
-            // if player failing to sit is a computer, then remove it
-            // since it won't be able to play and will be a zombie
-            DSGPlayerData dsgPlayerData = getPlayerInTable(player);
-            if (dsgPlayerData != null && dsgPlayerData.isComputer()) {
-                broadcastTable(
-                    new DSGTextTableEvent(dsgPlayerData.getName(),
-                        tableNum, "Oh my, someone's in my seat, bye!"));
-                aiController.removeAIPlayer(player, tableNum);
-            }
-		}
-	}
+	@Override
+	public void handleSit(String player, int seat) { }
 
 	protected void sit(String player, int seat) {
 		sittingPlayers[seat] = getPlayerInTable(player);
 
 		broadcastMainRoom(new DSGSitTableEvent(player, tableNum, seat));
 
-        // if a computer is sitting, make the game unrated and untimed
+        if (sittingPlayers[1] != null && sittingPlayers[2] != null) {
+            startPressPlayTimer();
+        }
 	}
+	
+	protected void startPressPlayTimer() {
+        if (pressPlayTimer == null) {
+            pressPlayTimer = new Timer();
+            pressPlayTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    determineAndUpdateForfeit();
+                }
+            }, 1000L*WAIT_TO_PRESS_PLAY);
+            broadcastTable(new DSGSystemMessageTableEvent(
+                    tableNum,
+                    "You have "+WAIT_TO_PRESS_PLAY+" seconds to press play, otherwise you forfeit this match."));
+        }
+    }
+    
+    protected void determineAndUpdateForfeit() {
+	    if (tourneyMatch == null) {
+	        return;
+        }
+	    int result = TourneyMatch.RESULT_UNFINISHED;
+	    if ((sittingPlayers[1] != null && sittingPlayers[2] != null)) {
+	        if (!this.playerClickedPlay[1] && !this.playerClickedPlay[2]) {
+	            result = TourneyMatch.RESULT_DBL_FORFEIT;
+            } else if (this.playerClickedPlay[1] && !this.playerClickedPlay[2]) {
+	            result = TourneyMatch.RESULT_P1_WINS;
+            } else if (this.playerClickedPlay[2] && !this.playerClickedPlay[1]) {
+                result = TourneyMatch.RESULT_P2_WINS;
+            }
+        } else if ((sittingPlayers[1] == null && sittingPlayers[2] == null)) {
+            result = TourneyMatch.RESULT_DBL_FORFEIT;
+        } else if (sittingPlayers[1] == null) {
+            result = TourneyMatch.RESULT_P2_WINS;
+        } else if (sittingPlayers[2] == null) {
+            result = TourneyMatch.RESULT_P1_WINS;
+        }
+        
+        tourneyMatch.setForfeit(true);
+	    tourneyMatch.setResult(result);
+        try {
+            resources.getTourneyStorer().updateMatch(tourneyMatch);
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+
+        TourneyMatch newMatch = null;
+        try {
+            newMatch = resources.getTourneyStorer().getUnplayedMatch(
+                    tourneyMatch.getPlayer2().getPlayerID(), tourneyMatch.getPlayer1().getPlayerID(),
+                    getGameEvent(game.getId()).getEventID());
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+        tourneyMatch = newMatch;
+        if (tourneyMatch != null) {
+            determineAndUpdateForfeit();
+        } else {
+            closeTable();
+        }
+    }
+    
 	protected void stand(String player, int seat) {
 		sittingPlayers[seat] = null;
 
@@ -491,89 +373,35 @@ public class TournamentServerTable extends ServerTable {
 		broadcastMainRoom(new DSGStandTableEvent(player, tableNum));
 	}
 
-	public void handleStand(String player) {
-		
-		int error = NO_ERROR;
-		if (!isPlayerInTable(player)) {
-			error = DSGTableErrorEvent.NOT_IN_TABLE;
-		}
-		else {
-			int seat = getPlayerSeat(player);
-			if (seat == NOT_SITTING) {
-				error = DSGTableErrorEvent.NOT_SITTING;
-			}
-			else if (state == DSGGameStateTableEvent.GAME_IN_PROGRESS) {
-				error = DSGTableErrorEvent.GAME_IN_PROGRESS;
-			}
-			else if (state == DSGGameStateTableEvent.WAIT_GAME_TWO_OF_SET) {
-				error = DSGTableErrorEvent.WAIT_GAME_TWO_OF_SET;
-			}
-			else if (state == DSGGameStateTableEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN) {
-				error = DSGTableErrorEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN;
-			}
-			else {
-				stand(player, seat);
-			}
-		}
-		
-		if (error != NO_ERROR) {
-			dsgEventRouter.routeEvent(
-				new DSGStandTableErrorEvent(player, tableNum, error),
-				player);
-		}
-	}
-
-    protected boolean isValidTourneyMatch() {
-
-        Tourney tourney = server.getTourney();
-        boolean valid = false;
-
-        try {
-            long pid1 = sittingPlayers[1].getPlayerID();
-            long pid2 = sittingPlayers[2].getPlayerID();
-            tourneyMatch = resources.getTourneyStorer().getUnplayedMatch(
-                pid1, pid2, tourney.getEventID());
-            
-            valid = tourneyMatch != null;
-            tourneyCurrentRound = tourney.getLastRound().getRound();
-            
-        } catch (Throwable t) {
-            log4j.error("Unable to get tourney match.", t);
-        }
-        
-        return valid;
-    }
-    
-  
-	protected boolean isPlayerOwner(String player) {
-        return player.equals(getOwner());
-	}
-	protected String getOwner() {
-		if (playersInTable.isEmpty()) {
-			return null;
-		}
-		else {
-//		    for (int i = playersInTable.size()-1; i>-1; i--) {
-//                DSGPlayerData d = (DSGPlayerData) playersInTable.elementAt(i);
-//                if (d == null) {
-//                    playersInTable.remove(i);
-//                } else if (d.isHuman()) {
-//                    return d.getName();
-//                }
-//            }
-//            return null;
-            for (int i = 0; i<playersInTable.size(); i++) {
-                DSGPlayerData d = (DSGPlayerData) playersInTable.elementAt(i);
-                if (d != null && d.isHuman()) {
-                    return d.getName();
-                }
-            }
-            return null;
-		}
-	}
+	@Override
+	public void handleStand(String player) { }
 
 	@Override
+    public void handleJoin(String player) {
+	    super.handleJoin(player);
+	    if (isPlayerInTable(player)) {
+	        int i = 0;
+	        if (tourneyMatch != null && tourneyMatch.getPlayer1().getName().equals(player)) {
+	            i = 1;
+            } else if (tourneyMatch != null && tourneyMatch.getPlayer1().getName().equals(player)) {
+	            i = 2;
+            }
+            if (i > 0) {
+                if (this.sittingPlayers[i] == null) {
+                    sit(player, i);
+                } else if (!this.sittingPlayers[i].getName().equals(player)) {
+                    stand(this.sittingPlayers[i].getName(), i);
+                    sit(player, i);
+                }
+            }
+        }
+    }
+    
+    @Override
     protected void startGame() {
+	    if (this.pressPlayTimer != null) {
+	        this.pressPlayTimer.cancel();
+        }
 	    super.startGame();
     }
 
@@ -583,124 +411,6 @@ public class TournamentServerTable extends ServerTable {
     @Override
 	public void handleCancelReply(DSGCancelReplyTableEvent cancelReplyEvent) { }
 	
-	public void handleExit(String player, boolean forced) {
-
-		if (!isPlayerInTable(player)) {
-			dsgEventRouter.routeEvent(
-				new DSGExitTableErrorEvent(player, tableNum, DSGTableErrorEvent.NOT_IN_TABLE),
-				player);
-		}
-		else {
-			int seat = getPlayerSeat(player);
-			if (seat != NOT_SITTING) {
-				if (state == DSGGameStateTableEvent.GAME_IN_PROGRESS ||
-					state == DSGGameStateTableEvent.WAIT_GAME_TWO_OF_SET) {
-					if (forced) {
-						
-						if (state == DSGGameStateTableEvent.GAME_IN_PROGRESS) {
-							changeGameState(DSGGameStateTableEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN, 
-							    "player " + player + " has been disconnected, game is paused. ", 0);
-
-							stopTimers();
-							startWaitingForPlayerToReturnTimer();
-						}
-						else if (state == DSGGameStateTableEvent.WAIT_GAME_TWO_OF_SET) {
-
-							startSetTimeOut(player);
-
-							changeGameState(DSGGameStateTableEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN, 
-								"player " + player + " has been disconnected, set is still active.", 0);
-						}
-						exit(player, false);
-					}
-					else {
-						int error = state == DSGGameStateTableEvent.GAME_IN_PROGRESS ?
-							DSGTableErrorEvent.GAME_IN_PROGRESS :
-							DSGTableErrorEvent.WAIT_GAME_TWO_OF_SET;
-						dsgEventRouter.routeEvent(
-							new DSGExitTableErrorEvent(player, tableNum, error),
-							player);
-					}
-				}
-				else if (state == DSGGameStateTableEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN) {
-					if (forced) {
-						cancelGame(LiveSet.STATUS_CANCEL_DOUBLE_DISCONNECT);
-						exit(player, false);
-					}
-					else {
-						dsgEventRouter.routeEvent(
-							new DSGExitTableErrorEvent(player, tableNum, DSGTableErrorEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN),
-							player);
-					}
-				}
-				else if (state == DSGGameStateTableEvent.NO_GAME_IN_PROGRESS) {
-					exit(player, false);
-				}
-			}
-			// else not sitting
-			else {
-				exit(player, false);
-			}
-		}
-	}
-	
-	
-	/** This method assumes that all validation has already
-	 *  been done that it is ok to exit
-	 */
-	protected void exit(String player, boolean booted) {
-		boolean owner = isPlayerOwner(player);
-
-		int seat = getPlayerSeat(player);
-		if (seat != NOT_SITTING) {
-			stand(player, seat);
-		}
-
-        removePlayer(player);
-
-		if (owner) {
-			String newOwner = getOwner();
-			if (newOwner != null) {
-
-                playersInvited.clear(); // clear all invitations from previous owner
-                broadcastTable(new DSGOwnerTableEvent(
-                    newOwner, tableNum));
-			}
-		}
-		
-		broadcastMainRoom(new DSGExitTableEvent(
-            player, tableNum, false, booted));
-
-		if (noHumanPlayersInTable()) {
-            if (state == DSGGameStateTableEvent.NO_GAME_IN_PROGRESS ||
-            	state == DSGGameStateTableEvent.WAIT_GAME_TWO_OF_SET) {
-                removeAllComputers();
-            }
-            else if (tableType == DSGChangeStateTableEvent.TABLE_TYPE_PRIVATE) {
-                tableType = DSGChangeStateTableEvent.TABLE_TYPE_PUBLIC;
-                broadcastMainRoom(getTableState());
-            }
-            
-            if (set != null) {
-            	set.setStatus(LiveSet.STATUS_CANCEL_DOUBLE_DISCONNECT);
-            	try {
-            		dsgPlayerStorer.updateLiveSet(set);
-            	} catch (DSGPlayerStoreException dpse) {
-            		dpse.printStackTrace();
-            	}
-            	set = null;
-            }
-		}
-        
-		for (int i = playersInTable.size()-1; i>-1; i--) {
-		    if (playersInTable.elementAt(i) == null) {
-		        playersInTable.remove(i);
-            }
-        }
-        if (playersInTable.isEmpty()) {
-            server.removeTable(tableNum);
-        }
-	}
 
     @Override
 	protected void cancelGame(String setStatus) { }
@@ -727,46 +437,49 @@ public class TournamentServerTable extends ServerTable {
 
     
     
-    protected void updateDatabaseAfterGameOverInSeparateThread(
-        final String winnerPlayer, final String loserPlayer, int winner, 
-        LiveSet localSet, String status) {
-        
-        if (serverData.isTournament()) {
-            broadcastTable(new DSGSystemMessageTableEvent(
-                tableNum,
-                "updating tournament standings, please wait"));
-        }
+    /** I suppose its possible that if a player finished 2 games at near
+     *  the same time, one games stats updates could override the others
+     */
+    @Override
+    protected void updateDatabaseAfterGameOver
+    (GameData gameData, String winnerPlayer, String loserPlayer,
+     int game, int localWinner, LiveSet localSet) {
 
-        final int localGame = game.getId();
-        final GameData gameData = getGameData(winner, status);
+        try {
+            super.updateDatabaseAfterGameOver(gameData, winnerPlayer, loserPlayer, game, localWinner, localSet);
+            long newPid1 = sittingPlayers[1].getPlayerID();
+            long newPid2 = sittingPlayers[2].getPlayerID();
+            TourneyMatch newMatch = resources.getTourneyStorer().getUnplayedMatch(
+                    newPid1, newPid2,
+                    getGameEvent(game).getEventID());
+            if (newMatch == null) {
+                closeTable();
+            } else {
+                tourneyMatch = newMatch;
+                startPressPlayTimer();
+            }
 
-        serverStatsHandler.gamePlayed();
-
-        // don't update db in new thread if tournament game because
-        // want to ensure tournament standings updated properly
-        
-        if (serverData.isTournament()) {
-            updateDatabaseAfterGameOver(
-                gameData, winnerPlayer, loserPlayer, localGame, winner, set);
-        }
-        else {
-            swapSeats();
-            
-            startGameOverThread();
-            gameOverRunnable.endGame(gameData, 
-            	winnerPlayer, loserPlayer, localGame, winner, set);
-            
-            // new thread not needed now since db will not be as slow due
-            // to fact that long queries are run against dsg_ro db
-//            new Thread(new Runnable() {
-//                public void run() {
-//                	try { Thread.sleep(5000);} catch (InterruptedException e) {}
-//                	System.out.println("done sleeping");
-//                    updateDatabaseAfterGameOver(
-//                        gameData, winnerPlayer, loserPlayer, localGame, winner);
-//                }
-//            }, "updateDatabaseAfterGameOver").start();
+        } catch (Throwable t) {
+            log4j.error("Error updating tourney match for " +
+                    gameData.getGameID(), t);
         }
     }
     
+    protected void closeTable() {
+        broadcastTable(new DSGSystemMessageTableEvent(
+                tableNum,
+                "this table will be automatically closed in "+WAIT_TO_CLOSE_TABLE+" seconds."));
+        closeTableTimer = new Timer();
+        closeTableTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                for (Object playerObject: playersInTable) {
+                    DSGPlayerData player = (DSGPlayerData) playerObject;
+                    if (player != null) {
+                        exit(player.getName(), true);
+                    }
+                }
+            }
+        }, 1000L*WAIT_TO_CLOSE_TABLE);
+    }
 }
