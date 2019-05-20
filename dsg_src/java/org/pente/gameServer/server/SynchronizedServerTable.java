@@ -35,7 +35,12 @@ public class SynchronizedServerTable implements DSGEventListener {
         Category.getInstance(SynchronizedServerTable.class.getName());
 	
     private long sid;
-	private ServerTable 		serverTable;
+
+    public ServerTable getServerTable() {
+        return serverTable;
+    }
+
+    private ServerTable 		serverTable;
 	private SynchronizedQueue 	synchronizedQueue;
 
 	private Thread				queueThread;
