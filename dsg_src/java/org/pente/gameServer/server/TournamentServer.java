@@ -20,6 +20,7 @@ package org.pente.gameServer.server;
 
 import java.util.*;
 import java.net.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.*;
 
@@ -39,216 +40,176 @@ import javax.websocket.Session;
  */
 public class TournamentServer extends Server {
 
+    protected int ROUND_PAUSE = 3; 
+    protected Map<Long, Integer> pid2tables;
+    protected Map<Integer, TourneyMatch> table2matches;
+    protected HashSet<String> tournamentPlayers;
+    protected Tourney tournament;
+    protected List<TourneyMatch> matches;
+    protected Timer timeoutBeforeNextRoundTimer;
+
     public TournamentServer(Resources resources,
                   ServerData serverData) throws Throwable {
 
         super(resources, serverData);
-//        this.resources = resources;
-//        this.dsgPlayerStorer = resources.getDsgPlayerStorer();
-//		this.serverStatsHandler = resources.getServerStatsHandler();
-//        this.returnEmailStorer = resources.getReturnEmailStorer();
-//        this.gameStorer = resources.getGameStorer();
-//        this.fileGameStorer = resources.getFileGameStorer();
-//        this.playerStorer = resources.getPlayerStorer();
-//        this.passwordHelper = resources.getPasswordHelper();
-//        this.activityLogger = resources.getActivityLogger();
-//        this.serverData = serverData;
-//        this.name = serverData.getName();
-//        this.port = serverData.getPort();
-//        this.kothStorer = resources.getKOTHStorer();
-//        this.followerStorer = resources.getFollowerStorer();
-//
-//        System.setProperty("javax.net.ssl.keyStore", "/var/lib/tomcat8/webapps/MyDSKeyStore.jks");
-//        System.setProperty("javax.net.ssl.keyStorePassword", "nuria8a13b");
-//        try {
-//            ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
-//            gameServerSocket = ssf.createServerSocket(port);
-//        } catch (Throwable t) {
-//            log4j.error("Server [" + name + "], could not listen on port: " + 
-//                port + ".", t);
-//            return;
-//        }
-//        
-//        // can these be shared also?
-//        loginHandler = new DSGPlayerStorerLoginHandler(dsgPlayerStorer);
-//        registerHandler = new DSGPlayerStorerRegisterHandler(dsgPlayerStorer);
-//
-//        // initialize per server stuff
-//        DSGEventToPlayerRouter baseRouter = new SimpleDSGEventToPlayerRouter();
-//        dsgEventToPlayerRouter = 
-//            new LoggingDSGEventToPlayerRouter(
-//                serverData.getServerId(), serverStatsHandler, baseRouter);
-//        pingManager = new DSGEventPingManager(dsgEventToPlayerRouter); // don't log ping events
-//
-//
-//        tables = new ArrayList(5);
-//        tables.add(new Object());//dummy 1st table
-//        
-//        mainRoom = new SynchronizedServerMainRoom(
-//            this, resources, dsgEventToPlayerRouter);
-//        dsgPlayerStorer.addPlayerDataChangeListener(mainRoom);
-//        dsgPlayerStorer.addIgnoreDataChangeListener(mainRoom);
-//        
-//        aiController = new ServerAIController(this, passwordHelper);
-//        initAiData(resources.getAiConfigFile());
-//
-//
-//        gameThread = new Thread(new Runnable() {
-//            public void run() {
-//                while (running) {
-//                    try {
-//                        Socket socket = gameServerSocket.accept();
-//                        
-//                        // don't wait for more messages to come in before sending
-//                        // because server sends many short messages
-//                        socket.setTcpNoDelay(true); 
-//                        // timeout after 30 seconds
-//                        // this should be ok because we send pings every 15 seconds
-//                        //socket.setSoTimeout(30 * 1000); 
-//                                             
-//                        addPlayerSocket(socket);
-//
-//                    } catch (Throwable t) {
-//                        if (running) {
-//                            log4j.error("Error accepting game socket " +
-//                                "connection [" + name + "].", t);
-//                        }
-//                    }
-//                }
-//                
-//                // close socket
-//                try {
-//                    gameServerSocket.close();
-//                    destroy();
-//                    log4j.info("Game server socket [" + name + "] closed.");
-//                } catch (Throwable t) {
-//                    log4j.error("Error closing game server socket [" + name + "].", t);
-//                }
-//            }
-//        }, "DSG Server [" + name + "]");
-//        gameThread.start();
-
-
+        tournament = getTourney();
+        if (tournament.getNumRounds() > 0) {
+            initNewRound();
+        }
     }
 
-    public void bootPlayer(String name, int minutes) {
-    	final SocketDSGEventHandler s = removePlayerListener(name, true);
-    	loginHandler.bootPlayer(name, minutes);
-    	
-    	if (s != null) { //ai shoudln't happen
-	    	// just in case client doesn't close the socket
-	    	// do it here
-			new Thread(new Runnable() {
-				public void run() {
-	
-					// sleep for 3 seconds to give booted player a chance to
-					// receive message that they were booted before closing socket
-					try {
-						Thread.sleep(3000);
-					} catch (InterruptedException ie) {}
-					
-			    	s.destroy();
-				}
-			}).run();
-    	}
-    }
-    
-    public int createNewTable(DSGJoinTableEvent joinEvent) throws Throwable {
 
-        int newTableNum = -1;
-        Collection mainRoomPlayers = mainRoom.getPlayersInMainRoom();
-        synchronized (tables) {
-
-            for (int i = 1; i < tables.size(); i++) {
-                SynchronizedServerTable t = (SynchronizedServerTable) tables.get(i);
-                if (t == null) {
-                    newTableNum = i;
-                    break;
+    public synchronized void initNewRound() {
+        pid2tables = new ConcurrentHashMap<>();
+        table2matches = new ConcurrentHashMap<>();
+        tournamentPlayers = new HashSet<>();
+        for (TourneyPlayerData p: tournament.getLastRound().getPlayers()) {
+            tournamentPlayers.add(p.getName());
+        }
+        matches = new ArrayList<>();
+        for (TourneySection section: tournament.getLastRound().getSections()) {
+            for (TourneyMatch match: section.getMatches()) {
+                if (!match.hasBeenPlayed()) {
+                    matches.add(match);
                 }
             }
-            // if all tables full, add to list
-            if (newTableNum == -1) {
-                newTableNum = tables.size();
-            }
+        }
+        attemptMatchStart(null);
+    }
+    
+    
 
-            SynchronizedServerTable newT = new SynchronizedServerTable(this,
-                resources,
-                aiController, newTableNum, dsgEventToPlayerRouter, dsgPlayerStorer,
-                pingManager, fileGameStorer, gameStorer, playerStorer,
-                serverStatsHandler, returnEmailStorer, mainRoomPlayers,
-                activityLogger, joinEvent, kothStorer);
-
-            if (newTableNum == tables.size()) {
-                tables.add(newT);
+    public synchronized void removeTable(int tableNum) {
+        TourneyMatch match = table2matches.get(tableNum);
+        if (match != null) {
+            long pid1 = match.getPlayer1().getPlayerID();
+            long pid2 = match.getPlayer2().getPlayerID();
+            pid2tables.remove(pid1);
+            pid2tables.remove(pid2);
+            table2matches.remove(tableNum);
+            attemptMatchStart(pid1);
+            attemptMatchStart(pid2);
+        }
+        super.removeTable(tableNum);
+    }
+    
+    public void matchOnJoin(DSGPlayerData playerData) {
+        if (!tournamentPlayers.contains(playerData.getName()) || pid2tables.get(playerData.getPlayerID()) != null) {
+            return;
+        }
+        attemptMatchStart(playerData.getPlayerID());
+    }
+    
+    private synchronized void attemptMatchStart(Long pid) {
+        for (TourneyMatch match: matches) {
+            if (match.hasBeenPlayed()) {
+                continue;
             }
-            else {
-                tables.set(newTableNum, newT);
+            if (pid != null && match.getPlayer1().getPlayerID() != pid && match.getPlayer2().getPlayerID() != pid) {
+                continue;
+            }
+            // make sure they're not playing
+            long pid1 = match.getPlayer1().getPlayerID();
+            if (pid2tables.get(pid1) != null) {
+                continue;
+            }
+            long pid2 = match.getPlayer2().getPlayerID();
+            if (pid2tables.get(pid2) != null) {
+                continue;
+            }
+            String player1 = match.getPlayer1().getName();
+            String player2 = match.getPlayer2().getName();
+            // make sure they're logged on
+            if (!mainRoom.isPlayerInMainRoom(player1) || !mainRoom.isPlayerInMainRoom(player2)) {
+                continue;
+            }
+            try {
+                int tableNum = createNewTable(new DSGJoinTableEvent());
+                // remove them if they're spectating
+                removePlayerFromTables(player1);
+                removePlayerFromTables(player2);
+                SynchronizedServerTable syncedTable = (SynchronizedServerTable) this.tables.get(tableNum);
+                ServerTable table = syncedTable.getServerTable();
+                table.setTourneyMatch(match);
+                // join only, table will sit them
+                syncedTable.eventOccurred(new DSGJoinTableEvent(player1, tableNum));
+                syncedTable.eventOccurred(new DSGJoinTableEvent(player2, tableNum));
+                // housekeeping
+                pid2tables.put(pid1, tableNum);
+                pid2tables.put(pid2, tableNum);
+                table2matches.put(tableNum, match);
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
             }
         }
-
-        return newTableNum;
+        if (pid2tables.isEmpty()) {
+            startWait();
+        } else if (timeoutBeforeNextRoundTimer != null) {
+            timeoutBeforeNextRoundTimer.cancel();
+            timeoutBeforeNextRoundTimer = null;
+        }
+    } 
+    
+    protected void removePlayerFromTables(String player) {
+        for (Integer tableNum: table2matches.keySet()) {
+            SynchronizedServerTable syncedTable = (SynchronizedServerTable) this.tables.get(tableNum);
+            ServerTable table = syncedTable.getServerTable();
+            Vector<DSGPlayerData> playersInTable = table.playersInTable;
+            for (DSGPlayerData p: playersInTable) {
+                if (p != null && p.getName().equals(player)) {
+                    syncedTable.eventOccurred(new DSGExitTableEvent(player, tableNum, false, false));
+                }
+            }
+        }
     }
-    public void removeTable(int tableNum) {
-        synchronized (tables) {
-            SynchronizedServerTable t = (SynchronizedServerTable) tables.get(tableNum);
-            if (t != null) {
-                t.destroy();
-                tables.set(tableNum, null);
+    
+    public synchronized void startWait() {
+        if (timeoutBeforeNextRoundTimer == null) {
+            mainRoom.eventOccurred(new DSGSystemMessageTableEvent(0, "No more possible matches with the present players. In "+ROUND_PAUSE+" minutes, the next round will start, unless new matches become possible."));
+            timeoutBeforeNextRoundTimer = new Timer();
+            timeoutBeforeNextRoundTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    forfeitRemainingMatches();
+                    timeoutBeforeNextRoundTimer = null;
+                }
+            }, 1000L * 60 * ROUND_PAUSE);
+        }
+        
+    }
+    
+    public synchronized void forfeitRemainingMatches() {
+        for (TourneyMatch match: matches) {
+            if (match.hasBeenPlayed()) {
+                continue;
+            }
+            String player1 = match.getPlayer1().getName();
+            String player2 = match.getPlayer2().getName();
+            boolean p1inRoom = mainRoom.isPlayerInMainRoom(player1), p2inRoom = mainRoom.isPlayerInMainRoom(player2);
+            int result = TourneyMatch.RESULT_UNFINISHED;
+            if (!p1inRoom && !p2inRoom) {
+                result = TourneyMatch.RESULT_DBL_FORFEIT;
+            } else if (!p1inRoom && p2inRoom) {
+                result = TourneyMatch.RESULT_P2_WINS;
+            } else if (!p2inRoom && p1inRoom) {
+                result = TourneyMatch.RESULT_P1_WINS;
+            }
+
+            match.setForfeit(true);
+            match.setResult(result);
+            try {
+                resources.getTourneyStorer().updateMatch(match);
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
             }
         }
     }
     
     
     public void destroy() {
-
-        try {
-            running = false;
-            if (gameThread != null) {
-                gameThread.interrupt();
-            }
-            if (gameServerSocket != null) {
-                gameServerSocket.close();
-            }
-            
-        } catch (Throwable t) {
-            log4j.error("Error stopping server threads [" + name + ".", t);
+        if (timeoutBeforeNextRoundTimer != null) {
+            timeoutBeforeNextRoundTimer.cancel();
         }
-        
-        synchronized (tables) {
-            for (int i = 1; i < tables.size(); i++) {
-                SynchronizedServerTable t = (SynchronizedServerTable) tables.get(i);
-                if (t != null) {
-                    t.destroy();
-                }
-            }
-        }
-        if (dsgPlayerStorer != null) {
-            dsgPlayerStorer.removePlayerDataChangeListener(mainRoom);
-        }
-        if (mainRoom != null) {
-            mainRoom.destroy();
-        }
-        if (pingManager != null) {
-	        pingManager.destroy();
-        }
-    }
-    public ServerData getServerData() {
-        return serverData;
-    }
-    public void setServerData(ServerData serverData) {
-        this.serverData = serverData;
-    }
-    public Tourney getTourney() {
-        Tourney tourney = null;
-        try {
-            if (serverData.isTournament()) {
-                GameEventData first = (GameEventData) serverData.getGameEvents().get(0);
-                tourney = resources.getTourneyStorer().getTourney(first.getEventID());
-            }
-        } catch (Throwable t) {
-            log4j.error("Error getting tourney.", t);
-        }
-
-        return tourney;
+        super.destroy(); 
     }
 }
