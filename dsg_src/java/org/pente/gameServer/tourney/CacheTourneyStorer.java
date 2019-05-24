@@ -6,6 +6,8 @@ import com.jivesoftware.oro.util.Cache;
 import org.apache.log4j.*;
 
 import org.pente.game.*;
+import org.pente.gameServer.server.ContextHolder;
+import org.pente.gameServer.server.Resources;
 import org.pente.kingOfTheHill.CacheKOTHStorer;
 import org.pente.kingOfTheHill.KOTHStorer;
 import org.pente.notifications.CacheNotificationServer;
@@ -15,6 +17,8 @@ import org.pente.turnBased.TBSet;
 import org.pente.turnBased.Utilities;
 import org.pente.turnBased.CacheTBStorer;
 import org.pente.gameServer.core.*;
+
+import javax.websocket.server.ServerContainer;
 
 public class CacheTourneyStorer implements TourneyStorer {
 
@@ -67,12 +71,52 @@ public class CacheTourneyStorer implements TourneyStorer {
         completedTournies = null;
         tourneyPlayerPids = null;
     }
+    
+    public synchronized void insertTourney(Tourney tourney, Resources resources) throws Throwable {
+        insertTourney(tourney);
+        if (tourney.isSpeed()) {
+            Date oneHourAgo = new Date();
+            Date now = new Date();
+            oneHourAgo.setTime(oneHourAgo.getTime() - 3600L*1000);
+            if (tourney.getStartDate().before(oneHourAgo)) {
+                resources.startNewServer(tourney);
+            } else {
+                Date startDate = new Date(tourney.getStartDate().getTime() - 3600L*1000);
+                Timer timer = new Timer();
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        resources.startNewServer(tourney);
+                    }
+                }, startDate);
+            }
+            if (tourney.getNumRounds() == 0) {
+                if (tourney.getStartDate().before(now)) {
+                    resources.startTournament(tourney);
+                } else {
+                    Timer timer = new Timer();
+                    timer.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            try {
+                                List players = setInitialSeeds(tourney.getEventID());
+                                TourneyRound newRound = tourney.createFirstRound(players);
+                                insertRound(newRound);
+                            } catch (Throwable t) {
+                                t.printStackTrace();
+                            }
+                        }
+                    }, tourney.getStartDate());
+                }
+            }
+        }
+    }
 
     public synchronized void insertTourney(Tourney tourney) throws Throwable { 
         backingStorer.insertTourney(tourney);
         
         log4j.debug("insertTourney(" + tourney.getEventID() + "), cached");
-        tournies.put(new Integer(tourney.getEventID()), tourney);
+        tournies.put(tourney.getEventID(), tourney);
         upcomingTournies = null;
     }
 

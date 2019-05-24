@@ -33,136 +33,12 @@ import org.pente.kingOfTheHill.*;
 
 public class TournamentServerTable extends ServerTable {
 
-    protected static Category log4j = Category.getInstance(ServerTable.class.getName());
-
-    protected static final PGNGameFormat gameFormat = new PGNGameFormat();
-    protected static final DateFormat dateFormat = new SimpleDateFormat("MM.dd.yyyy HH.mm.ss");
-
-	protected static final int MAX_PLAYERS = 2;
-	public static final int NO_ERROR = -1;
-	protected static final String SYSTEM = "system_player";
-
-	protected DSGPlayerData sittingPlayers[] = new DSGPlayerData[MAX_PLAYERS + 1];
-	// playing players is set just for the game in case players
-	// get kicked off we still know who was playing
-	protected DSGPlayerData playingPlayers[] = new DSGPlayerData[MAX_PLAYERS + 1];
-	protected boolean playerClickedPlay[] = new boolean[MAX_PLAYERS + 1];
-
-	protected Vector playersInTable = new Vector();
-	protected Vector playersInMainRoom;
-    protected List<String> playersInvited = new ArrayList<String>();
-
-    protected Map<String, Long> bootTimes = new HashMap<String, Long>();
-    
-    // keeps track of which ignores the person sending chat has been told about
-    // so we only tell them once per table that their chat is being ignored
-    protected Map<Long, Long> chatIgnoredMsg = new HashMap<Long, Long>();
-    
-	protected int state;
-	protected int prevState;
-
-	protected boolean timed;
-	protected boolean rated;
-	protected int	initialMinutes;
-	protected int incrementalSeconds;
-	protected GameTimer timers[];
-
-
-    /** Move times keeps track of the timer times when players have finished
-     *  with their turns.  Note that this doesn't always correspond to moves in
-     *  a game.  In d-pente, the time is recorded when player 2 sends in the
-     *  decision to swap or not in case after that decision the other player
-     *  undo's and we need to get back to that time. In connect6 it is after 2
-     *  moves.
-     */  
-  	protected List<Time> moveTimes = new ArrayList<Time>();
-    protected Date gameTime;
-    protected int tableType;
-
-	protected Game game = GridStateFactory.PENTE_GAME;
-	protected GridState gridState;
-
-	protected GameData lastGame;
-	
-	protected boolean undoRequested;
-	protected boolean cancelRequested;
-	protected String cancelRequestedBy;
-	
-	protected int tableNum;
-
-	/** This sequence number is needed for a very rare case that could occur.
-	 *  1. player 1 exits in middle of game, waiting timer is activated
-	 *  2. player 1 returns to table
-	 *  3. player 1 exits table again right away
-	 *  4. 1st waiting timer runs out and generates time up message
-	 *     (this could happen as long as 2. and 3. hadn't processed
-	 *      through the SynchronizedServerTable yet, so all 3 events
-	 *      would be sitting in the queue.)
-	 *  5. now the state of the table after 2. and 3. would be
-	 *     waiting for a player to return and a new waiting timer
-	 *     would be created. when 4. is processed it would see
-	 *     that the state of the system was waiting and would
-	 *     then send out the force resign / cancel WRONG!
-	 *  6. by adding a sequence number the table can check
-	 *     that the current sequence number matches the sequence
-	 *     number given by the time up timer.
-	 */
-	protected int waitingForPlayerToReturnSeqNbr;
-	protected static final int WAITING_FOR_PLAYER_TO_RETURN_TIMEOUT = 1;
-	protected boolean waitingForPlayerToReturnTimeUp;
-	protected GameTimer waitingForPlayerToReturnTimer;
-
-	/** this represents the player was disconnected
-	 *  in the middle of a set after game 1 and before game 2
-	 *  the set timeout clock has started running, but if the other player later
-	 *  gets disconnected, we want to give that player a full timeout clock as
-	 *  well
-	 */
-	protected String disconnectedPlayer;
-	/** if both players have been disconnected at different times, don't allow
-	 *  any more timer rests
-	 */
-	protected boolean noMoreTimerResets;
-	
-	protected boolean gameStarted;
-	
-    protected Server server;
-    protected ServerData serverData;
-    protected long sid;
-    protected ServerAIController aiController;
-	protected DSGEventToPlayerRouter dsgEventRouter;
-	protected DSGEventListener synchronizedTableListener;
-    protected DSGPlayerStorer dsgPlayerStorer;
-	protected PingManager pingManager;
-    protected GameStorer gameFileStorer;
-    protected GameStorer gameDbStorer;
-    protected PlayerStorer playerDbStorer;
-    protected ServerStatsHandler serverStatsHandler;
-    protected MySQLDSGReturnEmailStorer returnEmailStorer;
-    protected ActivityLogger activityLogger;
-    
-    protected Resources resources;
-    protected TourneyMatch tourneyMatch;
-    protected int tourneyCurrentRound;
-    
-    protected LiveSet set;
-    
-    protected Thread gameOverThread;
-	protected EndGameRunnable gameOverRunnable;
-    
-	protected String creator;
-
-    protected CacheKOTHStorer kothStorer;
-    
-    
-    
     // new TournamentServerTable stuff
-    protected static final int WAIT_TO_CLOSE_TABLE = 30;
+    protected static final int WAIT_TO_CLOSE_TABLE = 20;
     protected static final int WAIT_TO_PRESS_PLAY = 30;
     protected Timer closeTableTimer, pressPlayTimer;
-    protected boolean tableCanClose = false;
     public void setTourneyMatch(TourneyMatch tourneyMatch) { this.tourneyMatch = tourneyMatch; }
-
+    protected Long forfeitPid;
 
 
     public TournamentServerTable(final Server server,
@@ -224,7 +100,7 @@ public class TournamentServerTable extends ServerTable {
             pressPlayTimer.cancel();
         }
         
-        if (!tourneyMatch.hasBeenPlayed()) {
+        if (tourneyMatch != null && !tourneyMatch.hasBeenPlayed()) {
             determineAndUpdateForfeit();
         } else {
             TourneyMatch newMatch = null;
@@ -269,6 +145,7 @@ public class TournamentServerTable extends ServerTable {
         }
 	}
 	
+	@Override
 	public void handleMainRoomExit(String player) {
         for (Iterator it = playersInMainRoom.iterator(); it.hasNext();) {
             DSGPlayerData data = (DSGPlayerData) it.next();
@@ -287,6 +164,7 @@ public class TournamentServerTable extends ServerTable {
 	@Override
 	public void handleSit(String player, int seat) { }
 
+	@Override
 	protected void sit(String player, int seat) {
 		sittingPlayers[seat] = getPlayerInTable(player);
 
@@ -316,21 +194,41 @@ public class TournamentServerTable extends ServerTable {
 	    if (tourneyMatch == null) {
 	        return;
         }
-	    int result = TourneyMatch.RESULT_UNFINISHED;
-	    if ((sittingPlayers[1] != null && sittingPlayers[2] != null)) {
-	        if (!this.playerClickedPlay[1] && !this.playerClickedPlay[2]) {
-	            result = TourneyMatch.RESULT_DBL_FORFEIT;
-            } else if (this.playerClickedPlay[1] && !this.playerClickedPlay[2]) {
-	            result = TourneyMatch.RESULT_P1_WINS;
-            } else if (this.playerClickedPlay[2] && !this.playerClickedPlay[1]) {
-                result = TourneyMatch.RESULT_P2_WINS;
+	    if (waitingForPlayerToReturnTimer != null) {
+            waitingForPlayerToReturnTimer.stop();
+            waitingForPlayerToReturnTimer.destroy();
+        }
+
+	    int result = TourneyMatch.RESULT_DBL_FORFEIT;
+	    if (forfeitPid == null) {
+            if ((sittingPlayers[1] != null && sittingPlayers[2] != null)) {
+                if (this.playerClickedPlay[1] && !this.playerClickedPlay[2]) {
+                    forfeitPid = sittingPlayers[2].getPlayerID();
+                } else if (this.playerClickedPlay[2] && !this.playerClickedPlay[1]) {
+                    forfeitPid = sittingPlayers[1].getPlayerID();
+                }
+            } else if (sittingPlayers[1] == null && sittingPlayers[2] != null) {
+                forfeitPid = sittingPlayers[2].getPlayerID();
+            } else if (sittingPlayers[2] == null && sittingPlayers[1] != null) {
+                forfeitPid = sittingPlayers[1].getPlayerID();
             }
-        } else if ((sittingPlayers[1] == null && sittingPlayers[2] == null)) {
-            result = TourneyMatch.RESULT_DBL_FORFEIT;
-        } else if (sittingPlayers[1] == null) {
-            result = TourneyMatch.RESULT_P2_WINS;
-        } else if (sittingPlayers[2] == null) {
-            result = TourneyMatch.RESULT_P1_WINS;
+        }
+	    if (forfeitPid != null) {
+            if (forfeitPid == tourneyMatch.getPlayer1().getPlayerID()) {
+                result = TourneyMatch.RESULT_P2_WINS;
+                broadcastTable(new DSGSystemMessageTableEvent(
+                        tableNum,
+                        "Game over, forfeit by "+tourneyMatch.getPlayer1().getName()+"."));
+            } else if (forfeitPid == tourneyMatch.getPlayer2().getPlayerID()) {
+                result = TourneyMatch.RESULT_P1_WINS;
+                broadcastTable(new DSGSystemMessageTableEvent(
+                        tableNum,
+                        "Game over, forfeit by "+tourneyMatch.getPlayer2().getName()+"."));
+            }
+        } else {
+            broadcastTable(new DSGSystemMessageTableEvent(
+                    tableNum,
+                    "Game over, double forfeit."));
         }
         
         tourneyMatch.setForfeit(true);
@@ -357,6 +255,14 @@ public class TournamentServerTable extends ServerTable {
         }
     }
     
+//    protected void swapSeatsAndPlays() {
+//	    swapSeats();
+//	    boolean tmp = playerClickedPlay[1];
+//	    playerClickedPlay[1] = playerClickedPlay[2];
+//	    playerClickedPlay[2] = tmp;
+//    }
+    
+    @Override
 	protected void stand(String player, int seat) {
 		sittingPlayers[seat] = null;
 
@@ -383,7 +289,7 @@ public class TournamentServerTable extends ServerTable {
 	        int i = 0;
 	        if (tourneyMatch != null && tourneyMatch.getPlayer1().getName().equals(player)) {
 	            i = 1;
-            } else if (tourneyMatch != null && tourneyMatch.getPlayer1().getName().equals(player)) {
+            } else if (tourneyMatch != null && tourneyMatch.getPlayer2().getName().equals(player)) {
 	            i = 2;
             }
             if (i > 0) {
@@ -401,6 +307,7 @@ public class TournamentServerTable extends ServerTable {
     protected void startGame() {
 	    if (this.pressPlayTimer != null) {
 	        this.pressPlayTimer.cancel();
+	        this.pressPlayTimer = null;
         }
 	    super.startGame();
     }
@@ -473,10 +380,16 @@ public class TournamentServerTable extends ServerTable {
         closeTableTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                for (Object playerObject: playersInTable) {
+                List<DSGPlayerData> players = new ArrayList<>(playersInTable);
+                for (Object playerObject: players) {
                     DSGPlayerData player = (DSGPlayerData) playerObject;
                     if (player != null) {
                         exit(player.getName(), true);
+                        try {
+                            Thread.sleep(500);
+                        } catch (Exception e) {
+                            
+                        }
                     }
                 }
             }

@@ -7,12 +7,16 @@ import org.pente.game.*;
 import org.pente.gameDatabase.GameStorerSearcher;
 import org.pente.gameServer.client.web.SiteStatsData;
 import org.pente.gameServer.core.*;
+import org.pente.gameServer.event.WebSocketEndpoint;
 import org.pente.gameServer.tourney.*;
 import org.pente.notifications.NotificationServer;
 import org.pente.turnBased.*;
 import org.pente.message.*;
 
 import org.pente.kingOfTheHill.*;
+
+import javax.websocket.server.ServerContainer;
+import javax.websocket.server.ServerEndpointConfig;
 
 /** Holder of server side resources that are reused
  *  Created to avoid repeating a bunch of code that gets/sets things
@@ -71,6 +75,60 @@ public class Resources {
         serverData.remove(server.getServerData());
         server.destroy();
     }
+    public void startNewServer(Tourney tournament) {
+        try {
+            ServerContainer serverContainer = (ServerContainer) ContextHolder.servletContext.getAttribute("javax.websocket.server.ServerContainer");
+            ServerData data = new ServerData();
+            data.setTournament(true);
+            data.setPort(getNewServerPort());
+            data.setServerId(getNewServerID());
+            data.setName(tournament.getName());
+            GameEventData e = new SimpleGameEventData();
+            e.setGame(tournament.getGame());
+            e.setEventID(tournament.getEventID());
+            e.setName(tournament.getName());
+            data.addGameEvent(e);
+            TournamentServer server = new TournamentServer(this, data);
+            this.addServer(server);
+            ServerEndpointConfig.Configurator configurator = new WebSocketConfigurator(server);
+            ServerEndpointConfig sec = ServerEndpointConfig.Builder.
+                    create(WebSocketEndpoint.class, "/websocketServer/"+data.getPort()).
+                    configurator(configurator).build();
+            serverContainer.addEndpoint(sec);
+        } catch (Throwable t) {
+            t.printStackTrace();
+//            log4j.error("Problem in startNewServer()", t);
+        }
+    }
+
+    public void startTournament(Tourney tournament) {
+        try {
+            // create first round
+            List players = this.getTourneyStorer().setInitialSeeds(tournament.getEventID());
+            TourneyRound newRound = tournament.createFirstRound(players);
+            this.getTourneyStorer().insertRound(newRound);
+        } catch (Throwable t) {
+            t.printStackTrace();
+//            log4j.error("Problem in startTournament()", t);
+        }
+    }
+    private int getNewServerID() {
+        int maxID = 0;
+        for(Object o: this.getServers()) {
+            Server s = (Server) o;
+            maxID = Math.max(maxID, s.getServerData().getServerId());
+        }
+        return maxID + 1;
+    }
+    private int getNewServerPort() {
+        int maxPort = 0;
+        for(Object o: this.getServers()) {
+            Server s = (Server) o;
+            maxPort = Math.max(maxPort, s.getServerData().getPort());
+        }
+        return maxPort + 1;
+    }
+
     public List getServers() {
         return servers;
     }

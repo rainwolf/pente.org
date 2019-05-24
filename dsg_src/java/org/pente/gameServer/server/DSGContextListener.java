@@ -19,10 +19,7 @@
 package org.pente.gameServer.server;
 
 import java.io.*;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.servlet.*;
 import javax.websocket.server.ServerContainer;
@@ -30,6 +27,7 @@ import javax.websocket.server.ServerEndpointConfig;
 
 import org.apache.log4j.*;
 
+import org.apache.log4j.lf5.util.Resource;
 import org.pente.database.*;
 import org.pente.game.*;
 import org.pente.gameDatabase.*;
@@ -61,6 +59,7 @@ public class DSGContextListener implements ServletContextListener {
         try {
 
             ServletContext ctx = servletContextEvent.getServletContext();
+            ContextHolder.servletContext = ctx;
             Resources resources = new Resources();
             
             String appletVersion = ctx.getInitParameter("appletVersion");
@@ -251,10 +250,9 @@ public class DSGContextListener implements ServletContextListener {
                     ServerData data = (ServerData) it.next();
                     Server server;
                     if (data.isTournament()) {
-                        server = new TournamentServer(resources, data);
-                    } else {
-                        server = new Server(resources, data);
+                        continue;
                     }
+                    server = new Server(resources, data);
                     resources.addServer(server);
                     log4j.info("Server " + data + " started.");
                     ServerEndpointConfig.Configurator configurator = new WebSocketConfigurator(server);
@@ -262,6 +260,46 @@ public class DSGContextListener implements ServletContextListener {
                             create(WebSocketEndpoint.class, "/websocketServer/"+data.getPort()).
                             configurator(configurator).build();
                     serverContainer.addEndpoint(sec);
+                }
+                
+                List<Tourney> tournaments = new ArrayList<>();
+                tournaments.addAll(tourneyStorer.getCurrentTournies());
+                tournaments.addAll(tourneyStorer.getUpcomingTournies());
+                Date oneHourAgo = new Date();
+                Date now = new Date();
+                oneHourAgo.setTime(oneHourAgo.getTime() - 3600L*1000);
+                for (Tourney t: tournaments) {
+                    Tourney tourney = tourneyStorer.getTourneyDetails(t.getEventID());
+                    if (tourney.isSpeed()) {
+                        log4j.info("tournament " + tourney.getName());
+                        if (tourney.getStartDate().before(oneHourAgo)) {
+                            resources.startNewServer(tourney);
+                            log4j.info("Server " + tourney.getName() + " started.");
+                        } else {
+                            Date startDate = new Date(tourney.getStartDate().getTime() - 3600L*1000);
+                            Timer timer = new Timer();
+                            timer.schedule(new TimerTask() {
+                                @Override
+                                public void run() {
+                                    resources.startNewServer(tourney);
+                                    log4j.info("Server " + tourney.getName() + " started.");
+                                }
+                            }, startDate);
+                        }
+                        if (tourney.getNumRounds() == 0) {
+                            if (tourney.getStartDate().before(now)) {
+                                resources.startTournament(tourney);
+                            } else {
+                                Timer timer = new Timer();
+                                timer.schedule(new TimerTask() {
+                                    @Override
+                                    public void run() {
+                                        resources.startTournament(tourney);
+                                    }
+                                }, tourney.getStartDate());
+                            }
+                        }
+                    }
                 }
                 
                 log4j.info("Servers ready.");
