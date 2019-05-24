@@ -99,7 +99,7 @@ public class ServerTable {
 	 *      through the SynchronizedServerTable yet, so all 3 events
 	 *      would be sitting in the queue.)
 	 *  5. now the state of the table after 2. and 3. would be
-	 *     waiting for a player to return and a new waiting timer
+     *     waiting for a player to return and a new waiting timer
 	 *     would be created. when 4. is processed it would see
 	 *     that the state of the system was waiting and would
 	 *     then send out the force resign / cancel WRONG!
@@ -2856,6 +2856,7 @@ public class ServerTable {
 			broadcastMainRoom(new DSGSitTableEvent(sittingPlayers[1].getName(), tableNum, 1));
 			broadcastMainRoom(new DSGSitTableEvent(sittingPlayers[2].getName(), tableNum, 2));
 
+			resetClickedPlays();
             broadcastTable(new DSGSystemMessageTableEvent(
                 tableNum,
                 "server switched your seats for the next game"));

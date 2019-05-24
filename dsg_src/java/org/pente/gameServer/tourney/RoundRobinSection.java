@@ -1,8 +1,6 @@
 package org.pente.gameServer.tourney;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class RoundRobinSection extends TourneySection {
     
@@ -11,7 +9,13 @@ public class RoundRobinSection extends TourneySection {
     private boolean winners[];
     private long results[][];
     
-    private List matches = new ArrayList();
+    private List<TourneyMatch> matches = new ArrayList<>();
+
+    public List<TourneyMatch> getSingleEliminationMatches() {
+        return singleEliminationMatches;
+    }
+
+    private List<TourneyMatch> singleEliminationMatches = new ArrayList<>();
     
     public RoundRobinSection(int section) {
         super(section);
@@ -74,7 +78,45 @@ public class RoundRobinSection extends TourneySection {
         
         if (getMatches().isEmpty()) return;
         players.clear();
-        
+//        Collections.sort(matches, new Comparator() {
+//            public int compare(Object o1, Object o2) {
+//                TourneyMatch m1 = (TourneyMatch) o1;
+//                TourneyMatch m2 = (TourneyMatch) o2;
+//                if (m1.isBye()) return 1;
+//                else if (m2.isBye()) return -1;
+//
+//                String m1Names = "";
+//                String m2Names = "";
+//                String m1p1 = m1.getPlayer1().getName();
+//                String m1p2 = m1.getPlayer2().getName();
+//                String m2p1 = m2.getPlayer1().getName();
+//                String m2p2 = m2.getPlayer2().getName();
+//                if (m1p1.compareTo(m1p2) < 0) {
+//                    m1Names = m1p1 + m1p2;
+//                }
+//                else {
+//                    m1Names = m1p2 + m1p1;
+//                }
+//                if (m2p1.compareTo(m2p2) < 0) {
+//                    m2Names = m2p1 + m2p2;
+//                }
+//                else {
+//                    m2Names = m2p2 + m2p1;
+//                }
+//                return m1Names.compareTo(m2Names);
+//            }
+//        });
+//        singleEliminationMatches = new ArrayList<>();
+//        for (TourneyMatch m: matches) {
+//            if (m.isBye()) {
+//                continue;
+//            }
+//            if (m.getPlayer1().getPlayerID() < m.getPlayer2().getPlayerID() && this.) {
+//                continue;
+//            }
+//            singleEliminationMatches.add(m);
+//        }
+
         // store names, pids for later use
         for (int i = 0, j = 0;
              i < getMatches().size(); 

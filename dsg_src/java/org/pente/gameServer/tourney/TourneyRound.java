@@ -129,6 +129,18 @@ public class TourneyRound {
                 strings.add(p.getName() + " " + p.getMatchWins() + "-" + 
                     p.getOpponentWins());
             }
+//        } else if (tourney.getFormat() instanceof RoundRobinFormat) {
+//            int i = 1;
+//            for(TourneySection s: sections) {
+//                strings.add("Section "+i);
+//                for(TourneyMatch m: s.getMatches()) {
+//                    if (!m.isBye()) {
+//                        String r = m.getPlayer1().getName() + "(" + m.getPlayer1().getSeed() + ")" +
+//                                " " + m.getPlayer2().getName() + "(" + m.getPlayer2().getSeed() + ")";
+//                        strings.add(r);
+//                    }
+//                }
+//            }
         }
         
         return strings;
