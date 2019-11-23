@@ -59,10 +59,8 @@ A few more rules
 	<%}%> </li>
 	<li>non-subscribers who don't play any King of the Hill games for 62 days are removed from the hill, subscribers have 100 days leeway, </li>
 	<li>non-subscribers can only participate in one hill, <a href="https://pente.org/gameServer/subscriptions">subscribers</a> can participate in all hills,</li>
-	<li>live games must be played in the King of the Hill room and must be rated in order to count, games between players who are more than 2 steps apart are not considered.</li>
+	<li>live games must be played in the King of the Hill room and must be rated in order to count.</li>
 </ul>
-<br>
-This is new code so there may still be bugs here and there, that's why this is a beta feature.
 
 <br>
 <br>
