@@ -367,7 +367,8 @@ window.google_analytics_uacct = "UA-20529582-2";
 }
 %>
 
-           <li>New turn-based tournaments: <a href="/gameServer/tournaments">March Madness tournaments</a>
+    <li>New turn-based tournaments: <a href="/gameServer/tournaments">Halloween tournaments and Pente Masters</a>
+<%--    <li>Live (Speed) Test Tournament: <a href="/gameServer/tournaments">Test Tournament</a>--%>
             <%--<br>--%>
         <%--Final:  <a href="/gameServer/tournaments/statusRound.jsp?eid=1315&round=5">Pente</a>--%>
               </li>
@@ -629,12 +630,12 @@ if (inLiveGameRoom) {
    <tr>
     <td>
     <div class="buttonwrapper" style="margin-top:5px;">
-      <a class="boldbuttons" href="javascript:play();" 
-         style="margin-right:5px;"><span>Play the Computer</span></a>
+        <a class="boldbuttons" href="/gameServer/mmai"  target="_blank" rel="noopener noreferrer"
+           style="margin-right:5px;"><span>Play the Computer</span></a>
     </div>
     </td>
     <td style="vertical-align:middle">
-     Challenge the tough computer opponent with 8 skill levels
+        <font color="red"><b>(new)</b></font> Challenge the computer opponent with 12 levels
     </td>
    </tr>
    <tr>

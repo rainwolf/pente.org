@@ -53,6 +53,9 @@ public class WhosOnline {
                 else {
                     dsgPlayerData = dsgPlayerStorer.loadPlayer(d[i].getPlayerName());
                 }
+                if (seen.size() > 0 && seen.contains(d[i].getPlayerName())) {
+                    continue;
+                }
                 room.getPlayers().add(dsgPlayerData);
                 seen.add(d[i].getPlayerName());
             }

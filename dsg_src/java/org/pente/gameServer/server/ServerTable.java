@@ -3164,7 +3164,7 @@ public class ServerTable {
                         long winnerPid = winnerPlayerData.getPlayerID();
                         long loserPid = loserPlayerData.getPlayerID();
                         int stepsBetween = kothStorer.stepsBetween(game, winnerPid, loserPid);
-                        if (stepsBetween*stepsBetween < 5) {
+//                        if (stepsBetween*stepsBetween < 5) {
                             kothStorer.addPlayer(game, winnerPid);
                             kothStorer.addPlayer(game, loserPid);
                             kothStorer.movePlayersUpDown(game, winnerPid, loserPid);
@@ -3185,11 +3185,11 @@ public class ServerTable {
 										tableNum,
 										"KotH has been updated"));
 							}
-                        } else {
-                            broadcastTable(new DSGSystemMessageTableEvent(
-                                tableNum,
-                                "KotH has not been updated, players are too far apart"));
-                        }
+//                        } else {
+//                            broadcastTable(new DSGSystemMessageTableEvent(
+//                                tableNum,
+//                                "KotH has not been updated, players are too far apart"));
+//                        }
                     }
 //                }
 				if (serverData.getName() != null && serverData.getName().startsWith("King of the Hill")) {

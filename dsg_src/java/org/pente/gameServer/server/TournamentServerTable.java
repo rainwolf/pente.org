@@ -124,17 +124,6 @@ public class TournamentServerTable extends ServerTable {
 	 */
 	@Override
 	public void handleMainRoomJoin(DSGJoinMainRoomEvent mainRoomEvent) {
-//        if (playersInTable != null && playersInTable.size() == 0) {
-//            server.removeTable(tableNum);
-//            return;
-//        }
-//        
-//		playersInMainRoom.addElement(mainRoomEvent.getDSGPlayerData());
-//		
-//		String player = mainRoomEvent.getDSGPlayerData().getName();
-//		sendPlayerList(player);
-//		sendTableState(player);
-//		sendSittingPlayers(player);
 		super.handleMainRoomJoin(mainRoomEvent);
 		if (tourneyMatch == null || tourneyMatch.hasBeenPlayed()) {
 		    return;
