@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+
+<center>
+	
+				<input type='file' id="fileUpload" />
+<table width="1000px">
+	<tr>
+		<td valign="top" width="700px">
+			<div style="position: relative; top: 0;">
+<!-- 				<img src=""  id="mirror" style="position: absolute; left: 0; top: 0; z-index: -2;"> -->
+				<canvas id="maskCover" width="600" height="600" style="position: absolute; left: 0; top: 0; z-index: 1;"></canvas>
+				<canvas id="maskArt" width="600" height="600" style="position: absolute; left: 0; top: 0; z-index: 0;"></canvas>
+				<canvas id="depthCanvas" width="600" height="600" style="position: absolute; left: 0; top: 0; z-index: -1;"></canvas>
+				<!-- <canvas id="maskArt" width="600" height="600" style="position: absolute; left: 0; top: 0; z-index: 1;"></canvas> -->
+			</div>	
+		</td>
+		<td>
+<div style="height:650px;overflow:auto;">
+			<table border="1">
+				<tr>
+					<td>
+						<img src="covers/pink.png" id="pink.png" onclick='loadCover("pink.png")' ontouchstart='loadCover("pink.png")' width="200px">
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<img src="covers/green.jpg" id="green.jpg" onclick='loadCover("green.jpg")'   ontouchstart='loadCover("green.jpg")'  width="200px">
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<img src="covers/purple.jpg" id="purple.jpg" onclick='loadCover("purple.jpg")'  ontouchstart='loadCover("purple.jpg")'  width="200px">
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<img src="covers/black.jpg" id="black.jpg" onclick='loadCover("black.jpg")'  ontouchstart='loadCover("black.jpg")'  width="200px">
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<img src="covers/orange.jpg" id="orange.jpg" onclick='loadCover("orange.jpg")'  ontouchstart='loadCover("orange.jpg")'  width="200px">
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<img src="covers/blue.jpg" id="blue.jpg" onclick='loadCover("blue.jpg")'  ontouchstart='loadCover("blue.jpg")'  width="200px">
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<img src="covers/red.jpg" id="red.jpg" onclick='loadCover("red.jpg")'  ontouchstart='loadCover("red.jpg")'  width="200px">
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<img src="covers/yellow.jpg" id="yellow.jpg" onclick='loadCover("yellow.jpg")'  ontouchstart='loadCover("yellow.jpg")'  width="200px">
+					</td>
+				</tr>
+<!-- 				<tr>
+					<td>
+						<div id="messageBox" style="width:150px; height:auto; background: #cf9;"></div>
+					</td>
+				</tr> -->
+			</table>
+ </div>
+		</td>
+	</tr>
+</table>
+ Depth slider:  0<input type="range" min="0" max="30" step="1" id="depthSlider" onchange="changeDepth(this.value)">30 <input type="button" onclick="dismissDepth()" value="dismiss depth filter">
+
+ <br>
+ <br>
+
+<a id="downloadCover">Save as image</a>
+
+ <br>
+ <br>
+
+<a id="downloadDesign">Save the design as image</a>
+
+</center>
+
+<script type="text/javascript">
+    var coverCanvas = document.getElementById("maskCover");
+    var coverContext = coverCanvas.getContext("2d");
+    var maskArtCanvas = document.getElementById("maskArt");
+    var maskArtContext = maskArtCanvas.getContext("2d");
+    var depthCanvas = document.getElementById("depthCanvas");
+    var depthContext = depthCanvas.getContext("2d");
+
+	var isDragging=false;	
+	var dragStartX = 0;
+	var dragStartY = 0;
+	var canMouseX = 0;
+	var canMouseY = 0;
+	var scaling = 1;
+    var rect = maskArtCanvas.getBoundingClientRect();
+    var offsetX = rect.left;
+    var offsetY = rect.top;
+    var backgroundImg;
+
+
+    var coverImg = new Image();
+    var artImg = new Image();
+
+
+
+	function loadCover(imgFile) {
+		coverContext.setTransform(1,0,0,1,0,0);
+		coverContext.scale(1,1);
+		coverImg.src = "covers/" + imgFile;
+		var coverScaling = 1;
+		var indentX = 0, indentY = 0;
+		if (coverCanvas.width/coverImg.width < coverCanvas.height/coverImg.height) {
+			coverScaling = coverCanvas.width/coverImg.width;
+			indentY = (coverCanvas.height - coverImg.height*coverScaling)/2;
+		} else {
+			coverScaling = coverCanvas.height/coverImg.height;
+			indentX = (coverCanvas.width - coverImg.width*coverScaling)/2;
+		}
+    	coverContext.clearRect(0,0,coverCanvas.width,coverCanvas.height);
+        coverContext.beginPath();
+        coverContext.rect(0, 0, coverCanvas.width, coverCanvas.height);
+        coverContext.fillStyle='White';
+        coverContext.fill();   	
+        coverContext.closePath();
+		coverContext.drawImage(coverImg, indentX, indentY, coverImg.width * coverScaling, coverImg.height * coverScaling);
+		backgroundImg = coverContext.getImageData(0,0,coverCanvas.width,coverCanvas.height);
+
+		coverContext.scale(scaling, scaling);
+	  coverContext.drawImage(maskArtCanvas, canMouseX, canMouseY);
+
+	  if (depthCanvas.style.zIndex == 2) {
+		changeDepth(document.getElementById("depthSlider").value);	  	
+	  }
+
+	}
+	function loadArt(img) {
+		artImg = img;
+		canMouseX = 0;
+		canMouseY = 0;
+	      maskArtContext.clearRect(0,0,maskArtCanvas.width,maskArtCanvas.height);
+		if (maskArtCanvas.width/img.width < maskArtCanvas.height/img.height) {
+			scaling = maskArtCanvas.width/img.width;
+		} else {
+			scaling = maskArtCanvas.height/img.height;
+		}
+		maskArtContext.drawImage(img, canMouseX, canMouseY, img.width * scaling, img.height * scaling);
+		var imgData=maskArtContext.getImageData(0,0,maskArtCanvas.width,maskArtCanvas.height);
+		var pixel = imgData.data;
+
+		var r=0, g=1, b=2,a=3;
+		for (var p = 0; p<pixel.length; p+=4)
+		{
+		  if (
+		      pixel[p+r] > 225 &&
+		      pixel[p+g] > 225 &&
+		      pixel[p+b] > 225) // if white then change alpha to 0
+		  {pixel[p+a] = 0;}
+		}
+	      // maskArtContext.clearRect(0,0,maskArtCanvas.width,maskArtCanvas.height);
+		maskArtContext.putImageData(imgData,0,0);
+		coverContext.drawImage(maskArtCanvas, 0, 0);
+		scaling = 1;
+	}
+	function readImage() {
+	    if ( this.files && this.files[0] ) {
+	        var fileReader = new FileReader();
+	        fileReader.onload = function(e) {
+	           	artImg.onload = function() {
+	             loadArt(artImg);
+	           };
+		    artImg.src = e.target.result;
+	        };       
+	        fileReader.readAsDataURL( this.files[0] );
+	    }
+	}	
+	document.getElementById("fileUpload").addEventListener("change", readImage, false);
+
+    function handleMouseDown(e){
+    	// document.getElementById("messageBox").innerHTML = "hello " + canMouseX + " " + canMouseY;
+
+      dragStartX = parseInt(e.clientX-offsetX);
+      dragStartY=parseInt(e.clientY-offsetY);
+      isDragging=true;
+    }
+    function handleMouseUp(e){
+    	if (isDragging) {
+	      canMouseX=canMouseX + (parseInt(e.clientX-offsetX) - dragStartX)/scaling;
+	      canMouseY=canMouseY + (parseInt(e.clientY-offsetY) - dragStartY)/scaling;
+	    	// document.getElementById("messageBox").innerHTML = "hi " + canMouseX + " " + canMouseY;
+	      isDragging=false;
+		  // var dataURL = coverCanvas.toDataUrl('image/png');
+	   //    document.getElementById('mirror').src = dataURL;
+	   //    document.getElementById('btn-download').href = dataURL;
+    	}
+    }
+    function handleMouseOut(e){
+    	if (isDragging) {
+	      canMouseX=canMouseX + (parseInt(e.clientX-offsetX) - dragStartX);
+	      canMouseY=canMouseY + (parseInt(e.clientY-offsetY) - dragStartY);
+	      isDragging=false;
+    	}
+		  // var dataURL = coverCanvas.toDataUrl('image/png');
+	   //    document.getElementById('mirror').src = dataURL;
+	   //    document.getElementById('btn-download').href = dataURL;
+    }	
+    function handleMouseMove(e){
+      var currentMouseX = parseInt(e.clientX-offsetX);
+      var currentMouseY = parseInt(e.clientY-offsetY);
+      if(isDragging){
+          coverContext.putImageData(backgroundImg,0,0);
+		  coverContext.drawImage(maskArtCanvas, canMouseX + (currentMouseX - dragStartX)/scaling, canMouseY + (currentMouseY - dragStartY)/scaling);
+		  if (depthCanvas.style.zIndex == 2) {
+			changeDepth(document.getElementById("depthSlider").value);	  	
+		  }
+      }
+    }
+	function mouseWheelEvent(e) {
+	    var delta = e.wheelDelta ? e.wheelDelta : -10*e.detail;
+	    scaling = scaling * (1 + delta/200);
+    	// document.getElementById("messageBox").innerHTML = "hi " + scaling;
+          coverContext.putImageData(backgroundImg,0,0);
+          coverContext.scale( 1 + delta/200, 1 + delta/200);
+		  coverContext.drawImage(maskArtCanvas, canMouseX, canMouseY);
+		  if (depthCanvas.style.zIndex == 2) {
+			changeDepth(document.getElementById("depthSlider").value);	  	
+		  }
+		  // var dataURL = coverCanvas.toDataUrl('image/png');
+	   //    document.getElementById('mirror').src = dataURL;
+	   //    document.getElementById('btn-download').href = dataURL;
+	}
+
+	function changeDepth(depth) {
+    	// document.getElementById("messageBox").innerHTML = "depth: " + depth;
+		var imgData=coverContext.getImageData(0,0,coverCanvas.width,coverCanvas.height);
+		var pixel = imgData.data;
+
+		var r=0, g=1, b=2,a=3;
+		for (var p = 0; p<pixel.length; p+=4) {
+			pixel[p+r] = parseInt(pixel[p+r]*Math.max(0,1 - depth/15));
+			if (depth > 14) {
+				pixel[p+g] = parseInt(pixel[p+g]*Math.max(0,1 - (depth - 15)/15));
+			}
+		}
+	      // maskArtContext.clearRect(0,0,maskArtCanvas.width,maskArtCanvas.height);
+	      depthCanvas.style.zIndex = 2;
+		depthContext.putImageData(imgData,0,0);
+	}
+	function dismissDepth() {
+		depthCanvas.style.zIndex = -1;
+		document.getElementById("depthSlider").value = "0";
+ 	}
+	function downloadCanvas(link, canvasId, filename) {
+	    link.href = document.getElementById(canvasId).toDataURL();
+	    link.download = filename;
+	}
+    coverCanvas.addEventListener("mousedown",handleMouseDown);
+    coverCanvas.addEventListener("mouseup",handleMouseUp);
+    coverCanvas.addEventListener("mouseout",handleMouseOut);
+    coverCanvas.addEventListener("mousemove",handleMouseMove);
+    coverCanvas.addEventListener('mousewheel', mouseWheelEvent);
+    coverCanvas.addEventListener('DOMMouseScroll', mouseWheelEvent);
+    depthCanvas.addEventListener("mousedown",handleMouseDown);
+    depthCanvas.addEventListener("mouseup",handleMouseUp);
+    depthCanvas.addEventListener("mouseout",handleMouseOut);
+    depthCanvas.addEventListener("mousemove",handleMouseMove);
+    depthCanvas.addEventListener('mousewheel', mouseWheelEvent);
+    depthCanvas.addEventListener('DOMMouseScroll', mouseWheelEvent);
+	loadCover("pink.png");
+	document.getElementById("depthSlider").value = "0";
+
+	document.getElementById('downloadCover').addEventListener('click', function() {
+	    downloadCanvas(this, 'maskCover', 'maskCoverResult.png');
+	}, false);
+	document.getElementById('downloadDesign').addEventListener('click', function() {
+	    downloadCanvas(this, 'maskArt', 'maskCoverDesign.png');
+	}, false);
+
+</script>
+
+
+</body>
+</html>

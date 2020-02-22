@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!ELEMENT ai (aiPlayer*)>
+<!ELEMENT aiPlayer (name, className, numLevels, validGames, options?)>
+
+<!-- name must adhere to DSG registration rules and not be taken -->
+<!ELEMENT name (#PCDATA)>
+
+<!-- fully qualified class name of your AIPlayer implementation -->
+<!ELEMENT className (#PCDATA)>
+
+<!-- the number of levels your AI supports (must be an integer) -->
+<!ELEMENT numLevels (#PCDATA)>
+
+<!ELEMENT validGames (validGame+)>
+
+<!-- games your AI supports, must be one of the following
+     Pente
+     Keryo-Pente
+     Gomoku -->
+<!ELEMENT validGame (#PCDATA)>
+
+<!-- Here you can specify any options specific to you AI -->
+<!ELEMENT options (option+)>
+<!ELEMENT option (optionName, optionValue)>
+<!ELEMENT optionName (#PCDATA)>
+<!ELEMENT optionValue (#PCDATA)>

@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This file stores all properties need by Jive Forums. Property names must be in the
+format: "prop.name.is.blah=value"
+That will be stored as:
+<prop>
+  <name>
+    <is>
+      <blah>value</blah>
+    </is>
+  </name>
+</prop>
+
+All properties must be under the "jive" element.
+	
+This file should live in your jiveHome directory. The path to that directory
+should be specified in your jive_init.properties file. The
+jive_init.properties must be in your appserver's classpath. -->
+<!-- root element, all properties must be under this element -->
+<jive>
+    <!-- Allow admin logins to work by calling custom AuthFactory's
+         createAuthorization(request, response) -->
+    <admin>
+        <tryAlternativeLogin>true</tryAlternativeLogin>
+    </admin>
+    <!-- Allow 1 week for popular thread list since forum isn't that active -->
+    <popularThreads>
+        <timeWindow>168</timeWindow>
+    </popularThreads>
+    <!-- When setup is false, you can access the setup tool. -->
+    <setup>true</setup>
+    <!-- Cache settings -->
+    <cache>
+        <enabled>true</enabled>
+    </cache>
+    <!-- Search properties -->
+    <search>
+        <enabled>true</enabled>
+        <autoIndexEnabled>true</autoIndexEnabled>
+        <autoIndexInterval>10</autoIndexInterval>
+        <directory>dCX5gMyE</directory>
+        <lastIndexed>1580031780519</lastIndexed>
+    </search>
+    <!-- Mail properties -->
+    <mail>
+        <!-- If debug is true, JavaMail will debug to System.out -->
+        <debug>true</debug>
+        <smtp>
+            <host>mail.pente.org</host>
+            <port>25</port>
+            <username>dsg-mailer@pente.org</username>
+            <password>***REMOVED***</password>
+        </smtp>
+        <!--
+            The url information of this site. This is required for watch
+            and password reset emails
+        -->
+        <jiveURL>http://pente.org/gameServer/forums</jiveURL>
+    </mail>
+    <!-- Watches properties. -->
+    <watches>
+        <enabled>true</enabled>
+        <emailNotifyEnabled>true</emailNotifyEnabled>
+        <email>
+            <thread>
+                <fromName>Pente.org Forums</fromName>
+                <fromEmail>forums@pente.org</fromEmail>
+                <subject>Pente.org Forums - Thread "{threadName}" has been updated by {messageUser}</subject>
+                <body>From: {messageUser}
+Subject: {messageSubject}
+Date: {messageCreationDate}
+Post:
+{messageBody}
+
+
+You are watching the thread "{threadName}" at the Pente.org Forums.  The post can be viewed online at {jiveURL}/thread.jspa?forumID={forumID}&amp;threadID={threadID}.
+
+DO NOT REPLY TO THIS EMAIL, to reply to this post, or to stop receiving emails for this thread, visit {jiveURL}/thread.jspa?forumID={forumID}&amp;threadID={threadID}.</body>
+            </thread>
+            <forum>
+                <fromName>Pente.org Forums</fromName>
+                <fromEmail>forums@pente.org</fromEmail>
+                <subject>Pente.org Forums - Forum "{forumName}" has been updated by {messageUser}</subject>
+                <body>From: {messageUser}
+Subject: {messageSubject}
+Date: {messageCreationDate}
+Post:
+{messageBody}
+
+
+You are watching the forum "{forumName}" at the Pente.org Forums.  The post can be viewed online at {jiveURL}/thread.jspa?forumID={forumID}&amp;threadID={threadID}.
+
+DO NOT REPLY TO THIS EMAIL, to reply to this post, or to stop receiving emails for this forum, visit {jiveURL}/forum.jspa?forumID={forumID}&amp;start=0</body>
+            </forum>
+            <forumCategory>
+                <fromName>Pente.org Forums</fromName>
+                <fromEmail>forums@pente.org</fromEmail>
+                <subject>Pente.org Forums - Category "{categoryName}" has been updated by {messageUser}</subject>
+                <body>From: {messageUser}
+Subject: {messageSubject}
+Date: {messageCreationDate}
+Post:
+{messageBody}
+
+
+You are watching the category "{categoryName}" at the Pente.org Forums.  The post can be viewed online at {jiveURL}/thread.jspa?forumID={forumID}&amp;threadID={threadID}.
+
+DO NOT REPLY TO THIS EMAIL, to reply to this post, or to stop receiving emails for this category, visit {jiveURL}/forum.jspa?forumID={forumID}&amp;start=0</body>
+            </forumCategory>
+        </email>
+    </watches>
+    <!-- Password reset properties. -->
+    <passwordReset>
+        <enabled>false</enabled>
+        <email>
+            <host />
+            <port />
+            <webAppDir />
+            <fromName>Jive Administrator</fromName>
+            <fromEmail>webmaster@example.com</fromEmail>
+            <subject>Password reset request.</subject>
+            <body />
+        </email>
+    </passwordReset>
+    <!-- report tokens and their values -->
+    <stats>
+        <headerTitle>Community Statistics</headerTitle>
+        <headerBgColor>#336699</headerBgColor>
+    </stats>
+    <!-- Properties for the default skin. Edit these values    -->
+    <!-- via the admin tool. Many more UI customizations       -->
+    <!-- can be made using the CSS page: style.jsp in the      -->
+    <!-- default skin.                                         -->
+    <skin>
+        <default>
+            <fontFace>verdana,arial,sans-serif</fontFace>
+            <descrFontFace>verdana,arial,sans-serif</descrFontFace>
+            <fontSize>0.8em</fontSize>
+            <descrFontSize>0.8em</descrFontSize>
+            <homeURL />
+            <bgColor>#ffffff</bgColor>
+            <textColor>#000000</textColor>
+            <linkColor>#2C862F</linkColor>
+            <vLinkColor>#2C862F</vLinkColor>
+            <aLinkColor>#2C862F</aLinkColor>
+            <borderColor>#deecde</borderColor>
+            <evenColor>#ffffff</evenColor>
+            <oddColor>#deecde</oddColor>
+            <activeColor>#ffffcc</activeColor>
+            <tableHeaderColor>#ffffff</tableHeaderColor>
+            <tableHeaderBgColor>#2C862F</tableHeaderBgColor>
+            <breadcrumbColor>#2C862F</breadcrumbColor>
+            <breadcrumbColorHover>#2C862F</breadcrumbColorHover>
+            <communityDescription>The place for the Pente.org community to discuss
+              anything and everything.  To post you must be a registered
+              user.</communityDescription>
+            <communityName>Pente.org Forums</communityName>
+            <headerLogo>&lt;img src="images/logo.gif" width="300" height="40" alt="Jive Community Forums" border="0"&gt;</headerLogo>
+            <headerBorderColor>#000000</headerBorderColor>
+            <headerBgColor>#336699</headerBgColor>
+            <headerFontFace>verdana,arial,sans-serif</headerFontFace>
+            <threadMode>flat</threadMode>
+            <usersChooseThreadMode>false</usersChooseThreadMode>
+            <trackIP>true</trackIP>
+            <showLastPostLink>true</showLastPostLink>
+            <usersChooseLocale>false</usersChooseLocale>
+            <newAccountCreationEnabled>false</newAccountCreationEnabled>
+            <useDefaultWelcomeText>false</useDefaultWelcomeText>
+            <useDefaultHeaderImage>true</useDefaultHeaderImage>
+        </default>
+    </skin>
+    <UserManager>
+        <className>org.pente.jive.DSGUserManager</className>
+    </UserManager>
+    <GroupManager>
+        <className>com.jivesoftware.base.database.DbGroupManager</className>
+    </GroupManager>
+    <cookieKey>***REMOVED***</cookieKey>
+    <AuthFactory>
+        <className>org.pente.jive.DSGAuthFactory</className>
+    </AuthFactory>
+    <connectionProvider>
+        <className>com.jivesoftware.base.database.JNDIDataSourceProvider</className>
+    </connectionProvider>
+    <database>
+        <JNDIProvider>
+            <name>java:comp/env/jdbc/dsg</name>
+        </JNDIProvider>
+    </database>
+    <!--
+    <userGroupAdmin>
+        <disabled>true</disabled>
+    </userGroupAdmin>
+-->
+    <readTracker>
+        <enabled>true</enabled>
+    </readTracker>
+    <locale>
+        <country>US</country>
+        <language>en</language>
+        <timeZone>Europe/Brussels</timeZone>
+        <characterEncoding>ISO-8859-1</characterEncoding>
+    </locale>
+</jive>
+

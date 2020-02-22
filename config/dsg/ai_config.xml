@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE ai SYSTEM "ai.dtd">
+
+<ai>
+  <aiPlayer>
+    <name>mm_ai</name>
+    <className>org.pente.gameServer.server.MarksAIPlayer</className>
+    <numLevels>8</numLevels>
+    <validGames>
+      <validGame>Pente</validGame>
+      <validGame>Keryo-Pente</validGame>
+    </validGames>
+    <options>
+      <option>
+        <optionName>configDirectory</optionName>
+        <optionValue>/etc/dsg/marksAI</optionValue>
+      </option>
+    </options>
+  </aiPlayer>
+</ai>
+

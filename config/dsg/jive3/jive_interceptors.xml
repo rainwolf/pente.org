@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jiveInterceptors>
+    <interceptorClasses>
+        <interceptor0>com.jivesoftware.forum.interceptor.GovernorInterceptor</interceptor0>
+        <interceptor1>com.jivesoftware.forum.interceptor.UserInterceptor</interceptor1>
+    </interceptorClasses>
+</jiveInterceptors>
+
