@@ -26,7 +26,6 @@ DSGPlayerData opponent = (DSGPlayerData) request.getAttribute("opponent");
 
 <tr>
  <td>
-
    <form name="resign_form" method="post" 
          action="<%= request.getContextPath() %>/gameServer/tb/resign">
      <input type="hidden" name="gid" value="<%= game.getGid() %>">
@@ -38,8 +37,8 @@ DSGPlayerData opponent = (DSGPlayerData) request.getAttribute("opponent");
      <%= GridStateFactory.getGameName(game.getGame()) %> game
      against <%= opponent.getName() %>?<br>
      <br>
-     <input type="button" value="No" onclick="javascript:window.location='/gameServer/tb/game?gid=<%= game.getGid() %>&command=load';">
-     <input type="button" value="Yes" onclick="javascript:document.resign_form.submit();">
+       <button type="button" name="command" value="No" style="background-color:#f44336;color: white;font-size: 16px;padding: 5px 15px;" onclick="javascript:window.location='/gameServer/tb/game?gid=<%= game.getGid() %>&command=load';"> No </button>
+       <button type="button" name="command" value="Yes" style="background-color:#4CAF50;color: white;font-size: 16px;padding: 5px 15px;" onclick="javascript:document.resign_form.submit();"> Yes, resign </button>
    </form>
    
  </td>
