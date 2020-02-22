@@ -105,7 +105,7 @@ public class Server {
         this.kothStorer = resources.getKOTHStorer();
         this.followerStorer = resources.getFollowerStorer();
 
-        System.setProperty("javax.net.ssl.keyStore", "/var/lib/tomcat8/webapps/MyDSKeyStore.jks");
+        System.setProperty("javax.net.ssl.keyStore", "/var/lib/tomcat9/webapps/MyDSKeyStore.jks");
         System.setProperty("javax.net.ssl.keyStorePassword", "***REMOVED***");
         try {
             ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
