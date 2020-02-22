@@ -1,0 +1,912 @@
+/* automatic import /usersite/themes/core_mixins.less */
+/* automatic import /usersite/themes/legacy/mobile.less */
+@import "&.css";
+@import "&.css";
+.not-intro-page #usersite-container.mobile-view {
+  padding-top: 0;
+  margin-top: 0;
+}
+.not-intro-page #usersite-container.mobile-view #page-root,
+.not-intro-page #usersite-container.mobile-view #container-wrap,
+.not-intro-page #usersite-container.mobile-view #container,
+.not-intro-page #usersite-container.mobile-view #page-footer,
+.not-intro-page #usersite-container.mobile-view #content-wrap,
+.not-intro-page #usersite-container.mobile-view #content-top,
+.not-intro-page #usersite-container.mobile-view #content,
+.not-intro-page #usersite-container.mobile-view #content-bottom,
+.not-intro-page #usersite-container.mobile-view #page-header,
+.not-intro-page #usersite-container.mobile-view .music-player.display-swmp .player {
+  width: auto;
+  max-width: none;
+  border-width: 0;
+}
+.not-intro-page #usersite-container.mobile-view #container,
+.not-intro-page #usersite-container.mobile-view #content {
+  padding: 0;
+}
+.not-intro-page #usersite-container.mobile-view #page-header {
+  width: auto;
+  height: auto;
+  padding-top: 0;
+  background-image: none;
+}
+.not-intro-page #usersite-container.mobile-view .zoogle-columns,
+.not-intro-page #usersite-container.mobile-view div.zoogle-columns > .zoogle-column,
+.not-intro-page #usersite-container.mobile-view div.zoogle-columns > .zoogle-column ~ .zoogle-column {
+  display: block;
+  float: none;
+  width: 100%;
+  height: auto;
+  margin-left: 0;
+  left: 0;
+  top: 0;
+}
+.not-intro-page #usersite-container.mobile-view table#page-content-wrap,
+.not-intro-page #usersite-container.mobile-view table#page-content-wrap > tbody:first-child {
+  display: block;
+}
+.not-intro-page #usersite-container.mobile-view #header-wrap {
+  display: none;
+}
+.display-mode-desktop .not-intro-page #usersite-container.mobile-view #header-wrap {
+  display: block;
+}
+.not-intro-page #usersite-container.mobile-view #mobile-header {
+  display: block;
+}
+.not-intro-page #usersite-container.mobile-view #mobile-header .bar {
+  padding: 10px;
+  vertical-align: middle;
+  position: relative;
+  box-sizing: border-box;
+  min-height: 48px;
+}
+.not-intro-page #usersite-container.mobile-view #mobile-header .bar .project-name {
+  max-width: 80%;
+  margin: 0 auto;
+  text-align: center;
+}
+.not-intro-page #usersite-container.mobile-view #mobile-header a {
+  opacity: 0.75;
+  float: left;
+  border-style: solid;
+  border-width: 1px;
+  text-decoration: none !important;
+  border-radius: 2px;
+  font-size: 14px;
+  width: 24px;
+  height: 24px;
+  box-sizing: border-box;
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  margin-top: -12px;
+  text-align: center;
+  padding: 0 !important;
+}
+.not-intro-page #usersite-container.mobile-view #mobile-header a i {
+  height: 100%;
+}
+.not-intro-page #usersite-container.mobile-view #mobile-header a i,
+.not-intro-page #usersite-container.mobile-view #mobile-header a i:before {
+  display: block;
+  width: 100%;
+}
+.not-intro-page #usersite-container.mobile-view #mobile-header a i:before {
+  position: relative;
+  top: 50%;
+  margin-top: -0.5em;
+}
+.not-intro-page #usersite-container.mobile-view #mobile-header .page-photos {
+  position: relative;
+  overflow: hidden;
+}
+.not-intro-page #usersite-container.mobile-view #mobile-header img {
+  min-width: 100%;
+  max-width: 100%;
+  width: auto;
+  height: auto;
+  vertical-align: bottom;
+}
+.display-mode-desktop .not-intro-page #usersite-container.mobile-view #mobile-header {
+  display: none;
+}
+#usersite-container.previewing-within-container #mobile-header img {
+  top: 0 !important;
+  left: 0 !important;
+}
+/* --------------------------
+   Structure
+-------------------------- */
+.not-intro-page #usersite-container:not(.mobile-view) #container {
+  width: 1020px;
+}
+.not-intro-page #usersite-container .music-player.display-swmp .player {
+  width: 1020px;
+}
+.not-intro-page #usersite-container #container,
+.not-intro-page #usersite-container .music-player.display-swmp header,
+.not-intro-page #usersite-container footer#page-footer {
+  margin: 0 auto;
+}
+.not-intro-page #usersite-container #container {
+  min-height: 720px;
+}
+.not-intro-page #usersite-container #header-wrap,
+.not-intro-page #usersite-container nav#main-nav.non-mobile,
+.not-intro-page #usersite-container #content,
+.not-intro-page #usersite-container footer#page-footer {
+  width: 771px;
+  margin-left: 124px;
+}
+.not-intro-page #usersite-container footer#page-footer {
+  margin-left: auto;
+  margin-right: auto;
+}
+.not-intro-page #usersite-container nav#main-nav.non-mobile {
+  margin-top: 15px;
+  border: 1px solid #555555;
+  border-style: solid none;
+  padding: 8px 0;
+}
+.not-intro-page #usersite-container footer#page-footer {
+  text-align: center;
+}
+.not-intro-page #usersite-container.mobile-view #header-wrap,
+.not-intro-page #usersite-container.mobile-view #content,
+.not-intro-page #usersite-container.mobile-view footer#page-footer {
+  margin-left: 0;
+  width: auto;
+}
+/* --------------------------
+   / Structure
+-------------------------- */
+/* --------------------------
+   Variables: 
+
+@theme-id: 120;
+@variant-key: "d";
+@text-color: #90d692;
+@link-color: #bf9a04;
+@feature-title-color: #ffffff;
+@nav-link-color: #ffffff;
+@nav-link-rollover-color: #cccccc;
+@sub-menu-background-color: #ffcc00;
+@sub-menu-link-color: #ffffff;
+@page-title-color: #ffffff;
+@body-font-set: 1;
+@body-font-set-main-family: Lucida Grande, Tahoma, Verdana, sans-serif;
+@body-font-set-main-weight: normal;
+@body-font-set-main-text-transform: none;
+@body-font-set-main-font-style: normal;
+@body-font-set-main-letter-spacing: normal;
+@body-font-set-main-url: "";
+@body-font-set-alt-family: Lucida Grande, Tahoma, Verdana, sans-serif;
+@body-font-set-alt-weight: normal;
+@body-font-set-alt-text-transform: none;
+@body-font-set-alt-font-style: normal;
+@body-font-set-alt-letter-spacing: normal;
+@body-font-set-alt-url: "";
+@body-size-number: 18px;
+@feature-title-font-face: "Corben";
+@feature-title-font-face-base-url: "http://s3.amazonaws.com/content.sitezoogle.com/system/fonts/";
+@feature-title-font-face-svg-id: "Corben";
+@feature-title-size-number: 24px;
+@page-title-font-face: "Corben";
+@page-title-font-face-base-url: "http://s3.amazonaws.com/content.sitezoogle.com/system/fonts/";
+@page-title-font-face-svg-id: "Corben";
+@page-title-size-number: 43px;
+@button-font-face: "Corben";
+@button-font-face-base-url: "http://s3.amazonaws.com/content.sitezoogle.com/system/fonts/";
+@button-font-face-svg-id: "Corben";
+@button-size-number: 24px;
+@swmp-use-custom-colors-boolean: true;
+@swmp-background-color: #000000;
+@swmp-text-color-enum: "white";
+@page-title-type-enum: "text";
+@page-title-offset-x-number: 0px;
+@page-title-offset-y-number: 0px;
+@page-title-logo-background-image: none;
+@page-title-logo-background-image-original-width: 0px;
+@page-title-logo-background-image-original-height: 0px;
+@page-title-string: "Bruce Cropley's Music";
+@page-title-logo-size-number: 100%;
+@intro-page-background-color: #71617c;
+@intro-page-text-color: #90d692;
+@mobile-nav-link-color: #ffffff;
+-------------------------- */
+/* automatic import /usersite/themes/core_mixins.less */
+/* automatic import /usersite/themes/theme_option_groups/global_colors.less */
+.not-intro-page #usersite-container,
+.not-intro-page #usersite-container legend,
+.not-intro-page #usersite-container button {
+  color: #90d692;
+}
+.not-intro-page #usersite-container .FCK__AnchorC {
+  color: #90d692 !important;
+}
+.not-intro-page #usersite-container .text-main,
+.not-intro-page #usersite-container h1,
+.not-intro-page #usersite-container h2,
+.not-intro-page #usersite-container h3,
+.not-intro-page #usersite-container h4,
+.not-intro-page #usersite-container h5 {
+  color: #90d692;
+}
+.not-intro-page #usersite-container a,
+.not-intro-page #usersite-container .text-main a,
+.not-intro-page #usersite-container h1 a,
+.not-intro-page #usersite-container h2 a,
+.not-intro-page #usersite-container h3 a,
+.not-intro-page #usersite-container h4 a,
+.not-intro-page #usersite-container h5 a {
+  color: #bf9a04;
+}
+.not-intro-page #usersite-container .text-secondary {
+  color: lighten_or_darken(#90d692, 15%);
+  color: rgba(144, 214, 146, 0.75);
+}
+.not-intro-page #usersite-container .pagination a {
+  color: lighten_or_darken(#bf9a04, 15%);
+  color: rgba(191, 154, 4, 0.85);
+}
+.not-intro-page #usersite-container .pagination .current,
+.not-intro-page #usersite-container .pagination a:hover,
+.not-intro-page #usersite-container .pagination a:focus {
+  color: rgba(144, 214, 146, 0.5);
+}
+.not-intro-page #usersite-container .text-tertiary {
+  color: lighten_or_darken(#90d692, 30%);
+  color: rgba(144, 214, 146, 0.55);
+}
+.not-intro-page #usersite-container .text-tertiary a {
+  color: lighten_or_darken(#90d692, 15%);
+  color: rgba(144, 214, 146, 0.85);
+}
+.not-intro-page #usersite-container .text-tertiary a:hover,
+.not-intro-page #usersite-container .text-tertiary a:focus {
+  color: #90d692;
+}
+.not-intro-page #usersite-container .bg-accent-slight,
+.not-intro-page #usersite-container .bg-accent-slight-hover:hover,
+.not-intro-page #usersite-container table.ui-collection tr:hover {
+  background-color: rgba(144, 214, 146, 0.05);
+}
+.not-intro-page #usersite-container .bg-accent {
+  background-color: #153916;
+  background-color: rgba(144, 214, 146, 0.2);
+}
+.not-intro-page #usersite-container .bg-accent-heavy {
+  background-color: #1c4b1d;
+  background-color: rgba(144, 214, 146, 0.5);
+}
+.not-intro-page #usersite-container .bg-main {
+  background-color: #90d692;
+}
+.not-intro-page #usersite-container .pagination .current,
+.not-intro-page #usersite-container .pagination .page a:hover,
+.not-intro-page #usersite-container .pagination .page a:focus {
+  background-color: rgba(21, 57, 22, 0.5);
+}
+.not-intro-page #usersite-container table.underlined th,
+.not-intro-page #usersite-container table.underlined td,
+.not-intro-page #usersite-container table.ui-collection th,
+.not-intro-page #usersite-container table.ui-collection td,
+.not-intro-page #usersite-container .border-accent th,
+.not-intro-page #usersite-container .border-accent td,
+.not-intro-page #usersite-container .border-accent {
+  border-color: #153916;
+  border-color: rgba(144, 214, 146, 0.2);
+}
+.not-intro-page #usersite-container .border-accent-embossed {
+  border-color: #153916;
+  border-color: rgba(144, 214, 146, 0.2);
+  border-bottom-color: rgba(144, 214, 146, 0.35);
+}
+.not-intro-page #usersite-container .border-accent-dark {
+  border-color: #153916;
+  border-color: rgba(144, 214, 146, 0.35);
+}
+.not-intro-page #usersite-container .border-link {
+  border-color: #bf9a04;
+  border-color: rgba(191, 154, 4, 0.6);
+}
+.not-intro-page #usersite-container .pagination {
+  border-top: 1px solid #153916;
+}
+.not-intro-page #usersite-container td.spacer {
+  background: #153916;
+  background: rgba(144, 214, 146, 0.2);
+}
+.not-intro-page #usersite-container input,
+.not-intro-page #usersite-container textarea {
+  color: #333;
+  background-color: #fff;
+}
+.not-intro-page #usersite-container input[type="image"] {
+  background-color: transparent;
+}
+.not-intro-page #usersite-container .simple_form textarea,
+.not-intro-page #usersite-container .simple_form input {
+  border: 1px solid #153916;
+}
+.not-intro-page #usersite-container .simple_form textarea:focus,
+.not-intro-page #usersite-container .simple_form input:focus {
+  border-color: #bf9a04;
+  box-shadow: 0 0 4px rgba(191, 154, 4, 0.5);
+}
+.not-intro-page #usersite-container #mobile-header .bar {
+  color: #90d692;
+}
+.not-intro-page #usersite-container #mobile-header .bar a {
+  color: #90d692;
+  border-color: #90d692;
+}
+.not-intro-page #usersite-container .subtitle-wrap {
+  color: #ffffff;
+}
+.not-intro-page #usersite-container .button,
+.not-intro-page #usersite-container input[type="submit"],
+.not-intro-page #usersite-container .bg-highlight,
+.not-intro-page #usersite-container a.bg-highlight {
+  background-color: #bf9a04;
+  border: 1px solid transparent;
+}
+.not-intro-page #usersite-container .button,
+.not-intro-page #usersite-container input[type="submit"],
+.not-intro-page #usersite-container .bg-highlight,
+.not-intro-page #usersite-container a.bg-highlight,
+.not-intro-page #usersite-container .button:hover,
+.not-intro-page #usersite-container input[type="submit"]:hover,
+.not-intro-page #usersite-container .bg-highlight:hover,
+.not-intro-page #usersite-container a.bg-highlight:hover,
+.not-intro-page #usersite-container .button:focus,
+.not-intro-page #usersite-container input[type="submit"]:focus,
+.not-intro-page #usersite-container .bg-highlight:focus,
+.not-intro-page #usersite-container a.bg-highlight:focus {
+  color: rgba(255, 255, 255, 0.8);
+}
+.not-intro-page #usersite-container .button:hover,
+.not-intro-page #usersite-container .button:focus {
+  background-color: rgba(191, 154, 4, 0.9);
+}
+.not-intro-page #usersite-container .button:active {
+  background-color: lighten_or_darken(#bf9a04, 10%);
+}
+.not-intro-page #usersite-container .button.disabled:hover,
+.not-intro-page #usersite-container .button[disabled]:hover,
+.not-intro-page #usersite-container .button.disabled:focus,
+.not-intro-page #usersite-container .button[disabled]:focus {
+  background-color: rgba(191, 154, 4, 0.9);
+}
+.not-intro-page #usersite-container .button-secondary {
+  color: #bf9a04;
+  border: 1px solid rgba(191, 154, 4, 0.8);
+  background-color: transparent;
+}
+.not-intro-page #usersite-container .button-secondary:hover,
+.not-intro-page #usersite-container .button-secondary:focus {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: rgba(191, 154, 4, 0.8);
+}
+.not-intro-page #usersite-container .button-secondary:active {
+  background-color: rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.1);
+}
+.not-intro-page #usersite-container .button-tertiary,
+.not-intro-page #usersite-container .button-tertiary:hover,
+.not-intro-page #usersite-container .button-tertiary:focus {
+  background-color: transparent;
+  color: #bf9a04;
+}
+.not-intro-page #usersite-container .button-tertiary:hover,
+.not-intro-page #usersite-container .button-tertiary:hover:hover,
+.not-intro-page #usersite-container .button-tertiary:focus:hover {
+  background-color: rgba(255, 255, 255, 0.55);
+}
+.not-intro-page #usersite-container footer .branding a {
+  color: #90d692;
+}
+.oldie.not-intro-page #usersite-container .zoogle-music-player .circle-button {
+  color: #bf9a04;
+}
+.not-intro-page #usersite-container .track-number {
+  color: rgba(144, 214, 146, 0.4);
+}
+/* automatic import /usersite/themes/theme_option_groups/global_menu_colors.less */
+#usersite-container nav#main-nav.non-mobile ul ul li a:link,
+#usersite-container nav#main-nav.non-mobile ul ul li a:visited {
+  background-color: #ffcc00;
+  color: #ffffff;
+  color: rgba(255, 255, 255, 0.8);
+}
+#usersite-container nav#main-nav.non-mobile ul ul li a:hover,
+#usersite-container nav#main-nav.non-mobile ul ul li a:focus {
+  color: #ffffff;
+}
+#usersite-container nav#main-nav.non-mobile ul ul:before,
+#usersite-container nav#main-nav.non-mobile ul.horizontal ul:before {
+  border-color: transparent transparent #ffcc00 transparent;
+}
+#usersite-container nav#main-nav.non-mobile ul.horizontal ul:after {
+  border-color: #ffcc00 transparent transparent transparent;
+}
+#usersite-container nav#main-nav.non-mobile ul.vertical_right ul:before {
+  border-color: transparent transparent transparent #ffcc00;
+}
+#usersite-container nav#main-nav.non-mobile ul.vertical_left ul:before {
+  border-color: transparent #ffcc00 transparent transparent;
+}
+#usersite-container #toggle-mobile-menu a,
+#usersite-container nav#main-nav.non-mobile a.top {
+  color: #ffffff;
+}
+#usersite-container #toggle-mobile-menu a:hover,
+#usersite-container nav#main-nav.non-mobile a.top:hover {
+  color: #cccccc;
+}
+#usersite-container nav#main-nav.mobile a.top:hover {
+  color: #cccccc;
+}
+/* automatic import /usersite/themes/theme_option_groups/global_menu_fonts.less */
+@font-face {
+  font-family: "Corben";
+  src: url("http://s3.amazonaws.com/content.sitezoogle.com/system/fonts/Corben/Corben.eot?iefix") format("embedded-opentype"), url("http://s3.amazonaws.com/content.sitezoogle.com/system/fonts/Corben/Corben.woff") format("woff"), url("http://s3.amazonaws.com/content.sitezoogle.com/system/fonts/Corben/Corben.ttf") format("truetype"), url('http://s3.amazonaws.com/content.sitezoogle.com/system/fonts/Corben/Corben.svg#button-font-face-svg-id') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+#usersite-container #page-root nav#main-nav {
+  font-size: 24px;
+}
+#usersite-container #page-root nav#main-nav ul ul {
+  font-size: 17px;
+}
+#usersite-container #page-root nav#main-nav.non-mobile {
+  font-size: 24px;
+}
+#usersite-container #page-root nav#main-nav.non-mobile ul ul {
+  font-size: 17px;
+}
+#usersite-container nav#main-nav {
+  font-family: "Corben";
+}
+/* automatic import /usersite/themes/theme_option_groups/global_mobile_menu.less */
+#usersite-container nav#main-nav.mobile a.top:link,
+#usersite-container nav#main-nav.mobile ul li a:link,
+#usersite-container nav#main-nav.mobile a.top:visited,
+#usersite-container nav#main-nav.mobile ul li a:visited,
+#usersite-container nav#main-nav.mobile a.top:hover,
+#usersite-container nav#main-nav.mobile ul li a:hover,
+#usersite-container nav#main-nav.mobile a.top:active,
+#usersite-container nav#main-nav.mobile ul li a:active {
+  color: #ffffff;
+}
+/* automatic import /usersite/themes/theme_option_groups/global_content_fonts.less */
+#usersite-container {
+  text-align: left;
+}
+#usersite-container .main-font {
+  font-family: Lucida Grande, Tahoma, Verdana, sans-serif;
+  font-weight: normal;
+  text-transform: none;
+  font-style: normal;
+  letter-spacing: normal;
+}
+#usersite-container .alt-font {
+  font-family: Lucida Grande, Tahoma, Verdana, sans-serif;
+  font-weight: normal;
+  text-transform: none;
+  font-style: normal;
+  letter-spacing: normal;
+}
+#usersite-container,
+#usersite-container legend,
+#usersite-container input,
+#usersite-container textarea,
+#usersite-container button {
+  font-size: 18px;
+  line-height: 1.5;
+  font-family: Lucida Grande, Tahoma, Verdana, sans-serif;
+  font-weight: normal;
+  text-transform: none;
+  font-style: normal;
+  letter-spacing: normal;
+}
+#usersite-container .gallery_feature li {
+  font-size: 18px;
+}
+#usersite-container footer .branding a {
+  text-decoration: none;
+}
+/* automatic import /usersite/themes/theme_option_groups/global_feature_title_fonts.less */
+@font-face {
+  font-family: "Corben";
+  src: url("http://s3.amazonaws.com/content.sitezoogle.com/system/fonts/Corben/Corben.eot?iefix") format("embedded-opentype"), url("http://s3.amazonaws.com/content.sitezoogle.com/system/fonts/Corben/Corben.woff") format("woff"), url("http://s3.amazonaws.com/content.sitezoogle.com/system/fonts/Corben/Corben.ttf") format("truetype"), url('http://s3.amazonaws.com/content.sitezoogle.com/system/fonts/Corben/Corben.svg#feature-title-font-face-svg-id') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+#usersite-container #page-root .subtitle-wrap {
+  font-size: 24px;
+  font-family: "Corben";
+  letter-spacing: normal;
+  font-weight: normal;
+  text-transform: none;
+  font-style: normal;
+}
+/* automatic import /usersite/themes/theme_option_groups/global_page_title_logo_legacy.less */
+h1#page-title.display-type-logo img {
+  width: 100%;
+}
+/* automatic import /usersite/themes/theme_option_groups/global_page_title_offsets_legacy.less */
+#page-header .layer-title .outer {
+  -webkit-transform: translate(0px, 0px);
+  -moz-transform: translate(0px, 0px);
+  -ms-transform: translate(0px, 0px);
+  transform: translate(0px, 0px);
+}
+/* automatic import /usersite/themes/theme_option_groups/global_page_title_font_legacy.less */
+@font-face {
+  font-family: "Corben";
+  src: url("http://s3.amazonaws.com/content.sitezoogle.com/system/fonts/Corben/Corben.eot?iefix") format("embedded-opentype"), url("http://s3.amazonaws.com/content.sitezoogle.com/system/fonts/Corben/Corben.woff") format("woff"), url("http://s3.amazonaws.com/content.sitezoogle.com/system/fonts/Corben/Corben.ttf") format("truetype"), url('http://s3.amazonaws.com/content.sitezoogle.com/system/fonts/Corben/Corben.svg#page-title-font-face-svg-id') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+#usersite-container .project-name {
+  font-family: "Corben";
+  font-weight: normal;
+}
+#usersite-container h1#page-title .outer {
+  font-family: "Corben";
+  font-weight: normal;
+  font-size: 43px;
+}
+#usersite-container h1#page-title.display-type-logo span.outer,
+#usersite-container h1#page-title.display-type-none span.outer {
+  font-size: 0;
+}
+#usersite-container h1#page-title.display-type-none span {
+  display: none;
+}
+#usersite-container #title-wrap h1#page-title.display-type-logo span,
+#usersite-container #title-wrap h1#page-title.display-type-logo span img {
+  width: 100%;
+}
+/* automatic import /usersite/themes/theme_option_groups/global_page_title_color.less */
+#page-title span.outer {
+  color: #ffffff;
+}
+/* automatic import /usersite/themes/theme_option_groups/global_swmp.less */
+#sticky-footer .music_feature .music-player.display-swmp {
+  background-color: #000;
+  background-color: rgba(0, 0, 0, 0.95);
+}
+#sticky-footer .music_feature .music-player.display-swmp .player-title .title {
+  color: #fff;
+  color: rgba(255, 255, 255, 0.9);
+}
+#sticky-footer .music_feature .music-player.display-swmp .artist {
+  color: #fff;
+  color: rgba(255, 255, 255, 0.6);
+}
+#sticky-footer .music_feature .music-player.display-swmp .artist span {
+  color: #fff;
+  color: rgba(255, 255, 255, 0.7);
+}
+#sticky-footer .music_feature .music-player.display-swmp .player .action .button {
+  font-size: 12px;
+  min-width: 55px;
+}
+#sticky-footer .music_feature .music-player.display-swmp .player a {
+  color: #fff;
+}
+#sticky-footer .music_feature .music-player.display-swmp .player a.play-button,
+#sticky-footer .music_feature .music-player.display-swmp .player a.button {
+  background-color: transparent;
+  background-color: rgba(255, 255, 255, 0.3);
+}
+#sticky-footer .music_feature .music-player.display-swmp .player a.play-button:hover,
+#sticky-footer .music_feature .music-player.display-swmp .player a.button:hover,
+#sticky-footer .music_feature .music-player.display-swmp .player a.play-button:focus,
+#sticky-footer .music_feature .music-player.display-swmp .player a.button:focus {
+  background-color: rgba(255, 255, 255, 0.325);
+}
+#sticky-footer .music_feature .music-player.display-swmp .player a.play-button:active,
+#sticky-footer .music_feature .music-player.display-swmp .player a.button:active {
+  background-color: rgba(255, 255, 255, 0.35);
+}
+#sticky-footer .music_feature .music-player.display-swmp .player .progress {
+  background: #999;
+  background: rgba(255, 255, 255, 0.4);
+}
+#sticky-footer .music_feature .music-player.display-swmp .player .progress .position {
+  background: #222;
+  background: rgba(255, 255, 255, 0.7);
+}
+#sticky-footer .music_feature .music-player.display-swmp .time {
+  color: #fff;
+  color: rgba(255, 255, 255, 0.7);
+}
+#sticky-footer .music_feature .music-player.display-swmp .text-tertiary {
+  color: rgba(255, 255, 255, 0.7);
+}
+#sticky-footer .music_feature .music-player.display-swmp {
+  border-top: 1px solid #000000;
+  background-color: #000000;
+  background-color: rgba(0, 0, 0, 0.95);
+  background-image: -webkit-linear-gradient(top, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
+  background-image: -moz-linear-gradient(top, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
+  background-image: linear-gradient(top, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
+}
+#sticky-footer .music_feature .music-player.display-swmp span.title {
+  color: "white";
+}
+/* automatic import /usersite/themes/theme_option_groups/global_intro_page.less */
+.intro-page #usersite-container {
+  color: #90d692;
+}
+.intro-page #usersite-container,
+.intro-page #usersite-container #page-root {
+  background-color: #71617c;
+}
+.intro-page #usersite-container a:link,
+.intro-page #usersite-container a:visited {
+  color: #90d692;
+}
+.intro-page #usersite-container #intro-enter-link a.button {
+  background-color: #90d692;
+  color: #71617c;
+}
+/* --------------------------
+   Skin
+-------------------------- */
+.not-intro-page #usersite-container,
+.not-intro-page #usersite-container #page-root {
+  background: #71617c url("http://assets.sitezoogle.com/usersite/themes/120/d/background.gif") repeat-x;
+}
+.not-intro-page #usersite-container #container {
+  background: url("http://assets.sitezoogle.com/usersite/themes/120/d/background.jpg") center 0 no-repeat;
+}
+.not-intro-page #usersite-container #header-wrap {
+  width: 771px;
+  height: 291px;
+  position: relative;
+  overflow: hidden;
+  z-index: 0;
+}
+.not-intro-page #usersite-container #header-wrap img {
+  vertical-align: bottom;
+}
+.not-intro-page #usersite-container #header-wrap #page-title.display-type-none {
+  display: none;
+}
+.not-intro-page #usersite-container #header-wrap #page-title.display-type-logo {
+  font-size: 0px;
+}
+.not-intro-page #usersite-container #header-wrap .layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  background: transparent none no-repeat 0 0;
+}
+.not-intro-page #usersite-container #header-wrap .layer.layer-foreground,
+.not-intro-page #usersite-container #header-wrap .layer.layer-trim-frame,
+.not-intro-page #usersite-container #header-wrap .layer.layer-frame,
+.not-intro-page #usersite-container #header-wrap .layer.layer-title,
+.not-intro-page #usersite-container #header-wrap .layer.layer-title-background,
+.not-intro-page #usersite-container #header-wrap .layer.layer-subtitle {
+  z-index: 101;
+}
+.not-intro-page #usersite-container #header-wrap .layer-background {
+  left: 0px;
+  top: 0px;
+  width: 771px;
+  height: 297px;
+  background-image: url("http://assets.sitezoogle.com/usersite/themes/120/d/header/background.jpg?1");
+}
+.not-intro-page #usersite-container #header-wrap .layer-photo {
+  left: 0px;
+  top: 20px;
+  width: 760px;
+  height: 240px;
+  overflow: hidden;
+}
+.not-intro-page #usersite-container #header-wrap .layer-photo img {
+  max-width: none;
+  min-width: 0;
+  border: 0px none transparent;
+  padding: 0;
+  margin: 0;
+}
+.not-intro-page #usersite-container #header-wrap .layer-frame {
+  left: 0px;
+  top: 0px;
+  width: 771px;
+  height: 297px;
+  background-image: url("http://assets.sitezoogle.com/usersite/themes/120/d/header/frame.png?1");
+}
+.not-intro-page #usersite-container #header-wrap .layer-title {
+  text-align: center;
+  top: 280px;
+  overflow: visible;
+  left: 385px;
+  color: #ffffff;
+  -webkit-transform: translate(-50%, -95%) rotate(0deg);
+  -moz-transform: translate(-50%, -95%) rotate(0deg);
+  -ms-transform: translate(-50%, -95%) rotate(0deg);
+  transform: translate(-50%, -95%) rotate(0deg);
+}
+.not-intro-page #usersite-container #header-wrap .layer-title h1 {
+  color: #ffffff;
+  margin: 0;
+  padding: 0;
+  font-weight: normal;
+  line-height: normal;
+}
+.not-intro-page #usersite-container #header-wrap .layer-title span {
+  display: inline-block;
+  white-space: nowrap;
+  position: relative;
+}
+.not-intro-page #usersite-container #header-wrap .layer-title span img {
+  vertical-align: bottom;
+}
+.not-intro-page #usersite-container #header-wrap .layer-title {
+  text-shadow: 0 0 0.3em rgba(0, 0, 0, 0.6),
+               0 0 0.3em rgba(0, 0, 0, 0.6),
+               0 0 0.3em rgba(0, 0, 0, 0.6),
+               0 0 0.3em rgba(0, 0, 0, 0.6),
+               0 0 0.3em rgba(0, 0, 0, 0.6);
+}
+.not-intro-page #usersite-container .subtitle-wrap {
+  text-shadow: 0 0 0.38em rgba(0, 0, 0, 0.75),
+               0 0 0.38em rgba(0, 0, 0, 0.75),
+               0 0 0.38em rgba(0, 0, 0, 0.75);
+}
+.not-intro-page #usersite-container nav#main-nav.non-mobile a.top {
+  text-shadow: 0 0 0.38em rgba(0, 0, 0, 0.75),
+               0 0 0.38em rgba(0, 0, 0, 0.75),
+               0 0 0.38em rgba(0, 0, 0, 0.75);
+}
+.not-intro-page #usersite-container nav#main-nav.non-mobile a.top:hover {
+  text-shadow: 0 0 0.38em rgba(0, 0, 0, 0.75),
+               0 0 0.38em rgba(0, 0, 0, 0.75),
+               0 0 0.38em rgba(0, 0, 0, 0.75);
+}
+/* --------------------------
+   / Skin
+-------------------------- */
+/* --------------------------
+   Custom CSS
+-------------------------- */
+.not-intro-page #usersite-container {
+  margin: 0px;
+  background-color: #71617c;
+  background-image: url(http://assets.sitezoogle.com/templates/templatesource/157d/images/background.gif?1327000252);
+  background-repeat: repeat-x;
+}
+.not-intro-page #usersite-container .base {
+  color: #ffffff;
+}
+.not-intro-page #usersite-container .base * {
+  border-color: #999999;
+}
+.not-intro-page #usersite-container .base a {
+  color: #ffcc00;
+}
+.not-intro-page #usersite-container .base a:hover {
+  color: #ffffff;
+}
+.not-intro-page #usersite-container .hover:hover {
+  color: #ffffff;
+}
+.not-intro-page #usersite-container .hover:hover a {
+  color: #ffffff !important;
+}
+.not-intro-page #usersite-container .highlighted {
+  color: #ffffff !important;
+}
+.not-intro-page #usersite-container #content {
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: large;
+  color: #ffffff;
+}
+.not-intro-page #usersite-container td {
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: large;
+  color: #ffffff;
+}
+.not-intro-page #usersite-container a:link,
+.not-intro-page #usersite-container a:visited {
+  color: #ffcc00;
+}
+.not-intro-page #usersite-container a:hover {
+  color: #ffffff;
+}
+.not-intro-page #usersite-container h1,
+.not-intro-page #usersite-container h1 a {
+  font-size: medium;
+  font-weight: bolder;
+  color: #ffffff !important;
+}
+.not-intro-page #usersite-container h2,
+.not-intro-page #usersite-container h3,
+.not-intro-page #usersite-container h4,
+.not-intro-page #usersite-container h5,
+.not-intro-page #usersite-container h2 a,
+.not-intro-page #usersite-container h3 a,
+.not-intro-page #usersite-container h4 a,
+.not-intro-page #usersite-container h5 a {
+  font-size: medium;
+  font-weight: bolder;
+  color: #ffffff !important;
+}
+.not-intro-page #usersite-container table.add-comment {
+  background-image: url(http://assets.sitezoogle.com/common/usersite/css/features/skins/images/trans15-white.png) !important;
+}
+.not-intro-page #usersite-container table.cart {
+  background-image: url(http://assets.sitezoogle.com/common/usersite/css/features/skins/images/trans15-white.png) !important;
+}
+.not-intro-page #usersite-container nav#main-nav ul li ul li {
+  background-color: #201029;
+}
+.not-intro-page #usersite-container nav#main-nav ul li ul li:hover {
+  background: #201029 url(http://assets.sitezoogle.com/common/usersite/css/features/skins/images/trans15-white.png) !important;
+}
+.not-intro-page #usersite-container nav#main-nav ul li ul li a {
+  color: #ffcc00;
+}
+.not-intro-page #usersite-container .cancel-button {
+  color: #ffcc00 !important;
+}
+.not-intro-page #usersite-container .cancel-button:hover {
+  color: #ffffff !important;
+}
+.not-intro-page #usersite-container .track-lyrics a {
+  color: #ffffff;
+}
+.not-intro-page #usersite-container .track-lyrics a:hover {
+  color: #ffcc00;
+}
+.not-intro-page #usersite-container .popup {
+  background: url(http://assets.sitezoogle.com/common/usersite/css/features/skins/images/trans15-white.png) 0 0 repeat;
+  padding: 0;
+}
+.not-intro-page #usersite-container ul.events-list li.date {
+  padding: 7px;
+}
+.not-intro-page #usersite-container .FCK__AnchorC {
+  color: #ffffff !important;
+}
+.not-intro-page #usersite-container #twitter_div {
+  padding: 0 15px 40px 0;
+  margin: 0 0 15px 0;
+  color: #ffffff;
+}
+.not-intro-page #usersite-container #twitter_div li {
+  border-top: 1px solid #999999;
+}
+.not-intro-page #usersite-container .download_purchase {
+  color: #ffffff;
+  border: 1px solid #999999;
+  padding: 10px;
+  margin-bottom: 1.0em;
+}
+.not-intro-page #usersite-container nav#main-nav ul li ul li a {
+  font-size: 14px;
+  color: #000000;
+}
+.not-intro-page #usersite-container .music_feature .button {
+  background-color: #FFFFCC;
+}
+.not-intro-page #usersite-container .music_feature .button:hover {
+  color: #000000 !important;
+}
+.not-intro-page #usersite-container .my_site_feature ul {
+  text-align: left;
+}
+/* --------------------------
+   / Custom CSS
+-------------------------- */

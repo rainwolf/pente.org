@@ -1,0 +1,8 @@
+Origin: rainwolf's beta repo
+Label: none
+Suite: main
+Version: 0.0.1
+Codename: tangelo
+Architectures: iphoneos-arm
+Components: main
+Description: beta repo

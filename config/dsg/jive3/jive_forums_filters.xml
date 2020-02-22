@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jiveFilters>
+    <filterClasses>
+        <filter0>com.jivesoftware.base.filter.HTMLFilter</filter0>
+        <filter1>com.jivesoftware.base.filter.Newline</filter1>
+        <filter2>com.jivesoftware.base.filter.TextStyle</filter2>
+        <filter3>com.jivesoftware.base.filter.URLConverter</filter3>
+        <filter4>com.jivesoftware.base.filter.Profanity</filter4>
+        <filter5>com.jivesoftware.base.filter.JavaCodeHighlighter</filter5>
+        <filter6>com.jivesoftware.base.filter.WordBreak</filter6>
+        <filter7>com.jivesoftware.base.filter.QuoteFilter</filter7>
+        <filter8>com.jivesoftware.base.filter.Emoticon</filter8>
+        <filter9>org.pente.jive.BoardFilter</filter9>
+        <filter10>org.pente.jive.GameFilter</filter10>
+        <filter11>org.pente.jive.LinkFilter</filter11>
+    </filterClasses>
+    <global>
+        <filterCount>9</filterCount>
+        <filter0>
+            <className>com.jivesoftware.base.filter.HTMLFilter</className>
+            <filterTypes>0</filterTypes>
+        </filter0>
+        <filter1>
+            <className>com.jivesoftware.base.filter.TextStyle</className>
+            <properties>
+                <preformatEnabled>true</preformatEnabled>
+                <underlineEnabled>true</underlineEnabled>
+                <italicEnabled>true</italicEnabled>
+                <boldEnabled>true</boldEnabled>
+            </properties>
+            <filterTypes>24</filterTypes>
+        </filter1>
+        <filter2>
+            <className>com.jivesoftware.base.filter.Emoticon</className>
+            <properties>
+                <imageURL>/gameServer/forums/images/emoticons</imageURL>
+            </properties>
+            <filterTypes>24</filterTypes>
+        </filter2>
+        <filter3>
+            <className>org.pente.jive.LinkFilter</className>
+            <properties>
+                <schemes>http://,https://,ftp://</schemes>
+                <name>URLConverter-custom</name>
+                <class>org.pente.jive.LinkFilter</class>
+                <newWindowEnabled>false</newWindowEnabled>
+            </properties>
+            <filterTypes>24</filterTypes>
+        </filter3>
+        <filter4>
+            <className>com.jivesoftware.base.filter.Newline</className>
+            <filterTypes>24</filterTypes>
+        </filter4>
+        <filter5>
+            <className>com.jivesoftware.base.filter.Profanity</className>
+            <properties>
+                <wordList>bitch,ass,shit,fuck,fucker,asshole,shithead,cock,cocksucker,twat,cunt,dickhead,fux</wordList>
+            </properties>
+            <filterTypes>24</filterTypes>
+        </filter5>
+        <filter6>
+            <className>com.jivesoftware.base.filter.JavaCodeHighlighter</className>
+            <properties>
+                <stringStart>&lt;font color="red"&gt;</stringStart>
+                <tableBorderColor>#999999</tableBorderColor>
+                <showLineCount>false</showLineCount>
+                <bracketStart>&lt;font color="navy"&gt;</bracketStart>
+                <commentStart>&lt;font color="darkgreen"&gt;</commentStart>
+                <tableLinePanelBackgroundColor>#dddddd</tableLinePanelBackgroundColor>
+                <reservedWordEnd>&lt;/b&gt;&lt;/font&gt;</reservedWordEnd>
+                <bracketEnd>&lt;/font&gt;</bracketEnd>
+                <characterEnd>&lt;/font&gt;</characterEnd>
+                <lineNumberColor>#555555</lineNumberColor>
+                <applyTableSurround>false</applyTableSurround>
+                <characterStart>&lt;font color="navy"&gt;</characterStart>
+                <tableCodePanelBackgroundColor>#ffffff</tableCodePanelBackgroundColor>
+                <filterMethod>false</filterMethod>
+                <methodStart>&lt;font color="brown"&gt;</methodStart>
+                <numberStart>&lt;font color="red"&gt;</numberStart>
+                <commentEnd>&lt;/font&gt;</commentEnd>
+                <filterNumber>false</filterNumber>
+                <reservedWordStart>&lt;font color="navy"&gt;&lt;b&gt;</reservedWordStart>
+                <numberEnd>&lt;/font&gt;</numberEnd>
+                <stringEnd>&lt;/font&gt;</stringEnd>
+                <methodEnd>&lt;/font&gt;</methodEnd>
+            </properties>
+            <filterTypes>24</filterTypes>
+        </filter6>
+        <filter7>
+            <className>org.pente.jive.BoardFilter</className>
+            <properties>
+                <name>BoardFilter</name>
+                <class>org.pente.jive.BoardFilter</class>
+            </properties>
+            <filterTypes>16</filterTypes>
+        </filter7>
+        <filter8>
+            <className>org.pente.jive.GameFilter</className>
+            <properties>
+                <name>GameFilter</name>
+                <class>org.pente.jive.GameFilter</class>
+            </properties>
+            <filterTypes>16</filterTypes>
+        </filter8>
+    </global>
+</jiveFilters>
+

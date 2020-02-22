@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jiveAttachments>
+    <imagePreview>
+        <mappings>
+            <entry0>application/msword,msword.gif</entry0>
+            <entry1>application/vnd.ms-excel,msexcel.gif</entry1>
+            <entry2>application/vnd.ms-powerpoint,mspowerpoint.gif</entry2>
+            <entry3>application/pdf,pdf.gif</entry3>
+            <entry4>application/zip,zip.gif</entry4>
+            <entry5>application/x-gzip-compressed,zip.gif</entry5>
+            <entry6>application/x-zip-compressed,zip.gif</entry6>
+            <entry7>image/bmp,image.gif</entry7>
+            <entry8>image/gif,image.gif</entry8>
+            <entry9>image/jpeg,image.gif</entry9>
+            <entry10>image/pjpeg,image.gif</entry10>
+            <entry11>image/jpg,image.gif</entry11>
+            <entry12>image/pjpg,image.gif</entry12>
+            <entry13>image/psd,image.gif</entry13>
+            <entry14>image/tiff,image.gif</entry14>
+            <entry15>image/x-photoshop,image.gif</entry15>
+            <entry16>image/x-png,image.gif</entry16>
+            <entry17>text/richtext,rtf.gif</entry17>
+            <entry18>text/rtf,rtf.gif</entry18>
+            <entry19>text/plain,txt.gif</entry19>
+        </mappings>
+        <enabled>true</enabled>
+        <preserveAspectRatio>true</preserveAspectRatio>
+        <maxSize>100</maxSize>
+    </imagePreview>
+    <maxAttachmentsPerMessage>20</maxAttachmentsPerMessage>
+    <maxAttachmentSize>2048</maxAttachmentSize>
+</jiveAttachments>
+

@@ -1,0 +1,65 @@
+==================================================================
+https://keybase.io/rainwolf
+--------------------------------------------------------------------
+
+I hereby claim:
+
+  * I am an admin of http://www.submanifold.be
+  * I am rainwolf (https://keybase.io/rainwolf) on keybase.
+  * I have a public key with fingerprint C539 95E6 E193 A7EF 5EF4  8EE0 B7D5 10DB 4147 DFD2
+
+To claim this, I am signing this object:
+
+{
+    "body": {
+        "key": {
+            "fingerprint": "c53995e6e193a7ef5ef48ee0b7d510db4147dfd2",
+            "host": "keybase.io",
+            "key_id": "b7d510db4147dfd2",
+            "uid": "bde5542ed0751f9c5bd7bef32baa2800",
+            "username": "rainwolf"
+        },
+        "service": {
+            "hostname": "www.submanifold.be",
+            "protocol": "http:"
+        },
+        "type": "web_service_binding",
+        "version": 1
+    },
+    "ctime": 1412769554,
+    "expire_in": 157680000,
+    "prev": "b3d4de84651d9e6ed319a776b91c39801539e796bd3d365d08cd559ae3aa02b5",
+    "seqno": 5,
+    "tag": "signature"
+}
+
+with the aforementioned key, yielding the PGP signature:
+
+-----BEGIN PGP MESSAGE-----
+Version: Keybase OpenPGP v1.1.2
+Comment: https://keybase.io/crypto
+
+yMHrAnicbZFdSBRRFMdnc611I9QoHyx8mAcrFJnZmTuzs4lJmYH2pYgIKevcvXd0
+ap3ZZmd3dU0kH1R6qkTQNg36kCysh9AyyazUIO1BMtpQJIiiMq2XiiKwO2ZvPV3u
+Ob/zP/9zzvimBMppS1Am5parlEzb1NiPEFUGdmxupKGOGmhPI30Crz6KqtVgI2Co
+mkl7aB/gJAlgAbMSJ4tYAVjh3RgzUESAZRDkWV5ECnLR2XStHrQqiAyUgzhH1UmM
+fLwqItH/8KG/CYQB4F0YMSJgFckHIBIhVjgXlGWXm2EsMIgNTa7DhDZkVYvofoVu
+yqZJNKz6sOXZar1GRCKRnGAI1smaquh+lAMxUQgYuqn7dD/J15pmwGOVmw2BVR5D
+75qSF6oaItOTgjA2gqqu0R6WkD5TtaRZnnWJgkTcZtO4PqAa2KtaBBAF4pNhrDY4
+bI3EIR5hNy8AFklkdYhjJVkUBSixPk5yMyzZKRYlASIOcQJAjNuHAJBkzMky44KA
+tmY7qem0BxCbcg2RDKo1mmyGDEw3PR6rtFM2J7U+cZ11P8qZlPLvqk/CDurGwoTt
+sGM+r2RgJubO3HPtkBShGrLexJ1tK9+3LDSXL4zc6s9tHh/PfXRlOjwpPJvqKS3q
+GKg3vrTGC1OLX7VPDjOjyy9vvr5TEht9mI4rPeWx3AfHU5mLzupunWmJ92eMDB2N
+SZQt6ijqnqtYr0tn+1qjWbf90X2BdGGyOWPgbe/plr7pbaE0+4envRcSZheH8rWU
+oP0827LYZms4NZ/sjzor2ndeLSkY7OqCy2fyqn/eT9QP7r/3uwy+++jo3JAs5POX
+O9PubhzsCH01S7cWtnYeOVDweddSZGn3p+dMz/DwLzYeuVTssJ3bvne6auXY+xcz
+OOn6t/LZRHvjH3GfEcI=
+=KzTs
+-----END PGP MESSAGE-----
+
+And finally, I am proving ownership of this host by posting or
+appending to this document.
+
+View my publicly-auditable identity here: https://keybase.io/rainwolf
+
+==================================================================

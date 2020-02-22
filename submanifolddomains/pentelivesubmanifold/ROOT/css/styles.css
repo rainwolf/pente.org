@@ -1,0 +1,187 @@
+@charset "utf-8";
+
+/*
+---------------------------------------------
+Customize Template Colors
+---------------------------------------------
+*/
+ 
+/*Background color of entire page*/ body {background-color:#003300} 
+
+/*Background color of top bar*/ #header h1 a { background:#58B6DD} 
+/*Color of text and text shadow in top bar*/ #header h1 a { color:#FFFFFF; text-shadow:0 0px 0 #000000} 
+
+/*Background color of header section*/ #header { background:#} 
+
+/*Color of text in slogan*/ #header p { color:#000000} 
+
+/*Background and text color of click to call bar*/ .buttonclick a { background:#448DBE; color:#FFFFFF}
+/*Text shadow in click to call bar*/ .buttonclick { text-shadow:0 0px 0 #000000}
+
+/*Background and text shadow in navigation bar*/ .topnav p { text-shadow:0 0px 0 #000000; background:#ffffcc}
+/*Color of text in navigation bar*/ .topnav p a { color:#000000}
+
+/*Background color of homepage main menu*/ #content { background:#003300} 
+/*Border color of homepage main menu*/ #content { border:1px solid #003300} 
+/*Color of text in homepage main menu*/ #nav ul li a { color:#FFFFFF} 
+/*Color of arrows in homepage main menu. Change to black, grey or white*/ #nav ul li a { background:url(../images/arrow-white.gif) no-repeat right center}
+/*Color and thickness of separator lines in homepage main menu*/ #nav ul li { border-top:1px solid #FFFFFF} 
+
+/*Background color of content area*/ #contentinner { background:#f7f6ec}
+/*Border color of content area*/ #contentinner { border:4px solid #ffffcc}
+/*Color of all standard text in content area*/ p, ul, ol, label { color:#000000}
+/*Color of all heading text in content area*/ h1,h2,h3,h4,h5,h6 { color:#000000}
+
+/*Background color of footer*/ #footer { background:#} 
+/*Color of text in footer*/ #footer p { color:#FFFFFF} 
+/*Color of text links in footer*/ #footer p a { color:#FFFFFF} 
+
+/*
+---------------------------------------------
+01. main/default elements
+---------------------------------------------
+*/
+
+html, body, p, div, input, textarea, select, option, fieldset, label, h1, h2, h3, h4, h5, h6, img, a, a:link, a:active, a:hover, a:visited, form, ul, ol, li { margin:0;  padding:0;  text-align:left;}
+
+img,fieldset { border:none}
+
+ul, li { list-style:none}
+h1,h2,h3,h4,h5,h6 { font-weight:normal}
+
+body { font-family:Arial, Helvetica, sans-serif}
+
+p { font-size:0.875em; line-height:1.4em}
+p a { color:#0000FF; text-decoration:none}
+
+h1 { font-size:1.064em; font-weight:bold}
+h2 { font-size:0.938em; font-weight:bold}
+h3 { font-size:0.875em; font-weight:bold}
+
+/*
+---------------------------------------------
+02. header
+---------------------------------------------
+*/
+
+#header { width:100%; float:left; padding:0}
+#header h1 { width:100%; float:left; font-family:Arial, Helvetica, sans-serif; font-size:1.250em; color:#f5ba21; font-weight:regular; text-align:center}
+#header h1 a { width:100%; float:left; text-decoration:none; text-align:center; padding:12px 0 14px 0}
+#header p { text-align:center; padding-bottom:3px}
+#header p.socialmedia a { padding-bottom:3px}
+#header .logo { width:100%; padding:0px 0 0px 0; text-align:left}
+
+/*
+---------------------------------------------
+03. wrapper and content
+---------------------------------------------
+*/
+
+#wrapper { width:92%; float:left; padding:0px 4% 20px 4%}
+
+.buttonclick { width:100%; float:right; font-family:Arial, Helvetica, sans-serif; font-size:1.250em; font-weight:regular; padding:16px 0 22px 0%}
+.buttonclick a { width:90%; height:1.875em; float:left; -webkit-border-radius: 1.125em; -moz-border-radius: 1.125em; border-radius: 1.125em; text-decoration:none; padding:14px 5% 0 5%; text-align:center; position:relative}
+
+#content { width:99.8%; float:left; -webkit-border-radius:1.250em; -moz-border-radius:1.250em; border-radius:1.250em; position:relative}
+
+/*
+---------------------------------------------
+04. nav
+---------------------------------------------
+*/
+
+#nav { width:100%; float:left}
+#nav ul { width:100%; float:left}
+#nav ul li { width:100%; float:left; font-family:Arial, Helvetica, sans-serif; font-size:1em; color:#a43007; font-weight:regular}
+#nav ul li a { width:100%; float:left; text-decoration:none; padding:12px 0}
+#nav ul li a span { float:left; padding-left:20px}
+#nav ul li.top { border-top:none}
+
+/*
+---------------------------------------------
+05. footer
+---------------------------------------------
+*/
+
+#footer { width:100%; float:left; padding:15px 0 4px 0}
+#footer p { font-size:0.75em; line-height:1.6em; text-align:center; padding-bottom:0px}
+#footer p span { font-weight:bold}
+#footer p.socialmedia { padding-bottom:5px}
+#footer p.socialmedia a { padding:0 3px}
+#footer p.bottomlinks { font-size:0.875em; font-weight:bold; padding-bottom:5px}
+#footer p.bottomlinks span { padding:0 .5%}
+#footer p.bottomlinks a { text-decoration:underline}
+
+/*
+---------------------------------------------
+06. innerpage - header top nav
+---------------------------------------------
+*/
+
+.topnav { width:100%; float:left; padding:16px 0 25px 0%}
+.topnav p { width:90%; height:1.75em; float:left; font-family:Arial, Helvetica, sans-serif; font-size:1em; font-weight:regular; -webkit-border-radius: 1.125em; -moz-border-radius: 1.125em; border-radius: 0.5em; color:#3f0100; text-decoration:none; padding:10px 5% 0 5%; text-align:center}
+.topnav p a { text-decoration:none; padding:0 .8%}
+
+/*
+---------------------------------------------
+07. innerpage - content inner
+---------------------------------------------
+*/
+
+#contentinner { width:99.8%; float:left; -webkit-border-radius:1.250em; -moz-border-radius:1.250em; border-radius:0.75em; padding:25px 0 25px 0}
+
+#contentinner .content { padding:0 20px}
+
+#contentinner h1 { padding-bottom:5px}
+#contentinner h2 { padding-bottom:5px}
+#contentinner h3 { padding-bottom:5px}
+#contentinner p { padding-bottom:13px}
+#contentinner p span { font-weight:bold}
+#contentinner p a { text-decoration:underline}
+
+#contentinner ol{ width:100%; float:left; padding:5px 0 15px 20px}
+#contentinner ol li{ width:100%; float:left; font-size:0.875em; line-height:1.4em; list-style:decimal; padding-bottom:2px}
+#contentinner ol li a{text-decoration:underline}
+
+#contentinner ul{ width:100%; float:left; padding:5px 0 15px 0px}
+#contentinner ul li{ width:100%; float:left; font-size:0.875em; line-height:1.4em; background:url(../images/border.gif) no-repeat 0 7px; padding:0 0 2px 8px}
+#contentinner ul li a{text-decoration:underline}
+
+#contentinner .services { width:100%; float:left; padding-bottom:15px}
+#contentinner .services h3 { border-bottom:1px solid #7d7d7d; padding:20px 0 10px 0}
+#contentinner .services ul { width:100%; float:left; padding:10px 0 20px 0}
+#contentinner .services ul li { width:100%; float:left; font-size:0.814em; line-height:1.4em; background:none; padding:0 0 8px 0}
+#contentinner .services ul li span { width:49%; float:left}
+#contentinner .services ul li .right { width:50%; text-align:right; font-weight:normal}
+
+#contentinner .items { width:100%; float:left; padding-bottom:30px}
+#contentinner .items ul { width:100%; float:left; border-bottom:1px solid #7d7d7d; padding:0}
+#contentinner .items ul li { width:100%; float:left; font-size:1.000em; color:#000000; font-weight:bold; border-top:1px solid #7d7d7d; background:none; padding:0}
+#contentinner .items ul li a { width:100%; float:left; color:#000000; text-decoration:none; background:url(../images/li_arrow_item.gif) no-repeat right center; padding:20px 0}
+
+#contentinner p.divider { border-bottom:1px solid #7D7D7D; margin-bottom:10px}
+
+#contentinner .headline { width:100%; float:left; padding-top:10px; padding-bottom:10px}
+#contentinner h1.black { color:#000000; text-align:center}
+#contentinner h1.red { color:#D00000; text-align:center}
+#contentinner h1.blue { color:#062E71; text-align:center}
+
+#contentinner .centeredtext { width:100%; float:left; padding-bottom:0px}
+#contentinner .centeredtext h2 { text-align:center}
+#contentinner .centeredtext p { text-align:center}
+
+#contentinner .form { width:100%; float:left; padding-top:20px; padding-bottom:20px}
+#contentinner .form label { width:100%; float:left; font-size:0.875em; font-weight:bold; padding-bottom:10px}
+#contentinner .form label span {color:#FF0000}
+#contentinner .form .input { width:89.8%; float:left; font-family:Arial, Helvetica, sans-serif; font-size:1.0em; color:#010101; border:1px solid #666666; background:#FFFFFF; padding:8px 5%; margin-bottom:15px}
+#contentinner .form .dropdown { width:99.8%; float:left; font-family:Arial, Helvetica, sans-serif; font-size:1.0em; color:#010101; border:1px solid #666666; background:#FFFFFF; padding:12px 5%; margin-bottom:15px}
+#contentinner .form .dropdown2 { width:40%; float:left; font-family:Arial, Helvetica, sans-serif; font-size:1.0em; color:#010101; border:1px solid #666666; background:#FFFFFF; padding:12px 5%; margin-bottom:15px; margin-right:25px}
+#contentinner .form .textarea { width:89.8%; height:10em; float:left; font-family:Arial, Helvetica, sans-serif; font-size:1.0em; color:#010101; border:1px solid #666666; background:#FFFFFF; padding:10px 5%; margin-bottom:15px}
+#contentinner .form .button{ float:left; border: 2px solid #EEEEEE; background-color: #666666; font-family: Arial, Helvetica, sans-serif; font-weight: bold; font-size: 1.125em; color:#FFFFFF; padding:8px 25px 8px 25px; cursor: pointer}
+
+#contentinner .yellowbox { width:90%; float:left; background:#FAF9B2; padding:20px 5% 0 5%; margin-bottom:35px}
+#contentinner .bluebox { width:90%; float:left; background:#D3E2FD; padding:20px 5% 0 5%; margin-bottom:35px}
+
+#contentinner .photos { width:100%; float:left}
+#contentinner .photos p.centered { text-align:center; font-style:italic}
+#contentinner .photos p span img{border:5px solid #FFFFFF}

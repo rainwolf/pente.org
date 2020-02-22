@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jiveGateways>
+    <gatewayClasses>
+        <gateway0>com.jivesoftware.forum.gateway.EmailGateway</gateway0>
+        <gateway1>com.jivesoftware.forum.gateway.NewsgroupGateway</gateway1>
+    </gatewayClasses>
+</jiveGateways>
+
