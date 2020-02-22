@@ -46,10 +46,14 @@ a {text-decoration:none;}
 				<p>...it's ok, I hate filling out forms too</p>
         <p> Or perhaps you just want to <a href="features.jsp">check out all our features.</a></p>
 			</div>
-
-			<div id="signupnow-button">
-				<a href="/gameServer/live?guest" target="_blank" rel="noopener noreferrer">Play as a Guest!</a>
-			</div>
+            <div style="overflow: hidden;">
+            <div id="signupnow-button" style="float:left;">
+                <a href="/gameServer/live?guest" target="_blank" rel="noopener noreferrer">Play as a Guest!</a>
+            </div>
+            <div id="signupnow-button" style="float:left;">
+                <a href="/gameServer/mmai" target="_blank" rel="noopener noreferrer">Play the AI!</a>
+            </div>
+            </div>
 		</div>  
 	  
 	  

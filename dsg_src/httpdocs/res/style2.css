@@ -151,7 +151,8 @@ float:right;
     margin:0px 10px 24px 0px;
     background:#fffbcc;
     border:1px solid #e6db55;
-    height:86px;
+    /*height:86px;*/
+    display: inline-block;
     padding-top:24px;
 }
 #signupnow h2 {
