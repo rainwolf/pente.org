@@ -72,6 +72,12 @@ public class IOSReceiptServlet extends HttpServlet {
             PrintWriter out = response.getWriter();
             out.println("invalid receipt");
             return;
+        } else if (startDate.getTime() + (364L*24*3600*1000) < (new Date()).getTime()) {
+            log4j.info("IOSReceiptServlet: error: Receipt too old");
+            response.setContentType("text/html");
+            PrintWriter out = response.getWriter();
+            out.println("invalid receipt");
+            return;
         }
 
             try {
@@ -233,13 +239,14 @@ public class IOSReceiptServlet extends HttpServlet {
                 for (int i = 0; i < jsonArray.length(); i++) {
                     JSONObject jsn = jsonArray.getJSONObject(i);
                     if ("1YRNOADSORLIMITS".equals(jsn.getString("product_id"))) {
-                        transactionId = jsn.getString("original_transaction_id");
-                        break;
+                        long tmp_start_ms = jsn.getLong("purchase_date_ms");
+                        if (tmp_start_ms > start_ms) {
+                            start_ms = tmp_start_ms;
+                            transactionId = jsn.getString("original_transaction_id");
+                        }
                     }
                 }
-                start_ms = tmpJSON.getLong("original_purchase_date_ms");
                 startDate = new Date();
-                startDate.setTime(start_ms);
                 
                 if (json.has("latest_receipt_info")) {
                     jsonArray = json.getJSONArray("latest_receipt_info");
@@ -250,13 +257,14 @@ public class IOSReceiptServlet extends HttpServlet {
                     return false;
                 }
 
-
+                start_ms = 0;
                 for (int i = 0; i < jsonArray.length(); i++) {
                     JSONObject jsn = jsonArray.getJSONObject(i);
                     if ("1YRNOADSORLIMITS".equals(jsn.getString("product_id"))) {
-                        if (jsn.getLong("expires_date_ms") - (364L*24*3600*1000) > start_ms) {
+                        long tmp_start_ms = jsn.getLong("expires_date_ms") - (364L*24*3600*1000);
+                        if (tmp_start_ms > start_ms) {
                             transactionId = jsn.getString("transaction_id");
-                            start_ms = jsn.getLong("expires_date_ms") - (364L*24*3600*1000);
+                            start_ms = tmp_start_ms;
                         }
                     }
                 }
