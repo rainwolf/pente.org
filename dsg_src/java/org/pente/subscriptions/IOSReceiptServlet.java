@@ -34,6 +34,12 @@ public class IOSReceiptServlet extends HttpServlet {
     private Date startDate = null;
     private String transactionId = null;
 
+    public void doGet(HttpServletRequest request,
+                      HttpServletResponse response)
+            throws ServletException, IOException {
+        doPost(request, response);
+    }
+
     protected void doPost(HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException {
 

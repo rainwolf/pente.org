@@ -1,6 +1,7 @@
 #!/bin/bash
 
 #rm -r deploy/*
+#rsync -v -u -r -t --exclude test --exclude opengl --exclude swing --stats --progress dsg_src/java/ deploy/
 rsync -v -u -r -t --exclude test --exclude opengl --exclude swing --stats --progress dsg_src/java/ deploy/
 ant
 
