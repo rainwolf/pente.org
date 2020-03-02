@@ -22,6 +22,8 @@ import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import org.pente.gameServer.client.*;
@@ -201,6 +203,11 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
         repaint();
     }
 
+    @Override
+    public void setTerritory(Map<Integer, List<Integer>> territory) {
+        
+    }
+
     public void setHighlightPiece(GridPiece gridPiece) {
         synchronized (drawLock) {
             this.highlightPiece = gridPiece;
@@ -271,6 +278,12 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
     public void setDrawInnerCircles(boolean drawInnerCircles) {
         this.drawInnerCircles = drawInnerCircles;
     }
+
+    @Override
+    public void setDrawGoDots(boolean drawGoDots) {
+
+    }
+
     public void setDrawCoordinates(boolean drawCoordinates) {
         this.drawCoordinates = drawCoordinates;
     }

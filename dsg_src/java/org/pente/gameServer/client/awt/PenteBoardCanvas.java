@@ -64,7 +64,7 @@ public class PenteBoardCanvas extends GridBoardCanvas implements PenteBoardCompo
         return beveledEdge + insets.left + captureAreaWidth + edgeLeftOvers.width + coordinatesDimensions.width;
     }
 
-    void calculateGridSize() {
+    public void calculateGridSize() {
 
         Dimension size = getSize();
 

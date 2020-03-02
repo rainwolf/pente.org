@@ -117,8 +117,8 @@ public class CacheDSGFollowerStorer implements DSGFollowerStorer {
         }
         return false;
     }
-    @Override
-    public void notifyFollowers(long pid, String message) {
+//    @Override
+//    public void notifyFollowers(long pid, String message) {
 //        if (getPref(pid, "allow_followers_be_notified")) {
 //            try {
 //                List<Long> followerList = getFollowers(pid);
@@ -131,5 +131,5 @@ public class CacheDSGFollowerStorer implements DSGFollowerStorer {
 //                e.printStackTrace();
 //            }
 //        }
-    }
+//    }
 }
