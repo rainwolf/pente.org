@@ -93,4 +93,73 @@ for (Iterator it = matches.iterator(); it.hasNext();) {
 </table>
 </td>
 </tr>
+    <tr>
+        <td colspan="2">
+            <h2>games</h2>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <%
+                int t = 0;
+                for (Iterator it = matches.iterator(); it.hasNext();) {
+                    SingleEliminationMatch m = (SingleEliminationMatch) it.next();
+                    if (m.isBye()) {
+                        continue;
+                    }
+                    long pid = m.getPlayer1().getPlayerID();
+                    List<TBSet> sets = tbStorer.loadSets(pid);
+                    for (Iterator its = sets.iterator(); its.hasNext();) {
+                        TBSet s = (TBSet) its.next();
+                        TBGame game = s.getGame1();
+                        if (game != null && game.getEventId() == eid && !game.isCompleted() && !game.isHidden()) {
+                            if (t%2 == 0) {
+                                %>
+                                    <tr><td>
+                                <%
+                            } else {
+                                %>
+                                    <td>
+                                <%
+                            }
+                            %><%@ include file="../tb/listedMobileGame.jsp" %><%
+                            if (t%2 == 0) {
+                                %>
+                                    </td>
+                                <%
+                            } else {
+                                %>
+                                    </td></tr>
+                                <%
+                            }
+                            t++;
+                        }
+                        game = s.getGame2();
+                        if (game != null && game.getEventId() == eid && !game.isCompleted() && !game.isHidden()) {
+                            if (t%2 == 0) {
+                                %>
+                                    <tr><td>
+                                <%
+                            } else {
+                                %>
+                                    <td>
+                                <%
+                            }
+                            %><%@ include file="../tb/listedMobileGame.jsp" %><%
+                            if (t%2 == 0) {
+                                %>
+                                    </td>
+                                <%
+                            } else {
+                                %>
+                                    </td></tr>
+                                <%
+                            }
+                            t++;
+                        }
+                    }
+                }
+            %>
+        </td>
+    </tr>
 </table>
