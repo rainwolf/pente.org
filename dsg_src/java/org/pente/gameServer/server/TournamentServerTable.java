@@ -34,11 +34,12 @@ import org.pente.kingOfTheHill.*;
 public class TournamentServerTable extends ServerTable {
 
     // new TournamentServerTable stuff
-    protected static final int WAIT_TO_CLOSE_TABLE = 20;
+    protected static final int WAIT_TO_CLOSE_TABLE = 60;
     protected static final int WAIT_TO_PRESS_PLAY = 30;
     protected Timer closeTableTimer, pressPlayTimer;
     public void setTourneyMatch(TourneyMatch tourneyMatch) { this.tourneyMatch = tourneyMatch; }
     protected Long forfeitPid;
+    protected boolean closingTable = false;
 
 
     public TournamentServerTable(final Server server,
@@ -100,23 +101,6 @@ public class TournamentServerTable extends ServerTable {
             pressPlayTimer.cancel();
         }
         
-        if (tourneyMatch != null && !tourneyMatch.hasBeenPlayed()) {
-            determineAndUpdateForfeit();
-        } else {
-            TourneyMatch newMatch = null;
-            try {
-                newMatch = resources.getTourneyStorer().getUnplayedMatch(
-                        tourneyMatch.getPlayer2().getPlayerID(), tourneyMatch.getPlayer1().getPlayerID(),
-                        getGameEvent(game.getId()).getEventID());
-                tourneyMatch = newMatch;
-                if (tourneyMatch != null) {
-                    determineAndUpdateForfeit();
-                }
-            } catch (Throwable throwable) {
-                throwable.printStackTrace();
-            }
-        }
-
         super.destroy();
 	}
 
@@ -124,6 +108,9 @@ public class TournamentServerTable extends ServerTable {
 	 */
 	@Override
 	public void handleMainRoomJoin(DSGJoinMainRoomEvent mainRoomEvent) {
+	    if (closingTable) {
+	        return;
+        }
 		super.handleMainRoomJoin(mainRoomEvent);
 		if (tourneyMatch == null || tourneyMatch.hasBeenPlayed()) {
 		    return;
@@ -145,8 +132,16 @@ public class TournamentServerTable extends ServerTable {
         }
 
 		if (isPlayerInTable(player)) {
-			handleExit(player, true);
+            handleExit(player, true);
 		}
+		
+		if (sittingPlayers[1] == null && sittingPlayers[2] == null) {
+		    if (pressPlayTimer != null) {
+		        pressPlayTimer.cancel();
+		        pressPlayTimer = null;
+            }
+		    closeTableNow();
+        }
 	}
 
 
@@ -166,6 +161,7 @@ public class TournamentServerTable extends ServerTable {
 	
 	protected void startPressPlayTimer() {
         if (pressPlayTimer == null) {
+            resetClickedPlays();
             pressPlayTimer = new Timer();
             pressPlayTimer.schedule(new TimerTask() {
                 @Override
@@ -186,6 +182,7 @@ public class TournamentServerTable extends ServerTable {
 	    if (waitingForPlayerToReturnTimer != null) {
             waitingForPlayerToReturnTimer.stop();
             waitingForPlayerToReturnTimer.destroy();
+            waitingForPlayerToReturnTimer = null;
         }
 
 	    int result = TourneyMatch.RESULT_DBL_FORFEIT;
@@ -269,9 +266,6 @@ public class TournamentServerTable extends ServerTable {
 	}
 
 	@Override
-	public void handleStand(String player) { }
-
-	@Override
     public void handleJoin(String player) {
 	    super.handleJoin(player);
 	    if (isPlayerInTable(player)) {
@@ -302,15 +296,13 @@ public class TournamentServerTable extends ServerTable {
     }
 
     @Override
+    public void handleStand(String player) { }
+    @Override
 	public void handleCancelRequest(DSGCancelRequestTableEvent cancelRequestEvent) { }
-
     @Override
 	public void handleCancelReply(DSGCancelReplyTableEvent cancelReplyEvent) { }
-	
-
     @Override
 	protected void cancelGame(String setStatus) { }
-
     @Override
     public void handleAddAI(DSGAddAITableEvent addEvent) { }
 
@@ -362,26 +354,32 @@ public class TournamentServerTable extends ServerTable {
     }
     
     protected void closeTable() {
+        closingTable = true;
         broadcastTable(new DSGSystemMessageTableEvent(
                 tableNum,
-                "this table will be automatically closed in "+WAIT_TO_CLOSE_TABLE+" seconds."));
+                "this table will be automatically closed in "+WAIT_TO_CLOSE_TABLE+" seconds.\nYou will not be matched as long as you are seated, use this for a short break if needed."));
         closeTableTimer = new Timer();
         closeTableTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                List<DSGPlayerData> players = new ArrayList<>(playersInTable);
-                for (Object playerObject: players) {
-                    DSGPlayerData player = (DSGPlayerData) playerObject;
-                    if (player != null) {
-                        exit(player.getName(), true);
-                        try {
-                            Thread.sleep(500);
-                        } catch (Exception e) {
-                            
-                        }
-                    }
-                }
+                closeTableNow();
             }
         }, 1000L*WAIT_TO_CLOSE_TABLE);
+    }
+    
+    protected void closeTableNow() {
+        closingTable = true;
+        List<DSGPlayerData> players = new ArrayList<>(playersInTable);
+        for (Object playerObject: players) {
+            DSGPlayerData player = (DSGPlayerData) playerObject;
+            if (player != null) {
+                exit(player.getName(), true);
+                try {
+                    Thread.sleep(500);
+                } catch (Exception e) {
+                    log4j.error("Error removing " + player.getName() + " from table", e);
+                }
+            }
+        }
     }
 }
