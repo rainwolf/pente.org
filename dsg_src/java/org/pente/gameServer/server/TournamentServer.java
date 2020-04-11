@@ -35,6 +35,8 @@ import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.websocket.Session;
 
+import static java.lang.Thread.sleep;
+
 
 /** A simple class to contain the necessary components that make up the server
  */
@@ -47,6 +49,7 @@ public class TournamentServer extends Server {
     protected Tourney tournament;
     protected List<TourneyMatch> matches;
     protected Timer timeoutBeforeNextRoundTimer;
+    protected boolean noNeedForBreak = false;
 
     public TournamentServer(Resources resources,
                   ServerData serverData) throws Throwable {
@@ -69,9 +72,29 @@ public class TournamentServer extends Server {
 
 
     public synchronized void initNewRound() {
+        if (timeoutBeforeNextRoundTimer != null) {
+            timeoutBeforeNextRoundTimer.cancel();
+        }
         if (tournament.isComplete()) {
             return;
         }
+        if (noNeedForBreak) {
+            noNeedForBreak = false;
+            startNewRoundNow();
+        } else {
+            mainRoom.eventOccurred(new DSGSystemMessageTableEvent(0, "BREAK: round complete, new round starts "+ROUND_PAUSE+" minutes."));
+            timeoutBeforeNextRoundTimer = new Timer();
+            timeoutBeforeNextRoundTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    startNewRoundNow();
+                    timeoutBeforeNextRoundTimer = null;
+                }
+            }, 1000L * 60 * ROUND_PAUSE);
+        }
+    }
+    
+    protected void startNewRoundNow() {
         pid2tables = new ConcurrentHashMap<>();
         table2matches = new ConcurrentHashMap<>();
         tournamentPlayers = new HashSet<>();
@@ -115,6 +138,11 @@ public class TournamentServer extends Server {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
+                try {
+                    sleep(200);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 for (TourneyMatch match: matches) {
                     if (match.hasBeenPlayed()) {
                         continue;
@@ -138,6 +166,10 @@ public class TournamentServer extends Server {
                         continue;
                     }
                     try {
+                        if (timeoutBeforeNextRoundTimer != null) {
+                            timeoutBeforeNextRoundTimer.cancel();
+                            timeoutBeforeNextRoundTimer = null;
+                        }
                         int tableNum = createNewTable(new DSGJoinTableEvent());
                         // remove them if they're spectating
                         removePlayerFromTables(player1);
@@ -200,6 +232,7 @@ public class TournamentServer extends Server {
             if (match.hasBeenPlayed()) {
                 continue;
             }
+            noNeedForBreak = true;
             String player1 = match.getPlayer1().getName();
             String player2 = match.getPlayer2().getName();
             boolean p1inRoom = mainRoom.isPlayerInMainRoom(player1), p2inRoom = mainRoom.isPlayerInMainRoom(player2);
