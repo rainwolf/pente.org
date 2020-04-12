@@ -42,7 +42,8 @@ import static java.lang.Thread.sleep;
  */
 public class TournamentServer extends Server {
 
-    protected int ROUND_PAUSE = 3; 
+    protected int ROUND_PAUSE = 3;
+    protected int FIRST_ROUND_WAIT = 5;
     protected Map<Long, Integer> pid2tables;
     protected Map<Integer, TourneyMatch> table2matches;
     protected HashSet<String> tournamentPlayers;
@@ -82,7 +83,7 @@ public class TournamentServer extends Server {
             noNeedForBreak = false;
             startNewRoundNow();
         } else {
-            mainRoom.eventOccurred(new DSGSystemMessageTableEvent(0, "BREAK: round complete, new round starts "+ROUND_PAUSE+" minutes."));
+            mainRoom.eventOccurred(new DSGSystemMessageTableEvent(0, "BREAK: New round starts in "+ROUND_PAUSE+" minutes."));
             timeoutBeforeNextRoundTimer = new Timer();
             timeoutBeforeNextRoundTimer.schedule(new TimerTask() {
                 @Override
@@ -214,7 +215,11 @@ public class TournamentServer extends Server {
     
     public synchronized void startWait() {
         if (timeoutBeforeNextRoundTimer == null) {
-            mainRoom.eventOccurred(new DSGSystemMessageTableEvent(0, "No more possible matches with the present players. In "+ROUND_PAUSE+" minutes, the next round will start, unless new matches become possible."));
+            int pause = ROUND_PAUSE;
+            if (tournament.getNumRounds() == 1) {
+                pause = FIRST_ROUND_WAIT;
+            }
+            mainRoom.eventOccurred(new DSGSystemMessageTableEvent(0, "No more possible matches with the present players. In "+pause+" minutes, the next round will start, unless new matches become possible."));
             timeoutBeforeNextRoundTimer = new Timer();
             timeoutBeforeNextRoundTimer.schedule(new TimerTask() {
                 @Override
