@@ -75,8 +75,9 @@ public class Resources {
         serverData.remove(server.getServerData());
         server.destroy();
     }
-    public void startNewServer(Tourney tournament) {
+    public void startNewServer(int tourneyID) {
         try {
+            Tourney tournament = this.getTourneyStorer().getTourney(tourneyID);
             ServerContainer serverContainer = (ServerContainer) ContextHolder.servletContext.getAttribute("javax.websocket.server.ServerContainer");
             ServerData data = new ServerData();
             data.setTournament(true);
@@ -101,10 +102,11 @@ public class Resources {
         }
     }
 
-    public void startTournament(Tourney tournament) {
+    public void startTournament(int tourneyID) {
         try {
             // create first round
-            List players = this.getTourneyStorer().setInitialSeeds(tournament.getEventID());
+            Tourney tournament = this.getTourneyStorer().getTourney(tourneyID);
+            List players = this.getTourneyStorer().setInitialSeeds(tourneyID);
             TourneyRound newRound = tournament.createFirstRound(players);
             this.getTourneyStorer().insertRound(newRound);
         } catch (Throwable t) {

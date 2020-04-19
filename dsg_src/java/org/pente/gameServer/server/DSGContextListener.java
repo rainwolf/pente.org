@@ -273,7 +273,7 @@ public class DSGContextListener implements ServletContextListener {
                     if (tourney.isSpeed()) {
                         log4j.info("tournament " + tourney.getName());
                         if (tourney.getStartDate().before(oneHourAgo)) {
-                            resources.startNewServer(tourney);
+                            resources.startNewServer(tourney.getEventID());
                             log4j.info("Server " + tourney.getName() + " started.");
                         } else {
                             Date startDate = new Date(tourney.getStartDate().getTime() - 3600L*1000);
@@ -281,20 +281,20 @@ public class DSGContextListener implements ServletContextListener {
                             timer.schedule(new TimerTask() {
                                 @Override
                                 public void run() {
-                                    resources.startNewServer(tourney);
+                                    resources.startNewServer(tourney.getEventID());
                                     log4j.info("Server " + tourney.getName() + " started.");
                                 }
                             }, startDate);
                         }
                         if (tourney.getNumRounds() == 0) {
                             if (tourney.getStartDate().before(now)) {
-                                resources.startTournament(tourney);
+                                resources.startTournament(tourney.getEventID());
                             } else {
                                 Timer timer = new Timer();
                                 timer.schedule(new TimerTask() {
                                     @Override
                                     public void run() {
-                                        resources.startTournament(tourney);
+                                        resources.startTournament(tourney.getEventID());
                                     }
                                 }, tourney.getStartDate());
                             }
