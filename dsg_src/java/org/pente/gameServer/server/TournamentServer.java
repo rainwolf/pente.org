@@ -79,11 +79,23 @@ public class TournamentServer extends Server {
         if (tournament.isComplete()) {
             return;
         }
-        if (noNeedForBreak) {
+        if (noNeedForBreak || tournament.getNumRounds() == 1) {
             noNeedForBreak = false;
             startNewRoundNow();
         } else {
             mainRoom.eventOccurred(new DSGSystemMessageTableEvent(0, "BREAK: New round starts in "+ROUND_PAUSE+" minutes."));
+            if (ROUND_PAUSE > 1) {
+                for (int i = ROUND_PAUSE - 1; i > 0; i--) {
+                    Timer t = new Timer();
+                    int finalI = i;
+                    t.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            mainRoom.eventOccurred(new DSGSystemMessageTableEvent(0, finalI + " minutes left before round " + tournament.getNumRounds() + " starts."));
+                        }
+                    }, 1000L * 60 * (ROUND_PAUSE - finalI));
+                }
+            }
             timeoutBeforeNextRoundTimer = new Timer();
             timeoutBeforeNextRoundTimer.schedule(new TimerTask() {
                 @Override
