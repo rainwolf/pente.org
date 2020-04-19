@@ -50,6 +50,7 @@ public class TournamentServer extends Server {
     protected Tourney tournament;
     protected List<TourneyMatch> matches;
     protected Timer timeoutBeforeNextRoundTimer;
+    protected List<Timer> waitAnnouncementTimers;
     protected boolean noNeedForBreak = false;
 
     public TournamentServer(Resources resources,
@@ -73,9 +74,7 @@ public class TournamentServer extends Server {
 
 
     public synchronized void initNewRound() {
-        if (timeoutBeforeNextRoundTimer != null) {
-            timeoutBeforeNextRoundTimer.cancel();
-        }
+        stopWait();
         if (tournament.isComplete()) {
             return;
         }
@@ -179,10 +178,7 @@ public class TournamentServer extends Server {
                         continue;
                     }
                     try {
-                        if (timeoutBeforeNextRoundTimer != null) {
-                            timeoutBeforeNextRoundTimer.cancel();
-                            timeoutBeforeNextRoundTimer = null;
-                        }
+                        stopWait();
                         int tableNum = createNewTable(new DSGJoinTableEvent());
                         // remove them if they're spectating
                         removePlayerFromTables(player1);
@@ -203,9 +199,8 @@ public class TournamentServer extends Server {
                 }
                 if (pid2tables.isEmpty()) {
                     startWait();
-                } else if (timeoutBeforeNextRoundTimer != null) {
-                    timeoutBeforeNextRoundTimer.cancel();
-                    timeoutBeforeNextRoundTimer = null;
+                } else {
+                    stopWait();
                 }
             }
         });
@@ -232,6 +227,29 @@ public class TournamentServer extends Server {
                 pause = FIRST_ROUND_WAIT;
             }
             mainRoom.eventOccurred(new DSGSystemMessageTableEvent(0, "No more possible matches with the present players. In "+pause+" minutes, the next round will start, unless new matches become possible."));
+            if (pause > 1) {
+                if (waitAnnouncementTimers == null) {
+                    waitAnnouncementTimers = new ArrayList<>();
+                }
+                if (waitAnnouncementTimers.size() > 0) {
+                    for (Iterator<Timer> iterator = waitAnnouncementTimers.iterator(); iterator.hasNext();) {
+                        Timer t = iterator.next();
+                        t.cancel();
+                        iterator.remove();
+                    }
+                }
+                for (int i = pause - 1; i > 0; i--) {
+                    Timer t = new Timer();
+                    int finalI = i;
+                    t.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            mainRoom.eventOccurred(new DSGSystemMessageTableEvent(0, finalI + " minutes left before round " + tournament.getNumRounds() + " starts."));
+                        }
+                    }, 1000L * 60 * (pause - finalI));
+                    waitAnnouncementTimers.add(t);
+                }
+            }
             timeoutBeforeNextRoundTimer = new Timer();
             timeoutBeforeNextRoundTimer.schedule(new TimerTask() {
                 @Override
@@ -241,7 +259,21 @@ public class TournamentServer extends Server {
                 }
             }, 1000L * 60 * ROUND_PAUSE);
         }
-        
+    }
+    public synchronized void stopWait() {
+        if (timeoutBeforeNextRoundTimer != null) {
+            timeoutBeforeNextRoundTimer.cancel();
+            timeoutBeforeNextRoundTimer = null;
+        }
+        if (waitAnnouncementTimers != null) {
+            if (waitAnnouncementTimers.size() > 0) {
+                for (Iterator<Timer> iterator = waitAnnouncementTimers.iterator(); iterator.hasNext();) {
+                    Timer t = iterator.next();
+                    t.cancel();
+                    iterator.remove();
+                }
+            }
+        }
     }
     
     public synchronized void forfeitRemainingMatches() {
@@ -274,9 +306,7 @@ public class TournamentServer extends Server {
     
     
     public void destroy() {
-        if (timeoutBeforeNextRoundTimer != null) {
-            timeoutBeforeNextRoundTimer.cancel();
-        }
+        stopWait();
         super.destroy(); 
     }
 }
