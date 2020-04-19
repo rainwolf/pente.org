@@ -79,32 +79,26 @@ public class CacheTourneyStorer implements TourneyStorer {
             Date now = new Date();
             oneHourAgo.setTime(oneHourAgo.getTime() - 3600L*1000);
             if (tourney.getStartDate().before(oneHourAgo)) {
-                resources.startNewServer(tourney);
+                resources.startNewServer(tourney.getEventID());
             } else {
                 Date startDate = new Date(tourney.getStartDate().getTime() - 3600L*1000);
                 Timer timer = new Timer();
                 timer.schedule(new TimerTask() {
                     @Override
                     public void run() {
-                        resources.startNewServer(tourney);
+                        resources.startNewServer(tourney.getEventID());
                     }
                 }, startDate);
             }
             if (tourney.getNumRounds() == 0) {
                 if (tourney.getStartDate().before(now)) {
-                    resources.startTournament(tourney);
+                    resources.startTournament(tourney.getEventID());
                 } else {
                     Timer timer = new Timer();
                     timer.schedule(new TimerTask() {
                         @Override
                         public void run() {
-                            try {
-                                List players = setInitialSeeds(tourney.getEventID());
-                                TourneyRound newRound = tourney.createFirstRound(players);
-                                insertRound(newRound);
-                            } catch (Throwable t) {
-                                t.printStackTrace();
-                            }
+                            resources.startTournament(tourney.getEventID());
                         }
                     }, tourney.getStartDate());
                 }
