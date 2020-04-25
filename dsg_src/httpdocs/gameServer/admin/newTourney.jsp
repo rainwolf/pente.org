@@ -167,7 +167,7 @@
     </tr>
     <tr><td valign="top"><b>Directors:</b><br>(comma-delimited names)</td>
         <td>
-          <input type="text" name="admins" value="partica">
+          <input type="text" name="admins" value="rainwolf">
         </td>
     </tr>
     <tr><td>&nbsp;</td></tr>
