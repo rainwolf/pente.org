@@ -2996,11 +2996,16 @@ public class ServerTable {
                 isAllHumanGame = !isComputerGame;
                 
                 if (isAllHumanGame) {
-                    try {
-                    	gameFileStorer.storeGame(gameData);
-                    } catch (Throwable t) {
-                        log4j.error(psid() + "Problem saving game in file", t);
-                    }
+                    (new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                gameFileStorer.storeGame(gameData);
+                            } catch (Throwable t) {
+                                log4j.error(psid() + "Problem saving game in file", t);
+                            }
+                        }
+                    })).start();
                 }
                 gameData.setGameID(0);
                 
