@@ -86,6 +86,8 @@ Tourney tbOPente = getLastTBTourney(completedDetails, GridStateFactory.TB_OPENTE
 Tourney tbPenteOpen = getLastPenteOpenTBTourney(completedDetails);
 Tourney tbPenteBelow1800 = getLastPenteUnder1800TBTourney(completedDetails);
 Tourney tbPenteMasters = getLastPenteMastersTBTourney(completedDetails);
+
+Tourney speedPente = getLastTBTourney(completedDetails, GridStateFactory.SPEED_PENTE);
 %>
 
 <%@ include file="../begin.jsp" %>
@@ -156,36 +158,56 @@ Tourney tbPenteMasters = getLastPenteMastersTBTourney(completedDetails);
   </tr>
   <tr><td>&nbsp;</td></tr>
   <tr>
-     <td><b>Current Tournament Champs!</b></td>
+     <td align="center"><h2><b>Current Tournament Champs!</b></h2></td>
   </tr>
-  <tr><td>&nbsp;</td></tr>
-  <tr>
-  <td align="center">
-     <table width="80%" border="1" cellpadding="2" cellspacing="0" bordercolor="black">
-       <tr bgcolor="<%= bgColor1 %>">
-        <td align="center" width="33%"><font color="white">TB Pente Open</font></td>
-        <td align="center" width="33%"><font color="white">TB Pente (below 1800)</font></td>
-        <td align="center" width="33%"><font color="white">TB Pente (1800 and over)</font></td>
-       </tr>
-      </tr>
-      <tr>
-          <td align="center"><a href="statusRound.jsp?eid=<%= tbPenteOpen.getEventID() %>&round=<%= tbPenteOpen.getNumRounds() %>"><%=tbPenteOpen.getName()%></a></td>
-          <td align="center"><a href="statusRound.jsp?eid=<%= tbPenteBelow1800.getEventID() %>&round=<%= tbPenteBelow1800.getNumRounds() %>"><%=tbPenteBelow1800.getName()%></a></td>
-          <td align="center"><a href="statusRound.jsp?eid=<%= tbPenteMasters.getEventID() %>&round=<%= tbPenteMasters.getNumRounds() %>"><%=tbPenteMasters.getName()%></a></td>
-      </tr>
-      <tr>
-          <td align="center"><a href="../profile?viewName=<%=tbPenteOpen.getWinner()%>"><%=tbPenteOpen.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
-          <td align="center"><a href="../profile?viewName=<%=tbPenteBelow1800.getWinner()%>"><%=tbPenteBelow1800.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
-          <td align="center"><a href="../profile?viewName=<%=tbPenteMasters.getWinner()%>"><%=tbPenteMasters.getWinner()%></a> <img src="/gameServer/images/scrown.gif"></td>
-      </tr>
-      <tr>
-          <td align="center"><img src="/gameServer/avatar?name=<%=tbPenteOpen.getWinner()%>" style="width:125px;height:125px;"></td>
-          <td align="center"><img src="/gameServer/avatar?name=<%=tbPenteBelow1800.getWinner()%>" style="width:125px;height:125px;"></td>
-          <td align="center"><img src="/gameServer/avatar?name=<%=tbPenteMasters.getWinner()%>" style="width:125px;height:125px;"></td>
-      </tr>
-     </table>
-     </td>
-  </tr>
+    <tr><td>&nbsp;</td></tr>
+    <tr>
+        <td align="center">
+            <table width="27%" border="1" cellpadding="2" cellspacing="0" bordercolor="black">
+                <tr bgcolor="<%= bgColor1 %>">
+                    <td align="center" width="33%"><font color="white">Speed Pente</font></td>
+                </tr>
+                </tr>
+                <tr>
+                    <td align="center"><a href="statusRound.jsp?eid=<%= speedPente.getEventID() %>&round=<%= speedPente.getNumRounds() %>"><%=speedPente.getName()%></a></td>
+                </tr>
+                <tr>
+                    <td align="center"><a href="../profile?viewName=<%=speedPente.getWinner()%>"><%=speedPente.getWinner()%></a> <img src="/gameServer/images/crown.gif"></td>
+                </tr>
+                <tr>
+                    <td align="center"><img src="/gameServer/avatar?name=<%=speedPente.getWinner()%>" style="width:125px;height:125px;"></td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr><td>&nbsp;</td></tr>
+    <tr>
+        <td align="center">
+            <table width="80%" border="1" cellpadding="2" cellspacing="0" bordercolor="black">
+                <tr bgcolor="<%= bgColor1 %>">
+                    <td align="center" width="33%"><font color="white">TB Pente Open</font></td>
+                    <td align="center" width="33%"><font color="white">TB Pente (below 1800)</font></td>
+                    <td align="center" width="33%"><font color="white">TB Pente (1800 and over)</font></td>
+                </tr>
+                </tr>
+                <tr>
+                    <td align="center"><a href="statusRound.jsp?eid=<%= tbPenteOpen.getEventID() %>&round=<%= tbPenteOpen.getNumRounds() %>"><%=tbPenteOpen.getName()%></a></td>
+                    <td align="center"><a href="statusRound.jsp?eid=<%= tbPenteBelow1800.getEventID() %>&round=<%= tbPenteBelow1800.getNumRounds() %>"><%=tbPenteBelow1800.getName()%></a></td>
+                    <td align="center"><a href="statusRound.jsp?eid=<%= tbPenteMasters.getEventID() %>&round=<%= tbPenteMasters.getNumRounds() %>"><%=tbPenteMasters.getName()%></a></td>
+                </tr>
+                <tr>
+                    <td align="center"><a href="../profile?viewName=<%=tbPenteOpen.getWinner()%>"><%=tbPenteOpen.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
+                    <td align="center"><a href="../profile?viewName=<%=tbPenteBelow1800.getWinner()%>"><%=tbPenteBelow1800.getWinner()%></a> <img src="/gameServer/images/bcrown.gif"></td>
+                    <td align="center"><a href="../profile?viewName=<%=tbPenteMasters.getWinner()%>"><%=tbPenteMasters.getWinner()%></a> <img src="/gameServer/images/scrown.gif"></td>
+                </tr>
+                <tr>
+                    <td align="center"><img src="/gameServer/avatar?name=<%=tbPenteOpen.getWinner()%>" style="width:125px;height:125px;"></td>
+                    <td align="center"><img src="/gameServer/avatar?name=<%=tbPenteBelow1800.getWinner()%>" style="width:125px;height:125px;"></td>
+                    <td align="center"><img src="/gameServer/avatar?name=<%=tbPenteMasters.getWinner()%>" style="width:125px;height:125px;"></td>
+                </tr>
+            </table>
+        </td>
+    </tr>
   <tr>
     <td align="center">
       &nbsp
