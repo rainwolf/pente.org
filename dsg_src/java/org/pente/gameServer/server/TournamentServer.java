@@ -90,7 +90,7 @@ public class TournamentServer extends Server {
                     t.schedule(new TimerTask() {
                         @Override
                         public void run() {
-                            mainRoom.eventOccurred(new DSGSystemMessageTableEvent(0, finalI + " minutes left before round " + tournament.getNumRounds() + " starts."));
+                            mainRoom.eventOccurred(new DSGSystemMessageTableEvent(0, finalI + " minutes left before round " + (tournament.getNumRounds()+1) + " starts."));
                         }
                     }, 1000L * 60 * (ROUND_PAUSE - finalI));
                 }
@@ -221,6 +221,9 @@ public class TournamentServer extends Server {
     }
     
     public synchronized void startWait() {
+        if (tournament.isComplete()) {
+            return;
+        }
         if (timeoutBeforeNextRoundTimer == null) {
             int pause = ROUND_PAUSE;
             if (tournament.getNumRounds() == 1) {
@@ -244,7 +247,7 @@ public class TournamentServer extends Server {
                     t.schedule(new TimerTask() {
                         @Override
                         public void run() {
-                            mainRoom.eventOccurred(new DSGSystemMessageTableEvent(0, finalI + " minutes left before round " + tournament.getNumRounds() + " starts."));
+                            mainRoom.eventOccurred(new DSGSystemMessageTableEvent(0, finalI + " minutes left before round " + (tournament.getNumRounds()+1) + " starts."));
                         }
                     }, 1000L * 60 * (pause - finalI));
                     waitAnnouncementTimers.add(t);

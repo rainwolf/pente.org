@@ -3025,7 +3025,16 @@ public class ServerTable {
 				
 				// don't store games against ai in db, waste of resources
 				if (isAllHumanGame) {
-	                gameDbStorer.storeGame(gameData); 
+				    (new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                gameDbStorer.storeGame(gameData);
+                            } catch (Exception e) {
+                                log4j.error("Error storing game in DB: ", e);                                
+                            }
+                        }
+                    })).start();
 				}
 	        }
         } catch (Throwable t) {
