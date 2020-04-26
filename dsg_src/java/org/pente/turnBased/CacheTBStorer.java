@@ -848,7 +848,16 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 		            gameData.addMove(game.getMove(i));
 		        }
 	
-				gameStorer.storeGame(gameData);
+                (new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            gameStorer.storeGame(gameData);
+                        } catch (Exception e) {
+                            log4j.error("CacheTBStorer, problem storing in DB.", e);
+                        }
+                    }
+                })).start();
 
                 
                 // update player ratings
