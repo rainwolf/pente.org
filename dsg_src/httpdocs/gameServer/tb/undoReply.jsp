@@ -363,9 +363,9 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
     <br>
 
 
-<script type="text/javascript">
-window.google_analytics_uacct = "UA-20529582-2";
-</script>
+<%--<script type="text/javascript">--%>
+<%--window.google_analytics_uacct = "UA-20529582-2";--%>
+<%--</script>--%>
 
 
     <script src="/gameServer/tb/gameScript.js"></script>

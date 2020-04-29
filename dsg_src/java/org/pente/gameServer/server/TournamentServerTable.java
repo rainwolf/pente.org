@@ -35,7 +35,7 @@ public class TournamentServerTable extends ServerTable {
 
     // new TournamentServerTable stuff
     protected static final int WAIT_TO_CLOSE_TABLE = 60;
-    protected static final int WAIT_TO_PRESS_PLAY = 30;
+    protected static final int WAIT_TO_PRESS_PLAY = 40;
     protected Timer closeTableTimer, pressPlayTimer;
     public void setTourneyMatch(TourneyMatch tourneyMatch) { this.tourneyMatch = tourneyMatch; }
     protected Long forfeitPid;

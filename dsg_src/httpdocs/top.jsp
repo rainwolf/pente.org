@@ -81,7 +81,7 @@ function addLoadEvent(func) {
                 },
                 "theme": "classic",
                 "content": {
-                    "message": "Pente.org uses cookies to ensure you don't have to log in to every page. In addition, Google uses cookies for anonymized analytics and advertising. \n Kindly do not proceed if you do not consent to their use. ",
+                    "message": "Pente.org uses cookies to ensure you don't have to log in to every page. In addition, Google uses cookies for anonymized advertising (for free users). \n Kindly do not proceed if you do not consent to their use. ",
                     "href": "/help/helpWindow.jsp?file=privacyPolicy"
                 }
             })});

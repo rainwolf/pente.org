@@ -115,9 +115,9 @@ h2 { font-size:14pt;margin-top:0;padding:2px 0 2px 0}
 </style>
 <script type="text/javascript" src="/gameServer/js/go.js"></script>
 
-<script type="text/javascript">
-window.google_analytics_uacct = "UA-20529582-2";
-</script>
+<%--<script type="text/javascript">--%>
+<%--window.google_analytics_uacct = "UA-20529582-2";--%>
+<%--</script>--%>
 
 
 
