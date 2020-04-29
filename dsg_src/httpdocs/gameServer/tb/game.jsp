@@ -132,9 +132,9 @@ String cancelRequested="false";
  
 <%@ include file="applet.jsp" %>
 
-<script type="text/javascript">
-window.google_analytics_uacct = "UA-20529582-2";
-</script>
+<%--<script type="text/javascript">--%>
+<%--window.google_analytics_uacct = "UA-20529582-2";--%>
+<%--</script>--%>
 
     <br>
     <br>

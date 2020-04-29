@@ -3,5 +3,5 @@
 sh justCompile
 rsync -vurt --checksum --stats --exclude .DS_Store --progress "deployClasses/" -e ssh "rainwolf@pente.org:~/tomcat/WEB-INF/classes/"
 rsync -vurt --checksum --stats --exclude .DS_Store --progress "/Users/waliedothman/mariposa/coding/pente.org/dsg_src/httpdocs/gameServer/" -e ssh "rainwolf@pente.org:~/tomcat/gameServer/"
-ssh rainwolf@pente.org sudo chown -R rainwolf:tomcat9 tomcat/
+ssh rainwolf@pente.org sudo chown -R rainwolf:tomcat tomcat/
 ssh -t rainwolf@pente.org sudo /home/rainwolf/restartTomcat.sh
