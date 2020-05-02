@@ -78,10 +78,12 @@ public abstract class MySQLGameStorer implements PlayerStorer, GameStorer {
             // add the game
             storeGame(con, data);
 
-        } finally {
-            if (con != null) {
-                dbHandler.freeConnection(con);
-            }
+//        } finally {
+//            if (con != null) {
+//                dbHandler.freeConnection(con);
+//            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
