@@ -255,25 +255,25 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
                 else {
 //cat.debug("new game");
                     GameSiteData siteData = gameVenueStorer.getGameSiteData(
-                        GridStateFactory.getGameId(data.getGame()), data.getSite());
+                            GridStateFactory.getGameId(data.getGame()), data.getSite());
                     if (siteData == null) {
 
                         siteData = new SimpleGameSiteData();
                         siteData.setName(data.getSite());
                         gameVenueStorer.addGameSiteData(
-                            GridStateFactory.getGameId(data.getGame()),
-                            siteData);
+                                GridStateFactory.getGameId(data.getGame()),
+                                siteData);
                     }
 
                     // this will fail to get a good gid if there aren't any
                     // games stored from this site yet... don't feel like adding
                     // code to handle this right now
-                    
+
                     // gids above 50000000000000 reserved for turn-based games
                     stmt = con.prepareStatement("select max(gid) + 1 " +
-                                                "from " + GAME_TABLE + " " +
-                                                "where site_id = ? " +
-                                                "and gid < 50000000000000");
+                            "from " + GAME_TABLE + " " +
+                            "where site_id = ? " +
+                            "and gid < 50000000000000");
                     stmt.setInt(1, siteData.getSiteID());
 
                     result = stmt.executeQuery();
@@ -285,18 +285,42 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
                 }
             }
 
-            // don't put game in db if game is already in db
+            boolean finalNewGidAssigned = newGidAssigned;
+            boolean finalGameAlreadyStored = gameAlreadyStored;
+            PreparedStatement finalStmt = stmt;
+            (new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        storeGameNewThread(con, data, finalNewGidAssigned, finalGameAlreadyStored);
+                    } catch (Exception e) {
+                        log4j.error("Error storeGameNewThread: ", e);
+                    } finally {
+                        if (finalStmt != null) { try { finalStmt.close(); } catch(SQLException ex) {} }
+                    }
+                }
+            })).start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    private void storeGameNewThread(Connection con, GameData data, boolean newGidAssigned, boolean gameAlreadyStored) throws Exception {
+
+        PreparedStatement stmt = null;
+        ResultSet result = null;
+
+        try {
             if (newGidAssigned || (!gameAlreadyStored && !gameAlreadyStored(con, data.getGameID()))) {
 
                 gameAlreadyStored = false;
 
                 // enter game info
                 stmt = con.prepareStatement("insert into " + GAME_TABLE + " " +
-                    "(site_id, event_id, round, section, play_date, timer, rated, " +
-                    " initial_time, incremental_time, player1_pid, player2_pid, " +
-                    " player1_rating, player2_rating, player1_type, player2_type, " +
-                    " winner, gid, game, swapped, private, status) " +
-                    "values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                        "(site_id, event_id, round, section, play_date, timer, rated, " +
+                        " initial_time, incremental_time, player1_pid, player2_pid, " +
+                        " player1_rating, player2_rating, player1_type, player2_type, " +
+                        " winner, gid, game, swapped, private, status) " +
+                        "values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
                 String timer = "N";
                 if (data.getTimed()) {
@@ -309,25 +333,25 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
                 }
 
                 GameSiteData siteData = gameVenueStorer.getGameSiteData(
-                    GridStateFactory.getGameId(data.getGame()), data.getSite());
+                        GridStateFactory.getGameId(data.getGame()), data.getSite());
                 if (siteData == null) {
                     siteData = new SimpleGameSiteData();
                     siteData.setName(data.getSite());
                     // this also updates the site id
-                    gameVenueStorer.addGameSiteData( 
-                        GridStateFactory.getGameId(data.getGame()), siteData);
+                    gameVenueStorer.addGameSiteData(
+                            GridStateFactory.getGameId(data.getGame()), siteData);
                 }
 
                 GameEventData eventData = gameVenueStorer.getGameEventData(
-                    GridStateFactory.getGameId(data.getGame()), data.getEvent(),
-                    data.getSite());
+                        GridStateFactory.getGameId(data.getGame()), data.getEvent(),
+                        data.getSite());
                 if (eventData == null) {
                     eventData = new SimpleGameEventData();
                     eventData.setName(data.getEvent());
                     // this also updates the event id
                     gameVenueStorer.addGameEventData(
-                        GridStateFactory.getGameId(data.getGame()),
-                        eventData, siteData.getName());
+                            GridStateFactory.getGameId(data.getGame()),
+                            eventData, siteData.getName());
                 }
 
                 stmt.setInt(1, siteData.getSiteID());
@@ -376,20 +400,20 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
                     if (numMovesInDb < data.getNumMoves()) {
 
                         stmt = con.prepareStatement("update " + GAME_TABLE + " " +
-                                                    "set play_date = ?, " +
-                                                    "winner = ? " +
-                                                    "where gid = ?");
+                                "set play_date = ?, " +
+                                "winner = ? " +
+                                "where gid = ?");
                         stmt.setTimestamp(1, new Timestamp(data.getDate().getTime()));
                         stmt.setInt(2, data.getWinner());
                         stmt.setLong(3, data.getGameID());
 
                         stmt.executeUpdate();
-						
-						stmt = con.prepareStatement("update " + MOVE_TABLE + " " +
-							"set winner = ? where gid = ?");
+
+                        stmt = con.prepareStatement("update " + MOVE_TABLE + " " +
+                                "set winner = ? where gid = ?");
                         stmt.setLong(1, data.getGameID());
-						stmt.setInt(2, data.getWinner());
-						stmt.executeUpdate();
+                        stmt.setInt(2, data.getWinner());
+                        stmt.executeUpdate();
                     }
                 }
                 else {
@@ -400,17 +424,17 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
             if (!gameComplete && numMovesInDb < data.getNumMoves()) {
 
                 // create hash keys for all moves
-				int game = GridStateFactory.getGameId(data.getGame());
+                int game = GridStateFactory.getGameId(data.getGame());
                 GridState state = GridStateFactory.createGridState(
-                    game, data);
-                
+                        game, data);
+
                 // store moves
                 stmt = con.prepareStatement("insert into " + MOVE_TABLE + " " +
-                    "(gid, move_num, next_move, hash_key, rotation, game, winner, " +
-                    " play_date, seconds_left) " +
-                	"values(?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                        "(gid, move_num, next_move, hash_key, rotation, game, winner, " +
+                        " play_date, seconds_left) " +
+                        "values(?, ?, ?, ?, ?, ?, ?, ?, ?)");
                 stmt.setLong(1, data.getGameID());
-                
+
                 if (numMovesInDb == 0 && state.getNumMoves() > 0 && firstMoveCanBeOffCenter(game)) {
                     stmt.setInt(2, -1);
                     stmt.setInt(3, data.getMove(0));
@@ -431,32 +455,34 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
                 }
                 for (int i = numMovesInDb; i < state.getNumMoves(); i++) {
                     stmt.setInt(2, i);
-					// last move sets next_move to 361
-					if (i == state.getNumMoves() - 1) {
-						stmt.setInt(3, 361);
-					}
-					else {
-	                    stmt.setInt(3, data.getMove(i + 1));
-					}
+                    // last move sets next_move to 361
+                    if (i == state.getNumMoves() - 1) {
+                        stmt.setInt(3, 361);
+                    }
+                    else {
+                        stmt.setInt(3, data.getMove(i + 1));
+                    }
                     stmt.setLong(4, state.getHash(i));
                     stmt.setInt(5, state.getRotation(i));
-					stmt.setInt(6, game);
-					stmt.setInt(7, data.getWinner());
-					stmt.setTimestamp(8, new Timestamp(data.getDate().getTime()));
-					
-					if (data.getTimed() && data.getMoveTimes() != null && i < data.getMoveTimes().size()) {
-						stmt.setInt(9, data.getMoveTimes().get(i).getTotalSeconds());
-					}
-					else {
-						stmt.setInt(9, 0);
-					}
-					
+                    stmt.setInt(6, game);
+                    stmt.setInt(7, data.getWinner());
+                    stmt.setTimestamp(8, new Timestamp(data.getDate().getTime()));
+
+                    if (data.getTimed() && data.getMoveTimes() != null && i < data.getMoveTimes().size()) {
+                        stmt.setInt(9, data.getMoveTimes().get(i).getTotalSeconds());
+                    }
+                    else {
+                        stmt.setInt(9, 0);
+                    }
+
                     stmt.executeUpdate();
                 }
             }
 
         } finally {
-
+            if (con != null) {
+                dbHandler.freeConnection(con);
+            }
             if (stmt != null) { try { stmt.close(); } catch(SQLException ex) {} }
         }
     }
