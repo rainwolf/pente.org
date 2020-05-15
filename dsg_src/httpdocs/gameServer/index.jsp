@@ -368,7 +368,7 @@ h2 { font-size:14pt;margin-top:0;padding:2px 0 2px 0}
 %>
 
     <li>New turn-based tournaments: <a href="/gameServer/tournaments">Winter's End 2020 tournaments</a></li>
-    <li>New live speed-pente <a href="/gameServer/tournaments">tournament</a>, this is a tournament to test the code, if the code fails, the tournament will be aborted. More info <a href="/gameServer/forums/thread.jspa?forumID=2&threadID=232320">here.</a>
+<%--    <li>New live speed-pente <a href="/gameServer/tournaments">tournament</a>, this is a tournament to test the code, if the code fails, the tournament will be aborted. More info <a href="/gameServer/forums/thread.jspa?forumID=2&threadID=232320">here.</a>--%>
 <%--    <li>Live (Speed) Test Tournament: <a href="/gameServer/tournaments">Test Tournament</a>--%>
 <%--            <br>--%>
 <%--        Final:  <a href="/gameServer/tournaments/statusRound.jsp?eid=1315&round=5">Pente</a>--%>
