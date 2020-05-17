@@ -11,6 +11,8 @@ import javax.imageio.ImageIO;
 import javax.servlet.*;
 import javax.servlet.http.*;
 
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.log4j.*;
 import org.apache.commons.fileupload.*;
 
@@ -81,12 +83,11 @@ public class ChangeAvatarServlet extends HttpServlet {
             }
     
             // jakarta commons lib to handle upload files
-            DiskFileUpload upload = new DiskFileUpload();
-            
-            // need to make these configurable
-            upload.setSizeThreshold(50 * 1024); //50k to avoid out of memory issues
+            DiskFileItemFactory factory = new DiskFileItemFactory();
+            factory.setSizeThreshold(50 * 1024); //50k to avoid out of memory issues
+            factory.setRepository(new File("/var/lib/dsg/gameServer"));
+            ServletFileUpload upload = new ServletFileUpload(factory);
             upload.setSizeMax(4 * 1024 * 1024); //4mb
-            upload.setRepositoryPath("/var/lib/dsg/gameServer");
             
             // if request is multipart then we are saving, otherwise we are
             // viewing our profile

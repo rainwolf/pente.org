@@ -5,12 +5,16 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.*;
 import java.io.*;
+import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 import javax.servlet.*;
 import javax.servlet.http.*;
 
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.log4j.*;
 import org.apache.commons.fileupload.*;
 
@@ -100,24 +104,23 @@ public class ChangeProfileServlet extends HttpServlet {
             LoginCookieHandler loginCookieHandler = new LoginCookieHandler();
 
             // jakarta commons lib to handle upload files
-            DiskFileUpload upload = new DiskFileUpload();
-            
-            // need to make these configurable
-            upload.setSizeThreshold(50 * 1024); //50k to avoid out of memory issues
+            DiskFileItemFactory factory = new DiskFileItemFactory();
+            factory.setSizeThreshold(50 * 1024); //50k to avoid out of memory issues
+            factory.setRepository(new File("/var/lib/dsg/gameServer"));
+            ServletFileUpload upload = new ServletFileUpload(factory);
             upload.setSizeMax(4 * 1024 * 1024); //4mb
-            upload.setRepositoryPath("/var/lib/dsg/gameServer");
             
             // if request is multipart then we are saving, otherwise we are
             // viewing our profile
-            if (command.equals("myInfo") || FileUploadBase.isMultipartContent(request)) {
+            if (command.equals("myInfo") || ServletFileUpload.isMultipartContent(request)) {
     
                 // store request parameters in hash map for easy access
                 Map<String,String> params = new HashMap<String,String>();
                 // store avatar for later processing
                 FileItem avatarFileItem = null;
-            
-                // process request to get parameters and avatar upload
+
                 List items = upload.parseRequest(request);
+                
                 List<Integer> newVacationDays = new ArrayList<Integer>();
                 Iterator iter = items.iterator();
                 while (iter.hasNext()) {
@@ -128,7 +131,7 @@ public class ChangeProfileServlet extends HttpServlet {
                     		newVacationDays.add(new Integer(item.getString()));
                     	}
                     	else {
-                    		params.put(item.getFieldName(), item.getString());
+                    		params.put(item.getFieldName(), item.getString("UTF-8"));
                     	}
                     } else if (!item.getName().equals("")){
                         avatarFileItem = item;
@@ -245,7 +248,7 @@ public class ChangeProfileServlet extends HttpServlet {
 							dsgPlayerData.setTimezone(timezone);
 							dsgPlayerData.setHomepage(cleanHomepage(homepage));
 							
-	                        dsgPlayerData.setLastUpdateDate(new java.util.Date());
+	                        dsgPlayerData.setLastUpdateDate(new Date());
 							dsgPlayerStorer.updatePlayer(dsgPlayerData);
 
 							
@@ -338,7 +341,7 @@ public class ChangeProfileServlet extends HttpServlet {
                                 dsgPlayerStorer.insertAvatar(dsgPlayerData);
                             }
 							
-	                        dsgPlayerData.setLastUpdateDate(new java.util.Date());
+	                        dsgPlayerData.setLastUpdateDate(new Date());
 							dsgPlayerStorer.updatePlayer(dsgPlayerData);
 
 							 // update jives caches of player data
@@ -360,6 +363,8 @@ public class ChangeProfileServlet extends HttpServlet {
 					String weekend2 = (String) params.get("weekend2");
 
                     String refresh = (String) params.get("refresh");
+                    
+                    String personalizeAds = (String) params.get("personalizeAds");
 					
 					if (weekend1.equals(weekend2)) {
 						changeProfileError = "Must select two different " +
@@ -377,6 +382,12 @@ public class ChangeProfileServlet extends HttpServlet {
 						// stored in session for temporary quick access
 						HttpSession session = request.getSession(false);
 						session.setAttribute("gameRoomSize", gameRoomSize);
+						
+						boolean personalizeAdsBool = "Y".equals(personalizeAds);
+                        p = new DSGPlayerPreference(
+                                "personalizeAds", new Boolean(personalizeAdsBool));
+                        dsgPlayerStorer.storePlayerPreference(
+                                dsgPlayerData.getPlayerID(), p);
 						
 						boolean emailDsgMessages = email != null && email.equals("Y");
 						p = new DSGPlayerPreference(
