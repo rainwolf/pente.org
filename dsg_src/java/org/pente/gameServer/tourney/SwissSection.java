@@ -271,7 +271,7 @@ public class SwissSection extends TourneySection {
     public List getWinners() {
         // all players play all rounds
         // round will have to determine if highest player is actual winner
-        return players;
+        return getPlayersRanked(this.round.getTourney());
     }
 
 
