@@ -9,8 +9,26 @@ public class SwissFormat implements TourneyFormat {
     }
 	
 	public boolean isTourneyComplete(Tourney tourney) {
-		// TODO implement this after X rounds depending on player size
-		return false;
+        if (tourney.getEndDate() != null) return true;
+
+        if (tourney.getNumRounds() == 0) return false;
+        for (Iterator rounds = tourney.getRounds().iterator(); rounds.hasNext();) {
+            TourneyRound r = (TourneyRound) rounds.next();
+            if (!r.isComplete()) return false;
+        }
+        
+        int numberOfPlayers = tourney.getLastRound().getNumPlayers();
+        int numberOfRounds = tourney.getNumRounds();
+        if (numberOfPlayers < 16) {
+            return numberOfRounds > 3;
+        }
+        if (numberOfPlayers < 32) {
+            return numberOfRounds > 4;
+        }
+        if (numberOfPlayers < 64) {
+            return numberOfRounds > 5;
+        }
+		return numberOfRounds > 6;
 	}
 	
     public TourneyRound createFirstRound(List players, Tourney tourney) {
