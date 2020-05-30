@@ -1,14 +1,11 @@
 <div id = "bannerAd" style="width:728px;height:90px;">
-    <script type="text/javascript"><!--
-        google_ad_client = "ca-pub-3326997956703582";
-        /* penteORG3 */
-        google_ad_slot = "8550185440";
-        google_ad_width = 728;
-        google_ad_height = 90;
-        //-->
-        </script>
-        <script type="text/javascript"
-        src="//pagead2.googlesyndication.com/pagead/show_ads.js">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+    <ins class="adsbygoogle"
+         style="display:inline-block;width:728px;height:90px"
+         data-ad-client="ca-pub-3326997956703582"
+         data-ad-slot="8550185440"></ins>
+    <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
     </script>
 </div>
 

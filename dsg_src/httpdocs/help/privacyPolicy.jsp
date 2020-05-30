@@ -39,8 +39,8 @@ the address provided in the following cases:<br>
     <br>
     <br>
 In addition, pente.org serves advertisements to non-subscribers via the Google Adsense network, 
-and those users are additionally subject to <a href="https://www.google.com/intl/en/policies/privacy/">Google's privacy rules</a>. 
-<%--    We also make use of Google Analytics, however, with the privacy feature of anonymizing your IP-address turned on.--%>
+and those users are additionally subject to <a href="https://www.google.com/intl/en/policies/privacy/">Google's privacy rules</a>. Non-subscribers 
+    get the option to choose between personalized or non-personalized ads, and can change this setting at any time.
 <br>
 <br>
 Currently, you can purchase pente.org subscription from our iOS app, Pente Live. Payment will be charged to your iTunes account, and your account will be charged for renewal within 24-hours prior to the end of the current period at the same cost. Auto-renewal may be turned off at any time by going to your settings in the iTunes Store after purchase. Current subscription price is $4.99 USD/year and the subscription is valid for 1 year. Prices may vary in countries other than the U.S. and are subject to change without notice. If you cancel during the active subscription period, the remainder of the subscription price for that year will be forfeited. If you don’t choose to purchase a subscription you can simply continue playing for free.

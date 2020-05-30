@@ -25,16 +25,23 @@ if (gameStr != null) {
 	if (hill != null) {
 		iAmMember = hill.hasPlayer(myPid);
 	}
+    List prefs = dsgPlayerStorer.loadPlayerPreferences(dsgPlayerData.getPlayerID());
+    boolean personalizeAds = false;
+    for (Iterator it = prefs.iterator(); it.hasNext();) {
+        DSGPlayerPreference p = (DSGPlayerPreference) it.next();
+        if (p.getName().equals("personalizeAds")) {
+            personalizeAds = ((Boolean) p.getValue()).booleanValue();
+        }
+    }
 %>
 <center>
 <% if (dsgPlayerData.showAds()) { %>
+    <script>(adsbygoogle=window.adsbygoogle||[]).requestNonPersonalizedAds=<%=(personalizeAds?"0":"1")%></script>
     <div id = "senseReplace" style="width:728px;height:90px;" top="50%"> </div>
     <%@ include file="728x90adKotH.jsp" %>
     <br style="clear:both">
-<% } %>
-<% if (dsgPlayerData.showAds()) { %>
     <script type="text/javascript">
-        sensePage();
+        addLoadEvent(sensePage);
     </script>
 <% } %>
 </center>

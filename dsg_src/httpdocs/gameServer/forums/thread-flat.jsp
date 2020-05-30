@@ -19,6 +19,7 @@
                   org.pente.gameServer.core.*,
 		 org.pente.gameServer.server.*"
 %>
+<%@ page import="java.util.List" %>
 
 <%@ include file="global.jsp" %>
 
@@ -328,11 +329,21 @@ int views = 0;
 <%
 String nm = (String) request.getAttribute("name");
 DSGPlayerData data = null;
+    boolean personalizeAds = false;
 if (nm != null) {
 Resources resources = (Resources)
    application.getAttribute(Resources.class.getName());
 DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
   data = dsgPlayerStorer.loadPlayer(nm);
+    if (data != null) {
+        List prefs = dsgPlayerStorer.loadPlayerPreferences(data.getPlayerID());
+        for (Iterator it = prefs.iterator(); it.hasNext();) {
+            DSGPlayerPreference p = (DSGPlayerPreference) it.next();
+            if (p.getName().equals("personalizeAds")) {
+                personalizeAds = ((Boolean) p.getValue()).booleanValue();
+            }
+        }
+    }
 }
 %>
 <%  //
@@ -355,17 +366,19 @@ DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
         <br>
     <%  } %>
     
-<% if (count % 15 == 0 && (data == null || data.showAds())) { %>
+<% if (count % 15 == 0 && (data == null || data.showAds())) { 
+%>
+    
 
 <center>
+    <script>(adsbygoogle=window.adsbygoogle||[]).requestNonPersonalizedAds=<%=(personalizeAds?"0":"1")%></script>
     <div id = "senseReplace" style="width:728px;height:90px;" top="50%"> </div>
     <%@ include file="../728x90ad.jsp" %>
+    <script type="text/javascript">
+        addLoadEvent(sensePage);
+    </script>
     <br style="clear:both">
 </center>
-
-    <script type="text/javascript">
-        sensePage();
-    </script>
 
 <% } %>
 

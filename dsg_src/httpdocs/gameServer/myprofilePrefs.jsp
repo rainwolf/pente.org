@@ -22,6 +22,7 @@ boolean email = true;
 boolean emailSent = false;
 int weekend[]=new int[] { 7, 1 };
 int refresh = 5;
+boolean personalizeAds = false;
 if (prefs != null) {
   for (Iterator it = prefs.iterator(); it.hasNext();) {
     DSGPlayerPreference p = (DSGPlayerPreference) it.next();
@@ -39,7 +40,9 @@ if (prefs != null) {
     }
     else if ("refresh".equals(p.getName())) {
         refresh = ((Integer) p.getValue());
-    }
+    } else if ("personalizeAds".equals(p.getName())) {
+        personalizeAds = ((Boolean) p.getValue()).booleanValue();
+    } 
   }
 }
 
@@ -100,7 +103,18 @@ pageContext.setAttribute("current", "My Profile");
    }
 %>
 
-
+<% if (!dsgPlayerData.hasPlayerDonated()) { %>
+    <tr>
+        <td>
+            <a name="personalizeAds"><h3>personalizeAds</h3></a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <input type="checkbox" name="personalizeAds" value="Y" <% if (personalizeAds) { %>checked<% } %>>Allow personalized ads<br>
+        </td>
+    </tr>
+<% } %>    
 <tr>
   <td>
   <a name="gameRoomSize"><h3>Game Room Size</h3></a>

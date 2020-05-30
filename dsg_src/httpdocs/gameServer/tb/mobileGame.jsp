@@ -132,15 +132,24 @@
 <%
     String version = globalResources.getAppletVersion();
     DSGPlayerData meData = dsgPlayerStorer.loadPlayer(me);
+    List prefs = dsgPlayerStorer.loadPlayerPreferences(meData.getPlayerID());
+    boolean personalizeAds = false;
+    for (Iterator it = prefs.iterator(); it.hasNext();) {
+        DSGPlayerPreference p = (DSGPlayerPreference) it.next();
+        if (p.getName().equals("personalizeAds")) {
+            personalizeAds = ((Boolean) p.getValue()).booleanValue();
+        }
+    }
 
     String cancelRequested = "false";
 %>
 <% if (meData.showAds()) { %>
 <center>
+    <script>(adsbygoogle=window.adsbygoogle||[]).requestNonPersonalizedAds=<%=(personalizeAds?"0":"1")%></script>
     <div id="senseReplace" style="width:728px;height:90px;" top="50%"></div>
     <%@include file="728x90ad.jsp" %>
     <script type="text/javascript">
-        sensePage();
+        addLoadEvent(sensePage);
     </script>
 </center>
 <% } %>
