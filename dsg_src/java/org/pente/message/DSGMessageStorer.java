@@ -10,6 +10,7 @@ public interface DSGMessageStorer {
 	public void deleteMessage(int mid) throws DSGMessageStoreException;
 
 	public DSGMessage getMessage(int mid) throws DSGMessageStoreException;
-	public List<DSGMessage> getMessages(long pid) throws DSGMessageStoreException;
+    public List<DSGMessage> getMessages(long pid) throws DSGMessageStoreException;
+    public List<DSGMessage> getNextMessages(long pid, long start) throws DSGMessageStoreException;
 	public int getNumNewMessages(long pid) throws DSGMessageStoreException;
 }

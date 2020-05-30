@@ -20,6 +20,13 @@ filters = new com.jivesoftware.base.FilterChain(
 String error = (String) request.getAttribute("error");
 List<DSGMessage> messages = (List<DSGMessage>) request.getAttribute("messages");
 
+long next = 50, previous = -1;
+String str = (String) request.getAttribute("next");
+if (str != null) {
+    next = Long.parseLong(str) + 50;
+    previous = next - 100;
+}
+
 Resources resources = (Resources) application.getAttribute(
     Resources.class.getName());
 DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
@@ -91,10 +98,22 @@ messageDateFormat.setTimeZone(tz);
 	     <img src="/gameServer/images/email.gif" width="16" height="16" 
 	        border="0"></a>&nbsp;
 	 </td>
-     <td valign="middle">
-       <a href="/gameServer/myprofile/prefs#email">
-	     Configure Email Preferences</a>
-     </td>
+       <td valign="middle">
+           <a href="/gameServer/myprofile/prefs#email">
+               Configure Email Preferences</a>
+       </td>
+       <% if (previous >= 0) { %>
+       <td style="padding:10px">
+           <a href="/gameServer/mymessages?next=<%=previous%>">
+               << previous 50</a>
+       </td>
+       <% } %>
+       <% if (messages.size() == 50) { %>
+       <td style="padding:10px">
+           <a href="/gameServer/mymessages?next=<%=next%>">
+               next 50 >></a>
+       </td>
+       <% } %>
     </tr>
   </table>
   
