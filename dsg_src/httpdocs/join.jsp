@@ -190,7 +190,10 @@ That's it, and remember to have fun of course!</textarea>
        <td colspan="2">
          <input type="checkbox" name="agreePolicy" value="Y"> I have read, 
          understood, and accepted Pente.org's Policy for Playing Rated Games and Pente.org's
-           <a href="/help/helpWindow.jsp?file=privacyPolicy">privacy policy</a>
+           <a href="/help/helpWindow.jsp?file=privacyPolicy">privacy policy</a>. 
+           <br>
+           In particular, by proceeding you  <font color="red">consent</font>  to the use of cookies for the delivery of ads.
+           Free users can choose between <font color="red">non-personalized (default) or personalized</font> ads, paying users don't see ads at all. 
        </td>
      </tr>
      <tr>

@@ -349,17 +349,20 @@ No Ads
 EndOfSettingsParameters
 <%
 boolean emailMe = true;
+boolean personalizeAds = false;
 for (DSGPlayerPreference pref : prefs) {
     if ("emailDsgMessages".equals(pref.getName())) {
         emailMe = ((Boolean) pref.getValue()).booleanValue();
-        break;
+    }
+    if ("personalizeAds".equals(pref.getName())) {
+        personalizeAds = ((Boolean) pref.getValue()).booleanValue();
     }
 }
 boolean subscriber = dsgPlayerData.hasPlayerDonated(); 
 boolean dbAccess = subscriber || dsgPlayerData.getRegisterDate().getTime() > System.currentTimeMillis() - 1000L*3600*24*30;
 // dbAccess = true;
 %>
-<%=dsgPlayerData.getName().toLowerCase() + ";" + (subscriber?dsgPlayerData.getNameColorRGB():0) + ";" + (dsgPlayerData.showAds()?"ShowAds":"NoAds") + ";" + (subscriber?"subscriber":"freeloader") + ";" + livePlayers + ";" + (dbAccess?"dbAccessGranted":"dbAccessDenied") + ";" + (emailMe?"emailMe":"noEmail")+";"+onlineFollowing%>
+<%=dsgPlayerData.getName().toLowerCase() + ";" + (subscriber?dsgPlayerData.getNameColorRGB():0) + ";" + (dsgPlayerData.showAds()?"ShowAds":"NoAds") + ";" + (subscriber?"subscriber":"freeloader") + ";" + livePlayers + ";" + (dbAccess?"dbAccessGranted":"dbAccessDenied") + ";" + (emailMe?"emailMe":"noEmail")+";"+onlineFollowing+";"+(personalizeAds?"personalizeAds":"anonymizeAds")%>
 
 King of the Hill<%
 Hill hill;

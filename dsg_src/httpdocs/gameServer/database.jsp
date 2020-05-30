@@ -90,12 +90,19 @@ org.pente.game.*, java.text.*, java.util.*" %>
         pdata = dsgPlayerStorer.loadPlayer(nm);
     }
     boolean dbAccess = true;
+    Boolean personalizeAds = null;
     if (pdata == null) {
         dbAccess = false;
     } else {
         dbAccess = pdata.databaseAccess() || pdata.getRegisterDate().getTime() > System.currentTimeMillis() - 1000L*3600*24*30;
+        List prefs = dsgPlayerStorer.loadPlayerPreferences(pdata.getPlayerID());
+        for (Iterator it = prefs.iterator(); it.hasNext();) {
+            DSGPlayerPreference p = (DSGPlayerPreference) it.next();
+            if (p.getName().equals("personalizeAds")) {
+                personalizeAds = ((Boolean) p.getValue()).booleanValue();
+            }
+        }
     }
-//     dbAccess = true;
 %>
 
 <% String searchURL = request.getContextPath() + "/gameServer/controller/search?quick_start=1";
@@ -161,6 +168,7 @@ Game Database Instructions</a></b> to get the most information out of this tool.
                  data-ad-client="ca-pub-3326997956703582"
                  data-ad-slot="7539819041"></ins>
             <script>
+            (adsbygoogle=window.adsbygoogle||[]).requestNonPersonalizedAds=<%=(personalizeAds != null && personalizeAds?"0":"1")%>;
             (adsbygoogle = window.adsbygoogle || []).push({});
             </script>
       </div>

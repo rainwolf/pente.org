@@ -36,8 +36,8 @@
     function sensePage() {
         if (!document.getElementById('aswift_0')) {
             s = '<center><p class="senseText" style="border: 1px solid red; background: #cf9; padding: 1em; margin: 0; text-align:left; font-style:italic;">'+
-            'Adblocker activated? Please note that <b>pente.org</b> balances its '+
-            'expenses with ads. Perhaps you can consider making an exception for this site <b>or</b> <a href="/gameServer/subscriptions">subscribe</a> instead?'+ '</p>'+ '</center>';  
+                'Adblocker activated? Please note that <b>pente.org</b> balances its '+
+                'expenses with ads. Perhaps you can consider making an exception for this site <b>or</b> <a href="/gameServer/subscriptions">subscribe</a> instead?'+ '</p>'+ '</center>';
             document.getElementById('senseReplace').innerHTML = s;
             document.getElementById('bannerAd').setAttribute("style","width:1px; height:1px;");
             document.getElementById('senseReplace').setAttribute("style","width:728px;");
@@ -64,28 +64,6 @@ function addLoadEvent(func) {
 
 <link href="/res/<%= style %>" media="all" rel="Stylesheet" type="text/css">
 <link href="/res/hack.css" media="all" rel="Stylesheet" type="text/css">
-
-
-    <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.0.3/cookieconsent.min.css" />
-    <script src="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.0.3/cookieconsent.min.js"></script>
-    <script>
-        window.addEventListener("load", function(){
-            window.cookieconsent.initialise({
-                "palette": {
-                    "popup": {
-                        "background": "#000"
-                    },
-                    "button": {
-                        "background": "#f1d600"
-                    }
-                },
-                "theme": "classic",
-                "content": {
-                    "message": "Pente.org uses cookies to ensure you don't have to log in to every page. In addition, Google uses cookies for anonymized advertising (for free users). \n Kindly do not proceed if you do not consent to their use. ",
-                    "href": "/help/helpWindow.jsp?file=privacyPolicy"
-                }
-            })});
-    </script>
 
 </head>
 <body>

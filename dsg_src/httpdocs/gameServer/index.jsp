@@ -29,6 +29,7 @@ DSGPlayerData dsgPlayerData = dsgPlayerStorer.loadPlayer(nm);
 
 int refresh = 5;
 String grs = "800";
+Boolean personalizeAds = null;
 List prefs = dsgPlayerStorer.loadPlayerPreferences(
     dsgPlayerData.getPlayerID());
 for (Iterator it = prefs.iterator(); it.hasNext();) {
@@ -38,7 +39,9 @@ for (Iterator it = prefs.iterator(); it.hasNext();) {
     }
     else if (p.getName().equals("gameRoomSize")) {
         grs = (String) p.getValue();
-    }
+    } else if (p.getName().equals("personalizeAds")) {
+        personalizeAds = ((Boolean) p.getValue()).booleanValue();
+    } 
 }
 if (refresh != 0) {
     response.setHeader("Refresh", refresh * 60 + "; URL=index.jsp?refresh=1");
@@ -278,13 +281,12 @@ h2 { font-size:14pt;margin-top:0;padding:2px 0 2px 0}
 
 
 <% if (dsgPlayerData.showAds()) { %>
+<script>(adsbygoogle=window.adsbygoogle||[]).requestNonPersonalizedAds=<%=(personalizeAds != null && personalizeAds?"0":"1")%>;</script>
     <div id = "senseReplace" style="width:728px;height:90px;" top="50%"> </div>
     <%@ include file="728x90ad.jsp" %>
     <br style="clear:both">
-<% } %>
-<% if (dsgPlayerData.showAds()) { %>
     <script type="text/javascript">
-        sensePage();
+        addLoadEvent(sensePage);
     </script>
 <% } %>
 <%--
@@ -367,7 +369,7 @@ h2 { font-size:14pt;margin-top:0;padding:2px 0 2px 0}
 }
 %>
 
-    <li>New turn-based tournaments: <a href="/gameServer/tournaments">Winter's End 2020 tournaments</a></li>
+<%--    <li>New turn-based tournaments: <a href="/gameServer/tournaments">Winter's End 2020 tournaments</a></li>--%>
 <%--    <li>New live speed-pente <a href="/gameServer/tournaments">tournament</a>, this is a tournament to test the code, if the code fails, the tournament will be aborted. More info <a href="/gameServer/forums/thread.jspa?forumID=2&threadID=232320">here.</a>--%>
 <%--    <li>Live (Speed) Test Tournament: <a href="/gameServer/tournaments">Test Tournament</a>--%>
 <%--            <br>--%>
@@ -383,7 +385,13 @@ h2 { font-size:14pt;margin-top:0;padding:2px 0 2px 0}
         </ul>
 </div>
 <% } %>
-</div>
+     <% if (dsgPlayerData.showAds() && personalizeAds == null) { %>
+     <div align="left" style="position:relative;padding:4px;font-weight:bold;border:2px <%= textColor2 %> solid; background:#ffd0a7">
+         Pente.org now offers a choice between personalized or non-personalized ads. Ads are non-personalized by default, but this warning appears because you 
+         have not yet registered a preference in your <a href="/gameServer/myprofile/prefs">settings</a>. Doing so will make this warning disappear.
+     </div>
+ <% } %>
+ </div>
 <%-- todo find actual width of avatar in case less than 80 --%>
 <div style="margin-left:10px;float:left;width:25%;">
   <a href="/gameServer/myprofile/donor"><img align="right" width="80" style="border:1px solid gray" src="<%= (dsgPlayerData.hasAvatar() ? "/gameServer/avatar?name=" + dsgPlayerData.getName() : "/gameServer/images/no_photo.gif") %>"></a><br>
