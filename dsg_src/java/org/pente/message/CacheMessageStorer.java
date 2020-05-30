@@ -211,7 +211,19 @@ public class CacheMessageStorer implements DSGMessageStorer {
 		}
 	}
 
-	public int getNumNewMessages(long pid) throws DSGMessageStoreException {
+    @Override
+    public List<DSGMessage> getNextMessages(long pid, long start) throws DSGMessageStoreException {
+        List<DSGMessage> ms = null;
+        List<Integer> mids = null;
+
+        log4j.debug("CacheMessageStorer.getNextMessages(" + pid + ", " + start + ")");
+
+        ms = baseStorer.getNextMessages(pid, start);
+        
+        return ms;
+    }
+
+    public int getNumNewMessages(long pid) throws DSGMessageStoreException {
 		
 		log4j.debug("CacheMessageStorer.getNumMessages(" + pid + ")");
 		

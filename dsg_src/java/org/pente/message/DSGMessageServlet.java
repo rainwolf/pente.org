@@ -90,14 +90,32 @@ public class DSGMessageServlet extends HttpServlet {
 
 			// return to message screen
 			try {
-				List<DSGMessage> messages = dsgMessageStorer.getMessages(
-					playerData.getPlayerID());
+			    String next = request.getParameter("next");
+			    long next_int = 0;
+			    try {
+			        next_int = Long.parseLong(next);
+                } catch (NumberFormatException e) {
+                    log4j.error("DSGMessageServlet, invalid next: " + next);
+                }
+				List<DSGMessage> messages;
+			    if (next_int == 0) {
+                    messages = dsgMessageStorer.getMessages(
+                            playerData.getPlayerID());
+                } else {
+                    messages = dsgMessageStorer.getNextMessages(
+                            playerData.getPlayerID(), next_int);
+                }
 				Collections.sort(messages, new Comparator<DSGMessage>() {
 					public int compare(DSGMessage m1, DSGMessage m2) {
 						return m2.getCreationDate().compareTo(m1.getCreationDate());
 					}
 				});
 				request.setAttribute("messages", messages);
+				if (next_int > 0) {
+                    request.setAttribute("next", next);
+                } else {
+                    request.removeAttribute("next");
+                }
 		       	getServletContext().getRequestDispatcher(messagesPage).forward(
 			            request, response);
 				

@@ -227,4 +227,52 @@ public class MySQLDSGMessageStorer implements DSGMessageStorer {
 		
 		return messages;
 	}
+
+    @Override
+    public List<DSGMessage> getNextMessages(long pid, long start) throws DSGMessageStoreException {
+        log4j.debug("MySQLDSGMessageStorer.getNextMessages(" + pid + ", " + start + ")");
+        Connection con = null;
+        PreparedStatement stmt = null;
+        ResultSet result = null;
+        List<DSGMessage> messages = new ArrayList<DSGMessage>();
+
+        try {
+            con = dbHandler.getConnection();
+
+            stmt = con.prepareStatement(
+                    "select mid, from_pid, to_pid, subject, body, creation_date, read_fl " +
+                            "from dsg_message " +
+                            "where to_pid = ? " +
+                            "and viewable = 'Y' " +
+                            "order by creation_date desc limit ?, 50");
+            stmt.setLong(1, pid);
+            stmt.setLong(2, start);
+
+            result = stmt.executeQuery();
+            while (result.next()) {
+                DSGMessage m = new DSGMessage();
+                m.setMid(result.getInt(1));
+                m.setFromPid(result.getLong(2));
+                m.setToPid(result.getLong(3));
+                m.setSubject(result.getString(4));
+                m.setBody(result.getString(5));
+                m.setCreationDate(new java.util.Date(result.getTimestamp(6).getTime()));
+                m.setRead(result.getString(7).equals("Y"));
+
+                messages.add(m);
+            }
+
+        } catch (SQLException se) {
+            throw new DSGMessageStoreException(se);
+        } finally {
+            if (stmt != null) {
+                try { stmt.close(); } catch (SQLException se) {}
+            }
+            if (con != null) {
+                try { dbHandler.freeConnection(con); } catch (SQLException se) {}
+            }
+        }
+
+        return messages;
+    }
 }
