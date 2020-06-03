@@ -2867,15 +2867,17 @@ public class ServerTable {
     protected class EndGameRunnable implements Runnable {
 
 		class Data {
-			GameData gameData;
+            GameData gameData;
+            GameData fileGameData;
 			String winnerPlayer;
 			String loserPlayer;
 			int game;
 			int winner;
 			LiveSet set;
-			public Data(GameData gameData, String winnerPlayer,
+			public Data(GameData gameData, GameData fileGameData, String winnerPlayer,
 				String loserPlayer, int game, int winner, LiveSet set) {
-				this.gameData = gameData;
+                this.gameData = gameData;
+                this.fileGameData = fileGameData;
 				this.game = game;
 				this.winnerPlayer = winnerPlayer;
 				this.loserPlayer = loserPlayer;
@@ -2890,10 +2892,10 @@ public class ServerTable {
 		protected volatile boolean alive = true;
 		protected SynchronizedQueue queue = new SynchronizedQueue();
 		
-		public void endGame(GameData gameData, String winnerPlayer,
+		public void endGame(GameData gameData, GameData fileGameData, String winnerPlayer,
 				String loserPlayer, int game, int winner, LiveSet localSet) {
 			log4j.info("EndGameRunnable.endGame(" + tableNum + ", " + winnerPlayer + ", " + loserPlayer + ", " + game + ", " + winner + ")");
-			queue.add(new Data(gameData, winnerPlayer, loserPlayer, game, winner, localSet));
+			queue.add(new Data(gameData, fileGameData, winnerPlayer, loserPlayer, game, winner, localSet));
 		}
 		public String toString() {
 			return getName() + " queue.size()=" + queue;
@@ -2915,7 +2917,7 @@ public class ServerTable {
 					data = (Data) queue.remove();
 					
 					updateDatabaseAfterGameOver(
-	                    data.gameData, data.winnerPlayer, data.loserPlayer, 
+	                    data.gameData, data.fileGameData, data.winnerPlayer, data.loserPlayer, 
 	                    data.game, data.winner, data.set);
 					
 				} catch (InterruptedException e) {
@@ -2942,6 +2944,7 @@ public class ServerTable {
 
         final int localGame = game.getId();
         final GameData gameData = getGameData(winner, status);
+        final GameData fileGameData = getGameData(winner, status);
 
         serverStatsHandler.gamePlayed();
 
@@ -2950,13 +2953,13 @@ public class ServerTable {
         
         if (serverData.isTournament()) {
             updateDatabaseAfterGameOver(
-                gameData, winnerPlayer, loserPlayer, localGame, winner, set);
+                gameData, fileGameData, winnerPlayer, loserPlayer, localGame, winner, set);
         }
         else {
             swapSeats();
             
             startGameOverThread();
-            gameOverRunnable.endGame(gameData, 
+            gameOverRunnable.endGame(gameData, fileGameData, 
             	winnerPlayer, loserPlayer, localGame, winner, set);
             
             // new thread not needed now since db will not be as slow due
@@ -2976,7 +2979,7 @@ public class ServerTable {
      *  the same time, one games stats updates could override the others
      */
     protected void updateDatabaseAfterGameOver
-        (GameData gameData, String winnerPlayer, String loserPlayer, 
+        (GameData gameData, GameData fileGameData,  String winnerPlayer, String loserPlayer, 
         int game, int localWinner, LiveSet localSet) {
 
         boolean isComputerGame = false;
@@ -3000,14 +3003,14 @@ public class ServerTable {
                         @Override
                         public void run() {
                             try {
-                                gameFileStorer.storeGame(gameData);
+                                gameFileStorer.storeGame(fileGameData);
                             } catch (Throwable t) {
                                 log4j.error(psid() + "Problem saving game in file", t);
                             }
                         }
                     })).start();
                 }
-                gameData.setGameID(0);
+                gameData.setGameID(0); // make sure there's no gid 0 in the DB!
                 
                 PlayerData p1 = playerDbStorer.loadPlayer(
                     gameData.getPlayer1Data().getUserIDName(),
