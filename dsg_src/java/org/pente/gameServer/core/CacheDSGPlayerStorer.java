@@ -119,6 +119,7 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         DSGPlayerData newData = basePlayerStorer.loadPlayer(name);
         cacheByID.put(new Long(newData.getPlayerID()), newData);
         cacheByName.put(newData.getName(), newData);
+        cachedPrefs.remove(newData.getPlayerID());
         
         List<DSGIgnoreData> ignore = basePlayerStorer.getIgnoreData(newData.getPlayerID());
         ignoreData.put(newData.getPlayerID(), ignore);
