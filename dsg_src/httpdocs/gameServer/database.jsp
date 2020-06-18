@@ -360,14 +360,14 @@ onmouseover="javascript:highlightStat('<%= moveStr %>s');" onmouseout="javascrip
 <table width="100%" border="0">
 <tr>
 <td width="45%" align="center">
-<input type="button" onclick="javascript:firstMove()" value=" << ">
-<input type="button" onclick="javascript:backMove()" value="  <  ">
-<input type="button" onclick="javascript:forwardMove()" value="  >  ">
-<input type="button" onclick="javascript:lastMove()" value=" >> ">
+<input type="button" style="background-color:#257626;color: white;font-size: 24px;padding: 5px 20px;" onclick="javascript:firstMove()" value=" << ">
+<input type="button" style="background-color:#257626;color: white;font-size: 24px;padding: 5px 20px;" onclick="javascript:backMove()" value="  <  ">
+<input type="button" style="background-color:#257626;color: white;font-size: 24px;padding: 5px 20px;" onclick="javascript:forwardMove()" value="  >  ">
+<input type="button" style="background-color:#257626;color: white;font-size: 24px;padding: 5px 20px;"onclick="javascript:lastMove()" value=" >> ">
 </td><td width="55%" align="center">
-<input type="button" onclick="javascript:resetGame()" value="Reset">
-<input type="button" onclick="javascript:clearGame('K10')" value="Clear">
-<input type="button" onclick="javascript:search()" value="Search">
+<input type="button" style="background-color:#257626;color: white;font-size: 24px;padding: 5px 20px;"onclick="javascript:resetGame()" value="Reset">
+<input type="button" style="background-color:#257626;color: white;font-size: 24px;padding: 5px 20px;"onclick="javascript:clearGame('K10')" value="Clear">
+<input type="button" style="background-color:#257626;color: white;font-size: 24px;padding: 5px 20px;"onclick="javascript:search()" value="Search">
 </td>
 </tr>
 </table>

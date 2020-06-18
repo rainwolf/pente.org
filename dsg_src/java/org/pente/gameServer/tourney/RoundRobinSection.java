@@ -192,6 +192,7 @@ public class RoundRobinSection extends TourneySection {
             winners[i] = true;
         }
 
+//      Make it so if the single section round has a clear winner, the tournament is over.
         if (round.getNumSections() == 1) {
             boolean moreThanOneMaxScore = true;
             long currentMaxWins = 0;

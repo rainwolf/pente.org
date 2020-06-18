@@ -144,7 +144,7 @@ if (giftee != null) {
       <br> These vacation days do <b><font color="red">not</font></b> roll over to <%=Calendar.getInstance().get(Calendar.YEAR) + 1%>.  
   </td>
   <td align="center" colspan="2">
-<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_ppptop">
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
 <input type="hidden" name="cmd" value="_s-xclick">
 <input type="hidden" name="hosted_button_id" value="D7DCU23JAW26Q">
 <input type="hidden" name="on0" value="Vacation Deals">
