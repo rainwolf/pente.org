@@ -319,6 +319,7 @@ public class CacheTourneyStorer implements TourneyStorer {
     public List setInitialSeeds(int eid) throws Throwable {
         // not necessary to cache yet
         Tourney tourney = getTourneyDetails(eid);
+        List<Long> playersToRemove = new ArrayList<>();
         if (tourney.getRestrictions().size() > 0) {
             for(Restriction restriction: tourney.getRestrictions()) {
                 if (restriction.getType() == Restriction.RATING_RESTRICTION_ABOVE || 
@@ -329,15 +330,18 @@ public class CacheTourneyStorer implements TourneyStorer {
                         DSGPlayerGameData dsgPlayerGameData = dsgPlayerData.getPlayerGameData(tourney.getGame());
                         if (restriction.getType() == Restriction.GAMES_RESTRICTION_ABOVE) { 
                             if (dsgPlayerGameData.getRating() < rating) {
-                                removePlayerFromTourney(pid, eid);
+                                playersToRemove.add(pid);
                             }
                         } else if (restriction.getType() == Restriction.RATING_RESTRICTION_BELOW) {
                             if (dsgPlayerGameData.getRating() > rating) {
-                                removePlayerFromTourney(pid, eid);
+                                playersToRemove.add(pid);
                             }
                         }
                     }
                 }
+            }
+            for(Long pid: playersToRemove) {
+                removePlayerFromTourney(pid, eid);
             }
         }
         return backingStorer.setInitialSeeds(eid);
