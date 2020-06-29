@@ -49,64 +49,45 @@ String myTurn = "false";
               List<TBSet> sets = tbStorer.loadSets(m.getPlayer1().getPlayerID());
               TBSet matchSet = null;
                for (TBSet s : sets) {
-                   if (s.isTwoGameSet() && s.getGame1().getEventId()==eid && s.getState() == TBSet.STATE_ACTIVE) {
+                   if (s.getGame1().getEventId()==eid && s.getState() == TBSet.STATE_ACTIVE) {
                         matchSet = s;
                         break;
                     }
                }
-              %>
-<!--               <br>Match: 
-              <% if (m1 != null) { %>
-                      <% if (matchSet.getGame1().getPlayer1Pid() == m.getPlayer1().getPlayerID()) { %>
-                        <a href="javascript:goWH('/gameServer/tb/game?gid=<%=matchSet.getGame1().getGid()%>&command=load&mobile');">game 1</a>
-                      <% } else { %>
-                        <a href="javascript:goWH('/gameServer/tb/game?gid=<%=matchSet.getGame2().getGid()%>&command=load&mobile');">game 1</a>
-                      <% } %>
-              <% } else { %>
-                      <% if (matchSet.getGame1().getPlayer1Pid() == m.getPlayer1().getPlayerID()) { %>
-                        <a href="/gameServer/viewLiveGame?mobile&g=<%=matchSet.getGame1().getGid()%>">game 1</a>
-                      <% } else { %>
-                        <a href="/gameServer/viewLiveGame?mobile&g=<%=matchSet.getGame2().getGid()%>">game 1</a>
-                      <% } %>
-              <% } %>
-               - 
-              <% if (m2 != null) { %>
-                      <% if (matchSet.getGame1().getPlayer1Pid() == m.getPlayer1().getPlayerID()) { %>
-                        <a href="javascript:goWH('/gameServer/tb/game?gid=<%=matchSet.getGame2().getGid()%>&command=load&mobile');">game 2</a>
-                      <% } else { %>
-                        <a href="javascript:goWH('/gameServer/tb/game?gid=<%=matchSet.getGame1().getGid()%>&command=load&mobile');">game 2</a>
-                      <% } %>
-              <% } else { %>
-                      <% if (matchSet.getGame1().getPlayer1Pid() != m.getPlayer1().getPlayerID()) { %>
-                        <a href="/gameServer/viewLiveGame?mobile&g=<%=matchSet.getGame1().getGid()%>">game 2</a>
-                      <% } else { %>
-                        <a href="/gameServer/viewLiveGame?mobile&g=<%=matchSet.getGame2().getGid()%>">game 2</a>
-                      <% } %>
-              <% } %>
- -->                      </td>
+              if (matchSet != null) {
+          %>
+          <% if (m1 != null || m2 != null) { %>
+</td>
                     </tr>
-                    <tr>
-                      <td colspan="2" align="center">
-                        <% if (true) { 
-                        TBGame game = matchSet.getGame1(); 
-                        if (!game.isCompleted() && !game.isHidden()) {
-                        %> 
-                        <%@ include file="../tb/listedMobileGame.jsp" %>
-                        <% } } %>
-                      </td>
-                      <td colspan="2" align="center">
-                        <% if (true) { 
-                        TBGame game = matchSet.getGame2();
-                        if (!game.isCompleted() && !game.isHidden()) {
-                        %> 
-                        <%@ include file="../tb/listedMobileGame.jsp" %>
-                        <% } } %>
-          <% } %>
-          <% } %>
-      </td>
-      <% } %>
+
+    <tr>
+        <td colspan="<%=(isTBGo?"4":"2")%>" align="center">
+            <% if (true) {
+                TBGame game = matchSet.getGame1();
+                if (game != null && !game.isCompleted() && !game.isHidden()) {
+            %>
+            <%@ include file="../tb/listedMobileGame.jsp" %>
+            <% } } %>
+            <% if (!isTBGo) { %>
+        </td>
+        <td colspan="2" align="center">
+            <% } %>
+            <% if (true) {
+                TBGame game = matchSet.getGame2();
+                if (game != null && !game.isCompleted() && !game.isHidden()) {
+            %>
+            <%@ include file="../tb/listedMobileGame.jsp" %>
+            <% } } %>
+            <% } %>
+            <% } %>
+            <% } %>
+            <% } %>
+        </td>
+        <% } %>
     </tr>
-<% } %>
+    <%
+        }
+    %>
 </table>
 <% } %>
  
