@@ -472,7 +472,7 @@ public class MySQLTourneyStorer implements TourneyStorer {
         try {
             con = dbHandler.getConnection();
             stmt = con.prepareStatement(
-                    "select tp.pid, p.name, tp.seed, g.wins + g.losses, g.rating " +
+                    "select tp.pid, p.name, tp.seed, g.wins + g.losses + g.draws, g.rating " +
                             "from dsg_tournament_player tp left outer join dsg_player_game g " +
                             "on tp.pid = g.pid join player p left outer join game_event e " +
                             "on g.game = e.game and g.computer='N' " +
