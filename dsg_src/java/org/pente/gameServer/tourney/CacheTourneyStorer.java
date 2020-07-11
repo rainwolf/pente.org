@@ -328,7 +328,7 @@ public class CacheTourneyStorer implements TourneyStorer {
                     for(Long pid: getTourneyPlayerPids(eid)) {
                         DSGPlayerData dsgPlayerData = dsgPlayerStorer.loadPlayer(pid);
                         DSGPlayerGameData dsgPlayerGameData = dsgPlayerData.getPlayerGameData(tourney.getGame());
-                        if (restriction.getType() == Restriction.GAMES_RESTRICTION_ABOVE) { 
+                        if (restriction.getType() == Restriction.RATING_RESTRICTION_ABOVE) {
                             if (dsgPlayerGameData.getRating() < rating) {
                                 playersToRemove.add(pid);
                             }
