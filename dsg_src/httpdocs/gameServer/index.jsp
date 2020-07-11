@@ -369,9 +369,7 @@ h2 { font-size:14pt;margin-top:0;padding:2px 0 2px 0}
 }
 %>
 
-    <li>New turn-based tournaments: <a href="/gameServer/tournaments">Summer of 2020 tournaments and Pente Masters</a>. 
-    Note: tournaments with rating restrictions will have those enforced when the tournament starts.</li>
-    <li>Pente Masters start is postponed until July 10/11th, and vacation will be allowed.</li>
+    <li>New turn-based tournaments: <a href="/gameServer/tournaments">Summer of 2020 tournaments and Pente Masters</a>.</li>
 <%--    <li>New live speed-pente <a href="/gameServer/tournaments">tournament</a>, this is a tournament to test the code, if the code fails, the tournament will be aborted. More info <a href="/gameServer/forums/thread.jspa?forumID=2&threadID=232320">here.</a>--%>
 <%--    <li>Live (Speed) Test Tournament: <a href="/gameServer/tournaments">Test Tournament</a>--%>
 <%--            <br>--%>
