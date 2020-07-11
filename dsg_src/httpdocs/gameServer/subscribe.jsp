@@ -46,8 +46,6 @@ if (giftee != null) {
           <br>
           <u><b>Note:</b></u> The upgrade of your account should happen "near"-instantaneous after payment, if that does not happen within a few minutes, then <a href="http://www.pente.org/gameServer/newMessage.jsp?to=rainwolf">message</a> me and I will look into it asap.
           <br>
-          <b>Update:</b> Lately Paypal's servers have been a bit slower than usual, resulting in your profile being automatically upgraded between 10 minutes to 8 hours after payment. If this happens, let me know and I will manually fix your account.
-          <br>
           <br>
 
 <table align="center" border="1" cellpadding="10" cellspacing="0" width="100%">
@@ -144,6 +142,28 @@ if (giftee != null) {
       <br> These vacation days do <b><font color="red">not</font></b> roll over to <%=Calendar.getInstance().get(Calendar.YEAR) + 1%>.  
   </td>
   <td align="center" colspan="2">
+      <% 
+          boolean hideVacation = false;
+          Resources resources = (Resources) application.getAttribute(Resources.class.getName());
+          List<Tourney> currentT = resources.getTourneyStorer().getCurrentTournies();
+          for (Tourney tmp: currentT) {
+              Tourney t = resources.getTourneyStorer().getTourney(tmp.getEventID());
+              if (t.isTurnBased() && t.getIncrementalTime() > 0) {
+                  if (t.getNumRounds() > 0) {
+                      for(TourneyPlayerData p: t.getLastRound().getPlayers()) {
+                          if (p.getName().equals(giftee)) {
+                              hideVacation = true;
+                              break;
+                          }
+                      }
+                  }
+              }
+              if (hideVacation) {
+                  break;
+              }
+          }
+          
+          if (!hideVacation) {  %>
 <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
 <input type="hidden" name="cmd" value="_s-xclick">
 <input type="hidden" name="hosted_button_id" value="D7DCU23JAW26Q">
@@ -158,6 +178,9 @@ if (giftee != null) {
 <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_buynow_SM.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
 <img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
 </form>
+      <% } else { %>
+      <font color="red">Sorry, you can't purchase extra vacation while participating in an ongoing tournament that allows vacation time.</font>
+      <% } %>
   </td>
 </tr>
 <!-- <tr>
