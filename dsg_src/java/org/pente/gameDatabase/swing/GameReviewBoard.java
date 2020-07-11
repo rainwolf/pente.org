@@ -4,6 +4,9 @@ import java.awt.*;
 
 import java.io.*;
 
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import javax.swing.border.*;
 import java.awt.event.*;
 import java.sql.*;
@@ -30,9 +33,6 @@ import org.pente.tree.PenteAnalyzer;
 import org.pente.tree.PositionAnalysis;
 import org.pente.tree.Threat;
 import org.pente.mmai.*;
-
-import sun.audio.AudioPlayer;
-import sun.audio.AudioStream;
 
 public class GameReviewBoard extends JPanel implements TabComponent, VenueListener {
 
@@ -592,9 +592,10 @@ public class GameReviewBoard extends JPanel implements TabComponent, VenueListen
 					addMove(newMove);
 					
 					try {
-						InputStream in = new FileInputStream("yourturn.au");
-						AudioStream as = new AudioStream(in);         
-						AudioPlayer.player.start(as);
+                        AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(this.getClass().getResource("yourturn.au"));
+                        Clip clip = AudioSystem.getClip();
+                        clip.open(audioInputStream);
+                        clip.start();
 					} catch (Exception e) { e.printStackTrace(); }
 					
 				}
