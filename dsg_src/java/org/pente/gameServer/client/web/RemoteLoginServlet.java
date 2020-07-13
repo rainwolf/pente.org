@@ -87,8 +87,12 @@ public class RemoteLoginServlet extends HttpServlet {
             	password = passwordHelper.encrypt(password);
                 loginResult = loginHandler.isValidLogin(name, password);
             }
+            
+            DSGPlayerData pdata = resources.getDsgPlayerStorer().loadPlayer(name);
+            boolean access_allowed = pdata.databaseAccess() || pdata.getRegisterDate().getTime() > System.currentTimeMillis() - 1000L*3600*24*30;
 
-        	if (loginResult == LoginHandler.VALID) {
+
+            if (loginResult == LoginHandler.VALID && access_allowed) {
                 activityLogger.login(
                     new ActivityData(name, request.getRemoteAddr()),
                     request.getRequestURI());
