@@ -22,6 +22,7 @@ public class PasswordHelper {
     private Cipher encryptCipher = null;
     private Cipher decryptCipher = null;
     private Base64 base64 = new Base64();
+    private File keyFile;
     
     public PasswordHelper(File keyFile)
         throws InvalidKeyException, InvalidKeySpecException, IOException,
@@ -29,8 +30,9 @@ public class PasswordHelper {
         InvalidAlgorithmParameterException {
 
         log4j.info("Password helper, read key from " + keyFile);
-
-        initCiphers(keyFile);
+        
+        this.keyFile = keyFile;
+        initCiphers();
     }
     
     public String encrypt(String plain) {
@@ -42,12 +44,13 @@ public class PasswordHelper {
             encrypted = new String(base64.encode(crypt));
             
         } catch (Throwable t) {
-            log4j.error("Error encrypting String: " + plain);
+            log4j.error("Error encrypting String: " + plain, t);
             try {
                 log4j.error("Attempting to re-init() cipher.");
-                encryptCipher.init(Cipher.ENCRYPT_MODE, key);
+//                encryptCipher.init(Cipher.ENCRYPT_MODE, key);
+                this.initCiphers();
                 log4j.error("Re-init() successful.");
-            } catch (InvalidKeyException e) {
+            } catch (Exception e) {
                 log4j.error("Re-init() failed, uh-oh.");
             }
         }
@@ -67,20 +70,22 @@ public class PasswordHelper {
             log4j.error("Error decrypting String: " + encrypted, t);
             try {
                 log4j.error("Attempting to re-init() cipher.");
-                decryptCipher.init(Cipher.DECRYPT_MODE, key);
+//                decryptCipher.init(Cipher.DECRYPT_MODE, key);
+                this.initCiphers();
                 log4j.error("Re-init() successful.");
-            } catch (InvalidKeyException e) {
-                log4j.error("Re-init() failed, uh-oh.");
+            } catch (Exception e) {
+                log4j.error("Re-init() failed, uh-oh.", e);
             }
         }
         return plain;
     }
     
-    private void initCiphers(File f) 
+    private void initCiphers() 
         throws InvalidKeyException, InvalidKeySpecException, IOException,
         NoSuchAlgorithmException, NoSuchPaddingException,
         InvalidAlgorithmParameterException {
 
+        File f = this.keyFile;
         DataInputStream in = new DataInputStream(new FileInputStream(f));
 
         // read in the iv, needed by ciphers
