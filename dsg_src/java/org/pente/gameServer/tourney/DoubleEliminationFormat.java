@@ -3,6 +3,7 @@ package org.pente.gameServer.tourney;
 import java.util.*;
 
 import org.apache.log4j.*;
+import org.pente.game.GridStateFactory;
 
 public class DoubleEliminationFormat extends SingleEliminationFormat {
 
@@ -33,8 +34,16 @@ public class DoubleEliminationFormat extends SingleEliminationFormat {
             this.distance = distance;
         }
         
-        public void createRealMatch(int eid, int round, TourneySection s) {
+        public void createRealMatch(int eid, int round, TourneySection s, boolean set) {
 
+            newMatch(eid, round, s, p1, p2);
+
+            if (set) {
+                newMatch(eid, round, s, p2, p1);
+            }
+        }
+
+        private void newMatch(int eid, int round, TourneySection s, TourneyPlayerData p1, TourneyPlayerData p2) {
             TourneyMatch m1 = new TourneyMatch();
             m1.setPlayer1(p1);
             m1.setPlayer2(p2);
@@ -43,15 +52,6 @@ public class DoubleEliminationFormat extends SingleEliminationFormat {
             m1.setSection(s.getSection());
             m1.setSeq(1);
             s.addMatch(m1);
-            
-            TourneyMatch m2 = new TourneyMatch();
-            m2.setPlayer1(p2);
-            m2.setPlayer2(p1);
-            m2.setEvent(eid);
-            m2.setRound(round);
-            m2.setSection(s.getSection());
-            m2.setSeq(1);
-            s.addMatch(m2);
         }
     }
     private class PotentialSection {
@@ -77,7 +77,7 @@ public class DoubleEliminationFormat extends SingleEliminationFormat {
             else return false;
         }
         
-        public TourneySection createRealSection(int eid, int round, int section) {
+        public TourneySection createRealSection(int eid, int round, int section, boolean set) {
             TourneySection s = new SingleEliminationSection(section);
             Collections.sort(matches, new Comparator<PotentialMatch>() {
                 public int compare(PotentialMatch o1, PotentialMatch o2) {
@@ -88,7 +88,7 @@ public class DoubleEliminationFormat extends SingleEliminationFormat {
             });
             for (Iterator it = matches.iterator(); it.hasNext();) {
                 PotentialMatch m = (PotentialMatch) it.next();
-                m.createRealMatch(eid, round, s);
+                m.createRealMatch(eid, round, s, set);
             }
             return s;
         }
@@ -232,6 +232,15 @@ public class DoubleEliminationFormat extends SingleEliminationFormat {
                 return p1.getSeed() - p2.getSeed();
             }
         };
+        boolean set = (tourney.getGame() != GridStateFactory.GO &&
+                tourney.getGame() != GridStateFactory.GO9 &&
+                tourney.getGame() != GridStateFactory.GO13 &&
+                tourney.getGame() != GridStateFactory.SPEED_GO &&
+                tourney.getGame() != GridStateFactory.SPEED_GO9 &&
+                tourney.getGame() != GridStateFactory.SPEED_GO13 &&
+                tourney.getGame() != GridStateFactory.TB_GO &&
+                tourney.getGame() != GridStateFactory.TB_GO9 &&
+                tourney.getGame() != GridStateFactory.TB_GO13);
 
             TourneyMatch byeMatch = null;
             if (!bracketPlayers0.isEmpty()) {
@@ -257,7 +266,7 @@ public class DoubleEliminationFormat extends SingleEliminationFormat {
                 
                 PotentialSection ps = getSection(bracketPlayers0, tourney.getAlreadyPlayed());
                 TourneySection rs = ps.createRealSection(tourney.getEventID(), 
-                    round.getRound(), 1);
+                    round.getRound(), 1, set);
                 if (byeMatch != null) {
                     rs.addMatch(byeMatch);
                 }
@@ -289,7 +298,7 @@ public class DoubleEliminationFormat extends SingleEliminationFormat {
                 
                 PotentialSection ps = getSection(bracketPlayers1, tourney.getAlreadyPlayed());
                 TourneySection rs = ps.createRealSection(tourney.getEventID(), 
-                    round.getRound(), 2);
+                    round.getRound(), 2, set);
                 if (byeMatch != null) {
                     rs.addMatch(byeMatch);
                 }
