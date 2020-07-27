@@ -464,7 +464,7 @@ public class CacheTourneyStorer implements TourneyStorer {
             notificationServer.sendAdminNotification(t.getName() + " completed. Winner is " + t.getWinner());
         }
         else if (t.getLastRound().isComplete()) {
-            TourneyRound newRound = t.createNextRound();
+            TourneyRound newRound = t.createNextRound(dsgPlayerStorer);
             insertRound(newRound);
             notificationServer.sendAdminNotification("Round " + t.getNumRounds() + " started in " + t.getName());
         }

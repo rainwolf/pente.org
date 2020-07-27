@@ -20,7 +20,7 @@ public class RoundRobinFormat extends AbstractTourneyFormat {
      *  @param players List of TourneyPlayerData
      *  @return TourneyRound
      */    
-    TourneyRound createRound(List players, Tourney tourney, int rnd) {
+    TourneyRound createRound(List<TourneyPlayerData> players, Tourney tourney, int rnd) {
         TourneyRound round = new TourneyRound(rnd);
         round.setTourney(tourney);
         
@@ -37,7 +37,7 @@ public class RoundRobinFormat extends AbstractTourneyFormat {
         }
         
         // initially place player data in appropriate section
-        List sections[] = new List[numSections];
+        List<TourneyPlayerData> sections[] = new List[numSections];
 
         // create new sections for round
         for (int i = 0; i < numSections; i++) {
@@ -45,25 +45,41 @@ public class RoundRobinFormat extends AbstractTourneyFormat {
             sections[i] = new ArrayList();
         }
 
-        // place players into sections according to seeding and down/back alg.
-        int currentPlayer = 0;        
-        outer: for (int i = 0; i < maxPlayersInSection; i++) {
-            // if we are down to the last players it might not come out evenly
-            // across all sections, so if we were supposed to place players
-            // from the bottom up, instead place from top down
-            boolean lastRun = currentPlayer + numSections > players.size();
-            for (int j = 0; j < numSections; j++) {
-                int placement = 0;
-                if (i % 2 == 0) placement = j;
-                else if (lastRun) placement = players.size() - currentPlayer - 1;
-                else placement = numSections - 1 - j;
-                TourneyPlayerData p = (TourneyPlayerData) players.get(currentPlayer++);
-                sections[placement].add(p);
-                if (currentPlayer == players.size()) break outer;
-            }
-            
-        }
+//        // place players into sections according to seeding and down/back alg.
+//        int currentPlayer = 0;        
+//        outer: for (int i = 0; i < maxPlayersInSection; i++) {
+//            // if we are down to the last players it might not come out evenly
+//            // across all sections, so if we were supposed to place players
+//            // from the bottom up, instead place from top down
+//            boolean lastRun = currentPlayer + numSections > players.size();
+//            for (int j = 0; j < numSections; j++) {
+//                int placement = 0;
+//                if (i % 2 == 0) {
+//                    placement = j;
+//                } else if (lastRun) {
+//                    placement = players.size() - currentPlayer - 1;
+//                } else {
+//                    placement = numSections - 1 - j;
+//                }
+//                TourneyPlayerData p = (TourneyPlayerData) players.get(currentPlayer++);
+//                sections[placement].add(p);
+//                if (currentPlayer == players.size()) break outer;
+//            }
+//        }
 
+//        shuffle the layers of the sections to let luck help prevent repeated match ups.
+        if (numSections > 1) {
+            for (int i = 0; i < maxPlayersInSection; i++) {
+                int ub = Math.min(i*numSections + numSections, players.size());
+                List<TourneyPlayerData> list = players.subList(i*numSections, ub);
+                Collections.shuffle(list);
+                for (int j = 0; j < ub; j++) {
+                    sections[j].add(list.get(j));
+                }
+            }
+        } else {
+            sections[0].addAll(players);
+        }
         
         // now for each section, create matches
         for (int i = 0; i < numSections; i++) {
