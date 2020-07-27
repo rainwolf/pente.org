@@ -3,6 +3,7 @@ package org.pente.gameServer.tourney;
 import java.util.*;
 
 import org.pente.game.GridStateFactory;
+import org.pente.gameServer.core.DSGPlayerStorer;
 
 public class Tourney {
 
@@ -159,8 +160,8 @@ public class Tourney {
         addRound(r);
         return r;
     }
-    public TourneyRound createNextRound() {
-        TourneyRound r = format.createNextRound(this);
+    public TourneyRound createNextRound(DSGPlayerStorer dsgPlayerStorer) {
+        TourneyRound r = format.createNextRound(this, dsgPlayerStorer);
         addRound(r);
         return r;
     }
