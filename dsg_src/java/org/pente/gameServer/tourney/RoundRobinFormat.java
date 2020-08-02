@@ -73,7 +73,7 @@ public class RoundRobinFormat extends AbstractTourneyFormat {
                 int ub = Math.min(i*numSections + numSections, players.size());
                 List<TourneyPlayerData> list = players.subList(i*numSections, ub);
                 Collections.shuffle(list);
-                for (int j = 0; j < ub; j++) {
+                for (int j = 0; j < list.size(); j++) {
                     sections[j].add(list.get(j));
                 }
             }
