@@ -4,6 +4,7 @@ import java.util.*;
 
 import org.apache.log4j.*;
 import org.pente.game.GridStateFactory;
+import org.pente.gameServer.core.DSGPlayerStorer;
 
 public class DoubleEliminationFormat extends SingleEliminationFormat {
 
@@ -187,7 +188,7 @@ public class DoubleEliminationFormat extends SingleEliminationFormat {
         }
     }
 
-    public TourneyRound createNextRound(Tourney tourney) {
+    public TourneyRound createNextRound(Tourney tourney, DSGPlayerStorer dsgPlayerStorer) {
         
         int rnd = tourney.getNumRounds() + 1;
         TourneyRound round = new TourneyRound(rnd);

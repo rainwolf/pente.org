@@ -31,37 +31,40 @@ public abstract class AbstractTourneyFormat implements TourneyFormat {
             players.addAll(s.getWinners());
         }
 
-//        // now sort those winners by seeds for placement in sections
-//        Collections.sort(players, new Comparator<TourneyPlayerData>() {
-//            public int compare(TourneyPlayerData o1, TourneyPlayerData o2) {
-//                TourneyPlayerData p1 = (TourneyPlayerData) o1;
-//                TourneyPlayerData p2 = (TourneyPlayerData) o2;
-//                return p1.getSeed() - p2.getSeed();
-//            }
-//        });
-        // now sort those winners by rating for placement in sections
-        Collections.sort(players, new Comparator<TourneyPlayerData>() {
-            public int compare(TourneyPlayerData o1, TourneyPlayerData o2) {
-                DSGPlayerData p1 = null, p2 = null;
-                try {
-                    p1 = dsgPlayerStorer.loadPlayer(o1.getPlayerID());
-                    p2 = dsgPlayerStorer.loadPlayer(o2.getPlayerID());
-                } catch (DSGPlayerStoreException e) {
-                    e.printStackTrace();
-                }
-                double p1rating = p1.getPlayerGameData(tourney.getGame()).getRating();
-                double p2rating = p2.getPlayerGameData(tourney.getGame()).getRating();
-                if (p2rating > p1rating) {
-                    return 1;
-                } else if (p2rating < p1rating) {
-                    return -1;
-                } else {
-                    return 0;
-                }
+        if (tourney.getFormat() instanceof RoundRobinFormat) {
+            // now sort those winners by rating for placement in sections
+            Collections.sort(players, new Comparator<TourneyPlayerData>() {
+                public int compare(TourneyPlayerData o1, TourneyPlayerData o2) {
+                    DSGPlayerData p1 = null, p2 = null;
+                    try {
+                        p1 = dsgPlayerStorer.loadPlayer(o1.getPlayerID());
+                        p2 = dsgPlayerStorer.loadPlayer(o2.getPlayerID());
+                    } catch (DSGPlayerStoreException e) {
+                        e.printStackTrace();
+                    }
+                    double p1rating = p1.getPlayerGameData(tourney.getGame()).getRating();
+                    double p2rating = p2.getPlayerGameData(tourney.getGame()).getRating();
+                    if (p2rating > p1rating) {
+                        return 1;
+                    } else if (p2rating < p1rating) {
+                        return -1;
+                    } else {
+                        return 0;
+                    }
 //                return p2rating - p1rating;
 //                return p1.getSeed() - p2.getSeed();
-            }
-        });
+                }
+            });
+        } else {
+            // now sort those winners by seeds for placement in sections
+            Collections.sort(players, new Comparator<TourneyPlayerData>() {
+                public int compare(TourneyPlayerData o1, TourneyPlayerData o2) {
+                    TourneyPlayerData p1 = (TourneyPlayerData) o1;
+                    TourneyPlayerData p2 = (TourneyPlayerData) o2;
+                    return p1.getSeed() - p2.getSeed();
+                }
+            });
+        }
         
         // run standard round creation code
         return createRound(players, tourney, round);
