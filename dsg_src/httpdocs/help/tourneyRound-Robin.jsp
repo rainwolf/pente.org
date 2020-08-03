@@ -63,6 +63,9 @@
        3 players, the higher number sections will always be the ones with smaller
        numbers of players.
        <br>
+       <b>Update:</b> Now the layers of the sections will be shuffled as well. In the above example, layer 1 consists of seeds 1 to 10, 
+       layer 2 of seeds 11 to 20, and so on. The players within each layer are shuffled randomly before being assigned to a section. 
+       No 2 players from the same layer will end up in the same section for that round. 
  </ol>
 <b><a href="helpWindow.jsp?file=tourneySwiss">&lt;&lt; Swiss</a>&nbsp;&nbsp;&nbsp;
 <b><a href="helpWindow.jsp?file=faq">&gt;&gt; FAQ</a>
