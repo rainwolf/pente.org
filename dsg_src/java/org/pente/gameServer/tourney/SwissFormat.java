@@ -1,5 +1,7 @@
 package org.pente.gameServer.tourney;
 
+import org.pente.gameServer.core.DSGPlayerStorer;
+
 import java.util.*;
 
 public class SwissFormat implements TourneyFormat {
@@ -37,7 +39,7 @@ public class SwissFormat implements TourneyFormat {
         return createRound(players, tourney, 1);
     }
     
-    public TourneyRound createNextRound(Tourney tourney) {
+    public TourneyRound createNextRound(Tourney tourney, DSGPlayerStorer dsgPlayerStorer) {
         SwissSection s = (SwissSection) tourney.getLastRound().getSection(1);
         List players = s.getPlayersRanked(tourney);
         return createRound(players, tourney, tourney.getNumRounds() + 1);
