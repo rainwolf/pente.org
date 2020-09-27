@@ -270,8 +270,9 @@ below and do not specify a player to invite.<br>
         else { %>
 
         <br>
-        Be kind. Don't gobble all the public invitations to yourself, and post some in return.
-        <br>
+        Be kind. Don't gobble all the public invitations. <br> Post some in return.
+       <br>
+       <br>
         The "Open to" column is strictly informative, you can accept any invitation listed below.
         <br>
         <br>

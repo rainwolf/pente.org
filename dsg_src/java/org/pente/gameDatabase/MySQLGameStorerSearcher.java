@@ -554,7 +554,7 @@ System.out.println("move_num = " + (requestData.getNumMoves() - 1));
 
         PreparedStatement stmt = null;
         ResultSet results = null;
-        Vector gids = new Vector();
+        List<Long> gids = new ArrayList<>();
 
         try {
 
@@ -647,7 +647,7 @@ log4j.debug("move_num="+ (requestData.getNumMoves() - 1));
 
             int cnt = 0;
             while (results.next()) {
-        		gids.addElement(new Long(results.getLong(1)));
+        		gids.add(new Long(results.getLong(1)));
         		log4j.debug(results.getLong(1));
             }
 
@@ -663,12 +663,19 @@ log4j.debug("move_num="+ (requestData.getNumMoves() - 1));
 				totalGameCount);
 log4j.debug("total matched games = " + requestData.getGameStorerSearchRequestFilterData().getTotalGameNum());
 
+//            // load matched games into response object
+//            for (i = 0; i < gids.size(); i++) {
+//                long gid = ((Long) gids.elementAt(i)).longValue();
+//log4j.debug("load game " + gid);
+////                GameData gameData = gameStorer.loadGame(gid, null);
+//                GameData gameData = ((MySQLPenteGameStorer) gameStorer).loadGame(con, gid, null);
+//                responseData.addGame(gameData);
+//            }
+
             // load matched games into response object
-            for (i = 0; i < gids.size(); i++) {
-                long gid = ((Long) gids.elementAt(i)).longValue();
-log4j.debug("load game " + gid);
-                GameData gameData = gameStorer.loadGame(gid, null);
-                responseData.addGame(gameData);
+            List<GameData> games = ((MySQLPenteGameStorer) gameStorer).loadGames(con, gids);
+            for (GameData game: games) {
+                responseData.addGame(game);
             }
 
         } finally {
