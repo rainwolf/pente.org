@@ -21,6 +21,7 @@ package org.pente.game;
 import java.io.*;
 import java.util.*;
 import java.sql.*;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.*;
 
@@ -703,7 +704,9 @@ log4j.debug("select data complete");
                 gameData.setGame(GridStateFactory.getGameName(game));
 
 				log4j.debug("get moves");
-				if (game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO) {
+                if (game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO ||
+                    game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9 || 
+                    game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13) {
                     moveStmt = con.prepareStatement("select next_move, move_num " +
                             "from " + MOVE_TABLE + " " +
                             "where gid = ? " +
@@ -747,4 +750,220 @@ log4j.debug("select data complete");
 
         return gameData;
     }
+
+
+
+    private Map<Long, PlayerData> loadPlayers(Connection con, List<Long> playerIDs) throws Exception {
+
+        PreparedStatement stmt = null;
+        ResultSet result = null;
+        PlayerData playerData = null;
+        
+        Map<Long, PlayerData> resultMap = new HashMap<>();
+
+        try {
+
+            String playerIDsString = playerIDs.stream().map(String::valueOf).collect(Collectors.joining(","));
+            stmt = con.prepareStatement("select pid, name " +
+                    "from " + PLAYER_TABLE + " " +
+                    "where pid in (" + playerIDsString + ")");
+            result = stmt.executeQuery();
+
+            while (result.next()) {
+                playerData = new DefaultPlayerData();
+                playerData.setUserID(result.getLong(1));
+                playerData.setUserIDName(result.getString(2));
+                resultMap.put(playerData.getUserID(), playerData);
+            }
+
+        } finally {
+            if (stmt != null) { try { stmt.close(); } catch(SQLException ex) {} }
+            if (result != null) { try { result.close(); } catch(SQLException ex) {} }
+        }
+
+        return resultMap;
+    }
+
+    /** Loads the game information
+     *  @param con A database connection used to load the game
+     *  @param gameID The unique game id
+     *  @param data To load the game data into
+     *  @return List<GameData> The game data
+     *  @exception Exception If the game cannot be loaded
+     */
+    public List<GameData> loadGames(Connection con, List<Long> gameIDs) throws Exception {
+
+        PreparedStatement gameStmt = null;
+        ResultSet gameResult = null;
+
+        PreparedStatement playerStmt = null;
+        ResultSet playerResult = null;
+
+        PreparedStatement moveStmt = null;
+        ResultSet moveResult = null;
+        
+        List<GameData> results = new ArrayList<>();
+        
+        if (gameIDs.size() == 0) {
+            return results;
+        }
+        
+        try {
+            
+            String gidsString = gameIDs.stream().map(String::valueOf).collect(Collectors.joining(","));
+            log4j.debug("loadGames(" + gidsString + ") start");
+            System.out.println("loadGames(" + gidsString + ") start");
+            gameStmt = con.prepareStatement(
+                    "select site_id, event_id, round, section, play_date, timer, " +
+                            "rated, initial_time, incremental_time, player1_pid, " +
+                            "player2_pid, player1_rating, player2_rating, winner, game, swapped, private, status, gid " +
+                            "from " + GAME_TABLE + " " +
+                            "where gid in (" + gidsString +") order by gid");
+//            gameStmt.setLong(1, gameID);
+            gameResult = gameStmt.executeQuery();
+
+            playerStmt = con.prepareStatement(
+                    "select player1_pid, player2_pid " +
+                            "from " + GAME_TABLE + " " +
+                            "where gid in (" + gidsString +") order by gid");
+            playerResult = playerStmt.executeQuery();
+            Map<Long, Boolean> playerMap = new HashMap<>();
+            while (playerResult.next()) {
+                playerMap.put(playerResult.getLong(1), true);
+                playerMap.put(playerResult.getLong(2), true);
+            }
+            Map<Long, PlayerData> playerDataMap = loadPlayers(con, new ArrayList<>(playerMap.keySet()));
+
+            log4j.debug("get moves");
+            moveStmt = con.prepareStatement("select next_move, move_num, gid " +
+                    "from " + MOVE_TABLE + " " +
+                    "where gid in (" + gidsString + ") " +
+                    "and next_move != 361 " +
+                    "order by gid, move_num");
+            moveResult = moveStmt.executeQuery();
+            Map<Long, List<Integer>> movesMap = new HashMap<>();
+
+            while (moveResult.next()) {
+                int move = moveResult.getInt(1);
+                long gid = moveResult.getLong(3);
+                if (movesMap.get(gid) == null) {
+                    List<Integer> moves = new ArrayList<>();
+                    moves.add(move);
+                    movesMap.put(gid, moves);
+                } else {
+                    movesMap.get(gid).add(move);
+                }
+            }
+            
+            log4j.debug("select data complete");
+            while (gameResult.next()) {
+                
+                Long gameID = gameResult.getLong(19);
+
+                GameData gameData = new DefaultGameData();
+
+                gameData.setGameID(gameID);
+
+                int siteID = gameResult.getInt(1);
+                int game = gameResult.getInt(15);
+
+                log4j.debug("getGameSiteData for " + gameID + ", " + game + ", " + siteID);
+                GameSiteData siteData = gameVenueStorer.getGameSiteData(
+                        game, siteID);
+                gameData.setSite(siteData.getName());
+                gameData.setShortSite(siteData.getShortSite());
+                gameData.setSiteURL(siteData.getURL());
+                log4j.debug("done get site data");
+
+                int eventID = gameResult.getInt(2);
+                log4j.debug("get event data");
+                GameEventData eventData = gameVenueStorer.getGameEventData(
+                        game, eventID, siteData.getName());
+                if (eventData != null) {
+                    gameData.setEvent(eventData.getName());
+                } else {
+                    gameData.setEvent("");
+                }
+                log4j.debug("done get event data");
+
+                gameData.setRound(gameResult.getString(3));
+                gameData.setSection(gameResult.getString(4));
+
+                Timestamp playDate = gameResult.getTimestamp(5);
+                gameData.setDate(new java.util.Date(playDate.getTime()));
+
+                String timed = gameResult.getString(6);
+                if (timed.equals("S") || timed.equals("I")) {
+                    gameData.setTimed(true);
+                }
+                else {
+                    gameData.setTimed(false);
+                }
+
+                gameData.setRated(MySQLDBHandler.getBooleanValueFromDBString(gameResult.getString(7)));
+                gameData.setInitialTime(gameResult.getInt(8));
+                gameData.setIncrementalTime(gameResult.getInt(9));
+
+                log4j.debug("get p1 data");
+                long player1_pid = gameResult.getLong(10);
+                int player1_rating = gameResult.getInt(12);
+                PlayerData player1Data = playerDataMap.get(player1_pid);
+                player1Data.setRating(player1_rating);
+                gameData.setPlayer1Data(player1Data);
+                log4j.debug("done get p1 data");
+
+                long player2_pid = gameResult.getLong(11);
+                PlayerData player2Data = playerDataMap.get(player2_pid);
+
+                int player2_rating = gameResult.getInt(13);
+                player2Data.setRating(player2_rating);
+                gameData.setPlayer2Data(player2Data);
+                log4j.debug("done get p2 data");
+
+                gameData.setWinner(gameResult.getInt(14));
+                gameData.setSwapped(gameResult.getString(16).equals("Y"));
+
+                gameData.setPrivateGame(gameResult.getString(17).equals("Y"));
+                gameData.setStatus(gameResult.getString(18));
+
+                gameData.setGame(GridStateFactory.getGameName(game));
+
+                if (!firstMoveCanBeOffCenter(game)) {
+                    gameData.addMove(180);
+                }
+
+                for(Integer move: movesMap.get(gameID)) {
+                    gameData.addMove(move);
+                }
+
+                results.add(gameData);
+            }
+
+        } finally {
+
+            if (gameResult != null) {
+                gameResult.close();
+            }
+            if (gameStmt != null) {
+                gameStmt.close();
+            }
+
+            if (playerResult != null) {
+                playerResult.close();
+            }
+            if (playerStmt != null) {
+                playerStmt.close();
+            }
+
+            if (moveResult != null) {
+                moveResult.close();
+            }
+            if (moveStmt != null) {
+                moveStmt.close();
+            }
+        }
+
+        return results;
+    }
+    
 }
