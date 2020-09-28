@@ -822,18 +822,6 @@ log4j.debug("select data complete");
 //            gameStmt.setLong(1, gameID);
             gameResult = gameStmt.executeQuery();
 
-            playerStmt = con.prepareStatement(
-                    "select player1_pid, player2_pid " +
-                            "from " + GAME_TABLE + " " +
-                            "where gid in (" + gidsString +") order by gid");
-            playerResult = playerStmt.executeQuery();
-            Map<Long, Boolean> playerMap = new HashMap<>();
-            while (playerResult.next()) {
-                playerMap.put(playerResult.getLong(1), true);
-                playerMap.put(playerResult.getLong(2), true);
-            }
-            Map<Long, PlayerData> playerDataMap = loadPlayers(con, new ArrayList<>(playerMap.keySet()));
-
             log4j.debug("get moves");
             moveStmt = con.prepareStatement("select next_move, move_num, gid " +
                     "from " + MOVE_TABLE + " " +
@@ -854,7 +842,19 @@ log4j.debug("select data complete");
                     movesMap.get(gid).add(move);
                 }
             }
-            
+
+            playerStmt = con.prepareStatement(
+                    "select player1_pid, player2_pid " +
+                            "from " + GAME_TABLE + " " +
+                            "where gid in (" + gidsString +") order by gid");
+            playerResult = playerStmt.executeQuery();
+            Map<Long, Boolean> playerMap = new HashMap<>();
+            while (playerResult.next()) {
+                playerMap.put(playerResult.getLong(1), true);
+                playerMap.put(playerResult.getLong(2), true);
+            }
+            Map<Long, PlayerData> playerDataMap = loadPlayers(con, new ArrayList<>(playerMap.keySet()));
+
             log4j.debug("select data complete");
             while (gameResult.next()) {
                 
@@ -932,8 +932,10 @@ log4j.debug("select data complete");
                     gameData.addMove(180);
                 }
 
-                for(Integer move: movesMap.get(gameID)) {
-                    gameData.addMove(move);
+                if (movesMap.get(gameID) != null) {
+                    for(Integer move: movesMap.get(gameID)) {
+                        gameData.addMove(move);
+                    }
                 }
 
                 results.add(gameData);
