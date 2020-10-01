@@ -21,7 +21,10 @@ package org.pente.game;
 import java.io.*;
 import java.util.*;
 import java.sql.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.log4j.*;
 
@@ -784,6 +787,19 @@ log4j.debug("select data complete");
         return resultMap;
     }
 
+    
+    private ResultSet querySQL(String query) {
+        try {
+            Connection con = dbHandler.getConnection();
+            PreparedStatement stmt = con.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+            ResultSet result = stmt.executeQuery();
+            return result;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
     /** Loads the game information
      *  @param con A database connection used to load the game
      *  @param gameID The unique game id
@@ -796,8 +812,8 @@ log4j.debug("select data complete");
         PreparedStatement gameStmt = null;
         ResultSet gameResult = null;
 
-        PreparedStatement playerStmt = null;
-        ResultSet playerResult = null;
+//        PreparedStatement playerStmt = null;
+//        ResultSet playerResult = null;
 
         PreparedStatement moveStmt = null;
         ResultSet moveResult = null;
@@ -812,25 +828,47 @@ log4j.debug("select data complete");
             
             String gidsString = gameIDs.stream().map(String::valueOf).collect(Collectors.joining(","));
             log4j.debug("loadGames(" + gidsString + ") start");
-            System.out.println("loadGames(" + gidsString + ") start");
-            gameStmt = con.prepareStatement(
-                    "select site_id, event_id, round, section, play_date, timer, " +
-                            "rated, initial_time, incremental_time, player1_pid, " +
-                            "player2_pid, player1_rating, player2_rating, winner, game, swapped, private, status, gid " +
-                            "from " + GAME_TABLE + " " +
-                            "where gid in (" + gidsString +") order by gid");
+//            System.out.println("loadGames(" + gidsString + ") start");
+            String gameQueryStr = "select site_id, event_id, round, section, play_date, timer, " +
+                    "rated, initial_time, incremental_time, player1_pid, " +
+                    "player2_pid, player1_rating, player2_rating, winner, game, swapped, private, status, gid " +
+                    "from " + GAME_TABLE + " " +
+                    "where gid in (" + gidsString +") order by gid"; 
+//            gameStmt = con.prepareStatement(gameQueryStr);
 //            gameStmt.setLong(1, gameID);
-            gameResult = gameStmt.executeQuery();
-
-            log4j.debug("get moves");
-            moveStmt = con.prepareStatement("select next_move, move_num, gid " +
+            
+            String movesQueryStr = "select next_move, move_num, gid " +
                     "from " + MOVE_TABLE + " " +
                     "where gid in (" + gidsString + ") " +
                     "and next_move != 361 " +
-                    "order by gid, move_num");
-            moveResult = moveStmt.executeQuery();
+                    "order by gid, move_num";
+            
+//            String playerQueryStr = "select player1_pid, player2_pid " +
+//                    "from " + GAME_TABLE + " " +
+//                    "where gid in (" + gidsString +") order by gid";
+            
+//            gameResult = gameStmt.executeQuery();
+
+            log4j.debug("get moves");
+//            moveStmt = con.prepareStatement(movesQueryStr);
+//            moveResult = moveStmt.executeQuery();
             Map<Long, List<Integer>> movesMap = new HashMap<>();
 
+            Stream<Supplier<ResultSet>> tasks = Stream.of(
+                    () -> querySQL(gameQueryStr),
+                    () -> querySQL(movesQueryStr) //, () -> querySQL(playerQueryStr)
+                    );
+            List<ResultSet> lists = tasks
+                    // Supply all the tasks for execution and collect CompletableFutures
+                    .map(CompletableFuture::supplyAsync)//.collect(Collectors.toList())
+                    // Join all the CompletableFutures to gather the results
+//                    .stream()
+                    .map(CompletableFuture::join).collect(Collectors.toList());
+            
+            gameResult = lists.get(0);
+            moveResult = lists.get(1);
+//            playerResult = lists.get(2);
+            
             while (moveResult.next()) {
                 int move = moveResult.getInt(1);
                 long gid = moveResult.getLong(3);
@@ -843,18 +881,18 @@ log4j.debug("select data complete");
                 }
             }
 
-            playerStmt = con.prepareStatement(
-                    "select player1_pid, player2_pid " +
-                            "from " + GAME_TABLE + " " +
-                            "where gid in (" + gidsString +") order by gid");
-            playerResult = playerStmt.executeQuery();
+//            playerStmt = con.prepareStatement(playerQueryStr);
+//            playerResult = playerStmt.executeQuery();
             Map<Long, Boolean> playerMap = new HashMap<>();
-            while (playerResult.next()) {
-                playerMap.put(playerResult.getLong(1), true);
-                playerMap.put(playerResult.getLong(2), true);
+            while (gameResult.next()) {
+                long player1_pid = gameResult.getLong(10);
+                long player2_pid = gameResult.getLong(11);
+                playerMap.put(player1_pid, true);
+                playerMap.put(player2_pid, true);
             }
             Map<Long, PlayerData> playerDataMap = loadPlayers(con, new ArrayList<>(playerMap.keySet()));
-
+            gameResult.beforeFirst();
+            
             log4j.debug("select data complete");
             while (gameResult.next()) {
                 
@@ -950,12 +988,12 @@ log4j.debug("select data complete");
                 gameStmt.close();
             }
 
-            if (playerResult != null) {
-                playerResult.close();
-            }
-            if (playerStmt != null) {
-                playerStmt.close();
-            }
+//            if (playerResult != null) {
+//                playerResult.close();
+//            }
+//            if (playerStmt != null) {
+//                playerStmt.close();
+//            }
 
             if (moveResult != null) {
                 moveResult.close();
@@ -964,6 +1002,8 @@ log4j.debug("select data complete");
                 moveStmt.close();
             }
         }
+
+        Collections.sort(results, (o1, o2) -> o2.getDate().compareTo(o1.getDate()));
 
         return results;
     }
