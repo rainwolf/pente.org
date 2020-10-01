@@ -789,15 +789,22 @@ log4j.debug("select data complete");
 
     
     private ResultSet querySQL(String query) {
+        PreparedStatement stmt = null;
+        Connection con = null;
+        ResultSet result = null;
+        
         try {
-            Connection con = dbHandler.getConnection();
-            PreparedStatement stmt = con.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-            ResultSet result = stmt.executeQuery();
+            con = dbHandler.getConnection();
+            stmt = con.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+            result = stmt.executeQuery();
             return result;
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            if (stmt != null) { try { stmt.close(); } catch(SQLException ex) {} }
+            if (con != null)  { try { dbHandler.freeConnection(con); } catch(SQLException ex) {} }
         }
-        return null;
+        return result;
     }
     
     /** Loads the game information
