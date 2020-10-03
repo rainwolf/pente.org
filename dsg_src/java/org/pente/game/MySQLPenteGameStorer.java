@@ -788,21 +788,12 @@ log4j.debug("select data complete");
     }
 
     
-    private ResultSet querySQL(String query) {
-        PreparedStatement stmt = null;
-        Connection con = null;
+    private ResultSet executeQuery(PreparedStatement stmt) {
         ResultSet result = null;
-        
         try {
-            con = dbHandler.getConnection();
-            stmt = con.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
             result = stmt.executeQuery();
-            return result;
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            if (stmt != null) { try { stmt.close(); } catch(SQLException ex) {} }
-            if (con != null)  { try { dbHandler.freeConnection(con); } catch(SQLException ex) {} }
         }
         return result;
     }
@@ -827,6 +818,8 @@ log4j.debug("select data complete");
         
         List<GameData> results = new ArrayList<>();
         
+        Connection con2 = null;
+        
         if (gameIDs.size() == 0) {
             return results;
         }
@@ -841,7 +834,7 @@ log4j.debug("select data complete");
                     "player2_pid, player1_rating, player2_rating, winner, game, swapped, private, status, gid " +
                     "from " + GAME_TABLE + " " +
                     "where gid in (" + gidsString +") order by gid"; 
-//            gameStmt = con.prepareStatement(gameQueryStr);
+            gameStmt = con.prepareStatement(gameQueryStr, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 //            gameStmt.setLong(1, gameID);
             
             String movesQueryStr = "select next_move, move_num, gid " +
@@ -856,14 +849,19 @@ log4j.debug("select data complete");
             
 //            gameResult = gameStmt.executeQuery();
 
+
+            con2 = dbHandler.getConnection();
+
             log4j.debug("get moves");
-//            moveStmt = con.prepareStatement(movesQueryStr);
+            moveStmt = con2.prepareStatement(movesQueryStr, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 //            moveResult = moveStmt.executeQuery();
             Map<Long, List<Integer>> movesMap = new HashMap<>();
 
+            PreparedStatement finalGameStmt = gameStmt;
+            PreparedStatement finalMoveStmt = moveStmt;
             Stream<Supplier<ResultSet>> tasks = Stream.of(
-                    () -> querySQL(gameQueryStr),
-                    () -> querySQL(movesQueryStr) //, () -> querySQL(playerQueryStr)
+                    () -> executeQuery(finalGameStmt),
+                    () -> executeQuery(finalMoveStmt) //, () -> querySQL(playerQueryStr)
                     );
             List<ResultSet> lists = tasks
                     // Supply all the tasks for execution and collect CompletableFutures
@@ -872,6 +870,8 @@ log4j.debug("select data complete");
 //                    .stream()
                     .map(CompletableFuture::join).collect(Collectors.toList());
             
+//            gameResult = querySQL(con, gameQueryStr);
+//            moveResult = querySQL(con, movesQueryStr);
             gameResult = lists.get(0);
             moveResult = lists.get(1);
 //            playerResult = lists.get(2);
@@ -1007,6 +1007,10 @@ log4j.debug("select data complete");
             }
             if (moveStmt != null) {
                 moveStmt.close();
+            }
+            
+            if (con2 != null) {
+                dbHandler.freeConnection(con2);
             }
         }
 
