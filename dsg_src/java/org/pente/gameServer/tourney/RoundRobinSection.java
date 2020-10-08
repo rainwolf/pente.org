@@ -169,9 +169,8 @@ public class RoundRobinSection extends TourneySection {
         if (round.getTourney().getName().equals("Pente - March 2005 Open")) {
         	numWinnersInSection = 1; // this tourney didn't have the above rule
         }
-        // final round means final 2 players
-        else if (round.getNumSections() == 1 && 
-                round.getSection(1).getNumPlayers() == 2) {
+        // final round means 1 winner or tied winners advance
+        else if (round.getNumSections() == 1) {
                 numWinnersInSection = 1;
         }
         else {
@@ -192,31 +191,31 @@ public class RoundRobinSection extends TourneySection {
             winners[i] = true;
         }
 
-//      Make it so if the single section round has a clear winner, the tournament is over.
-        if (round.getNumSections() == 1) {
-            boolean moreThanOneMaxScore = true;
-            long currentMaxWins = 0;
-            int maxIdx = -1;
-            for (int i = 0; i < getNumPlayers(); i++) {
-//                long score = results[i][results[i].length - 1];
-                long score = wins[i];
-                if (score > currentMaxWins) {
-                    currentMaxWins = score;
-                    moreThanOneMaxScore = false;
-                    maxIdx = i;
-                } else if (score == currentMaxWins) {
-                    currentMaxWins = score;
-                    moreThanOneMaxScore = true;
-                }
-            }
-            if (!moreThanOneMaxScore) {
-                for (int i = 0; i < winners.length; i++) {
-                    if (i != maxIdx) {
-                        winners[i] = false;
-                    }
-                }
-            }
-        }
+////      Make it so if the single section round has a clear winner, the tournament is over.
+//        if (round.getNumSections() == 1) {
+//            boolean moreThanOneMaxScore = true;
+//            long currentMaxWins = 0;
+//            int maxIdx = -1;
+//            for (int i = 0; i < getNumPlayers(); i++) {
+////                long score = results[i][results[i].length - 1];
+//                long score = wins[i];
+//                if (score > currentMaxWins) {
+//                    currentMaxWins = score;
+//                    moreThanOneMaxScore = false;
+//                    maxIdx = i;
+//                } else if (score == currentMaxWins) {
+//                    currentMaxWins = score;
+//                    moreThanOneMaxScore = true;
+//                }
+//            }
+//            if (!moreThanOneMaxScore) {
+//                for (int i = 0; i < winners.length; i++) {
+//                    if (i != maxIdx) {
+//                        winners[i] = false;
+//                    }
+//                }
+//            }
+//        }
     }
     
     public List getWinners() {
