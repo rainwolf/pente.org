@@ -20,6 +20,10 @@ package org.pente.gameDatabase;
 
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.pente.database.*;
 import org.pente.game.*;
@@ -48,7 +52,7 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
 
     public void search(GameStorerSearchRequestData requestData, GameStorerSearchResponseData responseData) throws Exception {
 long startTime = System.currentTimeMillis();
-        Connection con = null;
+        Connection con = null, extraCon = null;
 
         responseData.setGameStorerSearchRequestData(requestData);
 
@@ -80,29 +84,70 @@ long startTime = System.currentTimeMillis();
 		
         try {
             con = dbHandler.getConnection();
+            extraCon = dbHandler.getConnection();
 
             int totalGameCount = 0;
-            if (requestData.getGameStorerSearchRequestFilterData().doGetNextMoves()) {
-	            totalGameCount = getSearchResults(requestData, 
-					responseData, filterOptionsFrom, includeGameTable, 
-					filterOptionsWhere, filterOptionsParams, 
-					filterOptionsFrom2, filterOptionsWhere2, filterOptionsParams2, union, con);
-            }
-            filterOptionsWhere.append("and g.private = 'N' ");
-            getMatchingGames(requestData, responseData, totalGameCount,
-				filterOptionsFrom, includeGameTable, filterOptionsWhere, 
-				filterOptionsParams, filterOptionsFrom2, filterOptionsWhere2, 
-				filterOptionsParams2, union, con);
+
+            StringBuffer filterOptionsWhereTmp = new StringBuffer();
+            filterOptionsWhereTmp.append(filterOptionsWhere);
+            filterOptionsWhereTmp.append("and g.private = 'N' ");
+
+            Connection finalCon = con;
+            boolean finalIncludeGameTable = includeGameTable;
+            boolean finalUnion = union;
+            Connection finalExtraCon = extraCon;
+            int finalTotalGameCount = totalGameCount;
+            Stream<Supplier<Integer>> tasks = Stream.of(
+                    () -> {
+                        try {
+                            return getTotalGameCount(requestData, responseData, finalCon, filterOptionsFrom, filterOptionsWhere, filterOptionsParams, filterOptionsFrom2, filterOptionsWhere2, filterOptionsParams2, finalIncludeGameTable, finalUnion, finalTotalGameCount);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        return 0;
+                    },
+                    () -> {
+                        try {
+                            return getMatchingGames(requestData, responseData, 
+                                    filterOptionsFrom, finalIncludeGameTable, filterOptionsWhereTmp,
+                                    filterOptionsParams, filterOptionsFrom2, filterOptionsWhere2,
+                                    filterOptionsParams2, finalUnion, finalExtraCon);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        return 0;
+                    }
+            );
+            List<Integer> lists = tasks
+                    .map(CompletableFuture::supplyAsync)
+                    .map(CompletableFuture::join).collect(Collectors.toList());
+            
+            totalGameCount = lists.get(0);
+
+            requestData.getGameStorerSearchRequestFilterData().setTotalGameNum(
+                    totalGameCount);
+            log4j.debug("total matched games = " + requestData.getGameStorerSearchRequestFilterData().getTotalGameNum());
 
         } finally {
             dbHandler.freeConnection(con);
+            dbHandler.freeConnection(extraCon);
         }
 long endTime = System.currentTimeMillis();
 long totalTime = endTime - startTime;
 log4j.debug("search time: " + totalTime);
     }
-	
-	private void addGameTable(StringBuffer filterOptionsFrom,
+
+    private int getTotalGameCount(GameStorerSearchRequestData requestData, GameStorerSearchResponseData responseData, Connection con, StringBuffer filterOptionsFrom, StringBuffer filterOptionsWhere, Vector filterOptionsParams, StringBuffer filterOptionsFrom2, StringBuffer filterOptionsWhere2, Vector filterOptionsParams2, boolean includeGameTable, boolean union, int totalGameCount) throws Exception {
+        if (requestData.getGameStorerSearchRequestFilterData().doGetNextMoves()) {
+            totalGameCount = getSearchResults(requestData,
+                    responseData, filterOptionsFrom, includeGameTable,
+                    filterOptionsWhere, filterOptionsParams,
+                    filterOptionsFrom2, filterOptionsWhere2, filterOptionsParams2, union, con);
+        }
+        return totalGameCount;
+    }
+
+    private void addGameTable(StringBuffer filterOptionsFrom,
 		StringBuffer filterOptionsWhere) {
 
 		filterOptionsFrom.append(", " + game_table + " g ");
@@ -540,9 +585,9 @@ System.out.println("move_num = " + (requestData.getNumMoves() - 1));
     }
 
     
-    protected void getMatchingGames(GameStorerSearchRequestData requestData,
+    protected int getMatchingGames(GameStorerSearchRequestData requestData,
                                     GameStorerSearchResponseData responseData,
-                                    int totalGameCount,
+//                                    int totalGameCount,
                                     StringBuffer filterOptionsFrom,
                                     boolean includeGameTable,
                                     StringBuffer filterOptionsWhere,
@@ -659,9 +704,9 @@ log4j.debug("move_num="+ (requestData.getNumMoves() - 1));
             }
 			
 
-			requestData.getGameStorerSearchRequestFilterData().setTotalGameNum(
-				totalGameCount);
-log4j.debug("total matched games = " + requestData.getGameStorerSearchRequestFilterData().getTotalGameNum());
+//			requestData.getGameStorerSearchRequestFilterData().setTotalGameNum(
+//				totalGameCount);
+//log4j.debug("total matched games = " + requestData.getGameStorerSearchRequestFilterData().getTotalGameNum());
 
 //            // load matched games into response object
 //            for (i = 0; i < gids.size(); i++) {
@@ -687,5 +732,6 @@ log4j.debug("total matched games = " + requestData.getGameStorerSearchRequestFil
                 stmt.close();
             }
         }
+        return 0;
     }
 }
