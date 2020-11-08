@@ -3,6 +3,7 @@
   &nbsp;&nbsp;<a href="helpWindow.jsp?file=register">Join</a><br>
   &nbsp;&nbsp;&nbsp;&nbsp;<a href="helpWindow.jsp?file=privacyPolicy">Privacy Policy</a><br>
   &nbsp;&nbsp;&nbsp;&nbsp;<a href="helpWindow.jsp?file=ratedPolicy">Rated Game Policy</a><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<a href="helpWindow.jsp?file=eula">EULA</a><br>
   &nbsp;&nbsp;<a href="helpWindow.jsp?file=myprofile">My Profile</a><br>
   &nbsp;&nbsp;<a href="helpWindow.jsp?file=play">Playing</a><br>
   &nbsp;&nbsp;&nbsp;&nbsp;<a href="helpWindow.jsp?file=playLive">Live Games</a><br>
