@@ -142,7 +142,9 @@ public class CacheTourneyStorer implements TourneyStorer {
             for (Iterator<Tourney> iterator = currentTournies.iterator(); iterator.hasNext();) {
                 Tourney t = iterator.next();
                 Tourney fullTourney = getTourney(t.getEventID());
-                checkRoundStatus(fullTourney);
+                if (fullTourney.getNumRounds() > 0) {
+                    checkRoundStatus(fullTourney);
+                }
                 if (fullTourney.getEndDate() != null && fullTourney.getEndDate().before(today)) {
                     iterator.remove();
                 }
