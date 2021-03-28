@@ -467,5 +467,8 @@
     </orderEntry>
     <orderEntry type="library" name="paypal-core-1.6.9" level="project" />
     <orderEntry type="library" name="javax.websocket-api-1.1" level="project" />
+    <orderEntry type="library" name="apns-http2-1.0.5-jar-with-dependencies" level="project" />
+    <orderEntry type="library" name="pushy-0.14.2" level="project" />
+    <orderEntry type="library" name="fast-uuid-0.1" level="project" />
   </component>
 </module>

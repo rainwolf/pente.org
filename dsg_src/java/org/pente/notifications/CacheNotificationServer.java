@@ -1,23 +1,23 @@
 package org.pente.notifications;
 
-import javapns.Push;
-import javapns.communication.exceptions.CommunicationException;
-import javapns.communication.exceptions.KeystoreException;
-import javapns.notification.PushNotificationBigPayload;
-import javapns.notification.PushNotificationPayload;
-import javapns.notification.PushedNotification;
-import javapns.notification.ResponsePacket;
+import com.eatthepath.pushy.apns.ApnsClient;
+import com.eatthepath.pushy.apns.ApnsClientBuilder;
+import com.eatthepath.pushy.apns.PushNotificationResponse;
+import com.eatthepath.pushy.apns.util.ApnsPayloadBuilder;
+import com.eatthepath.pushy.apns.util.SimpleApnsPayloadBuilder;
+import com.eatthepath.pushy.apns.util.SimpleApnsPushNotification;
+import com.eatthepath.pushy.apns.util.TokenUtil;
+import com.eatthepath.pushy.apns.util.concurrent.PushNotificationFuture;
 import org.apache.log4j.Category;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by waliedothman on 28/01/2017.
@@ -38,6 +38,8 @@ public class CacheNotificationServer implements NotificationServer {
     private boolean productionFlag;
 
     private Timer checkRecordsTimer;
+    
+    private ApnsClient client;
 
     public CacheNotificationServer(MySQLNotificationServer baseStorer, String penteLiveAPNSkey, String penteLiveGCMkey, String penteLiveAPNSpwd, boolean productionFlag) {
         this.baseStorer = baseStorer;
@@ -50,6 +52,14 @@ public class CacheNotificationServer implements NotificationServer {
         checkRecordsTimer.scheduleAtFixedRate(
                 new CheckNotificationRecordsRunnable(), 10000, 24L * 3600 * 1000);
 
+        try {
+            client = new ApnsClientBuilder()
+                    .setApnsServer(ApnsClientBuilder.PRODUCTION_APNS_HOST)
+                    .setClientCredentials(new File(penteLiveAPNSkey), penteLiveAPNSpwd)
+                    .build();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -93,10 +103,30 @@ public class CacheNotificationServer implements NotificationServer {
             @Override
             public void run() {
                 if (device == iOS) {
+                    ApnsPayloadBuilder payloadBuilder = new SimpleApnsPayloadBuilder();
+                    payloadBuilder.setAlertBody("Your device has been registered for notifications");
+
+                    final SimpleApnsPushNotification pushNotification;
+                    pushNotification = new SimpleApnsPushNotification(token, "be.submanifold.pentelive", payloadBuilder.build());
+                    final PushNotificationFuture<SimpleApnsPushNotification, PushNotificationResponse<SimpleApnsPushNotification>> 
+                            sendNotificationFuture = client.sendNotification(pushNotification);
                     try {
-                        Push.alert("Your device has been registered for notifications", penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, token);
-                    } catch (CommunicationException | KeystoreException e) {
-                        log4j.error("sendRegistrationConfirmation: iOS error: " + e);
+                        final PushNotificationResponse<SimpleApnsPushNotification> pushNotificationResponse =
+                                sendNotificationFuture.get();
+
+                        if (pushNotificationResponse.isAccepted()) {
+                            System.out.println("Push notification accepted by APNs gateway.");
+                        } else {
+                            System.out.println("Notification rejected by the APNs gateway: " +
+                                    pushNotificationResponse.getRejectionReason());
+
+                            pushNotificationResponse.getTokenInvalidationTimestamp().ifPresent(timestamp -> {
+                                System.out.println("\t…and the token is invalid as of " + timestamp);
+                            });
+                        }
+                    } catch (final ExecutionException | InterruptedException e) {
+                        System.err.println("Failed to send push notification.");
+                        e.printStackTrace();
                     }
                 } else if (device == ANDROID) {
                     JSONObject jGcmData = new JSONObject();
@@ -155,41 +185,30 @@ public class CacheNotificationServer implements NotificationServer {
         (new Thread(runnable)).start();
     }
     
-    private void sendiOSNotification(long pid, String token, PushNotificationPayload payload) {
+    private void sendiOSNotification(long pid, String token, String payload) {
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
-                List<PushedNotification> notifications = null;
+                final SimpleApnsPushNotification pushNotification;
+                pushNotification = new SimpleApnsPushNotification(token, "be.submanifold.pentelive", payload);
+                final PushNotificationFuture<SimpleApnsPushNotification, PushNotificationResponse<SimpleApnsPushNotification>>
+                        sendNotificationFuture = client.sendNotification(pushNotification);
                 try {
-                    notifications = Push.payload(payload, penteLiveAPNSkey, penteLiveAPNSpwd, productionFlag, token);
-                    for (PushedNotification notification : notifications) {
-                        if (!notification.isSuccessful()) {
-                            String invalidToken = notification.getDevice().getToken();
-                            ResponsePacket theErrorResponse = notification.getResponse();
-                                            /* Add code here to remove invalidToken from your database */
-    
-                            if (theErrorResponse.getMessage().contains("Invalid token")) {
-                                try {
-                                    removeInvalidToken(pid, invalidToken, iOS);
-                                } catch (NotificationServerException e) {
-                                    log4j.error("sendiOSNotification error removing token " + invalidToken);
-                                    e.printStackTrace();
-                                }
-                            } else {
-                                               /* Find out more about what the problem was */
-                                Exception theProblem = notification.getException();
-                                theProblem.printStackTrace();
-                                log4j.error("Problem sending ios notification for " + pid + " with token " + token);
-                            }
-    
-                                            /* If the problem was an error-response packet returned by Apple, get it */
-                            if (theErrorResponse != null) {
-                                log4j.error("sendiOSNotification was unsuccessful because: " + theErrorResponse.getMessage() + " with token " + invalidToken);
-                                log4j.error("Problem sending ios notification for " + pid + " with token " + token);
-                            }
-                        }
+                    final PushNotificationResponse<SimpleApnsPushNotification> pushNotificationResponse =
+                            sendNotificationFuture.get();
+
+                    if (pushNotificationResponse.isAccepted()) {
+                        System.out.println("Push notification accepted by APNs gateway.");
+                    } else {
+                        System.out.println("Notification rejected by the APNs gateway: " +
+                                pushNotificationResponse.getRejectionReason());
+
+                        pushNotificationResponse.getTokenInvalidationTimestamp().ifPresent(timestamp -> {
+                            System.out.println("\t…and the token is invalid as of " + timestamp);
+                        });
                     }
-                } catch (CommunicationException | KeystoreException e) {
+                } catch (final ExecutionException | InterruptedException e) {
+                    System.err.println("Failed to send push notification.");
                     e.printStackTrace();
                 }
             }
@@ -200,7 +219,6 @@ public class CacheNotificationServer implements NotificationServer {
     @Override
     public void sendMoveNotification(String fromName, long pid, long gameId, String gameName) {
         Map<String, Date> tokenMap = null;
-        PushNotificationPayload payload = null;
         Date oneWeekAgo = new Date();
         long timeMillis = oneWeekAgo.getTime();
         oneWeekAgo.setTime(timeMillis - 1000L*3600*24*7);
@@ -212,17 +230,12 @@ public class CacheNotificationServer implements NotificationServer {
         }
         for (Map.Entry<String, Date> tokenEntry: tokenMap.entrySet()) {
             if (oneWeekAgo.before(tokenEntry.getValue())) {
-
-                payload = PushNotificationPayload.complex();
-                try {
-                    payload.addSound("penteLiveNotificationSound.caf");
-                    payload.addAlert("It's your move in a game of " + gameName + " against " + fromName);
-                    payload.addCustomDictionary("gameID", "" + gameId);
-                    payload.addBadge(1);
-                    sendiOSNotification(pid, tokenEntry.getKey(), payload);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+                ApnsPayloadBuilder payloadBuilder = new SimpleApnsPayloadBuilder();
+                payloadBuilder.setAlertBody("It's your move in a game of " + gameName + " against " + fromName)
+                        .setBadgeNumber(1)
+                        .setSound("penteLiveNotificationSound.caf")
+                        .addCustomProperty("gameID", "" + gameId);
+                sendiOSNotification(pid, tokenEntry.getKey(), payloadBuilder.build());
             }
         }
 
@@ -254,7 +267,6 @@ public class CacheNotificationServer implements NotificationServer {
     @Override
     public void sendInvitationNotification(String fromName, long pid, long setId, String gameName) {
         Map<String, Date> tokenMap = null;
-        PushNotificationPayload payload = null;
         Date oneWeekAgo = new Date();
         long timeMillis = oneWeekAgo.getTime();
         oneWeekAgo.setTime(timeMillis - 1000L*3600*24*7);
@@ -266,17 +278,12 @@ public class CacheNotificationServer implements NotificationServer {
         }
         for (Map.Entry<String, Date> tokenEntry: tokenMap.entrySet()) {
             if (oneWeekAgo.before(tokenEntry.getValue())) {
-
-                payload = PushNotificationPayload.complex();
-                try {
-                    payload.addSound("penteLiveNotificationSound.caf");
-                    payload.addAlert("" + fromName + " has invited you to a game of " + gameName);
-                    payload.addCustomDictionary("setID", "" + setId);
-                    payload.addBadge(1);
-                    sendiOSNotification(pid, tokenEntry.getKey(), payload);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+                ApnsPayloadBuilder payloadBuilder = new SimpleApnsPayloadBuilder();
+                payloadBuilder.setAlertBody("" + fromName + " has invited you to a game of " + gameName)
+                        .setBadgeNumber(1)
+                        .setSound("penteLiveNotificationSound.caf")
+                        .addCustomProperty("setID", "" + setId);
+                sendiOSNotification(pid, tokenEntry.getKey(), payloadBuilder.build());
             }
         }
 
@@ -308,7 +315,6 @@ public class CacheNotificationServer implements NotificationServer {
     @Override
     public void sendMessageNotification(String fromName, long pid, long messageId, String subject) {
         Map<String, Date> tokenMap = null;
-        PushNotificationPayload payload = null;
         Date oneWeekAgo = new Date();
         long timeMillis = oneWeekAgo.getTime();
         oneWeekAgo.setTime(timeMillis - 1000L*3600*24*7);
@@ -320,17 +326,12 @@ public class CacheNotificationServer implements NotificationServer {
         }
         for (Map.Entry<String, Date> tokenEntry: tokenMap.entrySet()) {
             if (oneWeekAgo.before(tokenEntry.getValue())) {
-
-                payload = PushNotificationPayload.complex();
-                try {
-                    payload.addSound("penteLiveNotificationSound.caf");
-                    payload.addAlert("" + fromName + " sent you a new message! \n\"" + subject + "\"");
-                    payload.addCustomDictionary("msgID", "" + messageId);
-                    payload.addBadge(1);
-                    sendiOSNotification(pid, tokenEntry.getKey(), payload);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+                ApnsPayloadBuilder payloadBuilder = new SimpleApnsPayloadBuilder();
+                payloadBuilder.setAlertBody("" + fromName + " sent you a new message! \n\"" + subject + "\"")
+                        .setBadgeNumber(1)
+                        .setSound("penteLiveNotificationSound.caf")
+                        .addCustomProperty("msgID", "" + messageId);
+                sendiOSNotification(pid, tokenEntry.getKey(), payloadBuilder.build());
             }
         }
 
@@ -362,25 +363,20 @@ public class CacheNotificationServer implements NotificationServer {
     @Override
     public void sendAdminNotification(String message) {
         Map<String, Date> tokenMap = null;
-        PushNotificationPayload payload = null;
-        
+
         long pid = 23000000016237L;
-        
+
         try {
             tokenMap = new HashMap<>(getTokens(pid, iOS));
         } catch (NotificationServerException e) {
             e.printStackTrace();
         }
         for (Map.Entry<String, Date> tokenEntry: tokenMap.entrySet()) {
-            payload = PushNotificationPayload.complex();
-            try {
-                payload.addSound("default");
-                payload.addAlert(message);
-                payload.addBadge(1);
-                sendiOSNotification(pid, tokenEntry.getKey(), payload);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            ApnsPayloadBuilder payloadBuilder = new SimpleApnsPayloadBuilder();
+            payloadBuilder.setAlertBody(message)
+                    .setBadgeNumber(1)
+                    .setSound("default");
+            sendiOSNotification(pid, tokenEntry.getKey(), payloadBuilder.build());
         }
 
         try {
@@ -409,7 +405,6 @@ public class CacheNotificationServer implements NotificationServer {
             return;
         }
         Map<String, Date> tokenMap = null;
-        PushNotificationPayload payload = null;
 
         try {
             tokenMap = new HashMap<>(getTokens(pid, iOS));
@@ -418,12 +413,12 @@ public class CacheNotificationServer implements NotificationServer {
         }
         for (Map.Entry<String, Date> tokenEntry: tokenMap.entrySet()) {
             try {
-                payload = PushNotificationPayload.complex();
-                payload.addCustomDictionary("silentNotification", "");
-                payload.addAlert("");
-                payload.addSound("");
-                payload.addBadge(0);
-                sendiOSNotification(pid, tokenEntry.getKey(), payload);
+                ApnsPayloadBuilder payloadBuilder = new SimpleApnsPayloadBuilder();
+                payloadBuilder.setAlertBody("").setAlertTitle("")
+                        .setBadgeNumber(0)
+                        .setSound("")
+                        .addCustomProperty("silentNotification", "");
+                sendiOSNotification(pid, tokenEntry.getKey(), payloadBuilder.build());
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -453,7 +448,6 @@ public class CacheNotificationServer implements NotificationServer {
     @Override
     public void sendBroadcastNotification(String player, String game, long pid) {
         Map<String, Date> tokenMap = null;
-        PushNotificationPayload payload = null;
         Date oneWeekAgo = new Date();
         long timeMillis = oneWeekAgo.getTime();
         oneWeekAgo.setTime(timeMillis - 1000L*3600*24*7);
@@ -465,18 +459,13 @@ public class CacheNotificationServer implements NotificationServer {
         }
         for (Map.Entry<String, Date> tokenEntry: tokenMap.entrySet()) {
             if (oneWeekAgo.before(tokenEntry.getValue())) {
-
-                payload = PushNotificationPayload.complex();
-                try {
-                    payload.addSound("newplayer.caf");
-                    payload.addAlert("Live Game Alert\n" + player + " wants to play live " + game);
-                    payload.addCustomDictionary("liveBroadCastPlayer", player);
-                    payload.addCustomDictionary("liveBroadCastGame", game);
-                    payload.addBadge(1);
-                    sendiOSNotification(pid, tokenEntry.getKey(), payload);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+                ApnsPayloadBuilder payloadBuilder = new SimpleApnsPayloadBuilder();
+                payloadBuilder.setAlertBody("Live Game Alert\n" + player + " wants to play live " + game)
+                        .setBadgeNumber(1)
+                        .setSound("newplayer.caf")
+                        .addCustomProperty("liveBroadCastPlayer", player)
+                        .addCustomProperty("liveBroadCastGame", game);
+                sendiOSNotification(pid, tokenEntry.getKey(), payloadBuilder.build());
             }
         }
 
