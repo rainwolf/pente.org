@@ -8,8 +8,6 @@
                  org.pente.kingOfTheHill.*,
                  java.text.*,
                  java.sql.*, 
-                 javapns.Push,
-                 javapns.devices.*, 
                  java.util.Date,
                  java.util.List,
                  java.util.*,
