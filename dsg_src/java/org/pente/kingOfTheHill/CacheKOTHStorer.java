@@ -49,7 +49,7 @@ public class CacheKOTHStorer implements KOTHStorer {
 
         removeStalePlayersTimer = new Timer();
         removeStalePlayersTimer.scheduleAtFixedRate(
-                new RemoveStalePlayersRunnable(), 10000, 24L * 3600 * 1000);
+                new RemoveStalePlayersRunnable(), 5L*60*1000, 24L * 3600 * 1000);
     }
     public void setTbStorer(CacheTBStorer tbStorer) {
         this.tbStorer = tbStorer;
