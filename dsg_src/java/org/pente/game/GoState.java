@@ -81,8 +81,8 @@ public class GoState extends GridStateDecorator
         this.stoneGroupIDsByPlayer.put(2, new HashMap<>());
         this.koMove = -1;
         captures = new int[3];
-        capturedAt = new int[3][361];
-        capturedMoves = new int[3][361];
+        capturedAt = new int[3][720];
+        capturedMoves = new int[3][720];
         
         passMove = getGridSizeX() * getGridSizeY();
         handicapPass = passMove + 1;

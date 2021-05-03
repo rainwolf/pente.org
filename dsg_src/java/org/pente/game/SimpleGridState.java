@@ -321,8 +321,8 @@ public class SimpleGridState implements GridState {
     }
 
     // hash stuff
-    private long hashes[][] = new long[362][9];
-    private int rots[] = new int[362];
+    private long hashes[][] = new long[720][9];
+    private int rots[] = new int[720];
 
     private int possibleRotations[] = new int[8];
     private int numPossibleRotations = 0;

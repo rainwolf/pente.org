@@ -10,6 +10,10 @@ import java.util.Date;
 public class Step {
 
     private List<Player> players;
+    
+    public Step() {
+        players = new ArrayList<Player>();
+    }
 
     public List<Player> getPlayers() {
         return players;
