@@ -315,7 +315,9 @@ public class MySQLKOTHStorer implements KOTHStorer {
                 stmt.setInt(1, hill_id);
                 stmt.setLong(2, pid);
                 stmt.executeUpdate();
-
+            } catch (Exception se) {
+                log4j.error("MySQLKOTHStorer.updatePlayerLastGameDate(" + hill_id + ", " + pid + ")");
+                se.printStackTrace();
             } finally {
 //                if (result != null) {
 //                    result.close();
@@ -329,6 +331,7 @@ public class MySQLKOTHStorer implements KOTHStorer {
             }
         } catch (SQLException se) {
             log4j.error("MySQLKOTHStorer.updatePlayerLastGameDate(" + hill_id + ", " + pid + ")");
+            se.printStackTrace();
         }
     }
 

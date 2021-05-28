@@ -249,12 +249,18 @@ public class MoveServlet extends HttpServlet {
 							"Undo requests are available to subscribers only.");
 					return;
 				}
-				if (game.getOpponent(game.getCurrentPlayer()) != playerData.getPlayerID()) {
-					log4j.error("MoveServlet, out-of-turn undo request");
-					handleError(request, response,
-							"Undo requests are available when it's not your turn.");
-					return;
-				}
+                if (game.getOpponent(game.getCurrentPlayer()) != playerData.getPlayerID()) {
+                    log4j.error("MoveServlet, out-of-turn undo request");
+                    handleError(request, response,
+                            "Undo requests are available when it's not your turn.");
+                    return;
+                }
+                if (game.getNumMoves() == 0) {
+                    log4j.error("MoveServlet, nothing to undo");
+                    handleError(request, response,
+                            "No moves played yet, nothing to request undo for.");
+                    return;
+                }
 				log4j.debug("forward to game page");
 				String isMobile = (String) request.getParameter("mobile");
 				if (isMobile == null) {
