@@ -161,25 +161,25 @@ Tourney speedPente = getLastTBTourney(completedDetails, GridStateFactory.SPEED_P
      <td align="center"><h2><b>Current Tournament Champs!</b></h2></td>
   </tr>
     <tr><td>&nbsp;</td></tr>
-    <tr>
-        <td align="center">
-            <table width="27%" border="1" cellpadding="2" cellspacing="0" bordercolor="black">
-                <tr bgcolor="<%= bgColor1 %>">
-                    <td align="center" width="33%"><font color="white">Speed Pente</font></td>
-                </tr>
-                </tr>
-                <tr>
-                    <td align="center"><a href="statusRound.jsp?eid=<%= speedPente.getEventID() %>&round=<%= speedPente.getNumRounds() %>"><%=speedPente.getName()%></a></td>
-                </tr>
-                <tr>
-                    <td align="center"><a href="../profile?viewName=<%=speedPente.getWinner()%>"><%=speedPente.getWinner()%></a> <img src="/gameServer/images/crown.gif"></td>
-                </tr>
-                <tr>
-                    <td align="center"><img src="/gameServer/avatar?name=<%=speedPente.getWinner()%>" style="width:125px;height:125px;"></td>
-                </tr>
-            </table>
-        </td>
-    </tr>
+<%--    <tr>--%>
+<%--        <td align="center">--%>
+<%--            <table width="27%" border="1" cellpadding="2" cellspacing="0" bordercolor="black">--%>
+<%--                <tr bgcolor="<%= bgColor1 %>">--%>
+<%--                    <td align="center" width="33%"><font color="white">Speed Pente</font></td>--%>
+<%--                </tr>--%>
+<%--                </tr>--%>
+<%--                <tr>--%>
+<%--                    <td align="center"><a href="statusRound.jsp?eid=<%= speedPente.getEventID() %>&round=<%= speedPente.getNumRounds() %>"><%=speedPente.getName()%></a></td>--%>
+<%--                </tr>--%>
+<%--                <tr>--%>
+<%--                    <td align="center"><a href="../profile?viewName=<%=speedPente.getWinner()%>"><%=speedPente.getWinner()%></a> <img src="/gameServer/images/crown.gif"></td>--%>
+<%--                </tr>--%>
+<%--                <tr>--%>
+<%--                    <td align="center"><img src="/gameServer/avatar?name=<%=speedPente.getWinner()%>" style="width:125px;height:125px;"></td>--%>
+<%--                </tr>--%>
+<%--            </table>--%>
+<%--        </td>--%>
+<%--    </tr>--%>
     <tr><td>&nbsp;</td></tr>
     <tr>
         <td align="center">

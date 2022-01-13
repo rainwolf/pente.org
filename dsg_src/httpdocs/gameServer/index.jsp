@@ -488,11 +488,12 @@ addLoadEvent(goJws);
  <table style="width:100%">
   <tr>
 <%
-SessionListener sessionListener = (SessionListener) application.getAttribute(SessionListener.class.getName());
-List<WhosOnlineRoom> rooms = WhosOnline.getPlayers(dsgPlayerData.getPlayerID(), globalResources, sessionListener);
 
 boolean inLiveGameRoom = false;
-for (int i = 0; i < rooms.size(); i++) {
+    SessionListener sessionListener = (SessionListener) application.getAttribute(SessionListener.class.getName());
+    List<WhosOnlineRoom> rooms = WhosOnline.getPlayers(dsgPlayerData.getPlayerID(), globalResources, sessionListener);
+
+    for (int i = 0; i < rooms.size(); i++) {
     WhosOnlineRoom room = rooms.get(i);
     if (room.getName().equals("web")) {
       continue;
