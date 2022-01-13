@@ -14,16 +14,14 @@
                     </td>
                 </tr>
                 <tr <% if (i++ % 2 == 1) { %>style="background: #e5e5e5;"<% } %>>
-                    <%  ForumMessage lastPost = SkinUtils.getLastPost(thread); 
-                    if (lastPost != null && lastPost.getUser() != null) { %>
+                    <%  ForumMessage lastPost = SkinUtils.getLastPost(thread); %> 
                     <td style="font-size:10px">
                         Last Post: <%= dateFormat.format(thread.getModificationDate()) %> by:
-                        <%--
-                        --%>
+                    <% if (lastPost != null && lastPost.getUser() != null) { %>
                         <a href="/gameServer/forums/thread.jspa?forumID=<%= lastPost.getForumThread().getForum().getID() %>&threadID=<%= lastPost.getForumThread().getID() %>&messageID=<%= lastPost.getID() %>#<%= lastPost.getID() %>"
                         ><%= lastPost.getUser().getUsername()  %> &raquo;</a>
-                    </td>
                     <% } %>
+                    </td>
                 </tr>
                 <% 
         } %>
