@@ -755,7 +755,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
     <br>
 
     <a class="button" href="/gameServer/pgn.jsp?g=<%= game.getGameID() %>"><span style="color:white">Text version</span></a>
-    <% if (!game.isPrivateGame()) { %><a class="button" style="clear:right;" href="/gameServer/forums/post!default.jspa?forumID=27&body=[game]<%= game.getGameID() %>[/game]<%= URLEncoder.encode("\n\nEnter your comments here") %>&subject=<%= URLEncoder.encode("Game: " + game.getPlayer1Data().getUserIDName() + " vs. " + game.getPlayer2Data().getUserIDName() + " " + dateFormat.format(game.getDate().getTime())) %>"><span style="color:white">Discuss this game</span></a><% } %>
+    <% if (!game.isPrivateGame()) { %><a class="button" style="clear:right;" href="/gameServer/forums/post!default.jspa?forumID=27&body=<%= URLEncoder.encode("[game]"+game.getGameID()+"[/game]\n\nEnter your comments here") %>&subject=<%= URLEncoder.encode("Game: " + game.getPlayer1Data().getUserIDName() + " vs. " + game.getPlayer2Data().getUserIDName() + " " + dateFormat.format(game.getDate().getTime())) %>"><span style="color:white">Discuss this game</span></a><% } %>
     <a class="button" href="javascript:gifer();" ><span style="color:white">Animated GIF</span></a>
 
         <script type="text/javascript">
