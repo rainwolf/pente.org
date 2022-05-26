@@ -1,0 +1,9 @@
+#!/bin/bash
+
+#rm -r deploy/*
+#rsync -v -u -r -t --exclude test --exclude opengl --exclude swing --stats --progress dsg_src/java/ deploy/
+#ant
+#rsync -vurt --checksum --stats --exclude .DS_Store --progress "deployClasses/" -e ssh "rainwolf@development.pente.org:~/tomcat8/WEB-INF/classes/"
+rsync -vurt --checksum --stats --exclude .DS_Store --progress "/Users/waliedothman/mariposa/coding/pente.org/dsg_src/httpdocs/" -e ssh "rainwolf@development.pente.org:~/tomcat/"
+ssh rainwolf@development.pente.org sudo chown -R rainwolf:tomcat tomcat/
+#ssh -t rainwolf@development.pente.org sudo ./restartTomcat.sh

@@ -1,0 +1,6 @@
+#!/bin/bash
+
+open ~/mariposa/coding/keysCertificatesStuff.dmg 
+
+cd letsencrypt
+./getssl -w . pente.org
