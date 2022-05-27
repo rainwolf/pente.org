@@ -303,7 +303,7 @@ h2 { font-size:14pt;margin-top:0;padding:2px 0 2px 0}
     <h2 style="margin:0;padding:0;">Dashboard - Hi <%@ include file="playerLink.jspf" %>!</h2>
   <% } %>    
 <a href="/gameServer/myprofile">Edit Profile</a> | <a href="/gameServer/mymessages">My Messages <%= numMessages > 0 ? "("+numMessages+" unread)" : "" %></a> | <a href="/gameServer/social?social">Social</a>
-    <% if ("rainwolf".equals(dsgPlayerData.getName())) { %>
+    <% if ("rainwolf".equals(dsgPlayerData.getName()) || "zachburau".equals(dsgPlayerData.getName())) { %>
  | <a href="/gameServer/admin">adminLink</a> | <a href="/gameServer/who.jsp">who</a>
   <%}%>
     <br>

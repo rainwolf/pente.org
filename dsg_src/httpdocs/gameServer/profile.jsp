@@ -126,7 +126,7 @@ if (dsgPlayerData != null) {
       </td>
      <% } %>
      </tr>
-     <% if (name != null && name.equals("rainwolf")) { %>
+     <% if (name != null && (name.equals("rainwolf") || name.equals("zachburau"))) { %>
      <tr>
        <td>
          <font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b>ID:</b></font>
@@ -243,7 +243,7 @@ if (dsgPlayerData != null) {
         <%-- do not show email addresses to spiders --%>
         <%
         if (request.getAttribute("spider") == null && 
-            (dsgPlayerData.getEmailVisible() || (name != null && name.equals("rainwolf")))) {
+            (dsgPlayerData.getEmailVisible() || (name != null && (name.equals("rainwolf") || name.equals("zachburau"))))) {
             out.println("<b><a href=\"mailto:" + dsgPlayerData.getEmail() + "\">" + dsgPlayerData.getEmail() + "</a></b>");
         }
         else {
@@ -365,7 +365,7 @@ if (dsgPlayerData != null) {
          <%}%>
 
     <% } %>
-<% if ("rainwolf".equals(name)) { 
+<% if (name.equals("rainwolf") || name.equals("zachburau")) { 
 int weekend[]=new int[] { 7, 1 };
 List prefs = dsgPlayerStorer.loadPlayerPreferences(dsgPlayerData.getPlayerID());
 if (prefs != null) {
