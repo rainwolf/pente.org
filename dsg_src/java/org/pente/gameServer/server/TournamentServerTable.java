@@ -330,11 +330,11 @@ public class TournamentServerTable extends ServerTable {
      */
     @Override
     protected void updateDatabaseAfterGameOver
-    (GameData gameData, String winnerPlayer, String loserPlayer,
+    (GameData gameData, GameData fileGameData, String winnerPlayer, String loserPlayer,
      int game, int localWinner, LiveSet localSet) {
 
         try {
-            super.updateDatabaseAfterGameOver(gameData, winnerPlayer, loserPlayer, game, localWinner, localSet);
+            super.updateDatabaseAfterGameOver(gameData, fileGameData, winnerPlayer, loserPlayer, game, localWinner, localSet);
             long newPid1 = sittingPlayers[1].getPlayerID();
             long newPid2 = sittingPlayers[2].getPlayerID();
             TourneyMatch newMatch = resources.getTourneyStorer().getUnplayedMatch(
