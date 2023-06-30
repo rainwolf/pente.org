@@ -95,7 +95,7 @@
        -DappletVersion=...  Ant build replaces the text @appletVersion -->
   <context-param>
     <param-name>appletVersion</param-name>
-    <param-value>4.3.0.13</param-value>
+    <param-value>4.4.0.0</param-value>
   </context-param>
 
   <context-param>
@@ -454,6 +454,15 @@
 
   <servlet>
     <servlet-name>
+      ChangeAdsPersonalizationPreferenceServlet 
+    </servlet-name>
+    <servlet-class>
+      org.pente.gameServer.client.web.ChangeAdsPersonalizationPreferenceServlet
+    </servlet-class>
+  </servlet>
+
+  <servlet>
+    <servlet-name>
       DonationServlet
     </servlet-name>
     <servlet-class>
@@ -717,6 +726,11 @@
   <session-config>
     <session-timeout>8</session-timeout>
   </session-config>
+
+  <servlet-mapping>
+    <servlet-name>ChangeAdsPersonalizationPreferenceServlet</servlet-name>
+    <url-pattern>/gameServer/changeAdsPreference</url-pattern>
+  </servlet-mapping>
 
   <welcome-file-list>
     <welcome-file>index.jsp</welcome-file>
