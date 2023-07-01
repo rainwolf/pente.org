@@ -323,8 +323,8 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
                         "(site_id, event_id, round, section, play_date, timer, rated, " +
                         " initial_time, incremental_time, player1_pid, player2_pid, " +
                         " player1_rating, player2_rating, player1_type, player2_type, " +
-                        " winner, gid, game, swapped, private, status) " +
-                        "values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                        " winner, gid, game, swapped, private, status, swap2pass) " +
+                        "values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
                 String timer = "N";
                 if (data.getTimed()) {
@@ -379,6 +379,7 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
                 stmt.setString(19, data.didPlayersSwap() ? "Y" : "N");
                 stmt.setString(20, data.isPrivateGame() ? "Y" : "N");
                 stmt.setString(21, data.getStatus());
+                stmt.setInt(22, data.didSwap2Pass() ? 1 : 0);
                 stmt.executeUpdate();
                 stmt.close();
             }
@@ -497,7 +498,8 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
                 gameId == GridStateFactory.TB_DPENTE || gameId == GridStateFactory.TB_DKERYO ||
                 gameId == GridStateFactory.GO || gameId == GridStateFactory.SPEED_GO || gameId == GridStateFactory.TB_GO
         || gameId == GridStateFactory.GO9 || gameId == GridStateFactory.SPEED_GO9 || gameId == GridStateFactory.TB_GO9
-        || gameId == GridStateFactory.GO13 || gameId == GridStateFactory.SPEED_GO13 || gameId == GridStateFactory.TB_GO13);
+        || gameId == GridStateFactory.GO13 || gameId == GridStateFactory.SPEED_GO13 || gameId == GridStateFactory.TB_GO13
+        || gameId == GridStateFactory.SWAP2PENTE || gameId == GridStateFactory.SPEED_SWAP2PENTE || gameId == GridStateFactory.TB_SWAP2PENTE);
     }
     
     /** Gets the current number of moves stored for a game
@@ -628,7 +630,7 @@ log4j.debug("loadGame(" + gameID + ") start");
             gameStmt = con.prepareStatement(
                 "select site_id, event_id, round, section, play_date, timer, " +
                 "rated, initial_time, incremental_time, player1_pid, " +
-                "player2_pid, player1_rating, player2_rating, winner, game, swapped, private, status " +
+                "player2_pid, player1_rating, player2_rating, winner, game, swapped, private, status, swap2pass " +
                 "from " + GAME_TABLE + " " +
                 "where gid = ?");
             gameStmt.setLong(1, gameID);
@@ -703,7 +705,8 @@ log4j.debug("select data complete");
                 
                 gameData.setPrivateGame(gameResult.getString(17).equals("Y"));
                 gameData.setStatus(gameResult.getString(18));
-                
+                gameData.setSwap2Pass(gameResult.getInt(19) == 1);
+
                 gameData.setGame(GridStateFactory.getGameName(game));
 
 				log4j.debug("get moves");
@@ -831,7 +834,7 @@ log4j.debug("select data complete");
 //            System.out.println("loadGames(" + gidsString + ") start");
             String gameQueryStr = "select site_id, event_id, round, section, play_date, timer, " +
                     "rated, initial_time, incremental_time, player1_pid, " +
-                    "player2_pid, player1_rating, player2_rating, winner, game, swapped, private, status, gid " +
+                    "player2_pid, player1_rating, player2_rating, winner, game, swapped, private, status, gid, swap2pass " +
                     "from " + GAME_TABLE + " " +
                     "where gid in (" + gidsString +") order by gid"; 
             gameStmt = con.prepareStatement(gameQueryStr, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
@@ -972,6 +975,8 @@ log4j.debug("select data complete");
                 gameData.setStatus(gameResult.getString(18));
 
                 gameData.setGame(GridStateFactory.getGameName(game));
+
+                gameData.setSwap2Pass(gameResult.getInt(20) == 1);
 
                 if (!firstMoveCanBeOffCenter(game)) {
                     gameData.addMove(180);

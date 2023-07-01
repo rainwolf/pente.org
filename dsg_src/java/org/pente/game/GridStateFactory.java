@@ -28,7 +28,9 @@ public class GridStateFactory {
     public static final int SPEED_GO13 = GO13 + 1;
     public static final int OPENTE = 25;
     public static final int SPEED_OPENTE = OPENTE + 1;
-    
+    public static final int SWAP2PENTE = 27;
+    public static final int SPEED_SWAP2PENTE = SWAP2PENTE + 1;
+
     
 
 	// 50 + normal game for turn-based games
@@ -47,7 +49,8 @@ public class GridStateFactory {
     public static final int TB_GO9 = TB_START + GO9;
     public static final int TB_GO13 = TB_START + GO13;
     public static final int TB_OPENTE = TB_START + OPENTE;
-    
+    public static final int TB_SWAP2PENTE = TB_START + SWAP2PENTE;
+
 	
     public static final Game PENTE_GAME = new Game(PENTE, "Pente", false);
     public static final Game SPEED_PENTE_GAME = new Game(SPEED_PENTE, "Speed Pente", true);
@@ -90,7 +93,10 @@ public class GridStateFactory {
     public static final Game OPENTE_GAME = new Game(OPENTE, "O-Pente", false);
     public static final Game SPEED_OPENTE_GAME = new Game(SPEED_OPENTE, "Speed O-Pente", true);
     public static final Game TB_OPENTE_GAME = new Game(TB_OPENTE, "O-Pente", false);
-    
+    public static final Game SWAP2PENTE_GAME = new Game(SWAP2PENTE, "O-Pente", false);
+    public static final Game SPEED_SWAP2PENTE_GAME = new Game(SPEED_SWAP2PENTE, "Speed O-Pente", true);
+    public static final Game TB_SWAP2PENTE_GAME = new Game(TB_SWAP2PENTE, "Swap2-Pente", false);
+
     private static final Game allGames[] = {
         null, PENTE_GAME, SPEED_PENTE_GAME, KERYO_GAME, SPEED_KERYO_GAME,
         GOMOKU_GAME, SPEED_GOMOKU_GAME, DPENTE_GAME, SPEED_DPENTE_GAME,
@@ -98,11 +104,11 @@ public class GridStateFactory {
         CONNECT6_GAME, SPEED_CONNECT6_GAME, BOAT_PENTE_GAME, SPEED_BOAT_PENTE_GAME,
             DKERYO_GAME, SPEED_DKERYO_GAME, GO_GAME, SPEED_GO_GAME,
             GO9_GAME, SPEED_GO9_GAME, GO13_GAME, SPEED_GO13_GAME, 
-            OPENTE_GAME, SPEED_OPENTE_GAME,
+            OPENTE_GAME, SPEED_OPENTE_GAME, SWAP2PENTE_GAME, SPEED_SWAP2PENTE_GAME,
         TB_PENTE_GAME, TB_KERYO_GAME, TB_GOMOKU_GAME, TB_DPENTE_GAME,
         TB_GPENTE_GAME, TB_POOF_PENTE_GAME, TB_CONNECT6_GAME, 
             TB_BOAT_PENTE_GAME, TB_DKERYO_GAME, TB_GO_GAME,
-            TB_GO9_GAME, TB_GO13_GAME, TB_OPENTE_GAME
+            TB_GO9_GAME, TB_GO13_GAME, TB_OPENTE_GAME, TB_SWAP2PENTE_GAME
     };
 	private static final Game displaygames[] = {
 		PENTE_GAME, 
@@ -118,6 +124,7 @@ public class GridStateFactory {
             GO9_GAME,
             GO13_GAME,
             OPENTE_GAME,
+            SWAP2PENTE_GAME,
 		new Game(TB_PENTE, "Turn-based Pente", false), 
 		new Game(TB_KERYO, "Turn-based Keryo-Pente", false), 
         new Game(TB_GOMOKU, "Turn-based Gomoku", false), 
@@ -131,7 +138,8 @@ public class GridStateFactory {
             new Game(TB_GO9, "Turn-based Go (9x9)", false),
             new Game(TB_GO13, "Turn-based Go (13x13)", false),
             new Game(TB_OPENTE, "Turn-based O-Pente", false),
-        SPEED_PENTE_GAME, 
+            new Game(TB_SWAP2PENTE, "Turn-based Swap2-Pente", false),
+        SPEED_PENTE_GAME,
 		SPEED_KERYO_GAME,
         SPEED_GOMOKU_GAME, 
         SPEED_CONNECT6_GAME,
@@ -143,7 +151,8 @@ public class GridStateFactory {
             SPEED_GO_GAME,
             SPEED_GO9_GAME,
             SPEED_GO13_GAME,
-            SPEED_OPENTE_GAME
+            SPEED_OPENTE_GAME,
+            SPEED_SWAP2PENTE_GAME
 	};
 	
     private static final Game normalGames[] = {
@@ -153,7 +162,7 @@ public class GridStateFactory {
         CONNECT6_GAME, BOAT_PENTE_GAME,
             DKERYO_GAME, 
             GO_GAME, GO9_GAME, GO13_GAME,
-            OPENTE_GAME
+            OPENTE_GAME, SWAP2PENTE_GAME
     };
     private static final Game speedGames[] = {
         SPEED_PENTE_GAME, SPEED_KERYO_GAME,
@@ -162,7 +171,7 @@ public class GridStateFactory {
         SPEED_CONNECT6_GAME, SPEED_BOAT_PENTE_GAME,
             SPEED_DKERYO_GAME, 
             SPEED_GO_GAME, SPEED_GO9_GAME, SPEED_GO13_GAME,
-            SPEED_OPENTE_GAME
+            SPEED_OPENTE_GAME, SPEED_SWAP2PENTE_GAME
     };
     private static final Game tbGames[] = {
         TB_PENTE_GAME, TB_KERYO_GAME,
@@ -171,7 +180,7 @@ public class GridStateFactory {
 		TB_CONNECT6_GAME, TB_BOAT_PENTE_GAME,
             TB_DKERYO_GAME, 
             TB_GO_GAME, TB_GO9_GAME, TB_GO13_GAME,
-            TB_OPENTE_GAME
+            TB_OPENTE_GAME, TB_SWAP2PENTE_GAME
     };
     
     private static final GridState gridStates[] = new GridState[getNumGames() + 1];
@@ -285,6 +294,16 @@ public class GridStateFactory {
                 oPenteState.setCaptureLengths(new int[] { 2, 3 });
                 oPenteState.setCapturesToWin(15);
                 return oPenteState;
+            case SWAP2PENTE:
+            case SPEED_SWAP2PENTE:
+            case TB_SWAP2PENTE:
+                gomoku.allowOverlines(true);
+                PenteState swap2PenteState = new SimplePenteState(gomoku);
+                swap2PenteState.setTournamentRule(false);
+                swap2PenteState.setCaptureLengths(new int[] { 2 });
+                swap2PenteState.setCapturesToWin(10);
+                swap2PenteState.setSwap2Rules(true);
+                return swap2PenteState;
         }
         
         return null;

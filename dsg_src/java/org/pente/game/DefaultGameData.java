@@ -81,6 +81,9 @@ public class DefaultGameData implements GameData {
     /** Did players swap */
     protected boolean       swapped;
 
+    /** Did players swap */
+    protected boolean       swap2Pass;
+
     /** Is game private */
     protected boolean		privateGame;
 
@@ -357,6 +360,15 @@ public class DefaultGameData implements GameData {
         return swapped;
     }
 
+    @Override
+    public boolean didSwap2Pass() {
+        return swap2Pass;
+    }
+
+    @Override
+    public void setSwap2Pass(boolean swap2Pass) {
+        this.swap2Pass = swap2Pass;
+    }
 
     /** Add a move for this game
      *  @param move An integer representation of a move

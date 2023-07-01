@@ -43,12 +43,12 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 
 	private List<Integer> moves = new ArrayList<Integer>();
 	private List<TBMessage> messages = new ArrayList<TBMessage>();
-	
+
     public static final int DPENTE_STATE_START = 1;
     public static final int DPENTE_STATE_DECIDE = 2;
     public static final int DPENTE_STATE_DECIDED = 3;
-	private int dPenteState = DPENTE_STATE_START;
-	private boolean dPenteSwapped = false;
+    private int dPenteState = DPENTE_STATE_START;
+    private boolean dPenteSwapped = false;
 	
 	public static final int GO_PLAY = 1;
 	public static final int GO_MARK_DEAD_STONES = 2;
@@ -69,6 +69,10 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 //                moves.get(moves.size() - 2) == passMove && 
 //                moves.get(moves.size() - 3) == passMove;
 //    }
+
+    private boolean swap2Pass = false;
+
+
     public int containsDoublePass() {
 	    boolean hasPass = false;
 	    for (int i = 0; i < moves.size(); i++) {
@@ -194,7 +198,9 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 
 	public TBMessage getInviterMessage() {
 		//TODO hackish
-		if (messages.isEmpty()) return null;
+		if (messages.isEmpty()) {
+            return null;
+        }
 		return messages.get(0);
 	}
 	
@@ -227,8 +233,6 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 		int cp = 0;
 		
 		if (game == GridStateFactory.TB_GO || game == GridStateFactory.TB_GO9 || game == GridStateFactory.TB_GO13) {
-		    
-		    
 		    int dp = containsDoublePass();
 		    if (dp == -1) {
                 cp = moves.size() % 2 + 1;
@@ -237,18 +241,27 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
             } else {
                 cp = 2 - dp % 2;
             }
-            
-            
         } else if ((game == GridStateFactory.TB_DPENTE || game == GridStateFactory.TB_DKERYO) &&
-			dPenteState != DPENTE_STATE_DECIDED) {
-			if (dPenteState == DPENTE_STATE_START) {
-				cp = 1;
-			}
-			else if (dPenteState == DPENTE_STATE_DECIDE) {
-				cp = 2;
-			} else {
-				cp = -1;
-			}
+                dPenteState != DPENTE_STATE_DECIDED) {
+            if (dPenteState == DPENTE_STATE_START) {
+                cp = 1;
+            } else if (dPenteState == DPENTE_STATE_DECIDE) {
+                cp = 2;
+            } else {
+                cp = -1;
+            }
+        } else if ((game == GridStateFactory.TB_SWAP2PENTE) && !(dPenteState == DPENTE_STATE_DECIDED)) {
+            if (dPenteState == DPENTE_STATE_START) {
+                cp = 1;
+            } else {
+                if (dPenteState == DPENTE_STATE_DECIDE && moves.size() == 3) {
+                    cp = 2;
+                } else if (dPenteState == DPENTE_STATE_DECIDE && moves.size() == 5) {
+                    cp = 1;
+                } else {
+                    cp = -1;
+                }
+            }
 		}  else if (game == GridStateFactory.TB_CONNECT6) {
 	    	cp = ((moves.size() + 1) / 2) % 2 + 1;
 		} else {
@@ -288,8 +301,10 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 		this.player2Pid = player2Pid;
 	}
 	public long getOpponent(long pid) {
-		if (player1Pid == pid) return player2Pid;
-		else return player1Pid;
+		if (player1Pid == pid) {
+            return player2Pid;
+        }
+        return player1Pid;
 	}
 
 	public int getRound() {
@@ -336,8 +351,7 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 	public void acceptInvite(long pid, long inviterPid) {
 		if (inviterPid == player1Pid) {
 			player2Pid = pid;
-		}
-		else {
+		} else {
 			player1Pid = pid;
 		}
 		startDate = new Date();
@@ -348,50 +362,56 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
     public long getWinnerPid() {
         if (winner == 1) {
             return player1Pid;
-        }
-        else {
+        } else {
             return player2Pid;
         }
     }
 	public boolean isWinner(long pid) {
-		if (pid == player1Pid) return winner == 1;
-		else return winner == 2;
+		if (pid == player1Pid) {
+            return winner == 1;
+        }
+		return winner == 2;
 	}
 	public int getWinner() {
 		return winner;
 	}
 	public void setWinner(int winner) {
 		this.winner = winner;
-        if (state == STATE_COMPLETED && winner == 0) draw = true;
+        if (state == STATE_COMPLETED && winner == 0) {
+            draw = true;
+        }
 	}
 
-	public int getDPenteState() {
-		return dPenteState;
-	}
-	public void setDPenteState(int penteState) {
-		dPenteState = penteState;
-	}
+    public int getDPenteState() {
+        return dPenteState;
+    }
+    public void setDPenteState(int penteState) {
+        dPenteState = penteState;
+    }
 
-	public boolean didDPenteSwap() {
-		return dPenteSwapped;
-	}
-	public void setDPenteSwapped(boolean penteSwapped) {
-		dPenteSwapped = penteSwapped;
-	}
-	public void dPenteSwap(boolean swap) {
-		setDPenteSwapped(swap);
-		setDPenteState(DPENTE_STATE_DECIDED);
-		
-		if (swap) {
-			long tmp = getPlayer1Pid();
-			setPlayer1Pid(getPlayer2Pid());
-			setPlayer2Pid(tmp);
-		}
+    public boolean didDPenteSwap() {
+        return dPenteSwapped;
+    }
+    public void setDPenteSwapped(boolean penteSwapped) {
+        dPenteSwapped = penteSwapped;
+    }
+    public void dPenteSwap(boolean swap) {
+        setDPenteSwapped(swap);
+        setDPenteState(DPENTE_STATE_DECIDED);
 
-		lastMoveDate = new Date();
-	}
+        if (swap) {
+            long tmp = getPlayer1Pid();
+            setPlayer1Pid(getPlayer2Pid());
+            setPlayer2Pid(tmp);
+        }
 
-	public boolean isUndoRequested() { return undoRequested; }
+        lastMoveDate = new Date();
+    }
+    public boolean didSwap2Pass() { return swap2Pass; }
+    public void setSwap2Pass(boolean swap2PentePass) { this.swap2Pass = swap2PentePass; }
+
+
+    public boolean isUndoRequested() { return undoRequested; }
 	public void setUndoRequested(boolean undoRequested) { this.undoRequested = undoRequested; }
 	public byte getHiddenBy() { return hiddenBy; }
 	public void setHiddenBy(byte hider) { this.hiddenBy = hider; }
@@ -466,8 +486,13 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 
         gameData.setWinner(getWinner());
 
-        if (getGame() == GridStateFactory.TB_DPENTE || getGame() == GridStateFactory.TB_DKERYO) {
+        if (getGame() == GridStateFactory.TB_DPENTE ||
+            getGame() == GridStateFactory.TB_DKERYO ||
+            getGame() == GridStateFactory.TB_SWAP2PENTE) {
             gameData.setSwapped(didDPenteSwap());
+        }
+        if (getGame() == GridStateFactory.TB_SWAP2PENTE) {
+            gameData.setSwap2Pass(swap2Pass);
         }
 
         for (int i = 0; i < getNumMoves(); i++) {

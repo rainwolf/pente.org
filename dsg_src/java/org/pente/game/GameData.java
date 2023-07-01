@@ -227,6 +227,9 @@ public interface GameData extends MoveData {
      */
     public boolean didPlayersSwap();
 
+    public boolean didSwap2Pass();
+    public void setSwap2Pass(boolean swap2pass);
+
 
 	public boolean isPrivateGame();
 	public void setPrivateGame(boolean privateGame);
