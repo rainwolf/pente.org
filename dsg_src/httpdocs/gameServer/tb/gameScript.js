@@ -31,23 +31,25 @@ var abstractBoard = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]];
 var coordinateLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T'];
         
-        var whiteCaptures = 0, blackCaptures = 0;
-        var c6Move1 = -1, c6Move2 = -1, dPenteMove1 = -1, dPenteMove2 = -1, dPenteMove3 = -1, dPenteMove4 = -1;
+var whiteCaptures = 0, blackCaptures = 0;
+var c6Move1 = -1, c6Move2 = -1,
+    dPenteMove1 = -1, dPenteMove2 = -1, dPenteMove3 = -1, dPenteMove4 = -1,
+    swap2Move1 = -1, swap2Move2 = -1, swap2Move3 = -1;
 
-        var stoneCanvas = document.getElementById("stone");
-        var stoneContext = stoneCanvas.getContext("2d");
-        var interactionCanvas = document.getElementById("interactionLayer");
-        var interactionContext = interactionCanvas.getContext("2d");
+var stoneCanvas = document.getElementById("stone");
+var stoneContext = stoneCanvas.getContext("2d");
+var interactionCanvas = document.getElementById("interactionLayer");
+var interactionContext = interactionCanvas.getContext("2d");
 
-        var goGroupsByPlayerAndID = {1: {}, 2: {}}, goStoneGroupIDsByPlayer = {1: {}, 2: {}};
-        var koMove = -1;
-        var suicideAllowed = false;
-        var goTerritoryByPlayer = {1: [], 2: []};
-        var territoryDrawn = false;
-        var passMove = 361;
-        var handicapPass = passMove + 1;
+var goGroupsByPlayerAndID = {1: {}, 2: {}}, goStoneGroupIDsByPlayer = {1: {}, 2: {}};
+var koMove = -1;
+var suicideAllowed = false;
+var goTerritoryByPlayer = {1: [], 2: []};
+var territoryDrawn = false;
+var passMove = 361;
+var handicapPass = passMove + 1;
 
-        var goDeadStonesByPlayer = {1: [], 2: []};
+var goDeadStonesByPlayer = {1: [], 2: []};
         
         
 function leftRight(e) {
@@ -89,8 +91,6 @@ function drawGame() {
         drawCaptures();
     }
 }
-
-
 
 function replayGoGame(abstractBoard, movesList, until) {
     passMove = gridSize*gridSize;
@@ -166,8 +166,8 @@ function addGoMove(move, currentPlayer) {
 function makeCaptures(move, groupsByID, stoneGroupIDs, colorToCapture) {
     let captures = 0;
     if (move%gridSize !== 0) {
-        var neighborStone = move - 1;
-        var neighborStoneGroupID = stoneGroupIDs[neighborStone];
+        let neighborStone = move - 1;
+        let neighborStoneGroupID = stoneGroupIDs[neighborStone];
         captures = getCaptures(move, groupsByID, stoneGroupIDs, captures, neighborStone, neighborStoneGroupID);
     }
     if (move%gridSize !== gridSize - 1) {
@@ -220,8 +220,8 @@ function getCaptures(move, groupsByID, stoneGroupIDs, captures, neighborStone, n
 function checkKo(move) {
     let position = getPosition(move);
     if (move%gridSize !== 0) {
-        var neighborStone = move - 1;
-        var neighborPosition = getPosition(neighborStone);
+        let neighborStone = move - 1;
+        let neighborPosition = getPosition(neighborStone);
         if (position !== 3 - neighborPosition) {
             return false;
         }
@@ -268,8 +268,8 @@ function groupHasLiberties(group) {
 
 function stoneHasLiberties(stone) {
     if (stone%gridSize !== 0) {
-        var neighborStone = stone - 1;
-        var position = getPosition(neighborStone);
+        let neighborStone = stone - 1;
+        let position = getPosition(neighborStone);
         if (position !== 1 && position !== 2) {
             return true;
         }
@@ -318,8 +318,8 @@ function settleGroups(move, groupsByID, stoneGroupIDs) {
     stoneGroupIDs[move] = move;
     
     if (move%gridSize !== 0) {
-        var neighborStone = move - 1;
-        var neighborStoneGroupID = stoneGroupIDs[neighborStone];
+        let neighborStone = move - 1;
+        let neighborStoneGroupID = stoneGroupIDs[neighborStone];
         if (neighborStoneGroupID !== undefined) {
             mergeGroups(move, neighborStoneGroupID, groupsByID, stoneGroupIDs);
         }
@@ -372,7 +372,7 @@ function mergeGroups(group1, group2, groupsByID, stoneGroupIDs) {
 
 function getEmptyNeighbour(move) {
     if (move%gridSize !== 0) {
-        var neighborStone = move - 1;
+        let neighborStone = move - 1;
         if (getPosition(neighborStone) === 0) {
             return neighborStone;
         }
@@ -519,140 +519,136 @@ function reDrawTerritories() {
 }
 
 
+function drawGrid(boardContext, boardColor, gridSize, drawAxis) {
+    // boardContext.beginPath();
+    boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
+    // boardContext.closePath();
+    boardContext.save();
+    boardContext.beginPath();
+    boardContext.rect(indentWidth + stepX / 2, indentHeight + stepY / 2, boardSize - stepX, boardSize - stepY);
+    boardContext.lineWidth = 0.5;
+    boardContext.fillStyle = boardColor;
+    boardContext.shadowColor = 'Black';
+    boardContext.shadowBlur = 5;
+    boardContext.shadowOffsetX = radius / 4;
+    boardContext.shadowOffsetY = radius / 4;
+    boardContext.fill();
+    // boardContext.closePath();
+    boardContext.restore();
 
+    // boardContext.beginPath();
+    boardContext.font = "10px sans-serif";
+    boardContext.fillStyle = 'black';
+    boardContext.lineWidth = 0.5;
+    // alert("piep" + gridSize);
+    for (let i = 0; i < gridSize; i++) {
+        boardContext.moveTo(indentWidth + (i + 1) * stepX + stepX / 2, indentHeight + stepY + stepY / 2);
+        boardContext.lineTo(indentWidth + (i + 1) * stepX + stepX / 2, boardSize - stepY);
+        if (drawAxis) {
+            boardContext.fillText(coordinateLetters[i], indentWidth + (i + 1) * stepX + stepX / 2 - 2, indentHeight + stepY * 3 / 2 - 5);
+            boardContext.fillText(coordinateLetters[i], indentWidth + (i + 1) * stepX + stepX / 2 - 2, boardSize + indentHeight - stepY * 3 / 2 + 12);
+        }
+    }
+    for (i = 0; i < gridSize; i++) {
+        boardContext.moveTo(indentWidth + 3 * stepX / 2, indentHeight + (i + 1) * stepY + stepY / 2);
+        boardContext.lineTo(indentWidth + boardSize - 3 * stepX / 2, indentHeight + (i + 1) * stepY + stepY / 2);
+        if (drawAxis) {
+            boardContext.fillText("" + (gridSize - i), indentWidth + stepX * 3 / 2 - 15, indentHeight + (i + 1) * stepY + stepY / 2 + 3);
+            boardContext.fillText("" + (gridSize - i), boardSize + indentWidth - stepX * 3 / 2 + 6, indentHeight + (i + 1) * stepY + stepY / 2 + 3);
+        }
+    }
+    // boardContext.strokeStyle = "#FFFFFF";
+    boardContext.stroke();
+    boardContext.closePath();
+    if (game < 69 || game > 74) {
+        boardContext.beginPath();
+        boardContext.arc(indentWidth + 3 * stepX / 2 + 9 * stepX, indentHeight + 3 * stepY / 2 + 9 * stepY, stepX / 5, 0, Math.PI * 2, true);
+        boardContext.stroke();
+        boardContext.closePath();
+        boardContext.beginPath();
+        boardContext.arc(indentWidth + 3 * stepX / 2 + 6 * stepX, indentHeight + 3 * stepY / 2 + 6 * stepY, stepX / 5, 0, Math.PI * 2, true);
+        boardContext.stroke();
+        boardContext.closePath();
+        boardContext.beginPath();
+        boardContext.arc(indentWidth + 3 * stepX / 2 + 6 * stepX, indentHeight + 3 * stepY / 2 + 12 * stepY, stepX / 5, 0, Math.PI * 2, true);
+        boardContext.stroke();
+        boardContext.closePath();
+        boardContext.beginPath();
+        boardContext.arc(indentWidth + 3 * stepX / 2 + 12 * stepX, indentHeight + 3 * stepY / 2 + 6 * stepY, stepX / 5, 0, Math.PI * 2, true);
+        boardContext.stroke();
+        boardContext.closePath();
+        boardContext.beginPath();
+        boardContext.arc(indentWidth + 3 * stepX / 2 + 12 * stepX, indentHeight + 3 * stepY / 2 + 12 * stepY, stepX / 5, 0, Math.PI * 2, true);
+        boardContext.stroke();
+        boardContext.closePath();
+    } else if (game === 69 || game === 73) {
+        let rd = stepX / 8;
+        let c = Math.floor(gridSize / 2);
+        let l = 3, r = gridSize - 1 - l;
+        boardContext.beginPath();
+        boardContext.arc(indentWidth + 3 * stepX / 2 + c * stepX, indentHeight + 3 * stepY / 2 + c * stepY, rd, 0, Math.PI * 2, true);
+        boardContext.fill();
+        boardContext.closePath();
+        boardContext.beginPath();
+        boardContext.arc(indentWidth + 3 * stepX / 2 + l * stepX, indentHeight + 3 * stepY / 2 + c * stepY, rd, 0, Math.PI * 2, true);
+        boardContext.fill();
+        boardContext.closePath();
+        boardContext.beginPath();
+        boardContext.arc(indentWidth + 3 * stepX / 2 + c * stepX, indentHeight + 3 * stepY / 2 + l * stepY, rd, 0, Math.PI * 2, true);
+        boardContext.fill();
+        boardContext.closePath();
+        boardContext.beginPath();
+        boardContext.arc(indentWidth + 3 * stepX / 2 + r * stepX, indentHeight + 3 * stepY / 2 + c * stepY, rd, 0, Math.PI * 2, true);
+        boardContext.fill();
+        boardContext.closePath();
+        boardContext.beginPath();
+        boardContext.arc(indentWidth + 3 * stepX / 2 + c * stepX, indentHeight + 3 * stepY / 2 + r * stepY, rd, 0, Math.PI * 2, true);
+        boardContext.fill();
+        boardContext.closePath();
+        boardContext.beginPath();
+        boardContext.arc(indentWidth + 3 * stepX / 2 + l * stepX, indentHeight + 3 * stepY / 2 + l * stepY, rd, 0, Math.PI * 2, true);
+        boardContext.fill();
+        boardContext.closePath();
+        boardContext.beginPath();
+        boardContext.arc(indentWidth + 3 * stepX / 2 + l * stepX, indentHeight + 3 * stepY / 2 + r * stepY, rd, 0, Math.PI * 2, true);
+        boardContext.fill();
+        boardContext.closePath();
+        boardContext.beginPath();
+        boardContext.arc(indentWidth + 3 * stepX / 2 + r * stepX, indentHeight + 3 * stepY / 2 + l * stepY, rd, 0, Math.PI * 2, true);
+        boardContext.fill();
+        boardContext.closePath();
+        boardContext.beginPath();
+        boardContext.arc(indentWidth + 3 * stepX / 2 + r * stepX, indentHeight + 3 * stepY / 2 + r * stepY, rd, 0, Math.PI * 2, true);
+        boardContext.fill();
+        boardContext.closePath();
+    } else if (game === 71) {
+        rd = stepX / 8;
+        c = Math.floor(gridSize / 2);
+        l = 2;
+        r = gridSize - 1 - l;
+        boardContext.beginPath();
+        boardContext.arc(indentWidth + 3 * stepX / 2 + c * stepX, indentHeight + 3 * stepY / 2 + c * stepY, rd, 0, Math.PI * 2, true);
+        boardContext.fill();
+        boardContext.closePath();
+        boardContext.beginPath();
+        boardContext.arc(indentWidth + 3 * stepX / 2 + l * stepX, indentHeight + 3 * stepY / 2 + l * stepY, rd, 0, Math.PI * 2, true);
+        boardContext.fill();
+        boardContext.closePath();
+        boardContext.beginPath();
+        boardContext.arc(indentWidth + 3 * stepX / 2 + l * stepX, indentHeight + 3 * stepY / 2 + r * stepY, rd, 0, Math.PI * 2, true);
+        boardContext.fill();
+        boardContext.closePath();
+        boardContext.beginPath();
+        boardContext.arc(indentWidth + 3 * stepX / 2 + r * stepX, indentHeight + 3 * stepY / 2 + l * stepY, rd, 0, Math.PI * 2, true);
+        boardContext.fill();
+        boardContext.closePath();
+        boardContext.beginPath();
+        boardContext.arc(indentWidth + 3 * stepX / 2 + r * stepX, indentHeight + 3 * stepY / 2 + r * stepY, rd, 0, Math.PI * 2, true);
+        boardContext.fill();
+        boardContext.closePath();
+    }
+}
 
-
-
-
-
-            function drawGrid(boardContext, boardColor, gridSize, drawAxis) {
-                // boardContext.beginPath();
-                boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
-                // boardContext.closePath();
-              boardContext.save();
-                boardContext.beginPath();
-                boardContext.rect(indentWidth + stepX/2, indentHeight +stepY/2 , boardSize - stepX , boardSize - stepY);
-                boardContext.lineWidth=0.5;
-                boardContext.fillStyle=boardColor;
-                boardContext.shadowColor = 'Black';
-                boardContext.shadowBlur = 5;
-                boardContext.shadowOffsetX = radius/4;
-                boardContext.shadowOffsetY = radius/4;
-                boardContext.fill();     
-                // boardContext.closePath();
-                boardContext.restore();
-
-                // boardContext.beginPath();
-                boardContext.font = "10px sans-serif";
-                boardContext.fillStyle='black';
-                boardContext.lineWidth=0.5;
-                // alert("piep" + gridSize);
-                for (var i = 0; i < gridSize; i++) {
-                    boardContext.moveTo(indentWidth + (i+1)*stepX + stepX/2, indentHeight + stepY + stepY/2);
-                    boardContext.lineTo(indentWidth + (i+1)*stepX + stepX/2, boardSize - stepY);
-                    if (drawAxis) {
-                        boardContext.fillText(coordinateLetters[i], indentWidth + (i+1)*stepX + stepX/2 - 2, indentHeight + stepY*3/2 - 5);
-                        boardContext.fillText(coordinateLetters[i], indentWidth + (i+1)*stepX + stepX/2 - 2, boardSize + indentHeight - stepY*3/2 + 12);
-                    }
-                }
-                for (i = 0; i < gridSize; i++) {
-                    boardContext.moveTo(indentWidth + 3*stepX/2, indentHeight + (i+1)*stepY + stepY/2);
-                    boardContext.lineTo(indentWidth + boardSize - 3*stepX/2, indentHeight + (i+1)*stepY + stepY/2);
-                    if (drawAxis) {
-                        boardContext.fillText("" + (gridSize - i), indentWidth + stepX*3/2 - 15, indentHeight + (i+1)*stepY + stepY/2 + 3);
-                        boardContext.fillText("" + (gridSize - i), boardSize + indentWidth - stepX*3/2 + 6, indentHeight + (i+1)*stepY + stepY/2 + 3);
-                    }
-                }
-                // boardContext.strokeStyle = "#FFFFFF";
-                boardContext.stroke();
-                boardContext.closePath();
-                if (game < 69 || game > 74) {
-                    boardContext.beginPath();
-                    boardContext.arc(indentWidth + 3*stepX/2 + 9*stepX, indentHeight + 3*stepY/2 + 9*stepY, stepX / 5, 0, Math.PI*2, true);
-                    boardContext.stroke();
-                    boardContext.closePath();
-                    boardContext.beginPath();
-                    boardContext.arc(indentWidth + 3*stepX/2 + 6*stepX, indentHeight + 3*stepY/2 + 6*stepY, stepX / 5, 0, Math.PI*2, true);
-                    boardContext.stroke();
-                    boardContext.closePath();
-                    boardContext.beginPath();
-                    boardContext.arc(indentWidth + 3*stepX/2 + 6*stepX, indentHeight + 3*stepY/2 + 12*stepY, stepX / 5, 0, Math.PI*2, true);
-                    boardContext.stroke();
-                    boardContext.closePath();
-                    boardContext.beginPath();
-                    boardContext.arc(indentWidth + 3*stepX/2 + 12*stepX, indentHeight + 3*stepY/2 + 6*stepY, stepX / 5, 0, Math.PI*2, true);
-                    boardContext.stroke();
-                    boardContext.closePath();
-                    boardContext.beginPath();
-                    boardContext.arc(indentWidth + 3*stepX/2 + 12*stepX, indentHeight + 3*stepY/2 + 12*stepY, stepX / 5, 0, Math.PI*2, true);
-                    boardContext.stroke();
-                    boardContext.closePath();
-                } else if (game === 69 || game === 73) {
-                    var rd = stepX / 8;
-                    var c = Math.floor(gridSize/2);
-                    var l = 3, r = gridSize - 1 - l;
-                    boardContext.beginPath();
-                    boardContext.arc(indentWidth + 3*stepX/2 + c*stepX, indentHeight + 3*stepY/2 + c*stepY, rd, 0, Math.PI*2, true);
-                    boardContext.fill();
-                    boardContext.closePath();
-                    boardContext.beginPath();
-                    boardContext.arc(indentWidth + 3*stepX/2 + l*stepX, indentHeight + 3*stepY/2 + c*stepY, rd, 0, Math.PI*2, true);
-                    boardContext.fill();
-                    boardContext.closePath();
-                    boardContext.beginPath();
-                    boardContext.arc(indentWidth + 3*stepX/2 + c*stepX, indentHeight + 3*stepY/2 + l*stepY, rd, 0, Math.PI*2, true);
-                    boardContext.fill();
-                    boardContext.closePath();
-                    boardContext.beginPath();
-                    boardContext.arc(indentWidth + 3*stepX/2 + r*stepX, indentHeight + 3*stepY/2 + c*stepY, rd, 0, Math.PI*2, true);
-                    boardContext.fill();
-                    boardContext.closePath();
-                    boardContext.beginPath();
-                    boardContext.arc(indentWidth + 3*stepX/2 + c*stepX, indentHeight + 3*stepY/2 + r*stepY, rd, 0, Math.PI*2, true);
-                    boardContext.fill();
-                    boardContext.closePath();
-                    boardContext.beginPath();
-                    boardContext.arc(indentWidth + 3*stepX/2 + l*stepX, indentHeight + 3*stepY/2 + l*stepY, rd, 0, Math.PI*2, true);
-                    boardContext.fill();
-                    boardContext.closePath();
-                    boardContext.beginPath();
-                    boardContext.arc(indentWidth + 3*stepX/2 + l*stepX, indentHeight + 3*stepY/2 + r*stepY, rd, 0, Math.PI*2, true);
-                    boardContext.fill();
-                    boardContext.closePath();
-                    boardContext.beginPath();
-                    boardContext.arc(indentWidth + 3*stepX/2 + r*stepX, indentHeight + 3*stepY/2 + l*stepY, rd, 0, Math.PI*2, true);
-                    boardContext.fill();
-                    boardContext.closePath();
-                    boardContext.beginPath();
-                    boardContext.arc(indentWidth + 3*stepX/2 + r*stepX, indentHeight + 3*stepY/2 + r*stepY, rd, 0, Math.PI*2, true);
-                    boardContext.fill();
-                    boardContext.closePath();
-                } else if (game === 71) {
-                    rd = stepX / 8;
-                    c = Math.floor(gridSize/2);
-                    l = 2; r = gridSize - 1 - l;
-                    boardContext.beginPath();
-                    boardContext.arc(indentWidth + 3*stepX/2 + c*stepX, indentHeight + 3*stepY/2 + c*stepY, rd, 0, Math.PI*2, true);
-                    boardContext.fill();
-                    boardContext.closePath();
-                    boardContext.beginPath();
-                    boardContext.arc(indentWidth + 3*stepX/2 + l*stepX, indentHeight + 3*stepY/2 + l*stepY, rd, 0, Math.PI*2, true);
-                    boardContext.fill();
-                    boardContext.closePath();
-                    boardContext.beginPath();
-                    boardContext.arc(indentWidth + 3*stepX/2 + l*stepX, indentHeight + 3*stepY/2 + r*stepY, rd, 0, Math.PI*2, true);
-                    boardContext.fill();
-                    boardContext.closePath();
-                    boardContext.beginPath();
-                    boardContext.arc(indentWidth + 3*stepX/2 + r*stepX, indentHeight + 3*stepY/2 + l*stepY, rd, 0, Math.PI*2, true);
-                    boardContext.fill();
-                    boardContext.closePath();
-                    boardContext.beginPath();
-                    boardContext.arc(indentWidth + 3*stepX/2 + r*stepX, indentHeight + 3*stepY/2 + r*stepY, rd, 0, Math.PI*2, true);
-                    boardContext.fill();
-                    boardContext.closePath();
-                }
-            }
 function drawRedDot(i, j) {
     if (i>=gridSize || j>=gridSize) {
         return;
@@ -686,7 +682,7 @@ function drawStone(i, j, color) {
     boardContext.shadowOffsetX = radius/8;
     boardContext.shadowOffsetY = radius/8;
     if (color === 2) {
-        var gradient = boardContext.createRadialGradient(centerX, centerY, radius / 8, centerX, centerY, radius);
+        let gradient = boardContext.createRadialGradient(centerX, centerY, radius / 8, centerX, centerY, radius);
         gradient.addColorStop(0, 'Grey');
         gradient.addColorStop(1, 'Black');
         boardContext.fillStyle = gradient;
@@ -727,7 +723,7 @@ function drawDeadStone(move, color) {
     // boardContext.shadowOffsetX = radius / 8;
     // boardContext.shadowOffsetY = radius / 8;
     if (color === 2) {
-        var gradient = boardContext.createRadialGradient(centerX, centerY, radius / 8, centerX, centerY, radius);
+        let gradient = boardContext.createRadialGradient(centerX, centerY, radius / 8, centerX, centerY, radius);
         gradient.addColorStop(0, 'Grey');
         gradient.addColorStop(1, 'Black');
         boardContext.fillStyle = gradient;
@@ -771,7 +767,7 @@ function drawTerritorySquare(move, color) {
 
 function drawCaptures() {
     if (whiteCaptures > 0) {
-        for (var i = 0; i < whiteCaptures; i++) {
+        for (let i = 0; i < whiteCaptures; i++) {
             boardContext.beginPath();
             boardContext.arc(indentWidth + (i+2) * stepX * 4 / 5, boardSize + indentHeight-stepY/2, 2*stepX / 5, 0, Math.PI * 2, true);
             boardContext.fillStyle = 'white';
@@ -780,7 +776,7 @@ function drawCaptures() {
             boardContext.closePath();
         }
         if (boardSize > 230) {
-            var digit = 0;
+            let digit = 0;
             if (whiteCaptures > 9) {
                 digit = Math.floor(whiteCaptures / 10);
             } else {
@@ -836,14 +832,14 @@ function drawCaptures() {
 function drawGoCaptures() {
     let pxSize = Math.floor(stepX/2+1);
     if (whiteCaptures > 0) {
-        var digits = 1;
+        let digits = 1;
         if (whiteCaptures > 9) {
             digits = 2;
         }
         if (whiteCaptures > 99) {
             digits = 3;
         }
-        for (var i = 0; i < digits; i++) {
+        for (let i = 0; i < digits; i++) {
             boardContext.beginPath();
             boardContext.arc(indentWidth + (i+2) * stepX * 4 / 5, boardSize + indentHeight-stepY/2, 2*stepX / 5, 0, Math.PI * 2, true);
             boardContext.fillStyle = 'white';
@@ -852,7 +848,7 @@ function drawGoCaptures() {
             boardContext.closePath();
         }
         if (boardSize > 230) {
-            var digit = 0;
+            let digit = 0;
             if (whiteCaptures > 9) {
                 digit = Math.floor(whiteCaptures / 10);
                 if (whiteCaptures > 99) {
