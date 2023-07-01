@@ -231,11 +231,16 @@ public class MoveServlet extends HttpServlet {
 					return;
 				}
 				if (plr.hasPlayerDonated()) {
-					if ((game.getGame() == GridStateFactory.TB_DPENTE || game.getGame() == GridStateFactory.TB_DKERYO) && game.getNumMoves() < 5) {
-						log4j.error("MoveServlet, undo request for d-pente or dk-pente opening");
-						handleError(request, response,
-								"Undo requests are not available for opening moves.");
-						return;
+                    if ((game.getGame() == GridStateFactory.TB_DPENTE || game.getGame() == GridStateFactory.TB_DKERYO) && game.getNumMoves() < 5) {
+                        log4j.error("MoveServlet, undo request for d-pente or dk-pente opening");
+                        handleError(request, response,
+                                "Undo requests are not available for opening moves.");
+                        return;
+                    } else if ((game.getGame() == GridStateFactory.TB_SWAP2PENTE) && game.getNumMoves() < 6) {
+                        log4j.error("MoveServlet, undo request for swap2 opening");
+                        handleError(request, response,
+                                "Undo requests are not available for opening moves.");
+                        return;
 					} else if (game.getNumMoves() == 1) {
 						log4j.error("MoveServlet, undo request no move");
 						handleError(request, response,
@@ -283,7 +288,7 @@ public class MoveServlet extends HttpServlet {
 							"No undo request exists.");
 					return;
 				}
-				if (game.getNumMoves() > 1 || ((game.getGame() == GridStateFactory.TB_DPENTE || game.getGame() == GridStateFactory.TB_DKERYO) && game.getNumMoves() > 4)) {
+				if (game.getNumMoves() > 1) {
 					int numMoves = 1;
 					if (game.getGame() == GridStateFactory.TB_CONNECT6) {
 						numMoves += 1;
@@ -334,135 +339,238 @@ public class MoveServlet extends HttpServlet {
 				log4j.debug("done forwarding");
 				return;
 			} else if (command.equals("move")) {
-				
+
 // log4j.debug("************current player initial pid " + game.getCurrentPlayer());
 
-				if (game.getCurrentPlayer() != playerData.getPlayerID()) {
-					log4j.debug("MoveServlet, " + playerData.getName() + "" +
-							"attempted to make move out of turn: " + game.getGid());
-					handleError(request, response, "Its not your turn.");
-					return;
-				}
-				if (game.getState() != TBGame.STATE_ACTIVE) {
-					log4j.error("MoveServlet, game state invalid " + gid);
-					handleError(request, response, "Invalid game, game not active.");
-					return;
-				}
-				
-				// handle dpente stuff here, underlying code doesn't need
-				// to change
-				
-				// load moves
-				int moves[] = null;
-				String moveStr = request.getParameter("moves");
-				if ((moveStr != null) && !"(null)".equals(moveStr)) {
-					try {
-						StringTokenizer st = new StringTokenizer(moveStr, ",");
-						moves = new int[st.countTokens()];
-						for (int i = 0; i < moves.length; i++) {
-							moves[i] = Integer.parseInt(st.nextToken());
-						}
-					} catch (NumberFormatException nfe) {}
-				}
-				if (moves == null) {
-					log4j.error("MoveServlet, invalid moves " + moveStr + ": " + 
-						game.getGid());
-					handleError(request, response, "Invalid moves.");
-					return;
-				}
+                if (game.getCurrentPlayer() != playerData.getPlayerID()) {
+                    log4j.debug("MoveServlet, " + playerData.getName() + "" +
+                            "attempted to make move out of turn: " + game.getGid());
+                    handleError(request, response, "Its not your turn.");
+                    return;
+                }
+                if (game.getState() != TBGame.STATE_ACTIVE) {
+                    log4j.error("MoveServlet, game state invalid " + gid);
+                    handleError(request, response, "Invalid game, game not active.");
+                    return;
+                }
 
-				String msg = request.getParameter("message");
-				TBMessage message = null;
-				if (msg != null && !msg.trim().equals("")) {
-					message = new TBMessage();
-					message.setMessage(msg.substring(0, Math.min(msg.length(), 255)));
-					message.setDate(new java.util.Date());
-					message.setMoveNum(game.getNumMoves() + 1);
-					// default seq nbr = 1
-					message.setSeqNbr(1);
-					message.setPid(game.getCurrentPlayer());
-				}
-				
-				String hideStr = request.getParameter("hide");
+                // handle dpente stuff here, underlying code doesn't need
+                // to change
+
+                // load moves
+                int moves[] = null;
+                String moveStr = request.getParameter("moves");
+                if ((moveStr != null) && !"(null)".equals(moveStr)) {
+                    try {
+                        StringTokenizer st = new StringTokenizer(moveStr, ",");
+                        moves = new int[st.countTokens()];
+                        for (int i = 0; i < moves.length; i++) {
+                            moves[i] = Integer.parseInt(st.nextToken());
+                        }
+                    } catch (NumberFormatException nfe) {
+                    }
+                }
+                if (moves == null) {
+                    log4j.error("MoveServlet, invalid moves " + moveStr + ": " +
+                            game.getGid());
+                    handleError(request, response, "Invalid moves.");
+                    return;
+                }
+
+                String msg = request.getParameter("message");
+                TBMessage message = null;
+                if (msg != null && !msg.trim().equals("")) {
+                    message = new TBMessage();
+                    message.setMessage(msg.substring(0, Math.min(msg.length(), 255)));
+                    message.setDate(new java.util.Date());
+                    message.setMoveNum(game.getNumMoves() + 1);
+                    // default seq nbr = 1
+                    message.setSeqNbr(1);
+                    message.setPid(game.getCurrentPlayer());
+                }
+
+                String hideStr = request.getParameter("hide");
 //                if (hideStr != null && (game.getEventId() == tbGameStorer.getEventId(game.getGame()))) {
                 if (hideStr != null) {
-					if (playerData.hasPlayerDonated()) {
-						byte hiddenBy = 0;
-						if ("yes".equals(hideStr)) {
-							hiddenBy = (byte) (playerData.getPlayerID() == game.getPlayer1Pid()?1:2);
-						}
-						tbGameStorer.hideGame(game.getGid(), hiddenBy);
-					}
-				}
+                    if (playerData.hasPlayerDonated()) {
+                        byte hiddenBy = 0;
+                        if ("yes".equals(hideStr)) {
+                            hiddenBy = (byte) (playerData.getPlayerID() == game.getPlayer1Pid() ? 1 : 2);
+                        }
+                        tbGameStorer.hideGame(game.getGid(), hiddenBy);
+                    }
+                }
 
-				// handle dpente separately
-				if ((game.getGame() == GridStateFactory.TB_DPENTE || game.getGame() == GridStateFactory.TB_DKERYO) &&
-					game.getDPenteState() != TBGame.DPENTE_STATE_DECIDED) {
+                // handle dpente separately
+                if ((game.getGame() == GridStateFactory.TB_DPENTE || game.getGame() == GridStateFactory.TB_DKERYO) &&
+                        game.getDPenteState() != TBGame.DPENTE_STATE_DECIDED) {
 
-					log4j.debug("MoveServlet, handle dpente move");
-					if (game.getDPenteState() == TBGame.DPENTE_STATE_START) {
-						if (moves.length != 4) {
-							log4j.error("MoveServlet, dpente game start, " +
-								"expected 4 moves.");
-							handleError(request, response, "Expected 4 moves.");
-							return;
-						}
-						if ((moves[0] == moves[1] || moves[0] == moves[2] || moves[0] == moves[3]
-								|| moves[2] == moves[1] || moves[1] == moves[3] || moves[2] == moves[3]) || 
-								(moves[0]<0 || moves[0]>360) ||
-								(moves[1]<0 || moves[1]>360) ||
-								(moves[3]<0 || moves[3]>360) ||
-								(moves[2]<0 || moves[2]>360) ) {
-							log4j.error("MoveServlet, d(keryo)pente game start, " +
-									"expected 4 different moves.");
-							handleError(request, response, "Expected 4 different moves to start d(keryo)pente.");
-							return;
-						}
-						log4j.debug("MoveServlet, handle d(keryo)pente start");
-						
-						tbGameStorer.updateDPenteState(game, TBGame.DPENTE_STATE_DECIDE);
+                    log4j.debug("MoveServlet, handle dpente move");
+                    if (game.getDPenteState() == TBGame.DPENTE_STATE_START) {
+                        if (moves.length != 4) {
+                            log4j.error("MoveServlet, dpente game start, " +
+                                    "expected 4 moves.");
+                            handleError(request, response, "Expected 4 moves.");
+                            return;
+                        }
+                        if ((moves[0] == moves[1] || moves[0] == moves[2] || moves[0] == moves[3]
+                                || moves[2] == moves[1] || moves[1] == moves[3] || moves[2] == moves[3]) ||
+                                (moves[0] < 0 || moves[0] > 360) ||
+                                (moves[1] < 0 || moves[1] > 360) ||
+                                (moves[3] < 0 || moves[3] > 360) ||
+                                (moves[2] < 0 || moves[2] > 360)) {
+                            log4j.error("MoveServlet, d(keryo)pente game start, " +
+                                    "expected 4 different moves.");
+                            handleError(request, response, "Expected 4 different moves to start d(keryo)pente.");
+                            return;
+                        }
+                        log4j.debug("MoveServlet, handle d(keryo)pente start");
 
-						for (int i = 0; i < moves.length; i++) {
-							tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(),
-								moves[i]);
-						}
-						
-						if (message != null) {
-							message.setMoveNum(4);
-							tbGameStorer.storeNewMessage(game.getGid(), message);
-						}
-					}
-					else if (game.getDPenteState() == TBGame.DPENTE_STATE_DECIDE) {
+                        tbGameStorer.updateDPenteState(game, TBGame.DPENTE_STATE_DECIDE);
 
-						log4j.debug("MoveServlet, handle dpente decision");
+                        for (int i = 0; i < moves.length; i++) {
+                            tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(),
+                                    moves[i]);
+                        }
 
-						boolean swap = moves[0] == 1;
-						tbGameStorer.dPenteSwap(game, swap);
+                        if (message != null) {
+                            message.setMoveNum(4);
+                            tbGameStorer.storeNewMessage(game.getGid(), message);
+                        }
+                    } else if (game.getDPenteState() == TBGame.DPENTE_STATE_DECIDE) {
 
-						// didn't swap but still might have written message
-						if (!swap && message != null) {
-							// set seq nbr
-							log4j.debug("MoveServlet, no swap record message");
-							message.setMoveNum(4);
-							message.setSeqNbr(2);
-							tbGameStorer.storeNewMessage(game.getGid(), message);
-						}
-						else if (swap) {
-							log4j.debug("MoveServlet, swap, " + moves[1]);
-							game.setDPenteSwapped(true);
-							tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(),
-								moves[1]);
-							if (game.isHidden()) {
-								tbGameStorer.hideGame(game.getGid(), (byte) (3 - game.getHiddenBy()));
-							}
-							if (message != null) {
-								message.setMoveNum(5);
-								tbGameStorer.storeNewMessage(game.getGid(), message);
-							}
-						}
+                        log4j.debug("MoveServlet, handle dpente decision");
 
-					}
-				}
+                        boolean swap = moves[0] == 1;
+                        tbGameStorer.dPenteSwap(game, swap);
+
+                        // didn't swap but still might have written message
+                        if (!swap && message != null) {
+                            // set seq nbr
+                            log4j.debug("MoveServlet, no swap record message");
+                            message.setMoveNum(4);
+                            message.setSeqNbr(2);
+                            tbGameStorer.storeNewMessage(game.getGid(), message);
+                        } else if (swap) {
+                            log4j.debug("MoveServlet, swap, " + moves[1]);
+                            game.setDPenteSwapped(true);
+                            tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(),
+                                    moves[1]);
+                            if (game.isHidden()) {
+                                tbGameStorer.hideGame(game.getGid(), (byte) (3 - game.getHiddenBy()));
+                            }
+                            if (message != null) {
+                                message.setMoveNum(5);
+                                tbGameStorer.storeNewMessage(game.getGid(), message);
+                            }
+                        }
+
+                    }
+                }
+                else if (game.getGame() == GridStateFactory.TB_SWAP2PENTE &&
+                        game.getDPenteState() != TBGame.DPENTE_STATE_DECIDED) {
+
+                        log4j.debug("MoveServlet, handle swap2 move");
+                        if (game.getDPenteState() == TBGame.DPENTE_STATE_START) {
+                            if (moves.length != 3) {
+                                log4j.error("MoveServlet, dpente game start, expected 3 moves.");
+                                handleError(request, response, "Expected 3 moves.");
+                                return;
+                            }
+                            if ((moves[0] == moves[1] || moves[0] == moves[2] || moves[2] == moves[1]) ||
+                                (moves[0]<0 || moves[0]>360) || (moves[1]<0 || moves[1]>360) ||
+                                    (moves[2]<0 || moves[2]>360) ) {
+                                log4j.error("MoveServlet, swap2 game start, expected different moves.");
+                                handleError(request, response, "Expected different moves to start swap2.");
+                                return;
+                            }
+                            log4j.debug("MoveServlet, handle swap2 start");
+
+                            tbGameStorer.updateDPenteState(game, TBGame.DPENTE_STATE_DECIDE);
+
+                            for (int i = 0; i < moves.length; i++) {
+                                tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(),
+                                        moves[i]);
+                            }
+
+                            if (message != null) {
+                                message.setMoveNum(4);
+                                tbGameStorer.storeNewMessage(game.getGid(), message);
+                            }
+                        } else if (game.getDPenteState() == TBGame.DPENTE_STATE_DECIDE &&
+                                !game.didSwap2Pass() && game.getNumMoves() == 3) {
+                            log4j.debug("MoveServlet, handle swap2 decision by p2");
+                            boolean pass = moves[0] == 2;
+                            boolean swap = moves[0] == 1;
+                            if (!pass) {
+                                tbGameStorer.dPenteSwap(game, swap);
+                            }
+
+                            // didn't swap but still might have written message
+                            if (pass) {
+                                game.setSwap2Pass(true);
+                                tbGameStorer.swap2Pass(game);
+
+                                int numMoves = game.getNumMoves();
+                                tbGameStorer.storeNewMove(game.getGid(), numMoves, moves[1]);
+                                tbGameStorer.storeNewMove(game.getGid(), numMoves + 1, moves[2]);
+                                if (game.isHidden()) {
+                                    tbGameStorer.hideGame(game.getGid(), (byte) (3 - game.getHiddenBy()));
+                                }
+                                if (message != null) {
+                                    message.setMoveNum(5);
+                                    tbGameStorer.storeNewMessage(game.getGid(), message);
+                                }
+                            }
+                            else if (swap && message != null) {
+                                // set seq nbr
+                                log4j.debug("MoveServlet, swap2 swap, record message");
+                                message.setMoveNum(3);
+                                message.setSeqNbr(2);
+                                tbGameStorer.storeNewMessage(game.getGid(), message);
+                            }
+                            else if (!swap) {
+                                log4j.debug("MoveServlet, swap2 not swap, " + moves[1]);
+                                game.setDPenteSwapped(true);
+                                tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(), moves[1]);
+                                if (game.isHidden()) {
+                                    tbGameStorer.hideGame(game.getGid(), (byte) (3 - game.getHiddenBy()));
+                                }
+                                if (message != null) {
+                                    message.setMoveNum(4);
+                                    tbGameStorer.storeNewMessage(game.getGid(), message);
+                                }
+                            }
+                        } else if (game.getDPenteState() == TBGame.DPENTE_STATE_DECIDE &&
+                                game.didSwap2Pass() && game.getNumMoves() == 5) {
+                            log4j.debug("MoveServlet, handle swap2 decision by p1");
+
+                            boolean swap = moves[0] == 1;
+                            tbGameStorer.dPenteSwap(game, swap);
+
+                            // didn't swap but still might have written message
+                            if (!swap && message != null) {
+                                // set seq nbr
+                                log4j.debug("MoveServlet, no swap record message");
+                                message.setMoveNum(5);
+                                message.setSeqNbr(2);
+                                tbGameStorer.storeNewMessage(game.getGid(), message);
+                            }
+                            else if (swap) {
+                                log4j.debug("MoveServlet, swap, " + moves[1]);
+                                game.setDPenteSwapped(true);
+                                tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(), moves[1]);
+                                if (game.isHidden()) {
+                                    tbGameStorer.hideGame(game.getGid(), (byte) (3 - game.getHiddenBy()));
+                                }
+                                if (message != null) {
+                                    message.setMoveNum(5);
+                                    tbGameStorer.storeNewMessage(game.getGid(), message);
+                                }
+                            }
+
+                        }
+                    }
 				else if (game.getGame() == GridStateFactory.TB_CONNECT6) {
 					log4j.debug("MoveServlet, store moves " + moves[0] + "," + moves[1]);
 					if (moves.length != 2) {
@@ -499,8 +607,7 @@ public class MoveServlet extends HttpServlet {
                     }
 				    
 				    for (int move: moves) {
-                        tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(),
-                                move);
+                        tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(), move);
                     }
 
                     if (message != null) {

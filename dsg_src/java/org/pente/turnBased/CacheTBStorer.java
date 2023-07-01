@@ -840,9 +840,14 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
 		        gameData.setWinner(game.getWinner());
 
-		        if (game.getGame() == GridStateFactory.TB_DPENTE || game.getGame() == GridStateFactory.TB_DKERYO) {
+		        if (game.getGame() == GridStateFactory.TB_DPENTE ||
+                    game.getGame() == GridStateFactory.TB_DKERYO ||
+                    game.getGame() == GridStateFactory.TB_SWAP2PENTE) {
 		            gameData.setSwapped(game.didDPenteSwap());
 		        }
+                if (game.getGame() == GridStateFactory.TB_SWAP2PENTE) {
+                    gameData.setSwap2Pass(game.didSwap2Pass());
+                }
 	
 		        for (int i = 0; i < game.getNumMoves(); i++) {
 		            gameData.addMove(game.getMove(i));
@@ -895,7 +900,8 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 				if (set.isCompleted() && game.isRated()) {
                     double k = (game.getGame() == GridStateFactory.TB_GO ||
                             game.getGame() == GridStateFactory.TB_GO13 ||
-                            game.getGame() == GridStateFactory.TB_GO9)?32:64;
+                            game.getGame() == GridStateFactory.TB_GO9 ||
+                            game.getGame() == GridStateFactory.TB_SWAP2PENTE)?32:64;
 					GameOverUtilities.updateGameData(dsgPlayerStorer, winnerData,
 						winnerData.getPlayerGameData(game.getGame(), false),
 						loserData,
@@ -1056,7 +1062,9 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 					kothStorer.updatePlayerLastGameDate(game.getGame(), loserData.getPlayerID());
 				} else if (game.getEventId() != getEventId(game.getGame())) {
 					TourneyMatch tourneyMatch = null;
-					if ((game.getGame() == GridStateFactory.TB_DPENTE || game.getGame() == GridStateFactory.TB_DKERYO) && game.didDPenteSwap()) {
+					if ((game.getGame() == GridStateFactory.TB_DPENTE ||
+                            game.getGame() == GridStateFactory.TB_DKERYO ||
+                            game.getGame() == GridStateFactory.SWAP2PENTE) && game.didDPenteSwap()) {
 						tourneyMatch = tourneyStorer.getUnplayedMatch(game.getPlayer2Pid(),game.getPlayer1Pid(),game.getEventId());
 					} else {
 						tourneyMatch = tourneyStorer.getUnplayedMatch(game.getPlayer1Pid(),game.getPlayer2Pid(),game.getEventId());
@@ -1064,7 +1072,9 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 					if (tourneyMatch != null) {
 						tourneyMatch.setGid(game.getGid());
 						int winner = game.getWinner();
-						if ((game.getGame() == GridStateFactory.TB_DPENTE || game.getGame() == GridStateFactory.TB_DKERYO) && game.didDPenteSwap()) {
+						if ((game.getGame() == GridStateFactory.TB_DPENTE ||
+                                game.getGame() == GridStateFactory.TB_DKERYO ||
+                                game.getGame() == GridStateFactory.SWAP2PENTE) && game.didDPenteSwap()) {
 							winner = 3 - winner;
 						}						
 						tourneyMatch.setResult(winner);
@@ -1231,7 +1241,8 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                         game.getGame() == GridStateFactory.TB_DKERYO || 
                         game.getGame() == GridStateFactory.TB_GO ||
                         game.getGame() == GridStateFactory.TB_GO9 ||
-                        game.getGame() == GridStateFactory.TB_GO13) {
+                        game.getGame() == GridStateFactory.TB_GO13 ||
+                        game.getGame() == GridStateFactory.TB_SWAP2PENTE) {
 
                     long newTimeout = Utilities.calculateNewTimeout(
                             game, dsgPlayerStorer);
@@ -1565,7 +1576,8 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                         && game.getGame() != GridStateFactory.TB_DKERYO
                         && game.getGame() != GridStateFactory.TB_GO
                         && game.getGame() != GridStateFactory.TB_GO9
-                        && game.getGame() != GridStateFactory.TB_GO13) {
+                        && game.getGame() != GridStateFactory.TB_GO13
+                        && game.getGame() != GridStateFactory.SWAP2PENTE) {
 					game.addMove(180);
 				}
 			}
@@ -1600,7 +1612,8 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                     && game.getGame() != GridStateFactory.TB_DKERYO
                     && game.getGame() != GridStateFactory.TB_GO
                     && game.getGame() != GridStateFactory.TB_GO9
-                    && game.getGame() != GridStateFactory.TB_GO13) {
+                    && game.getGame() != GridStateFactory.TB_GO13
+                    && game.getGame() != GridStateFactory.TB_SWAP2PENTE) {
 				baseStorer.storeNewMove(game.getGid(), 0, 180);
 			}
 		}
@@ -1692,25 +1705,32 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 		}
 		baseStorer.updateDPenteState(game, state);
 	}
-	
-	public void dPenteSwap(TBGame g, boolean swap) throws TBStoreException {
 
-		log4j.debug("CacheTBGameStorer.dPenteSwap(" + g.getGid() + ", " + swap + ")");
-		TBGame game = loadGame(g.getGid());
+    public void dPenteSwap(TBGame g, boolean swap) throws TBStoreException {
 
-		synchronized (cacheTbLock) {
-			game.dPenteSwap(swap);
-		}
-		long newTimeout = Utilities.calculateNewTimeout(
-				game, dsgPlayerStorer);
-		synchronized (cacheTbLock) {
-			game.setTimeoutDate(new Date(newTimeout));
-		}
-		baseStorer.dPenteSwap(game, swap);
-	}
-	
+        log4j.debug("CacheTBGameStorer.dPenteSwap(" + g.getGid() + ", " + swap + ")");
+        TBGame game = loadGame(g.getGid());
 
-	public void updateDaysOff(long pid, int weekend[]) throws TBStoreException {
+        synchronized (cacheTbLock) {
+            game.dPenteSwap(swap);
+        }
+        long newTimeout = Utilities.calculateNewTimeout(
+                game, dsgPlayerStorer);
+        synchronized (cacheTbLock) {
+            game.setTimeoutDate(new Date(newTimeout));
+        }
+        baseStorer.dPenteSwap(game, swap);
+    }
+
+    public void swap2Pass(TBGame g) throws TBStoreException {
+        log4j.debug("CacheTBGameStorer.swap2Pass(" + g.getGid() + ", " + g.didSwap2Pass() + ")");
+        TBGame game = loadGame(g.getGid());
+
+        baseStorer.swap2Pass(game);
+    }
+
+
+    public void updateDaysOff(long pid, int weekend[]) throws TBStoreException {
 		log4j.debug("updateWeekend(" + pid + ", " + weekend[0] + "," + 
 			weekend[1] + ")");
 
@@ -1807,7 +1827,10 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 	        tbg1.setLastMoveDate(new Date());
 	        tbg1.setStartDate(new Date());
 	        TBGame tbg2 = null;
-	        if (game < GridStateFactory.TB_GO || game > GridStateFactory.TB_GO13) {
+	        if (game != GridStateFactory.TB_GO
+                && game != GridStateFactory.TB_GO9
+                && game != GridStateFactory.TB_GO13
+                && game != GridStateFactory.TB_SWAP2PENTE) {
                 tbg2 = new TBGame();
                 tbg2.setGame(game);
                 tbg2.setDaysPerMove(daysPerMove);

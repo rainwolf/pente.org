@@ -171,7 +171,8 @@ public class CacheNotificationServer implements NotificationServer {
                     if (resp.contains("InvalidRegistration") || resp.contains("NotRegistered")) {
                         removeInvalidToken(pid, token, ANDROID);
                     }
-//                    System.out.println("==============" + resp);
+                    log4j.info("Android Push notification accepted.");
+                    log4j.info("==============" + resp);
                 } catch (IOException e) {
                     log4j.error("Unable to send GCM message.");
                     log4j.error("Problem sending android notification for " + pid + " with token " + token);
@@ -198,13 +199,13 @@ public class CacheNotificationServer implements NotificationServer {
                             sendNotificationFuture.get();
 
                     if (pushNotificationResponse.isAccepted()) {
-                        System.out.println("Push notification accepted by APNs gateway.");
+                        log4j.info("iOS Push notification accepted by APNs gateway.");
                     } else {
-                        System.out.println("Notification rejected by the APNs gateway: " +
+                        log4j.info("Notification rejected by the APNs gateway: " +
                                 pushNotificationResponse.getRejectionReason());
 
                         pushNotificationResponse.getTokenInvalidationTimestamp().ifPresent(timestamp -> {
-                            System.out.println("\t…and the token is invalid as of " + timestamp);
+                            log4j.info("\t…and the token is invalid as of " + timestamp);
                         });
                     }
                 } catch (final ExecutionException | InterruptedException e) {

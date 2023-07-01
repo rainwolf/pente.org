@@ -419,7 +419,7 @@ public class MySQLTBGameStorer implements TBGameStorer {
 		"gid, state, p1_pid, p2_pid, creation_date, " +
 		"start_date, last_move_date, timeout_date, completion_date, " +
 		"game, event_id, round, section, days_per_move, rated, " +
-		"winner, dpente_state, dpente_swap, hiddenBy";
+		"winner, dpente_state, dpente_swap, hiddenBy, swap2pass";
 
 	public TBGame loadGame(long gid) throws TBStoreException {
 
@@ -610,6 +610,7 @@ public class MySQLTBGameStorer implements TBGameStorer {
 		String swapped = result.getString(r++);
 		game.setDPenteSwapped(swapped != null && swapped.equals("Y"));
 		game.setHiddenBy(result.getByte(r++));
+        game.setSwap2Pass(result.getInt(r++) == 1);
 	}
 	private java.util.Date getDate(ResultSet result, int column) 
 		throws SQLException {
@@ -1202,17 +1203,19 @@ public class MySQLTBGameStorer implements TBGameStorer {
 				"set last_move_date = ?, " +
 				"timeout_date = ?, " +
 				"dpente_state = ?, " +
-				"dpente_swap = ?, " +
+                "dpente_swap = ?, " +
+                "swap2pass = ?, " +
 				"p1_pid = ?, " +
 				"p2_pid = ? " +
 				"where gid = ?");
 			stmt.setTimestamp(1, new Timestamp(g.getLastMoveDate().getTime()));
 			stmt.setTimestamp(2, new Timestamp(g.getTimeoutDate().getTime()));
 			stmt.setInt(3, g.getDPenteState());
-			stmt.setString(4, g.didDPenteSwap() ? "Y" : "N");
-			stmt.setLong(5, g.getPlayer1Pid());
-			stmt.setLong(6, g.getPlayer2Pid());
-			stmt.setLong(7, g.getGid());
+            stmt.setString(4, g.didDPenteSwap() ? "Y" : "N");
+            stmt.setInt(5, g.didSwap2Pass() ? 1 : 0);
+			stmt.setLong(6, g.getPlayer1Pid());
+			stmt.setLong(7, g.getPlayer2Pid());
+			stmt.setLong(8, g.getGid());
 			stmt.executeUpdate();
 			
 	    } catch (SQLException se) {
@@ -1226,6 +1229,43 @@ public class MySQLTBGameStorer implements TBGameStorer {
 			}
 	    }
 	}
+
+    public void swap2Pass(TBGame g) throws TBStoreException {
+
+        log4j.debug("MySQLGameTbStorer.swap2Pass(" + g.getGid() + ", " + g.didSwap2Pass() + ")");
+
+        Connection con = null;
+        PreparedStatement stmt = null;
+
+        try {
+            con = dbHandler.getConnection();
+            stmt = con.prepareStatement(
+                    "update tb_game " +
+                            "set last_move_date = ?, " +
+                            "timeout_date = ?, " +
+                            "dpente_state = ?, " +
+                            "dpente_swap = ?, " +
+                            "swap2pass = ? " +
+                            "where gid = ?");
+            stmt.setTimestamp(1, new Timestamp(g.getLastMoveDate().getTime()));
+            stmt.setTimestamp(2, new Timestamp(g.getTimeoutDate().getTime()));
+            stmt.setInt(3, g.getDPenteState());
+            stmt.setString(4, g.didDPenteSwap() ? "Y" : "N");
+            stmt.setInt(5, g.didSwap2Pass() ? 1 : 0);
+            stmt.setLong(6, g.getGid());
+            stmt.executeUpdate();
+
+        } catch (SQLException se) {
+            throw new TBStoreException(se);
+        } finally {
+            if (stmt != null) {
+                try { stmt.close(); } catch (SQLException se) {}
+            }
+            if (con != null) {
+                try { dbHandler.freeConnection(con); } catch (SQLException se) {}
+            }
+        }
+    }
 
 	public void updateDaysOff(long pid, int weekend[]) throws TBStoreException{
 		throw new UnsupportedOperationException("Not supported.");

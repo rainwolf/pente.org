@@ -33,8 +33,10 @@ public interface TBGameStorer {
     public void declineCancel(TBSet set) throws TBStoreException;
 	public void updateDPenteState(TBGame game, int state)
 		throws TBStoreException;
-	public void dPenteSwap(TBGame game, boolean swap)
-		throws TBStoreException;
+    public void dPenteSwap(TBGame game, boolean swap)
+            throws TBStoreException;
+    public void swap2Pass(TBGame game)
+            throws TBStoreException;
 	public void restoreGame(long gid) throws TBStoreException;
 	public TBVacation getTBVacation(long pid);
 	
