@@ -381,7 +381,9 @@ public class CacheTourneyStorer implements TourneyStorer {
                 tourneyMatch.getPlayer2() != null &&
                 tourneyMatch.getPlayer2().getPlayerID() != 0 && ((
                 tourneyMatch.getPlayer1().getPlayerID() < tourneyMatch.getPlayer2().getPlayerID()) ||
-                t.getGame() == GridStateFactory.TB_GO || t.getGame() == GridStateFactory.TB_GO9 || t.getGame() == GridStateFactory.TB_GO13)) {
+                t.getGame() == GridStateFactory.TB_GO || t.getGame() == GridStateFactory.TB_GO9 ||
+                t.getGame() == GridStateFactory.TB_GO13 || t.getGame() == GridStateFactory.TB_SWAP2PENTE
+        )) {
             this.tbStorer.createTournamentSet(t.getGame(), tourneyMatch.getPlayer1().getPlayerID(), tourneyMatch.getPlayer2().getPlayerID(), 
                                                 t.getInitialTime(), t.getEventID());
         }        
@@ -452,7 +454,10 @@ public class CacheTourneyStorer implements TourneyStorer {
                         t.getGame() != GridStateFactory.SPEED_GO13 &&
                         t.getGame() != GridStateFactory.TB_GO &&
                         t.getGame() != GridStateFactory.TB_GO9 &&
-                        t.getGame() != GridStateFactory.TB_GO13) {
+                        t.getGame() != GridStateFactory.TB_GO13 &&
+                        t.getGame() != GridStateFactory.SWAP2PENTE &&
+                        t.getGame() != GridStateFactory.SPEED_SWAP2PENTE &&
+                        t.getGame() != GridStateFactory.TB_SWAP2PENTE) {
                     insertMatch(more[1]);
                     s.addMatch(more[1]);
                 }
