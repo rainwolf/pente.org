@@ -413,7 +413,7 @@ public class MySQLTBGameStorer implements TBGameStorer {
 		"g.gid, g.state, g.p1_pid, g.p2_pid, g.creation_date, " +
 		"g.start_date, g.last_move_date, g.timeout_date, g.completion_date, " +
 		"g.game, g.event_id, g.round, g.section, g.days_per_move, g.rated, " +
-		"g.winner, g.dpente_state, g.dpente_swap, g.hiddenBy";
+		"g.winner, g.dpente_state, g.dpente_swap, g.hiddenBy, g.swap2pass";
 
 	private static final String TB_COLUMNS = 
 		"gid, state, p1_pid, p2_pid, creation_date, " +
