@@ -133,9 +133,12 @@ if (set.getCancelPid() != 0) {
 <%=(tbGame.getGoState()==TBGame.GO_MARK_DEAD_STONES)?"Go=MARK_DEAD_STONES":""%>
 <%=(tbGame.getGoState()==TBGame.GO_EVALUATE_DEAD_STONES)?"Go=EVALUATE_DEAD_STONES":""%>
 <%
-
-if (!tbGame.isCompleted() && (tbGame.getGame() == GridStateFactory.TB_DPENTE || tbGame.getGame() == GridStateFactory.TB_DKERYO)) {
+if (!tbGame.isCompleted() &&
+   (tbGame.getGame() == GridStateFactory.TB_DPENTE ||
+   tbGame.getGame() == GridStateFactory.TB_DKERYO  ||
+   tbGame.getGame() == GridStateFactory.TB_SWAP2PENTE)) {
 %>dPenteState=<%=tbGame.getDPenteState()%>
+%>swap2pass=<%=tbGame.didSwap2Pass()%>
 <%
 }
         
@@ -157,9 +160,6 @@ player1=<%=p1Data.getUserIDName() + "," + (p1Data.getRating()) %>
 player2=<%=p2Data.getUserIDName() + "," + (p2Data.getRating()) %>
 messages=
 messageNums=
-<%
-    }
-
-%>
+<%  } %>
 
 EndOfSettingsParameters

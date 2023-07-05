@@ -1251,7 +1251,6 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                     }
                     baseStorer.updateGameAfterMove(game);
                     continue;
-
                 }
                 storeNewMove(game.getGid(), 0, 180);
 				
@@ -1577,7 +1576,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                         && game.getGame() != GridStateFactory.TB_GO
                         && game.getGame() != GridStateFactory.TB_GO9
                         && game.getGame() != GridStateFactory.TB_GO13
-                        && game.getGame() != GridStateFactory.SWAP2PENTE) {
+                        && game.getGame() != GridStateFactory.TB_SWAP2PENTE) {
 					game.addMove(180);
 				}
 			}
