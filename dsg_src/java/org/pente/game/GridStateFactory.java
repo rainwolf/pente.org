@@ -352,7 +352,7 @@ public class GridStateFactory {
         return allGames.length - 1;
     }
 	public static int getMaxGameId() {
-		return TB_OPENTE;
+		return TB_SWAP2PENTE;
 	}
 
     public static Game[] getAllGames() {

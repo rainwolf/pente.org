@@ -254,7 +254,11 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
             if (dPenteState == DPENTE_STATE_START) {
                 cp = 1;
             } else {
-                if (dPenteState == DPENTE_STATE_DECIDE && moves.size() == 3) {
+                if (dPenteState == DPENTE_STATE_DECIDE && moves.size() < 3) {
+                    cp = 1;
+                } else if (dPenteState == DPENTE_STATE_DECIDE && moves.size() == 3) {
+                    cp = 2;
+                } else if (dPenteState == DPENTE_STATE_DECIDE && moves.size() < 5) {
                     cp = 2;
                 } else if (dPenteState == DPENTE_STATE_DECIDE && moves.size() == 5) {
                     cp = 1;

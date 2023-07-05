@@ -8,7 +8,7 @@ var connect6Color = "#EDA3FD";
 var boatPenteColor = "#25BAFF";
 var dkeryoPenteColor = "#FFA500";
 var goColor = "#FAC832";
-var oPenteColor = '#52be80 ';
+var oPenteColor = '#52BE80';
 
 var abstractBoard = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
