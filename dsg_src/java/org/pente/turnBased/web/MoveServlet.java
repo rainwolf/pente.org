@@ -497,14 +497,15 @@ public class MoveServlet extends HttpServlet {
                                 tbGameStorer.storeNewMessage(game.getGid(), message);
                             }
                         } else if (game.getDPenteState() == TBGame.DPENTE_STATE_DECIDE &&
-                                !game.didSwap2Pass() && (game.getNumMoves() == 3 || game.getNumMoves() == 5)) {
-                            log4j.debug("MoveServlet, handle swap2 decisionat move " + game.getNumMoves());
+                                (game.getNumMoves() == 3 || game.getNumMoves() == 5)) {
+                            log4j.debug("MoveServlet, handle swap2 decision at move " + game.getNumMoves());
                             boolean pass = moves[0] == 2 && game.getNumMoves() == 3;
                             // p2 wants to play as p1, or p1 wants to play as p2
                             boolean swap = (moves[0] == 0 && game.getNumMoves() == 3) ||
                                     (moves[0] == 1 && game.getNumMoves() == 5);
                             boolean addOneMove = moves[0] == 1;
                             if (!pass) {
+                                tbGameStorer.updateDPenteState(game, TBGame.DPENTE_STATE_DECIDE);
                                 tbGameStorer.dPenteSwap(game, swap);
                             }
 
