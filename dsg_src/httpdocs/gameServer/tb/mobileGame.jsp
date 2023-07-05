@@ -653,9 +653,12 @@
             case 73:
                 boardColor = goColor;
                 break;
-            case 75:
-                boardColor = oPenteColor;
-                break;
+           case 75:
+              boardColor = oPenteColor;
+              break;
+           case 77:
+              boardColor = swap2PenteColor;
+              break;
             default:
                 boardColor = penteColor;
                 break;
