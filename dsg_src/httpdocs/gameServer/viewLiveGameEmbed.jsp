@@ -428,6 +428,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                     case 73:
                         replayGoGame(abstractBoard, movesList, until); break;
                     case 75: replayOPenteGame(abstractBoard, movesList, until); break;
+                   case 77: replayPenteGame(abstractBoard, movesList, until); break;
                 }
             }
             function goBack() {
@@ -499,6 +500,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                     case 73:
                         boardColor = goColor; break;
                     case 75: boardColor = oPenteColor; break;
+                   case 77: boardColor = swap2PenteColor; break;
                     default: boardColor = penteColor; break;
                 }
                 boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);

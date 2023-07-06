@@ -93,8 +93,8 @@ public class GridStateFactory {
     public static final Game OPENTE_GAME = new Game(OPENTE, "O-Pente", false);
     public static final Game SPEED_OPENTE_GAME = new Game(SPEED_OPENTE, "Speed O-Pente", true);
     public static final Game TB_OPENTE_GAME = new Game(TB_OPENTE, "O-Pente", false);
-    public static final Game SWAP2PENTE_GAME = new Game(SWAP2PENTE, "O-Pente", false);
-    public static final Game SPEED_SWAP2PENTE_GAME = new Game(SPEED_SWAP2PENTE, "Speed O-Pente", true);
+    public static final Game SWAP2PENTE_GAME = new Game(SWAP2PENTE, "Swap2-Pente", false);
+    public static final Game SPEED_SWAP2PENTE_GAME = new Game(SPEED_SWAP2PENTE, "Speed Swap2-Pente", true);
     public static final Game TB_SWAP2PENTE_GAME = new Game(TB_SWAP2PENTE, "Swap2-Pente", false);
 
     private static final Game allGames[] = {
