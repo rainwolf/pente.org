@@ -488,8 +488,8 @@ public class MoveServlet extends HttpServlet {
 
                             tbGameStorer.updateDPenteState(game, TBGame.DPENTE_STATE_DECIDE);
 
-                            for (int i = 0; i < moves.length; i++) {
-                                tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(), moves[i]);
+                            for (int move : moves) {
+                                tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(), move);
                             }
 
                             if (message != null) {
