@@ -64,9 +64,10 @@ public class SocketDSGEventHandler implements DSGEventListener, DSGEventSource {
                             String jsonStr = new String(result, "UTF-8");
 //                            System.out.println("ObjectReader: " + jsonStr);
                             GsonBuilder gsonBuilder = new GsonBuilder();
+                            gsonBuilder.setPrettyPrinting();
+                            gsonBuilder.registerTypeAdapter(Color.class, new DSGColorAdapter());
                             gsonBuilder.registerTypeAdapter(DSGPlayerData.class, new DSGPlayerDataAdapter());
                             gsonBuilder.registerTypeAdapter(DSGPlayerGameData.class, new DSGPlayerGameDataAdapter());
-//                            gsonBuilder.registerTypeAdapter(Color.class, new DSGColorAdapter());
                             Gson gson = gsonBuilder.create();
                             wrappedEvent = gson.fromJson(jsonStr, DSGEventWrapper.class);
                             baos.reset();

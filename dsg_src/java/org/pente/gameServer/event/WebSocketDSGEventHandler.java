@@ -73,9 +73,10 @@ public class WebSocketDSGEventHandler extends ServerSocketDSGEventHandler {
             DSGEventWrapper wrappedEvent = null;
 
             GsonBuilder gsonBuilder = new GsonBuilder();
+            gsonBuilder.setPrettyPrinting();
+            gsonBuilder.registerTypeAdapter(Color.class, new DSGColorAdapter());
             gsonBuilder.registerTypeAdapter(DSGPlayerData.class, new DSGPlayerDataAdapter());
             gsonBuilder.registerTypeAdapter(DSGPlayerGameData.class, new DSGPlayerGameDataAdapter());
-//            gsonBuilder.registerTypeAdapter(Color.class, new DSGColorAdapter());
             Gson gson = gsonBuilder.create();
             wrappedEvent = gson.fromJson(message, DSGEventWrapper.class);
 
