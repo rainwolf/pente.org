@@ -64,6 +64,10 @@ public class ServerSocketDSGEventHandler extends SocketDSGEventHandler {
 
     void handleError(Throwable t) {
 
+//        if (t != null) {
+//            t.printStackTrace();
+//        }
+
         if (handledError) {
             log4j.info(playerName + " - handleError - already handled, returning.");
             return;
