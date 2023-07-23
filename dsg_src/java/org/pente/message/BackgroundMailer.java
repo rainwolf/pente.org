@@ -33,14 +33,15 @@ public class BackgroundMailer extends BackgroundWorker {
 
 	class Work {
 		DSGMessage message;
-		boolean ccSender;
-		public Work(DSGMessage message, boolean ccSender) {
+		boolean ccSender, email;
+		public Work(DSGMessage message, boolean email, boolean ccSender) {
 			this.message = message;
 			this.ccSender = ccSender;
+            this.email = email;
 		}
 	}
-	public void mail(DSGMessage message, boolean ccSender) {
-		doWork(new Work(message, ccSender));
+	public void mail(DSGMessage message, boolean email, boolean ccSender) {
+		doWork(new Work(message, email, ccSender));
 	}
 	public void internalDoWork(Object obj) {
 		Work w = (Work) obj;
@@ -66,13 +67,20 @@ public class BackgroundMailer extends BackgroundWorker {
             }
 
 	        message.setFrom(new InternetAddress(smtpUser, fromData.getName()));
-	        message.addRecipient(Message.RecipientType.TO, 
-	        	new InternetAddress(toData.getEmail(), toData.getName()));
-	        if (w.ccSender) {
-	        	message.addRecipient(Message.RecipientType.BCC,
-	        		new InternetAddress(fromData.getEmail(), fromData.getName()));
-	        }
-	        //message.addRecipient(Message.RecipientType.BCC, 
+            if (w.email) {
+                message.addRecipient(Message.RecipientType.TO,
+                        new InternetAddress(toData.getEmail(), toData.getName()));
+                if (w.ccSender) {
+                    message.addRecipient(Message.RecipientType.BCC,
+                            new InternetAddress(fromData.getEmail(), fromData.getName()));
+                }
+            } else {
+                if (w.ccSender) {
+                    message.addRecipient(Message.RecipientType.TO,
+                            new InternetAddress(fromData.getEmail(), fromData.getName()));
+                }
+            }
+	        //message.addRecipient(Message.RecipientType.BCC,
 	        //	new InternetAddress("dweebo@pente.org", "dweebo"));
 	        
 	        message.setSubject("Pente.org Message: " + m.getSubject());
