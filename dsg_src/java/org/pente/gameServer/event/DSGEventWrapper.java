@@ -1,7 +1,10 @@
 package org.pente.gameServer.event;
 
 import com.google.gson.*;
+import org.pente.gameServer.core.DSGPlayerData;
+import org.pente.gameServer.core.DSGPlayerGameData;
 
+import java.awt.*;
 import java.lang.reflect.Field;
 
 /**
@@ -105,7 +108,13 @@ public class DSGEventWrapper {
     }
 
     public String getJSON() {
-        return (new Gson()).toJson(this);
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.setPrettyPrinting();
+        gsonBuilder.registerTypeAdapter(Color.class, new DSGColorAdapter());
+        gsonBuilder.registerTypeAdapter(DSGPlayerData.class, new DSGPlayerDataAdapter());
+        gsonBuilder.registerTypeAdapter(DSGPlayerGameData.class, new DSGPlayerGameDataAdapter());
+        Gson gson = gsonBuilder.create();
+        return gson.toJson(this);
     }
 
 
