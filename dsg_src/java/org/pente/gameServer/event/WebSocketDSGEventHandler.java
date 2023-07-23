@@ -7,6 +7,7 @@ import org.pente.gameServer.core.DSGPlayerGameData;
 import org.pente.gameServer.core.SynchronizedQueue;
 
 import javax.websocket.Session;
+import java.awt.*;
 import java.io.IOException;
 import java.util.Vector;
 
@@ -74,6 +75,7 @@ public class WebSocketDSGEventHandler extends ServerSocketDSGEventHandler {
             GsonBuilder gsonBuilder = new GsonBuilder();
             gsonBuilder.registerTypeAdapter(DSGPlayerData.class, new DSGPlayerDataAdapter());
             gsonBuilder.registerTypeAdapter(DSGPlayerGameData.class, new DSGPlayerGameDataAdapter());
+//            gsonBuilder.registerTypeAdapter(Color.class, new DSGColorAdapter());
             Gson gson = gsonBuilder.create();
             wrappedEvent = gson.fromJson(message, DSGEventWrapper.class);
 

@@ -18,6 +18,7 @@
 
 package org.pente.gameServer.event;
 
+import java.awt.*;
 import java.net.*;
 import java.io.*;
 import java.util.*;
@@ -65,6 +66,7 @@ public class SocketDSGEventHandler implements DSGEventListener, DSGEventSource {
                             GsonBuilder gsonBuilder = new GsonBuilder();
                             gsonBuilder.registerTypeAdapter(DSGPlayerData.class, new DSGPlayerDataAdapter());
                             gsonBuilder.registerTypeAdapter(DSGPlayerGameData.class, new DSGPlayerGameDataAdapter());
+//                            gsonBuilder.registerTypeAdapter(Color.class, new DSGColorAdapter());
                             Gson gson = gsonBuilder.create();
                             wrappedEvent = gson.fromJson(jsonStr, DSGEventWrapper.class);
                             baos.reset();

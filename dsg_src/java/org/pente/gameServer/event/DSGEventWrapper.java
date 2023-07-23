@@ -3,12 +3,6 @@ package org.pente.gameServer.event;
 import com.google.gson.*;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Type;
-
-import org.pente.gameServer.core.DSGPlayerData;
-import org.pente.gameServer.core.DSGPlayerGameData;
-import org.pente.gameServer.core.SimpleDSGPlayerData;
-import org.pente.gameServer.core.SimpleDSGPlayerGameData;
 
 /**
  * Created by waliedothman on 27/11/2016.
