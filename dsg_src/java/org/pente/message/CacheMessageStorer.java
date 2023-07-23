@@ -111,11 +111,10 @@ public class CacheMessageStorer implements DSGMessageStorer {
 						email = ((Boolean) pref.getValue()).booleanValue();
 					}
 				}
-				if (email) {
-					mailer.mail(message, ccSender);
-				}
-					
-			} catch (DSGPlayerStoreException dpse) {
+
+                mailer.mail(message, email, ccSender);
+
+            } catch (DSGPlayerStoreException dpse) {
 				log4j.debug("CacheMessageStorer, error loading prefs to send email.", dpse);
 			}
 		}
