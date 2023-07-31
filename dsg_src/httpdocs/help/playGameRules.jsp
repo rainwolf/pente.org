@@ -19,7 +19,8 @@ also cover the rules of Pente with some helpful examples.<br>
   <li><a href="#connect6"><b>Connect6 Rules</b></a></li>
     <li><a href="#dkeryo"><b>DK-Pente Rules</b></a></li>
     <li><a href="#go"><b>Go Rules</b></a></li>
-    <li><a href="#opente"><b>O-Pente Rules</b></a></li>
+   <li><a href="#opente"><b>O-Pente Rules</b></a></li>
+   <li><a href="#swap2pente"><b>Swap2-Pente Rules</b></a></li>
   <li><a href="#speed"><b>Speed Games</b></a></li>
 </ul>
 <br>
@@ -157,10 +158,21 @@ The rules of Go are a bit involved but a nice interactive tutorial can be found 
     the game resets to the move before the double pass, and play continues.
 <br>
     <br>
-    <a name="opente"><u>O-Pente</u></a><br>
-    O-Pente combines the rules of Keryo, Poof, and Boat Pente.
-    <br>
-<br>
+   <a name="opente"><u>O-Pente</u></a><br>
+   O-Pente combines the rules of Keryo, Poof, and Boat Pente.
+   <br>
+   <br>
+   <a name="swap2pente"><u>Swap2-Pente</u></a><br>
+   Swap2-Pente is Pente with swap2 rules: The 1st player plays 3 stones, then player 2 decides to
+   <ul>
+      <li>play as player 1, or,</li>
+      <li>play as player 2, or,</li>
+      <li>plays 2 more stones and lets player 1 decide to play as player 1 or 2.</li>
+   </ul>
+   The game is not played in a set, a single game decides the winner.
+
+   <br>
+   <br>
 <a name="speed"><u>Speed Games</u></a><br>
 All of the above games can be played untimed, with a "normal" time limit, or
 as <b>Speed</b> games.  Speed games are played so differently that they are
