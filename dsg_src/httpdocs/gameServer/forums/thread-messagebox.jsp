@@ -13,6 +13,7 @@
                  com.jivesoftware.forum.*,
 				 org.pente.jive.*"
 %>
+<%@ page contentType="text/html; charset=UTF-8" %>
 
 <%  // This page is meant to be *included statically* in the thread pages. This is because
     // the box that contains the actual message content (subject, body, reply buttons,

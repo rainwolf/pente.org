@@ -19,6 +19,7 @@
                   org.pente.gameServer.core.*,
 		 org.pente.gameServer.server.*"
 %>
+<%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="java.util.List" %>
 
 <%@ include file="global.jsp" %>
