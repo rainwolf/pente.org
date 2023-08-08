@@ -75,6 +75,7 @@ public class DSGEventWrapper {
     private DSGUndoRequestTableEvent dsgUndoRequestTableEvent;
     private DSGUpdatePlayerDataEvent dsgUpdatePlayerDataEvent;
     private DSGWaitingPlayerReturnTimeUpTableEvent dsgWaitingPlayerReturnTimeUpTableEvent;
+    private DSGSwap2PassTableEvent dsgSwap2PassTableEvent;
 
     public DSGEventWrapper(Object o) {
         Field[] fields = DSGEventWrapper.class.getDeclaredFields();
@@ -625,6 +626,14 @@ public class DSGEventWrapper {
 
     public void setDsgWaitingPlayerReturnTimeUpTableEvent(DSGWaitingPlayerReturnTimeUpTableEvent dsgWaitingPlayerReturnTimeUpTableEvent) {
         this.dsgWaitingPlayerReturnTimeUpTableEvent = dsgWaitingPlayerReturnTimeUpTableEvent;
+    }
+
+    public DSGSwap2PassTableEvent getDsgSwap2PassTableEvent() {
+        return dsgSwap2PassTableEvent;
+    }
+
+    public void setDsgSwap2PassTableEvent(DSGSwap2PassTableEvent dsgSwap2PassTableEvent) {
+        this.dsgSwap2PassTableEvent = dsgSwap2PassTableEvent;
     }
 }
 
