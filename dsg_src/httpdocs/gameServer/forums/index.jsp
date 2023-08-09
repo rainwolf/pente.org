@@ -8,6 +8,6 @@
   - This software is the proprietary information of Jive Software. Use is subject to license terms.
 --%>
 
-<%  response.sendRedirect("index.jspa");
-    return;
+<% response.sendRedirect("index.jspa");
+   return;
 %>

@@ -13,23 +13,27 @@ import org.pente.gameServer.core.DSGPlayerData;
 public class DSGUser extends SimpleUserAdapter {
 
     private static final Category log4j =
-        Category.getInstance(DSGUserManager.class.getName());
-        
+            Category.getInstance(DSGUserManager.class.getName());
+
     private String location;
     private int age;
     private String homepage;
     private boolean avatar;
-	private String timeZone;
-	private String sig = "";
-	
-    /** used for tournament forum creation */
+    private String timeZone;
+    private String sig = "";
+
+    /**
+     * used for tournament forum creation
+     */
     public DSGUser(long id) {
         this.ID = id;
     }
-    
-    /** normal use */
+
+    /**
+     * normal use
+     */
     public DSGUser(DSGPlayerData baseData) {
-        
+
         this.ID = baseData.getPlayerID();
         this.username = baseData.getName();
         this.name = baseData.getName();
@@ -37,132 +41,122 @@ public class DSGUser extends SimpleUserAdapter {
         this.emailVisible = baseData.getEmailVisible();
         this.creationDate = baseData.getRegisterDate();
         this.modificationDate = baseData.getLastUpdateDate();
-        
+
         this.location = baseData.getLocation();
         this.age = baseData.getAge();
         this.homepage = baseData.getHomepage();
         this.avatar = baseData.hasAvatar();
         this.timeZone = baseData.getTimezone();
         if (baseData.hasPlayerDonated() && baseData.getNote() != null) {
-        	this.sig = baseData.getNote();
+            this.sig = baseData.getNote();
         }
     }
 
     // names are always visible
-	public boolean isNameVisible() {
-		return true;
-	}
+    public boolean isNameVisible() {
+        return true;
+    }
 
     public void updateUser(DSGPlayerData data) {
 
-    	boolean fireEvent = false;
-    	
-    	Map<String, String> params = new HashMap<String, String>();
-		params.put("Type", "propertyModify");
+        boolean fireEvent = false;
 
-    	if (!data.getTimezone().equals(timeZone)) {
-			
-			fireEvent = true;
-			params.put("PropertyKey", "jiveTimeZoneID");
-			params.put("originalValue", timeZone);
-			
-			timeZone = data.getTimezone();		
-		}
-		if (data.getAge() != age) {
-			fireEvent = true;
-			params.put("PropertyKey", "dsgAge");
-			params.put("originalValue", Integer.toString(age));
-			
-			age = data.getAge();
-		}
-		if (data.getLocation() != null && !data.getLocation().equals(location)) {
-			fireEvent = true;
-			params.put("PropertyKey", "dsgLocation");
-			params.put("originalValue", location);
-			
-			location = data.getLocation();
-		}
-		if (data.getHomepage() != null && !data.getHomepage().equals(homepage)) {
-			fireEvent = true;
-			params.put("PropertyKey", "dsgHomePage");
-			params.put("originalValue", homepage);
-			
-			homepage = data.getHomepage();
-		}
-		if (data.hasAvatar() != avatar) {
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("Type", "propertyModify");
 
-			fireEvent = true;
-			params.put("PropertyKey", "dsgAvatar");
-			params.put("originalValue", avatar ? "yes" : null);
-			
-			avatar = data.hasAvatar();
-		}
-		if (!sig.equals(data.getNote())) {
+        if (!data.getTimezone().equals(timeZone)) {
 
-			fireEvent = true;
-			params.put("PropertyKey", "sig");
-			params.put("originalValue", "sig");
-			
-			sig = "";
-			if (data.getNote() != null) {
-				sig = data.getNote();
-			}
-		}
+            fireEvent = true;
+            params.put("PropertyKey", "jiveTimeZoneID");
+            params.put("originalValue", timeZone);
 
-    	if (fireEvent) {
-			UserEvent event = new UserEvent(UserEvent.USER_MODIFIED, 
-					this, params);
-			EventDispatcher.getInstance().notifyListeners(event);
-    	}
+            timeZone = data.getTimezone();
+        }
+        if (data.getAge() != age) {
+            fireEvent = true;
+            params.put("PropertyKey", "dsgAge");
+            params.put("originalValue", Integer.toString(age));
+
+            age = data.getAge();
+        }
+        if (data.getLocation() != null && !data.getLocation().equals(location)) {
+            fireEvent = true;
+            params.put("PropertyKey", "dsgLocation");
+            params.put("originalValue", location);
+
+            location = data.getLocation();
+        }
+        if (data.getHomepage() != null && !data.getHomepage().equals(homepage)) {
+            fireEvent = true;
+            params.put("PropertyKey", "dsgHomePage");
+            params.put("originalValue", homepage);
+
+            homepage = data.getHomepage();
+        }
+        if (data.hasAvatar() != avatar) {
+
+            fireEvent = true;
+            params.put("PropertyKey", "dsgAvatar");
+            params.put("originalValue", avatar ? "yes" : null);
+
+            avatar = data.hasAvatar();
+        }
+        if (!sig.equals(data.getNote())) {
+
+            fireEvent = true;
+            params.put("PropertyKey", "sig");
+            params.put("originalValue", "sig");
+
+            sig = "";
+            if (data.getNote() != null) {
+                sig = data.getNote();
+            }
+        }
+
+        if (fireEvent) {
+            UserEvent event = new UserEvent(UserEvent.USER_MODIFIED,
+                    this, params);
+            EventDispatcher.getInstance().notifyListeners(event);
+        }
     }
 
     // not used
-	public String getProperty(String name) {
+    public String getProperty(String name) {
 
         if (name.equals("jiveTimeZoneID")) {
-        	return timeZone;
-        }  	
-        else if (name.equals("dsgLocation")) {
+            return timeZone;
+        } else if (name.equals("dsgLocation")) {
             if (location == null ||
-                location.equals("")) {
+                    location.equals("")) {
                 return null;
-            }
-            else {
+            } else {
                 return location;
             }
-        }
-        else if (name.equals("dsgAge")) {
+        } else if (name.equals("dsgAge")) {
             if (age == 0) {
                 return null;
-            }
-            else {
+            } else {
                 return Integer.toString(age);
             }
-        }
-        else if (name.equals("dsgHomePage")) {
+        } else if (name.equals("dsgHomePage")) {
             if (homepage == null ||
-                homepage.equals("")) {
+                    homepage.equals("")) {
                 return null;
-            }
-            else {
+            } else {
                 return homepage;
             }
-        }
-        else if (name.equals("dsgAvatar")) {
+        } else if (name.equals("dsgAvatar")) {
             if (avatar) {
                 return "yes";
-            }
-            else {
+            } else {
                 return null;
             }
-        }
-        else if (name.equals("dsgSig")) {
+        } else if (name.equals("dsgSig")) {
             return sig;
-        }
-        else {
+        } else {
             return super.getProperty(name);
         }
-	}
+    }
 
     // Cacheable Interface
     public int getCachedSize() {
@@ -171,10 +165,10 @@ public class DSGUser extends SimpleUserAdapter {
 
         size += CacheSizes.sizeOfString(location);      // location
         size += CacheSizes.sizeOfString(homepage);      // homepage
-        size += CacheSizes.sizeOfString(timeZone);		// timezone
-        size += CacheSizes.sizeOfInt();					// age
+        size += CacheSizes.sizeOfString(timeZone);        // timezone
+        size += CacheSizes.sizeOfInt();                    // age
         size += CacheSizes.sizeOfBoolean();             // avatar
-        size += CacheSizes.sizeOfString(sig);			// sig
+        size += CacheSizes.sizeOfString(sig);            // sig
 
         return size;
     }

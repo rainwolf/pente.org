@@ -1,19 +1,20 @@
-/** SimpleCacheGameStorerProxy.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * SimpleCacheGameStorerProxy.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.game;
@@ -28,16 +29,16 @@ package org.pente.game;
 public class SimpleCacheGameStorerProxy implements GameStorer, PlayerStorer {
 
     /** The quicker of the two game storers */
-    private GameStorer      quickerGameStorer;
+    private GameStorer quickerGameStorer;
 
     /** The slower of the two game storers */
-    private GameStorer      slowerGameStorer;
+    private GameStorer slowerGameStorer;
 
     /** The quicker of the two game storers */
-    private PlayerStorer    quickerPlayerStorer;
+    private PlayerStorer quickerPlayerStorer;
 
     /** The slower of the two game storers */
-    private PlayerStorer    slowerPlayerStorer;
+    private PlayerStorer slowerPlayerStorer;
 
     /** Constructor
      *  @param quickerGameStorer The quicker game storer

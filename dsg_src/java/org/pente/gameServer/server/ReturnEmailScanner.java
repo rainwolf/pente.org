@@ -18,27 +18,27 @@ public class ReturnEmailScanner {
         DBHandler dbHandler = new MySQLDBHandler(args[0], args[1], args[2]);
         GameVenueStorer gameVenueStorer = new MySQLGameVenueStorer(dbHandler);
         DSGPlayerStorer dsgPlayerStorer = new MySQLDSGPlayerStorer(
-            dbHandler, gameVenueStorer);
+                dbHandler, gameVenueStorer);
         new ReturnEmailScanner(dbHandler, dsgPlayerStorer).scanEmails();
     }
 
-    private static Category log4j = 
-        Category.getInstance(ReturnEmailScanner.class.getName());
-    
+    private static Category log4j =
+            Category.getInstance(ReturnEmailScanner.class.getName());
+
     private MySQLDSGReturnEmailStorer returnEmailStorer;
     private DSGPlayerStorer dsgPlayerStorer;
 
     private Hashtable scannedMessageIds = new Hashtable();
-    
+
     public ReturnEmailScanner(
-        DBHandler dbHandler,
-        DSGPlayerStorer dsgPlayerStorer) {
+            DBHandler dbHandler,
+            DSGPlayerStorer dsgPlayerStorer) {
 
         this.dsgPlayerStorer = dsgPlayerStorer;
-        
+
         returnEmailStorer = new MySQLDSGReturnEmailStorer(dbHandler);
     }
-    
+
     public void scanEmails() throws Throwable {
 
         String mailHost = System.getProperty("mail.imap.host");
@@ -54,17 +54,17 @@ public class ReturnEmailScanner {
         // Get folder
         Folder inbox = store.getFolder("INBOX");
         inbox.open(Folder.READ_WRITE);
-        
-        
+
+
         Message message[] = inbox.getMessages();
         ArrayList moveMessages = new ArrayList();
         for (int i = 0, n = message.length; i < n; i++) {
             Vector messageIds = getMessageIds(message[i]);
-            
+
             if (messageIds != null) {
-                for (Iterator it = messageIds.iterator(); it.hasNext();) {
+                for (Iterator it = messageIds.iterator(); it.hasNext(); ) {
                     String m = (String) it.next();
-                    
+
                     // only scan messages once
                     if (scannedMessageIds.get(m) != null) {
                         continue;
@@ -76,12 +76,12 @@ public class ReturnEmailScanner {
                         String mid = ((MimeMessage) message[i]).getMessageID();
                         if (mid != null && mid.equals(m)) continue;
                     }
-                    
+
                     scannedMessageIds.put(m, m);
-                    
+
                     updateDatabase(m);
 
-                    moveMessages.add(message[i]);               
+                    moveMessages.add(message[i]);
                 }
             }
         }
@@ -93,9 +93,9 @@ public class ReturnEmailScanner {
         }
         Folder returned = store.getFolder("mail/returned");
         returned.open(Folder.READ_WRITE);
-        
+
         inbox.copyMessages(move, returned);
-        
+
         for (int i = 0; i < move.length; i++) {
             move[i].setFlag(Flags.Flag.DELETED, true);
         }
@@ -110,11 +110,11 @@ public class ReturnEmailScanner {
     private static final byte[] messageIdBytes = "message-id:".getBytes();
 
     private Vector getMessageIds(Message message) throws Throwable {
-        
+
         Vector messageIds = new Vector();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         message.writeTo(out);
-        
+
         byte[] bytes = out.toByteArray();
         int messageIdIndex = 0;
         for (int j = 0; j < bytes.length; j++) {
@@ -124,11 +124,10 @@ public class ReturnEmailScanner {
             }
             if (b == messageIdBytes[messageIdIndex]) {
                 messageIdIndex++;
-            }
-            else {
+            } else {
                 messageIdIndex = 0;
             }
-            
+
             if (messageIdIndex == messageIdBytes.length) {
 
                 int begin = j + 1;
@@ -142,28 +141,28 @@ public class ReturnEmailScanner {
                 messageIdIndex = 0;
             }
         }
-        
+
         return messageIds;
     }
-    
+
 
     private void updateDatabase(String messageId) throws Throwable {
 
-        DSGReturnEmailData returnEmailData = 
-        returnEmailStorer.getReturnedEmailData(messageId);
-        
+        DSGReturnEmailData returnEmailData =
+                returnEmailStorer.getReturnedEmailData(messageId);
+
         if (returnEmailData == null) {
             log4j.debug("Message " + messageId + " not found in database.");
             return;
         }
-        
+
         try {
-            DSGPlayerData dsgPlayerData = 
-            dsgPlayerStorer.loadPlayer(returnEmailData.getPid());
-            
+            DSGPlayerData dsgPlayerData =
+                    dsgPlayerStorer.loadPlayer(returnEmailData.getPid());
+
             if (dsgPlayerData == null) {
-                log4j.error(returnEmailData.getPid() + 
-                " not found in returned email processing.");
+                log4j.error(returnEmailData.getPid() +
+                        " not found in returned email processing.");
                 return;
             }
 
@@ -173,18 +172,17 @@ public class ReturnEmailScanner {
             if (dsgPlayerData.getEmail().equals(returnEmailData.getEmail()) &&
                     !dsgPlayerData.getLastUpdateDate().after(returnEmailData.getSendDate()) &&
                     dsgPlayerData.getEmailValid()) {
-                
-                log4j.info("For message " + messageId + ", updating " + 
+
+                log4j.info("For message " + messageId + ", updating " +
                         dsgPlayerData.getName() + "'s email (" +
                         dsgPlayerData.getEmail() + ") to invalid.");
-                
+
                 dsgPlayerData.setEmailValid(false);
                 dsgPlayerData.setLastUpdateDate(new java.util.Date());
                 dsgPlayerStorer.updatePlayer(dsgPlayerData);
-            }
-            else {
-                log4j.info("Email returned for " + dsgPlayerData.getName() + 
-                " but player has updated profile.");
+            } else {
+                log4j.info("Email returned for " + dsgPlayerData.getName() +
+                        " but player has updated profile.");
             }
 
         } catch (DSGPlayerStoreException e) {

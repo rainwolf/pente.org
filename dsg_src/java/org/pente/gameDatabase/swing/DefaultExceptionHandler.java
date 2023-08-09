@@ -5,15 +5,15 @@ import java.lang.Thread.UncaughtExceptionHandler;
 import java.awt.Frame;
 import javax.swing.*;
 
-public class DefaultExceptionHandler implements UncaughtExceptionHandler
-{
+public class DefaultExceptionHandler implements UncaughtExceptionHandler {
     public void uncaughtException(Thread t, Throwable e) {
         // Here you should have a more robust, permanent record of problems
         JOptionPane.showMessageDialog(findActiveFrame(),
-            e.toString(), "Exception Occurred", JOptionPane.OK_OPTION);
+                e.toString(), "Exception Occurred", JOptionPane.OK_OPTION);
         System.err.println("Uncaught exception");
         e.printStackTrace();
     }
+
     private Frame findActiveFrame() {
         Frame[] frames = Frame.getFrames();
         for (int i = 0; i < frames.length; i++) {

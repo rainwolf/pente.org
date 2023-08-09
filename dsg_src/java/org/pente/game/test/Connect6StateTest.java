@@ -7,8 +7,8 @@ import org.pente.game.*;
 public class Connect6StateTest extends GridStateTest {
 
     public static void main(String[] args) {
-        junit.textui.TestRunner.main(new String[] {
-            Connect6StateTest.class.getName()
+        junit.textui.TestRunner.main(new String[]{
+                Connect6StateTest.class.getName()
         });
     }
 
@@ -26,22 +26,22 @@ public class Connect6StateTest extends GridStateTest {
 
 
     public void testGameOver() {
-    	SimpleConnect6State state1 = createGridState(19, 19);
+        SimpleConnect6State state1 = createGridState(19, 19);
 
-        addMoves(new int[] { 180, 181, 182, 1, 2, 183, 184, 3, 4, 185 }, 
-        	state1);
-    
+        addMoves(new int[]{180, 181, 182, 1, 2, 183, 184, 3, 4, 185},
+                state1);
+
         state1.printBoard();
         assertEquals(false, state1.isGameOver());
-        
-        addMoves(new int[] { 186 }, state1);
+
+        addMoves(new int[]{186}, state1);
 
         assertEquals(true, state1.isGameOver());
         assertEquals(2, state1.getWinner());
-        
+
         state1.printBoard();
     }
-    
+
     public void testDraw() {
 
         SimpleConnect6State state1 = createGridState(19, 19);
@@ -52,10 +52,9 @@ public class Connect6StateTest extends GridStateTest {
         addMoves(moves, state1);
         assertEquals(true, state1.isGameOver());
         assertEquals(true, state1.getWinner() == 0);
-        
+
         state1.printBoard();
     }
-    
 
 
 //    public void testUndo() {

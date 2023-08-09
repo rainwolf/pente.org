@@ -1,19 +1,20 @@
-/** ChatPanel.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * ChatPanel.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.gameServer.client.awt;
@@ -28,16 +29,16 @@ import org.pente.gameServer.client.*;
 public class ChatPanel extends Panel implements ChatComponent, ActionListener {
 
     private static final DateFormat dateFormat = new SimpleDateFormat("(HH:mm)");
-    
+
     private TextArea chatArea;
     private TextField chatEnter;
     private FontMetrics fontMetrics;
-    
+
     private boolean notified = false;
     private boolean destroyed = false;
-    
+
     private PreferenceHandler preferenceHandler;
-    
+
     private Vector listeners = new Vector();
 
     /**
@@ -50,7 +51,7 @@ public class ChatPanel extends Panel implements ChatComponent, ActionListener {
     public ChatPanel(int width, int height, int spacing, PreferenceHandler preferenceHandler/*, Boolean isGuest */) {
 
         this.preferenceHandler = preferenceHandler;
-        
+
         chatArea = new TextArea("", height, width, TextArea.SCROLLBARS_VERTICAL_ONLY);
         chatArea.setEditable(false);
         chatArea.setBackground(Color.white);
@@ -67,7 +68,7 @@ public class ChatPanel extends Panel implements ChatComponent, ActionListener {
         Font dialogFont = new Font("Dialog", Font.PLAIN, 12);
         fontMetrics = chatArea.getFontMetrics(dialogFont);
     }
-    
+
     public void addNotify() {
         super.addNotify();
         notified = true;
@@ -94,13 +95,13 @@ public class ChatPanel extends Panel implements ChatComponent, ActionListener {
             if (destroyed) return;
             chatArea.append(message + "\n");
             //if (notified) {
-                // hack to scroll chatarea down, seems to not work by
-                // default on mac OS X's
+            // hack to scroll chatarea down, seems to not work by
+            // default on mac OS X's
             //    chatArea.setCaretPosition(Integer.MAX_VALUE);
             //}
         }
     }
-    
+
     public void newChatMessage(String message, String player) {
         newChatMessage(getMessage(message, player, false));
     }
@@ -110,16 +111,16 @@ public class ChatPanel extends Panel implements ChatComponent, ActionListener {
     }
 
     private String getMessage(String message, String player, boolean system) {
-        
+
         // might be bad for performance to get timestamp preference
         // for every text message but easier this way
         boolean showTimestamp = false;
         Boolean showTimestampPref = (Boolean) preferenceHandler.getPref(
-            "chatTimestamp");
+                "chatTimestamp");
         if (showTimestampPref != null) {
             showTimestamp = showTimestampPref.booleanValue();
         }
-        
+
         String msg = "";
         if (player != null) {
             msg += player;
@@ -130,12 +131,10 @@ public class ChatPanel extends Panel implements ChatComponent, ActionListener {
 
         if ((player != null || showTimestamp) && !system) {
             msg += ": ";
-        }
-        else if (system) {
+        } else if (system) {
             if (showTimestamp) {
                 msg += " * ";
-            }
-            else {
+            } else {
                 msg += "* ";
             }
         }
@@ -144,10 +143,10 @@ public class ChatPanel extends Panel implements ChatComponent, ActionListener {
         if (system) {
             msg += " *";
         }
-        
+
         return msg;
     }
-    
+
     public void actionPerformed(ActionEvent e) {
 
         synchronized (chatArea) {
@@ -166,6 +165,7 @@ public class ChatPanel extends Panel implements ChatComponent, ActionListener {
             chatListener.chatEntered(text);
         }
     }
+
     public void destroy() {
         synchronized (chatArea) {
             destroyed = true;

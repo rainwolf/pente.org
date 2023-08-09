@@ -1,19 +1,20 @@
-/** PenteApplet.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * PenteApplet.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.gameServer.client.awt;
@@ -81,8 +82,8 @@ public class PenteApplet extends Applet {
                 sounds.addSound(getAudioClip(getCodeBase(), "yourturn.au"), "move");
                 sounds.addSound(getAudioClip(getCodeBase(), "newplayer.au"), "join");
                 sounds.addSound(getAudioClip(getCodeBase(), "woohoo.au"), "win");
-                sounds.addSound(getAudioClip(getCodeBase(),"doh.au"), "lose");
-                sounds.addSound(getAudioClip(getCodeBase(),"invite.au"), "invite");
+                sounds.addSound(getAudioClip(getCodeBase(), "doh.au"), "lose");
+                sounds.addSound(getAudioClip(getCodeBase(), "invite.au"), "invite");
             }
 
             //set up game styles
@@ -156,7 +157,7 @@ public class PenteApplet extends Applet {
                 cardLayout.show(this, LOGIN);
             }
 
-        } catch(Throwable t) {
+        } catch (Throwable t) {
             System.out.println("unknown init error");
             t.printStackTrace();
             cardLayout.show(this, ERROR_PANEL);
@@ -187,12 +188,14 @@ public class PenteApplet extends Applet {
     public String getHost() {
         return host;
     }
+
     public void reconnect(int port) {
         this.port = port;
         changingRooms = true;
         reconnect();
         changingRooms = false;
     }
+
     public void reconnect() {
         logout();
         connect();
@@ -203,7 +206,7 @@ public class PenteApplet extends Applet {
         try {
             cardLayout.show(this, "CONNECT");
             connectPanel.printMessage("Connecting to game room, port " + port + "...");
-            System.out.println("Connecting to game room, host="+host+", port="+port);
+            System.out.println("Connecting to game room, host=" + host + ", port=" + port);
             statsFrame = new Frame();
             playerDataCache = new PlayerDataCache();
 
@@ -244,19 +247,16 @@ public class PenteApplet extends Applet {
                             if (mainRoomEvent.getPlayer().equals(playerName)) {
                                 booted = false;
                                 cardLayout.show(PenteApplet.this, MAINROOM);
-                            }
-                            else {
+                            } else {
                                 playerDataCache.addPlayer(mainRoomEvent.getDSGPlayerData());
                             }
-                        }
-                        else if (dsgEvent instanceof DSGJoinMainRoomErrorEvent) {
+                        } else if (dsgEvent instanceof DSGJoinMainRoomErrorEvent) {
                             DSGJoinMainRoomErrorEvent mainRoomError = (DSGJoinMainRoomErrorEvent) dsgEvent;
                             if (mainRoomError.getError() == DSGMainRoomErrorEvent.ALREADY_IN_MAIN_ROOM) {
                                 cardLayout.show(PenteApplet.this, LOGIN);
                                 loginPnl.showAlreadyLoggedIn();
                             }
-                        }
-                        else if (dsgEvent instanceof DSGExitMainRoomEvent) {
+                        } else if (dsgEvent instanceof DSGExitMainRoomEvent) {
                             DSGExitMainRoomEvent exitEvent = (DSGExitMainRoomEvent) dsgEvent;
                             if (exitEvent.getPlayer() == null && !booted) {
                                 if (!changingRooms) {
@@ -264,26 +264,22 @@ public class PenteApplet extends Applet {
                                     cardLayout.show(PenteApplet.this, ERROR_PANEL);
                                     logout();
                                 }
-                            }
-                            else if (exitEvent.getPlayer().equals(playerName) &&
+                            } else if (exitEvent.getPlayer().equals(playerName) &&
                                     exitEvent.wasBooted()) {
                                 errorPnl.setBooted();
                                 booted = true;
                                 cardLayout.show(PenteApplet.this, ERROR_PANEL);
                                 logout();
                             }
-                        }
-                        else if (dsgEvent instanceof DSGUpdatePlayerDataEvent) {
+                        } else if (dsgEvent instanceof DSGUpdatePlayerDataEvent) {
                             DSGUpdatePlayerDataEvent updateEvent =
                                     (DSGUpdatePlayerDataEvent) dsgEvent;
                             playerDataCache.updatePlayer(updateEvent.getDSGPlayerData());
-                        }
-                        else if (dsgEvent instanceof DSGIgnoreEvent) {
+                        } else if (dsgEvent instanceof DSGIgnoreEvent) {
                             DSGIgnoreEvent ignoreEvent = (DSGIgnoreEvent) dsgEvent;
                             playerDataCache.updateIgnore(ignoreEvent.getPlayers());
                             //note any open dialogs won't be modified
-                        }
-                        else if (dsgEvent instanceof DSGServerStatsEvent) {
+                        } else if (dsgEvent instanceof DSGServerStatsEvent) {
                             DSGServerStatsEvent statsEvent = (DSGServerStatsEvent) dsgEvent;
 
                             new ServerStatsDialog(
@@ -291,22 +287,18 @@ public class PenteApplet extends Applet {
                                     gameStyle,
                                     statsEvent,
                                     safeGetLocationOnScreen());
-                        }
-                        else if (dsgEvent instanceof DSGAddAITableEvent) {
+                        } else if (dsgEvent instanceof DSGAddAITableEvent) {
                             aiDataVector.addElement(((DSGAddAITableEvent) dsgEvent).getAIData());
-                        }
-                        else if(dsgEvent instanceof DSGLoginErrorEvent) {
+                        } else if (dsgEvent instanceof DSGLoginErrorEvent) {
                             DSGLoginErrorEvent loginErrorEvent = (DSGLoginErrorEvent) dsgEvent;
                             if (loginErrorEvent.getError() == DSGLoginErrorEvent.INVALID_LOGIN) {
                                 cardLayout.show(PenteApplet.this, LOGIN);
                                 loginPnl.showInvalidLogin();
-                            }
-                            else if (loginErrorEvent.getError() == DSGLoginErrorEvent.PRIVATE_ROOM) {
+                            } else if (loginErrorEvent.getError() == DSGLoginErrorEvent.PRIVATE_ROOM) {
                                 cardLayout.show(PenteApplet.this, LOGIN);
                                 loginPnl.showPrivateRoom();
                             }
-                        }
-                        else if (dsgEvent instanceof DSGLoginEvent) {
+                        } else if (dsgEvent instanceof DSGLoginEvent) {
 
                             DSGLoginEvent l = (DSGLoginEvent) dsgEvent;
                             if (l.isGuest()) {
@@ -360,14 +352,13 @@ public class PenteApplet extends Applet {
                 if (playerName != null) {
                     l.setPlayer(playerName);
                 }
-            }
-            else {
+            } else {
                 connectPanel.printMessage("Connected. Logging in as " + playerName + "...");
                 l = new DSGLoginEvent(playerName, password, info);
             }
             socketDSGEventHandler.eventOccurred(l);
 
-        } catch(Throwable t) {
+        } catch (Throwable t) {
             System.out.println("unknown connect error");
             t.printStackTrace();
             cardLayout.show(this, ERROR_PANEL);

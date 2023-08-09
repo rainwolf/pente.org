@@ -22,7 +22,8 @@ public class MySQLDSGFollowerStorer implements DSGFollowerStorer {
         this.dbHandler = dbHandler;
     }
 
-    /** Make sure the database handler is destroyed
+    /**
+     * Make sure the database handler is destroyed
      */
     public void destroy() {
         dbHandler.destroy();
@@ -82,7 +83,7 @@ public class MySQLDSGFollowerStorer implements DSGFollowerStorer {
                 }
             }
         } catch (Throwable t) {
-            throw new DSGFollowerStoreException("remove follower "+followerPid+" of "+pid+" problem", t);
+            throw new DSGFollowerStoreException("remove follower " + followerPid + " of " + pid + " problem", t);
         }
     }
 
@@ -119,7 +120,7 @@ public class MySQLDSGFollowerStorer implements DSGFollowerStorer {
                 }
             }
         } catch (Throwable t) {
-            throw new DSGFollowerStoreException("get followers for "+pid+" problem", t);
+            throw new DSGFollowerStoreException("get followers for " + pid + " problem", t);
         }
         return followers;
     }
@@ -157,7 +158,7 @@ public class MySQLDSGFollowerStorer implements DSGFollowerStorer {
                 }
             }
         } catch (Throwable t) {
-            throw new DSGFollowerStoreException("get following for "+pid+" problem", t);
+            throw new DSGFollowerStoreException("get following for " + pid + " problem", t);
         }
         return following;
     }

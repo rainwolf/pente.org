@@ -3,20 +3,20 @@
  */
 package org.pente.gameDatabase;
 
-        import java.io.*;
-        import java.net.*;
-        import java.util.*;
+import java.io.*;
+import java.net.*;
+import java.util.*;
 
-        import javax.servlet.*;
-        import javax.servlet.http.*;
+import javax.servlet.*;
+import javax.servlet.http.*;
 
-        import org.apache.log4j.*;
+import org.apache.log4j.*;
 
-        import org.pente.database.*;
-        import org.pente.game.*;
-        import org.pente.filter.http.*;
-        import org.pente.filter.iyt.game.*;
-        import org.pente.gameServer.server.*;
+import org.pente.database.*;
+import org.pente.game.*;
+import org.pente.filter.http.*;
+import org.pente.filter.iyt.game.*;
+import org.pente.gameServer.server.*;
 
 public class MobileGameServlet extends HttpServlet {
 
@@ -135,8 +135,7 @@ public class MobileGameServlet extends HttpServlet {
                 GameStorerSearchRequestData requestData = null;
                 if (request.getParameter(HttpGameServer.SEARCH_START_PARAM) != null) {
                     requestData = startRequestData;
-                }
-                else {
+                } else {
 
                     // build parameter buffer so that http object format
                     // cant decode it, yes its a little backwards but only because
@@ -198,11 +197,9 @@ public class MobileGameServlet extends HttpServlet {
                     }
                     if (endGameNum <= startGameNum) {
                         endGameNum = startGameNum + minIncrement;
-                    }
-                    else if ((endGameNum - startGameNum) > maxIncrement) {
+                    } else if ((endGameNum - startGameNum) > maxIncrement) {
                         endGameNum = startGameNum + maxIncrement;
-                    }
-                    else if ((endGameNum - startGameNum) < minIncrement) {
+                    } else if ((endGameNum - startGameNum) < minIncrement) {
                         endGameNum = startGameNum + minIncrement;
                     }
                     requestData.getGameStorerSearchRequestFilterData().setStartGameNum(startGameNum);
@@ -230,8 +227,7 @@ public class MobileGameServlet extends HttpServlet {
                         if (requestData.getGameStorerSearchResponseOrder() == GameStorerSearchResponseMoveDataComparator.SORT_GAMES) {
                             //if (requestData.getGameStorerSearchResponseOrder() == responseData1.getGameStorerSearchRequestData().getGameStorerSearchResponseOrder()) {
                             responseData2 = responseData1;
-                        }
-                        else {
+                        } else {
                             responseData2.setGameStorerSearchRequestData(responseData1.getGameStorerSearchRequestData());
 
                             Vector resultMoves = responseData1.searchResponseMoveData();
@@ -257,13 +253,11 @@ public class MobileGameServlet extends HttpServlet {
                             responseStr = buffer.toString();
                             contentType = responseFormat.getContentType();
                         }
-                    }
-                    else {
+                    } else {
                         status = HttpConstants.STATUS_BAD_REQUEST;
                         responseStr = "Invalid request: No moves specified";
                     }
-                }
-                else {
+                } else {
                     status = HttpConstants.STATUS_BAD_REQUEST;
                     responseStr = "Invalid request: parse exception";
                 }
@@ -277,8 +271,7 @@ public class MobileGameServlet extends HttpServlet {
 
                 if (responseStr != null && !responseStr.equals("")) {
                     sendResponse(response, status, responseStr, contentType, false);
-                }
-                else {
+                } else {
                     request.getRequestDispatcher("/gameServer/mobile/database.jsp").
                             forward(request, response);
                 }
@@ -321,14 +314,11 @@ public class MobileGameServlet extends HttpServlet {
 
         if (gameFormatClass == null) {
             return null;
-        }
-        else if (gameFormatClass.equals("org.pente.filter.iyt.game.IYTPGNGameFormat")) {
+        } else if (gameFormatClass.equals("org.pente.filter.iyt.game.IYTPGNGameFormat")) {
             return new IYTGameData();
-        }
-        else if (gameFormatClass.equals("org.pente.game.PGNGameFormat")) {
+        } else if (gameFormatClass.equals("org.pente.game.PGNGameFormat")) {
             return new DefaultGameData();
-        }
-        else {
+        } else {
             return null;
         }
     }

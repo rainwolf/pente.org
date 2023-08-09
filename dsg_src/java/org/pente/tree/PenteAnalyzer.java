@@ -12,25 +12,26 @@ public class PenteAnalyzer {
 
 //    private static final Category log4j = Category.getInstance(
 //        PenteAnalyzer.class.getName());
- 
+
     private PenteState penteState;
+
     public PenteAnalyzer(PenteState penteState) {
         this.penteState = penteState;
 
-        	int x = penteState.getGridSizeX();
-        	System.out.println("x="+x);
-        	surrounding = new int[] { 
-        		x + 1, 1, -x + 1, x
-        	};
-        	FULL_SURROUND = new int[] {
-        		x + 1, 1, -x + 1, x, -x - 1, -1, x - 1, -x
-        	};
+        int x = penteState.getGridSizeX();
+        System.out.println("x=" + x);
+        surrounding = new int[]{
+                x + 1, 1, -x + 1, x
+        };
+        FULL_SURROUND = new int[]{
+                x + 1, 1, -x + 1, x, -x - 1, -1, x - 1, -x
+        };
     }
 
     private int surrounding[];// = new int[] { 20, 1, -18, 19 };
     private int FULL_SURROUND[];// = 
-        //new int[] { 20, 1, -18, 19, -20, -1, 18, -19 };
-    
+    //new int[] { 20, 1, -18, 19, -20, -1, 18, -19 };
+
     public PositionAnalysis analyzeMove() {
 
         int move = penteState.getMove(penteState.getNumMoves() - 1);
@@ -41,11 +42,11 @@ public class PenteAnalyzer {
         long startTime = System.currentTimeMillis();
 
         PositionAnalysis analysis = new PositionAnalysis(
-            new int[] { 0, penteState.getNumCaptures(1), 
-                penteState.getNumCaptures(2) });
+                new int[]{0, penteState.getNumCaptures(1),
+                        penteState.getNumCaptures(2)});
         analysis.move = move;
         analysis.player = p;
-        
+
         // scan all moves for threats to ensure everything is caught
         // too hard to keep track of changes to threats between moves
         for (int i = 0; i < penteState.getNumMoves(); i++) {
@@ -60,15 +61,13 @@ public class PenteAnalyzer {
             findCaps(m, c, analysis);
         }
         analysis.analyzeCaptures();
-        
-        
-        
-        
+
+
         // TODO then need to recheck all threats against pairs and pot. caps. to
         // add results for 3's, 4's
         // TODO i guess i could rescan rethreats, checking to see if any potential captures
         // are a keystone pair and then setting the rank very high in that case...
-        
+
         // print results
 //        if (log4j.isDebugEnabled()) {
 //            log4j.debug("analyze position " + Utils.printState(penteState));
@@ -79,7 +78,7 @@ public class PenteAnalyzer {
 
         return analysis;
     }
-    
+
     public void findCaps(int move, int p, PositionAnalysis analysis) {
 
         int op = 3 - p;
@@ -92,7 +91,7 @@ public class PenteAnalyzer {
             if (!penteState.isValidPosition(c2, move)) continue;
             if (!penteState.isValidPosition(c3, move)) continue;
             if (!penteState.isValidPosition(c4, move)) continue;
-            
+
             int pos1 = penteState.getPosition(c1);
             int pos2 = penteState.getPosition(c2);
             int pos3 = penteState.getPosition(c3);
@@ -106,15 +105,14 @@ public class PenteAnalyzer {
                 t.addMove(c2);
                 t.addNext(c3);
                 t.addResp(c3);
-                System.out.println(c1+","+c2+","+c3+","+c4);
+                System.out.println(c1 + "," + c2 + "," + c3 + "," + c4);
                 t.captureMove = c3;
                 t.threatMove = move;
                 analysis.addThreat(t);
 //                if (log4j.isDebugEnabled()) {
 //                	log4j.debug("found potential cap " + t);
 //                }
-            }
-            else if (pos4 == 0 && pos1 == p && pos2 == 0) {
+            } else if (pos4 == 0 && pos1 == p && pos2 == 0) {
                 Threat t = new Threat();
                 t.player = op;
                 t.type = Threat.TYPE_POTENTIAL_THREE_PAIR;
@@ -130,7 +128,7 @@ public class PenteAnalyzer {
             }
         }
     }
-    
+
 
     public void findLines(int move, int p, PositionAnalysis analysis) {
         int origMove = move;
@@ -141,7 +139,7 @@ public class PenteAnalyzer {
             line.move = move;
             line.orientation = i;
             line.p = p;
-            
+
             // first scan left as far as possible
             // stop when encounter wall, opponent or 3rd gap total
             int startRightScan = move;
@@ -154,12 +152,11 @@ public class PenteAnalyzer {
                 int val = 0;
                 if (!penteState.isValidPosition(newMove, move)) {
                     endOp = true;
-                }
-                else {
-                     val = penteState.getPosition(newMove);
-                     if (val == op) {
-                         endOp = true;
-                     }
+                } else {
+                    val = penteState.getPosition(newMove);
+                    if (val == op) {
+                        endOp = true;
+                    }
                 }
                 move = newMove;
 
@@ -168,8 +165,7 @@ public class PenteAnalyzer {
                     markEnd(startRightScan - 2 * surrounding[i], startRightScan, 0, line);
                     markEnd(startRightScan - surrounding[i], startRightScan, 1, line);
                     break;
-                }
-                else if (val == p) {
+                } else if (val == p) {
                     startRightScan = move;
                     gapsSinceStart = 0;
                     line.myLen++;
@@ -191,7 +187,7 @@ public class PenteAnalyzer {
             line.positions[2] = startRightScan;
             line.moves[2] = p;
             line.myLen = 1;
-            
+
             // then scan right as far as possible
             move = startRightScan;
             gapsTotal = 0;
@@ -203,23 +199,21 @@ public class PenteAnalyzer {
                 int val = 0;
                 if (!penteState.isValidPosition(newMove, move)) {
                     endOp = true;
-                }
-                else {
-                     val = penteState.getPosition(newMove);
-                     if (val == op) {
-                         endOp = true;
-                     }
+                } else {
+                    val = penteState.getPosition(newMove);
+                    if (val == op) {
+                        endOp = true;
+                    }
                 }
                 move = newMove;
-                
+
                 if (endOp) {
                     line.len = line.myLen + line.gaps + 4 - gapsSinceEnd;
                     markEnd(endRightScan + surrounding[i], endRightScan, line.len - 2, line);
                     markEnd(endRightScan + 2 * surrounding[i], endRightScan, line.len - 1, line);
                     markExtendedEnd(endRightScan + 3 * surrounding[i], endRightScan, 1, line);
                     break;
-                }
-                else if (val == p) {
+                } else if (val == p) {
                     endRightScan = move;
                     gapsSinceEnd = 0;
                     line.myLen++;
@@ -228,7 +222,7 @@ public class PenteAnalyzer {
                 else if (val == 0) {
                     gapsTotal++;
                     gapsSinceEnd++;
-                    line.gaps++;                
+                    line.gaps++;
                 }
 
                 line.moves[line.len] = val;
@@ -252,7 +246,7 @@ public class PenteAnalyzer {
 //            }
 //            
             List lines = line.split();
-            for (Iterator it = lines.iterator(); it.hasNext();) {
+            for (Iterator it = lines.iterator(); it.hasNext(); ) {
                 Line l = (Line) it.next();
 //                if (log4j.isDebugEnabled()) {
 //                    log4j.debug(l);
@@ -267,24 +261,24 @@ public class PenteAnalyzer {
             }
         }
     }
-    
+
     private static final int WALL = 4;
+
     private void markEnd(int newMove, int oldMove, int endPos, Line line) {
         if (penteState.isValidPosition(newMove, oldMove)) {
             line.positions[endPos] = newMove;
             line.moves[endPos] = penteState.getPosition(line.positions[endPos]);
-        }
-        else {
+        } else {
             line.positions[endPos] = 0;
             line.moves[endPos] = WALL;
         }
     }
+
     private void markExtendedEnd(int newMove, int oldMove, int endPos, Line line) {
         if (penteState.isValidPosition(newMove, oldMove)) {
             line.thirdOuterPositions[endPos] = newMove;
             line.thirdOuterMoves[endPos] = penteState.getPosition(line.thirdOuterPositions[endPos]);
-        }
-        else {
+        } else {
             line.thirdOuterPositions[endPos] = 0;
             line.thirdOuterMoves[endPos] = WALL;
         }

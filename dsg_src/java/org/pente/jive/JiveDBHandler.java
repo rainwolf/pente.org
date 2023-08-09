@@ -8,19 +8,19 @@ import com.jivesoftware.base.database.*;
 
 public class JiveDBHandler implements DBHandler {
 
-	public Connection getConnection() throws SQLException {
-		return ConnectionManager.getConnection();
-	}
+    public Connection getConnection() throws SQLException {
+        return ConnectionManager.getConnection();
+    }
 
     // jive code doesn't do this...
-	public void freeConnection(Connection con) throws SQLException {
+    public void freeConnection(Connection con) throws SQLException {
         try {
             con.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-	}
+    }
 
-	public void destroy() {
-	}
+    public void destroy() {
+    }
 }

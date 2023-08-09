@@ -1,18 +1,20 @@
 <%
-{ //scope
-	String playText = (String) pageContext.getAttribute("playText");
-    String gameRoomSize = (String) session.getAttribute("gameRoomSize");
-    if (gameRoomSize == null) {
-    	gameRoomSize = "800";
-    }
-    
-    if (me != null &&
-    	   request.getAttribute("pluginChoiceMade") != null) { // player logged in
+   { //scope
+      String playText = (String) pageContext.getAttribute("playText");
+      String gameRoomSize = (String) session.getAttribute("gameRoomSize");
+      if (gameRoomSize == null) {
+         gameRoomSize = "800";
+      }
 
-    	String plugin = request.getAttribute("plugin") == null ? "false" : "true"; %>
-	    <b><a href="javascript:handlePlay('<%= plugin %>', '<%= gameRoomSize %>');"><%= playText %></a></b>
+      if (me != null &&
+         request.getAttribute("pluginChoiceMade") != null) { // player logged in
 
-	<% } else { %>
-	    <b><a href="/gameServer/index.jsp"><%= playText %></a></b>
-	<% }
+         String plugin = request.getAttribute("plugin") == null ? "false" : "true"; %>
+<b><a href="javascript:handlePlay('<%= plugin %>', '<%= gameRoomSize %>');"><%= playText %>
+</a></b>
+
+<% } else { %>
+<b><a href="/gameServer/index.jsp"><%= playText %>
+</a></b>
+<% }
 } %>

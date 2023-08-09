@@ -1,8 +1,8 @@
 package org.pente.gameServer.event;
 
 public class DSGForceCancelResignTableErrorEvent extends AbstractDSGTableErrorEvent {
-	
-	private int action;
+
+    private int action;
 
     public DSGForceCancelResignTableErrorEvent() {
         super();
@@ -10,23 +10,24 @@ public class DSGForceCancelResignTableErrorEvent extends AbstractDSGTableErrorEv
 
     public DSGForceCancelResignTableErrorEvent(String player, int table, int error, int action) {
         super(player, table, error);
-        
+
         this.action = action;
     }
 
-	public boolean forcedResign() {
-		return action == DSGForceCancelResignTableEvent.RESIGN;
-	}
-	public boolean forcedCancel() {
-		return action == DSGForceCancelResignTableEvent.CANCEL;
-	}
+    public boolean forcedResign() {
+        return action == DSGForceCancelResignTableEvent.RESIGN;
+    }
 
-	public int getAction() {
-		return action;
-	}
+    public boolean forcedCancel() {
+        return action == DSGForceCancelResignTableEvent.CANCEL;
+    }
 
-	public String toString() {
-		return "force " + (action == DSGForceCancelResignTableEvent.CANCEL ? "cancel " : "resign ") + super.toString();
-	}
+    public int getAction() {
+        return action;
+    }
+
+    public String toString() {
+        return "force " + (action == DSGForceCancelResignTableEvent.CANCEL ? "cancel " : "resign ") + super.toString();
+    }
 }
 

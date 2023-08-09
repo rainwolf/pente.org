@@ -1,19 +1,20 @@
-/** GridBoardCanvas.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * GridBoardCanvas.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.gameServer.client.awt;
@@ -27,81 +28,81 @@ import org.pente.gameServer.core.*;
 import org.pente.gameServer.client.*;
 
 public class GridBoardCanvas extends Canvas
-    implements GridBoardComponent,
-               GridCoordinatesChangeListener,
-               GameOptionsChangeListener {
+        implements GridBoardComponent,
+        GridCoordinatesChangeListener,
+        GameOptionsChangeListener {
 
     // the number of grids on the x axis
-    int             gridWidth;
+    int gridWidth;
 
     // number of grids on the y axis
-    int             gridHeight;
+    int gridHeight;
 
     // if true, the pieces show up ontop of the grid lines
     // if false, the pieces show up in between the grid lines
-    boolean         piecesOnGrid;
+    boolean piecesOnGrid;
 
     // the width of the beveled edge around the whole board
-    int             beveledEdge;
+    int beveledEdge;
 
     // space after beveled edge that won't be
     // used to draw the grid lines of the board
-    Insets          insets;
+    Insets insets;
 
     // space used for the coordinates
-    Dimension       coordinatesDimensions;
+    Dimension coordinatesDimensions;
 
     // the left over space between the edge of the
     // insets and the beginning of the grid lines of the board
-    Dimension       edgeLeftOvers;
+    Dimension edgeLeftOvers;
 
     // the width of a piece on the board
-    int             gridPieceSize;
+    int gridPieceSize;
 
 
     private Map<Integer, List<Integer>> goTerritory;
-    
-    private String          gameName;
-    private Vector          gridPieces;
-    private GridPiece       highlightPiece;
-    private GridPiece       thinkingPiece;
-    private GridPiece       oldThinkingPiece;
-    private boolean         showThinkingPiece;
-    private boolean         newMovesAvailable;
-    private boolean         showNewMovesAvailable;
-    private GameTimer       showNewMovesAvailableTimer;
-    private boolean         drawInnerCircles;
-    private boolean         drawGoDots;
-    private boolean         drawCoordinates = true;
 
-    GameOptions             gameOptions;
-    GridCoordinates         gridCoordinates;
+    private String gameName;
+    private Vector gridPieces;
+    private GridPiece highlightPiece;
+    private GridPiece thinkingPiece;
+    private GridPiece oldThinkingPiece;
+    private boolean showThinkingPiece;
+    private boolean newMovesAvailable;
+    private boolean showNewMovesAvailable;
+    private GameTimer showNewMovesAvailableTimer;
+    private boolean drawInnerCircles;
+    private boolean drawGoDots;
+    private boolean drawCoordinates = true;
 
-    boolean                 boardDirty = true;
-    boolean                 emptyBoardDirty = true;
-    final Object                  drawLock = new Object();
+    GameOptions gameOptions;
+    GridCoordinates gridCoordinates;
 
-    private Dimension       currentSize;
+    boolean boardDirty = true;
+    boolean emptyBoardDirty = true;
+    final Object drawLock = new Object();
 
-    Image                   emptyBoardImage;
-    Graphics                emptyBoardGraphics;
-    Image                   boardImage;
-    Graphics                boardGraphics;
+    private Dimension currentSize;
 
-    private Color           backGroundColor;
-    private Color           gridColor;
-    private Color           gameNameColor;
-    private Color           highlightColor;
-    private Color           shadowColor;
-    private Color           transparentHighlightColor;
-    private Color           transparentShadowColor;
+    Image emptyBoardImage;
+    Graphics emptyBoardGraphics;
+    Image boardImage;
+    Graphics boardGraphics;
+
+    private Color backGroundColor;
+    private Color gridColor;
+    private Color gameNameColor;
+    private Color highlightColor;
+    private Color shadowColor;
+    private Color transparentHighlightColor;
+    private Color transparentShadowColor;
 
     // move listeners
-    private Vector          listeners;
+    private Vector listeners;
 
     private static final Font MESSAGE_FONT = new Font("Arial", Font.PLAIN, 12);
-	private String			message;
-	private boolean			hideMessage = false;
+    private String message;
+    private boolean hideMessage = false;
 
     public GridBoardCanvas() {
         listeners = new Vector();
@@ -138,9 +139,9 @@ public class GridBoardCanvas extends Canvas
         // end temp
     }
 
-	public void testMouseEvent(MouseEvent e) {
-		processMouseMotionEvent(e);
-	}
+    public void testMouseEvent(MouseEvent e) {
+        processMouseMotionEvent(e);
+    }
 
     // GridBoardComponent
     // most of these functions SHOULD be set prior
@@ -149,6 +150,7 @@ public class GridBoardCanvas extends Canvas
     public int getGridWidth() {
         return gridWidth;
     }
+
     public void setGridWidth(int width) {
         this.gridWidth = width;
 //        calculateGridSize();
@@ -157,6 +159,7 @@ public class GridBoardCanvas extends Canvas
     public int getGridHeight() {
         return gridHeight;
     }
+
     public void setGridHeight(int height) {
         this.gridHeight = height;
 //        calculateGridSize();
@@ -165,6 +168,7 @@ public class GridBoardCanvas extends Canvas
     public boolean getOnGrid() {
         return piecesOnGrid;
     }
+
     public void setOnGrid(boolean onGrid) {
         this.piecesOnGrid = onGrid;
     }
@@ -177,12 +181,15 @@ public class GridBoardCanvas extends Canvas
         this.backGroundColor = new Color(color);
         gameNameColor = backGroundColor.darker();
     }
+
     public void setGridColor(int color) {
         this.gridColor = new Color(color);
     }
+
     public void setHighlightColor(int color) {
         this.highlightColor = new Color(color);
     }
+
     public void setGameNameColor(int color) {
         this.gameNameColor = new Color(color);
     }
@@ -197,11 +204,11 @@ public class GridBoardCanvas extends Canvas
 
     public void setMessage(String message) {
         synchronized (drawLock) {
-			this.message = message;
+            this.message = message;
         }
-		repaint();
-	}
-	
+        repaint();
+    }
+
     public void setGameName(String gameName) {
         synchronized (drawLock) {
             this.gameName = gameName;
@@ -215,7 +222,7 @@ public class GridBoardCanvas extends Canvas
             this.highlightPiece = gridPiece;
             emptyBoardDirty = true;
         }
-        
+
         repaint();
     }
 
@@ -262,8 +269,7 @@ public class GridBoardCanvas extends Canvas
                         });
                     }
                     showNewMovesAvailableTimer.go();
-                }
-                else {
+                } else {
                     synchronized (drawLock) {
                         if (showNewMovesAvailableTimer != null) {
                             showNewMovesAvailableTimer.stop();
@@ -280,19 +286,27 @@ public class GridBoardCanvas extends Canvas
     public void setDrawInnerCircles(boolean drawInnerCircles) {
         this.drawInnerCircles = drawInnerCircles;
     }
-    public void setDrawGoDots(boolean drawGoDots) { this.drawGoDots = drawGoDots; }
-    public boolean drawGoDots() { return drawGoDots; }
+
+    public void setDrawGoDots(boolean drawGoDots) {
+        this.drawGoDots = drawGoDots;
+    }
+
+    public boolean drawGoDots() {
+        return drawGoDots;
+    }
+
     public void setDrawCoordinates(boolean drawCoordinates) {
         this.drawCoordinates = drawCoordinates;
     }
 
-    public void setBoardInsets(int l,int t,int r, int b) {
-        this.insets = new Insets(l,t,r,b);
+    public void setBoardInsets(int l, int t, int r, int b) {
+        this.insets = new Insets(l, t, r, b);
     }
 
     public void addGridBoardListener(GridBoardListener listener) {
         listeners.addElement(listener);
     }
+
     public void removeGridBoardListener(GridBoardListener listener) {
         listeners.removeElement(listener);
     }
@@ -308,6 +322,7 @@ public class GridBoardCanvas extends Canvas
         }
         repaint();
     }
+
     public void removePiece(GridPiece gridPiece) {
         synchronized (drawLock) {
             gridPieces.removeElement(gridPiece);
@@ -317,20 +332,21 @@ public class GridBoardCanvas extends Canvas
     }
 
     public void updatePiecePlayer(int x, int y, int player) {
-    	synchronized (drawLock) {
-    		for (int i = 0; i < gridPieces.size(); i++) {
-    			GridPiece p = (GridPiece) gridPieces.elementAt(i);
-    			if (p.getX() == x && p.getY() == y) {
-    				p.setPlayer(player);
-    				boardDirty = true;
-    				break;
-    			}
-    		}
-    		if (boardDirty) {
-    			repaint();
-    		}
-    	}
+        synchronized (drawLock) {
+            for (int i = 0; i < gridPieces.size(); i++) {
+                GridPiece p = (GridPiece) gridPieces.elementAt(i);
+                if (p.getX() == x && p.getY() == y) {
+                    p.setPlayer(player);
+                    boardDirty = true;
+                    break;
+                }
+            }
+            if (boardDirty) {
+                repaint();
+            }
+        }
     }
+
     public void clearPieces() {
         synchronized (drawLock) {
             gridPieces.removeAllElements();
@@ -359,13 +375,14 @@ public class GridBoardCanvas extends Canvas
     }
 
     // Canvas
-	public Dimension getMinimumSize() {
-		return new Dimension(200, 200);
-	}
-	public Dimension getPreferredSize() {
-		return new Dimension(400, 400);
-	}
-	
+    public Dimension getMinimumSize() {
+        return new Dimension(200, 200);
+    }
+
+    public Dimension getPreferredSize() {
+        return new Dimension(400, 400);
+    }
+
     public void addNotify() {
         super.addNotify();
 
@@ -377,6 +394,7 @@ public class GridBoardCanvas extends Canvas
         boardGraphics = boardImage.getGraphics();
         boardGraphics.setClip(0, 0, 1, 1);
     }
+
     public void destroy() {
 
         if (emptyBoardGraphics != null) {
@@ -408,15 +426,17 @@ public class GridBoardCanvas extends Canvas
     }
 
     public void refresh() {
-    	repaint();
+        repaint();
     }
+
     public void myPaint(Graphics g, int width, int height) {
-    	setSize(width, height);
-    	emptyBoardGraphics = g;
-    	calculateGridSize();
-    	drawEmptyBoard(g);
-    	drawBoard(g);
+        setSize(width, height);
+        emptyBoardGraphics = g;
+        calculateGridSize();
+        drawEmptyBoard(g);
+        drawBoard(g);
     }
+
     public void paint(Graphics g) {
 
         if (emptyBoardGraphics != null) {
@@ -425,7 +445,7 @@ public class GridBoardCanvas extends Canvas
 
                     Dimension size = getSize();
                     if (size.width != currentSize.width ||
-                        size.height != currentSize.height) {
+                            size.height != currentSize.height) {
 
                         sizeChanged(size.width, size.height);
                         calculateGridSize();
@@ -438,15 +458,13 @@ public class GridBoardCanvas extends Canvas
                         drawBoard(emptyBoardImage, boardGraphics);
                         g.setClip(0, 0, currentSize.width, currentSize.height);
                         g.drawImage(boardImage, 0, 0, this);
-                    }
-                    else if (boardDirty) {
+                    } else if (boardDirty) {
                         drawBoard(emptyBoardImage, boardGraphics);
                         g.setClip(0, 0, currentSize.width, currentSize.height);
                         g.drawImage(boardImage, 0, 0, this);
-                    }
-                    else {
+                    } else {
                         if (oldThinkingPiece.getX() >= 0 &&
-                            oldThinkingPiece.getY() >= 0) {
+                                oldThinkingPiece.getY() >= 0) {
                             int x = getStartX() + oldThinkingPiece.getX() * gridPieceSize;
                             int y = getStartY() + (gridHeight - oldThinkingPiece.getY() - 2) * gridPieceSize;
 
@@ -463,66 +481,66 @@ public class GridBoardCanvas extends Canvas
                     // if the client wants to show thinking piece
                     // and thinking piece is on the board
                     if (showThinkingPiece &&
-                        thinkingPiece.getX() >= 0 &&
-                        thinkingPiece.getY() >= 0) {
+                            thinkingPiece.getX() >= 0 &&
+                            thinkingPiece.getY() >= 0) {
                         drawPiece(g, thinkingPiece);
                     }
-					
-					if (message != null && !hideMessage) {
-						int x = currentSize.width;
-						int y = getStartY() + (gridHeight - 2) * gridPieceSize; 
-	
-						g.setFont(MESSAGE_FONT);
-						FontMetrics fm = g.getFontMetrics(MESSAGE_FONT);
-						int mWidth = fm.stringWidth(message);
-						int mHeight = fm.getMaxAscent() +
-	                    			  fm.getLeading();
 
-						g.setColor(Color.white);
-						g.fillRect(x / 2 - mWidth / 2 - 10, y - mHeight / 2 - 10,
-							mWidth + 20, mHeight + 20);
-						g.setColor(Color.black);
-						g.drawRect(x / 2 - mWidth / 2 - 10, y - mHeight / 2 - 10,
-							mWidth + 20, mHeight + 20);
-						g.drawRect(x / 2 - mWidth / 2 - 9,  y - mHeight / 2 - 9,
-							mWidth + 18, mHeight + 18);
-					
-						x = (x / 2) - 100 + ((200 - mWidth) / 2);
-						y = y + mHeight / 2;
-						g.drawString(message, x, y);
-					}
-					
+                    if (message != null && !hideMessage) {
+                        int x = currentSize.width;
+                        int y = getStartY() + (gridHeight - 2) * gridPieceSize;
+
+                        g.setFont(MESSAGE_FONT);
+                        FontMetrics fm = g.getFontMetrics(MESSAGE_FONT);
+                        int mWidth = fm.stringWidth(message);
+                        int mHeight = fm.getMaxAscent() +
+                                fm.getLeading();
+
+                        g.setColor(Color.white);
+                        g.fillRect(x / 2 - mWidth / 2 - 10, y - mHeight / 2 - 10,
+                                mWidth + 20, mHeight + 20);
+                        g.setColor(Color.black);
+                        g.drawRect(x / 2 - mWidth / 2 - 10, y - mHeight / 2 - 10,
+                                mWidth + 20, mHeight + 20);
+                        g.drawRect(x / 2 - mWidth / 2 - 9, y - mHeight / 2 - 9,
+                                mWidth + 18, mHeight + 18);
+
+                        x = (x / 2) - 100 + ((200 - mWidth) / 2);
+                        y = y + mHeight / 2;
+                        g.drawString(message, x, y);
+                    }
+
                 }
             } catch (Throwable t) {
                 t.printStackTrace(System.err);
             }
-			
+
         }
     }
 
     private Rectangle getMessageDimensions() {
 
-		int x = currentSize.width;
-		int y = getStartY() + (gridHeight - 2) * gridPieceSize; 
-		FontMetrics fm = getFontMetrics(MESSAGE_FONT);
-		int mWidth = fm.stringWidth(message);
-		int mHeight = fm.getMaxAscent() +
-        			  fm.getLeading();
+        int x = currentSize.width;
+        int y = getStartY() + (gridHeight - 2) * gridPieceSize;
+        FontMetrics fm = getFontMetrics(MESSAGE_FONT);
+        int mWidth = fm.stringWidth(message);
+        int mHeight = fm.getMaxAscent() +
+                fm.getLeading();
 
-		return new Rectangle(x / 2 - mWidth / 2 - 10, y - mHeight / 2 - 10,
-			mWidth + 20, mHeight + 20);
+        return new Rectangle(x / 2 - mWidth / 2 - 10, y - mHeight / 2 - 10,
+                mWidth + 20, mHeight + 20);
     }
-    
+
     private void sizeChanged(int x, int y) {
 
         if (emptyBoardImage != null &&
-            x != 0 && y != 0) {
+                x != 0 && y != 0) {
 
             // need a bigger image
             Rectangle rec = emptyBoardGraphics.getClipBounds();
             if (rec != null &&
-                (rec.width < x ||
-                 rec.height < y)) {
+                    (rec.width < x ||
+                            rec.height < y)) {
                 if (emptyBoardGraphics != null) {
                     emptyBoardGraphics.dispose();
                     emptyBoardGraphics = null;
@@ -583,6 +601,7 @@ public class GridBoardCanvas extends Canvas
     protected int getStartX() {
         return insets.left + beveledEdge + coordinatesDimensions.width + edgeLeftOvers.width;
     }
+
     protected int getStartY() {
         return insets.top + beveledEdge + coordinatesDimensions.height + edgeLeftOvers.height;
     }
@@ -598,8 +617,7 @@ public class GridBoardCanvas extends Canvas
             FontMetrics fm = emptyBoardGraphics.getFontMetrics(f);
             coordinatesDimensions.width = fm.stringWidth("10") + 2;
             coordinatesDimensions.height = fm.getAscent() + 2;
-        }
-        else {
+        } else {
             coordinatesDimensions.width = 0;
             coordinatesDimensions.height = 0;
         }
@@ -615,7 +633,7 @@ public class GridBoardCanvas extends Canvas
         int gridPieceSizeHeight = size.height / (gridHeight - 1);
 
         gridPieceSize = gridPieceSizeWidth < gridPieceSizeHeight ?
-            gridPieceSizeWidth : gridPieceSizeHeight;
+                gridPieceSizeWidth : gridPieceSizeHeight;
         // end gridpiecesize
 
         // get edges left overs
@@ -637,7 +655,7 @@ public class GridBoardCanvas extends Canvas
         g.setColor(backGroundColor);
         g.clearRect(0, 0, size.width, size.height);
 
-        for (int i = 0;  i < beveledEdge; i++) {
+        for (int i = 0; i < beveledEdge; i++) {
             g.fill3DRect(i, i, size.width - 2 * i, size.height - 2 * i, true);
         }
     }
@@ -694,9 +712,8 @@ public class GridBoardCanvas extends Canvas
         for (int i = 0; i < gridWidth; i++) {
 
             if (drawDifferentMiddleLine && i == gridWidth / 2) {
-                 g.setColor(middleColor);
-            }
-            else {
+                g.setColor(middleColor);
+            } else {
                 g.setColor(gridColor);
             }
 
@@ -711,9 +728,8 @@ public class GridBoardCanvas extends Canvas
         for (int i = 0; i < gridHeight; i++) {
 
             if (drawDifferentMiddleLine && i == gridHeight / 2) {
-                 g.setColor(middleColor);
-            }
-            else {
+                g.setColor(middleColor);
+            } else {
                 g.setColor(gridColor);
             }
 
@@ -819,12 +835,10 @@ public class GridBoardCanvas extends Canvas
                 if (piecesOnGrid) {
                     if (i == gridWidth - 1) {
                         x2 -= fm.stringWidth(h);
-                    }
-                    else if (i != 0) {
+                    } else if (i != 0) {
                         x2 -= fm.stringWidth(h) / 2;
                     }
-                }
-                else {
+                } else {
                     x2 += gridPieceSize / 2 - fm.stringWidth(h) / 2;
                 }
                 g.drawString(h, x2, y);
@@ -847,20 +861,17 @@ public class GridBoardCanvas extends Canvas
                 if (piecesOnGrid) {
                     if (i == gridHeight - 1) {
                         y2 += height;
-                    }
-                    else if (i != 0) {
+                    } else if (i != 0) {
                         y2 += height / 2;
                     }
-                }
-                else {
+                } else {
                     y2 += height / 2 + gridPieceSize / 2;
                 }
 
                 int x2 = x;
                 if (j == 0) {
                     x2 -= fm.stringWidth(v) + 1;
-                }
-                else {
+                } else {
                     x2 += 1;
                 }
 
@@ -876,7 +887,7 @@ public class GridBoardCanvas extends Canvas
         if (gameOptions.getShowLastMove()) {
             for (int i = gridPieces.size() - 1; i >= 0; i--) {
                 GridPiece piece = (GridPiece) gridPieces.elementAt(i);
-                if (piece.getX()<0 || piece.getY()<0 || piece.getX()>=gridWidth || piece.getY()>=gridWidth) {
+                if (piece.getX() < 0 || piece.getY() < 0 || piece.getX() >= gridWidth || piece.getY() >= gridWidth) {
                     continue;
                 }
                 if (piece == highlightPiece) {
@@ -893,32 +904,34 @@ public class GridBoardCanvas extends Canvas
             if (gameOptions.getShowLastMove() && piece == highlightPiece) {
                 continue;
             }
-            if (piece.getX()<0 || piece.getY()<0 || piece.getX()>=gridWidth || piece.getY()>=gridWidth) {
+            if (piece.getX() < 0 || piece.getY() < 0 || piece.getX() >= gridWidth || piece.getY() >= gridWidth) {
                 continue;
             }
 
             drawPiece(boardGraphics, piece);
         }
-        
+
         if (goTerritory != null) {
             List<Integer> territory = goTerritory.get(1);
             int x, y;
             if (territory != null) {
-                for (int pos: territory) {
-                    x = pos % gridWidth; y = pos/gridWidth;
-                    fillRect(boardGraphics, x, y, gridPieceSize/3, Color.BLACK);
+                for (int pos : territory) {
+                    x = pos % gridWidth;
+                    y = pos / gridWidth;
+                    fillRect(boardGraphics, x, y, gridPieceSize / 3, Color.BLACK);
                 }
             }
             territory = goTerritory.get(2);
             if (territory != null) {
-                for (int pos: territory) {
-                    x = pos % gridWidth; y = pos/gridWidth;
-                    fillRect(boardGraphics, x, y, gridPieceSize/3, Color.WHITE);
+                for (int pos : territory) {
+                    x = pos % gridWidth;
+                    y = pos / gridWidth;
+                    fillRect(boardGraphics, x, y, gridPieceSize / 3, Color.WHITE);
                 }
             }
         }
     }
-    
+
     private void drawBoard(Image emptyBoardImage, Graphics boardGraphics) {
 //System.out.println("drawBoard()");
         boardGraphics.drawImage(emptyBoardImage, 0, 0, this);
@@ -951,8 +964,7 @@ public class GridBoardCanvas extends Canvas
 
         if (gameOptions.getDraw3DPieces()) {
             draw3DPiece(g, new Point(x, y), c, localHighlightColor, gridPieceSize);
-        }
-        else {
+        } else {
             draw2DPiece(g, new Point(x, y), c[1], localHighlightColor, gridPieceSize);
         }
     }
@@ -997,12 +1009,12 @@ public class GridBoardCanvas extends Canvas
         g.setColor(c);
         g.fillOval(x, y, r, r);
     }
-    
+
     private void fillRect(Graphics g, int x, int y, int w, Color c) {
         g.setColor(c);
-        x = getStartX() + x * gridPieceSize - w/2;
-        y = getStartY() + y * gridPieceSize - w/2;
-        g.fillRect(x,y,w,w);
+        x = getStartX() + x * gridPieceSize - w / 2;
+        y = getStartY() + y * gridPieceSize - w / 2;
+        g.fillRect(x, y, w, w);
     }
 
     private Point getGridMove(int x, int y) {
@@ -1024,10 +1036,9 @@ public class GridBoardCanvas extends Canvas
 
         int piecesOnGridOffset = (piecesOnGrid) ? 0 : 1;
         if (x >= 0 && x < gridWidth - piecesOnGridOffset &&
-            y >= 0 && y < gridHeight - piecesOnGridOffset) {
+                y >= 0 && y < gridHeight - piecesOnGridOffset) {
             return new Point(x, y);
-        }
-        else {
+        } else {
             return null;
         }
     }
@@ -1040,21 +1051,21 @@ public class GridBoardCanvas extends Canvas
         // place, doesn't always happen when moves are being made quickly
         public void mousePressed(MouseEvent e) {
 
-			boolean gridClicked = false;
-			Point gridMove = null;
+            boolean gridClicked = false;
+            Point gridMove = null;
 
             synchronized (drawLock) {
 
                 gridMove = getGridMove(e.getX(), e.getY());
                 if (gridMove != null) {
-					gridClicked = true;
+                    gridClicked = true;
                 }
             }
 
             if (gridClicked) {
                 for (int i = 0; i < listeners.size(); i++) {
                     GridBoardListener l = (GridBoardListener) listeners.elementAt(i);
-                    
+
                     // which button pressed changed in 1.4
                     l.gridClicked(gridMove.x, gridMove.y, e.getModifiers());
                 }
@@ -1066,8 +1077,8 @@ public class GridBoardCanvas extends Canvas
 
         public void mouseMoved(MouseEvent e) {
 
-        	boolean gridMoved = false;
-        	Point gridMove = null;
+            boolean gridMoved = false;
+            Point gridMove = null;
 
             synchronized (drawLock) {
                 gridMove = getGridMove(e.getX(), e.getY());
@@ -1081,10 +1092,9 @@ public class GridBoardCanvas extends Canvas
                         thinkingPiece.setY(-1);
                         repaint();
                     }
-                }
-                else {
+                } else {
                     if (gridMove.x != thinkingPiece.getX() ||
-                        gridMove.y != thinkingPiece.getY()) {
+                            gridMove.y != thinkingPiece.getY()) {
 
                         oldThinkingPiece.setX(thinkingPiece.getX());
                         oldThinkingPiece.setY(thinkingPiece.getY());
@@ -1093,35 +1103,34 @@ public class GridBoardCanvas extends Canvas
                         thinkingPiece.setY(gridMove.y);
 
                         gridMoved = true;
-                        
+
                         repaint();
                     }
                 }
-                
+
                 if (message != null) {
-                	Rectangle r = getMessageDimensions();
-                	if (!hideMessage && r.contains(e.getX(), e.getY())) {
-                		hideMessage = true;
+                    Rectangle r = getMessageDimensions();
+                    if (!hideMessage && r.contains(e.getX(), e.getY())) {
+                        hideMessage = true;
                         repaint();
-                	}
-                	else if (hideMessage && !r.contains(e.getX(), e.getY())) {
-                		hideMessage = false;
-                		repaint();
-                	}
+                    } else if (hideMessage && !r.contains(e.getX(), e.getY())) {
+                        hideMessage = false;
+                        repaint();
+                    }
                 }
             }
-            
+
             // moved out of synchronized block due to deadlock
             if (gridMoved) {
                 for (int i = 0; i < listeners.size(); i++) {
-               		GridBoardListener l = (GridBoardListener) listeners.elementAt(i);
-                   	l.gridMoved(gridMove.x, gridMove.y);
-             	}
+                    GridBoardListener l = (GridBoardListener) listeners.elementAt(i);
+                    l.gridMoved(gridMove.x, gridMove.y);
+                }
             }
         }
     }
 
     public void setCursor(int cursor) {
-    	setCursor(Cursor.getPredefinedCursor(cursor));
+        setCursor(Cursor.getPredefinedCursor(cursor));
     }
 }

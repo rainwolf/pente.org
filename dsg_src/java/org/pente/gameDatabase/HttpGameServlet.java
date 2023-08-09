@@ -1,19 +1,20 @@
-/** HttpGameServlet.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * HttpGameServlet.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 package org.pente.gameDatabase;
 
@@ -46,7 +47,7 @@ public class HttpGameServlet extends HttpServlet {
     private static GameStats gameStats;
 
     private static ActivityLogger activityLogger;
-    
+
 
     private static final int MAX_MOVES = 20;
 
@@ -60,8 +61,8 @@ public class HttpGameServlet extends HttpServlet {
 
             ServletContext ctx = config.getServletContext();
 
-			Resources resources = (Resources) ctx.getAttribute(Resources.class.getName());
-			DBHandler dbHandler = resources.getDbHandlerRo();
+            Resources resources = (Resources) ctx.getAttribute(Resources.class.getName());
+            DBHandler dbHandler = resources.getDbHandlerRo();
             GameVenueStorer gameVenueStorer = (GameVenueStorer) ctx.getAttribute(GameVenueStorer.class.getName());
 
             // setup game stats objects
@@ -87,8 +88,8 @@ public class HttpGameServlet extends HttpServlet {
             cat.info("init(), created startRequestData");
 
             activityLogger = (ActivityLogger) ctx.getAttribute(
-                ActivityLogger.class.getName());
-            
+                    ActivityLogger.class.getName());
+
         } catch (Throwable t) {
             cat.error("Problem in init()", t);
         }
@@ -118,14 +119,14 @@ public class HttpGameServlet extends HttpServlet {
 
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response)
-        throws ServletException, IOException {
-        
+            throws ServletException, IOException {
+
         doPost(request, response);
     }
 
     public void doPost(HttpServletRequest request,
                        HttpServletResponse response)
-        throws ServletException, IOException {
+            throws ServletException, IOException {
 
         GameFormat gameFormat;
         String requestStr = null;
@@ -166,8 +167,7 @@ public class HttpGameServlet extends HttpServlet {
 
                                 status = HttpConstants.STATUS_OK;
                                 responseStr = buffer.toString();
-                            }
-                            else {
+                            } else {
                                 status = HttpConstants.STATUS_NOT_FOUND;
                                 responseStr = "Game not found: " + gameIDStr;
                             }
@@ -175,22 +175,18 @@ public class HttpGameServlet extends HttpServlet {
                             status = HttpConstants.STATUS_NOT_FOUND;
                             responseStr = "Game not found: " + gameIDStr;
                         }
-                    }
-                    else {
+                    } else {
                         status = HttpConstants.STATUS_BAD_REQUEST;
                         responseStr = "Invalid request: Missing " + HttpGameServer.GAME_ID;
                     }
-                }
-                else {
+                } else {
                     status = HttpConstants.STATUS_BAD_REQUEST;
-                    responseStr = "Invalid request: Missing, Invalid, or unsupported " + HttpGameServer.GAME_FORMAT + " - " +gameFormatClass;
+                    responseStr = "Invalid request: Missing, Invalid, or unsupported " + HttpGameServer.GAME_FORMAT + " - " + gameFormatClass;
                 }
 
                 sendResponse(response, status, responseStr, HttpConstants.CONTENT_TYPE_TEXT, false);
-            }
-
-            else if (requestStr.equals(HttpGameServer.SEARCH) ||
-                requestStr.equals(HttpGameServer.SEARCH_ZIP)) {
+            } else if (requestStr.equals(HttpGameServer.SEARCH) ||
+                    requestStr.equals(HttpGameServer.SEARCH_ZIP)) {
 
                 boolean downloadGames = requestStr.equals(HttpGameServer.SEARCH_ZIP);
 
@@ -201,8 +197,7 @@ public class HttpGameServlet extends HttpServlet {
                 GameStorerSearchRequestData requestData = null;
                 if (request.getParameter(HttpGameServer.SEARCH_START_PARAM) != null) {
                     requestData = startRequestData;
-                }
-                else {
+                } else {
 
                     // build parameter buffer so that http object format
                     // cant decode it, yes its a little backwards but only because
@@ -238,21 +233,21 @@ public class HttpGameServlet extends HttpServlet {
                     // create this just to get hashcode of position for 
                     // activity logger
                     GridState hashState = GridStateFactory.createGridState(
-                    	requestData.getGameStorerSearchRequestFilterData().getGame(), 
-                    	requestData);
+                            requestData.getGameStorerSearchRequestFilterData().getGame(),
+                            requestData);
 
                     // if player banned from game db, return K10 position!
                     if (activityLogger.viewDb(
-                        new ActivityData((String) request.getAttribute("name"),
-                            request.getRemoteAddr()),
-                        hashState.hashCode(),
-                        requestData.getMoves(),
-                        paramsBuf.toString())) {
-                        
+                            new ActivityData((String) request.getAttribute("name"),
+                                    request.getRemoteAddr()),
+                            hashState.hashCode(),
+                            requestData.getMoves(),
+                            paramsBuf.toString())) {
+
                         request.setAttribute("blocked", new Object());
                         requestData = startRequestData;
                     }
-                    
+
                     // move this somewhere else!
                     int startGameNum = requestData.getGameStorerSearchRequestFilterData().getStartGameNum();
                     int endGameNum = requestData.getGameStorerSearchRequestFilterData().getEndGameNum();
@@ -264,17 +259,15 @@ public class HttpGameServlet extends HttpServlet {
                     }
                     if (endGameNum <= startGameNum) {
                         endGameNum = startGameNum + minIncrement;
-                    }
-                    else if ((endGameNum - startGameNum) > maxIncrement) {
+                    } else if ((endGameNum - startGameNum) > maxIncrement) {
                         endGameNum = startGameNum + maxIncrement;
-                    }
-                    else if ((endGameNum - startGameNum) < minIncrement) {
+                    } else if ((endGameNum - startGameNum) < minIncrement) {
                         endGameNum = startGameNum + minIncrement;
                     }
                     requestData.getGameStorerSearchRequestFilterData().setStartGameNum(startGameNum);
                     requestData.getGameStorerSearchRequestFilterData().setEndGameNum(endGameNum);
                 }
-                
+
                 GameStorerSearchResponseData responseData2 = null;
                 if (requestData != null) {
                     GameStorerSearchResponseFormat responseFormat = (GameStorerSearchResponseFormat) objectFormatFactory.createFormat(requestData.getGameStorerSearchResponseFormat());
@@ -283,8 +276,8 @@ public class HttpGameServlet extends HttpServlet {
                     GameStorerSearchResponseData responseData1 = new SortedGameStorerSearchResponseData(GameStorerSearchResponseMoveDataComparator.SORT_GAMES, MAX_MOVES, numGames);
                     responseData2 = new SortedGameStorerSearchResponseData(requestData.getGameStorerSearchResponseOrder(), MAX_MOVES, numGames);
 
-                    if (requestData.getNumMoves() > 0 || 
-                            (requestData.getNumMoves() == 0 && 
+                    if (requestData.getNumMoves() > 0 ||
+                            (requestData.getNumMoves() == 0 &&
                                     (requestData.getGameStorerSearchRequestFilterData().getGame() == GridStateFactory.DPENTE ||
                                             requestData.getGameStorerSearchRequestFilterData().getGame() == GridStateFactory.SPEED_DPENTE ||
                                             requestData.getGameStorerSearchRequestFilterData().getGame() == GridStateFactory.DKERYO ||
@@ -297,9 +290,8 @@ public class HttpGameServlet extends HttpServlet {
                         // copy response data 1 to response data 2 if sorting is different
                         if (requestData.getGameStorerSearchResponseOrder() == GameStorerSearchResponseMoveDataComparator.SORT_GAMES) {
                             //if (requestData.getGameStorerSearchResponseOrder() == responseData1.getGameStorerSearchRequestData().getGameStorerSearchResponseOrder()) {
-                             responseData2 = responseData1;
-                        }
-                        else {
+                            responseData2 = responseData1;
+                        } else {
                             responseData2.setGameStorerSearchRequestData(responseData1.getGameStorerSearchRequestData());
 
                             Vector resultMoves = responseData1.searchResponseMoveData();
@@ -309,7 +301,7 @@ public class HttpGameServlet extends HttpServlet {
                             }
 
                             responseData2.setRotation(responseData1.getRotation());
-                            
+
                             Vector resultGames = responseData1.getGames();
                             for (int i = 0; i < resultGames.size(); i++) {
                                 GameData data = (GameData) resultGames.elementAt(i);
@@ -324,25 +316,22 @@ public class HttpGameServlet extends HttpServlet {
                             zipStream.writeOutput(response, responseData2, gameFormat);
                             // don't call sendResponse below
                             return;
-                        }
-                        else {
+                        } else {
 
                             if (responseFormat instanceof SimpleGameStorerSearchResponseFormat) {
-								StringBuffer buffer = new StringBuffer();
-	                            buffer = responseFormat.format(responseData2, buffer);
-	
-	                            status = HttpConstants.STATUS_OK;
-	                            responseStr = buffer.toString();
-	                            contentType = responseFormat.getContentType();
+                                StringBuffer buffer = new StringBuffer();
+                                buffer = responseFormat.format(responseData2, buffer);
+
+                                status = HttpConstants.STATUS_OK;
+                                responseStr = buffer.toString();
+                                contentType = responseFormat.getContentType();
                             }
                         }
-                    }
-                    else {
+                    } else {
                         status = HttpConstants.STATUS_BAD_REQUEST;
                         responseStr = "Invalid request: No moves specified";
                     }
-                }
-                else {
+                } else {
                     status = HttpConstants.STATUS_BAD_REQUEST;
                     responseStr = "Invalid request: parse exception";
                 }
@@ -354,13 +343,12 @@ public class HttpGameServlet extends HttpServlet {
                 }
                 request.setAttribute("gameStats", gameStats);
 
-				if (responseStr != null && !responseStr.equals("")) {
-					sendResponse(response, status, responseStr, contentType, false);
-				}
-				else {
-					request.getRequestDispatcher("/gameServer/database.jsp").
-    	                forward(request, response);
-            	}
+                if (responseStr != null && !responseStr.equals("")) {
+                    sendResponse(response, status, responseStr, contentType, false);
+                } else {
+                    request.getRequestDispatcher("/gameServer/database.jsp").
+                            forward(request, response);
+                }
             }
 
 
@@ -409,8 +397,7 @@ public class HttpGameServlet extends HttpServlet {
                         if (encodingValue.charAt(qIndex + 2) != '0') {
                             encoding = encodingValue.substring(0, qIndex);
                         }
-                    }
-                    else {
+                    } else {
                         encoding = encodingValue;
                     }
 
@@ -432,8 +419,7 @@ public class HttpGameServlet extends HttpServlet {
         if (gzipOutput) {
             out = new PrintWriter(new GZIPOutputStream(response.getOutputStream()));
             response.setHeader("Content-Encoding", "gzip");
-        }
-        else {
+        } else {
             out = response.getWriter();
         }
 
@@ -449,14 +435,11 @@ public class HttpGameServlet extends HttpServlet {
 
         if (gameFormatClass == null) {
             return null;
-        }
-        else if (gameFormatClass.equals("org.pente.filter.iyt.game.IYTPGNGameFormat")) {
+        } else if (gameFormatClass.equals("org.pente.filter.iyt.game.IYTPGNGameFormat")) {
             return new IYTGameData();
-        }
-        else if (gameFormatClass.equals("org.pente.game.PGNGameFormat")) {
+        } else if (gameFormatClass.equals("org.pente.game.PGNGameFormat")) {
             return new DefaultGameData();
-        }
-        else {
+        } else {
             return null;
         }
     }

@@ -15,7 +15,7 @@ public class WebSocketConfigurator extends ServerEndpointConfig.Configurator {
         sessionId2HandlerMap = new ConcurrentHashMap<>();
         this.server = server;
     }
-    
+
     public void addSession(Session session) {
         WebSocketDSGEventHandler handler = server.addPlayerWebSocketSession(session);
         sessionId2HandlerMap.put(session.getId(), handler);
@@ -26,7 +26,7 @@ public class WebSocketConfigurator extends ServerEndpointConfig.Configurator {
         handler.handleError(null);
         sessionId2HandlerMap.remove(session.getId());
     }
-    
+
     public void receiveMessage(Session session, String message) {
         WebSocketDSGEventHandler handler = sessionId2HandlerMap.get(session.getId());
         handler.readMessage(message);

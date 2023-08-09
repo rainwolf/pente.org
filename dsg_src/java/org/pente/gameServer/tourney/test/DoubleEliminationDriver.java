@@ -8,14 +8,14 @@ import org.pente.gameServer.tourney.*;
 public class DoubleEliminationDriver {
 
     private static Category log4j = Category.getInstance(
-        DoubleEliminationDriver.class.getName());
-    
+            DoubleEliminationDriver.class.getName());
+
     public static void main(String[] args) throws Throwable {
-        
+
         BasicConfigurator.configure();
-        
+
         CacheTourneyStorer tourneyStorer = new CacheTourneyStorer(
-            new DummyTourneyStorer());
+                new DummyTourneyStorer());
 
         for (int k = 0; k < Integer.parseInt(args[0]); k++) {
 
@@ -32,22 +32,22 @@ public class DoubleEliminationDriver {
             }
 
             long startTime = System.currentTimeMillis();
-            
+
             do {
                 // complete all matches, using somewhat random determination
-                for (Iterator it = r.getSections().iterator(); it.hasNext();) {
+                for (Iterator it = r.getSections().iterator(); it.hasNext(); ) {
                     SingleEliminationSection s = (SingleEliminationSection) it.next();
                     for (int i = 0; i < s.getNumTotalMatches(); i++) {
                         TourneyMatch m = (TourneyMatch) s.getMatches().get(i);
                         if (m == null) {
-                            boolean f =false;
+                            boolean f = false;
                         }
                         if (m.getPlayer2() == null) continue;//skip bye
                         double rDiff = m.getPlayer1().getRating() - m.getPlayer2().getRating();
                         // for every 50 ratings points diff, add an extra 5% chance of winning
                         double rMult = rDiff / 50 * .05;
-                        if (rMult > 1) rMult=1;
-                        else if (rMult < -1) rMult=-1;
+                        if (rMult > 1) rMult = 1;
+                        else if (rMult < -1) rMult = -1;
                         // bigger ratings diff, means less chance for p2 to win
                         double rand = Math.random();
                         int result = (int) (rand - rMult + 1.5);
@@ -58,40 +58,40 @@ public class DoubleEliminationDriver {
                         }
                         m.setResult(result);
                         s.init();
-                        
+
                         // in case of tie, add
                         SingleEliminationMatch m2 = s.getSingleEliminationMatch(m);
                         if (m2.getResult() == TourneyMatch.RESULT_TIE) {
                             DoubleEliminationFormat f = (DoubleEliminationFormat)
-                                t.getFormat();
+                                    t.getFormat();
                             TourneyMatch more[] = f.createMoreMatchesAfterTie(m);
                             s.addMatch(more[0]);
                             s.addMatch(more[1]);
                         }
                     }
                 }
-                
+
                 log4j.info("round " + t.getNumRounds() + " complete");
                 matchups = r.getMatchStrings();
-                for (Iterator strs = matchups.iterator(); strs.hasNext();) {
+                for (Iterator strs = matchups.iterator(); strs.hasNext(); ) {
                     log4j.info((String) strs.next());
                 }
-                
+
                 if (t.isComplete()) break;
-                
-                log4j.info("create round "+ (t.getNumRounds() + 1));
+
+                log4j.info("create round " + (t.getNumRounds() + 1));
                 r = t.createNextRound();
                 matchups = r.getMatchStrings();
-                for (Iterator strs = matchups.iterator(); strs.hasNext();) {
+                for (Iterator strs = matchups.iterator(); strs.hasNext(); ) {
                     log4j.info((String) strs.next());
                 }
-                
+
             } while (true);
-            
+
             log4j.info("tourney complete, winner=" + t.getWinner());
             log4j.info("total time = " + (System.currentTimeMillis() - startTime));
             DoubleEliminationFormat f = (DoubleEliminationFormat)
-                t.getFormat();
+                    t.getFormat();
             log4j.info("called getSection " + f.getSectionCount + " times.");
         }
     }
@@ -104,7 +104,7 @@ public class DoubleEliminationDriver {
             p.setName("player" + i);
             p.setPlayerID(1L + i);
             int rand = (int) (Math.random() * 200);
-            p.setRating(1200 + i*20 + rand);
+            p.setRating(1200 + i * 20 + rand);
             p.setTotalGames(21);
             players.add(p);
         }

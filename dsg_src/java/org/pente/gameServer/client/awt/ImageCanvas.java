@@ -8,13 +8,13 @@ public class ImageCanvas extends Canvas {
     //private byte imageBytes[];
     private Image image;
     private boolean notified = false;
-    
+
     private String playerName;
     private String host;
     private boolean donor;
-    
+
     private Dimension size = new Dimension(50, 50);
-    
+
     public ImageCanvas() {
     }
 
@@ -22,10 +22,11 @@ public class ImageCanvas extends Canvas {
         this.playerName = playerName;
         this.host = host;
     }
+
     public ImageCanvas(Image image) {
         this.image = image;
     }
-    
+
     public void updateImage(boolean donor) {
         this.donor = donor;
         if (!donor) return;
@@ -39,17 +40,17 @@ public class ImageCanvas extends Canvas {
     public void addNotify() {
         super.addNotify();
         makeImage();
-        
+
         notified = true;
     }
 
     private void makeImage() {
 
         if (!donor) return;
-        
+
         try {
             URL imageUrl = new URL("https", host, "/gameServer/avatar?name=" + playerName);
-            
+
             image = Toolkit.getDefaultToolkit().getImage(imageUrl);
             //image = Toolkit.getDefaultToolkit().createImage(imageBytes);
             MediaTracker mediaTracker = new MediaTracker(this);
@@ -69,13 +70,15 @@ public class ImageCanvas extends Canvas {
             image = null;
         }
     }
+
     public Dimension getMinimumSize() {
         return getPreferredSize();
     }
+
     public Dimension getPreferredSize() {
         if (image == null) return size;
         return new Dimension(image.getWidth(null) + 12,
-            image.getHeight(null) + 12);
+                image.getHeight(null) + 12);
     }
 
     public void update(Graphics g) {
@@ -85,8 +88,7 @@ public class ImageCanvas extends Canvas {
     public void paint(Graphics g) {
         if (image == null) {
             super.paint(g);
-        }
-        else {
+        } else {
             Dimension d = getMinimumSize();
             g.setColor(Color.black);
             g.fillRect(3, 3, d.width - 6, d.height - 6);

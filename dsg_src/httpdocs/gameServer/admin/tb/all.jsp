@@ -1,21 +1,21 @@
-<%@ page import="org.pente.game.*, 
-				 org.pente.gameServer.core.*,
+<%@ page import="org.pente.game.*,
+                 org.pente.gameServer.core.*,
                  org.pente.gameServer.server.*,
-                 org.pente.turnBased.*, 
+                 org.pente.turnBased.*,
                  java.util.*" %>
 
 <%
-Resources resources = (Resources) application.getAttribute(
-   Resources.class.getName());
+   Resources resources = (Resources) application.getAttribute(
+      Resources.class.getName());
 
-CacheTBStorer tbGameStorer = (CacheTBStorer) resources.getTbGameStorer();
-DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
-String pageName="all.jsp?";
+   CacheTBStorer tbGameStorer = (CacheTBStorer) resources.getTbGameStorer();
+   DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
+   String pageName = "all.jsp?";
 %>
 
 <html>
 <head>
- <title>TB Cache Statistics</title>
+   <title>TB Cache Statistics</title>
 </head>
 
 <body>
@@ -26,11 +26,11 @@ String pageName="all.jsp?";
 <b>Games cached:</b> <%= tbGameStorer.getGames().size() %>
 <br>
 
-<% List<TBSet> sets = tbGameStorer.getSets(); 
-   List<TBGame> games = new ArrayList<TBGame>(sets.size()*2); 
+<% List<TBSet> sets = tbGameStorer.getSets();
+   List<TBGame> games = new ArrayList<TBGame>(sets.size() * 2);
    for (TBSet s : sets) {
-       games.add(s.getGame1());
-       if (s.isTwoGameSet()) games.add(s.getGame2());
+      games.add(s.getGame1());
+      if (s.isTwoGameSet()) games.add(s.getGame2());
    }
 %>
 <%@include file="games.jsp" %>

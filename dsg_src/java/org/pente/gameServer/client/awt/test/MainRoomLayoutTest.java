@@ -4,14 +4,13 @@ import java.awt.*;
 import java.awt.event.*;
 
 
-
 public class MainRoomLayoutTest {
 
-	public static void main(String args[]) {
-		
-		final Frame f = new Frame("MainRoomLayoutTest");
-		
-		Panel p = new Panel();
+    public static void main(String args[]) {
+
+        final Frame f = new Frame("MainRoomLayoutTest");
+
+        Panel p = new Panel();
         GridBagLayout gridbag = new GridBagLayout();
         GridBagConstraints constraints = new GridBagConstraints();
         p.setLayout(gridbag);
@@ -29,7 +28,7 @@ public class MainRoomLayoutTest {
         p1.setBackground(Color.yellow);
         gridbag.setConstraints(p1, constraints);
         p.add(p1);
-        
+
         constraints.gridx = 1;
         constraints.gridy = 2;
         constraints.gridheight = 1;
@@ -66,7 +65,7 @@ public class MainRoomLayoutTest {
 //        p6.setBackground(Color.green);
 //        gridbag.setConstraints(p6, constraints);
 //        p.add(p6);
-        
+
         constraints.gridy = 3;
         constraints.gridx = 1;
         constraints.gridheight = 2;
@@ -78,7 +77,7 @@ public class MainRoomLayoutTest {
         p6.setBackground(Color.green);
         gridbag.setConstraints(p6, constraints);
         p.add(p6);
-        
+
         constraints.gridx = 2;
         constraints.gridy = 1;
         constraints.gridheight = 4;
@@ -94,20 +93,20 @@ public class MainRoomLayoutTest {
         Button b = new Button("Hello");
         p4.add("Center", p10);
         p4.add("South", b);
-        
+
         gridbag.setConstraints(p4, constraints);
         p.add(p4);
 
-        
+
         f.add(p);
-		f.setSize(300, 300);
-		f.setVisible(true);
-		
-		f.addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {
-				f.dispose();
-			}
-		});
+        f.setSize(300, 300);
+        f.setVisible(true);
+
+        f.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                f.dispose();
+            }
+        });
     }
 }
 

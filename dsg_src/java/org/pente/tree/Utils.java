@@ -7,13 +7,14 @@ import org.pente.gameServer.core.*;
 
 
 public class Utils {
-    
-    private static GridCoordinates coordinates = 
-        new AlphaNumericGridCoordinates(19, 19);
+
+    private static GridCoordinates coordinates =
+            new AlphaNumericGridCoordinates(19, 19);
 
     public static String printMove(int move) {
         return coordinates.getCoordinate(move);
     }
+
     public static int getMove(String move) {
         Point p = coordinates.getPoint(move);
         return (18 - p.y) * 19 + p.x;
@@ -26,7 +27,7 @@ public class Utils {
         }
         return f;
     }
-    
+
     public static String printState(PenteState penteState) {
         StringBuffer buf = new StringBuffer();
         for (int i = 0; i < penteState.getNumMoves(); i++) {

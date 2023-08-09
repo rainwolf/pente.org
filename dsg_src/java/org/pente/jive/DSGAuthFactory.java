@@ -12,17 +12,18 @@ import org.pente.database.*;
 public class DSGAuthFactory extends AuthFactory {
 
     private static final Category log4j =
-        Category.getInstance(DSGAuthFactory.class.getName());
-        
+            Category.getInstance(DSGAuthFactory.class.getName());
+
     private static final String GET_AUTHORIZATION_SQL =
-        "select player.pid " +
-        "from player, dsg_player " +
-        "where player.pid = dsg_player.pid " +
-        "and player.name = ? " +
-        "and dsg_player.status = 'A' " +
-        "and dsg_player.password = ?";
+            "select player.pid " +
+                    "from player, dsg_player " +
+                    "where player.pid = dsg_player.pid " +
+                    "and player.name = ? " +
+                    "and dsg_player.status = 'A' " +
+                    "and dsg_player.password = ?";
 
     private DBHandler dbHandler;
+
     public DSGAuthFactory() {
         dbHandler = new JiveDBHandler();
     }
@@ -34,20 +35,20 @@ public class DSGAuthFactory extends AuthFactory {
     }
 
     public AuthToken createAuthToken(
-        HttpServletRequest request, HttpServletResponse response)
-        throws UnauthorizedException  {
+            HttpServletRequest request, HttpServletResponse response)
+            throws UnauthorizedException {
 
         String name = (String) request.getAttribute("name");
         String password = (String) request.getAttribute("password");
-		log4j.debug("createAuthToken(request, response), name=" + name + ", password="+password);
-		
+        log4j.debug("createAuthToken(request, response), name=" + name + ", password=" + password);
+
         return createAuthToken(name, password);
     }
-    
-    public AuthToken createAuthToken(String username, String password)
-        throws UnauthorizedException {
 
-		log4j.debug("createAuthToken(" + username + "," + password + ")");
+    public AuthToken createAuthToken(String username, String password)
+            throws UnauthorizedException {
+
+        log4j.debug("createAuthToken(" + username + "," + password + ")");
         if (username == null || password == null) {
             throw new UnauthorizedException();
         }
@@ -56,8 +57,8 @@ public class DSGAuthFactory extends AuthFactory {
         PreparedStatement stmt = null;
         ResultSet result = null;
         long userId = -1;
-        
-		try {
+
+        try {
             con = dbHandler.getConnection();
             stmt = con.prepareStatement(GET_AUTHORIZATION_SQL);
             stmt.setString(1, username);
@@ -65,13 +66,11 @@ public class DSGAuthFactory extends AuthFactory {
 
             result = stmt.executeQuery();
             if (result.next()) {
-	            userId = result.getLong(1);
+                userId = result.getLong(1);
             }
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             throw new UnauthorizedException(t);
-        }
-        finally {
+        } finally {
             try {
                 if (result != null) {
                     result.close();
@@ -91,9 +90,9 @@ public class DSGAuthFactory extends AuthFactory {
             } catch (SQLException ex) {
             }
         }
-		if (userId == -1) {
-			throw new UnauthorizedException();
-		}
+        if (userId == -1) {
+            throw new UnauthorizedException();
+        }
         return new DSGAuthToken(userId);
     }
 }

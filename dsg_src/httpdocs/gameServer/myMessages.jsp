@@ -1,126 +1,128 @@
- 	<%@ page import="java.util.*,
+<%@ page import="java.util.*,
                  org.pente.gameServer.core.*,
                  org.pente.message.*,
-	             org.pente.turnBased.web.TBEmoticon,
-	             com.jivesoftware.base.*,
-	             com.jivesoftware.base.filter.*" %>
+                 org.pente.turnBased.web.TBEmoticon,
+                 com.jivesoftware.base.*,
+                 com.jivesoftware.base.filter.*" %>
 
 <%! private static com.jivesoftware.base.FilterChain filters; %>
 <%! static {
-TBEmoticon emoticon = new TBEmoticon();
-emoticon.setImageURL("/gameServer/forums/images/emoticons");
-filters = new com.jivesoftware.base.FilterChain(
-    null, 1, new com.jivesoftware.base.Filter[] { 
-        new HTMLFilter(), new URLConverter(), emoticon, new Newline() }, 
-        new long[] { 1, 1, 1, 1 });
+   TBEmoticon emoticon = new TBEmoticon();
+   emoticon.setImageURL("/gameServer/forums/images/emoticons");
+   filters = new com.jivesoftware.base.FilterChain(
+      null, 1, new com.jivesoftware.base.Filter[]{
+      new HTMLFilter(), new URLConverter(), emoticon, new Newline()},
+      new long[]{1, 1, 1, 1});
 }
 %>
 
 <%
-String error = (String) request.getAttribute("error");
-List<DSGMessage> messages = (List<DSGMessage>) request.getAttribute("messages");
+   String error = (String) request.getAttribute("error");
+   List<DSGMessage> messages = (List<DSGMessage>) request.getAttribute("messages");
 
-long next = 50, previous = -1;
-String str = (String) request.getAttribute("next");
-if (str != null) {
-    next = Long.parseLong(str) + 50;
-    previous = next - 100;
-}
+   long next = 50, previous = -1;
+   String str = (String) request.getAttribute("next");
+   if (str != null) {
+      next = Long.parseLong(str) + 50;
+      previous = next - 100;
+   }
 
-Resources resources = (Resources) application.getAttribute(
-    Resources.class.getName());
-DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
+   Resources resources = (Resources) application.getAttribute(
+      Resources.class.getName());
+   DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
 
 %>
 
 <% pageContext.setAttribute("title", "My Messages"); %>
 <%@ include file="begin.jsp" %>
 
-<link rel="stylesheet" type="text/css" href="<%= request.getContextPath() %>/gameServer/forums/style.jsp" />
+<link rel="stylesheet" type="text/css" href="<%= request.getContextPath() %>/gameServer/forums/style.jsp"/>
 
 <%
-DateFormat messageDateFormat = null;
-{
-DSGPlayerData meData = dsgPlayerStorer.loadPlayer(me);
-TimeZone tz = TimeZone.getTimeZone(meData.getTimezone());
-messageDateFormat = new SimpleDateFormat("MMM dd, yyyy hh:mm aa z");
-messageDateFormat.setTimeZone(tz);
-}
+   DateFormat messageDateFormat = null;
+   {
+      DSGPlayerData meData = dsgPlayerStorer.loadPlayer(me);
+      TimeZone tz = TimeZone.getTimeZone(meData.getTimezone());
+      messageDateFormat = new SimpleDateFormat("MMM dd, yyyy hh:mm aa z");
+      messageDateFormat.setTimeZone(tz);
+   }
 %>
 
 <form name="delete_form" method="post" action="/gameServer/mymessages">
-  <input type="hidden" name="command" value="delete">
+   <input type="hidden" name="command" value="delete">
 
-<script language="javascript">
-  function checkAll() {
-    for (i = 1; i < document.delete_form.mid.length; i++) {
-      document.delete_form.mid[i].checked = document.delete_form.mid[0].checked;
-    }
-  }
-</script>
+   <script language="javascript">
+      function checkAll() {
+         for (i = 1; i < document.delete_form.mid.length; i++) {
+            document.delete_form.mid[i].checked = document.delete_form.mid[0].checked;
+         }
+      }
+   </script>
 
-<table width="100%" border="0" colspacing="0" colpadding="0">
+   <table width="100%" border="0" colspacing="0" colpadding="0">
 
 
-<tr>
- <td>
-  <h3>My Messages</h3>
- </td>
-</tr>
-<tr>
-  <td>
+      <tr>
+         <td>
+            <h3>My Messages</h3>
+         </td>
+      </tr>
+      <tr>
+         <td>
 
- <table cellpadding="0" cellspacing="0" border="0">
-    <tr><td height="10"></td></tr>
-   <tr>
-     <td>
-       <a href="/gameServer/newMessage.jsp">
-	     <img src="/gameServer/forums/images/post-16x16.gif" width="16" height="16" 
-	        border="0"></a>&nbsp;
-	 </td>
-     <td valign="middle">
-       <a href="/gameServer/newMessage.jsp">
-	     New Message</a>&nbsp;&nbsp;&nbsp;
-     </td>
-     
-     <td>
-       <a href="javascript:document.delete_form.submit()">
-	     <img src="/gameServer/forums/images/delete-16x16.gif" width="16" height="16" 
-	        border="0"></a>&nbsp;
-	 </td>
-     <td valign="middle">
-       <a href="javascript:document.delete_form.submit()">
-	     Delete Messages</a>&nbsp;&nbsp;&nbsp;
-     </td>
-     
-     <td>
-       <a href="/gameServer/myprofile/prefs#email">
-	     <img src="/gameServer/images/email.gif" width="16" height="16" 
-	        border="0"></a>&nbsp;
-	 </td>
-       <td valign="middle">
-           <a href="/gameServer/myprofile/prefs#email">
-               Configure Email Preferences</a>
-       </td>
-       <% if (previous >= 0) { %>
-       <td style="padding:10px">
-           <a href="/gameServer/mymessages?next=<%=previous%>">
-               << previous 50</a>
-       </td>
-       <% } %>
-       <% if (messages.size() == 50) { %>
-       <td style="padding:10px">
-           <a href="/gameServer/mymessages?next=<%=next%>">
-               next 50 >></a>
-       </td>
-       <% } %>
-    </tr>
-  </table>
-  
-  </td>
-</tr>
-<tr>
-  <td>
+            <table cellpadding="0" cellspacing="0" border="0">
+               <tr>
+                  <td height="10"></td>
+               </tr>
+               <tr>
+                  <td>
+                     <a href="/gameServer/newMessage.jsp">
+                        <img src="/gameServer/forums/images/post-16x16.gif" width="16" height="16"
+                             border="0"></a>&nbsp;
+                  </td>
+                  <td valign="middle">
+                     <a href="/gameServer/newMessage.jsp">
+                        New Message</a>&nbsp;&nbsp;&nbsp;
+                  </td>
+
+                  <td>
+                     <a href="javascript:document.delete_form.submit()">
+                        <img src="/gameServer/forums/images/delete-16x16.gif" width="16" height="16"
+                             border="0"></a>&nbsp;
+                  </td>
+                  <td valign="middle">
+                     <a href="javascript:document.delete_form.submit()">
+                        Delete Messages</a>&nbsp;&nbsp;&nbsp;
+                  </td>
+
+                  <td>
+                     <a href="/gameServer/myprofile/prefs#email">
+                        <img src="/gameServer/images/email.gif" width="16" height="16"
+                             border="0"></a>&nbsp;
+                  </td>
+                  <td valign="middle">
+                     <a href="/gameServer/myprofile/prefs#email">
+                        Configure Email Preferences</a>
+                  </td>
+                  <% if (previous >= 0) { %>
+                  <td style="padding:10px">
+                     <a href="/gameServer/mymessages?next=<%=previous%>">
+                        << previous 50</a>
+                  </td>
+                  <% } %>
+                  <% if (messages.size() == 50) { %>
+                  <td style="padding:10px">
+                     <a href="/gameServer/mymessages?next=<%=next%>">
+                        next 50 >></a>
+                  </td>
+                  <% } %>
+               </tr>
+            </table>
+
+         </td>
+      </tr>
+      <tr>
+         <td>
     <span id="jive-topic-list">
       <table class="jive-list" cellpadding="3" cellspacing="2" width="100%">
         <tr>
@@ -132,8 +134,8 @@ messageDateFormat.setTimeZone(tz);
 
 <% int i = 0;
    for (DSGMessage m : messages) {
-       i++; 
-       DSGPlayerData from = dsgPlayerStorer.loadPlayer(m.getFromPid()); %>
+      i++;
+      DSGPlayerData from = dsgPlayerStorer.loadPlayer(m.getFromPid()); %>
         <tr class="<%= (i % 2 == 0 ? "jive-even" : "jive-odd") %>" valign="top">
           <td width="1%" valign="middle">
             <input type="checkbox" name="mid" value="<%= m.getMid() %>">
@@ -144,10 +146,10 @@ messageDateFormat.setTimeZone(tz);
           </td>
           <td class="jive-topic-name" width="96%">
           <%
-            String subject = filters.applyFilters(0, m.getSubject()).replaceAll("http://","");
-            if ("".equals(subject)) {
-              subject = "(no subject)";
-            }
+             String subject = filters.applyFilters(0, m.getSubject()).replaceAll("http://", "");
+             if ("".equals(subject)) {
+                subject = "(no subject)";
+             }
           %>
             <a href="mymessages?command=view&mid=<%= m.getMid() %>"><%= subject %></a>
           </td>
@@ -161,9 +163,9 @@ messageDateFormat.setTimeZone(tz);
 <% } %>
       </table>
     </span>
-  </td>
-</tr>
-</table>
+         </td>
+      </tr>
+   </table>
 </form>
 
 <%@ include file="end.jsp" %>

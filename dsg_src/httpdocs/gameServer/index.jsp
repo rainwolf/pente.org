@@ -1,5 +1,7 @@
-<%@ page import="org.pente.game.*, org.pente.turnBased.*,
-                 java.util.*, java.security.MessageDigest,
+<%@ page import="org.pente.game.*,
+                 org.pente.turnBased.*,
+                 java.util.*,
+                 java.security.MessageDigest,
                  org.apache.commons.codec.binary.Hex,
                  org.pente.gameServer.client.web.*,
                  org.pente.gameServer.server.*,
@@ -7,252 +9,251 @@
                  org.pente.kingOfTheHill.*"
          errorPage="../five00.jsp" %>
 <%!
-private static final NumberFormat profileNF = NumberFormat.getPercentInstance();
+   private static final NumberFormat profileNF = NumberFormat.getPercentInstance();
 %>
 
 <% if (request.getAttribute("name") == null) {
-    response.sendRedirect("/index.jsp");
-   } %>
+   response.sendRedirect("/index.jsp");
+} %>
 <%
 
-Resources resources = (Resources) application.getAttribute(
-   Resources.class.getName());
-CacheKOTHStorer kothStorer = resources.getKOTHStorer();
+   Resources resources = (Resources) application.getAttribute(
+      Resources.class.getName());
+   CacheKOTHStorer kothStorer = resources.getKOTHStorer();
 
-String nm = (String) request.getAttribute("name");
-String name = nm;
-DSGPlayerData dsgPlayerData = dsgPlayerStorer.loadPlayer(nm);
+   String nm = (String) request.getAttribute("name");
+   String name = nm;
+   DSGPlayerData dsgPlayerData = dsgPlayerStorer.loadPlayer(nm);
 
-  TimeZone myTz = TimeZone.getTimeZone(dsgPlayerData.getTimezone());
-  SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
-  dateFormat.setTimeZone(myTz);
+   TimeZone myTz = TimeZone.getTimeZone(dsgPlayerData.getTimezone());
+   SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+   dateFormat.setTimeZone(myTz);
 
-int refresh = 5;
-String grs = "800";
-Boolean personalizeAds = null;
-List prefs = dsgPlayerStorer.loadPlayerPreferences(
-    dsgPlayerData.getPlayerID());
-for (Iterator it = prefs.iterator(); it.hasNext();) {
-    DSGPlayerPreference p = (DSGPlayerPreference) it.next();
-    if (p.getName().equals("refresh")) {
-        refresh = ((Integer) p.getValue());
-    }
-    else if (p.getName().equals("gameRoomSize")) {
-        grs = (String) p.getValue();
-    } else if (p.getName().equals("personalizeAds")) {
-        personalizeAds = ((Boolean) p.getValue()).booleanValue();
-    } 
-}
-if (refresh != 0) {
-    response.setHeader("Refresh", refresh * 60 + "; URL=index.jsp?refresh=1");
-}
-TourneyStorer tourneyStorer = resources.getTourneyStorer();
-List<Tourney> currentTournies = (List<Tourney>) tourneyStorer.getCurrentTournies();
-
-TBGameStorer tbGameStorer = resources.getTbGameStorer();
-List<TBSet> currentSets = tbGameStorer.loadSets(dsgPlayerData.getPlayerID());
-List<TBSet> invitesTo = new ArrayList<TBSet>();
-List<TBSet> invitesFrom = new ArrayList<TBSet>();
-List<TBGame> myTurn = new ArrayList<TBGame>();
-List<TBGame> oppTurn = new ArrayList<TBGame>();
-Utilities.organizeGames(dsgPlayerData.getPlayerID(), currentSets,
-    invitesTo, invitesFrom, myTurn, oppTurn);
-String title2 = "Dashboard";
-int gc = tbGameStorer.getNumGamesMyTurn(dsgPlayerData.getPlayerID());
-if (gc > 0) {
-    title2 += " (" + gc + ")";
-}
-int numMessages = resources.getDsgMessageStorer().getNumNewMessages(dsgPlayerData.getPlayerID());
-int numGames = resources.getTbGameStorer().getNumGamesMyTurn(dsgPlayerData.getPlayerID());
-
-boolean limitExceeded;
-ServletContext ctx = getServletContext();
-int gamesLimit = Integer.parseInt(ctx.getInitParameter("TBGamesLimit"));
-// int gamesLimit = 6;
-if (dsgPlayerData.unlimitedTBGames()) {
-  limitExceeded = false;
-} else {
-  int currentCount = myTurn.size() + oppTurn.size();
-  if (!invitesFrom.isEmpty()) {
-    for (TBSet s : invitesFrom) {
-      if (s.isTwoGameSet()) {
-        currentCount += 2;
-      } else {
-        currentCount++;
+   int refresh = 5;
+   String grs = "800";
+   Boolean personalizeAds = null;
+   List prefs = dsgPlayerStorer.loadPlayerPreferences(
+      dsgPlayerData.getPlayerID());
+   for (Iterator it = prefs.iterator(); it.hasNext(); ) {
+      DSGPlayerPreference p = (DSGPlayerPreference) it.next();
+      if (p.getName().equals("refresh")) {
+         refresh = ((Integer) p.getValue());
+      } else if (p.getName().equals("gameRoomSize")) {
+         grs = (String) p.getValue();
+      } else if (p.getName().equals("personalizeAds")) {
+         personalizeAds = ((Boolean) p.getValue()).booleanValue();
       }
-    }
-  }
-  if (currentCount > gamesLimit) {
-    limitExceeded = true;
-  } else {
-    limitExceeded = false;
-  }
-}
+   }
+   if (refresh != 0) {
+      response.setHeader("Refresh", refresh * 60 + "; URL=index.jsp?refresh=1");
+   }
+   TourneyStorer tourneyStorer = resources.getTourneyStorer();
+   List<Tourney> currentTournies = (List<Tourney>) tourneyStorer.getCurrentTournies();
+
+   TBGameStorer tbGameStorer = resources.getTbGameStorer();
+   List<TBSet> currentSets = tbGameStorer.loadSets(dsgPlayerData.getPlayerID());
+   List<TBSet> invitesTo = new ArrayList<TBSet>();
+   List<TBSet> invitesFrom = new ArrayList<TBSet>();
+   List<TBGame> myTurn = new ArrayList<TBGame>();
+   List<TBGame> oppTurn = new ArrayList<TBGame>();
+   Utilities.organizeGames(dsgPlayerData.getPlayerID(), currentSets,
+      invitesTo, invitesFrom, myTurn, oppTurn);
+   String title2 = "Dashboard";
+   int gc = tbGameStorer.getNumGamesMyTurn(dsgPlayerData.getPlayerID());
+   if (gc > 0) {
+      title2 += " (" + gc + ")";
+   }
+   int numMessages = resources.getDsgMessageStorer().getNumNewMessages(dsgPlayerData.getPlayerID());
+   int numGames = resources.getTbGameStorer().getNumGamesMyTurn(dsgPlayerData.getPlayerID());
+
+   boolean limitExceeded;
+   ServletContext ctx = getServletContext();
+   int gamesLimit = Integer.parseInt(ctx.getInitParameter("TBGamesLimit"));
+// int gamesLimit = 6;
+   if (dsgPlayerData.unlimitedTBGames()) {
+      limitExceeded = false;
+   } else {
+      int currentCount = myTurn.size() + oppTurn.size();
+      if (!invitesFrom.isEmpty()) {
+         for (TBSet s : invitesFrom) {
+            if (s.isTwoGameSet()) {
+               currentCount += 2;
+            } else {
+               currentCount++;
+            }
+         }
+      }
+      if (currentCount > gamesLimit) {
+         limitExceeded = true;
+      } else {
+         limitExceeded = false;
+      }
+   }
 
 // List<TBSet> waitingSets = tbGameStorer.loadWaitingSets();
-List<TBSet> waitingSets = ((CacheTBStorer)tbGameStorer).getWaitingSets();
-int openTBgames = 0;
+   List<TBSet> waitingSets = ((CacheTBStorer) tbGameStorer).getWaitingSets();
+   int openTBgames = 0;
 // int concurrentPlayLimit = 2;
-DSGPlayerData meData = dsgPlayerData;
-long myPID = meData.getPlayerID();
-for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
-    TBSet s = iterator.next();
+   DSGPlayerData meData = dsgPlayerData;
+   long myPID = meData.getPlayerID();
+   for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext(); ) {
+      TBSet s = iterator.next();
 
-     if (s.getPlayer1Pid() != meData.getPlayerID() && s.getPlayer2Pid() != meData.getPlayerID()) { 
+      if (s.getPlayer1Pid() != meData.getPlayerID() && s.getPlayer2Pid() != meData.getPlayerID()) {
          openTBgames++;
-     } else {
-          iterator.remove();
-          continue;
-     }
+      } else {
+         iterator.remove();
+         continue;
+      }
 
-    int nrGamesPlaying = 0;
-    boolean alreadyPlaying = false, iAmIgnored = false;
-    long theirPID = (0 == s.getPlayer1Pid()) ? s.getPlayer2Pid() : s.getPlayer1Pid();
-    if (s.getInvitationRestriction() == TBSet.ANYONE_NOTPLAYING) {
-        String setGame = GridStateFactory.getGameName(s.getGame1().getGame());
-        for (TBGame g : myTurn) {
+      int nrGamesPlaying = 0;
+      boolean alreadyPlaying = false, iAmIgnored = false;
+      long theirPID = (0 == s.getPlayer1Pid()) ? s.getPlayer2Pid() : s.getPlayer1Pid();
+      if (s.getInvitationRestriction() == TBSet.ANYONE_NOTPLAYING) {
+         String setGame = GridStateFactory.getGameName(s.getGame1().getGame());
+         for (TBGame g : myTurn) {
             long oppPid = myPID == g.getPlayer1Pid() ? g.getPlayer2Pid() : g.getPlayer1Pid();
             String myTurnGame = GridStateFactory.getGameName(g.getGame());
             if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
 //                nrGamesPlaying++;
 //                if (nrGamesPlaying > concurrentPlayLimit) {
-                    alreadyPlaying = true;
-                    break;
+               alreadyPlaying = true;
+               break;
 //                }
             }
-        }
-        if (!alreadyPlaying) {
+         }
+         if (!alreadyPlaying) {
             for (TBGame g : oppTurn) {
-                long oppPid = myPID == g.getPlayer1Pid() ? g.getPlayer2Pid() : g.getPlayer1Pid();
-                String myTurnGame = GridStateFactory.getGameName(g.getGame());
-                if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
+               long oppPid = myPID == g.getPlayer1Pid() ? g.getPlayer2Pid() : g.getPlayer1Pid();
+               String myTurnGame = GridStateFactory.getGameName(g.getGame());
+               if ((theirPID == oppPid) && (myTurnGame.equals(setGame))) {
 //                    nrGamesPlaying++;
 //                    if (nrGamesPlaying > concurrentPlayLimit) {
-                        alreadyPlaying = true;
-                        break;
+                  alreadyPlaying = true;
+                  break;
 //                    }
-                }
+               }
             }
-        }
+         }
 
-        if (alreadyPlaying && !"rainwolf".equals(name)) {
+         if (alreadyPlaying && !"rainwolf".equals(name)) {
             openTBgames--;
             iterator.remove();
             continue;
-        }
-    }
-    
+         }
+      }
 
-    List<DSGIgnoreData> ignoreData = dsgPlayerStorer.getIgnoreData(theirPID);
-    for (Iterator<DSGIgnoreData> it = ignoreData.iterator(); it.hasNext();) {
-        DSGIgnoreData i = it.next();
-        if (i.getIgnorePid() == myPID) {
+
+      List<DSGIgnoreData> ignoreData = dsgPlayerStorer.getIgnoreData(theirPID);
+      for (Iterator<DSGIgnoreData> it = ignoreData.iterator(); it.hasNext(); ) {
+         DSGIgnoreData i = it.next();
+         if (i.getIgnorePid() == myPID) {
             if (i.getIgnoreInvite()) {
-                iAmIgnored = true;
-                break;
-            } 
-        } 
-    }
-    if (iAmIgnored && !alreadyPlaying) {
-        openTBgames--;
-        iterator.remove();
-        continue;
-    }
+               iAmIgnored = true;
+               break;
+            }
+         }
+      }
+      if (iAmIgnored && !alreadyPlaying) {
+         openTBgames--;
+         iterator.remove();
+         continue;
+      }
 
-    if (s.isTwoGameSet()) {
-        int game = s.getGame1().getGame();
-        if (kothStorer.getEventId(game) == s.getGame1().getEventId()) {
+      if (s.isTwoGameSet()) {
+         int game = s.getGame1().getGame();
+         if (kothStorer.getEventId(game) == s.getGame1().getEventId()) {
             Hill hill = kothStorer.getHill(game);
             if (!hill.hasPlayer(myPID)) {
-                openTBgames--;
-                iterator.remove();
-                continue;
+               openTBgames--;
+               iterator.remove();
+               continue;
             } else {
-                if (!meData.hasPlayerDonated() && !kothStorer.canPlayerBeChallenged(game, myPID)) {
-                    openTBgames--;
-                    iterator.remove();
-                    continue;
-                } else {
-                    int stepsBetween = hill.stepsBetween(myPID, s.getInviterPid());
-                    if (stepsBetween < 0) {
-                        stepsBetween *= -1;
-                    }
-                    if (stepsBetween > 2) {
-                        openTBgames--;
-                        iterator.remove();
-                        continue;
-                    }
-                }
+               if (!meData.hasPlayerDonated() && !kothStorer.canPlayerBeChallenged(game, myPID)) {
+                  openTBgames--;
+                  iterator.remove();
+                  continue;
+               } else {
+                  int stepsBetween = hill.stepsBetween(myPID, s.getInviterPid());
+                  if (stepsBetween < 0) {
+                     stepsBetween *= -1;
+                  }
+                  if (stepsBetween > 2) {
+                     openTBgames--;
+                     iterator.remove();
+                     continue;
+                  }
+               }
             }
-        }
-    }
+         }
+      }
 
-    if (s.getInvitationRestriction() == TBSet.ANY_RATING) {
-        continue;
-    }
-    DSGPlayerGameData myGameData = meData.getPlayerGameData(s.getGame1().getGame());
-    int myRating = 1200;
-    if (myGameData != null && myGameData.getTotalGames() > 0) {
-        myRating = (int) Math.round(myGameData.getRating());
-    }
-    DSGPlayerData oppData = null;
-    oppData = dsgPlayerStorer.loadPlayer(theirPID);
-    DSGPlayerGameData oppGameData = null;
-    if (oppData != null) {
-        oppGameData = oppData.getPlayerGameData(s.getGame1().getGame());
-    }
-    int oppRating = 1200;
-    if (oppGameData != null && oppGameData.getTotalGames() > 0) {
-        oppRating = (int) Math.round(oppGameData.getRating());
-    }
-    if (s.getInvitationRestriction() == TBSet.LOWER_RATING) {
-        if (myRating > oppRating) {
+      if (s.getInvitationRestriction() == TBSet.ANY_RATING) {
+         continue;
+      }
+      DSGPlayerGameData myGameData = meData.getPlayerGameData(s.getGame1().getGame());
+      int myRating = 1200;
+      if (myGameData != null && myGameData.getTotalGames() > 0) {
+         myRating = (int) Math.round(myGameData.getRating());
+      }
+      DSGPlayerData oppData = null;
+      oppData = dsgPlayerStorer.loadPlayer(theirPID);
+      DSGPlayerGameData oppGameData = null;
+      if (oppData != null) {
+         oppGameData = oppData.getPlayerGameData(s.getGame1().getGame());
+      }
+      int oppRating = 1200;
+      if (oppGameData != null && oppGameData.getTotalGames() > 0) {
+         oppRating = (int) Math.round(oppGameData.getRating());
+      }
+      if (s.getInvitationRestriction() == TBSet.LOWER_RATING) {
+         if (myRating > oppRating) {
             openTBgames--;
             iterator.remove();
-        }
-        continue;
-    }
-    if (s.getInvitationRestriction() == TBSet.HIGHER_RATING) {
-        if (myRating < oppRating) {
+         }
+         continue;
+      }
+      if (s.getInvitationRestriction() == TBSet.HIGHER_RATING) {
+         if (myRating < oppRating) {
             openTBgames--;
             iterator.remove();
-        }
-        continue;
-    }
-    int delta = 100;
-    if (s.getInvitationRestriction() == TBSet.SIMILAR_RATING) {
-        if ((myRating + delta < oppRating) || (myRating - delta > oppRating)) {
+         }
+         continue;
+      }
+      int delta = 100;
+      if (s.getInvitationRestriction() == TBSet.SIMILAR_RATING) {
+         if ((myRating + delta < oppRating) || (myRating - delta > oppRating)) {
             openTBgames--;
             iterator.remove();
-        }
-        continue;
-    }
-    if (s.getInvitationRestriction() == TBSet.CLASS_RATING) {
-        if (1900 <= myRating && 1900 <= oppRating) {
+         }
+         continue;
+      }
+      if (s.getInvitationRestriction() == TBSet.CLASS_RATING) {
+         if (1900 <= myRating && 1900 <= oppRating) {
             continue;
-        }
-        if ((myRating >= 1700 && myRating < 1900) && (oppRating >= 1700 && oppRating < 1900)) {
+         }
+         if ((myRating >= 1700 && myRating < 1900) && (oppRating >= 1700 && oppRating < 1900)) {
             continue;
-        }
-        if ((myRating >= 1400 && myRating < 1700) && (oppRating >= 1400 && oppRating < 1700)) {
+         }
+         if ((myRating >= 1400 && myRating < 1700) && (oppRating >= 1400 && oppRating < 1700)) {
             continue;
-        }
-        if ((myRating >= 1000 && myRating < 1400) && (oppRating >= 1000 && oppRating < 1400)) {
+         }
+         if ((myRating >= 1000 && myRating < 1400) && (oppRating >= 1000 && oppRating < 1400)) {
             continue;
-        }
-        if (1000 > myRating && oppRating < 1000) {
+         }
+         if (1000 > myRating && oppRating < 1000) {
             continue;
-        }
-        openTBgames--;
-        iterator.remove();
-    }
-}
-int kothSets = 0;
-for (TBSet tbSet:  waitingSets) {
-    if (kothStorer.getEventId(tbSet.getGame1().getGame()) == tbSet.getGame1().getEventId()) {
-      kothSets += 1;
-    }
-}
+         }
+         openTBgames--;
+         iterator.remove();
+      }
+   }
+   int kothSets = 0;
+   for (TBSet tbSet : waitingSets) {
+      if (kothStorer.getEventId(tbSet.getGame1().getGame()) == tbSet.getGame1().getEventId()) {
+         kothSets += 1;
+      }
+   }
 
 %>
 <% pageContext.setAttribute("title", title2); %>
@@ -270,7 +271,11 @@ for (TBSet tbSet:  waitingSets) {
 </style>
 --%>
 <style type="text/css">
-h2 { font-size:14pt;margin-top:0;padding:2px 0 2px 0}
+    h2 {
+        font-size: 14pt;
+        margin-top: 0;
+        padding: 2px 0 2px 0
+    }
 </style>
 <script type="text/javascript" src="/gameServer/js/go.js"></script>
 
@@ -279,42 +284,45 @@ h2 { font-size:14pt;margin-top:0;padding:2px 0 2px 0}
 <%--</script>--%>
 
 
-
 <% if (dsgPlayerData.showAds()) { %>
-<script>(adsbygoogle=window.adsbygoogle||[]).requestNonPersonalizedAds=<%=(personalizeAds != null && personalizeAds?"0":"1")%>;</script>
-    <div id = "senseReplace" style="width:728px;height:90px;" top="50%"> </div>
-    <%@ include file="728x90ad.jsp" %>
-    <br style="clear:both">
-    <script type="text/javascript">
-        addLoadEvent(sensePage);
-    </script>
+<script>(adsbygoogle = window.adsbygoogle || []).requestNonPersonalizedAds =<%=(personalizeAds != null && personalizeAds?"0":"1")%>;</script>
+<div id="senseReplace" style="width:728px;height:90px;" top="50%"></div>
+<%@ include file="728x90ad.jsp" %>
+<br style="clear:both">
+<script type="text/javascript">
+   addLoadEvent(sensePage);
+</script>
 <% } %>
 <%--
 --%>
 
 
- <div style="font-family:Verdana, Arial, Helvetica, sans-serif;
+<div style="font-family:Verdana, Arial, Helvetica, sans-serif;
  float:left;width:70%">
- 
- <!--    <h2 style="margin:0;padding:0;">Dashboard - Hi <%= ((dsgPlayerData.hasPlayerDonated() && (dsgPlayerData.getNameColorRGB() != 0)) ? "<span style='color:#" + Integer.toHexString(dsgPlayerData.getNameColorRGB()).substring(2) + "'>" : "<span>") %><%= dsgPlayerData.getName() %></span>!</h2>
-  -->   
-   <% if (true) {
-     DSGPlayerData d = dsgPlayerData; %>
-    <h2 style="margin:0;padding:0;">Dashboard - Hi <%@ include file="playerLink.jspf" %>!</h2>
-  <% } %>    
-<a href="/gameServer/myprofile">Edit Profile</a> | <a href="/gameServer/mymessages">My Messages <%= numMessages > 0 ? "("+numMessages+" unread)" : "" %></a> | <a href="/gameServer/social?social">Social</a>
-    <% if ("rainwolf".equals(dsgPlayerData.getName()) || "zachburau".equals(dsgPlayerData.getName())) { %>
- | <a href="/gameServer/admin">adminLink</a> | <a href="/gameServer/who.jsp">who</a>
-  <%}%>
-     
-    <br>
-    
-      <font size="-1">
-      Refresh: <%= refresh == 0 ? "No refresh" : refresh + " minute" + (refresh == 1 ? "" : "s") %> - 
-      <a href="/gameServer/myprofile/prefs">Change</a>
-      </font>
 
-<% if (true || dsgPlayerData.getLogins() < 5 || numMessages > 0 || numGames > 0) { %>
+   <!--    <h2 style="margin:0;padding:0;">Dashboard - Hi <%= ((dsgPlayerData.hasPlayerDonated() && (dsgPlayerData.getNameColorRGB() != 0)) ? "<span style='color:#" + Integer.toHexString(dsgPlayerData.getNameColorRGB()).substring(2) + "'>" : "<span>") %><%= dsgPlayerData.getName() %></span>!</h2>
+  -->
+   <% if (true) {
+      DSGPlayerData d = dsgPlayerData; %>
+   <h2 style="margin:0;padding:0;">Dashboard - Hi
+      <%@ include file="playerLink.jspf" %>
+      !</h2>
+   <% } %>
+   <a href="/gameServer/myprofile">Edit Profile</a> | <a href="/gameServer/mymessages">My
+   Messages <%= numMessages > 0 ? "(" + numMessages + " unread)" : "" %>
+</a> | <a href="/gameServer/social?social">Social</a>
+   <% if ("rainwolf".equals(dsgPlayerData.getName()) || "zachburau".equals(dsgPlayerData.getName())) { %>
+   | <a href="/gameServer/admin">adminLink</a> | <a href="/gameServer/who.jsp">who</a>
+   <%}%>
+
+   <br>
+
+   <font size="-1">
+      Refresh: <%= refresh == 0 ? "No refresh" : refresh + " minute" + (refresh == 1 ? "" : "s") %> -
+      <a href="/gameServer/myprofile/prefs">Change</a>
+   </font>
+
+   <% if (true || dsgPlayerData.getLogins() < 5 || numMessages > 0 || numGames > 0) { %>
    <div style="font-family:Verdana, Arial, Helvetica, sans-serif;
    margin-top:10px;margin-bottom:10px;
    background:#fffbcc;
@@ -322,284 +330,280 @@ h2 { font-size:14pt;margin-top:0;padding:2px 0 2px 0}
    padding:5px;
    font-weight:bold;
    width:100%;">
-<% if (dsgPlayerData.getLogins() < 5) { %>
-    Welcome to pente.org!<br>
-    Read the <a href="/help/helpWindow.jsp?file=gettingStarted"><b>
-    Getting Started</b></a> documentation to learn how to use all of pente.org or
-    consult the <a href="/gameServer/forums">Forums</a>.<br>
-    <br>
-    <a href="/gameServer/myprofile">My Profile</a> - change your email address, 
-    or any other information in your profile.<br> <hr>
-<% } %>
-<% if (numMessages > 0 || numGames > 0) {  %>
-    <% if (numMessages > 0) {  %>
-    You have <a href="/gameServer/mymessages"><%= numMessages %></a> new <%= numMessages > 1 ? "messages" : "message" %>.<br>
-    <% } %>
-    <% if (numGames > 0) { %>
-    It is your turn in <%= numGames %> turn-based <%= numGames > 1 ? "games" : "game" %>. 
-    <% } %>
-<% } %>
+      <% if (dsgPlayerData.getLogins() < 5) { %>
+      Welcome to pente.org!<br>
+      Read the <a href="/help/helpWindow.jsp?file=gettingStarted"><b>
+      Getting Started</b></a> documentation to learn how to use all of pente.org or
+      consult the <a href="/gameServer/forums">Forums</a>.<br>
+      <br>
+      <a href="/gameServer/myprofile">My Profile</a> - change your email address,
+      or any other information in your profile.<br>
+      <hr>
+      <% } %>
+      <% if (numMessages > 0 || numGames > 0) { %>
+      <% if (numMessages > 0) { %>
+      You have <a href="/gameServer/mymessages"><%= numMessages %>
+   </a> new <%= numMessages > 1 ? "messages" : "message" %>.<br>
+      <% } %>
+      <% if (numGames > 0) { %>
+      It is your turn in <%= numGames %> turn-based <%= numGames > 1 ? "games" : "game" %>.
+      <% } %>
+      <% } %>
 
-  <%= (numGames + numMessages) > 0 ? "<hr>" : ""%>
-<%--
-    The server will undergo maintenance at 11am CET (2am PST), this may take 6hrs to complete.        
-        <hr>
---%>
-        <ul>
-<%--
-          <li>Public/Open Invitations have been <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=5&threadID=230031&tstart=0">limited</a>.<hr>
-          </li>
-          <li><font color ="red">Pente.org is going offline at half past the hour.</font> We are moving servers, more updates on our <a href="https://www.facebook.com/pente.org">Facebook page</a>. <hr>
-          </li>
-          <li>New BK tournament. More information <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=3312&start=60&tstart=0">here</a>. (March 17th, 2014)
-          </li>
-          <li><a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230251">King of the Hill!</a> Every Tuesday from 6pm EST (3pm PST, 12am CET).<br>
-          Want a <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230250">crown</a>? Come and get it!
-          </li>
-          <li><a href="/gameServer/forums/thread.jspa?forumID=1&threadID=230403">King of the Hill!</a> Every 3rd Thursday monthly from 6pm EST (3pm PST, 12am CET). Next: May 19th. 
-          Prize: a <a href="/gameServer/forums/thread.jspa?forumID=1&threadID=230250">crown</a> and subscriber goodies!
-          </li>
---%>
-<% if (dsgPlayerData.getTotalGames() < 200) { %>
-          <li>Looking for <a href="/gameServer/forums/forum.jspa?forumID=34&start=0">resources</a> to get started?
-          </li>
-            <li>Want to play turn-based? Try posting an <a href="/gameServer/tb/new.jsp">open invitation</a><%= openTBgames > 0 ? " or try " + (openTBgames == 1 ? "" : "one of ") + "the <a href=\"/gameServer/tb/waiting.jsp\">" + openTBgames + " open turn-based invitation" + (openTBgames == 1 ? "" : "s") + "</a>" : ""%>.</li>
-            </li>
-            <hr>
-<%  
-}
-%>
+      <%= (numGames + numMessages) > 0 ? "<hr>" : ""%>
+      <%--
+          The server will undergo maintenance at 11am CET (2am PST), this may take 6hrs to complete.
+              <hr>
+      --%>
+      <ul>
+         <%--
+                   <li>Public/Open Invitations have been <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=5&threadID=230031&tstart=0">limited</a>.<hr>
+                   </li>
+                   <li><font color ="red">Pente.org is going offline at half past the hour.</font> We are moving servers, more updates on our <a href="https://www.facebook.com/pente.org">Facebook page</a>. <hr>
+                   </li>
+                   <li>New BK tournament. More information <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=3312&start=60&tstart=0">here</a>. (March 17th, 2014)
+                   </li>
+                   <li><a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230251">King of the Hill!</a> Every Tuesday from 6pm EST (3pm PST, 12am CET).<br>
+                   Want a <a href="http://www.pente.org/gameServer/forums/thread.jspa?forumID=1&threadID=230250">crown</a>? Come and get it!
+                   </li>
+                   <li><a href="/gameServer/forums/thread.jspa?forumID=1&threadID=230403">King of the Hill!</a> Every 3rd Thursday monthly from 6pm EST (3pm PST, 12am CET). Next: May 19th.
+                   Prize: a <a href="/gameServer/forums/thread.jspa?forumID=1&threadID=230250">crown</a> and subscriber goodies!
+                   </li>
+         --%>
+         <% if (dsgPlayerData.getTotalGames() < 200) { %>
+         <li>Looking for <a href="/gameServer/forums/forum.jspa?forumID=34&start=0">resources</a> to get started?
+         </li>
+         <li>Want to play turn-based? Try posting an <a href="/gameServer/tb/new.jsp">open
+            invitation</a><%= openTBgames > 0 ? " or try " + (openTBgames == 1 ? "" : "one of ") + "the <a href=\"/gameServer/tb/waiting.jsp\">" + openTBgames + " open turn-based invitation" + (openTBgames == 1 ? "" : "s") + "</a>" : ""%>
+            .
+         </li>
+         </li>
+         <hr>
+         <%
+            }
+         %>
 
-       <li>New turn-based game: Swap2-Pente (no live version yet).</li>
-       <li>New turn-based tournaments: <a href="/gameServer/tournaments">Swap2 Test Tournament</a>.</li>
-<%--    <li>New live speed-pente <a href="/gameServer/tournaments">tournament</a>, this is a tournament to test the code, if the code fails, the tournament will be aborted. More info <a href="/gameServer/forums/thread.jspa?forumID=2&threadID=232320">here.</a>--%>
-<%--    <li>Live (Speed) Test Tournament: <a href="/gameServer/tournaments">Test Tournament</a>--%>
-<%--            <br>--%>
-<%--        Final:  <a href="/gameServer/tournaments/statusRound.jsp?eid=1315&round=5">Pente</a>--%>
-<%--              </li>--%>
+         <li>New turn-based game: Swap2-Pente (no live version yet).</li>
+         <li>New turn-based tournaments: <a href="/gameServer/tournaments">Swap2 Test Tournament</a>.</li>
+         <%--    <li>New live speed-pente <a href="/gameServer/tournaments">tournament</a>, this is a tournament to test the code, if the code fails, the tournament will be aborted. More info <a href="/gameServer/forums/thread.jspa?forumID=2&threadID=232320">here.</a>--%>
+         <%--    <li>Live (Speed) Test Tournament: <a href="/gameServer/tournaments">Test Tournament</a>--%>
+         <%--            <br>--%>
+         <%--        Final:  <a href="/gameServer/tournaments/statusRound.jsp?eid=1315&round=5">Pente</a>--%>
+         <%--              </li>--%>
 
 
-<%--
-            <hr>
-          <li>The <a href="https://play.google.com/store/apps/details?id=be.submanifold.pentelive">Android Turn-Based Pente app</a> is finally here. Get your copy today!
-          (<a href="/gameServer/forums/thread.jspa?forumID=35&threadID=230731&tstart=0">schedule</a>)
---%>
-        </ul>
+         <%--
+                     <hr>
+                   <li>The <a href="https://play.google.com/store/apps/details?id=be.submanifold.pentelive">Android Turn-Based Pente app</a> is finally here. Get your copy today!
+                   (<a href="/gameServer/forums/thread.jspa?forumID=35&threadID=230731&tstart=0">schedule</a>)
+         --%>
+      </ul>
+   </div>
+   <% } %>
+   <% if (dsgPlayerData.showAds() && personalizeAds == null) { %>
+   <div align="left"
+        style="position:relative;padding:4px;font-weight:bold;border:2px <%= textColor2 %> solid; background:#ffd0a7">
+      Pente.org now offers a choice between personalized or non-personalized ads. Ads are non-personalized by default,
+      but this warning appears because you
+      have not yet registered a preference in your <a href="/gameServer/myprofile/prefs">settings</a>. Doing so will
+      make this warning disappear.
+   </div>
+   <% } %>
 </div>
-<% } %>
-     <% if (dsgPlayerData.showAds() && personalizeAds == null) { %>
-     <div align="left" style="position:relative;padding:4px;font-weight:bold;border:2px <%= textColor2 %> solid; background:#ffd0a7">
-         Pente.org now offers a choice between personalized or non-personalized ads. Ads are non-personalized by default, but this warning appears because you 
-         have not yet registered a preference in your <a href="/gameServer/myprofile/prefs">settings</a>. Doing so will make this warning disappear.
-     </div>
- <% } %>
- </div>
 <%-- todo find actual width of avatar in case less than 80 --%>
 <div style="margin-left:10px;float:left;width:25%;">
-  <a href="/gameServer/myprofile/donor"><img align="right" width="80" style="border:1px solid gray" src="<%= (dsgPlayerData.hasAvatar() ? "/gameServer/avatar?name=" + dsgPlayerData.getName() : "/gameServer/images/no_photo.gif") %>"></a><br>
-  <a href="/gameServer/myprofile/donor"><p style="clear:both;text-align:right;font-size:10px">Edit</p></a>
+   <a href="/gameServer/myprofile/donor"><img align="right" width="80" style="border:1px solid gray"
+                                              src="<%= (dsgPlayerData.hasAvatar() ? "/gameServer/avatar?name=" + dsgPlayerData.getName() : "/gameServer/images/no_photo.gif") %>"></a><br>
+   <a href="/gameServer/myprofile/donor"><p style="clear:both;text-align:right;font-size:10px">Edit</p></a>
 </div>
 
 <div style="width:100%;clear:both;">
-<h2 style="background:#e5e5e5">Live Game Room</h2>
+   <h2 style="background:#e5e5e5">Live Game Room</h2>
 </div>
 
 <% if (request.getParameter("jws") != null) { %>
 
 <form name="jws" method="post" action="" style="margin:0;padding:0;">
-  <input type="hidden" name="showPopupMessage" value="true">
-  <input type="hidden" name="pass" value="http://www.pente.org/<%= request.getContextPath() %>/gameServer/jwsInstall.jsp">
-  <input type="hidden" name="fail" value="http://java.sun.com/javase/downloads/ea.jsp">
+   <input type="hidden" name="showPopupMessage" value="true">
+   <input type="hidden" name="pass"
+          value="http://www.pente.org/<%= request.getContextPath() %>/gameServer/jwsInstall.jsp">
+   <input type="hidden" name="fail" value="http://java.sun.com/javase/downloads/ea.jsp">
 </form>
 
-<SCRIPT LANGUAGE="JavaScript"> 
-var javawsInstalled = 0;  
-isIE = "false"; 
-if (navigator.mimeTypes && navigator.mimeTypes.length) { 
-   x = navigator.mimeTypes['application/x-java-jnlp-file']; 
-   if (x) { 
-      javawsInstalled = 1; 
-  } 
-} 
-else { 
-   isIE = "true"; 
-} 
-</SCRIPT> 
+<SCRIPT LANGUAGE="JavaScript">
+   var javawsInstalled = 0;
+   isIE = "false";
+   if (navigator.mimeTypes && navigator.mimeTypes.length) {
+      x = navigator.mimeTypes['application/x-java-jnlp-file'];
+      if (x) {
+         javawsInstalled = 1;
+      }
+   } else {
+      isIE = "true";
+   }
+</SCRIPT>
 <SCRIPT LANGUAGE="VBScript">
-on error resume next
-If isIE = "true" Then
-  If Not(IsObject(CreateObject("JavaWebStart.isInstalled"))) Then
-     javawsInstalled = 0
-  Else
-     javawsInstalled = 1
-  End If
-End If
+   on error resume next
+   If isIE = "true" Then
+     If Not(IsObject(CreateObject("JavaWebStart.isInstalled"))) Then
+        javawsInstalled = 0
+     Else
+        javawsInstalled = 1
+     End If
+   End If
 </SCRIPT>
 
 <script language="javascript">
 
-function goJws() {
-  // send to the jnlp file, load it up
-  if (javawsInstalled || (navigator.userAgent.indexOf("Gecko") !=-1)) {
-    document.jws.action="/gameServer/pente.jnlp";
-    document.jws.method="get";
-  }
-  // try to autoinstall
-  else {
-    document.jws.action="http://java.sun.com/PluginBrowserCheck";
-    document.jws.method="get";
-  }
-      
-  document.jws.submit();
-}
-addLoadEvent(goJws);
+   function goJws() {
+      // send to the jnlp file, load it up
+      if (javawsInstalled || (navigator.userAgent.indexOf("Gecko") != -1)) {
+         document.jws.action = "/gameServer/pente.jnlp";
+         document.jws.method = "get";
+      }
+      // try to autoinstall
+      else {
+         document.jws.action = "http://java.sun.com/PluginBrowserCheck";
+         document.jws.method = "get";
+      }
+
+      document.jws.submit();
+   }
+
+   addLoadEvent(goJws);
 </script>
 
 
 <% } %>
 
-<% 
-  LoginCookieHandler handler = new LoginCookieHandler();
-  handler.loadCookie(request);
-  
-  boolean plugin = true;
-  if (handler.pluginChoiceMade() && !handler.usePlugin()) {
+<%
+   LoginCookieHandler handler = new LoginCookieHandler();
+   handler.loadCookie(request);
+
+   boolean plugin = true;
+   if (handler.pluginChoiceMade() && !handler.usePlugin()) {
       plugin = false;
-  } 
+   }
 %>
 
 <script language="javascript" src="/gameServer/js/openwin.js"></script>
 <script type="text/javascript">
    function play() {
-       handlePlay('<%= plugin %>', document.mainPlayForm.gameRoomSize.options[document.mainPlayForm.gameRoomSize.selectedIndex].value, false);
+      handlePlay('<%= plugin %>', document.mainPlayForm.gameRoomSize.options[document.mainPlayForm.gameRoomSize.selectedIndex].value, false);
    }
 </script>
 
 
-
-
-
-
-
-
-
-
-
-
-
- <table style="width:100%">
-  <tr>
-<%
-
-boolean inLiveGameRoom = false;
-    SessionListener sessionListener = (SessionListener) application.getAttribute(SessionListener.class.getName());
-    List<WhosOnlineRoom> rooms = WhosOnline.getPlayers(dsgPlayerData.getPlayerID(), globalResources, sessionListener);
-
-    for (int i = 0; i < rooms.size(); i++) {
-    WhosOnlineRoom room = rooms.get(i);
-    if (room.getName().equals("web")) {
-      continue;
-    }
-
-    for (DSGPlayerData d : room.getPlayers()) {
-      if (d.getName().equals(nm)) {
-        inLiveGameRoom = true;
-        break;
-      }
-    }
-    if (inLiveGameRoom) {
-      break;
-    }
-}
-
-if (inLiveGameRoom) {
-  MessageDigest md = MessageDigest.getInstance("SHA-256");
-  String text = "pente seeds-" + dsgPlayerData.getPlayerID();
-  md.update(text.getBytes("UTF-8")); 
-  String checkHash = new String(Hex.encodeHex( md.digest() ));
-  %>
-    <td style="width: 18%;" valign="top">
-    <div class="buttonwrapper">
-      <a class="boldbuttons" href="bootMe.jsp?name=<%= nm %>&pidHash=<%= checkHash %>" 
-         style="margin-right:5px;"><span>Boot me NOW!</span></a>
-    </div>
-</td>
-<%
-} else {
-%>
-    <td style="width: 28%;" valign="top">
-    <div class="buttonwrapper">
-      <a class="boldbuttons" href="/gameServer/live"  target="_blank" rel="noopener noreferrer" 
-         style="margin-right:5px;"><span>Live Game Room</span></a>
-    </div>
-        (best with Firefox or Chrome)
-        <div style="margin-top:5px;">
-            or <a href="/gameServer/pente.jnlp?name=<%=name%>&password=<%=dsgPlayerData.getPassword()%>"><span>install</span></a> the (deprecated, unmaintained, old Java) game room on your desktop.
-        </div>
-</td>
+<table style="width:100%">
+   <tr>
       <%
-          }
+
+         boolean inLiveGameRoom = false;
+         SessionListener sessionListener = (SessionListener) application.getAttribute(SessionListener.class.getName());
+         List<WhosOnlineRoom> rooms = WhosOnline.getPlayers(dsgPlayerData.getPlayerID(), globalResources, sessionListener);
+
+         for (int i = 0; i < rooms.size(); i++) {
+            WhosOnlineRoom room = rooms.get(i);
+            if (room.getName().equals("web")) {
+               continue;
+            }
+
+            for (DSGPlayerData d : room.getPlayers()) {
+               if (d.getName().equals(nm)) {
+                  inLiveGameRoom = true;
+                  break;
+               }
+            }
+            if (inLiveGameRoom) {
+               break;
+            }
+         }
+
+         if (inLiveGameRoom) {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            String text = "pente seeds-" + dsgPlayerData.getPlayerID();
+            md.update(text.getBytes("UTF-8"));
+            String checkHash = new String(Hex.encodeHex(md.digest()));
+      %>
+      <td style="width: 18%;" valign="top">
+         <div class="buttonwrapper">
+            <a class="boldbuttons" href="bootMe.jsp?name=<%= nm %>&pidHash=<%= checkHash %>"
+               style="margin-right:5px;"><span>Boot me NOW!</span></a>
+         </div>
+      </td>
+      <%
+      } else {
+      %>
+      <td style="width: 28%;" valign="top">
+         <div class="buttonwrapper">
+            <a class="boldbuttons" href="/gameServer/live" target="_blank" rel="noopener noreferrer"
+               style="margin-right:5px;"><span>Live Game Room</span></a>
+         </div>
+         (best with Firefox or Chrome)
+         <div style="margin-top:5px;">
+            or <a
+            href="/gameServer/pente.jnlp?name=<%=name%>&password=<%=dsgPlayerData.getPassword()%>"><span>install</span></a>
+            the (deprecated, unmaintained, old Java) game room on your desktop.
+         </div>
+      </td>
+      <%
+         }
       %>
 
       <%--<td style="width: 72%;">--%>
 
-          <%--<form name="mainPlayForm" method="post" action="" style="margin:0;padding:0;">--%>
-              <%--<div class="buttonwrapper">--%>
+      <%--<form name="mainPlayForm" method="post" action="" style="margin:0;padding:0;">--%>
+      <%--<div class="buttonwrapper">--%>
 
-                  <%--<a class="boldbuttons" href="javascript:void(0);"--%>
-                     <%--style="float:left;margin-right:5px;"--%>
-                     <%--onClick="javascript:play();"><span>(Deprecated) Game Room</span></a>--%>
+      <%--<a class="boldbuttons" href="javascript:void(0);"--%>
+      <%--style="float:left;margin-right:5px;"--%>
+      <%--onClick="javascript:play();"><span>(Deprecated) Game Room</span></a>--%>
 
-                  <%--<div style="margin-top:5px;">--%>
+      <%--<div style="margin-top:5px;">--%>
 
-                      <%--&lt;%&ndash; no sense making players choose when only one choice &ndash;%&gt;--%>
-                      <%--<% if (resources.getServerData().size() == 1) { %>--%>
-                      <%--<input type="hidden" name="port" value="<%= ((ServerData) resources.getServerData().get(0)).getPort() %>">--%>
-                      <%--<% } else { %>--%>
-                      <%--<select name="lobbies">--%>
-                          <%--<% for (Iterator it = resources.getServerData().iterator(); it.hasNext();) {--%>
-                              <%--ServerData data = (ServerData) it.next(); %>--%>
-                          <%--<option value="<%= data.getPort() %>"><%= data.getName() %></option>--%>
-                          <%--<% } %>--%>
-                          <%--<% } %>--%>
-                      <%--</select>--%>
-                      <%--<br>--%>
-                      <%--Size: <select name="gameRoomSize">--%>
-                      <%--<option value="640" <% if (grs.equals("640")) { %>selected<% } %>>640x480</option>--%>
-                      <%--<option value="800" <% if (grs.equals("800")) { %>selected<% } %>>800x600</option>--%>
-                  <%--</select>--%>
+      <%--&lt;%&ndash; no sense making players choose when only one choice &ndash;%&gt;--%>
+      <%--<% if (resources.getServerData().size() == 1) { %>--%>
+      <%--<input type="hidden" name="port" value="<%= ((ServerData) resources.getServerData().get(0)).getPort() %>">--%>
+      <%--<% } else { %>--%>
+      <%--<select name="lobbies">--%>
+      <%--<% for (Iterator it = resources.getServerData().iterator(); it.hasNext();) {--%>
+      <%--ServerData data = (ServerData) it.next(); %>--%>
+      <%--<option value="<%= data.getPort() %>"><%= data.getName() %></option>--%>
+      <%--<% } %>--%>
+      <%--<% } %>--%>
+      <%--</select>--%>
+      <%--<br>--%>
+      <%--Size: <select name="gameRoomSize">--%>
+      <%--<option value="640" <% if (grs.equals("640")) { %>selected<% } %>>640x480</option>--%>
+      <%--<option value="800" <% if (grs.equals("800")) { %>selected<% } %>>800x600</option>--%>
+      <%--</select>--%>
 
-                  <%--</div>--%>
-              <%--</div>--%>
+      <%--</div>--%>
+      <%--</div>--%>
 
-          <%--</form>--%>
+      <%--</form>--%>
 
-          <%--<div style="margin-top:5px;">--%>
-          <%--or <a href="/gameServer/index.jsp?jws=1"><span>install</span></a> the game room on your desktop--%>
-          <%--</div>--%>
-          <%--<div class="buttonwrapper">--%>
+      <%--<div style="margin-top:5px;">--%>
+      <%--or <a href="/gameServer/index.jsp?jws=1"><span>install</span></a> the game room on your desktop--%>
+      <%--</div>--%>
+      <%--<div class="buttonwrapper">--%>
 
-          <%--<a class="boldbuttons" href="/gameServer/pente.jnlp?name=<%=name%>&password=<%=dsgPlayerData.getPassword()%>"--%>
-          <%--style="float:left;margin-right:5px;""><span>Install Game Room </span></a> --%>
-          <%--<div style="margin-top:5px;">--%>
-          <%--(on your desktop)--%>
+      <%--<a class="boldbuttons" href="/gameServer/pente.jnlp?name=<%=name%>&password=<%=dsgPlayerData.getPassword()%>"--%>
+      <%--style="float:left;margin-right:5px;""><span>Install Game Room </span></a> --%>
+      <%--<div style="margin-top:5px;">--%>
+      <%--(on your desktop)--%>
 
-          <%--<div style="margin-top:5px;">--%>
-          <%--&lt;%&ndash;or <a href="/gameServer/pente.jnlp?name=lupulo"><span>install</span></a> the game room on your desktop&ndash;%&gt;--%>
-          <%--or <a href="/gameServer/pente.jnlp?name=<%=name%>&password=<%=dsgPlayerData.getPassword()%>"><span>install</span></a> the game room on your desktop <br> <font color="red"><b>(new install link, without the need to log in manually)</b></font>--%>
-          <%--</div>--%>
-          <%--
-          --%>
+      <%--<div style="margin-top:5px;">--%>
+      <%--&lt;%&ndash;or <a href="/gameServer/pente.jnlp?name=lupulo"><span>install</span></a> the game room on your desktop&ndash;%&gt;--%>
+      <%--or <a href="/gameServer/pente.jnlp?name=<%=name%>&password=<%=dsgPlayerData.getPassword()%>"><span>install</span></a> the game room on your desktop <br> <font color="red"><b>(new install link, without the need to log in manually)</b></font>--%>
+      <%--</div>--%>
+      <%--
+      --%>
       <%--</td>--%>
 
 
-
-  </tr>
-</table> 
-
-
-
-
+   </tr>
+</table>
 
 
 <%--
@@ -613,409 +617,441 @@ if (inLiveGameRoom) {
 
 
 <div style="width:100%;height:175px;margin-top:10px;">
-  <div style="width:43%;float:left;border:1px solid black;height:100%;overflow:auto;">
-      <h2 style="background: #e5e5e5"><span style="padding-left:5px;">In the <a href="/gameServer/forums"><span>Forums</span></a></span></h2>
-<%--
---%>
+   <div style="width:43%;float:left;border:1px solid black;height:100%;overflow:auto;">
+      <h2 style="background: #e5e5e5"><span style="padding-left:5px;">In the <a
+         href="/gameServer/forums"><span>Forums</span></a></span></h2>
+      <%--
+      --%>
       <div style="padding-left:5px;">
-      <%@ include file="jivePopularTemplate.jsp" %>
-      <br>
-        <a class="boldbuttons" href="/gameServer/forums/post!default.jspa?forumID=1"><span>Post a Message</span></a>
-      <br>
+         <%@ include file="jivePopularTemplate.jsp" %>
+         <br>
+         <a class="boldbuttons" href="/gameServer/forums/post!default.jspa?forumID=1"><span>Post a Message</span></a>
+         <br>
       </div>
 
-  </div>
-  <div style="width:55%;float:right;border:1px solid #ffd0a7;;height:100%;">
-  <h2 style="color:white;background:#ff8105"><span style="padding-left:5px;">Strategy Center</span></h2>
-  <table style="padding-left:5px;">
-   <tr>
-    <td width="170px">
-    <div class="buttonwrapper">
-      <a class="boldbuttons" href="/gameServer/controller/search?quick_start=1" 
-         style="margin-right:5px;"><span>Game Database</span></a>
-    </div>
-    </td>
-    <td style="vertical-align:middle">
-      Search and filter <span style="color:<%= textColor2 %>;font-weight:bold"><%= numberFormat.format(siteStatsData.getNumGames()) %></span> games by position
-    </td>
-   </tr>
-   <tr>
-    <td>
-    <div class="buttonwrapper" style="margin-top:5px;">
-        <a class="boldbuttons" href="/gameServer/mmai"  target="_blank" rel="noopener noreferrer"
-           style="margin-right:5px;"><span>Play the Computer</span></a>
-    </div>
-    </td>
-    <td style="vertical-align:middle">
-        <font color="red"><b>(new)</b></font> Challenge the computer opponent with 12 levels
-    </td>
-   </tr>
-   <tr>
-    <td>
-    <div class="buttonwrapper" style="margin-top:5px;">
-        <a class="boldbuttons" href="/gameServer/strategy.jsp" 
-           style="margin-right:5px;"><span>Tutorials</span></a> 
-      <a class="boldbuttons" href="/gameServer/puzzle.jsp" 
-         style="margin-right:5px;"><span>Puzzles</span></a>
-    </div>
-    </td>
-    <td style="vertical-align:middle">
-      Learn the basics with the tutorials and challenge yourself with some fun puzzles
-    </td>
-   </tr>
-  </table>    
-  </div>
-  <div style="clear:both"></div>
+   </div>
+   <div style="width:55%;float:right;border:1px solid #ffd0a7;;height:100%;">
+      <h2 style="color:white;background:#ff8105"><span style="padding-left:5px;">Strategy Center</span></h2>
+      <table style="padding-left:5px;">
+         <tr>
+            <td width="170px">
+               <div class="buttonwrapper">
+                  <a class="boldbuttons" href="/gameServer/controller/search?quick_start=1"
+                     style="margin-right:5px;"><span>Game Database</span></a>
+               </div>
+            </td>
+            <td style="vertical-align:middle">
+               Search and filter <span
+               style="color:<%= textColor2 %>;font-weight:bold"><%= numberFormat.format(siteStatsData.getNumGames()) %></span>
+               games by position
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <div class="buttonwrapper" style="margin-top:5px;">
+                  <a class="boldbuttons" href="/gameServer/mmai" target="_blank" rel="noopener noreferrer"
+                     style="margin-right:5px;"><span>Play the Computer</span></a>
+               </div>
+            </td>
+            <td style="vertical-align:middle">
+               <font color="red"><b>(new)</b></font> Challenge the computer opponent with 12 levels
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <div class="buttonwrapper" style="margin-top:5px;">
+                  <a class="boldbuttons" href="/gameServer/strategy.jsp"
+                     style="margin-right:5px;"><span>Tutorials</span></a>
+                  <a class="boldbuttons" href="/gameServer/puzzle.jsp"
+                     style="margin-right:5px;"><span>Puzzles</span></a>
+               </div>
+            </td>
+            <td style="vertical-align:middle">
+               Learn the basics with the tutorials and challenge yourself with some fun puzzles
+            </td>
+         </tr>
+      </table>
+   </div>
+   <div style="clear:both"></div>
 </div>
 <br>
 
 <div style="width:100%;margin-top:10px">
-<h2 style="background:#e5e5e5">My Turn-Based Games</h2> 
+   <h2 style="background:#e5e5e5">My Turn-Based Games</h2>
 </div>
 
 <%--
 --%>
 
 
-
 <table border="0" cellpadding="0" cellspacing="0" width="100%">
-  <tr>
-   <td align="left" >
-      <div class="buttonwrapper">
-       <a class="boldbuttons" href="/gameServer/tb/new.jsp"><span>Start a New Game</span></a> <a class="boldbuttons" href="/gameServer/tb/waiting.jsp" style="margin-right:6px; margin-left: 6px"><span>Find a Public Game <b>
-       (<%=openTBgames %>)</b><a class="boldbuttons" href="/gameServer/tb/newAIgame.jsp" style="margin-right:6px"><span>Play the TB AI</span></a></span></a> 
-      </div>
-   </td>
-   <td>
-          Active games: <b><%= numberFormat.format(siteStatsData.getNumTbGames()) %></b>, <br>Public games: <b><%=(kothSets==0?openTBgames:(openTBgames-kothSets)+" + "+kothSets+" KotH") %></b><%-- --%>
+   <tr>
+      <td align="left">
+         <div class="buttonwrapper">
+            <a class="boldbuttons" href="/gameServer/tb/new.jsp"><span>Start a New Game</span></a> <a
+            class="boldbuttons" href="/gameServer/tb/waiting.jsp" style="margin-right:6px; margin-left: 6px"><span>Find a Public Game <b>
+       (<%=openTBgames %>)</b><a class="boldbuttons" href="/gameServer/tb/newAIgame.jsp" style="margin-right:6px"><span>Play the TB AI</span></a></span></a>
+         </div>
+      </td>
+      <td>
+         Active games: <b><%= numberFormat.format(siteStatsData.getNumTbGames()) %>
+      </b>, <br>Public games:
+         <b><%=(kothSets == 0 ? openTBgames : (openTBgames - kothSets) + " + " + kothSets + " KotH") %>
+         </b><%-- --%>
 
-   </td>
-   <td width="5">&nbsp;</td>
- </tr>
-<% if (invitesTo.isEmpty() && invitesFrom.isEmpty() && myTurn.isEmpty() && oppTurn.isEmpty()) { %>
-  <tr>
-   <td align="left" colspan="3">
-    <br>You have no active turn-based games.
-   </td>
-  </tr>
-<% } else { %>
- <tr>
-   <td colspan="2"><br>
-     <% if (!invitesTo.isEmpty()) { %>
+      </td>
+      <td width="5">&nbsp;</td>
+   </tr>
+   <% if (invitesTo.isEmpty() && invitesFrom.isEmpty() && myTurn.isEmpty() && oppTurn.isEmpty()) { %>
+   <tr>
+      <td align="left" colspan="3">
+         <br>You have no active turn-based games.
+      </td>
+   </tr>
+   <% } else { %>
+   <tr>
+      <td colspan="2"><br>
+         <% if (!invitesTo.isEmpty()) { %>
 
-     <table border="0"  cellspacing="0" cellpadding="0" width="100%">
-       <tr bgcolor="<%= textColor2 %>">
-         <td colspan="5">
-           <font color="white">
-             <b>Invitations received (<%= invitesTo.size() %>) <%=(limitExceeded?"(Free account limit reached)":"")%></b>
-           </font>
-         </td>
-       </tr>
-       <tr>
-         <td><b>Game</b></td>
-         <td><b>Opponent</b></td>
-         <td><b>Play as</b></td>
-         <td><b>Time/Move</b></td>
-         <td><b>Rated</b></td>
-       </tr>
-     <% for (TBSet s : invitesTo) {
-         String color = null;
-         boolean isGo = s.getGame1().getGame()==GridStateFactory.TB_GO ||
-                 s.getGame1().getGame()==GridStateFactory.TB_GO9 ||
-                 s.getGame1().getGame()==GridStateFactory.TB_GO13;
-         if (s.isTwoGameSet()) {
-             color = "white,black (2 game set)";
-         }
-         else if ((myPID == s.getPlayer1Pid() && !isGo) ||
-                 (myPID == s.getPlayer2Pid() && isGo)) {
-             color = "white";
-         }
-         else {
-             color = "black";
-         }
-         if ("white".equals(color)) {
-             color += (!isGo?" (p1)":" (p2)");
-         } else if ("black".equals(color)) {
-             color += (isGo?" (p1)":" (p2)");
-         }
-         TBGame g = s.getGame1();
-         boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
-        boolean tourney = false;
-        if (!koth) {
-            for (Tourney tmpTourney : currentTournies) {
-                if (tmpTourney.getEventID() == g.getEventId()) {
-                    tourney = true;
-                    break;
-                }
-            }
-        }
-         DSGPlayerData d = dsgPlayerStorer.loadPlayer(s.getInviterPid());
-         DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(s.getGame1().getGame());
-         %>
-         <tr>
-          <td>
-<!--           <%  if (limitExceeded) { %>
+         <table border="0" cellspacing="0" cellpadding="0" width="100%">
+            <tr bgcolor="<%= textColor2 %>">
+               <td colspan="5">
+                  <font color="white">
+                     <b>Invitations received (<%= invitesTo.size() %>
+                        ) <%=(limitExceeded ? "(Free account limit reached)" : "")%>
+                     </b>
+                  </font>
+               </td>
+            </tr>
+            <tr>
+               <td><b>Game</b></td>
+               <td><b>Opponent</b></td>
+               <td><b>Play as</b></td>
+               <td><b>Time/Move</b></td>
+               <td><b>Rated</b></td>
+            </tr>
+            <% for (TBSet s : invitesTo) {
+               String color = null;
+               boolean isGo = s.getGame1().getGame() == GridStateFactory.TB_GO ||
+                  s.getGame1().getGame() == GridStateFactory.TB_GO9 ||
+                  s.getGame1().getGame() == GridStateFactory.TB_GO13;
+               if (s.isTwoGameSet()) {
+                  color = "white,black (2 game set)";
+               } else if ((myPID == s.getPlayer1Pid() && !isGo) ||
+                  (myPID == s.getPlayer2Pid() && isGo)) {
+                  color = "white";
+               } else {
+                  color = "black";
+               }
+               if ("white".equals(color)) {
+                  color += (!isGo ? " (p1)" : " (p2)");
+               } else if ("black".equals(color)) {
+                  color += (isGo ? " (p1)" : " (p2)");
+               }
+               TBGame g = s.getGame1();
+               boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
+               boolean tourney = false;
+               if (!koth) {
+                  for (Tourney tmpTourney : currentTournies) {
+                     if (tmpTourney.getEventID() == g.getEventId()) {
+                        tourney = true;
+                        break;
+                     }
+                  }
+               }
+               DSGPlayerData d = dsgPlayerStorer.loadPlayer(s.getInviterPid());
+               DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(s.getGame1().getGame());
+            %>
+            <tr>
+               <td>
+                  <!--           <%  if (limitExceeded) { %>
            <%= GridStateFactory.getGameName(s.getGame1().getGame()) %>
           <%} else {%>
            <a href="/gameServer/tb/replyInvitation?command=load&sid=<%= s.getSetId() %>">
              <%= GridStateFactory.getGameName(s.getGame1().getGame()) %></a>
           <%}%>
- -->           <a href="/gameServer/tb/replyInvitation?command=load&sid=<%= s.getSetId() %>">
-             <%= GridStateFactory.getGameName(s.getGame1().getGame()) + (koth?" (KotH)":"") + (tourney?" (Tournament)":"")%></a>
-          </td>
-           <td><%@include file="playerLink.jspf" %><%@ include file="ratings.jspf" %></td>
-           <td><%= color %></td>
-           <td><%= s.getGame1().getDaysPerMove() %> days</td>
-           <td><%= s.getGame1().isRated() ? "Rated" : "Not Rated" %></td>
-         </tr>
-     <% } %>
-     </table>
-     <br>
-     <% } %>
-     
-     <% if (!invitesFrom.isEmpty()) { %>
-     <table border="0"  cellspacing="0" cellpadding="0" width="100%">
-       <tr bgcolor="<%= bgColor2 %>">
-         <td colspan="5">
-           <b>Invitations sent (<%= invitesFrom.size() %>)</b>
-         </td>
-       </tr>
-       <tr>
-         <td><b>Game</b></td>
-         <td><b>Opponent</b></td>
-         <td><b>You are</b></td>
-         <td><b>Time/Move</b></td>
-         <td><b>Rated</b></td>
-       </tr>
-     <% for (TBSet s : invitesFrom) {
-         String color = null;
-         boolean isGo = s.getGame1().getGame()==GridStateFactory.TB_GO ||
-                 s.getGame1().getGame()==GridStateFactory.TB_GO9 ||
-                 s.getGame1().getGame()==GridStateFactory.TB_GO13;
-         if (s.isTwoGameSet()) {
-             color = "white,black (2 game set)";
-         }
-         else if ((myPID == s.getPlayer1Pid() && !isGo) ||
-                 (myPID == s.getPlayer2Pid() && isGo)) {
-             color = "white";
-         }
-         else {
-             color = "black";
-         }
-         if ("white".equals(color)) {
-             color += (!isGo?" (p1)":" (p2)");
-         } else if ("black".equals(color)) {
-             color += (isGo?" (p1)":" (p2)");
-         }
-         long pid = s.getInviteePid();
-         DSGPlayerGameData dsgPlayerGameData = null;
-         DSGPlayerData d = null;
-         String anyoneString = "Anyone";
-         if (pid != 0) {
-             d = dsgPlayerStorer.loadPlayer(pid);
-             dsgPlayerGameData = d.getPlayerGameData(s.getGame1().getGame());
-         } else {
-              DSGPlayerGameData myGameData = null;
-              int myRating = 1600;
-              if (s.getInvitationRestriction() != TBSet.ANY_RATING) {
-                  myGameData = dsgPlayerData.getPlayerGameData(s.getGame1().getGame());
-                  if (myGameData != null && myGameData.getTotalGames() > 0) {
-                      myRating = (int) Math.round(myGameData.getRating());
+ --> <a href="/gameServer/tb/replyInvitation?command=load&sid=<%= s.getSetId() %>">
+                  <%= GridStateFactory.getGameName(s.getGame1().getGame()) + (koth ? " (KotH)" : "") + (tourney ? " (Tournament)" : "")%>
+               </a>
+               </td>
+               <td>
+                  <%@include file="playerLink.jspf" %>
+                  <%@ include file="ratings.jspf" %>
+               </td>
+               <td><%= color %>
+               </td>
+               <td><%= s.getGame1().getDaysPerMove() %> days</td>
+               <td><%= s.getGame1().isRated() ? "Rated" : "Not Rated" %>
+               </td>
+            </tr>
+            <% } %>
+         </table>
+         <br>
+         <% } %>
+
+         <% if (!invitesFrom.isEmpty()) { %>
+         <table border="0" cellspacing="0" cellpadding="0" width="100%">
+            <tr bgcolor="<%= bgColor2 %>">
+               <td colspan="5">
+                  <b>Invitations sent (<%= invitesFrom.size() %>)</b>
+               </td>
+            </tr>
+            <tr>
+               <td><b>Game</b></td>
+               <td><b>Opponent</b></td>
+               <td><b>You are</b></td>
+               <td><b>Time/Move</b></td>
+               <td><b>Rated</b></td>
+            </tr>
+            <% for (TBSet s : invitesFrom) {
+               String color = null;
+               boolean isGo = s.getGame1().getGame() == GridStateFactory.TB_GO ||
+                  s.getGame1().getGame() == GridStateFactory.TB_GO9 ||
+                  s.getGame1().getGame() == GridStateFactory.TB_GO13;
+               if (s.isTwoGameSet()) {
+                  color = "white,black (2 game set)";
+               } else if ((myPID == s.getPlayer1Pid() && !isGo) ||
+                  (myPID == s.getPlayer2Pid() && isGo)) {
+                  color = "white";
+               } else {
+                  color = "black";
+               }
+               if ("white".equals(color)) {
+                  color += (!isGo ? " (p1)" : " (p2)");
+               } else if ("black".equals(color)) {
+                  color += (isGo ? " (p1)" : " (p2)");
+               }
+               long pid = s.getInviteePid();
+               DSGPlayerGameData dsgPlayerGameData = null;
+               DSGPlayerData d = null;
+               String anyoneString = "Anyone";
+               if (pid != 0) {
+                  d = dsgPlayerStorer.loadPlayer(pid);
+                  dsgPlayerGameData = d.getPlayerGameData(s.getGame1().getGame());
+               } else {
+                  DSGPlayerGameData myGameData = null;
+                  int myRating = 1600;
+                  if (s.getInvitationRestriction() != TBSet.ANY_RATING) {
+                     myGameData = dsgPlayerData.getPlayerGameData(s.getGame1().getGame());
+                     if (myGameData != null && myGameData.getTotalGames() > 0) {
+                        myRating = (int) Math.round(myGameData.getRating());
+                     }
                   }
-              }
-              if (s.getInvitationRestriction() == TBSet.ANYONE_NOTPLAYING) {
-                  anyoneString += " (new opponents)";
-              }
-              if (s.getInvitationRestriction() == TBSet.LOWER_RATING) {
-                  anyoneString += " under " + myRating;
-              }
-              if (s.getInvitationRestriction() == TBSet.HIGHER_RATING) {
-                  anyoneString += " over " + myRating;
-              }
-              if (s.getInvitationRestriction() == TBSet.SIMILAR_RATING) {
-                  anyoneString += " similar";
-              }
-              if (s.getInvitationRestriction() == TBSet.CLASS_RATING) {
-                  SimpleDSGPlayerGameData tmpData = new SimpleDSGPlayerGameData();
-                  anyoneString += " <img src=\"/gameServer/images/" + tmpData.getRatingsGifRatingOnly(myRating) + "\">";
-              }
-         }
-         TBGame g = s.getGame1();
-         boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
-        boolean tourney = false;
-        if (!koth) {
-            for (Tourney tmpTourney : currentTournies) {
-                if (tmpTourney.getEventID() == g.getEventId()) {
-                    tourney = true;
-                    break;
-                }
-            }
-        }
-         %>
-         <tr>
-           <td><a href="/gameServer/tb/cancelInvitation?command=load&sid=<%= s.getSetId() %>">
-             <%= GridStateFactory.getGameName(s.getGame1().getGame()) + (koth?" (KotH)":"") + (tourney?" (Tournament)":"")%></a></td>
-           <td><% if (pid == 0) { %> <%=anyoneString%> <% } else {%><%@include file="playerLink.jspf" %><% } %><% if (dsgPlayerGameData != null) { %><%@ include file="ratings.jspf" %><% } %></td>
-           <td><%= color %></td>
-           <td><%= s.getGame1().getDaysPerMove() %> days</td>
-           <td><%= s.getGame1().isRated() ? "Rated" : "Not Rated" %></td>
-         </tr>
-     <% } %>
-     </table>
-     
-     <br>
-     <% } %>
+                  if (s.getInvitationRestriction() == TBSet.ANYONE_NOTPLAYING) {
+                     anyoneString += " (new opponents)";
+                  }
+                  if (s.getInvitationRestriction() == TBSet.LOWER_RATING) {
+                     anyoneString += " under " + myRating;
+                  }
+                  if (s.getInvitationRestriction() == TBSet.HIGHER_RATING) {
+                     anyoneString += " over " + myRating;
+                  }
+                  if (s.getInvitationRestriction() == TBSet.SIMILAR_RATING) {
+                     anyoneString += " similar";
+                  }
+                  if (s.getInvitationRestriction() == TBSet.CLASS_RATING) {
+                     SimpleDSGPlayerGameData tmpData = new SimpleDSGPlayerGameData();
+                     anyoneString += " <img src=\"/gameServer/images/" + tmpData.getRatingsGifRatingOnly(myRating) + "\">";
+                  }
+               }
+               TBGame g = s.getGame1();
+               boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
+               boolean tourney = false;
+               if (!koth) {
+                  for (Tourney tmpTourney : currentTournies) {
+                     if (tmpTourney.getEventID() == g.getEventId()) {
+                        tourney = true;
+                        break;
+                     }
+                  }
+               }
+            %>
+            <tr>
+               <td><a href="/gameServer/tb/cancelInvitation?command=load&sid=<%= s.getSetId() %>">
+                  <%= GridStateFactory.getGameName(s.getGame1().getGame()) + (koth ? " (KotH)" : "") + (tourney ? " (Tournament)" : "")%>
+               </a></td>
+               <td><% if (pid == 0) { %> <%=anyoneString%> <% } else {%>
+                  <%@include file="playerLink.jspf" %>
+                  <% } %><% if (dsgPlayerGameData != null) { %>
+                  <%@ include file="ratings.jspf" %>
+                  <% } %></td>
+               <td><%= color %>
+               </td>
+               <td><%= s.getGame1().getDaysPerMove() %> days</td>
+               <td><%= s.getGame1().isRated() ? "Rated" : "Not Rated" %>
+               </td>
+            </tr>
+            <% } %>
+         </table>
 
-     <% if (!myTurn.isEmpty()) { %>
+         <br>
+         <% } %>
 
-     <table border="0"  cellspacing="0" cellpadding="0" width="100%">
-       <tr bgcolor="<%= textColor2 %>">
-         <td colspan="6">
-           <font color="white">
-             <b>Active Games - My Turn (<%= myTurn.size() %>)</b>
-           </font>
-         </td>
-       </tr>
-       <tr>
-         <td><b>Game</b></td>
-         <td><b>Opponent</b></td>
-         <td><b>You are</b></td>
-         <td><b>Move</b></td>
-         <td><b>Time Left</b></td>
-         <td><b>Rated</b></td>
-       </tr>
-     <% for (TBGame g : myTurn) {
-         boolean isGo = g.getGame()==GridStateFactory.TB_GO ||
-                 g.getGame()==GridStateFactory.TB_GO9 ||
-                 g.getGame()==GridStateFactory.TB_GO13;
-             String color =  ((myPID == g.getPlayer1Pid() && !isGo) ||
-                     (myPID == g.getPlayer2Pid() && isGo)) ?
-             "white" : "black";
-         if ("white".equals(color)) {
-             color += (!isGo?" (p1)":" (p2)");
-         } else {
-             color += (isGo?" (p1)":" (p2)");
-         }
-         long oppPid = dsgPlayerData.getPlayerID() == g.getPlayer1Pid() ?
-             g.getPlayer2Pid() : g.getPlayer1Pid();
-        boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
-        boolean tourney = false;
-        if (!koth) {
-            for (Tourney tmpTourney : currentTournies) {
-                if (tmpTourney.getEventID() == g.getEventId()) {
-                    tourney = true;
-                    break;
-                }
-            }
-        }
-        String ratedStr = "Not Rated";
-        if (koth) {
-            ratedStr = "KotH";
-        } else if (tourney) {
-            ratedStr = "Tournament";
-        }
+         <% if (!myTurn.isEmpty()) { %>
 
-         DSGPlayerData d = dsgPlayerStorer.loadPlayer(oppPid);
-         DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(g.getGame());
-     %>
-           
-         <tr>
-           <td>
-         <!-- <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><img src="/gameServer/images/mobile.png" title="Without Java" height="12" width="12"></a> -  -->
-         <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><%= GridStateFactory.getGameName(g.getGame()) + (koth || tourney?" ("+ratedStr+")":"")%></a>
-<!--
+         <table border="0" cellspacing="0" cellpadding="0" width="100%">
+            <tr bgcolor="<%= textColor2 %>">
+               <td colspan="6">
+                  <font color="white">
+                     <b>Active Games - My Turn (<%= myTurn.size() %>)</b>
+                  </font>
+               </td>
+            </tr>
+            <tr>
+               <td><b>Game</b></td>
+               <td><b>Opponent</b></td>
+               <td><b>You are</b></td>
+               <td><b>Move</b></td>
+               <td><b>Time Left</b></td>
+               <td><b>Rated</b></td>
+            </tr>
+            <% for (TBGame g : myTurn) {
+               boolean isGo = g.getGame() == GridStateFactory.TB_GO ||
+                  g.getGame() == GridStateFactory.TB_GO9 ||
+                  g.getGame() == GridStateFactory.TB_GO13;
+               String color = ((myPID == g.getPlayer1Pid() && !isGo) ||
+                  (myPID == g.getPlayer2Pid() && isGo)) ?
+                  "white" : "black";
+               if ("white".equals(color)) {
+                  color += (!isGo ? " (p1)" : " (p2)");
+               } else {
+                  color += (isGo ? " (p1)" : " (p2)");
+               }
+               long oppPid = dsgPlayerData.getPlayerID() == g.getPlayer1Pid() ?
+                  g.getPlayer2Pid() : g.getPlayer1Pid();
+               boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
+               boolean tourney = false;
+               if (!koth) {
+                  for (Tourney tmpTourney : currentTournies) {
+                     if (tmpTourney.getEventID() == g.getEventId()) {
+                        tourney = true;
+                        break;
+                     }
+                  }
+               }
+               String ratedStr = "Not Rated";
+               if (koth) {
+                  ratedStr = "KotH";
+               } else if (tourney) {
+                  ratedStr = "Tournament";
+               }
+
+               DSGPlayerData d = dsgPlayerStorer.loadPlayer(oppPid);
+               DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(g.getGame());
+            %>
+
+            <tr>
+               <td>
+                  <!-- <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><img src="/gameServer/images/mobile.png" title="Without Java" height="12" width="12"></a> -  -->
+                  <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><%= GridStateFactory.getGameName(g.getGame()) + (koth || tourney ? " (" + ratedStr + ")" : "")%>
+                  </a>
+                  <!--
           - 
            (<a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load');"><img src="/gameServer/images/java.png" title="With Java" height="14" width="14"></a>)
--->           
-             </td>
-           <td><%@ include file="playerLink.jspf" %>&nbsp;<% if (dsgPlayerGameData != null) { %><%@ include file="ratings.jspf" %><% } %></td>
-           <td><%= color %></td>
-           <td><%= g.getNumMoves() + 1 %></td>
-           <td><%= Utilities.getTimeLeft(g.getTimeoutDate().getTime()) %></td>
-           <td><%= g.isRated() ? "Rated" : "Not Rated" %></td>
-         </tr>
-     <% } %>
-     </table>
+-->
+               </td>
+               <td>
+                  <%@ include file="playerLink.jspf" %>&nbsp;<% if (dsgPlayerGameData != null) { %>
+                  <%@ include file="ratings.jspf" %>
+                  <% } %></td>
+               <td><%= color %>
+               </td>
+               <td><%= g.getNumMoves() + 1 %>
+               </td>
+               <td><%= Utilities.getTimeLeft(g.getTimeoutDate().getTime()) %>
+               </td>
+               <td><%= g.isRated() ? "Rated" : "Not Rated" %>
+               </td>
+            </tr>
+            <% } %>
+         </table>
 
-     <br>
-     <% } %>
-     
-     <% if (!oppTurn.isEmpty()) { %>
-     <table border="0"  cellspacing="0" cellpadding="0" width="100%">
-       <tr  bgcolor="<%= bgColor1 %>">
-         <td colspan="6">
-           <font color="white">
-             <b>Active Games - Opponents Turn (<%= oppTurn.size() %>)</b>
-           </font>
-         </td>
-       </tr>
-       <tr>
-         <td><b>Game</b></td>
-         <td><b>Opponent</b></td>
-         <td><b>You are</b></td>
-         <td><b>Move</b></td>
-         <td><b>Time Left</b></td>
-         <td><b>Rated</b></td>
-       </tr>
-     <% for (TBGame g : oppTurn) {
-         boolean isGo = g.getGame()==GridStateFactory.TB_GO ||
-                 g.getGame()==GridStateFactory.TB_GO9 ||
-                 g.getGame()==GridStateFactory.TB_GO13;
-         String color =  ((myPID == g.getPlayer1Pid() && !isGo) ||
-                 (myPID == g.getPlayer2Pid() && isGo)) ?
-             "white" : "black";
-         if ("white".equals(color)) {
-             color += (!isGo?" (p1)":" (p2)");
-         } else {
-             color += (isGo?" (p1)":" (p2)");
-         }
-         long oppPid = dsgPlayerData.getPlayerID() == g.getPlayer1Pid() ?
-             g.getPlayer2Pid() : g.getPlayer1Pid();
-        boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
-        boolean tourney = false;
-        if (!koth) {
-            for (Tourney tmpTourney : currentTournies) {
-                if (tmpTourney.getEventID() == g.getEventId()) {
-                    tourney = true;
-                    break;
-                }
-            }
-        }
-        String ratedStr = "Not Rated";
-        if (koth) {
-            ratedStr = "KotH";
-        } else if (tourney) {
-            ratedStr = "Tournament";
-        }
-         DSGPlayerData d = dsgPlayerStorer.loadPlayer(oppPid);
-         DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(g.getGame());
-      %>
-           
-         <tr>
-           <td>
-         <!-- <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><img src="/gameServer/images/mobile.png" title="Without Java" height="12" width="12"></a> -  -->
-         <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><%= GridStateFactory.getGameName(g.getGame()) + (koth || tourney?" ("+ratedStr+")":"")%></a> 
-<!--
+         <br>
+         <% } %>
+
+         <% if (!oppTurn.isEmpty()) { %>
+         <table border="0" cellspacing="0" cellpadding="0" width="100%">
+            <tr bgcolor="<%= bgColor1 %>">
+               <td colspan="6">
+                  <font color="white">
+                     <b>Active Games - Opponents Turn (<%= oppTurn.size() %>)</b>
+                  </font>
+               </td>
+            </tr>
+            <tr>
+               <td><b>Game</b></td>
+               <td><b>Opponent</b></td>
+               <td><b>You are</b></td>
+               <td><b>Move</b></td>
+               <td><b>Time Left</b></td>
+               <td><b>Rated</b></td>
+            </tr>
+            <% for (TBGame g : oppTurn) {
+               boolean isGo = g.getGame() == GridStateFactory.TB_GO ||
+                  g.getGame() == GridStateFactory.TB_GO9 ||
+                  g.getGame() == GridStateFactory.TB_GO13;
+               String color = ((myPID == g.getPlayer1Pid() && !isGo) ||
+                  (myPID == g.getPlayer2Pid() && isGo)) ?
+                  "white" : "black";
+               if ("white".equals(color)) {
+                  color += (!isGo ? " (p1)" : " (p2)");
+               } else {
+                  color += (isGo ? " (p1)" : " (p2)");
+               }
+               long oppPid = dsgPlayerData.getPlayerID() == g.getPlayer1Pid() ?
+                  g.getPlayer2Pid() : g.getPlayer1Pid();
+               boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
+               boolean tourney = false;
+               if (!koth) {
+                  for (Tourney tmpTourney : currentTournies) {
+                     if (tmpTourney.getEventID() == g.getEventId()) {
+                        tourney = true;
+                        break;
+                     }
+                  }
+               }
+               String ratedStr = "Not Rated";
+               if (koth) {
+                  ratedStr = "KotH";
+               } else if (tourney) {
+                  ratedStr = "Tournament";
+               }
+               DSGPlayerData d = dsgPlayerStorer.loadPlayer(oppPid);
+               DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(g.getGame());
+            %>
+
+            <tr>
+               <td>
+                  <!-- <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><img src="/gameServer/images/mobile.png" title="Without Java" height="12" width="12"></a> -  -->
+                  <a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load&mobile');"><%= GridStateFactory.getGameName(g.getGame()) + (koth || tourney ? " (" + ratedStr + ")" : "")%>
+                  </a>
+                  <!--
 - 
            (<a href="javascript:goWH('/gameServer/tb/game?gid=<%= g.getGid() %>&command=load');"><img src="/gameServer/images/java.png" title="With Java" height="14" width="14"></a>)
 -->
-             </td>
-           <td><%@ include file="playerLink.jspf" %></a>&nbsp;<% if (dsgPlayerGameData != null) { %><%@ include file="ratings.jspf" %><% } %></td>
-           <td><%= color %></td>
-           <td><%= g.getNumMoves() + 1 %></td>
-           <td><%= Utilities.getTimeLeft(g.getTimeoutDate().getTime()) %></td>
-           <td><%= g.isRated() ? "Rated" : "Not Rated" %></td>
-         </tr>
-     <% } %>
-     </table>
-     
-     <% } %>
+               </td>
+               <td><%@ include file="playerLink.jspf" %></a>&nbsp;<% if (dsgPlayerGameData != null) { %>
+                  <%@ include file="ratings.jspf" %>
+                  <% } %></td>
+               <td><%= color %>
+               </td>
+               <td><%= g.getNumMoves() + 1 %>
+               </td>
+               <td><%= Utilities.getTimeLeft(g.getTimeoutDate().getTime()) %>
+               </td>
+               <td><%= g.isRated() ? "Rated" : "Not Rated" %>
+               </td>
+            </tr>
+            <% } %>
+         </table>
 
-    </td>
-    
-   <td width="5">&nbsp;</td>
-  </tr>
-<% } %>
+         <% } %>
+
+      </td>
+
+      <td width="5">&nbsp;</td>
+   </tr>
+   <% } %>
 </table>
 <br>
 
@@ -1028,28 +1064,28 @@ if (inLiveGameRoom) {
 --%>
 
 <% if (dsgPlayerData.getTotalGames() == 0) { %>
-  You haven't completed any rated games yet.<br>
+You haven't completed any rated games yet.<br>
 <% } else {
-int tourneyWinner = 0; %>
+   int tourneyWinner = 0; %>
 <%@ include file="playerstatsbox.jsp" %>
 <% } %>
 <br>
 </td>
-<td valign="top" align="right" >
-<%@ include file="leaderboard.jsp" %>
-<%@ include file="kothBox.jsp" %>
+<td valign="top" align="right">
+   <%@ include file="leaderboard.jsp" %>
+   <%@ include file="kothBox.jsp" %>
 
-<% if (dsgPlayerData.showAds()) { %>
-<div class="box" style="background-color:white; border: 1px solid white;">
-<%@ include file="dash200ad.jsp" %>
-</div>
-<% } %>
-<%--
---%>
+      <% if (dsgPlayerData.showAds()) { %>
+   <div class="box" style="background-color:white; border: 1px solid white;">
+      <%@ include file="dash200ad.jsp" %>
+   </div>
+      <% } %>
+   <%--
+   --%>
 
-<%@ include file="whobox.jsp" %>
-<%@ include file="mobile.jsp" %>
-<%@ include file="social.jsp" %>
-<%@ include file="donorsbox.jsp" %>
-<%@ include file="statbox.jsp" %>
-<%@ include file="end.jsp" %>
+   <%@ include file="whobox.jsp" %>
+   <%@ include file="mobile.jsp" %>
+   <%@ include file="social.jsp" %>
+   <%@ include file="donorsbox.jsp" %>
+   <%@ include file="statbox.jsp" %>
+   <%@ include file="end.jsp" %>

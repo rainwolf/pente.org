@@ -15,36 +15,37 @@ public class AWTNodeEditor extends Panel {
     private TextArea comments;
 
 
-    /** could make this settable later */
+    /**
+     * could make this settable later
+     */
     public static final GameStyles gs =
-        new GameStyles(new Color(0, 102, 153), //board back
-                       new Color(188, 188, 188), //button back
-                       Color.black, //button fore
-                       new Color(64, 64, 64), //new Color(0, 102, 255), //button disabled
-                       Color.white, //player 1 back
-                       Color.black, //player 1 fore
-                       Color.black, //player 2 back
-                       Color.white, //player 2 fore
-                       new Color(188, 188, 188)); //watcher
+            new GameStyles(new Color(0, 102, 153), //board back
+                    new Color(188, 188, 188), //button back
+                    Color.black, //button fore
+                    new Color(64, 64, 64), //new Color(0, 102, 255), //button disabled
+                    Color.white, //player 1 back
+                    Color.black, //player 1 fore
+                    Color.black, //player 2 back
+                    Color.white, //player 2 fore
+                    new Color(188, 188, 188)); //watcher
 
 
-    
     public AWTNodeEditor(final NodeBoardListener controller,
-        String name, boolean readOnly) {
-        
+                         String name, boolean readOnly) {
+
         super();
 
         board = new AWTBoard(gs, readOnly);
         controller.registerView(this, board);
-        
+
         // specify how high comment area is with "height"
         comments = new TextArea(5, 4);
 
         setLayout(new GridBagLayout());
         setBackground(gs.boardBack);
-        
+
         GridBagConstraints c = new GridBagConstraints();
-        c.insets = new Insets(2,2,2,2);
+        c.insets = new Insets(2, 2, 2, 2);
         c.gridx = 1;
         c.gridy = 1;
         c.gridwidth = 1;
@@ -57,7 +58,7 @@ public class AWTNodeEditor extends Panel {
         c.gridy = 2;
         c.weighty = 1;
         add(comments, c);
-        
+
         if (!readOnly) {
             Button defaultButton = gs.createDSGButton("Default");
             defaultButton.addActionListener(new ActionListener() {
@@ -65,14 +66,14 @@ public class AWTNodeEditor extends Panel {
                     controller.toggleDefault();
                 }
             });
-            
+
             Button saveButton = gs.createDSGButton("Save");
             saveButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     controller.store();
                 }
             });
-            
+
 
             final TextField maxDepth = new TextField("10");
             final TextField maxNodes = new TextField("2000");
@@ -92,23 +93,22 @@ public class AWTNodeEditor extends Panel {
                         }
                         scanButton.setLabel("Stop");
                         controller.scan(maxD, maxN);
-                    }
-                    else {
+                    } else {
                         scanButton.setLabel("Scan");
                         controller.stop();
                     }
                 }
             });
-            
-            
+
+
             Button singleScanButton = gs.createDSGButton("Single Scan");
             singleScanButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     controller.singleScan();
                 }
             });
-            
-            
+
+
             Panel buttonPanel = new Panel();
             buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
             buttonPanel.add(defaultButton);
@@ -132,7 +132,7 @@ public class AWTNodeEditor extends Panel {
             c.weighty = 1;
             add(buttonPanel, c);
         }
-        
+
         Panel scannedPanel = new Panel();
         scannedPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
         Button nextButton = gs.createDSGButton("Next Scanned");
@@ -149,7 +149,7 @@ public class AWTNodeEditor extends Panel {
         });
         scannedPanel.add(nextButton);
         scannedPanel.add(prevButton);
-        
+
         c.gridy = 4;
         add(scannedPanel, c);
     }
@@ -157,10 +157,11 @@ public class AWTNodeEditor extends Panel {
     public void destroy() {
         board.destroy();
     }
-    
+
     public void setComment(String comment) {
         comments.setText(comment);
     }
+
     public String getComment() {
         return comments.getText();
     }

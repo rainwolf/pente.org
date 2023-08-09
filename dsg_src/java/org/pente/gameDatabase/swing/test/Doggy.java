@@ -84,19 +84,19 @@ public class Doggy {
 
         // Register a Tool.
         toolWindowManager.registerToolWindow("Debug",                      // Id
-                                             "Debug Tool",                 // Title
-                                             null,                         // Icon
-                                             new JButton("Debug Tool"),    // Component
-                                             ToolWindowAnchor.LEFT);       // Anchor
+                "Debug Tool",                 // Title
+                null,                         // Icon
+                new JButton("Debug Tool"),    // Component
+                ToolWindowAnchor.LEFT);       // Anchor
 
         setupDebugTool();
 
         // Register another Tool.
         toolWindowManager.registerToolWindow("Run",                      // Id
-                                             "Run Tool",                 // Title
-                                             null,                       // Icon
-                                             new JButton("Run Tool"),    // Component
-                                             ToolWindowAnchor.LEFT);     // Anchor
+                "Run Tool",                 // Title
+                null,                       // Icon
+                new JButton("Run Tool"),    // Component
+                ToolWindowAnchor.LEFT);     // Anchor
 
         // Made all tools available
         for (ToolWindow window : toolWindowManager.getToolWindows())
@@ -108,7 +108,7 @@ public class Doggy {
         this.frame.getContentPane().add(myDoggyToolWindowManager, "1,1,");
     }
 
-    
+
     protected void setupDebugTool() {
         ToolWindow debugTool = toolWindowManager.getToolWindow("Debug");
 
@@ -142,8 +142,8 @@ public class Doggy {
 
         FloatingTypeDescriptor floatingTypeDescriptor = (FloatingTypeDescriptor) debugTool.getTypeDescriptor(ToolWindowType.FLOATING);
         floatingTypeDescriptor.setEnabled(true);
-        floatingTypeDescriptor.setLocation(150,200);
-        floatingTypeDescriptor.setSize(320,200);
+        floatingTypeDescriptor.setLocation(150, 200);
+        floatingTypeDescriptor.setSize(320, 200);
         floatingTypeDescriptor.setModal(false);
         floatingTypeDescriptor.setTransparentMode(true);
         floatingTypeDescriptor.setTransparentRatio(0.2f);
@@ -153,32 +153,32 @@ public class Doggy {
         // Setup Tabs
         initTabs();
     }
-    
+
     protected void initTabs() {
         ToolWindow debugTool = toolWindowManager.getToolWindow("Debug");
         ToolWindowTab profilingTab = debugTool.addToolWindowTab("Profiling", new JButton("Profiling"));
         profilingTab.setCloseable(true);
     }
-    
+
     protected void initContentManager() {
-         JTree treeContent = new JTree();
+        JTree treeContent = new JTree();
 
         ContentManager contentManager = toolWindowManager.getContentManager();
         Content content = contentManager.addContent("Tree Key",
-                                                    "Tree Title",
-                                                    null,      // An icon
-                                                    treeContent);
+                "Tree Title",
+                null,      // An icon
+                treeContent);
         content.setToolTipText("Tree tip");
 
         setupContentManagerUI();
     }
-    
+
     protected void setupContentManagerUI() {
-        
+
         ContentManager contentManager = toolWindowManager.getContentManager();
         MultiSplitContentManagerUI contentManagerUI = new MyDoggyMultiSplitContentManagerUI();
         contentManager.setContentManagerUI(contentManagerUI);
-        
+
 
         contentManagerUI.setShowAlwaysTab(true);
         contentManagerUI.setTabPlacement(TabbedContentManagerUI.TabPlacement.BOTTOM);
@@ -199,14 +199,14 @@ public class Doggy {
         contentUI.setTransparentMode(true);
         contentUI.setTransparentRatio(0.7f);
         contentUI.setTransparentDelay(1000);
-        
+
         // Now Register two other contents...
         contentManager.addContent("Tree Key 2", "Tree Title 2", null, new JTree(), null,
-                                 new MultiSplitConstraint(contentManager.getContent(0), 0));
+                new MultiSplitConstraint(contentManager.getContent(0), 0));
 
         contentManager.addContent("Tree Key 3", "Tree Title 3", null, new JTree(), null,
-                                 new MultiSplitConstraint(AggregationPosition.RIGHT));
-        
+                new MultiSplitConstraint(AggregationPosition.RIGHT));
+
     }
 
     public static void main(String[] args) {

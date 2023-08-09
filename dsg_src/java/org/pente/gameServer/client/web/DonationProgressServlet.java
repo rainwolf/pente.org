@@ -12,11 +12,11 @@ import org.pente.database.*;
 public class DonationProgressServlet extends HttpServlet {
 
     private static Category log4j =
-        Category.getInstance(DonationProgressServlet.class.getName());
+            Category.getInstance(DonationProgressServlet.class.getName());
 
     private DBHandler dbHandler = null;
     private int percentage;
-    
+
     public void init(ServletConfig config) throws ServletException {
 
         super.init(config);
@@ -25,24 +25,23 @@ public class DonationProgressServlet extends HttpServlet {
 
             ServletContext ctx = config.getServletContext();
             dbHandler = (DBHandler) ctx.getAttribute(
-                DBHandler.class.getName());
+                    DBHandler.class.getName());
 
             percentage = 10;
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             log4j.error("Problem in init", t);
         }
     }
-    
+
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response)
-        throws ServletException, IOException {
+            throws ServletException, IOException {
         doPost(request, response);
     }
 
     public void doPost(HttpServletRequest request,
                        HttpServletResponse response)
-        throws ServletException, IOException {
+            throws ServletException, IOException {
 
         response.setContentType("image/jpeg");
         OutputStream out = response.getOutputStream();

@@ -9,109 +9,109 @@ import org.apache.log4j.*;
 
 public class LogChecker {
 
-	private File logDir;
-	
-	private Date minDate;
-	private Date maxDate;
+    private File logDir;
+
+    private Date minDate;
+    private Date maxDate;
 
 
-	private static final DateFormat dateFormat = 
-		new SimpleDateFormat("yyyy-MM-dd");
+    private static final DateFormat dateFormat =
+            new SimpleDateFormat("yyyy-MM-dd");
 
-	public LogChecker(File logDir) {
-		this.logDir = logDir;
-		scanDir();
-	}
-	
-	private void scanDir() {
-		
-		File files[] = logDir.listFiles(new FilenameFilter() {
-			public boolean accept(File dir, String name) {
-				return name.startsWith("activity.log");
-			}
-		});
-		for (int i = 0; i < files.length; i++) {
-			try {
-				Date d = null;
-				String fn = files[i].getName();
-				if (fn.equals("activity.log")) {
-					d = new Date();//today
-				}
-				else {
-					d = dateFormat.parse(fn.substring(13));
-				}
-				
-				if (minDate == null || d.before(minDate)) {
-					minDate = d;
-				}
-				if (maxDate == null || d.after(maxDate)) {
-					maxDate = d;
-				}
-			} catch (ParseException pe) {
-				pe.printStackTrace();
-			}
-		}
-	}
+    public LogChecker(File logDir) {
+        this.logDir = logDir;
+        scanDir();
+    }
 
-	private File getFile(String date) {
-		if (dateFormat.format(new Date()).equals(date)) {
-			return new File(logDir, "activity.log");
-		}
-		else {
-			return new File(logDir, "activity.log." + date);
-		}
-	}
+    private void scanDir() {
 
-	public List<LogData> scanFile(String date) throws IOException {
-		List<LogData> events = new ArrayList<LogData>();
-		int num = 0;
-		BufferedReader in = new BufferedReader(
-			new FileReader(getFile(date)));
-		String line = null;
-		while ((line = in.readLine()) != null) {
-			String susp = line.substring(26, 29);
-			if (susp.equals("2: ") || susp.equals("5: ")) {
-				events.add(new LogData(num, line));
-			}
-			num++;
-		}
-		return events;
-	}
+        File files[] = logDir.listFiles(new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                return name.startsWith("activity.log");
+            }
+        });
+        for (int i = 0; i < files.length; i++) {
+            try {
+                Date d = null;
+                String fn = files[i].getName();
+                if (fn.equals("activity.log")) {
+                    d = new Date();//today
+                } else {
+                    d = dateFormat.parse(fn.substring(13));
+                }
 
-	public int getFileLength(String date) throws IOException {
-		int len = 0;
-		BufferedReader in = new BufferedReader(
-			new FileReader(getFile(date)));
-		while (in.readLine() != null) {
-			len++;
-		}
-		return len;
-	}
-	public String[] getFileSection(String date, int lineStart, int lineEnd)
-		throws IOException  {
-		
-		String lines[]=new String[lineEnd-lineStart];
-		int i = 0;
-		int len = 0;
-		BufferedReader in = new BufferedReader(
-			new FileReader(getFile(date)));
-		String line = null;
-		while ((line = in.readLine()) != null) {
-			if (len >= lineEnd) break;
-			if (len >= lineStart) {
-				lines[i++] = line;
-			}
-			len++;
-		}
-		return lines;
-	}
-	
-	public Date getMinDate() {
-		return minDate;
-	}
-	public Date getMaxDate() {
-		return maxDate;
-	}
+                if (minDate == null || d.before(minDate)) {
+                    minDate = d;
+                }
+                if (maxDate == null || d.after(maxDate)) {
+                    maxDate = d;
+                }
+            } catch (ParseException pe) {
+                pe.printStackTrace();
+            }
+        }
+    }
+
+    private File getFile(String date) {
+        if (dateFormat.format(new Date()).equals(date)) {
+            return new File(logDir, "activity.log");
+        } else {
+            return new File(logDir, "activity.log." + date);
+        }
+    }
+
+    public List<LogData> scanFile(String date) throws IOException {
+        List<LogData> events = new ArrayList<LogData>();
+        int num = 0;
+        BufferedReader in = new BufferedReader(
+                new FileReader(getFile(date)));
+        String line = null;
+        while ((line = in.readLine()) != null) {
+            String susp = line.substring(26, 29);
+            if (susp.equals("2: ") || susp.equals("5: ")) {
+                events.add(new LogData(num, line));
+            }
+            num++;
+        }
+        return events;
+    }
+
+    public int getFileLength(String date) throws IOException {
+        int len = 0;
+        BufferedReader in = new BufferedReader(
+                new FileReader(getFile(date)));
+        while (in.readLine() != null) {
+            len++;
+        }
+        return len;
+    }
+
+    public String[] getFileSection(String date, int lineStart, int lineEnd)
+            throws IOException {
+
+        String lines[] = new String[lineEnd - lineStart];
+        int i = 0;
+        int len = 0;
+        BufferedReader in = new BufferedReader(
+                new FileReader(getFile(date)));
+        String line = null;
+        while ((line = in.readLine()) != null) {
+            if (len >= lineEnd) break;
+            if (len >= lineStart) {
+                lines[i++] = line;
+            }
+            len++;
+        }
+        return lines;
+    }
+
+    public Date getMinDate() {
+        return minDate;
+    }
+
+    public Date getMaxDate() {
+        return maxDate;
+    }
 
 //  not going to do this, just have to enter in date manually
 //	public int[] getYearRange() {
@@ -129,9 +129,9 @@ public class LogChecker {
 //		return r;
 //	}
 
-	
-	public static void main(String args[]) throws IOException {
-		LogChecker l = new LogChecker(new File(args[0]));
-		l.scanFile("2005-12-02");
-	}
+
+    public static void main(String args[]) throws IOException {
+        LogChecker l = new LogChecker(new File(args[0]));
+        l.scanFile("2005-12-02");
+    }
 }

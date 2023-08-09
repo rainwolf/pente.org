@@ -9,18 +9,18 @@ public class PositionAnalysis {
 
 //    private static final Category log4j = Category.getInstance(
 //        PositionAnalysis.class.getName());
-    
-    
+
+
     int move; // move that was just made
     int player; // player that just moved
     int maxCaps = 0;
     int maxCapsPos = 0;
-    
+
     int caps[] = null;
-    
+
     private Set<Threat> threats[] = new HashSet[3];
     private Set<Threat> pairs[] = new HashSet[3];
-    
+
     public PositionAnalysis(int caps[]) {
         for (int i = 1; i < 3; i++) {
             threats[i] = new HashSet<Threat>();
@@ -28,18 +28,17 @@ public class PositionAnalysis {
         }
         this.caps = caps;
     }
-    
+
     //K10, J10, O10, J9, M10, J8, N11, N9, M8, C17, O8
     public void addThreat(Threat t) {
-        
-        for (Iterator it = threats[t.player].iterator(); it.hasNext();) {
+
+        for (Iterator it = threats[t.player].iterator(); it.hasNext(); ) {
             Threat e = (Threat) it.next();
             if (e.equals(t)) return;
             int sim = e.isSimilar(t);
             if (sim == 1) { // already have a threat that contains this new one
                 return;
-            }
-            else if (sim == 2) { // new threat contains existing one, swap them
+            } else if (sim == 2) { // new threat contains existing one, swap them
                 it.remove();
                 break;
             }
@@ -47,18 +46,19 @@ public class PositionAnalysis {
         // either new threat doesn't exist or is better than an existing one
         threats[t.player].add(t);
     }
-    
+
     public void addPair(Threat t) {
         pairs[t.player].add(t);
     }
-    
+
     public int getNumThreats(int player) {
         return threats[player].size();
     }
+
     public Iterator getThreats(int player) {
         return threats[player].iterator();
     }
-    
+
     //inefficient implementation
     //looks at all potential caps, stores counts of all capture positions
     //in a hashmap, then looks at all counts in the hashmap to find max
@@ -125,7 +125,7 @@ public class PositionAnalysis {
     //     remove group 5
     // if max is group 4
     //   remove group 5
-    
+
     // maybe the rankings work by creating a list, inserting moves with
     // a ranking value for each threat.  1st check if the move exists, if
     // so add to the ranking value.  Then sort in the end.
@@ -135,7 +135,7 @@ public class PositionAnalysis {
     //
     // probably don't want to go this far - 
     // 12. check if my opponent has a potential 3, block it.
-    
+
     // rankings for offensive and defensive moves
     // note that potential captures are a little backward.
     // it seems like it will be hard to tell generically when it is a good
@@ -148,7 +148,7 @@ public class PositionAnalysis {
 
     // another problem with rankings.  should check offensive moves for opponent
     // better (if opponent has a pot4 + pot3 w/ one move, it needs to be defended!)
-    
+
     //TYPE_BLOCKED = 0; //ignore except for capture analysis
     //TYPE_POTENTIAL_CAPTURE = 1;
     //TYPE_POTENTIAL_THREE_SPLIT = 2;
@@ -157,25 +157,25 @@ public class PositionAnalysis {
     //TYPE_TRIA = 5;
     //TYPE_CLOSED_FOUR = 6;
     //TYPE_OPEN_FOUR = 7;
-    final int[] RANKS_OFFENSE = new int[] {
-        1, 2, 10, 10, 1000, 1000, 100000, 100000
+    final int[] RANKS_OFFENSE = new int[]{
+            1, 2, 10, 10, 1000, 1000, 100000, 100000
     };
     //final int[] GROUPS_OFFENSE = new int[] {
     //   6, 5, 5, 5, 3, 3, 1, 1
     //};
-    final int[] RANKS_DEFENSE = new int[] {
-        1, 2, 5, 5, 5, 100, 10000, 10000
+    final int[] RANKS_DEFENSE = new int[]{
+            1, 2, 5, 5, 5, 100, 10000, 10000
     };
     //final int[] GROUPS_DEFENSE = new int[] {
     //    6, 6, 6, 6, 5, 4, 2, 2
     //};
-    
-    final int[] TYPE_PRIOR = new int[] {
-        0, 0, 0, 0, 0, 3, 5, 5
+
+    final int[] TYPE_PRIOR = new int[]{
+            0, 0, 0, 0, 0, 3, 5, 5
     };
-    
+
     public List<Rank> getNextMoveRanks() {
-       
+
 
         // experimental
         // this is for the cases where all moves have at least the offensive
@@ -195,10 +195,10 @@ public class PositionAnalysis {
         }
         minMovesToWin += 2;
         // end experimental
-        
+
         Rank moves[] = new Rank[362];
         // look at threats of current player
-        for (Iterator it = threats[3 - player].iterator(); it.hasNext();) {
+        for (Iterator it = threats[3 - player].iterator(); it.hasNext(); ) {
             Threat t = (Threat) it.next();
             if (t.movesToWin == 0) continue; //no way to win w/o caps
             if (RANKS_OFFENSE[t.type] == 0) continue; //ignore 0 ranks
@@ -216,12 +216,10 @@ public class PositionAnalysis {
                     if (t.movesToWin < r.getOffenseGroup()) {
                         r.setOffenseGroup(t.movesToWin);
                     }
-                }
-                else {
+                } else {
                     r = new Rank(m);
-                    
-                    
-                    
+
+
                     r.setOffenseGroup(t.movesToWin);
                     r.addOffenseRank(RANKS_OFFENSE[t.type] + j);
 
@@ -235,7 +233,7 @@ public class PositionAnalysis {
                         }
                     }
                     // end experimental
-                    
+
                     moves[m] = r;
 //                    if (log4j.isDebugEnabled()) {
 //                        log4j.debug("creating rank " + r);
@@ -244,17 +242,17 @@ public class PositionAnalysis {
             }
         }
         //repeats above for opponents threats using RANKS_DEFENSE
-        for (Iterator it = threats[player].iterator(); it.hasNext();) {
+        for (Iterator it = threats[player].iterator(); it.hasNext(); ) {
             Threat t = (Threat) it.next();
             if (t.movesToWin == 0) continue; //no way to win w/o caps
             if (RANKS_DEFENSE[t.type] == 0) continue; //ignore 0 ranks
-            
+
             int movesToWin = t.movesToWin + 1; // since on defense
             if (t.type == Threat.TYPE_POTENTIAL_FOUR) {
                 movesToWin++;
             }
-            
-            for (Iterator it2 = t.resps.iterator(); it2.hasNext();) {
+
+            for (Iterator it2 = t.resps.iterator(); it2.hasNext(); ) {
                 int m = ((Integer) it2.next()).intValue();
                 if (m == 0) continue;
                 Rank r = moves[m];
@@ -269,12 +267,11 @@ public class PositionAnalysis {
                     if (movesToWin < r.getDefenseGroup()) {
                         r.setDefenseGroup(movesToWin);
                     }
-                }
-                else {
+                } else {
                     r = new Rank(m);
                     r.setDefenseGroup(movesToWin);
                     r.addDefenseRank(RANKS_DEFENSE[t.type]);
-                    
+
 
                     // experimental
                     r.setOffenseGroup(minMovesToWin);
@@ -282,7 +279,7 @@ public class PositionAnalysis {
                         r.addOffenseRank(RANKS_OFFENSE[TYPE_PRIOR[mt.type]]);
                     }
                     // end experimental
-                    
+
                     moves[m] = r;
 
 //                    if (log4j.isDebugEnabled()) {
@@ -292,21 +289,21 @@ public class PositionAnalysis {
             }
         }
 
-        
+
         // find captures by me that can reveal hidden threats
-        for (Iterator it = threats[3 - player].iterator(); it.hasNext();) {
+        for (Iterator it = threats[3 - player].iterator(); it.hasNext(); ) {
             Threat t = (Threat) it.next();
             if (t.type == Threat.TYPE_POTENTIAL_CAPTURE) {
                 int c1 = t.moves[0];
                 int c2 = t.moves[1];
                 int capMove = ((Integer) t.next.get(0)).intValue();
                 Rank r = moves[capMove];
-                for (Iterator it2 = threats[3 - player].iterator(); it2.hasNext();) {
+                for (Iterator it2 = threats[3 - player].iterator(); it2.hasNext(); ) {
                     Threat t2 = (Threat) it2.next();
                     if (t2.blocked == false) continue;
                     for (int i = 0; i < t2.numBlocks; i++) {
                         if (c1 == t2.blockPositions[i] ||
-                            c2 == t2.blockPositions[i]) {
+                                c2 == t2.blockPositions[i]) {
 
                             int posNewGroup = t2.blockedMovesToWin + 2; // +2 since have to capture to reveal threat
                             if (r.getOffenseGroup() > posNewGroup) {
@@ -341,7 +338,7 @@ public class PositionAnalysis {
                 }
                 for (int i = 0; i < t2.numBlocks; i++) {
                     if (c1 == t2.blockPositions[i] ||
-                        c2 == t2.blockPositions[i]) {
+                            c2 == t2.blockPositions[i]) {
 
                         int posNewGroup = t2.blockedMovesToWin + 4; // +4 since have to setup cap and then make it
                         if (r1.getOffenseGroup() > posNewGroup) {
@@ -363,7 +360,6 @@ public class PositionAnalysis {
         }
 
 
-        
         // sort by group and rank
         List<Rank> m = new ArrayList<Rank>(10);
         for (int i = 0; i < moves.length; i++) {
@@ -371,27 +367,22 @@ public class PositionAnalysis {
                 m.add(moves[i]);
             }
         }
-        
 
-                                                     
-        
+
         // now sort by offense and defense group to determine which ones
         // can be culled below
         Collections.sort(m, new Comparator<Rank>() {
-            public int compare(Rank r1, Rank r2)
-            {
+            public int compare(Rank r1, Rank r2) {
                 if (r2.getGroup() < r1.getGroup()) {
                     return 1;
-                }
-                else if (r2.getGroup() > r1.getGroup()) {
+                } else if (r2.getGroup() > r1.getGroup()) {
                     return -1;
-                }
-                else {
+                } else {
                     return r2.getRank() - r1.getRank();
                 }
             }
         });
-        
+
         // remove moves that are not necessary
         // determines this by the groupings. 
         // if max is group 1, remove everything else
@@ -414,8 +405,8 @@ public class PositionAnalysis {
                     }
                 }
             }
-            
-            for (Iterator it = m.iterator(); it.hasNext();) {
+
+            for (Iterator it = m.iterator(); it.hasNext(); ) {
                 curr = (Rank) it.next();
                 // if there is a group 1 or 2, and this one is in a group [345...], remove it
                 if (maxGroup < 3 && curr.getGroup() > maxGroup) {
@@ -430,7 +421,7 @@ public class PositionAnalysis {
                 }
                 // if anything in group 4, remove 6
                 else if (maxGroup == 4 && curr.getGroup() >= 5) {
-                   //if (log4j.isDebugEnabled()) log4j.debug("removing rank " + curr);
+                    //if (log4j.isDebugEnabled()) log4j.debug("removing rank " + curr);
                     it.remove();
                 }
             }
@@ -443,6 +434,7 @@ public class PositionAnalysis {
 //        }
         return m;
     }
+
     public int[] getNextMoves() {
 
         List<Rank> m = getNextMoveRanks();
@@ -457,18 +449,18 @@ public class PositionAnalysis {
         }
         return r;
     }
-    
-    /** for each potential capture that i can make, scan all other threats 
-     *  and see if the capture can disrupt the threat, if so add the capture
-     *  move as a response
-     *
-     *  
+
+    /**
+     * for each potential capture that i can make, scan all other threats
+     * and see if the capture can disrupt the threat, if so add the capture
+     * move as a response
      */
     public void analyzeCaptures() {
-        for (Iterator it = threats[3 - player].iterator(); it.hasNext();) {
+        for (Iterator it = threats[3 - player].iterator(); it.hasNext(); ) {
             Threat t = (Threat) it.next();
             if (t.type == Threat.TYPE_POTENTIAL_CAPTURE) {
-                outer: for (Iterator it2 = threats[player].iterator(); it2.hasNext();) {
+                outer:
+                for (Iterator it2 = threats[player].iterator(); it2.hasNext(); ) {
                     Threat t2 = (Threat) it2.next();
 
                     for (int i = 0; i < t.numMoves; i++) {
@@ -488,7 +480,8 @@ public class PositionAnalysis {
         }
         for (Threat t : pairs[3 - player]) {
 
-            outer: for (Threat t2 : threats[player]) {
+            outer:
+            for (Threat t2 : threats[player]) {
 
                 // opponent has a 4, so no time to capture
                 if (t2.type > Threat.TYPE_TRIA) continue;
@@ -508,19 +501,19 @@ public class PositionAnalysis {
                 }
             }
         }
-        
+
 
         // look for a position that returns the maximum captures
         // if max + already captures > 5 then elevate the group to top since its a win bitch!
         int capBoard[] = new int[362];
-        for (Iterator it = threats[3 - player].iterator(); it.hasNext();) {
+        for (Iterator it = threats[3 - player].iterator(); it.hasNext(); ) {
             Threat t = (Threat) it.next();
             if (t.type == Threat.TYPE_POTENTIAL_CAPTURE) {
                 capBoard[t.captureMove] += 2;
             }
         }
-        
-        for (Iterator it = threats[3 - player].iterator(); it.hasNext();) {
+
+        for (Iterator it = threats[3 - player].iterator(); it.hasNext(); ) {
             Threat t = (Threat) it.next();
             if (t.type == Threat.TYPE_POTENTIAL_CAPTURE) {
                 if (capBoard[t.captureMove] + caps[3 - player] > 8) {
@@ -534,14 +527,14 @@ public class PositionAnalysis {
         // look for a position that returns the maximum captures on MY PIECES
         // if max + already captures > 5 then elevate the group to top since its a loser bitch!
         capBoard = new int[362];
-        for (Iterator it = threats[player].iterator(); it.hasNext();) {
+        for (Iterator it = threats[player].iterator(); it.hasNext(); ) {
             Threat t = (Threat) it.next();
             if (t.type == Threat.TYPE_POTENTIAL_CAPTURE) {
                 capBoard[t.captureMove] += 2;
             }
         }
-        
-        for (Iterator it = threats[player].iterator(); it.hasNext();) {
+
+        for (Iterator it = threats[player].iterator(); it.hasNext(); ) {
             Threat t = (Threat) it.next();
             if (t.type == Threat.TYPE_POTENTIAL_CAPTURE) {
                 if (capBoard[t.captureMove] + caps[player] > 8) {
@@ -551,17 +544,17 @@ public class PositionAnalysis {
                 }
             }
         }
-        
+
         //TODO elevate movesToWin by chasing pairs as well if that leads to a win
     }
-    
+
     public String toString() {
         //if (!log4j.isDebugEnabled()) return "";
-        
+
         StringBuffer buf = new StringBuffer(1024);
         for (int i = 1; i < 3; i++) {
             buf.append("Threats for player " + i + ":\n");
-            for (Iterator it = threats[i].iterator(); it.hasNext();) {
+            for (Iterator it = threats[i].iterator(); it.hasNext(); ) {
                 Threat threat = (Threat) it.next();
                 buf.append(threat + "\n");
             }

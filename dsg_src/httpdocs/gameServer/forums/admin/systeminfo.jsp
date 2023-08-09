@@ -1,9 +1,9 @@
 <%
-/**
- *	$RCSfile: systeminfo.jsp,v $
- *	$Revision: 1.2 $
- *	$Date: 2003/01/08 02:31:36 $
- */
+   /**
+    *	$RCSfile: systeminfo.jsp,v $
+    *	$Revision: 1.2 $
+    *	$Date: 2003/01/08 02:31:36 $
+    */
 %>
 
 <%@ page import="java.util.*,
@@ -17,9 +17,9 @@
 
 <%@ include file="header.jsp" %>
 
-<%  // Title of this page and breadcrumbs
-    String title = "System Info";
-    String[][] breadcrumbs = null;
+<% // Title of this page and breadcrumbs
+   String title = "System Info";
+   String[][] breadcrumbs = null;
 %>
 <%@ include file="title.jsp" %>
 
@@ -62,9 +62,9 @@ forums at jivesoftware.com, be sure to include this information when posting que
         <%= application.getServerInfo() %>
     </td>
 </tr>
-<%	// Get database info
-	Connection con = ConnectionManager.getConnection();
-    DatabaseMetaData metaData = con.getMetaData();
+<% // Get database info
+   Connection con = ConnectionManager.getConnection();
+   DatabaseMetaData metaData = con.getMetaData();
 %>
 <tr>
     <td class="jive-label">
@@ -83,11 +83,11 @@ forums at jivesoftware.com, be sure to include this information when posting que
         <%= metaData.getDriverName() %> <%= metaData.getDriverVersion() %>
     </td>
 </tr>
-<%  // Close the database connection:
-    try {
-        con.close();
-    }
-    catch (Exception e) {}
+<% // Close the database connection:
+   try {
+      con.close();
+   } catch (Exception e) {
+   }
 %>
 </table>
 </span>

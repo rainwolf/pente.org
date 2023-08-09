@@ -1,19 +1,20 @@
-/** SimpleGameStorerSearchRequestFilterFormat.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * SimpleGameStorerSearchRequestFilterFormat.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.gameDatabase;
@@ -32,45 +33,43 @@ public class SimpleGameStorerSearchRequestFilterFormat implements ObjectFormat {
 
     //private static Category log4j = Category.getInstance(
     //    SimpleGameStorerSearchRequestFilterFormat.class.getName());
-        
-    private static final String     paramSeparator =        "&";
 
-    public static final String      START_GAME_NUM_PARAM =  "start_game_num";
-    public static final String      END_GAME_NUM_PARAM =    "end_game_num";
-    public static final String      TOTAL_GAME_NUM_PARAM =  "total_game_num";
-    public static final String      PLAYER_1_NAME_PARAM =   "player_1_name";
-    public static final String      PLAYER_2_NAME_PARAM =   "player_2_name";
-    public static final String      PLAYER_1_SEAT_PARAM =   "player_1_seat";
-    public static final String      PLAYER_2_SEAT_PARAM =   "player_2_seat";
-    public static final String      GAME_PARAM =            "game";
-    public static final String      SITE_PARAM =            "site";
-    public static final String      EVENT_PARAM =           "event";
-    public static final String      ROUND_PARAM =           "round";
-    public static final String      SECTION_PARAM =         "section";
-    public static final String      AFTER_DATE_PARAM =      "after_date";
-    public static final String      BEFORE_DATE_PARAM =     "before_date";
-    public static final String      WINNER_PARAM =          "winner";
+    private static final String paramSeparator = "&";
 
-    public static final String      RATING_PARAM =          "rating_above";
-    public static final String      P1RATING_PARAM =        "p1_rating_above";
-    public static final String      P2RATING_PARAM =        "p2_rating_above";
-    public static final String      P1ORP2_PARAM =          "p1_or_p2";
-    public static final String      EXCLUDETIMEOUT_PARAM =  "exclude_timeout";
-    public static final String      LIVE_ONLY_PARAM =  "only_live";
-    public static final String      TURN_BASED_ONLY_PARAM =  "only_turn_based";
+    public static final String START_GAME_NUM_PARAM = "start_game_num";
+    public static final String END_GAME_NUM_PARAM = "end_game_num";
+    public static final String TOTAL_GAME_NUM_PARAM = "total_game_num";
+    public static final String PLAYER_1_NAME_PARAM = "player_1_name";
+    public static final String PLAYER_2_NAME_PARAM = "player_2_name";
+    public static final String PLAYER_1_SEAT_PARAM = "player_1_seat";
+    public static final String PLAYER_2_SEAT_PARAM = "player_2_seat";
+    public static final String GAME_PARAM = "game";
+    public static final String SITE_PARAM = "site";
+    public static final String EVENT_PARAM = "event";
+    public static final String ROUND_PARAM = "round";
+    public static final String SECTION_PARAM = "section";
+    public static final String AFTER_DATE_PARAM = "after_date";
+    public static final String BEFORE_DATE_PARAM = "before_date";
+    public static final String WINNER_PARAM = "winner";
 
-    public static final DateFormat  shortDateFormat = new SimpleDateFormat("MM/dd/yyyy");
-    public static final DateFormat  longDateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+    public static final String RATING_PARAM = "rating_above";
+    public static final String P1RATING_PARAM = "p1_rating_above";
+    public static final String P2RATING_PARAM = "p2_rating_above";
+    public static final String P1ORP2_PARAM = "p1_or_p2";
+    public static final String EXCLUDETIMEOUT_PARAM = "exclude_timeout";
+    public static final String LIVE_ONLY_PARAM = "only_live";
+    public static final String TURN_BASED_ONLY_PARAM = "only_turn_based";
+
+    public static final DateFormat shortDateFormat = new SimpleDateFormat("MM/dd/yyyy");
+    public static final DateFormat longDateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 
     private GameStorerSearchRequestFilterData convertObject(Object obj) {
 
         if (obj == null) {
             return null;
-        }
-        else if (!(obj instanceof GameStorerSearchRequestFilterData)) {
+        } else if (!(obj instanceof GameStorerSearchRequestFilterData)) {
             throw new IllegalArgumentException("Object not GameStorerSearchRequestFilterData");
-        }
-        else {
+        } else {
             return (GameStorerSearchRequestFilterData) obj;
         }
     }
@@ -83,30 +82,30 @@ public class SimpleGameStorerSearchRequestFilterFormat implements ObjectFormat {
     }
 
     public StringBuffer format(GameStorerSearchRequestFilterData filterData,
-        StringBuffer buffer, boolean encode) {
+                               StringBuffer buffer, boolean encode) {
 
         try {
             // add start game number
             buffer.append(START_GAME_NUM_PARAM);
             buffer.append("=");
             buffer.append(filterData.getStartGameNum());
-    
+
             buffer.append(paramSeparator);
-    
+
             // add end game number
             buffer.append(END_GAME_NUM_PARAM);
             buffer.append("=");
             buffer.append(filterData.getEndGameNum());
-    
+
             buffer.append(paramSeparator);
-    
+
             // add total game number (only valid for responses which is a little
             // weird since this is a REQUEST format, but request data gets included
             // with response data
             buffer.append(TOTAL_GAME_NUM_PARAM);
             buffer.append("=");
             buffer.append(filterData.getTotalGameNum());
-    
+
             // add player 1 name if not null
             if (filterData.getPlayer1Name() != null) {
                 buffer.append(paramSeparator);
@@ -114,9 +113,8 @@ public class SimpleGameStorerSearchRequestFilterFormat implements ObjectFormat {
                 buffer.append("=");
                 if (encode) {
                     buffer.append(URLEncoder.encode(
-                        filterData.getPlayer1Name(), "UTF-8"));
-                }
-                else {
+                            filterData.getPlayer1Name(), "UTF-8"));
+                } else {
                     buffer.append(filterData.getPlayer1Name());
                 }
             }
@@ -125,7 +123,7 @@ public class SimpleGameStorerSearchRequestFilterFormat implements ObjectFormat {
             buffer.append(PLAYER_1_SEAT_PARAM);
             buffer.append("=");
             buffer.append(filterData.getPlayer1Seat());
-    
+
             // add player 2 name if not null
             if (filterData.getPlayer2Name() != null) {
                 buffer.append(paramSeparator);
@@ -133,9 +131,8 @@ public class SimpleGameStorerSearchRequestFilterFormat implements ObjectFormat {
                 buffer.append("=");
                 if (encode) {
                     buffer.append(URLEncoder.encode(
-                        filterData.getPlayer2Name(), "UTF-8"));
-                }
-                else {
+                            filterData.getPlayer2Name(), "UTF-8"));
+                } else {
                     buffer.append(filterData.getPlayer2Name());
                 }
             }
@@ -144,12 +141,12 @@ public class SimpleGameStorerSearchRequestFilterFormat implements ObjectFormat {
             buffer.append(PLAYER_2_SEAT_PARAM);
             buffer.append("=");
             buffer.append(filterData.getPlayer2Seat());
-    
+
             buffer.append(paramSeparator);
             buffer.append(GAME_PARAM);
             buffer.append("=");
             buffer.append(GridStateFactory.getGameName(filterData.getGame()));
-    
+
             // add site name if not null
             if (filterData.getSite() != null) {
                 buffer.append(paramSeparator);
@@ -157,13 +154,12 @@ public class SimpleGameStorerSearchRequestFilterFormat implements ObjectFormat {
                 buffer.append("=");
                 if (encode) {
                     buffer.append(URLEncoder.encode(
-                        filterData.getSite(), "UTF-8"));
-                }
-                else {
+                            filterData.getSite(), "UTF-8"));
+                } else {
                     buffer.append(filterData.getSite());
                 }
             }
-    
+
             // add event name if not null
             if (filterData.getEvent() != null) {
                 buffer.append(paramSeparator);
@@ -171,13 +167,12 @@ public class SimpleGameStorerSearchRequestFilterFormat implements ObjectFormat {
                 buffer.append("=");
                 if (encode) {
                     buffer.append(URLEncoder.encode(
-                        filterData.getEvent(), "UTF-8"));
-                }
-                else {
+                            filterData.getEvent(), "UTF-8"));
+                } else {
                     buffer.append(filterData.getEvent());
                 }
             }
-    
+
             // add round name if not null
             if (filterData.getRound() != null) {
                 buffer.append(paramSeparator);
@@ -185,13 +180,12 @@ public class SimpleGameStorerSearchRequestFilterFormat implements ObjectFormat {
                 buffer.append("=");
                 if (encode) {
                     buffer.append(URLEncoder.encode(
-                        filterData.getRound(), "UTF-8"));
-                }
-                else {
+                            filterData.getRound(), "UTF-8"));
+                } else {
                     buffer.append(filterData.getRound());
                 }
             }
-    
+
             // add section name if not null
             if (filterData.getSection() != null) {
                 buffer.append(paramSeparator);
@@ -199,13 +193,12 @@ public class SimpleGameStorerSearchRequestFilterFormat implements ObjectFormat {
                 buffer.append("=");
                 if (encode) {
                     buffer.append(URLEncoder.encode(
-                        filterData.getSection(), "UTF-8"));
-                }
-                else {
+                            filterData.getSection(), "UTF-8"));
+                } else {
                     buffer.append(filterData.getSection());
                 }
             }
-    
+
             // add after date if not null
             if (filterData.getAfterDate() != null) {
                 buffer.append(paramSeparator);
@@ -213,13 +206,12 @@ public class SimpleGameStorerSearchRequestFilterFormat implements ObjectFormat {
                 buffer.append("=");
                 if (encode) {
                     buffer.append(URLEncoder.encode(
-                        longDateFormat.format(filterData.getAfterDate()), "UTF-8"));
-                }
-                else {
+                            longDateFormat.format(filterData.getAfterDate()), "UTF-8"));
+                } else {
                     buffer.append(longDateFormat.format(filterData.getAfterDate()));
                 }
             }
-    
+
             // add after date if not null
             if (filterData.getBeforeDate() != null) {
                 buffer.append(paramSeparator);
@@ -227,9 +219,8 @@ public class SimpleGameStorerSearchRequestFilterFormat implements ObjectFormat {
                 buffer.append("=");
                 if (encode) {
                     buffer.append(URLEncoder.encode(
-                        longDateFormat.format(filterData.getBeforeDate()), "UTF-8"));
-                }
-                else {
+                            longDateFormat.format(filterData.getBeforeDate()), "UTF-8"));
+                } else {
                     buffer.append(longDateFormat.format(filterData.getBeforeDate()));
                 }
             }
@@ -297,27 +288,27 @@ public class SimpleGameStorerSearchRequestFilterFormat implements ObjectFormat {
                 filterData.setTotalGameNum(Integer.parseInt(totalGameStr));
             }
 
-    
+
             String player1Name = (String) params.get(PLAYER_1_NAME_PARAM);
             String player2Name = (String) params.get(PLAYER_2_NAME_PARAM);
 
             if (player1Name != null && player1Name.trim().length() > 0) {
                 filterData.setPlayer1Name(URLDecoder.decode(
-                    player1Name, "UTF-8"));
+                        player1Name, "UTF-8"));
             }
             if (player2Name != null && player2Name.trim().length() > 0) {
                 filterData.setPlayer2Name(URLDecoder.decode(
-                    player2Name, "UTF-8"));
+                        player2Name, "UTF-8"));
             }
             String p1SeatStr = (String) params.get(PLAYER_1_SEAT_PARAM);
             String p2SeatStr = (String) params.get(PLAYER_2_SEAT_PARAM);
             if (p1SeatStr != null && p1SeatStr.trim().length() > 0) {
-            	int player1Seat = Integer.parseInt(p1SeatStr);
-            	filterData.setPlayer1Seat(player1Seat);
+                int player1Seat = Integer.parseInt(p1SeatStr);
+                filterData.setPlayer1Seat(player1Seat);
             }
             if (p2SeatStr != null && p2SeatStr.trim().length() > 0) {
-            	int player2Seat = Integer.parseInt(p2SeatStr);
-            	filterData.setPlayer2Seat(player2Seat);
+                int player2Seat = Integer.parseInt(p2SeatStr);
+                filterData.setPlayer2Seat(player2Seat);
             }
 
             String gameStr = (String) params.get(GAME_PARAM);
@@ -330,41 +321,39 @@ public class SimpleGameStorerSearchRequestFilterFormat implements ObjectFormat {
                 throw new Exception("Game can't be null");
             }
             filterData.setGame(GridStateFactory.getGameId(gameStr));
-            
+
             if (site != null) {
                 filterData.setSite(URLDecoder.decode(
-                    site, "UTF-8"));
+                        site, "UTF-8"));
             }
             if (event != null) {
                 filterData.setEvent(URLDecoder.decode(
-                    event, "UTF-8"));
+                        event, "UTF-8"));
             }
             if (round != null) {
                 filterData.setRound(URLDecoder.decode(
-                    round, "UTF-8"));
+                        round, "UTF-8"));
             }
             if (section != null) {
                 filterData.setSection(URLDecoder.decode(
-                    section, "UTF-8"));
+                        section, "UTF-8"));
             }
 
 
             String afterDateStr = (String) params.get(AFTER_DATE_PARAM);
             String beforeDateStr = (String) params.get(BEFORE_DATE_PARAM);
-    
+
             if (afterDateStr != null) {
                 if (afterDateStr.length() < 11) {
                     filterData.setAfterDate(shortDateFormat.parse(afterDateStr));
-                }
-                else {
+                } else {
                     filterData.setAfterDate(longDateFormat.parse(afterDateStr));
                 }
             }
             if (beforeDateStr != null) {
                 if (beforeDateStr.length() < 11) {
                     filterData.setBeforeDate(shortDateFormat.parse(beforeDateStr));
-                }
-                else {
+                } else {
                     filterData.setBeforeDate(longDateFormat.parse(beforeDateStr));
                 }
             }
@@ -372,8 +361,7 @@ public class SimpleGameStorerSearchRequestFilterFormat implements ObjectFormat {
             String winnerStr = (String) params.get(WINNER_PARAM);
             if (winnerStr != null) {
                 filterData.setWinner(Integer.parseInt(winnerStr));
-            }
-            else {
+            } else {
                 filterData.setWinner(0);
             }
 
@@ -426,7 +414,7 @@ public class SimpleGameStorerSearchRequestFilterFormat implements ObjectFormat {
             //log4j.error("ParseException ", ex);
             throw new ParseException("ParseException using URLDecoder", 0);
         }
-        
+
         return filterData;
     }
 }

@@ -1,44 +1,198 @@
-
 <!--
-  BODY { background-color: #ffffff; font-family: arial, helvetica, sans-serif; font-size:12pt}
-  P { font-family: arial, helvetica, sans-serif; font-size:12pt}
-  P.tableCaption { font-family: arial, helvetica, sans-serif; font-size:12pt; font-weight: bold}
-  P.tableCaptionPageTitle { font-family: arial, helvetica, sans-serif; font-size:16pt; font-weight: bold}
-  p.contentMargin { margin-left:10px; margin-right:10px;}
-  p.contentIndent { margin-left:30px; }
-  th {font-family: arial, helvetica, sans-serif; font-size:12pt; font-weight: bold; background-color: ccccff}
-  td {font-family: arial, helvetica, sans-serif; font-size:12pt;}
-  td.normal {font-family: arial, helvetica, sans-serif; font-size:12pt; font-weight:normal}
-  td.strong {font-family: arial, helvetica, sans-serif; font-size:12pt; font-weight:bold}
-  td.small {font-family: arial, helvetica, sans-serif; font-size:10pt;}
-  td.wrp {font-family: arial, helvetica, sans-serif; font-size:12pt; word-wrap: break-word;}
-  caption {font-family: arial, helvetica, sans-serif; font-size:12pt;}
-  caption.pageTitle {font-family: arial, helvetica, sans-serif; font-size:16pt; font-weight: bold}
-  input {font-family: arial, helvetica, sans-serif; font-size:12pt;}
-  textarea {font-family: arial, helvetica, sans-serif; font-size:10pt; }
-  hr {color: #3333cc; clear:both; }
-  img.diagnosticUser, a.diagnosticUser {filter: alpha(opacity=50); -moz-opacity: .5; opacity:.5;}
-  .noteBox {background-color: #ffffcc; color: #800000; padding: 10px; border:2px inset #3333CC; vertical-align:middle; text-align:left;}
-  .plainNoteBox {padding: 10px; border:2px inset #3333CC; vertical-align:middle; text-align:left;}
-  .errorBox {background-color: #ffffcc; color: #800000; padding: 10px; border:2px inset #3333CC; vertical-align:middle; text-align:left; width:625px;}
-  .ALERT { text-decoration:none; background-color: #ffffcc; font-weight: bold ; color: #800000; padding: 10px; border:2px inset #3333CC; vertical-align:middle; text-align:left; }
-  .odd {background-color: #dddddd;}
-  .NPDBblue {background-color: #ccccff;}
-  .white {background-color: white;}
-  .summaryrow { background-color:#cccccc; }
-  .summaryrow DIV { border-top:1px solid black; font-weight:bold;}
-    input.emailinput{ height: 20px; font-size:9pt; width:435px;}
-    input.invalid { color: red; background-color:yellow; font-style:italic; }
-    input.value { color: black; background-color: #ffffff; }
-   .standardWidth{ width: 740px; }
-   .wideWidth { width:850px; }
-   .internalheader {font-size:24px;font-weight:bold }
+BODY {
+    background-color: #ffffff;
+    font-family: arial, helvetica, sans-serif;
+    font-size: 12pt
+}
+
+P {
+    font-family: arial, helvetica, sans-serif;
+    font-size: 12pt
+}
+
+P.tableCaption {
+    font-family: arial, helvetica, sans-serif;
+    font-size: 12pt;
+    font-weight: bold
+}
+
+P.tableCaptionPageTitle {
+    font-family: arial, helvetica, sans-serif;
+    font-size: 16pt;
+    font-weight: bold
+}
+
+p.contentMargin {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+p.contentIndent {
+    margin-left: 30px;
+}
+
+th {
+    font-family: arial, helvetica, sans-serif;
+    font-size: 12pt;
+    font-weight: bold;
+    background-color: ccccff
+}
+
+td {
+    font-family: arial, helvetica, sans-serif;
+    font-size: 12pt;
+}
+
+td.normal {
+    font-family: arial, helvetica, sans-serif;
+    font-size: 12pt;
+    font-weight: normal
+}
+
+td.strong {
+    font-family: arial, helvetica, sans-serif;
+    font-size: 12pt;
+    font-weight: bold
+}
+
+td.small {
+    font-family: arial, helvetica, sans-serif;
+    font-size: 10pt;
+}
+
+td.wrp {
+    font-family: arial, helvetica, sans-serif;
+    font-size: 12pt;
+    word-wrap: break-word;
+}
+
+caption {
+    font-family: arial, helvetica, sans-serif;
+    font-size: 12pt;
+}
+
+caption.pageTitle {
+    font-family: arial, helvetica, sans-serif;
+    font-size: 16pt;
+    font-weight: bold
+}
+
+input {
+    font-family: arial, helvetica, sans-serif;
+    font-size: 12pt;
+}
+
+textarea {
+    font-family: arial, helvetica, sans-serif;
+    font-size: 10pt;
+}
+
+hr {
+    color: #3333cc;
+    clear: both;
+}
+
+img.diagnosticUser, a.diagnosticUser {
+    filter: alpha(opacity=50);
+    -moz-opacity: .5;
+    opacity: .5;
+}
+
+.noteBox {
+    background-color: #ffffcc;
+    color: #800000;
+    padding: 10px;
+    border: 2px inset #3333CC;
+    vertical-align: middle;
+    text-align: left;
+}
+
+.plainNoteBox {
+    padding: 10px;
+    border: 2px inset #3333CC;
+    vertical-align: middle;
+    text-align: left;
+}
+
+.errorBox {
+    background-color: #ffffcc;
+    color: #800000;
+    padding: 10px;
+    border: 2px inset #3333CC;
+    vertical-align: middle;
+    text-align: left;
+    width: 625px;
+}
+
+.ALERT {
+    text-decoration: none;
+    background-color: #ffffcc;
+    font-weight: bold;
+    color: #800000;
+    padding: 10px;
+    border: 2px inset #3333CC;
+    vertical-align: middle;
+    text-align: left;
+}
+
+.odd {
+    background-color: #dddddd;
+}
+
+.NPDBblue {
+    background-color: #ccccff;
+}
+
+.white {
+    background-color: white;
+}
+
+.summaryrow {
+    background-color: #cccccc;
+}
+
+.summaryrow DIV {
+    border-top: 1px solid black;
+    font-weight: bold;
+}
+
+input.emailinput {
+    height: 20px;
+    font-size: 9pt;
+    width: 435px;
+}
+
+input.invalid {
+    color: red;
+    background-color: yellow;
+    font-style: italic;
+}
+
+input.value {
+    color: black;
+    background-color: #ffffff;
+}
+
+.standardWidth {
+    width: 740px;
+}
+
+.wideWidth {
+    width: 850px;
+}
+
+.internalheader {
+    font-size: 24px;
+    font-weight: bold
+}
+
 .multipleButtons {
-    float:right;
-    text-align:right;
-    vertical-align:top;
+    float: right;
+    text-align: right;
+    vertical-align: top;
     margin: 0px 0px 0px 0px;
 }
+
 .mailingAddrText {
     font-family: Palatino Linotype;
     letter-spacing: 0.7pt;
@@ -59,73 +213,103 @@
     font-size: 25pt;
 }
 
-.mailingAddrPadBox p{
+.mailingAddrPadBox p {
     margin-right: 20px;
 }
 
-.normalText{
+.normalText {
     line-height: 12pt;
 }
 
-.threecol_container
-{
-    float:left;
-    width:100%;
-    overflow:hidden;
-    position:relative;
-    padding-top:1%;
-    padding-bottom:1%;
+.threecol_container {
+    float: left;
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    padding-top: 1%;
+    padding-bottom: 1%;
 }
-.threecol_col_1
-{
-    float:left;
-    position:relative;
-    overflow:hidden;
+
+.threecol_col_1 {
+    float: left;
+    position: relative;
+    overflow: hidden;
 }
-.threecol_col_2
-{
-    float:left;
-    position:relative;
-    overflow:hidden;
+
+.threecol_col_2 {
+    float: left;
+    position: relative;
+    overflow: hidden;
     padding-left: 2%;
 }
-.threecol_col_3
-{
-    float:right;
-    position:relative;
-    overflow:hidden;
+
+.threecol_col_3 {
+    float: right;
+    position: relative;
+    overflow: hidden;
 }
+
 .bold {
-    font-weight:bold;
+    font-weight: bold;
 }
+
 .italic {
     font-style: italic;
 }
+
 .clear {
-    clear:both;
+    clear: both;
     height: 20px;
 }
+
 .toptext {
     width: 640px;
     float: left;
 }
+
 .tophelp {
     width: 90px;
     float: right;
 }
+
 .bottombuttons {
     float: right;
 }
+
 .bottombutton {
     float: left;
-    vertical-align:top;
+    vertical-align: top;
     margin: 0px 0px 0px 0px;
 }
+
 .topAlertBox {
-    text-decoration:none; background-color: #ffffcc; font-size:.8em;
-    font-weight: bold ; color: #800000; padding: 1px; border:2px solid #1c1c75;
-    vertical-align:middle; text-align:center; position:relative; left:0px; width:200px;
-    margin-left: auto; margin-right: auto; margin-bottom: 10px; margin-top: -2px; }
-.topAlertBox div { width: 100%; text-align: center; clear:both; }
-.topAlertBox a { color: blue; text-decoration: underline; }
+    text-decoration: none;
+    background-color: #ffffcc;
+    font-size: .8em;
+    font-weight: bold;
+    color: #800000;
+    padding: 1px;
+    border: 2px solid #1c1c75;
+    vertical-align: middle;
+    text-align: center;
+    position: relative;
+    left: 0px;
+    width: 200px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 10px;
+    margin-top: -2px;
+}
+
+.topAlertBox div {
+    width: 100%;
+    text-align: center;
+    clear: both;
+}
+
+.topAlertBox a {
+    color: blue;
+    text-decoration: underline;
+}
+
 -->

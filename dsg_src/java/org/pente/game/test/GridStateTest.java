@@ -16,8 +16,8 @@ public class GridStateTest extends TestCase {
         //junit.awtui.TestRunner.main(new String[] {
         //    SimpleGridStateTest.class.getName()
         //});
-        junit.textui.TestRunner.main(new String[] {
-            GridStateTest.class.getName()
+        junit.textui.TestRunner.main(new String[]{
+                GridStateTest.class.getName()
         });
     }
 
@@ -50,8 +50,9 @@ public class GridStateTest extends TestCase {
         assertEquals(2, state1.getPosition(51));
     }
 
-    /** Make sure the position equals method works so we can test
-     *  more important things.
+    /**
+     * Make sure the position equals method works so we can test
+     * more important things.
      */
     public void testPositionEquals() {
         GridState state1 = createGridState(10, 10);
@@ -183,22 +184,23 @@ public class GridStateTest extends TestCase {
     }
 
     void addMoves(String moves[], GridState state) {
-        
+
         for (int i = 0; i < moves.length; i++) {
             state.addMove(getMove(moves[i]));
         }
     }
-    
+
     GridState gridState = GridStateFactory.createGridState(GridStateFactory.GOMOKU);
     GridCoordinates coordinates = new AlphaNumericGridCoordinates(19, 19);
+
     int getMove(String move) {
-        
+
         Point p = coordinates.getPoint(move);
         return gridState.convertMove(p.x, p.y);
     }
 
     void printBoard(int board[][]) {
-        
+
         int index = 0;
         for (int i = 0; i < board.length; i++) {
             for (int j = 0; j < board[0].length; j++) {

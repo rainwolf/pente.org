@@ -1,19 +1,20 @@
-/** GridState.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * GridState.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.game;
@@ -45,7 +46,7 @@ public interface GridState extends MoveData {
      *  @return boolean True if game is over
      */
     public boolean isGameOver();
-    
+
     /** If the game is over calling this will return
      *  which player has one.  If game is not over will return 0
      *  @return int The player who won the game
@@ -57,6 +58,7 @@ public interface GridState extends MoveData {
     public void clear();
 
     public int getGridSizeX();
+
     public int getGridSizeY();
 
 
@@ -123,26 +125,35 @@ public interface GridState extends MoveData {
      *  @return boolean True if the position is the same
      */
     public boolean positionEquals(GridState gridState);
-    
+
 
     public GridState getInstance(MoveData moveData);
 
     // game hashing functions
     public long getHash();
+
     public long getHash(int index);
+
     public long[][] getHashes();
+
     public void updateHash(HashCalculator calc);
-    
+
     public int getRotation();
+
     public int getRotation(int index);
+
     public int[] getRotations();
-    
+
     public int rotateMove(int move, int newRotation);
+
     public int rotateMoveToLocalRotation(int move, int newRotation);
+
     public int getFirstMoveRotation(int move);
+
     public int rotateFirstMove(int move, int rotation);
-    
+
     public int[] getAllPossibleRotations(int move, int newRotation);
+
     // callbacks for subclasses to generate unique hash values
     //public void setHasher(GridState state);
     //public void updateHashes();

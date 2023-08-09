@@ -12,6 +12,7 @@ public class MySQLDSGReturnEmailStorer {
     private static final String DSG_RETURN_EMAIL_TABLE = "dsg_return_email";
 
     private static final Vector ALL_TABLES = new Vector();
+
     static {
         ALL_TABLES.addElement(PLAYER_TABLE);
         ALL_TABLES.addElement(DSG_PLAYER_TABLE);
@@ -20,12 +21,12 @@ public class MySQLDSGReturnEmailStorer {
 
     private DBHandler dbHandler;
 
-	public MySQLDSGReturnEmailStorer(DBHandler dbHandler) {
-		this.dbHandler = dbHandler;
-	}
+    public MySQLDSGReturnEmailStorer(DBHandler dbHandler) {
+        this.dbHandler = dbHandler;
+    }
 
-    public void insertEmail(long playerId, String messageId, String email) 
-        throws Throwable {
+    public void insertEmail(long playerId, String messageId, String email)
+            throws Throwable {
 
         Connection con = null;
         PreparedStatement stmt = null;
@@ -38,8 +39,8 @@ public class MySQLDSGReturnEmailStorer {
             MySQLDBHandler.lockTable(DSG_RETURN_EMAIL_TABLE, con);
 
             stmt = con.prepareStatement("insert into " + DSG_RETURN_EMAIL_TABLE + " " +
-                                        "(pid, message_id, email, send_date) " +
-                                        "values(?, ?, ?, ?)");
+                    "(pid, message_id, email, send_date) " +
+                    "values(?, ?, ?, ?)");
             stmt.setLong(1, playerId);
             stmt.setString(2, messageId);
             stmt.setString(3, email);
@@ -56,9 +57,9 @@ public class MySQLDSGReturnEmailStorer {
             }
         }
     }
-    
+
     public DSGReturnEmailData getReturnedEmailData(String messageId)
-        throws Throwable {
+            throws Throwable {
 
         Connection con = null;
         PreparedStatement stmt = null;
@@ -73,8 +74,8 @@ public class MySQLDSGReturnEmailStorer {
             MySQLDBHandler.lockTable(DSG_RETURN_EMAIL_TABLE, con);
 
             stmt = con.prepareStatement("select pid, email, send_date " +
-                                        "from " + DSG_RETURN_EMAIL_TABLE + " " +
-                                        "where message_id = ?");
+                    "from " + DSG_RETURN_EMAIL_TABLE + " " +
+                    "where message_id = ?");
             stmt.setString(1, messageId);
 
             result = stmt.executeQuery();
@@ -99,7 +100,7 @@ public class MySQLDSGReturnEmailStorer {
                 dbHandler.freeConnection(con);
             }
         }
-        
+
         return returnEmailData;
     }
 }

@@ -1,23 +1,28 @@
-<%! private static final String images[] = new String[] {
-	"shirt1.jpg", "shirt2.jpg", "shirt3.jpg", "shirt4.jpg", "hat.jpg", "mug.jpg" };
-    private static int dsgStoreCounter=0;
+<%! private static final String images[] = new String[]{
+   "shirt1.jpg", "shirt2.jpg", "shirt3.jpg", "shirt4.jpg", "hat.jpg", "mug.jpg"};
+   private static int dsgStoreCounter = 0;
 %>
 <% String image = images[dsgStoreCounter++ % images.length]; %>
 
-     <table border="1" cellpadding="0" cellspacing="0" bordercolor="gray" width="170">
-      <tr>
-       <td>
-        <table border="0" cellpadding="2" cellspacing="0">
-         <tr><td align="center">
-           <font face="Verdana, Arial, Helvetica, sans-serif">
-           <h3>Pente.org Merchandise!</h3>
-           <a href="http://www.cafepress.com/dweebos">
-             <img src="/gameServer/images/store/<%= image %>" width="150" height="150" border="0"></a>
-         </td></tr>
-         <tr>
-          <td align="center">
-            <font size="-2"><a href="http://www.cafepress.com/dweebos">Buy Pente.org Shirts, Hats and Mugs!</a></font>
-          </td>
-         </tr>
-        </table>
-      </td></tr></table>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="gray" width="170">
+   <tr>
+      <td>
+         <table border="0" cellpadding="2" cellspacing="0">
+            <tr>
+               <td align="center">
+                  <font face="Verdana, Arial, Helvetica, sans-serif">
+                     <h3>Pente.org Merchandise!</h3>
+                     <a href="http://www.cafepress.com/dweebos">
+                        <img src="/gameServer/images/store/<%= image %>" width="150" height="150" border="0"></a>
+               </td>
+            </tr>
+            <tr>
+               <td align="center">
+                  <font size="-2"><a href="http://www.cafepress.com/dweebos">Buy Pente.org Shirts, Hats and
+                     Mugs!</a></font>
+               </td>
+            </tr>
+         </table>
+      </td>
+   </tr>
+</table>

@@ -58,7 +58,7 @@ public class NotificationServlet extends HttpServlet {
 
         String player = (String) request.getAttribute("name");
         String device = (String) request.getParameter("device");
-        String token = (String) request.getParameter("token"); 
+        String token = (String) request.getParameter("token");
 
         DSGPlayerData playerData = null;
         if (player == null) {
@@ -69,7 +69,7 @@ public class NotificationServlet extends HttpServlet {
             playerData = dsgPlayerStorer.loadPlayer(player);
         } catch (DSGPlayerStoreException e) {
             e.printStackTrace();
-            log4j.error("NotificationServlet error loading player: "+player);
+            log4j.error("NotificationServlet error loading player: " + player);
             handleError(request, response, "database error, try again later");
             return;
         }
@@ -82,7 +82,7 @@ public class NotificationServlet extends HttpServlet {
             }
         } catch (NotificationServerException e) {
             e.printStackTrace();
-            log4j.error("NotificationServlet error registering for "+player);
+            log4j.error("NotificationServlet error registering for " + player);
             handleError(request, response, "database error, try again later");
             return;
         }

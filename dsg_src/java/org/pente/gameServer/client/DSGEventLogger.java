@@ -9,9 +9,9 @@ public class DSGEventLogger extends DSGEventChainer {
     }
 
     public void eventOccurred(DSGEvent dsgEvent) {
-    	super.eventOccurred(dsgEvent);
-    	
-    	System.out.println("out: " + dsgEvent);
+        super.eventOccurred(dsgEvent);
+
+        System.out.println("out: " + dsgEvent);
     }
 }
 

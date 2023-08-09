@@ -1,19 +1,20 @@
-/** PlayerListPanel.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * PlayerListPanel.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.gameServer.client.awt;
@@ -29,57 +30,57 @@ import org.pente.gameServer.core.DSGPlayerGameData;
 public class PlayerListPanel extends Panel
         implements PlayerListComponent {
 
-    private Vector              listeners = new Vector();
+    private Vector listeners = new Vector();
 
-    private Vector              players = new Vector();
+    private Vector players = new Vector();
 
-    private String              selectedPlayer;
-    private String              ownerPlayer = "";
-    private String              tableName;
+    private String selectedPlayer;
+    private String ownerPlayer = "";
+    private String tableName;
 
-    private Image               playersImage;
-    private Graphics            playersGraphics;
+    private Image playersImage;
+    private Graphics playersGraphics;
 
-    private Color               selectedColor;
+    private Color selectedColor;
 
-    private static final Font   tableNameFont =
+    private static final Font tableNameFont =
             new Font("Arial", Font.BOLD, 14);
-    private static final Font   playerFont =
+    private static final Font playerFont =
             new Font("Dialog", Font.PLAIN, 12);
-    private static final Font   boldPlayerFont =
+    private static final Font boldPlayerFont =
             new Font("Dialog", Font.BOLD, 12);
-    private static final Font   adminPlayerFont =
+    private static final Font adminPlayerFont =
             new Font("Dialog", Font.BOLD | Font.ITALIC, 12);
-    private static final Color  GREEN_RATINGS_COLOR =
+    private static final Color GREEN_RATINGS_COLOR =
             new Color(11, 203, 11);
-    private static final Color  BLUE_RATINGS_COLOR =
+    private static final Color BLUE_RATINGS_COLOR =
             new Color(1, 85, 255);
-    private static final Color  YELLOW_RATINGS_COLOR =
+    private static final Color YELLOW_RATINGS_COLOR =
             new Color(243, 235, 23);
 
-    private Dimension           minSize;
-    private Dimension           currentSize;
-    private int                 minPlayers = 3;
-    private int                 maxPlayersVisibleInitially = 6;
-    private int                 headerHeight;
-    private int                 rowHeight;
-    private boolean             scrollbarVisible = false;
-    private Scrollbar           scrollbar;
-    private int                 startRow;
-    private int                 visibleRows;
-    private int                 oneCharWidth;
+    private Dimension minSize;
+    private Dimension currentSize;
+    private int minPlayers = 3;
+    private int maxPlayersVisibleInitially = 6;
+    private int headerHeight;
+    private int rowHeight;
+    private boolean scrollbarVisible = false;
+    private Scrollbar scrollbar;
+    private int startRow;
+    private int visibleRows;
+    private int oneCharWidth;
 
-    private int                 ratingsColumnWidth;
-    private static final int    PLAYER_COLUMN = 1;
-    private static final int    RATINGS_COLUMN = 2;
-    private int                 sortColumn = RATINGS_COLUMN;
-    private static final int    ASCENDING = 1;
-    private static final int    DESCENDING = -1;
-    private int                 sortDir = DESCENDING;
-    private int                 sortColumnPressed = 0;
+    private int ratingsColumnWidth;
+    private static final int PLAYER_COLUMN = 1;
+    private static final int RATINGS_COLUMN = 2;
+    private int sortColumn = RATINGS_COLUMN;
+    private static final int ASCENDING = 1;
+    private static final int DESCENDING = -1;
+    private int sortDir = DESCENDING;
+    private int sortColumnPressed = 0;
 
-    private int                 game = 1;
-    private boolean             showNumPlayers;
+    private int game = 1;
+    private boolean showNumPlayers;
 
     public PlayerListPanel(PlayerListPanel toCopy) {
         this(toCopy.selectedColor);
@@ -91,6 +92,7 @@ public class PlayerListPanel extends Panel
         }
 
     }
+
     public PlayerListPanel(Color selectedColor) {
 
         this.selectedColor = selectedColor;
@@ -133,21 +135,18 @@ public class PlayerListPanel extends Panel
                         int x = e.getX();
                         if (x > getRealWidth() - ratingsColumnWidth) {
                             sortColumnPressed = RATINGS_COLUMN;
-                        }
-                        else if (x > 0 && x < getRealWidth() - ratingsColumnWidth) {
+                        } else if (x > 0 && x < getRealWidth() - ratingsColumnWidth) {
                             sortColumnPressed = PLAYER_COLUMN;
                         }
 
                         repaint();
                     }
-                }
-                else {
+                } else {
                     int selectedNum = y / rowHeight + startRow;
                     synchronized (players) {
                         if (selectedNum < 0 || selectedNum > players.size() - 1) {
                             selectedPlayer = null;
-                        }
-                        else {
+                        } else {
                             selectedPlayer = ((DSGPlayerData)
                                     players.elementAt(selectedNum)).getName();
                         }
@@ -155,6 +154,7 @@ public class PlayerListPanel extends Panel
                     repaint();
                 }
             }
+
             public void mouseReleased(MouseEvent e) {
 
                 boolean p = false;
@@ -168,8 +168,7 @@ public class PlayerListPanel extends Panel
                         if (sortColumn == RATINGS_COLUMN) {
                             if (sortDir == ASCENDING) {
                                 sortDir = DESCENDING;
-                            }
-                            else {
+                            } else {
                                 sortDir = ASCENDING;
                             }
                         }
@@ -179,8 +178,7 @@ public class PlayerListPanel extends Panel
                             sortDir = DESCENDING;
                         }
                         sort();
-                    }
-                    else if (sortColumnPressed == PLAYER_COLUMN &&
+                    } else if (sortColumnPressed == PLAYER_COLUMN &&
                             x > 0 && x < getRealWidth() - ratingsColumnWidth) {
 
                         p = true;
@@ -188,8 +186,7 @@ public class PlayerListPanel extends Panel
                         if (sortColumn == PLAYER_COLUMN) {
                             if (sortDir == ASCENDING) {
                                 sortDir = DESCENDING;
-                            }
-                            else {
+                            } else {
                                 sortDir = ASCENDING;
                             }
                         }
@@ -219,8 +216,7 @@ public class PlayerListPanel extends Panel
                     int y = e.getY() - headerHeight - rowHeight;
                     if (y < 0) {
                         selectedPlayer = null;
-                    }
-                    else {
+                    } else {
                         int selectedNum = y / rowHeight + startRow;
 
                         synchronized (players) {
@@ -257,6 +253,7 @@ public class PlayerListPanel extends Panel
     public void addGetStatsListener(PlayerActionListener getStatsListener) {
         listeners.addElement(getStatsListener);
     }
+
     public void removeGetStatsListener(PlayerActionListener getStatsListener) {
         listeners.removeElement(getStatsListener);
     }
@@ -264,6 +261,7 @@ public class PlayerListPanel extends Panel
     public void setTableName(String tableName) {
         this.tableName = tableName;
     }
+
     public void setOwner(String player) {
 
         synchronized (players) {
@@ -296,6 +294,7 @@ public class PlayerListPanel extends Panel
         }
         return playerNames.elements();
     }
+
     public String getSelectedPlayer() {
         return selectedPlayer;
     }
@@ -355,8 +354,7 @@ public class PlayerListPanel extends Panel
                 else if (sortDir == comp(existingPlayer, playerData)) {
                     break;
                 }
-            }
-            else {
+            } else {
                 // insert new non-admin lower than admins
                 if (existingPlayer.isAdmin()) {
                     continue;
@@ -370,6 +368,7 @@ public class PlayerListPanel extends Panel
 
         players.insertElementAt(playerData, i);
     }
+
     private int comp(DSGPlayerData existingPlayer, DSGPlayerData playerData) {
         int comp = 0;
         if (sortColumn == PLAYER_COLUMN) {
@@ -377,8 +376,7 @@ public class PlayerListPanel extends Panel
                     existingPlayer.getName());
             if (comp > 0) comp = -1;
             else if (comp < 0) comp = 1;
-        }
-        else if (sortColumn == RATINGS_COLUMN) {
+        } else if (sortColumn == RATINGS_COLUMN) {
             DSGPlayerGameData p = playerData.getPlayerGameData(game);
             DSGPlayerGameData e = existingPlayer.getPlayerGameData(game);
             if (e.getTotalGames() == 0 && p.getTotalGames() > 0) comp = sortDir;
@@ -387,8 +385,7 @@ public class PlayerListPanel extends Panel
             else if (e.isProvisional() && !p.isProvisional()) comp = sortDir;
             else if (p.getRating() > e.getRating()) comp = -1;
             else comp = 1;
-        }
-        else comp = 0;
+        } else comp = 0;
 
         return comp;
     }
@@ -433,7 +430,7 @@ public class PlayerListPanel extends Panel
         if (playerName == null) {
             return;
         }
-        
+
         String playerLowerCase = playerName.toLowerCase();
 
         boolean removeScrollbar = false;
@@ -448,11 +445,9 @@ public class PlayerListPanel extends Panel
                     if (existingPlayer.equals(selectedPlayer)) {
                         if (players.size() == 0) {
                             selectedPlayer = null;
-                        }
-                        else if (i == players.size()) {
+                        } else if (i == players.size()) {
                             selectedPlayer = ((DSGPlayerData) players.elementAt(i - 1)).getName();
-                        }
-                        else {
+                        } else {
                             selectedPlayer = ((DSGPlayerData) players.elementAt(i)).getName();
                         }
                     }
@@ -505,6 +500,7 @@ public class PlayerListPanel extends Panel
         playersGraphics = playersImage.getGraphics();
         playersGraphics.setClip(0, 0, minSize.width, minSize.height);
     }
+
     public void destroy() {
         if (playersGraphics != null) {
             playersGraphics.dispose();
@@ -652,7 +648,7 @@ public class PlayerListPanel extends Panel
                 drawPlayers(playersGraphics);
                 g.drawImage(playersImage, 0, 0, this);
 
-            } catch(Throwable t) {
+            } catch (Throwable t) {
                 t.printStackTrace();
             }
         }
@@ -665,6 +661,7 @@ public class PlayerListPanel extends Panel
         }
         return width;
     }
+
     private void drawPlayers(Graphics g) {
 
         int width = getSize().width;
@@ -735,16 +732,14 @@ public class PlayerListPanel extends Panel
         int sortY1, sortY2 = 0;
         if (sortColumn == PLAYER_COLUMN) {
             sortX = width - ratingsColumnWidth - pLen + 2;
-        }
-        else {
+        } else {
             sortX = width - pLen + 2;
         }
 
         if (sortDir == DESCENDING) {
             sortY1 = sortY - pLen;
             sortY2 = sortY;
-        }
-        else {
+        } else {
             sortY1 = sortY;
             sortY2 = sortY - pLen;
         }
@@ -774,7 +769,6 @@ public class PlayerListPanel extends Panel
         g.drawPolygon(p);
 
 
-
         // gridline down center
         g.setColor(new Color(230, 230, 230));
         g.drawLine(width - ratingsColumnWidth, headerHeight + 2,
@@ -797,8 +791,7 @@ public class PlayerListPanel extends Panel
                 if (showingAdmins &&
                         (d.isAdmin() || ownerPlayer.equals(d.getName()))) {
                     anAdmin = true;
-                }
-                else if (showingAdmins && !d.isAdmin()) {
+                } else if (showingAdmins && !d.isAdmin()) {
                     showingAdmins = false;
                     if (anAdmin) {
                         g.setColor(new Color(230, 230, 230));
@@ -813,8 +806,7 @@ public class PlayerListPanel extends Panel
                 if (d.hasPlayerDonated()) {
                     g.setFont(boldPlayerFont);
                     g.setColor(playerColor);
-                }
-                else {
+                } else {
                     g.setFont(playerFont);
                     g.setColor(Color.black);
                 }
@@ -854,17 +846,13 @@ public class PlayerListPanel extends Panel
                     if (!gameData.isProvisional()) {
                         if (r >= 1900) {
                             ratingsColor = Color.red;
-                        }
-                        else if (r >= 1700) {
+                        } else if (r >= 1700) {
                             ratingsColor = YELLOW_RATINGS_COLOR;
-                        }
-                        else if (r >= 1400) {
+                        } else if (r >= 1400) {
                             ratingsColor = BLUE_RATINGS_COLOR;
-                        }
-                        else if (r >= 1000) {
+                        } else if (r >= 1000) {
                             ratingsColor = GREEN_RATINGS_COLOR;
-                        }
-                        else {
+                        } else {
                             ratingsColor = Color.gray;
                         }
                     }
@@ -891,12 +879,12 @@ public class PlayerListPanel extends Panel
         }
     }
 
-    private static final Color CROWN_COLORS[] = new Color[] {
+    private static final Color CROWN_COLORS[] = new Color[]{
             null,
             new Color(255, 203, 79),
             new Color(192, 192, 192),
             new Color(180, 97, 0),
-            new Color(255, 255, 255) };
+            new Color(255, 255, 255)};
 
     /** @param x - Where to start drawing to the right of
      *  @param y - Where to start drawing up from
@@ -921,7 +909,7 @@ public class PlayerListPanel extends Panel
         if (type <= DSGPlayerGameData.KINGOFTHEHILL_WINNER) {
             g.setColor(CROWN_COLORS[type]);
         } else {
-            int rgb = (30 + 3 - type)*255/30;
+            int rgb = (30 + 3 - type) * 255 / 30;
             g.setColor(new Color(rgb, rgb, rgb));
         }
         g.fillPolygon(p);
@@ -930,7 +918,7 @@ public class PlayerListPanel extends Panel
         g.drawPolygon(p);
 
         // draw little dots on crown
-        if (type > DSGPlayerGameData.KINGOFTHEHILL_WINNER+7) {
+        if (type > DSGPlayerGameData.KINGOFTHEHILL_WINNER + 7) {
             g.setColor(Color.white);
         }
         g.drawLine(x + x1, y - 4, x + x1, y - 4);
@@ -950,6 +938,7 @@ public class PlayerListPanel extends Panel
 
         return endRow;
     }
+
     private void updateStartRow() {
 
         int endRow = getEndRow();
@@ -960,6 +949,7 @@ public class PlayerListPanel extends Panel
             startRow = 0;
         }
     }
+
     private void updateScrollbarMaximum() {
 
         int max = players.size() - visibleRows + 1;

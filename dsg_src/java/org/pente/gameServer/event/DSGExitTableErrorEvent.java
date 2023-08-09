@@ -11,7 +11,7 @@ public class DSGExitTableErrorEvent extends AbstractDSGTableErrorEvent {
     }
 
     public String toString() {
-    	return "exit " + super.toString();
+        return "exit " + super.toString();
     }
 }
 

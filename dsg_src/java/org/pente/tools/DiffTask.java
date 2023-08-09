@@ -13,7 +13,7 @@ public class DiffTask extends Task {
     private File file1;
     private File file2;
     private File outputFile;
-    
+
     public void setFile1(File file1) {
         this.file1 = file1;
     }
@@ -30,12 +30,12 @@ public class DiffTask extends Task {
 
         Commandline toExecute = new Commandline();
         toExecute.setExecutable("diff");
-        
+
         toExecute.createArgument().setValue("-c");
         toExecute.createArgument().setFile(file1);
         toExecute.createArgument().setFile(file2);
- 
-        
+
+
         ExecuteStreamHandler handler = new FileStreamHandler(outputFile);
 
         Execute exe = new Execute(handler, null);
@@ -55,24 +55,26 @@ public class DiffTask extends Task {
 
         private FileOutputStream outputStream;
         private Thread thread;
-        
+
         public FileStreamHandler(File outputFile) {
             try {
                 this.outputStream = new FileOutputStream(outputFile);
             } catch (FileNotFoundException f) {
-                
+
             }
         }
 
         public void setProcessInputStream(OutputStream os) {
 
         }
+
         public void setProcessErrorStream(InputStream is)
-            throws IOException {
-                               
+                throws IOException {
+
         }
+
         public void setProcessOutputStream(InputStream is)
-            throws IOException {
+                throws IOException {
             thread = new MonitorInputStreamThread(is, outputStream);
             thread.start();
 
@@ -83,7 +85,7 @@ public class DiffTask extends Task {
         }
 
         public void start()
-           throws IOException {
+                throws IOException {
         }
 
         public void stop() {
@@ -111,7 +113,7 @@ public class DiffTask extends Task {
         }
 
         public void run() {
- 
+
             try {
                 int c;
                 while ((c = reader.read()) != -1) {
@@ -119,8 +121,7 @@ public class DiffTask extends Task {
                     writer.write(c);
                     writer.flush();
                 }
-            }
-            catch (IOException ioe) {
+            } catch (IOException ioe) {
                 ioe.printStackTrace(new PrintWriter(writer));
             }
         }

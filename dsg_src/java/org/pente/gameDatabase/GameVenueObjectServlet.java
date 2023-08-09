@@ -12,8 +12,8 @@ public class GameVenueObjectServlet extends HttpServlet {
 
     private static Category log4j = Category.getInstance(GameVenueObjectServlet.class.getName());
 
-    private byte[]		data;
-    private Timer       timer;
+    private byte[] data;
+    private Timer timer;
 
 
     public void init(ServletConfig config) throws ServletException {
@@ -30,52 +30,52 @@ public class GameVenueObjectServlet extends HttpServlet {
             log4j.error("Error in init()", t);
         }
     }
-    
+
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response)
-        throws ServletException, IOException {
-            doPost(request, response);
+            throws ServletException, IOException {
+        doPost(request, response);
     }
 
     public void doPost(HttpServletRequest request,
                        HttpServletResponse response)
-        throws ServletException, IOException {
+            throws ServletException, IOException {
 
-    	long startTime = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
         //log4j.info("data len=" + data.length);
         response.setContentLength(data.length);
         OutputStream ro = response.getOutputStream();
         int i = 0;
         while (true) {
-        	int n = i + 1024 > data.length ? data.length - i : 1024;
-        	//log4j.info("n=" + n);
-        	ro.write(data, i, n);
-        	ro.flush();
-        	i += n;
-        	//try {
-        	//	Thread.sleep(200);
-        	//} catch (InterruptedException ie) {}
-        	//log4j.debug("i=" + i);
-        	if (i == data.length) break;
+            int n = i + 1024 > data.length ? data.length - i : 1024;
+            //log4j.info("n=" + n);
+            ro.write(data, i, n);
+            ro.flush();
+            i += n;
+            //try {
+            //	Thread.sleep(200);
+            //} catch (InterruptedException ie) {}
+            //log4j.debug("i=" + i);
+            if (i == data.length) break;
         }
-        
+
         log4j.info("send in " + (System.currentTimeMillis() - startTime));
     }
-    
+
     public void updateData() {
-    	try {
-	        MySQLGameVenueStorer gameVenueStorer = (MySQLGameVenueStorer) 
-	    	getServletContext().getAttribute(GameVenueStorer.class.getName());
-	    	ByteArrayOutputStream out = new ByteArrayOutputStream();
-	        ObjectOutputStream o = new ObjectOutputStream(out);
-	        o.writeObject(gameVenueStorer.getGameTree());
-	
-	        data = out.toByteArray();
-    	} catch (Exception e) {
-    		e.printStackTrace();
-    	}
+        try {
+            MySQLGameVenueStorer gameVenueStorer = (MySQLGameVenueStorer)
+                    getServletContext().getAttribute(GameVenueStorer.class.getName());
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            ObjectOutputStream o = new ObjectOutputStream(out);
+            o.writeObject(gameVenueStorer.getGameTree());
+
+            data = out.toByteArray();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
-    
+
     public void destroy() {
         if (timer != null) {
             timer.stopRunning();

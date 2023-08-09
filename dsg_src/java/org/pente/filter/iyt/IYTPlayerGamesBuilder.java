@@ -18,15 +18,14 @@ public class IYTPlayerGamesBuilder implements Runnable {
     private Hashtable cookies;
 
     /**
-     * 
-     * @param args <player id> <iyt cookie> <db user> <db pass> 
-     *             <db name> <db host> 
+     * @param args <player id> <iyt cookie> <db user> <db pass>
+     *             <db name> <db host>
      * @throws Throwable
      */
     public static void main(String args[]) throws Throwable {
-        
+
         BasicConfigurator.configure();
-        
+
         String playerID = args[0];
         Hashtable cookies = new Hashtable();
         cookies.put(IYTConstants.USERID_COOKIE, args[1]);
@@ -35,7 +34,7 @@ public class IYTPlayerGamesBuilder implements Runnable {
         PlayerStorer playerStorer = null;
 
         DBHandler dbHandler = new MySQLDBHandler(
-            args[2], args[3], args[4], args[5]);
+                args[2], args[3], args[4], args[5]);
         GameVenueStorer gameVenueStorer = new MySQLGameVenueStorer(
                 dbHandler);
         gameStorer = new MySQLPenteGameStorer(dbHandler, gameVenueStorer);
@@ -43,13 +42,13 @@ public class IYTPlayerGamesBuilder implements Runnable {
 
         PlayerData myPlayerData = new DefaultPlayerData();
         myPlayerData.setUserID(Long.parseLong(args[1].substring(0, 14)));
-        
-        IYTPlayerGamesBuilder builder = new IYTPlayerGamesBuilder(playerID, 
-            cookies);
+
+        IYTPlayerGamesBuilder builder = new IYTPlayerGamesBuilder(playerID,
+                cookies);
         builder.run();
         Vector games = builder.getGames();
 
-        for (Iterator it = builder.getGames().iterator(); it.hasNext();) {
+        for (Iterator it = builder.getGames().iterator(); it.hasNext(); ) {
             String game = (String) it.next();
             System.out.println("Game: " + game);
         }
@@ -73,24 +72,23 @@ public class IYTPlayerGamesBuilder implements Runnable {
                         if (storedData.getWinner() == GameData.UNKNOWN) {
                             buildGame = true;
                         }
-                    }
-                    else {
+                    } else {
                         buildGame = true;
                     }
 
                     if (buildGame) {
 
                         IYTGameBuilder gameBuilder = new IYTGameBuilder(gameIDStr,
-                                                                        IYTConstants.GAME_REQUEST,
-                                                                        gameStorer,
-                                                                        playerStorer,
-                                                                        myPlayerData,
-                                                                        cookies,
-                                                                        "");
+                                IYTConstants.GAME_REQUEST,
+                                gameStorer,
+                                playerStorer,
+                                myPlayerData,
+                                cookies,
+                                "");
                         gameBuilder.run();
                     }
 
-                } catch(Exception ex) {
+                } catch (Exception ex) {
                     ex.printStackTrace(System.err);
                 }
             }
@@ -107,19 +105,22 @@ public class IYTPlayerGamesBuilder implements Runnable {
     public IYTPlayerGamesBuilder(String playerID, Hashtable cookies) {
         this.playerID = playerID;
         this.cookies = cookies;
-        
+
         games = new Vector();
     }
 
-    /** Gets the game ids filtered
-     *  @return Vector The game ids
+    /**
+     * Gets the game ids filtered
+     *
+     * @return Vector The game ids
      */
     public Vector getGames() {
         return games;
     }
 
-    /** Creates an IYTTournamentGamesFilter and uses it with a HttpFilterController
-     *  to filter out game ids
+    /**
+     * Creates an IYTTournamentGamesFilter and uses it with a HttpFilterController
+     * to filter out game ids
      */
     public void run() {
 //http://www.itsyourturn.com/iyt.dll?completedgame?userid=15200000098568&gametype=42&tn=0
@@ -131,11 +132,11 @@ public class IYTPlayerGamesBuilder implements Runnable {
         IYTTournamentGamesFilter filter = new IYTTournamentGamesFilter(games);
 
         FilterController httpFilterController = new HttpFilterController("GET",
-                                                                         IYTConstants.HOST,
-                                                                         IYTConstants.COMPLETE_GAMES_REQUEST,
-                                                                         params,
-                                                                         cookies,
-                                                                         filter);
+                IYTConstants.HOST,
+                IYTConstants.COMPLETE_GAMES_REQUEST,
+                params,
+                cookies,
+                filter);
         httpFilterController.run();
     }
 }

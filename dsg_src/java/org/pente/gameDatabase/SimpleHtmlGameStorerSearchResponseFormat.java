@@ -1,19 +1,20 @@
-/** SimpleHtmlGameStorerSearchResponseFormat.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * SimpleHtmlGameStorerSearchResponseFormat.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.gameDatabase;
@@ -27,15 +28,15 @@ import org.pente.filter.http.*;
 
 public class SimpleHtmlGameStorerSearchResponseFormat implements GameStorerSearchResponseFormat {
 
-    private String      indexUrl;
-    private String      basePath;
-    private String      imagePath;
-    private String      jsPath;
-    private GameStats   gameStats;
+    private String indexUrl;
+    private String basePath;
+    private String imagePath;
+    private String jsPath;
+    private GameStats gameStats;
 
-    private String      BLANK_IMAGE;
-    private String      DOT_IMAGE;
-    private String      PLAYER_IMAGES[];
+    private String BLANK_IMAGE;
+    private String DOT_IMAGE;
+    private String PLAYER_IMAGES[];
 
     private static final NumberFormat numberFormat = NumberFormat.getInstance();
 
@@ -53,7 +54,7 @@ public class SimpleHtmlGameStorerSearchResponseFormat implements GameStorerSearc
 
         BLANK_IMAGE = imagePath + "blank.gif";
         DOT_IMAGE = imagePath + "dot.gif";
-        PLAYER_IMAGES = new String[] { imagePath + "white.gif", imagePath + "black.gif" };
+        PLAYER_IMAGES = new String[]{imagePath + "white.gif", imagePath + "black.gif"};
     }
 
     // not implemented
@@ -70,8 +71,7 @@ public class SimpleHtmlGameStorerSearchResponseFormat implements GameStorerSearc
         GameStorerSearchResponseData data;
         if (!(obj instanceof GameStorerSearchResponseData)) {
             throw new IllegalArgumentException("Object not GameStorerSearchResponseData");
-        }
-        else {
+        } else {
             data = (GameStorerSearchResponseData) obj;
         }
 
@@ -313,7 +313,7 @@ public class SimpleHtmlGameStorerSearchResponseFormat implements GameStorerSearc
         buffer.append("<td>&nbsp;</td>\r\n");
         buffer.append("</tr>\r\n");
 
-        String p[] = new String[] { "w", "b" };
+        String p[] = new String[]{"w", "b"};
         // for white and black capture rows
         for (int i = 0; i < 2; i++) {
 
@@ -323,9 +323,9 @@ public class SimpleHtmlGameStorerSearchResponseFormat implements GameStorerSearc
             // for 5 pairs of captures
             for (int k = 0; k < 5; k++) {
 
-                String imageNames[] = new String[] { p[i] + "c" + (k + 1) + "a",
-                                                     p[i] + "c" + (k + 1) + "b",
-                                                     "", "" };
+                String imageNames[] = new String[]{p[i] + "c" + (k + 1) + "a",
+                        p[i] + "c" + (k + 1) + "b",
+                        "", ""};
                 // for each capture pair put 2 images for stones and 2 blanks
                 for (int l = 0; l < imageNames.length; l++) {
 
@@ -355,7 +355,7 @@ public class SimpleHtmlGameStorerSearchResponseFormat implements GameStorerSearc
         buffer.append("</tr>\r\n");
 
         buffer.append("<tr bgcolor=\"#336633\">\r\n");
-        String headers[] = new String[] { "#", "Move", "Games", "Wins" };
+        String headers[] = new String[]{"#", "Move", "Games", "Wins"};
         int responseOrder = data.getGameStorerSearchRequestData().getGameStorerSearchResponseOrder() + 1;
 
         for (int i = 0; i < headers.length; i++) {
@@ -377,10 +377,10 @@ public class SimpleHtmlGameStorerSearchResponseFormat implements GameStorerSearc
             }
 
             buffer.append("<td><font face=\"Verdana, Arial, Helvetica, sans-serif\" color=\"").
-                   append(color).
-                   append("\" size=\"2\"><b>").
-                   append(header).
-                   append("</b></font></td>\r\n");
+                    append(color).
+                    append("\" size=\"2\"><b>").
+                    append(header).
+                    append("</b></font></td>\r\n");
         }
 
         buffer.append("</tr>\r\n");
@@ -398,8 +398,7 @@ public class SimpleHtmlGameStorerSearchResponseFormat implements GameStorerSearc
                 moveData = new SimpleGameStorerSearchResponseMoveData();
                 moveData.setGames(totalGames);
                 moveData.setWins(totalWins);
-            }
-            else {
+            } else {
                 moveData = (GameStorerSearchResponseMoveData) searchResults.elementAt(i);
 
                 totalGames += moveData.getGames();
@@ -413,8 +412,7 @@ public class SimpleHtmlGameStorerSearchResponseFormat implements GameStorerSearc
                 buffer.append("<td colspan=\"2\"><font face=\"Verdana, Arial, Helvetica, sans-serif\" color=\"#FFFFFF\" size=\"2\">");
                 buffer.append("<b>Total</b>");
                 buffer.append("</font></td>\r\n");
-            }
-            else {
+            } else {
                 buffer.append("<td><font face=\"Verdana, Arial, Helvetica, sans-serif\" color=\"#FFFFFF\" size=\"2\">");
                 buffer.append((i + 1));
                 buffer.append("</font></td>\r\n");
@@ -450,8 +448,8 @@ public class SimpleHtmlGameStorerSearchResponseFormat implements GameStorerSearc
     }
 
     public void formatForm(
-        GameStorerSearchResponseData data, StringBuffer buffer)
-        throws UnsupportedEncodingException {
+            GameStorerSearchResponseData data, StringBuffer buffer)
+            throws UnsupportedEncodingException {
 
         SimpleGameStorerSearchRequestFormat requestFormat = new SimpleGameStorerSearchRequestFormat();
         SimpleGameStorerSearchResponseFormat responseFormat = new SimpleGameStorerSearchResponseFormat();
@@ -472,7 +470,7 @@ public class SimpleHtmlGameStorerSearchResponseFormat implements GameStorerSearc
         buffer.append("<input type=\"hidden\" name=\"results_order\" value=\"" + data.getGameStorerSearchRequestData().getGameStorerSearchResponseOrder() + "\">\r\n");
 
         int startNumDownloads = ((SimpleHtmlGameStorerSearchRequestData)
-            data.getGameStorerSearchRequestData()).getStartZippedPartNum();
+                data.getGameStorerSearchRequestData()).getStartZippedPartNum();
         buffer.append("<input type=\"hidden\" name=\"zippedPartNumParam\" value=\"" + startNumDownloads + "\">\r\n");
 
         buffer.append("<table width=\"100%\" border=\"0\">\r\n");
@@ -503,8 +501,8 @@ public class SimpleHtmlGameStorerSearchResponseFormat implements GameStorerSearc
     }
 
     public void formatMatchedGames(
-        GameStorerSearchResponseData data, StringBuffer buffer)
-        throws UnsupportedEncodingException {
+            GameStorerSearchResponseData data, StringBuffer buffer)
+            throws UnsupportedEncodingException {
 
         buffer.append("<form name=\"loadGameForm\" action=\"" + basePath + HttpGameServer.LOAD_GAME + "\" method=\"POST\">\r\n");
         buffer.append("<input type=\"hidden\" name=\"" + HttpGameServer.GAME_ID + "\" value=\"\">\r\n");
@@ -578,8 +576,7 @@ public class SimpleHtmlGameStorerSearchResponseFormat implements GameStorerSearc
             String player2Color = "white";
             if (gameData.getWinner() == GameData.PLAYER1) {
                 player1Color = "yellow";
-            }
-            else if (gameData.getWinner() == GameData.PLAYER2) {
+            } else if (gameData.getWinner() == GameData.PLAYER2) {
                 player2Color = "yellow";
             }
 
@@ -639,8 +636,7 @@ public class SimpleHtmlGameStorerSearchResponseFormat implements GameStorerSearc
         if (filterData.getStartGameNum() > 0) {
             buffer.append("<font face=\"Verdana, Arial, Helvetica, sans-serif\" color=\"#FFFFFF\" size=\"2\">");
             buffer.append("<a href=\"javascript:prevGames();\">&lt;&lt; Prev Games</a></font>");
-        }
-        else {
+        } else {
             buffer.append("&nbsp;");
         }
         buffer.append("</td>\r\n");
@@ -652,8 +648,8 @@ public class SimpleHtmlGameStorerSearchResponseFormat implements GameStorerSearc
             showNextLink = false;
         }
         String viewingCount = numberFormat.format((long) filterData.getStartGameNum() + 1)
-                              + "-" + numberFormat.format((long) actualEnd) + " of " +
-                              numberFormat.format((long) filterData.getTotalGameNum()) + " matched games";
+                + "-" + numberFormat.format((long) actualEnd) + " of " +
+                numberFormat.format((long) filterData.getTotalGameNum()) + " matched games";
 
         buffer.append("<td width=\"50%\" align=\"center\">\r\n");
         buffer.append("<font face=\"Verdana, Arial, Helvetica, sans-serif\" color=\"#FFFFFF\" size=\"2\">");
@@ -666,8 +662,7 @@ public class SimpleHtmlGameStorerSearchResponseFormat implements GameStorerSearc
         if (showNextLink) {
             buffer.append("<font face=\"Verdana, Arial, Helvetica, sans-serif\" color=\"#FFFFFF\" size=\"2\">");
             buffer.append("<a href=\"javascript:nextGames();\">Next Games &gt;&gt;</a></font>");
-        }
-        else {
+        } else {
             buffer.append("&nbsp;");
         }
         buffer.append("</td>\r\n");
@@ -687,7 +682,7 @@ public class SimpleHtmlGameStorerSearchResponseFormat implements GameStorerSearc
         }
 
         int startNumDownloads = ((SimpleHtmlGameStorerSearchRequestData)
-            data.getGameStorerSearchRequestData()).getStartZippedPartNum();
+                data.getGameStorerSearchRequestData()).getStartZippedPartNum();
         if (startNumDownloads > totalNumDownloads) {
             startNumDownloads = 1;
         }
@@ -695,7 +690,7 @@ public class SimpleHtmlGameStorerSearchResponseFormat implements GameStorerSearc
             showPrevDlLink = true;
         }
         int endNumDownloads = startNumDownloads + 10;
-        if (endNumDownloads> totalNumDownloads) {
+        if (endNumDownloads > totalNumDownloads) {
             endNumDownloads = totalNumDownloads + 1;
             showNextDlLink = false;
         }
@@ -748,8 +743,7 @@ public class SimpleHtmlGameStorerSearchResponseFormat implements GameStorerSearc
 
     }
 
-    public void formatFilterOptions(GameStorerSearchResponseData responseData, StringBuffer buffer)
-    {
+    public void formatFilterOptions(GameStorerSearchResponseData responseData, StringBuffer buffer) {
         GameStorerSearchRequestFilterData filterData = responseData.getGameStorerSearchRequestData().getGameStorerSearchRequestFilterData();
         String player1Name = filterData.getPlayer1Name();
         if (player1Name == null) {
@@ -780,7 +774,7 @@ public class SimpleHtmlGameStorerSearchResponseFormat implements GameStorerSearc
 
         buffer.append("<form name=\"filter_options_data\">\r\n");
 
-        String selectNames[] = new String[] { "Site", "Event", "Round", "Section" };
+        String selectNames[] = new String[]{"Site", "Event", "Round", "Section"};
         StringBuffer table[][] = new StringBuffer[5][4];
         for (int i = 0; i < table.length; i++) {
             for (int j = 0; j < table[i].length; j++) {
@@ -810,7 +804,7 @@ public class SimpleHtmlGameStorerSearchResponseFormat implements GameStorerSearc
         }
 
         table[0][2].append("<font face=\"Verdana, Arial, Helvetica, sans-serif\" color=\"#FFFFFF\" size=\"2\"><b>Player 1 Name</b></font></td>");
-        table[0][3].append("<input type=\"text\" name=\"" + SimpleGameStorerSearchRequestFilterFormat.PLAYER_1_NAME_PARAM +  "\" value=\"" + player1Name + "\" size=\"10\" tabindex=\"5\">");
+        table[0][3].append("<input type=\"text\" name=\"" + SimpleGameStorerSearchRequestFilterFormat.PLAYER_1_NAME_PARAM + "\" value=\"" + player1Name + "\" size=\"10\" tabindex=\"5\">");
 
         table[1][2].append("<font face=\"Verdana, Arial, Helvetica, sans-serif\" color=\"#FFFFFF\" size=\"2\"><b>Player 2 Name</b></font>");
         table[1][3].append("<input type=\"text\" name=\"" + SimpleGameStorerSearchRequestFilterFormat.PLAYER_2_NAME_PARAM + "\" value=\"" + player2Name + "\" size=\"10\" tabindex=\"6\">");
@@ -826,7 +820,7 @@ public class SimpleHtmlGameStorerSearchResponseFormat implements GameStorerSearc
         table[4][2].append("<font face=\"Verdana, Arial, Helvetica, sans-serif\" color=\"#FFFFFF\" size=\"2\"><b>Winner</b></font>");
         table[4][3].append("<select name=\"selectWinner\" tabindex=\"9\">");
 
-        String winnerSelectNames[] = new String[] { "Either player", "Player 1", "Player 2" };
+        String winnerSelectNames[] = new String[]{"Either player", "Player 1", "Player 2"};
         for (int i = 0; i < winnerSelectNames.length; i++) {
             table[4][3].append("<option value=\"" + i + "\"");
             if (filterData.getWinner() == i) {

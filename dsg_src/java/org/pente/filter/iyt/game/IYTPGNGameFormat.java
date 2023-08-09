@@ -1,19 +1,20 @@
-/** IYTPGNGameFormat.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * IYTPGNGameFormat.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.filter.iyt.game;
@@ -72,11 +73,9 @@ public class IYTPGNGameFormat extends PGNGameFormat {
         String timeControl = "-";
         if (data.getEvent() == null) {
             timeControl = "-";
-        }
-        else if (data.getEvent().indexOf("Main") != -1) {
+        } else if (data.getEvent().indexOf("Main") != -1) {
             timeControl = "48 hours/move (Main)";
-        }
-        else if (data.getEvent().indexOf("Fast") != -1) {
+        } else if (data.getEvent().indexOf("Fast") != -1) {
             timeControl = "28 hours/move (Fast)";
         }
 
@@ -93,14 +92,12 @@ public class IYTPGNGameFormat extends PGNGameFormat {
 
             if (timeControl.equals("-")) {
                 timeControl = null;
-            }
-            else {
+            } else {
 
                 int time = 0;
                 if (timeControl.indexOf("Main") != -1) {
                     time = 48;
-                }
-                else if (timeControl.indexOf("Fast") != -1) {
+                } else if (timeControl.indexOf("Fast") != -1) {
                     time = 28;
                 }
 

@@ -10,10 +10,10 @@ public class DSGBootTableErrorEvent extends AbstractDSGTableErrorEvent {
     }
 
     public DSGBootTableErrorEvent(String player, int table, String toBoot,
-        int error) {
-            
+                                  int error) {
+
         super(player, table, error);
-        
+
         this.toBoot = toBoot;
     }
 

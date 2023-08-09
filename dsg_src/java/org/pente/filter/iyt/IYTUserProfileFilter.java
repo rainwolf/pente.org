@@ -1,19 +1,20 @@
-/** IYTUserProfileFilter.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * IYTUserProfileFilter.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.filter.iyt;
@@ -29,24 +30,24 @@ import org.pente.game.*;
 public class IYTUserProfileFilter implements LineFilter {
 
     /** String to look for to get the users userIDName */
-    private static final String     USER_ID_NAME =      "User ID:";
+    private static final String USER_ID_NAME = "User ID:";
     /** Html tag that the users userIDName is in */
-    private static final String     USER_ID_NAME_TAG =  "b";
+    private static final String USER_ID_NAME_TAG = "b";
     /** String to look for to get the users name */
-    private static final String     PLAYER_NAME =       "Name:";
+    private static final String PLAYER_NAME = "Name:";
     /** Html tag that the users name is in */
-    private static final String     PLAYER_NAME_TAG =   "b";
+    private static final String PLAYER_NAME_TAG = "b";
 
     /** The player data found */
-    private PlayerData              playerData;
+    private PlayerData playerData;
 
     /** Flag to tell if all info has been found, if true then
      *  filterLine() requests will just return the original line
      */
-    private boolean                 done = false;
+    private boolean done = false;
 
     /** The previous filter to call before filtering */
-    private LineFilter              prevFilter;
+    private LineFilter prevFilter;
 
     /** Use this constructor if this is the base filter in your chain of filters
      *  @param playerData The PlayerData to put info into

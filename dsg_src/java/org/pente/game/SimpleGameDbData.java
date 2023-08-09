@@ -7,7 +7,7 @@ public class SimpleGameDbData implements GameDbData, Cloneable, java.io.Serializ
     private int id;
     private String name;
     private List games = new ArrayList(3);
-    
+
     public void setID(int id) {
         this.id = id;
     }
@@ -21,15 +21,17 @@ public class SimpleGameDbData implements GameDbData, Cloneable, java.io.Serializ
     }
 
     public String getName() {
-       return name;
+        return name;
     }
+
     public String toString() {
-    	return name;
+        return name;
     }
 
     public void addGameTreeData(Vector gameTreeData) {
-    	games.addAll(gameTreeData);
+        games.addAll(gameTreeData);
     }
+
     public void addGameTreeData(GameTreeData gameTreeData) {
         games.add(gameTreeData);
     }
@@ -39,7 +41,7 @@ public class SimpleGameDbData implements GameDbData, Cloneable, java.io.Serializ
         return games;
     }
 
-    public Object clone()  {
+    public Object clone() {
 
         SimpleGameDbData cloned = new SimpleGameDbData();
 
@@ -47,7 +49,7 @@ public class SimpleGameDbData implements GameDbData, Cloneable, java.io.Serializ
         cloned.setName(getName());
 
         for (int i = 0; i < games.size(); i++) {
-        	GameTreeData s = (GameTreeData) games.get(i);
+            GameTreeData s = (GameTreeData) games.get(i);
             cloned.addGameTreeData((GameTreeData) s.clone());
         }
 

@@ -1,19 +1,20 @@
-/** CacheSGPlayerStorer.java
- *  Copyright (C) 2003 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * CacheSGPlayerStorer.java
+ * Copyright (C) 2003 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.gameServer.core;
@@ -41,24 +42,24 @@ import javax.servlet.ServletContext;
 
 public class CacheDSGPlayerStorer implements DSGPlayerStorer {
 
-    private static final Category log4j = 
-        Category.getInstance(CacheDSGPlayerStorer.class.getName());
+    private static final Category log4j =
+            Category.getInstance(CacheDSGPlayerStorer.class.getName());
 
     private DSGPlayerStorer basePlayerStorer;
     private Hashtable<Long, DSGPlayerData> cacheByID;
     private Hashtable<String, DSGPlayerData> cacheByName;
 
     private HashMap<Long, List<DSGPlayerPreference>> cachedPrefs;
-    
+
     private Map<Long, List<DSGIgnoreData>> ignoreData;
-    
+
     private List<PlayerDataChangeListener> listeners;
     private List<IgnoreDataChangeListener> ignoreListeners;
     private List<DSGDonationData> donors;
 
     private Timer checkiOSSubscribersTimer;
     private Timer checkSubscribersTimer;
-    
+
     private NotificationServer notificationServer;
 
     private ServletContext ctx;
@@ -79,34 +80,38 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         checkSubscribersTimer = new Timer();
         checkSubscribersTimer.scheduleAtFixedRate(
                 new CheckSubscriptionsRunnable(), 1000000, 24L * 3600 * 1000);
-        
+
         cachedPrefs = new HashMap<>();
     }
 
     public synchronized void addPlayerDataChangeListener(
-        PlayerDataChangeListener l) {
+            PlayerDataChangeListener l) {
         listeners.add(l);
     }
+
     public synchronized void removePlayerDataChangeListener(
-        PlayerDataChangeListener l) {
+            PlayerDataChangeListener l) {
         listeners.remove(l);
     }
+
     public synchronized void addIgnoreDataChangeListener(
-        IgnoreDataChangeListener l) {
+            IgnoreDataChangeListener l) {
         ignoreListeners.add(l);
     }
+
     public synchronized void removeIgnoreDataChangeListener(
-        IgnoreDataChangeListener l) {
+            IgnoreDataChangeListener l) {
         ignoreListeners.remove(l);
     }
 
     public void notifyListeners(DSGPlayerData dsgPlayerData) {
-        for (Iterator i = listeners.iterator(); i.hasNext();) {
+        for (Iterator i = listeners.iterator(); i.hasNext(); ) {
             PlayerDataChangeListener l = (PlayerDataChangeListener)
-                i.next();
+                    i.next();
             l.playerChanged(dsgPlayerData);
         }
     }
+
     public void notifyIgnoreListeners(long pid) throws DSGPlayerStoreException {
 
         for (IgnoreDataChangeListener l : ignoreListeners) {
@@ -120,12 +125,12 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         cacheByID.put(new Long(newData.getPlayerID()), newData);
         cacheByName.put(newData.getName(), newData);
         cachedPrefs.remove(newData.getPlayerID());
-        
+
         List<DSGIgnoreData> ignore = basePlayerStorer.getIgnoreData(newData.getPlayerID());
         ignoreData.put(newData.getPlayerID(), ignore);
         notifyListeners(newData);
     }
-    
+
     public synchronized void insertPlayer(DSGPlayerData dsgPlayerData) throws DSGPlayerStoreException {
         log4j.debug("insertPlayer(" + dsgPlayerData.getName() + ")");
         basePlayerStorer.insertPlayer(dsgPlayerData);
@@ -138,15 +143,16 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
 
 
     public synchronized void deleteAvatar(DSGPlayerData dsgPlayerData)
-        throws DSGPlayerStoreException {
+            throws DSGPlayerStoreException {
         dsgPlayerData.setAvatar(null);
         basePlayerStorer.deleteAvatar(dsgPlayerData);
     }
+
     public void insertAvatar(DSGPlayerData dsgPlayerData)
-        throws DSGPlayerStoreException {
+            throws DSGPlayerStoreException {
         basePlayerStorer.insertAvatar(dsgPlayerData);
     }
-    
+
     public synchronized void updatePlayer(DSGPlayerData dsgPlayerData) throws DSGPlayerStoreException {
         log4j.debug("updatePlayer(" + dsgPlayerData.getName() + ")");
         basePlayerStorer.updatePlayer(dsgPlayerData);
@@ -157,14 +163,13 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
             cacheByID.remove(dsgPlayerData);
             cacheByName.remove(dsgPlayerData);
             newData = dsgPlayerData;
-        }
-        else {
+        } else {
             log4j.debug("player active, update cache from db");
             // reload from db since can't be certain nothing was added in sql and not in data class
             newData = basePlayerStorer.loadPlayer(dsgPlayerData.getPlayerID());
             cacheByID.put(new Long(dsgPlayerData.getPlayerID()), newData);
             cacheByName.put(dsgPlayerData.getName(), newData);
-            
+
             if (newData.hasPlayerDonated()) {
                 checkUpdateDonors(newData);
             }
@@ -188,8 +193,7 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         }
         if (dsgPlayerData == null) {
             return null;
-        }
-        else {
+        } else {
             return (DSGPlayerData) dsgPlayerData.clone();
         }
     }
@@ -211,8 +215,7 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         }
         if (dsgPlayerData == null) {
             return null;
-        }
-        else {
+        } else {
             return (DSGPlayerData) dsgPlayerData.clone();
         }
     }
@@ -222,7 +225,7 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         basePlayerStorer.insertDonation(dsgDonationData, playerID);
 
         DSGPlayerData dsgPlayerData = (DSGPlayerData) cacheByID.get(new Long(
-            playerID));
+                playerID));
         if (dsgPlayerData == null) {
             log4j.debug("not cached");
             dsgPlayerData = basePlayerStorer.loadPlayer(playerID);
@@ -234,15 +237,18 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         }
         notifyListeners(dsgPlayerData);
     }
+
     public Collection getDonations(long playerID) throws DSGPlayerStoreException {
         return basePlayerStorer.getDonations(playerID);
     }
+
     public synchronized List<DSGDonationData> getAllPlayersWhoDonated() throws DSGPlayerStoreException {
         if (donors == null) {
             donors = basePlayerStorer.getAllPlayersWhoDonated();
         }
         return donors;
     }
+
     public synchronized void checkUpdateDonors(DSGPlayerData data) throws DSGPlayerStoreException {
         getAllPlayersWhoDonated();
         for (DSGDonationData d : donors) {
@@ -263,12 +269,12 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
                 cacheByID.put(new Long(dsgPlayerData.getPlayerID()), dsgPlayerData);
                 cacheByName.put(dsgPlayerData.getName(), dsgPlayerData);
             }
-        }
-        else {
+        } else {
             dsgPlayerData.setPlayerGameData((DSGPlayerGameData) dsgPlayerGameData.clone());
         }
         notifyListeners(dsgPlayerData);
     }
+
     public synchronized void updateGame(DSGPlayerGameData dsgPlayerGameData) throws DSGPlayerStoreException {
         log4j.debug("updateGame(" + dsgPlayerGameData.getPlayerID() + ", " + dsgPlayerGameData.getGame() + ", " + dsgPlayerGameData.isHumanScore() + ")");
         basePlayerStorer.updateGame(dsgPlayerGameData);
@@ -281,16 +287,15 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
                 cacheByID.put(new Long(dsgPlayerData.getPlayerID()), dsgPlayerData);
                 cacheByName.put(dsgPlayerData.getName(), dsgPlayerData);
             }
-        }
-        else {
+        } else {
             dsgPlayerData.setPlayerGameData((DSGPlayerGameData) dsgPlayerGameData.clone());
         }
         notifyListeners(dsgPlayerData);
     }
 
     public synchronized DSGPlayerGameData loadGame(int game, long playerID, boolean computer)
-        throws DSGPlayerStoreException {
-    
+            throws DSGPlayerStoreException {
+
         log4j.debug("loadGame(" + playerID + ", " + game + ", " + !computer + ")");
         DSGPlayerData dsgPlayerData = (DSGPlayerData) cacheByID.get(new Long(playerID));
         if (dsgPlayerData == null) {
@@ -302,11 +307,10 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
                 cacheByName.put(dsgPlayerData.getName(), dsgPlayerData);
             }
         }
-        
+
         if (dsgPlayerData == null) {
             return null;
-        }
-        else {
+        } else {
             return (DSGPlayerGameData) dsgPlayerData.getPlayerGameData(game, computer).clone();
         }
     }
@@ -326,8 +330,7 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         }
         if (dsgPlayerData == null) {
             return null;
-        }
-        else {
+        } else {
             Vector<DSGPlayerGameData> newGames = new Vector<DSGPlayerGameData>(dsgPlayerData.getAllPlayerGameData().size());
             for (int i = 0; i < dsgPlayerData.getAllPlayerGameData().size(); i++) {
                 newGames.add((DSGPlayerGameData) ((DSGPlayerGameData) dsgPlayerData.getAllPlayerGameData().get(i)).clone());
@@ -336,30 +339,30 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         }
     }
 
-    
+
     public Vector search(
-        int game, int sortField, 
-        int startNum, int length, 
-        boolean showProvisional, boolean showInactive,
-        int playerType) throws DSGPlayerStoreException {
-    
-        return basePlayerStorer.search(game, sortField, startNum, length, showProvisional, showInactive, playerType);                   
+            int game, int sortField,
+            int startNum, int length,
+            boolean showProvisional, boolean showInactive,
+            int playerType) throws DSGPlayerStoreException {
+
+        return basePlayerStorer.search(game, sortField, startNum, length, showProvisional, showInactive, playerType);
     }
 
     public int getNumPlayers(
-        int game,
-        boolean showProvisional,
-        boolean showInactive,
-        int playerType)
-        throws DSGPlayerStoreException {
+            int game,
+            boolean showProvisional,
+            boolean showInactive,
+            int playerType)
+            throws DSGPlayerStoreException {
 
         return basePlayerStorer.getNumPlayers(game, showProvisional, showInactive, playerType);
     }
 
     // no great need to cache these i don't think, I think now yes
     public List<DSGPlayerPreference> loadPlayerPreferences(long playerID)
-        throws DSGPlayerStoreException {
-        List<DSGPlayerPreference> prefs = cachedPrefs.get(playerID); 
+            throws DSGPlayerStoreException {
+        List<DSGPlayerPreference> prefs = cachedPrefs.get(playerID);
         if (prefs != null) {
             return prefs;
         }
@@ -367,14 +370,17 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         cachedPrefs.put(playerID, prefs);
         return prefs;
     }
+
     public void storePlayerPreference(long playerID, DSGPlayerPreference pref)
-        throws DSGPlayerStoreException {
+            throws DSGPlayerStoreException {
         basePlayerStorer.storePlayerPreference(playerID, pref);
         cachedPrefs.remove(playerID);
     }
+
     public List<java.util.Date> loadVacationDays(long playerID) throws DSGPlayerStoreException {
         return basePlayerStorer.loadVacationDays(playerID);
     }
+
     public void storeVacationDays(long playerID, List<Date> vacationDays) throws DSGPlayerStoreException {
         basePlayerStorer.storeVacationDays(playerID, vacationDays);
     }
@@ -387,18 +393,18 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
 //    public void addFloatingVacationDays(long playerID, int extraDays) throws DSGPlayerStoreException {
 //        basePlayerStorer.addFloatingVacationDays(playerID, extraDays);
 //    }
-    
+
     public void deleteIgnore(DSGIgnoreData data) throws DSGPlayerStoreException {
         if (!data.isGuest()) {
             basePlayerStorer.deleteIgnore(data);
         }
-        
+
         List<DSGIgnoreData> l = ignoreData.get(data.getPid());
         if (l != null) { //shouldn't be
             l.remove(data);
         }
     }
-    
+
     public synchronized void insertIgnore(DSGIgnoreData data) throws DSGPlayerStoreException {
         if (!data.isGuest()) {
             basePlayerStorer.insertIgnore(data);
@@ -406,7 +412,7 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
 
         cacheIgnoreData(data);
     }
-    
+
     private void cacheIgnoreData(DSGIgnoreData data) throws DSGPlayerStoreException {
         List<DSGIgnoreData> l = ignoreData.get(data.getPid());
         if (l == null) {
@@ -415,6 +421,7 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         }
         l.add(data);
     }
+
     public synchronized DSGIgnoreData getIgnoreData(long pid, long ignorePid) throws DSGPlayerStoreException {
         List<DSGIgnoreData> l = ignoreData.get(pid);
         if (l != null) {
@@ -429,15 +436,16 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         if (data != null) {
             cacheIgnoreData(data);
         }
-        
+
         return data;
     }
+
     public synchronized List<DSGIgnoreData> getIgnoreData(long pid) throws DSGPlayerStoreException {
         List<DSGIgnoreData> l = ignoreData.get(pid);
         if (l != null) {
             return new ArrayList<DSGIgnoreData>(l); //wrap it
         }
-        
+
         l = basePlayerStorer.getIgnoreData(pid);
         if (l != null) {
             ignoreData.put(pid, l);
@@ -445,6 +453,7 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
 
         return new ArrayList<DSGIgnoreData>(l); //wrap it
     }
+
     public void updateIgnore(DSGIgnoreData data) throws DSGPlayerStoreException {
         if (!data.isGuest()) {
             basePlayerStorer.updateIgnore(data);
@@ -452,12 +461,15 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
 
         // since we allow direct updates no need to do anything here
     }
+
     public void insertLiveSet(LiveSet set) throws DSGPlayerStoreException {
         basePlayerStorer.insertLiveSet(set);
     }
+
     public LiveSet loadLiveSet(long sid) throws DSGPlayerStoreException {
         return basePlayerStorer.loadLiveSet(sid);
     }
+
     public void updateLiveSet(LiveSet set) throws DSGPlayerStoreException {
         basePlayerStorer.updateLiveSet(set);
     }
@@ -477,7 +489,7 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         public void run() {
             try {
                 Map<Long, String> expiringSubscriptions = ((MySQLDSGPlayerStorer) basePlayerStorer).getExpiringiOSSubscribers();
-                for (Map.Entry<Long, String> entry: expiringSubscriptions.entrySet()) {
+                for (Map.Entry<Long, String> entry : expiringSubscriptions.entrySet()) {
                     if (checkReceipt(entry.getValue(), iOSSharedSecret, true)) {
                         if (!((MySQLDSGPlayerStorer) basePlayerStorer).hasiOSTransactionId(transactionId)) {
                             ((MySQLDSGPlayerStorer) basePlayerStorer).insertiOSTransactionId(entry.getKey().longValue(), transactionId, startDate);
@@ -495,6 +507,7 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
                 log4j.info("CheckiOSSubscribersRunnable: Something went wrong: " + e);
             }
         }
+
         private boolean checkReceipt(String receiptDataStr, String sharedSecret, boolean production) {
             // sandbox URL
             try {
@@ -505,8 +518,8 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
                 obj.put("receipt-data", receiptDataStr);
                 obj.put("password", sharedSecret);
 
-                final URL url = new URL(production?PRODUCTION_URL:SANDBOX_URL);
-                final HttpURLConnection conn = (HttpsURLConnection)url.openConnection();
+                final URL url = new URL(production ? PRODUCTION_URL : SANDBOX_URL);
+                final HttpURLConnection conn = (HttpsURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setDoOutput(true);
                 conn.setRequestProperty("Content-Type", "application/json");
@@ -526,20 +539,38 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
                 rd.close();
 //                log4j.info("IOSReceiptServlet: received response: " + lines);
 
-                JSONObject json =  new JSONObject(lines);
+                JSONObject json = new JSONObject(lines);
 
                 // verify the response: something like {"status":21004} etc...
                 int status = json.getInt("status");
                 switch (status) {
-                    case 0: getStartDate(json); return true;
-                    case 21000: log4j.info("CheckiOSSubscribersRunnable: " + status + ": App store could not read"); return false;
-                    case 21002: log4j.info("CheckiOSSubscribersRunnable: " + status + ": Data was malformed"); return false;
-                    case 21003: log4j.info("CheckiOSSubscribersRunnable: " + status + ": Receipt not authenticated"); return false;
-                    case 21004: log4j.info("CheckiOSSubscribersRunnable: " + status + ": Shared secret does not match"); return false;
-                    case 21005: log4j.info("CheckiOSSubscribersRunnable: " + status + ": Receipt server unavailable"); return false;
-                    case 21006: log4j.info("CheckiOSSubscribersRunnable: " + status + ": Receipt valid but sub expired"); return false;
-                    case 21007: log4j.info("CheckiOSSubscribersRunnable: " + status + ": Sandbox receipt sent to Production environment"); return false;
-                    case 21008: log4j.info("CheckiOSSubscribersRunnable: " + status + ": Production receipt sent to Sandbox environment"); return false;
+                    case 0:
+                        getStartDate(json);
+                        return true;
+                    case 21000:
+                        log4j.info("CheckiOSSubscribersRunnable: " + status + ": App store could not read");
+                        return false;
+                    case 21002:
+                        log4j.info("CheckiOSSubscribersRunnable: " + status + ": Data was malformed");
+                        return false;
+                    case 21003:
+                        log4j.info("CheckiOSSubscribersRunnable: " + status + ": Receipt not authenticated");
+                        return false;
+                    case 21004:
+                        log4j.info("CheckiOSSubscribersRunnable: " + status + ": Shared secret does not match");
+                        return false;
+                    case 21005:
+                        log4j.info("CheckiOSSubscribersRunnable: " + status + ": Receipt server unavailable");
+                        return false;
+                    case 21006:
+                        log4j.info("CheckiOSSubscribersRunnable: " + status + ": Receipt valid but sub expired");
+                        return false;
+                    case 21007:
+                        log4j.info("CheckiOSSubscribersRunnable: " + status + ": Sandbox receipt sent to Production environment");
+                        return false;
+                    case 21008:
+                        log4j.info("CheckiOSSubscribersRunnable: " + status + ": Production receipt sent to Sandbox environment");
+                        return false;
                     default:
                         // unknown error code (nevertheless a problem)
                         log4j.info("CheckiOSSubscribersRunnable: " + "Unknown error: status code = " + status);
@@ -585,9 +616,9 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
                 for (int i = 0; i < jsonArray.length(); i++) {
                     JSONObject jsn = jsonArray.getJSONObject(i);
                     if ("1YRNOADSORLIMITS".equals(jsn.getString("product_id"))) {
-                        if (jsn.getLong("expires_date_ms") - (364L*24*3600*1000) > start_ms) {
+                        if (jsn.getLong("expires_date_ms") - (364L * 24 * 3600 * 1000) > start_ms) {
                             transactionId = jsn.getString("transaction_id");
-                            start_ms = jsn.getLong("expires_date_ms") - (364L*24*3600*1000);
+                            start_ms = jsn.getLong("expires_date_ms") - (364L * 24 * 3600 * 1000);
                         }
                     }
                 }
@@ -618,7 +649,7 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
                         cachedSubscribers.add(playerData.getName());
                     }
                 }
-                for (String playerName: cachedSubscribers) {
+                for (String playerName : cachedSubscribers) {
                     refreshPlayer(playerName);
                 }
             } catch (DSGPlayerStoreException e) {

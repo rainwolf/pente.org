@@ -1,19 +1,20 @@
-/** SimpleFileGameStorer.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * SimpleFileGameStorer.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.game;
@@ -30,22 +31,22 @@ import java.io.*;
 public class SimpleFileGameStorer implements GameStorer, PlayerStorer {
 
     /** The Game Format to use when storing the file */
-    private GameFormat      gameFormat;
+    private GameFormat gameFormat;
 
     /** The directory to store game files in */
-    private File            gameDir;
+    private File gameDir;
 
     /** The directory to store player files in */
-    private File            playerDir;
+    private File playerDir;
 
     /** Used to store the player data in memory for retrieval */
-    private PlayerStorer    playerStorer;
+    private PlayerStorer playerStorer;
 
     /** Used if storing a player with pid == 0 */
-    private long            maxPid = 0;
+    private long maxPid = 0;
 
     /** Used if storing a game with gid == 0 */
-    private long            maxGid = 0;
+    private long maxGid = 0;
 
     /** Constructor
      *  @param gameFormat The game format to use when storing/loading games
@@ -96,7 +97,7 @@ public class SimpleFileGameStorer implements GameStorer, PlayerStorer {
                     playerStorer.storePlayer(playerData, site);
                 }
 
-            } catch(Exception ex) {
+            } catch (Exception ex) {
             } finally {
                 if (inputStream != null) {
                     inputStream.close();
@@ -200,8 +201,7 @@ public class SimpleFileGameStorer implements GameStorer, PlayerStorer {
                 int length = reader.read(chars);
                 if (length == -1) {
                     break;
-                }
-                else {
+                } else {
                     buffer.append(chars, 0, length);
                 }
             }
@@ -302,6 +302,7 @@ public class SimpleFileGameStorer implements GameStorer, PlayerStorer {
     public synchronized long getNewPid() {
         return ++maxPid;
     }
+
     public synchronized long getNewGid() {
         return ++maxGid;
     }

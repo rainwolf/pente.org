@@ -3,29 +3,31 @@ package org.pente.tree;
 import java.util.Comparator;;
 
 public class PriorityQ {
-    
+
     private int size;
     private Node[] data;
     private Comparator<Node> comp;
-    
-    
-    
+
+
     public PriorityQ(Comparator<Node> c, int initialCapacity) {
         this.comp = c;
         data = new Node[initialCapacity];
         size = 0;
         java.util.PriorityQueue<Node> n = null;
     }
-    
+
     private int left(int i) {
         return 2 * i;
     }
+
     private int right(int i) {
         return 2 * i + 1;
     }
+
     private int parent(int i) {
         return i / 2;
     }
+
     private void grow() {
         int newcap = data.length;
         if (size < newcap) // don't need to grow
@@ -38,11 +40,11 @@ public class PriorityQ {
             else
                 newcap <<= 2;
         }
-        Node[] newData= new Node[newcap];
+        Node[] newData = new Node[newcap];
         System.arraycopy(data, 0, newData, 0, data.length);
         data = newData;
     }
-    
+
     private void fixUp(int k) {
         while (k > 1) {
             int j = parent(k);
@@ -52,18 +54,19 @@ public class PriorityQ {
             Node tmp = data[j];
             data[j] = data[k];
             data[k] = tmp;
-            
+
             data[k].setHeapIndex(k);
             data[j].setHeapIndex(j);
             k = j;
         }
     }
+
     private void fixDown(int k) {
         int j;
         while ((j = left(k)) <= size && (j > 0)) {
-            if (j < size && 
-                comp.compare(data[j], data[j + 1]) > 0)
-                j++; 
+            if (j < size &&
+                    comp.compare(data[j], data[j + 1]) > 0)
+                j++;
             if (comp.compare(data[k], data[j]) <= 0)
                 break;
             Node tmp = data[j];
@@ -75,13 +78,14 @@ public class PriorityQ {
             k = j;
         }
     }
-    
+
     public Node max() {
         if (size == 0) {
             return null;
         }
         return data[1];
     }
+
     public void add(Node n) {
         if (n == null) {
             throw new NullPointerException();
@@ -98,7 +102,7 @@ public class PriorityQ {
 //            System.err.println("check failed in add");
 //        }
     }
-    
+
     public void remove(Node n) {
         if (n == null) {
             throw new NullPointerException();
@@ -126,7 +130,7 @@ public class PriorityQ {
 //            }
 //            return;
 //        }
-        
+
         Node moved = data[size];
         data[i] = moved;
         data[size--] = null;  // Drop extra ref to prevent memory leak
@@ -142,13 +146,14 @@ public class PriorityQ {
 //            System.err.println("check failed in remove");
 //        }
     }
+
     public void increaseKey(Node n) {
         if (n == null) {
             throw new NullPointerException();
         }
         int i = n.getHeapIndex();
         fixDown(i);
-        
+
 //        if (!check()) {
 //            System.err.println("check failed in increaseKey");
 //        }
@@ -157,9 +162,11 @@ public class PriorityQ {
     public boolean isEmpty() {
         return size == 0;
     }
+
     public int size() {
         return size;
     }
+
     public void clear() {
         for (int i = 1; i <= size; i++) {
             data[i] = null;

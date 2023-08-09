@@ -2,13 +2,10 @@
                  java.util.*,
                  java.sql.*,
                  java.util.Date,
-                 
                  javax.servlet.*,
                  javax.servlet.http.*,
-                 
                  com.jivesoftware.base.*,
                  com.jivesoftware.forum.*,
-                 
                  org.pente.jive.*,
                  org.pente.database.*,
                  org.pente.game.*,
@@ -16,42 +13,43 @@
                  org.pente.gameServer.server.*,
                  org.pente.gameServer.client.web.*,
                  org.pente.gameServer.tourney.*,
-                 org.pente.turnBased.*" %><%
-String gidStr = request.getParameter("g");
-if (gidStr == null) {
-    return;
-}
-long gid = Long.parseLong(gidStr);
-Resources resources = (Resources) application.getAttribute(
-   Resources.class.getName());
-   
-DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
+                 org.pente.turnBased.*" %>
+<%
+   String gidStr = request.getParameter("g");
+   if (gidStr == null) {
+      return;
+   }
+   long gid = Long.parseLong(gidStr);
+   Resources resources = (Resources) application.getAttribute(
+      Resources.class.getName());
 
-String player = (String) request.getAttribute("name");
-DSGPlayerData playerData = null;
-try {
-	playerData = resources.getDsgPlayerStorer().
-		loadPlayer(player);
-	// if player prefers to make moves attached or not
+   DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
 
-} catch (DSGPlayerStoreException dpse) {
-	//log4j.error("Error getting attach", dpse);
-}
+   String player = (String) request.getAttribute("name");
+   DSGPlayerData playerData = null;
+   try {
+      playerData = resources.getDsgPlayerStorer().
+         loadPlayer(player);
+      // if player prefers to make moves attached or not
 
-GameData game = new DefaultGameData();
-resources.getGameStorer().loadGame(gid, game);
+   } catch (DSGPlayerStoreException dpse) {
+      //log4j.error("Error getting attach", dpse);
+   }
 
-if (game.isPrivateGame() && 
-	playerData.getPlayerID() != game.getPlayer1Data().getUserID() &&
-	playerData.getPlayerID() != game.getPlayer2Data().getUserID()) {
+   GameData game = new DefaultGameData();
+   resources.getGameStorer().loadGame(gid, game);
 
-	response.sendError(404);
-	return;
-}
+   if (game.isPrivateGame() &&
+      playerData.getPlayerID() != game.getPlayer1Data().getUserID() &&
+      playerData.getPlayerID() != game.getPlayer2Data().getUserID()) {
 
-PGNGameFormat gf = new PGNGameFormat("\r\n", "MM/dd/yyyy");
-StringBuffer outBuf = new StringBuffer();
-gf.format(game, outBuf);
+      response.sendError(404);
+      return;
+   }
 
-response.setContentType("text/plain");
+   PGNGameFormat gf = new PGNGameFormat("\r\n", "MM/dd/yyyy");
+   StringBuffer outBuf = new StringBuffer();
+   gf.format(game, outBuf);
+
+   response.setContentType("text/plain");
 %><%= outBuf %>

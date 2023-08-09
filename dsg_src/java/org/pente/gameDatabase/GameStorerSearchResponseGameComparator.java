@@ -12,7 +12,7 @@ public class GameStorerSearchResponseGameComparator implements Comparator {
     public int compare(Object obj1, Object obj2) {
 
         if (!(obj1 instanceof GameData) ||
-            !(obj2 instanceof GameData)) {
+                !(obj2 instanceof GameData)) {
             throw new IllegalArgumentException("Invalid objects");
         }
 

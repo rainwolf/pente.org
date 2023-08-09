@@ -22,7 +22,7 @@ import org.pente.turnBased.*;
 public class ViewGamesServlet extends HttpServlet {
 
     private static final Category log4j = Category.getInstance(
-        ViewGamesServlet.class.getName());
+            ViewGamesServlet.class.getName());
 
     private Resources resources;
     private static final String redirectPage = "/gameServer/viewLiveGames.jsp";
@@ -35,15 +35,15 @@ public class ViewGamesServlet extends HttpServlet {
 
             ServletContext ctx = config.getServletContext();
             resources = (Resources) ctx.getAttribute(Resources.class.getName());
-            
+
         } catch (Throwable t) {
             log4j.error("Problem in init()", t);
         }
     }
-    
+
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response)
-        throws ServletException, IOException {
+            throws ServletException, IOException {
         doPost(request, response);
     }
 
@@ -53,19 +53,19 @@ public class ViewGamesServlet extends HttpServlet {
     // s = start seq nbr, not required
     public void doPost(HttpServletRequest request,
                        HttpServletResponse response)
-        throws ServletException, IOException {
-        
+            throws ServletException, IOException {
+
         try {
             String me = (String) request.getAttribute("name");
             String name = (String) request.getParameter("p");
             String countString = (String) request.getParameter("c");
             String myWinsString = (String) request.getParameter("w");
             String myTotalString = (String) request.getParameter("t");
-            
+
             if (name == null) {
                 log4j.error("ViewGamesServlet, Player not found: " + name);
                 handleError(request, response,
-                    "Player not found, please try again.");
+                        "Player not found, please try again.");
                 return;
             }
             name = name.toLowerCase();
@@ -80,13 +80,14 @@ public class ViewGamesServlet extends HttpServlet {
                 return;
             }
             request.setAttribute("dsgPlayerData", playerData);
-            
+
             String gameStr = (String) request.getParameter("g");
             int game = -1;
             if (gameStr != null) {
                 try {
-                    game = Integer.parseInt(gameStr); 
-                } catch (NumberFormatException nfe) {}
+                    game = Integer.parseInt(gameStr);
+                } catch (NumberFormatException nfe) {
+                }
             }
             if (game == -1) {
                 if (gameStr == null) {
@@ -94,75 +95,75 @@ public class ViewGamesServlet extends HttpServlet {
                 }
                 log4j.error("ViewGamesServlet, Invalid game: " + gameStr);
                 handleError(request, response,
-                    "Invalid game " + gameStr);
+                        "Invalid game " + gameStr);
                 return;
             }
             request.setAttribute("game", new Integer(game));
-            
+
             String startSeqStr = request.getParameter("s");
             int startSeq = 0;
             if (startSeqStr != null) {
                 try {
-                    startSeq = Integer.parseInt(startSeqStr); 
-                } catch (NumberFormatException nfe) {}
+                    startSeq = Integer.parseInt(startSeqStr);
+                } catch (NumberFormatException nfe) {
+                }
             }
             request.setAttribute("start", new Integer(startSeq));
 
             log4j.info("view player games for " + name + ", " + game + "," + startSeq);
-            
+
             List<GameData> games = resources.getDsgGameLookup().search(
-                name, playerData.getPlayerID(), playerData.getNameColorRGB(),
-                meData.getPlayerID(),
-                game, startSeq, 100);
+                    name, playerData.getPlayerID(), playerData.getNameColorRGB(),
+                    meData.getPlayerID(),
+                    game, startSeq, 100);
             int count;
             int myWins;
             int myTotal;
             if (countString == null) {
                 count = resources.getDsgGameLookup().count(
-                    playerData.getPlayerID(), game);
+                        playerData.getPlayerID(), game);
                 myWins = resources.getDsgGameLookup().totalWins(
-                    playerData.getPlayerID(), meData.getPlayerID(), game);
+                        playerData.getPlayerID(), meData.getPlayerID(), game);
                 myTotal = resources.getDsgGameLookup().totalGames(
-                    playerData.getPlayerID(), meData.getPlayerID(), game);
+                        playerData.getPlayerID(), meData.getPlayerID(), game);
             } else {
                 count = Integer.parseInt(countString);
                 myWins = Integer.parseInt(myWinsString);
                 myTotal = Integer.parseInt(myTotalString);
             }
-            
+
             List<GameData> wins = new ArrayList<GameData>();
             List<GameData> losses = new ArrayList<GameData>();
-            
-            for (GameData d :games) {
+
+            for (GameData d : games) {
                 int player = d.getPlayer1Data().getUserIDName().equals(
-                    playerData.getName()) ? 1 : 2;
+                        playerData.getName()) ? 1 : 2;
                 if (d.getWinner() == player) {
                     wins.add(d);
-                }
-                else {
+                } else {
                     losses.add(d);
                 }
             }
-            
+
             request.setAttribute("wins", wins);
             request.setAttribute("losses", losses);
             request.setAttribute("count", new Integer(count));
             request.setAttribute("w", new Integer(myWins));
             request.setAttribute("t", new Integer(myTotal));
             getServletContext().getRequestDispatcher(redirectPage).forward(
-                request, response);
+                    request, response);
 
         } catch (Throwable t) {
             log4j.error("ViewGamesServlet, unknown error", t);
             handleError(request, response, "Unknown error.");
         }
     }
-    
+
     private void handleError(HttpServletRequest request,
-            HttpServletResponse response, String errorMessage) throws ServletException,
+                             HttpServletResponse response, String errorMessage) throws ServletException,
             IOException {
         request.setAttribute("error", errorMessage);
         getServletContext().getRequestDispatcher(redirectPage).forward(
-            request, response);
+                request, response);
     }
 }

@@ -18,13 +18,13 @@ import org.apache.log4j.*;
 
 public class TBStorerTest {
 
-	private static final DateFormat DATE_FORMAT = new SimpleDateFormat(
-		"MM/dd/yyyy HH:mm");
+    private static final DateFormat DATE_FORMAT = new SimpleDateFormat(
+            "MM/dd/yyyy HH:mm");
 
     private static Category log4j = Category.getInstance(
-			TBStorerTest.class.getName());
+            TBStorerTest.class.getName());
 
-	public static void main(String[] args) throws Throwable {
+    public static void main(String[] args) throws Throwable {
 
 //		int today=3;
 //		int wk1=0;
@@ -36,24 +36,24 @@ public class TBStorerTest {
 //		while (st.hasMoreTokens()) {
 //			System.out.println(st.nextToken());
 //		}
-		
-		BasicConfigurator.configure();
+
+        BasicConfigurator.configure();
 
         DBHandler dbHandler = new MySQLDBHandler(
-            args[0], args[1], args[2], args[3]);
+                args[0], args[1], args[2], args[3]);
 
-		GameVenueStorer gameVenueStorer = new MySQLGameVenueStorer(dbHandler);
-		DSGPlayerStorer dsgPlayerStorer = new MySQLDSGPlayerStorer(dbHandler,
-			gameVenueStorer);
-		GameStorer gameStorer = new MySQLPenteGameStorer(dbHandler, gameVenueStorer);
-		DSGMessageStorer dsgMessageStorer = new MySQLDSGMessageStorer(dbHandler);
-		TBGameStorer storer = new CacheTBStorer(new MySQLTBGameStorer(dbHandler),
-			dsgPlayerStorer, gameStorer, dsgMessageStorer);
+        GameVenueStorer gameVenueStorer = new MySQLGameVenueStorer(dbHandler);
+        DSGPlayerStorer dsgPlayerStorer = new MySQLDSGPlayerStorer(dbHandler,
+                gameVenueStorer);
+        GameStorer gameStorer = new MySQLPenteGameStorer(dbHandler, gameVenueStorer);
+        DSGMessageStorer dsgMessageStorer = new MySQLDSGMessageStorer(dbHandler);
+        TBGameStorer storer = new CacheTBStorer(new MySQLTBGameStorer(dbHandler),
+                dsgPlayerStorer, gameStorer, dsgMessageStorer);
 
-		
-		// test code
-		
-		
+
+        // test code
+
+
 //		
 //		TBGame g = new TBGame();
 //		g.setPlayer1Pid(22000000000002L);
@@ -71,14 +71,14 @@ public class TBStorerTest {
 //		for (TBGame t : l) {
 //			System.out.println("loaded game " + t.getGid());
 //		}
-		
-		TBGame g = storer.loadGame(50000000000080L);
-		System.out.println(DATE_FORMAT.format(g.getTimeoutDate()));
-		
-		System.out.println("time left=" + Utilities.getTimeLeft(
-			g.getTimeoutDate().getTime()));
-		//storer.storeNewMove(5, 10, 260, null);
-		
+
+        TBGame g = storer.loadGame(50000000000080L);
+        System.out.println(DATE_FORMAT.format(g.getTimeoutDate()));
+
+        System.out.println("time left=" + Utilities.getTimeLeft(
+                g.getTimeoutDate().getTime()));
+        //storer.storeNewMove(5, 10, 260, null);
+
 //		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 //		ObjectOutputStream out = new ObjectOutputStream(bout);
 //		out.writeObject(g);
@@ -87,8 +87,8 @@ public class TBStorerTest {
 //		String tbGameStr = new String(bout.toByteArray());
 //		tbGameStr = URLEncoder.encode(tbGameStr);
 //		System.out.println(tbGameStr);
-		
-		storer.destroy();
-	}
+
+        storer.destroy();
+    }
 
 }

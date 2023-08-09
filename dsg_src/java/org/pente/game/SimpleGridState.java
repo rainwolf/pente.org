@@ -1,19 +1,20 @@
-/** SimpleGridState.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * SimpleGridState.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.game;
@@ -29,28 +30,46 @@ import java.util.*;
 public class SimpleGridState implements GridState {
 
     /** The width of the board */
-    private int     boardSizeX;
+    private int boardSizeX;
 
     /** The height of the board */
-    private int     boardSizeY;
+    private int boardSizeY;
 
     /** The data for the board, currently stored as 1 int per position */
     private int[][] board;
 
     /** The list of moves made on the board in order */
-    private Vector<Integer>  moves;
-    public void setMoves(Vector<Integer> moves) { this.moves = new Vector<>(moves); }
-    public Vector<Integer> getMovesVector() { return moves; }
-    
+    private Vector<Integer> moves;
+
+    public void setMoves(Vector<Integer> moves) {
+        this.moves = new Vector<>(moves);
+    }
+
+    public Vector<Integer> getMovesVector() {
+        return moves;
+    }
+
     private boolean allowNonBoardMoves;
-    public boolean allowNonBoardMoves() { return allowNonBoardMoves; }
-    public void setAllowNonBoardMoves(boolean allowNonBoardMoves) { this.allowNonBoardMoves = allowNonBoardMoves; }
+
+    public boolean allowNonBoardMoves() {
+        return allowNonBoardMoves;
+    }
+
+    public void setAllowNonBoardMoves(boolean allowNonBoardMoves) {
+        this.allowNonBoardMoves = allowNonBoardMoves;
+    }
 
     private boolean allowOccupiedMoves;
-    public boolean isAllowOccupiedMoves() { return allowOccupiedMoves; }
-    public void setAllowOccupiedMoves(boolean allowOccupiedMoves) { this.allowOccupiedMoves = allowOccupiedMoves; }
 
-    
+    public boolean isAllowOccupiedMoves() {
+        return allowOccupiedMoves;
+    }
+
+    public void setAllowOccupiedMoves(boolean allowOccupiedMoves) {
+        this.allowOccupiedMoves = allowOccupiedMoves;
+    }
+
+
     /** Create a new grid state with a specified size
      *  @param boardSize The size of the board
      */
@@ -74,15 +93,16 @@ public class SimpleGridState implements GridState {
             addMove(data.getMove(i));
         }
     }
-    
+
     public GridState getInstance(MoveData moveData) {
-        
+
         return new SimpleGridState(moveData, boardSizeX, boardSizeY);
     }
 
     public int getGridSizeX() {
         return boardSizeX;
     }
+
     public int getGridSizeY() {
         return boardSizeY;
     }
@@ -98,7 +118,7 @@ public class SimpleGridState implements GridState {
         }
 
         // make sure move is in bounds
-        
+
         if (outOfBounds(move)) {
             if (!allowNonBoardMoves) {
                 return false;
@@ -135,6 +155,7 @@ public class SimpleGridState implements GridState {
     public boolean isGameOver() {
         return false;
     }
+
     /** Not implemented */
     public int getWinner() {
         return 0;
@@ -178,8 +199,9 @@ public class SimpleGridState implements GridState {
     }
 
     public int getColor(int moveNum) {
-    	return moveNum % 2 + 1;
+        return moveNum % 2 + 1;
     }
+
     /** Get whose turn it is
      *  @return int The current player (1, 2, etc.)
      */
@@ -208,7 +230,7 @@ public class SimpleGridState implements GridState {
         }
         return m;
     }
-    
+
     /** Get info about a position
      *  @param position The position on the board
      *  @return int The value associated with this position
@@ -233,6 +255,7 @@ public class SimpleGridState implements GridState {
         Coord p = convertMove(move);
         checkOutOfBounds(p.x, p.y);
     }
+
     public void checkOutOfBounds(int x, int y) {
         if (x < 0 || x >= boardSizeX ||
                 y < 0 || y >= boardSizeY) {
@@ -287,12 +310,13 @@ public class SimpleGridState implements GridState {
     }
 
     public boolean outOfBounds(int move) {
-    	Coord p = convertMove(move);
+        Coord p = convertMove(move);
         return outOfBounds(p.x, p.y);
     }
+
     public boolean outOfBounds(int x, int y) {
         if (x < 0 || x >= boardSizeX ||
-            y < 0 || y >= boardSizeY) {
+                y < 0 || y >= boardSizeY) {
             return true;
         }
         return false;
@@ -305,12 +329,12 @@ public class SimpleGridState implements GridState {
     public boolean positionEquals(GridState gridState) {
 
         if (boardSizeX != gridState.getGridSizeX() ||
-            boardSizeY != gridState.getGridSizeY()) {
+                boardSizeY != gridState.getGridSizeY()) {
             return false;
         }
 
         for (int i = 0; i < boardSizeX; i++) {
-            for (int j = 0; j <	boardSizeY; j++) {
+            for (int j = 0; j < boardSizeY; j++) {
                 if (getPosition(i, j) != gridState.getPosition(i, j)) {
                     return false;
                 }
@@ -329,14 +353,15 @@ public class SimpleGridState implements GridState {
 
 
     public long[][] getHashes() {
-    	return hashes;
+        return hashes;
     }
+
     public long getHash() {
 
         if (getNumMoves() == 0) {
             return 0;
         }
-        
+
         return hashes[getNumMoves() - 1][8];
     }
 
@@ -344,38 +369,40 @@ public class SimpleGridState implements GridState {
         if (index >= getNumMoves()) {
             return 0;
         }
-        
+
         return hashes[index][8];
     }
-    
+
     public int getRotation() {
         if (getNumMoves() == 0) {
             return 0;
         }
-        
+
         return rots[getNumMoves() - 1];
     }
+
     public int getRotation(int index) {
         if (index >= getNumMoves()) {
             return 0;
         }
-        
+
         return rots[index];
     }
+
     public int[] getRotations() {
-    	return rots;	
+        return rots;
     }
 
-    static final int rotx[] = new int[] { 1, 1,  1,  1, -1, -1, -1, -1 };
-    static final int roty[] = new int[] { 1, 1, -1, -1, -1, -1,  1,  1 };
-    static final int rotf[] = new int[] { 0, 1,  0,  1,  0,  1,  0,  1 };
+    static final int rotx[] = new int[]{1, 1, 1, 1, -1, -1, -1, -1};
+    static final int roty[] = new int[]{1, 1, -1, -1, -1, -1, 1, 1};
+    static final int rotf[] = new int[]{0, 1, 0, 1, 0, 1, 0, 1};
 
     public int rotateMove(int move, int rotationIndex) {
         if (outOfBounds(move)) {
             return move;
         }
-        int xoff = - (boardSizeX/2);
-        int yoff = - (boardSizeY/2);
+        int xoff = -(boardSizeX / 2);
+        int yoff = -(boardSizeY / 2);
 
         Coord p = convertMove(move);
         int x = p.x;
@@ -391,8 +418,8 @@ public class SimpleGridState implements GridState {
     }
 
     public int rotateFirstMove(int move, int rotation) {
-        int xoff = - (boardSizeX/2);
-        int yoff = - (boardSizeY/2);
+        int xoff = -(boardSizeX / 2);
+        int yoff = -(boardSizeY / 2);
 
         Coord p = convertMove(move);
         int x = p.x;
@@ -410,8 +437,8 @@ public class SimpleGridState implements GridState {
     }
 
     public int getFirstMoveRotation(int move) {
-        int xoff = - (boardSizeX/2);
-        int yoff = - (boardSizeY/2);
+        int xoff = -(boardSizeX / 2);
+        int yoff = -(boardSizeY / 2);
 
         Coord p = convertMove(move);
         int x = p.x;
@@ -446,8 +473,8 @@ public class SimpleGridState implements GridState {
     }
 
     public int rotateMoveToLocalRotation(int move, int newRotation) {
-        int xoff = - (boardSizeX/2);
-        int yoff = - (boardSizeY/2);
+        int xoff = -(boardSizeX / 2);
+        int yoff = -(boardSizeY / 2);
 
         Coord p = convertMove(move);
         int x = p.x;
@@ -468,7 +495,7 @@ public class SimpleGridState implements GridState {
             x = x1 - xoff;
             y = y1 - yoff;
         }
-        
+
         for (int k = 0; k < numPossibleRotations; k++) {
             //rotate from std to test
             newRotation = possibleRotations[k];
@@ -481,7 +508,7 @@ public class SimpleGridState implements GridState {
             }
             x2 = x2 * rotx[newRotation] - xoff;
             y2 = y2 * roty[newRotation] - yoff;
-    
+
             if (x2 > x || x2 == x && y2 > y) {
                 x = x2;
                 y = y2;
@@ -490,9 +517,10 @@ public class SimpleGridState implements GridState {
 
         return convertMove(x, y);
     }
+
     public int[] getAllPossibleRotations(int move, int newRotation) {
-        int xoff = - (boardSizeX/2);
-        int yoff = - (boardSizeY/2);
+        int xoff = -(boardSizeX / 2);
+        int yoff = -(boardSizeY / 2);
 
         Coord p = convertMove(move);
         int x = p.x;
@@ -519,31 +547,29 @@ public class SimpleGridState implements GridState {
             }
             x2 = x2 * rotx[newRotation] - xoff;
             y2 = y2 * roty[newRotation] - yoff;
-    
+
             poss[k] = convertMove(x2, y2);
         }
 
         return poss;
     }
- 
-    
+
+
     public void updateHash(HashCalculator calc) {
 
         if (moves.isEmpty()) {
             return;
-        }
-        else if (moves.size() == 1) {
-        	for (int i = 0; i < 8; i++) {
-        		hashes[0][i] = 0;
-        	}
-        }
-        else if (moves.size() > 1) {
+        } else if (moves.size() == 1) {
+            for (int i = 0; i < 8; i++) {
+                hashes[0][i] = 0;
+            }
+        } else if (moves.size() > 1) {
             // copy prev. moves hashes into current moves
             for (int i = 0; i < 8; i++) {
                 hashes[moves.size() - 1][i] = hashes[moves.size() - 2][i];
             }
         }
-            
+
         // record hash, rotation of move
         long maxHash = Long.MIN_VALUE;
         int maxRotation = 0;
@@ -553,11 +579,11 @@ public class SimpleGridState implements GridState {
             p = getPosition(move);
         }
         numPossibleRotations = 0;
-        
+
         // for each possible rotation of this move
         for (int j = 0; j < 8; j++) {
-            hashes[moves.size() - 1][j] = 
-                calc.calcHash(hashes[moves.size() - 1][j], p, move, j);
+            hashes[moves.size() - 1][j] =
+                    calc.calcHash(hashes[moves.size() - 1][j], p, move, j);
 
             if (hashes[moves.size() - 1][j] == maxHash) {
                 possibleRotations[numPossibleRotations++] = j;
@@ -569,15 +595,15 @@ public class SimpleGridState implements GridState {
                 maxRotation = j;
             }
         }
-        
-        
+
+
         rots[moves.size() - 1] = maxRotation;
         hashes[moves.size() - 1][8] = maxHash;
     }
-    
+
     public void printBoard() {
-        for (int i=0;i<boardSizeY;i++) {
-            for (int j=0;j<boardSizeX;j++) {
+        for (int i = 0; i < boardSizeY; i++) {
+            for (int j = 0; j < boardSizeX; j++) {
                 System.out.print(board[j][i] + " ");
             }
             System.out.println();

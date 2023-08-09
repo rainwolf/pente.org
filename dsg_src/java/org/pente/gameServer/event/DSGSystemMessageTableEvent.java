@@ -10,14 +10,14 @@ public class DSGSystemMessageTableEvent extends AbstractDSGTableEvent {
 
     public DSGSystemMessageTableEvent(int table, String message) {
         super("system", table);
-        
+
         this.message = message;
     }
-    
+
     public String getMessage() {
         return message;
     }
-    
+
     public String toString() {
         return "system message - " + message + " - " + super.toString();
     }

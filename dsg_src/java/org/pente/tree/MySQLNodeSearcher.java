@@ -11,25 +11,24 @@ import org.pente.game.MoveData;
 public class MySQLNodeSearcher implements NodeSearcher {
 
     private static final Category log4j = Category.getInstance(
-        MySQLNodeSearcher.class.getName());
-    
+            MySQLNodeSearcher.class.getName());
+
     private int game = 1; //pente
     private DBHandler dbHandler = null;
     private Node root;
+
     public MySQLNodeSearcher(DBHandler dbHandler) {
         this.dbHandler = dbHandler;
     }
 
-    public Node loadAll() throws NodeSearchException
-    {
+    public Node loadAll() throws NodeSearchException {
         if (root == null) {
             root = loadPositionOnly(0);
         }
         return root;
     }
 
-    public Node loadPosition(long hash) throws NodeSearchException
-    {
+    public Node loadPosition(long hash) throws NodeSearchException {
         Node n = loadPositionOnly(hash);
         if (n == null) return null;
         try {
@@ -39,16 +38,15 @@ public class MySQLNodeSearcher implements NodeSearcher {
             try {
                 con = dbHandler.getConnection();
                 stmt = con.prepareStatement(
-                    "select next_key " +
-                    "from node_next " +
-                    "where hash_key = ?");
+                        "select next_key " +
+                                "from node_next " +
+                                "where hash_key = ?");
                 stmt.setLong(1, hash);
                 result = stmt.executeQuery();
                 while (result.next()) {
                     n.addNextMove(loadPositionOnly(result.getLong(1)));
                 }
-            } 
-            finally {
+            } finally {
                 if (result != null) {
                     result.close();
                 }
@@ -57,8 +55,7 @@ public class MySQLNodeSearcher implements NodeSearcher {
                 }
                 dbHandler.freeConnection(con);
             }
-        }
-        catch (SQLException s) {
+        } catch (SQLException s) {
             throw new NodeSearchException("loadPosition failed: " + hash, s);
         }
         return n;
@@ -73,9 +70,9 @@ public class MySQLNodeSearcher implements NodeSearcher {
             try {
                 con = dbHandler.getConnection();
                 stmt = con.prepareStatement("select player, " +
-                    "position, rotation, depth, type, score, comment, parent_key " +
-                    "from node " +
-                    "where hash_key = ?");
+                        "position, rotation, depth, type, score, comment, parent_key " +
+                        "from node " +
+                        "where hash_key = ?");
                 stmt.setLong(1, hash);
                 result = stmt.executeQuery();
                 if (result.next()) {
@@ -91,8 +88,7 @@ public class MySQLNodeSearcher implements NodeSearcher {
                     n.setParentHash(result.getLong(8));
                     n.setStored(true);
                 }
-            } 
-            finally {
+            } finally {
                 if (result != null) {
                     result.close();
                 }
@@ -100,43 +96,38 @@ public class MySQLNodeSearcher implements NodeSearcher {
                     stmt.close();
                 }
             }
-        }
-        catch (SQLException s) {
+        } catch (SQLException s) {
             throw new NodeSearchException("loadPosition failed: " + hash, s);
         }
         return n;
     }
 
-    public Node loadPosition(GridState state) throws NodeSearchException
-    {
+    public Node loadPosition(GridState state) throws NodeSearchException {
         return loadPosition(state.getHash());
     }
 
-    public void storeAll() throws NodeSearchException
-    {
+    public void storeAll() throws NodeSearchException {
         // TODO Auto-generated method stub
 
     }
 
-    public void storePosition(Node node) throws NodeSearchException
-    {
-        try {   
+    public void storePosition(Node node) throws NodeSearchException {
+        try {
             if (!node.isStored()) {
-                log4j.info("mysql.storePosition("+node.getHash() +") insert");
+                log4j.info("mysql.storePosition(" + node.getHash() + ") insert");
                 insertPosition(node);
-            }
-            else { 
+            } else {
                 if (node.nodeNeedsWrite()) {
-                    log4j.info("mysql.storePosition("+node.getHash() +") update");
+                    log4j.info("mysql.storePosition(" + node.getHash() + ") update");
                     updatePosition(node);
                 }
             }
             node.setStored(true);
-        }
-        catch (SQLException s) {
+        } catch (SQLException s) {
             throw new NodeSearchException("storePosition failed: " + node.getHash(), s);
         }
     }
+
     public void insertPosition(Node node) throws SQLException {
 
         Connection con = null;
@@ -144,9 +135,9 @@ public class MySQLNodeSearcher implements NodeSearcher {
         try {
             con = dbHandler.getConnection();
             stmt = con.prepareStatement("insert into node" +
-                "(hash_key, parent_key, player, " +
-                "position, rotation, depth, type, score, comment) " +
-                "values(?, ?, ?, ?, ?, ?, ?, 0, ?)");
+                    "(hash_key, parent_key, player, " +
+                    "position, rotation, depth, type, score, comment) " +
+                    "values(?, ?, ?, ?, ?, ?, ?, 0, ?)");
             stmt.setLong(1, node.getHash());
             stmt.setLong(2, node.getParent().getHash());
             stmt.setInt(3, node.getPlayer());
@@ -155,22 +146,22 @@ public class MySQLNodeSearcher implements NodeSearcher {
             stmt.setInt(6, node.getDepth());
             stmt.setInt(7, node.getType());
             stmt.setString(8, node.getComment());
-            
+
             stmt.execute();
             stmt.close();
             stmt = con.prepareStatement("insert into node_next " +
-                "values(?, ?)");
+                    "values(?, ?)");
             stmt.setLong(1, node.getParent().getHash());
             stmt.setLong(2, node.getHash());
             stmt.execute();
-        } 
-        finally {
+        } finally {
             if (stmt != null) {
                 stmt.close();
             }
             dbHandler.freeConnection(con);
         }
     }
+
     public void updatePosition(Node node) throws SQLException {
 
         Connection con = null;
@@ -178,23 +169,22 @@ public class MySQLNodeSearcher implements NodeSearcher {
         try {
             con = dbHandler.getConnection();
             stmt = con.prepareStatement("update node " +
-                "set type = ?, score = 0, comment = ? " +
-                "where hash_key = ?");
+                    "set type = ?, score = 0, comment = ? " +
+                    "where hash_key = ?");
             stmt.setInt(1, node.getType());
             stmt.setString(2, node.getComment());
             stmt.setLong(3, node.getHash());
-            
+
             stmt.execute();
 
-        } 
-        finally {
+        } finally {
             if (stmt != null) {
                 stmt.close();
             }
             dbHandler.freeConnection(con);
         }
     }
-    public void destroy()
-    {
+
+    public void destroy() {
     }
 }

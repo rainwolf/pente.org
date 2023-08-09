@@ -1,17 +1,17 @@
 <%@ page import="com.jivesoftware.forum.action.AttachAction,
                  com.jivesoftware.util.StringUtils,
-                 java.io.BufferedReader, 
+                 java.io.BufferedReader,
                  java.io.IOException,
                  java.io.InputStreamReader,
                  java.net.HttpURLConnection,
                  java.net.URL" %>
 
 <%
-/**
- *	$RCSfile: attachform.jsp,v $
- *	$Revision: 1.8 $
- *	$Date: 2002/12/20 23:12:48 $
- */
+   /**
+    *	$RCSfile: attachform.jsp,v $
+    *	$Revision: 1.8 $
+    *	$Date: 2002/12/20 23:12:48 $
+    */
 %>
 
 <%@ include file="global.jsp" %>
@@ -19,146 +19,152 @@
 <%@ taglib uri="webwork" prefix="ww" %>
 <%@ taglib uri="jivetags" prefix="jive" %>
 
-<jsp:include page="header.jsp" flush="true" />
+<jsp:include page="header.jsp" flush="true"/>
 
 <script language="JavaScript" type="text/javascript" src="utils.js"></script>
 
 <table cellpadding="0" cellspacing="0" border="0" width="100%">
-<tr valign="top">
-    <td width="98%">
+   <tr valign="top">
+      <td width="98%">
 
-        <%-- Breadcrumbs (customizable via the admin tool) --%>
+         <%-- Breadcrumbs (customizable via the admin tool) --%>
 
-        <jsp:include page="breadcrumbs.jsp" flush="true" />
+         <jsp:include page="breadcrumbs.jsp" flush="true"/>
 
-        <%-- Page title --%>
+         <%-- Page title --%>
 
-        <p class="jive-page-title">
-        <%-- Post Message: Attach Files --%>
-        <jive:i18n key="attach.title" />
-        </p>
+         <p class="jive-page-title">
+            <%-- Post Message: Attach Files --%>
+            <jive:i18n key="attach.title"/>
+         </p>
 
-    </td>
-    <td width="1%"><img src="images/blank.gif" width="10" height="1" border="0"></td>
-    <td width="1%">
+      </td>
+      <td width="1%"><img src="images/blank.gif" width="10" height="1" border="0"></td>
+      <td width="1%">
 
-        <%@ include file="accountbox.jsp" %>
+         <%@ include file="accountbox.jsp" %>
 
-    </td>
-</tr>
+      </td>
+   </tr>
 </table>
 
 <%-- reCaptcha checking --%>
 <ww:if test="$g-recaptcha-response">
-      <%
-        String gResponse = "nothing yet";
-        String gReCaptchaResponse = request.getParameter("g-recaptcha-response");
+   <%
+      String gResponse = "nothing yet";
+      String gReCaptchaResponse = request.getParameter("g-recaptcha-response");
 
-        URL url = new URL("https://www.google.com/recaptcha/api/siteverify?secret=***REMOVED***&response=" + gReCaptchaResponse);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("GET");
-        String line, outputString = "";
-        BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-        while ((line = reader.readLine()) != null) {
-            outputString += line;
-        }
-        if (!outputString.contains("\"success\": true")) { 
-        %>
-                <table class="jive-error-message" cellpadding="3" cellspacing="2" border="0" width="350">
-                <tr valign="top">
-                    <td width="1%"><img src="images/error-16x16.gif" width="16" height="16" border="0"></td>
-                    <td width="99%">
-                        <font color="red">Wrong Captcha, please try again.</font>
-                    </td>
-                </tr>
-                </table>
-                <jsp:include page="footer.jsp" flush="true" />            
-        <% } else { %>
-            
-            <p>
-            <%-- Use the form below to attach files to this message. --%>
-            <jive:i18n key="attach.description" />
-            </p>
-            
-            <ww:if test="hasErrorMessages == true">
+      URL url = new URL("https://www.google.com/recaptcha/api/siteverify?secret=***REMOVED***&response=" + gReCaptchaResponse);
+      HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+      conn.setRequestMethod("GET");
+      String line, outputString = "";
+      BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+      while ((line = reader.readLine()) != null) {
+         outputString += line;
+      }
+      if (!outputString.contains("\"success\": true")) {
+   %>
+   <table class="jive-error-message" cellpadding="3" cellspacing="2" border="0" width="350">
+      <tr valign="top">
+         <td width="1%"><img src="images/error-16x16.gif" width="16" height="16" border="0"></td>
+         <td width="99%">
+            <font color="red">Wrong Captcha, please try again.</font>
+         </td>
+      </tr>
+   </table>
+   <jsp:include page="footer.jsp" flush="true"/>
+   <% } else { %>
+
+   <p>
+         <%-- Use the form below to attach files to this message. --%>
+      <jive:i18n key="attach.description"/>
+   </p>
+
+   <ww:if test="hasErrorMessages == true">
             
                 <span class="jive-error-text">
                 <ww:iterator value="errorMessages">
-                    <ww:property />
+                   <ww:property/>
                 </ww:iterator>
                 </span>
-                <br><br>
-            
-            </ww:if>
-            
-            <script language="JavaScript" type="text/javascript">
-            <!--
-            var clicked = false;
-            function isClicked() {
-                if (!clicked) { clicked = true; return true; }
-                return false;
-            }
-            //-->
-            </script>
-            
-            <form action="attach!execute.jspa?forumID=<ww:property value="$forumID" /><ww:if test="$threadID">&threadID=<ww:property value="$threadID" /></ww:if><ww:if test="$messageID">&messageID=<ww:property value="$messageID" /></ww:if>&reply=<ww:property value="reply" />"
-             method="post" enctype="multipart/form-data" onsubmit="return isClicked();">
-            
-            <%  // Get the action for this view.
-                AttachAction action = (AttachAction)getAction(request);
-            %>
-            
-            <input type="hidden" name="encSubject" value="<%= StringUtils.encodeHex(action.getSubject().getBytes()) %>">
-            <input type="hidden" name="encBody" value="<%= StringUtils.encodeHex(action.getBody().getBytes()) %>">
-            
-            
-            <table cellpadding="3" cellspacing="2" border="0">
-            <ww:bean name="'com.jivesoftware.webwork.util.Counter'" id="counter">
-                <ww:param name="'first'" value="1" />
-                <ww:param name="'last'" value="attachmentManager/maxAttachmentsPerMessage" />
-                <ww:iterator>
-                <tr>
-                    <td>
-                        <%-- File 1 [2, 3, 4 ...]: --%>
-                        <jive:i18n key="attach.file_in_sequence">
-                            <jive:arg>
-                                <ww:property />
-                            </jive:arg>
-                        </jive:i18n>
-                    </td>
-                    <td>
-                        <input type="file" name="attachFile<ww:property />" size="40">
-                    </td>
-                </tr>
-                <ww:if test="errors[.]">
-                    <tr>
-                        <td>&nbsp;</td>
-                        <td>
-                            <span class="jive-error-text">
-                            <ww:property value="errors[.]" />
-                            </span>
-                        </td>
-                    </tr>
-                </ww:if>
-                </ww:iterator>
-            </ww:bean>
-            </table>
-            
-            <br>
-            
-            <%-- Attach Files &amp; Post Message --%>
-            <input type="submit" name="doAttach" value="<jive:i18n key="attach.attach_post" />">
-            
-            <%-- Cancel --%>
-            <input type="submit" name="doCancel" value="<jive:i18n key="global.cancel" />">
-            
-            </form>
-            
-            <jsp:include page="footer.jsp" flush="true" />
-        <% }
+      <br><br>
+
+   </ww:if>
+
+   <script language="JavaScript" type="text/javascript">
+      <!--
+      var clicked = false;
+
+      function isClicked() {
+         if (!clicked) {
+            clicked = true;
+            return true;
+         }
+         return false;
+      }
+
+      //-->
+   </script>
+
+   <form
+      action="attach!execute.jspa?forumID=<ww:property value="$forumID" /><ww:if test="$threadID">&threadID=<ww:property value="$threadID" /></ww:if><ww:if test="$messageID">&messageID=<ww:property value="$messageID" /></ww:if>&reply=<ww:property value="reply" />"
+      method="post" enctype="multipart/form-data" onsubmit="return isClicked();">
+
+      <% // Get the action for this view.
+         AttachAction action = (AttachAction) getAction(request);
       %>
+
+      <input type="hidden" name="encSubject" value="<%= StringUtils.encodeHex(action.getSubject().getBytes()) %>">
+      <input type="hidden" name="encBody" value="<%= StringUtils.encodeHex(action.getBody().getBytes()) %>">
+
+
+      <table cellpadding="3" cellspacing="2" border="0">
+         <ww:bean name="'com.jivesoftware.webwork.util.Counter'" id="counter">
+            <ww:param name="'first'" value="1"/>
+            <ww:param name="'last'" value="attachmentManager/maxAttachmentsPerMessage"/>
+            <ww:iterator>
+               <tr>
+                  <td>
+                        <%-- File 1 [2, 3, 4 ...]: --%>
+                     <jive:i18n key="attach.file_in_sequence">
+                        <jive:arg>
+                           <ww:property/>
+                        </jive:arg>
+                     </jive:i18n>
+                  </td>
+                  <td>
+                     <input type="file" name="attachFile<ww:property />" size="40">
+                  </td>
+               </tr>
+               <ww:if test="errors[.]">
+                  <tr>
+                     <td>&nbsp;</td>
+                     <td>
+                            <span class="jive-error-text">
+                            <ww:property value="errors[.]"/>
+                            </span>
+                     </td>
+                  </tr>
+               </ww:if>
+            </ww:iterator>
+         </ww:bean>
+      </table>
+
+      <br>
+
+         <%-- Attach Files &amp; Post Message --%>
+      <input type="submit" name="doAttach" value="<jive:i18n key="attach.attach_post" />">
+
+         <%-- Cancel --%>
+      <input type="submit" name="doCancel" value="<jive:i18n key="global.cancel" />">
+
+   </form>
+
+   <jsp:include page="footer.jsp" flush="true"/>
+   <% }
+   %>
 </ww:if>
 
 <ww:if test="!$g-recaptcha-response">
-    I am not sure how you got here, but this is not supposed to happen.
+   I am not sure how you got here, but this is not supposed to happen.
 </ww:if>

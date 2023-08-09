@@ -1,19 +1,20 @@
-/** PGNGameFormat.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * PGNGameFormat.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.game;
@@ -34,73 +35,74 @@ import org.pente.gameDatabase.swing.*;
 public class PGNGameFormat implements GameFormat {
 
     /** Header name for game name */
-    protected static final String   HEADER_GAME =               "Game";
+    protected static final String HEADER_GAME = "Game";
 
     /** Header name for site */
-    protected static final String   HEADER_SITE =               "Site";
+    protected static final String HEADER_SITE = "Site";
 
     /** Header name for event */
-    protected static final String   HEADER_EVENT =              "Event";
+    protected static final String HEADER_EVENT = "Event";
 
     /** Header name for round */
-    protected static final String   HEADER_ROUND =              "Round";
+    protected static final String HEADER_ROUND = "Round";
 
     /** Header name for section */
-    protected static final String   HEADER_SECTION =            "Section";
+    protected static final String HEADER_SECTION = "Section";
 
     /** Header name for date */
-    protected static final String   HEADER_DATE =               "Date";
+    protected static final String HEADER_DATE = "Date";
 
     /** Header name for time */
-    protected static final String   HEADER_TIME =               "Time";
+    protected static final String HEADER_TIME = "Time";
 
     /** Header name for time control */
-    protected static final String   HEADER_TIME_CONTROL =       "TimeControl";
+    protected static final String HEADER_TIME_CONTROL = "TimeControl";
 
     /** Header name for rated */
-    protected static final String   HEADER_RATED =              "Rated";
+    protected static final String HEADER_RATED = "Rated";
 
     /** Header name for player 1 name */
-    protected static final String   HEADER_PLAYER_1_NAME =      "Player 1 Name";
+    protected static final String HEADER_PLAYER_1_NAME = "Player 1 Name";
 
     /** Header name for player 1 rating */
-    protected static final String   HEADER_PLAYER_1_RATING =    "Player 1 Rating";
+    protected static final String HEADER_PLAYER_1_RATING = "Player 1 Rating";
 
     /** Header name for player 1 type */
-    protected static final String   HEADER_PLAYER_1_TYPE =      "Player 1 Type";
+    protected static final String HEADER_PLAYER_1_TYPE = "Player 1 Type";
 
     /** Header name for player 2 name */
-    protected static final String   HEADER_PLAYER_2_NAME =      "Player 2 Name";
+    protected static final String HEADER_PLAYER_2_NAME = "Player 2 Name";
 
     /** Header name for player 2 rating */
-    protected static final String   HEADER_PLAYER_2_RATING =    "Player 2 Rating";
+    protected static final String HEADER_PLAYER_2_RATING = "Player 2 Rating";
 
     /** Header name for player 2 type */
-    protected static final String   HEADER_PLAYER_2_TYPE =      "Player 2 Type";
+    protected static final String HEADER_PLAYER_2_TYPE = "Player 2 Type";
 
     /** Header name for result */
-    protected static final String   HEADER_RESULT =             "Result";
+    protected static final String HEADER_RESULT = "Result";
 
     /** Header name for swapped */
-    protected static final String   HEADER_SWAPPED =            "Player's Swapped?";
+    protected static final String HEADER_SWAPPED = "Player's Swapped?";
 
     /** Formatting string to format/parse dates */
-    protected String   dateFormatStr =               "MM/dd/yyyy";
-    protected String   dateFormatStr2=				 "yyyy.MM.dd";
+    protected String dateFormatStr = "MM/dd/yyyy";
+    protected String dateFormatStr2 = "yyyy.MM.dd";
     /** Formatting string to format/parse times */
-    protected static final String   TIME_FORMAT =               "HH:mm:ss";
+    protected static final String TIME_FORMAT = "HH:mm:ss";
 
     /** The line separator used to format games */
-    private String      lineSeparator;
+    private String lineSeparator;
 
     /** Use a default line separator */
     public PGNGameFormat() {
         this("\r\n");
     }
-	public PGNGameFormat(String lineSeparator, String dateFormatString) {
-		this.lineSeparator = lineSeparator;
-		this.dateFormatStr = dateFormatString;
-	}
+
+    public PGNGameFormat(String lineSeparator, String dateFormatString) {
+        this.lineSeparator = lineSeparator;
+        this.dateFormatStr = dateFormatString;
+    }
 
     /** Specify the line seperator used to format games
      *  @param lineSeparator The line separator
@@ -144,8 +146,7 @@ public class PGNGameFormat implements GameFormat {
             int length = reader.read(chars);
             if (length == -1) {
                 break;
-            }
-            else {
+            } else {
                 buffer.append(chars);
             }
         }
@@ -161,11 +162,10 @@ public class PGNGameFormat implements GameFormat {
 
         if (obj == null) {
             return null;
-        }
-        else if (!(obj instanceof GameData)) {
+        } else if (!(obj instanceof GameData)) {
             throw new IllegalArgumentException("Object not GameData");
         }
-        
+
         return (GameData) obj;
     }
 
@@ -176,7 +176,7 @@ public class PGNGameFormat implements GameFormat {
      */
     public StringBuffer format(Object obj, StringBuffer buffer) {
 
-    	GameData data = convertObject(obj);
+        GameData data = convertObject(obj);
 
         // print headers
         buffer.append(formatGame(data) + lineSeparator);
@@ -196,7 +196,7 @@ public class PGNGameFormat implements GameFormat {
         buffer.append(formatPlayer2Type(data) + lineSeparator);
         buffer.append(formatResult(data, true) + lineSeparator);
         if (data.getGame().equals(GridStateFactory.DPENTE_GAME.getName()) ||
-            data.getGame().equals(GridStateFactory.SPEED_DPENTE_GAME.getName())) {
+                data.getGame().equals(GridStateFactory.SPEED_DPENTE_GAME.getName())) {
             buffer.append(formatSwapped(data) + lineSeparator);
         }
         buffer.append(lineSeparator);
@@ -205,13 +205,13 @@ public class PGNGameFormat implements GameFormat {
         String moveList = "";
 
         int j = 1;
-        for(int i = 0; i < data.getNumMoves(); i++) {
+        for (int i = 0; i < data.getNumMoves(); i++) {
 
             int move = data.getMove(i);
             String moveStr = formatCoordinates(move);
 
             // whites move
-            if(i % 2 == 0) {
+            if (i % 2 == 0) {
                 moveList += Integer.toString(j++) + ". ";
             }
             moveList += moveStr + " ";
@@ -232,37 +232,38 @@ public class PGNGameFormat implements GameFormat {
     }
 
     public GameData parse(File f) throws IOException, ParseException {
-    	return parse(new FileInputStream(f));
+        return parse(new FileInputStream(f));
     }
+
     public PlunkGameData parse(InputStream in) throws IOException, ParseException {
 
-    	PlunkGameData gameData  = null;
+        PlunkGameData gameData = null;
 
         try {
-	    	// read game into a StringBuffer
-	        StringBuffer buffer = new StringBuffer(new String(
-	        	org.pente.gameDatabase.swing.Utilities.readStream(in)));
-	
-	        // parse the game data
-	        gameData = new PlunkGameData();
-	        gameData = (PlunkGameData) parse(gameData, buffer);
-	        
-        } 
-        finally {
-        	if (in != null) {
-        		in.close();
-        	}
+            // read game into a StringBuffer
+            StringBuffer buffer = new StringBuffer(new String(
+                    org.pente.gameDatabase.swing.Utilities.readStream(in)));
+
+            // parse the game data
+            gameData = new PlunkGameData();
+            gameData = (PlunkGameData) parse(gameData, buffer);
+
+        } finally {
+            if (in != null) {
+                in.close();
+            }
         }
-        
+
         return gameData;
     }
-    
+
     public PlunkGameData parse(StringBuffer s) throws ParseException {
-    	PlunkGameData gameData = new PlunkGameData();
+        PlunkGameData gameData = new PlunkGameData();
         gameData = (PlunkGameData) parse(gameData, s);
 
         return gameData;
     }
+
     /** Parse the game data from a buffer
      *  @param data The game data to parse into
      *  @param buffer The buffer to parse from
@@ -271,14 +272,14 @@ public class PGNGameFormat implements GameFormat {
      */
     public Object parse(Object obj, StringBuffer buffer) throws ParseException {
 
-    	GameData data = convertObject(obj);
+        GameData data = convertObject(obj);
 
         try {
 
             String bufferString = buffer.toString().trim();
 
             // parse out headers
-            Hashtable<String,String> headers = new Hashtable<String,String>();
+            Hashtable<String, String> headers = new Hashtable<String, String>();
             int beginLineIndex = 0;
             boolean parsingHeaders = true;
             boolean moreLines = true;
@@ -297,7 +298,7 @@ public class PGNGameFormat implements GameFormat {
                 if (parsingHeaders) {
                     try {
                         parseHeader(line, headers);
-                    } catch(ParseException ex) {
+                    } catch (ParseException ex) {
                         parsingHeaders = false;
                     }
                 }
@@ -310,7 +311,7 @@ public class PGNGameFormat implements GameFormat {
                             if (move.equals("Resign")) {
                                 data.setStatus(GameData.STATUS_RESIGN);
                                 continue;
-                            } 
+                            }
                             if (move.equals("Forfeit")) {
                                 data.setStatus(GameData.STATUS_FORCE_RESIGN);
                                 continue;
@@ -327,7 +328,7 @@ public class PGNGameFormat implements GameFormat {
             // parse individual headers
             String game = (String) headers.get(HEADER_GAME);
             if (game == null) {
-            	game = (String) headers.get("GameType");//marks
+                game = (String) headers.get("GameType");//marks
             }
             parseGame(game, data);
             parseSite((String) headers.get(HEADER_SITE), data);
@@ -340,29 +341,29 @@ public class PGNGameFormat implements GameFormat {
             parseRated((String) headers.get(HEADER_RATED), data);
             String p1 = (String) headers.get(HEADER_PLAYER_1_NAME);
             if (p1 == null) {
-            	p1 = (String) headers.get("White");
+                p1 = (String) headers.get("White");
             }
             parsePlayer1Name(p1, data);
             String p1R = (String) headers.get(HEADER_PLAYER_1_RATING);
             if (p1R == null) {
-            	p1R = (String) headers.get("WhiteRating");
+                p1R = (String) headers.get("WhiteRating");
             }
             parsePlayer1Rating(p1R, data);
             parsePlayer1Type((String) headers.get(HEADER_PLAYER_1_TYPE), data);
             String p2 = (String) headers.get(HEADER_PLAYER_2_NAME);
             if (p2 == null) {
-            	p2 = (String) headers.get("Black");
+                p2 = (String) headers.get("Black");
             }
             parsePlayer2Name(p2, data);
             String p2R = (String) headers.get(HEADER_PLAYER_2_RATING);
             if (p2R == null) {
-            	p2R = (String) headers.get("BlackRating");
+                p2R = (String) headers.get("BlackRating");
             }
             parsePlayer2Rating(p2R, data);
             parsePlayer2Type((String) headers.get(HEADER_PLAYER_2_TYPE), data);
             parseResult((String) headers.get(HEADER_RESULT), data);
 
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
             throw new ParseException("Parse Exception", 0);
         }
@@ -489,9 +490,9 @@ public class PGNGameFormat implements GameFormat {
             date = "2001.12.16";
         }
         try {
-        	dateDate = dateFormat.parse(date);
+            dateDate = dateFormat.parse(date);
         } catch (ParseException e) {
-        	dateDate = new SimpleDateFormat(dateFormatStr2).parse(date);
+            dateDate = new SimpleDateFormat(dateFormatStr2).parse(date);
         }
 
         // if already parsed time, add time to date
@@ -507,8 +508,7 @@ public class PGNGameFormat implements GameFormat {
             dateCalendar.add(Calendar.SECOND, timeCalendar.get(Calendar.SECOND));
 
             data.setDate(dateCalendar.getTime());
-        }
-        else {
+        } else {
             data.setDate(dateDate);
         }
     }
@@ -532,7 +532,7 @@ public class PGNGameFormat implements GameFormat {
     protected void parseTime(String time, GameData data) throws ParseException {
 
         if (time == null) return;
-        
+
         SimpleDateFormat timeFormat = new SimpleDateFormat(TIME_FORMAT);
 
         Date dateDate = data.getDate();
@@ -552,8 +552,7 @@ public class PGNGameFormat implements GameFormat {
             dateCalendar.add(Calendar.SECOND, timeCalendar.get(Calendar.SECOND));
 
             data.setDate(dateCalendar.getTime());
-        }
-        else {
+        } else {
             data.setDate(timeDate);
         }
     }
@@ -579,7 +578,7 @@ public class PGNGameFormat implements GameFormat {
     protected void parseTimeControl(String timeControl, GameData data) {
 
         if (timeControl != null) {
-            
+
             // added for games created by mark at bk
             if (timeControl.endsWith("day")) {
                 timeControl = timeControl.substring(0, timeControl.length() - 3).trim();
@@ -590,14 +589,12 @@ public class PGNGameFormat implements GameFormat {
 
             if (timeControl.equals("-")) {
                 timeControl = null;
-            }
-            else {
+            } else {
                 int plusIndex = timeControl.indexOf("+");
                 if (plusIndex != -1) {
                     data.setInitialTime(Integer.parseInt(timeControl.substring(0, plusIndex)));
                     data.setIncrementalTime(Integer.parseInt(timeControl.substring(plusIndex + 1)));
-                }
-                else {
+                } else {
 
                     data.setInitialTime(Integer.parseInt(timeControl));
                 }
@@ -629,12 +626,10 @@ public class PGNGameFormat implements GameFormat {
 
         if (rated == null) {
             data.setRated(true);
-        }
-        else {
+        } else {
             if (rated.equals("Y")) {
                 data.setRated(true);
-            }
-            else {
+            } else {
                 data.setRated(false);
             }
         }
@@ -808,11 +803,9 @@ public class PGNGameFormat implements GameFormat {
         String result = "?";
         if (data.getWinner() == GameData.PLAYER1) {
             result = "1-0";
-        }
-        else if (data.getWinner() == GameData.PLAYER2) {
+        } else if (data.getWinner() == GameData.PLAYER2) {
             result = "0-1";
-        }
-        else if (data.getWinner() == GameData.DRAW) {
+        } else if (data.getWinner() == GameData.DRAW) {
             result = "1/2-1/2";
         }
 
@@ -837,14 +830,11 @@ public class PGNGameFormat implements GameFormat {
 
         if (resultStr != null && resultStr.equals("?")) {
             result = GameData.UNKNOWN;
-        }
-        else if (resultStr.equals("1-0")) {
+        } else if (resultStr.equals("1-0")) {
             result = GameData.PLAYER1;
-        }
-        else if (resultStr.equals("0-1")) {
+        } else if (resultStr.equals("0-1")) {
             result = GameData.PLAYER2;
-        }
-        else if (resultStr.equals("0-0") || resultStr.equals("1/2-1/2")) {
+        } else if (resultStr.equals("0-0") || resultStr.equals("1/2-1/2")) {
             result = GameData.DRAW;
         }
 
@@ -866,18 +856,15 @@ public class PGNGameFormat implements GameFormat {
      *  @param headers The hashtable to put the parsed header into
      *  @exception ParseException If the header cannot be parsed
      */
-    protected void parseHeader(String header, Hashtable<String,String> headers) throws ParseException {
+    protected void parseHeader(String header, Hashtable<String, String> headers) throws ParseException {
 
         if (header == null || header.length() == 0) {
             throw new ParseException("Invalid header, empty", 0);
-        }
-        else if (header.charAt(0) != '[') {
+        } else if (header.charAt(0) != '[') {
             throw new ParseException("Invalid header, missing [", 0);
-        }
-        else if (header.charAt(header.length() - 1) != ']') {
+        } else if (header.charAt(header.length() - 1) != ']') {
             throw new ParseException("Invalid header, missing ]", header.length());
-        }
-        else {
+        } else {
             int lastQuote = header.lastIndexOf('"');
             if (lastQuote == -1) {
                 throw new ParseException("Invalid header, can't find quote on value", 1);
@@ -921,9 +908,9 @@ public class PGNGameFormat implements GameFormat {
      */
     public static int parseCoordinates(String p) {
 
-    	if (p != null) {
-    		p = p.toUpperCase();
-    	}
+        if (p != null) {
+            p = p.toUpperCase();
+        }
         // invalid coordinate
         if (p == null || p.length() < 2 || p.charAt(0) < 'A' || p.charAt(0) > 'Z') {
             return -1;

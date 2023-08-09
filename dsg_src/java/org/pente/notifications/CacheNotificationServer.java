@@ -27,7 +27,7 @@ public class CacheNotificationServer implements NotificationServer {
             Category.getInstance(CacheNotificationServer.class.getName());
 
     MySQLNotificationServer baseStorer;
-    
+
     private Map<Long, Map<String, Date>> iOStokens = new HashMap<>();
     private Map<Long, Map<String, Date>> androidTokens = new HashMap<>();
     private Map<Long, Date> broadcasts = new HashMap<>();
@@ -38,7 +38,7 @@ public class CacheNotificationServer implements NotificationServer {
     private boolean productionFlag;
 
     private Timer checkRecordsTimer;
-    
+
     private ApnsClient client;
 
     public CacheNotificationServer(MySQLNotificationServer baseStorer, String penteLiveAPNSkey, String penteLiveGCMkey, String penteLiveAPNSpwd, boolean productionFlag) {
@@ -108,7 +108,7 @@ public class CacheNotificationServer implements NotificationServer {
 
                     final SimpleApnsPushNotification pushNotification;
                     pushNotification = new SimpleApnsPushNotification(token, "be.submanifold.pentelive", payloadBuilder.build());
-                    final PushNotificationFuture<SimpleApnsPushNotification, PushNotificationResponse<SimpleApnsPushNotification>> 
+                    final PushNotificationFuture<SimpleApnsPushNotification, PushNotificationResponse<SimpleApnsPushNotification>>
                             sendNotificationFuture = client.sendNotification(pushNotification);
                     try {
                         final PushNotificationResponse<SimpleApnsPushNotification> pushNotificationResponse =
@@ -146,7 +146,7 @@ public class CacheNotificationServer implements NotificationServer {
         };
         (new Thread(runnable)).start();
     }
-    
+
     private void sendAndroidNotification(long pid, String token, String message) {
         Runnable runnable = new Runnable() {
             @Override
@@ -185,7 +185,7 @@ public class CacheNotificationServer implements NotificationServer {
         };
         (new Thread(runnable)).start();
     }
-    
+
     private void sendiOSNotification(long pid, String token, String payload) {
         Runnable runnable = new Runnable() {
             @Override
@@ -222,14 +222,14 @@ public class CacheNotificationServer implements NotificationServer {
         Map<String, Date> tokenMap = null;
         Date oneWeekAgo = new Date();
         long timeMillis = oneWeekAgo.getTime();
-        oneWeekAgo.setTime(timeMillis - 1000L*3600*24*7);
+        oneWeekAgo.setTime(timeMillis - 1000L * 3600 * 24 * 7);
 
         try {
             tokenMap = new HashMap<>(getTokens(pid, iOS));
         } catch (NotificationServerException e) {
             e.printStackTrace();
         }
-        for (Map.Entry<String, Date> tokenEntry: tokenMap.entrySet()) {
+        for (Map.Entry<String, Date> tokenEntry : tokenMap.entrySet()) {
             if (oneWeekAgo.before(tokenEntry.getValue())) {
                 ApnsPayloadBuilder payloadBuilder = new SimpleApnsPayloadBuilder();
                 payloadBuilder.setAlertBody("It's your move in a game of " + gameName + " against " + fromName)
@@ -245,7 +245,7 @@ public class CacheNotificationServer implements NotificationServer {
         } catch (NotificationServerException e) {
             e.printStackTrace();
         }
-        for (Map.Entry<String, Date> tokenEntry: tokenMap.entrySet()) {
+        for (Map.Entry<String, Date> tokenEntry : tokenMap.entrySet()) {
             if (oneWeekAgo.before(tokenEntry.getValue())) {
 
                 JSONObject jGcmData = new JSONObject();
@@ -270,14 +270,14 @@ public class CacheNotificationServer implements NotificationServer {
         Map<String, Date> tokenMap = null;
         Date oneWeekAgo = new Date();
         long timeMillis = oneWeekAgo.getTime();
-        oneWeekAgo.setTime(timeMillis - 1000L*3600*24*7);
+        oneWeekAgo.setTime(timeMillis - 1000L * 3600 * 24 * 7);
 
         try {
             tokenMap = new HashMap<>(getTokens(pid, iOS));
         } catch (NotificationServerException e) {
             e.printStackTrace();
         }
-        for (Map.Entry<String, Date> tokenEntry: tokenMap.entrySet()) {
+        for (Map.Entry<String, Date> tokenEntry : tokenMap.entrySet()) {
             if (oneWeekAgo.before(tokenEntry.getValue())) {
                 ApnsPayloadBuilder payloadBuilder = new SimpleApnsPayloadBuilder();
                 payloadBuilder.setAlertBody("" + fromName + " has invited you to a game of " + gameName)
@@ -293,7 +293,7 @@ public class CacheNotificationServer implements NotificationServer {
         } catch (NotificationServerException e) {
             e.printStackTrace();
         }
-        for (Map.Entry<String, Date> tokenEntry: tokenMap.entrySet()) {
+        for (Map.Entry<String, Date> tokenEntry : tokenMap.entrySet()) {
             if (oneWeekAgo.before(tokenEntry.getValue())) {
 
                 JSONObject jGcmData = new JSONObject();
@@ -318,14 +318,14 @@ public class CacheNotificationServer implements NotificationServer {
         Map<String, Date> tokenMap = null;
         Date oneWeekAgo = new Date();
         long timeMillis = oneWeekAgo.getTime();
-        oneWeekAgo.setTime(timeMillis - 1000L*3600*24*7);
+        oneWeekAgo.setTime(timeMillis - 1000L * 3600 * 24 * 7);
 
         try {
             tokenMap = new HashMap<>(getTokens(pid, iOS));
         } catch (NotificationServerException e) {
             e.printStackTrace();
         }
-        for (Map.Entry<String, Date> tokenEntry: tokenMap.entrySet()) {
+        for (Map.Entry<String, Date> tokenEntry : tokenMap.entrySet()) {
             if (oneWeekAgo.before(tokenEntry.getValue())) {
                 ApnsPayloadBuilder payloadBuilder = new SimpleApnsPayloadBuilder();
                 payloadBuilder.setAlertBody("" + fromName + " sent you a new message! \n\"" + subject + "\"")
@@ -341,7 +341,7 @@ public class CacheNotificationServer implements NotificationServer {
         } catch (NotificationServerException e) {
             e.printStackTrace();
         }
-        for (Map.Entry<String, Date> tokenEntry: tokenMap.entrySet()) {
+        for (Map.Entry<String, Date> tokenEntry : tokenMap.entrySet()) {
             if (oneWeekAgo.before(tokenEntry.getValue())) {
 
                 JSONObject jGcmData = new JSONObject();
@@ -372,7 +372,7 @@ public class CacheNotificationServer implements NotificationServer {
         } catch (NotificationServerException e) {
             e.printStackTrace();
         }
-        for (Map.Entry<String, Date> tokenEntry: tokenMap.entrySet()) {
+        for (Map.Entry<String, Date> tokenEntry : tokenMap.entrySet()) {
             ApnsPayloadBuilder payloadBuilder = new SimpleApnsPayloadBuilder();
             payloadBuilder.setAlertBody(message)
                     .setBadgeNumber(1)
@@ -385,7 +385,7 @@ public class CacheNotificationServer implements NotificationServer {
         } catch (NotificationServerException e) {
             e.printStackTrace();
         }
-        for (Map.Entry<String, Date> tokenEntry: tokenMap.entrySet()) {
+        for (Map.Entry<String, Date> tokenEntry : tokenMap.entrySet()) {
             JSONObject jGcmData = new JSONObject();
             JSONObject jData = new JSONObject();
             try {
@@ -412,7 +412,7 @@ public class CacheNotificationServer implements NotificationServer {
         } catch (NotificationServerException e) {
             e.printStackTrace();
         }
-        for (Map.Entry<String, Date> tokenEntry: tokenMap.entrySet()) {
+        for (Map.Entry<String, Date> tokenEntry : tokenMap.entrySet()) {
             try {
                 ApnsPayloadBuilder payloadBuilder = new SimpleApnsPayloadBuilder();
                 payloadBuilder.setAlertBody("").setAlertTitle("")
@@ -430,7 +430,7 @@ public class CacheNotificationServer implements NotificationServer {
         } catch (NotificationServerException e) {
             e.printStackTrace();
         }
-        for (Map.Entry<String, Date> tokenEntry: tokenMap.entrySet()) {
+        for (Map.Entry<String, Date> tokenEntry : tokenMap.entrySet()) {
             JSONObject jGcmData = new JSONObject();
             JSONObject jData = new JSONObject();
             try {
@@ -451,14 +451,14 @@ public class CacheNotificationServer implements NotificationServer {
         Map<String, Date> tokenMap = null;
         Date oneWeekAgo = new Date();
         long timeMillis = oneWeekAgo.getTime();
-        oneWeekAgo.setTime(timeMillis - 1000L*3600*24*7);
+        oneWeekAgo.setTime(timeMillis - 1000L * 3600 * 24 * 7);
 
         try {
             tokenMap = new HashMap<>(getTokens(pid, iOS));
         } catch (NotificationServerException e) {
             e.printStackTrace();
         }
-        for (Map.Entry<String, Date> tokenEntry: tokenMap.entrySet()) {
+        for (Map.Entry<String, Date> tokenEntry : tokenMap.entrySet()) {
             if (oneWeekAgo.before(tokenEntry.getValue())) {
                 ApnsPayloadBuilder payloadBuilder = new SimpleApnsPayloadBuilder();
                 payloadBuilder.setAlertBody("Live Game Alert\n" + player + " wants to play live " + game)
@@ -475,7 +475,7 @@ public class CacheNotificationServer implements NotificationServer {
         } catch (NotificationServerException e) {
             e.printStackTrace();
         }
-        for (Map.Entry<String, Date> tokenEntry: tokenMap.entrySet()) {
+        for (Map.Entry<String, Date> tokenEntry : tokenMap.entrySet()) {
             if (oneWeekAgo.before(tokenEntry.getValue())) {
 
                 JSONObject jGcmData = new JSONObject();
@@ -501,7 +501,7 @@ public class CacheNotificationServer implements NotificationServer {
         if (lastBroadcast != null) {
             Date oneHourAgo = new Date();
             long timeMillis = oneHourAgo.getTime();
-            oneHourAgo.setTime(timeMillis - 1000L*3600);
+            oneHourAgo.setTime(timeMillis - 1000L * 3600);
             if (oneHourAgo.before(lastBroadcast)) {
                 return false;
             }
@@ -517,6 +517,7 @@ public class CacheNotificationServer implements NotificationServer {
     private class CheckNotificationRecordsRunnable extends TimerTask {
 
         private static final int DELAY = 60;
+
         public String getName() {
             return "CheckNotificationRecordsRunnable";
         }
@@ -524,11 +525,11 @@ public class CacheNotificationServer implements NotificationServer {
         public void run() {
             Date twoWeeksAgo = new Date();
             long timeMillis = twoWeeksAgo.getTime();
-            twoWeeksAgo.setTime(timeMillis - 1000L*3600*24*14);
-            for (Map.Entry<Long, Map<String, Date>> tokenMapEntry: iOStokens.entrySet()) {
+            twoWeeksAgo.setTime(timeMillis - 1000L * 3600 * 24 * 14);
+            for (Map.Entry<Long, Map<String, Date>> tokenMapEntry : iOStokens.entrySet()) {
                 Iterator<Map.Entry<String, Date>> iter = tokenMapEntry.getValue().entrySet().iterator();
                 while (iter.hasNext()) {
-                    Map.Entry<String,Date> tokenEntry = iter.next();
+                    Map.Entry<String, Date> tokenEntry = iter.next();
                     if (tokenEntry.getValue().before(twoWeeksAgo)) {
                         try {
                             baseStorer.removeInvalidToken(tokenMapEntry.getKey(), tokenEntry.getKey(), iOS);
@@ -539,10 +540,10 @@ public class CacheNotificationServer implements NotificationServer {
                     }
                 }
             }
-            for (Map.Entry<Long, Map<String, Date>> tokenMapEntry: androidTokens.entrySet()) {
+            for (Map.Entry<Long, Map<String, Date>> tokenMapEntry : androidTokens.entrySet()) {
                 Iterator<Map.Entry<String, Date>> iter = tokenMapEntry.getValue().entrySet().iterator();
                 while (iter.hasNext()) {
-                    Map.Entry<String,Date> tokenEntry = iter.next();
+                    Map.Entry<String, Date> tokenEntry = iter.next();
                     if (tokenEntry.getValue().before(twoWeeksAgo)) {
                         try {
                             baseStorer.removeInvalidToken(tokenMapEntry.getKey(), tokenEntry.getKey(), ANDROID);

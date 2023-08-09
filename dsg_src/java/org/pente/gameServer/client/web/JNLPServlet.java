@@ -30,8 +30,7 @@ public class JNLPServlet extends HttpServlet {
             dsgPlayerStorer = (DSGPlayerStorer) ctx.getAttribute(
                     DSGPlayerStorer.class.getName());
 
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             log4j.error("Problem in init", t);
         }
     }
@@ -56,9 +55,9 @@ public class JNLPServlet extends HttpServlet {
         } catch (DSGPlayerStoreException e) {
             e.printStackTrace();
         }
-    
+
         if (password != null && password.equals(dsgPlayerData.getPassword())) {
-            getServletContext().getRequestDispatcher("/gameServer/pentejnlp.jsp?name="+name+"&password="+dsgPlayerData.getPassword()).forward(
+            getServletContext().getRequestDispatcher("/gameServer/pentejnlp.jsp?name=" + name + "&password=" + dsgPlayerData.getPassword()).forward(
                     request, response);
         } else {
             getServletContext().getRequestDispatcher("/gameServer/pentejnlp.jsp").forward(

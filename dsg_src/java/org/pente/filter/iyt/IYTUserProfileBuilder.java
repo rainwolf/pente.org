@@ -1,19 +1,20 @@
-/** IYTUserProfileBuilder.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * IYTUserProfileBuilder.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.filter.iyt;
@@ -33,15 +34,15 @@ import org.pente.game.*;
 public class IYTUserProfileBuilder implements FilterListener, Runnable {
 
     /** Filter that does the work of finding player data */
-    private IYTUserProfileFilter    iytUserProfileFilter;
+    private IYTUserProfileFilter iytUserProfileFilter;
 
     /** Cookies used to send requests to iyt */
-    private Hashtable               cookies;
+    private Hashtable cookies;
     /** Parameters used to send requests to iyt */
-    private Hashtable               params;
+    private Hashtable params;
 
     /** The player data found */
-    private PlayerData              playerData;
+    private PlayerData playerData;
 
     /** For testing purposes you can call this builder directly
      *  with your cookie info to attempt to get your player info
@@ -51,8 +52,7 @@ public class IYTUserProfileBuilder implements FilterListener, Runnable {
 
         if (args.length != 1) {
             System.err.println("usage: IYTUserProfileBuilder <cookie>");
-        }
-        else {
+        } else {
             String cookie = args[0];
 
             IYTUserProfileBuilder builder = new IYTUserProfileBuilder(cookie);
@@ -127,11 +127,11 @@ public class IYTUserProfileBuilder implements FilterListener, Runnable {
     public synchronized void run() {
 
         FilterController filterController = new HttpFilterController("GET",
-                                                                     IYTConstants.HOST,
-                                                                     IYTConstants.USER_PROFILE_REQUEST,
-                                                                     params,
-                                                                     cookies,
-                                                                     iytUserProfileFilter);
+                IYTConstants.HOST,
+                IYTConstants.USER_PROFILE_REQUEST,
+                params,
+                cookies,
+                iytUserProfileFilter);
         filterController.run();
 
         // if the players user id name wasn't found, try looking again with the userid

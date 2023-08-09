@@ -9,17 +9,18 @@ import org.pente.gameServer.server.*;
 import org.apache.log4j.*;
 
 public class GameServerChecker implements DSGEventListener {
-    
-    /** Checks status of game server.  Doesn't send errors
-     *  more than 5 times.  Need tomcat to reset status file
-     *  on startup.
-     * 
+
+    /**
+     * Checks status of game server.  Doesn't send errors
+     * more than 5 times.  Need tomcat to reset status file
+     * on startup.
+     * <p>
      *  TODO, add checks for ALL game servers?
      */
     public static void main(String args[]) throws Throwable {
-        
+
         BasicConfigurator.configure();
-        
+
         int port = Integer.parseInt(args[0]);
         String mailHost = args[1];
         String mailUser = args[2];
@@ -30,7 +31,7 @@ public class GameServerChecker implements DSGEventListener {
         if (args.length == 6) {
             host = args[5];
         }
-        
+
         // don't send out more than 5 messages
         int failures = 0;
         if (statusFile.exists()) {
@@ -39,7 +40,7 @@ public class GameServerChecker implements DSGEventListener {
             in.close();
             if (failures >= 5) return;
         }
-        
+
         GameServerChecker checker = new GameServerChecker(host, port);
         if (!checker.isGameServerUp()) {
             try {
@@ -49,10 +50,10 @@ public class GameServerChecker implements DSGEventListener {
                 System.setProperty("mail.smtp.auth", "true");
 
                 SendMail2.sendMail("DSG", "dweebo@pente.org",
-                    "DSG Admins", "admins@pente.org", "DSG May Be Down", "", false, null);
+                        "DSG Admins", "admins@pente.org", "DSG May Be Down", "", false, null);
 
                 failures++;
-                
+
             } catch (Throwable t) {
                 t.printStackTrace();
                 failures--; // try again if failed to send email
@@ -62,12 +63,12 @@ public class GameServerChecker implements DSGEventListener {
         else {
             failures = 0;
         }
-        
+
         // write out failure count
         FileOutputStream out = new FileOutputStream(statusFile);
         out.write(failures);
     }
-    
+
     private String host;
     private int port;
     private boolean valid = false;
@@ -75,26 +76,27 @@ public class GameServerChecker implements DSGEventListener {
     private Socket socket = null;
     private SocketDSGEventHandler eventHandler = null;
     private Object lock;
-    
+
     public GameServerChecker(String host, int port) {
         this.host = host;
         this.port = port;
         lock = new Object();
     }
-    
-    /** Determine if the game server is up.
-     *  This blocks until game server response is returned.
+
+    /**
+     * Determine if the game server is up.
+     * This blocks until game server response is returned.
      */
     public boolean isGameServerUp() {
 
         try {
             setupEventHandler();
             eventHandler.eventOccurred(new DSGLoginEvent("stat", "stat", null));
-                
+
         } catch (Throwable t) {
             return false;
         }
-        
+
         while (!finished) {
             try {
                 synchronized (lock) {
@@ -105,9 +107,9 @@ public class GameServerChecker implements DSGEventListener {
             } catch (InterruptedException i) {
             }
         }
-        
+
         destroyEventHandler();
-        
+
         return valid;
     }
 
@@ -116,18 +118,22 @@ public class GameServerChecker implements DSGEventListener {
         eventHandler = new ClientSocketDSGEventHandler(socket);
         eventHandler.addListener(this);
     }
+
     private void destroyEventHandler() {
         if (eventHandler != null) {
             eventHandler.removeListener(this);
             eventHandler.destroy();
         }
         if (socket != null) {
-            try { socket.close(); } catch (IOException e) {}
+            try {
+                socket.close();
+            } catch (IOException e) {
+            }
         }
     }
-    
+
     public void eventOccurred(DSGEvent dsgEvent) {
-        
+
         // login ok
         if (dsgEvent instanceof DSGLoginEvent) {
             valid = true;
@@ -142,7 +148,7 @@ public class GameServerChecker implements DSGEventListener {
         else if (dsgEvent instanceof DSGExitMainRoomEvent) {
             finished = true;
         }
-        
+
         if (finished) {
             synchronized (lock) {
                 lock.notifyAll();

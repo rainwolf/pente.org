@@ -151,7 +151,7 @@
    <div id="senseReplace" style="width:728px;height:90px;" top="50%"></div>
    <%@include file="728x90ad.jsp" %>
    <script type="text/javascript">
-       addLoadEvent(sensePage);
+      addLoadEvent(sensePage);
    </script>
 </center>
 <% } %>
@@ -195,60 +195,60 @@
           <center> -->
 
          <script type='text/javascript'>
-             var currentMove = -1;
+            var currentMove = -1;
 
-             function selectMove(newMove) {
-                 // alert("cell " + newMove);
-                 let cell = document.getElementById('' + newMove);
-                 cell.style.background = '#AAF';
-                 resetAbstractBoard(abstractBoard);
-                 drawUntilMove = newMove + 1;
-                 if (game === 63 && drawUntilMove !== 1) {
-                     drawUntilMove += 1;
-                 }
-                 replayGame(abstractBoard, moves, drawUntilMove);
-                 boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
-                 boardContext.fill();
-                 drawGrid(boardContext, boardColor, gridSize, true);
-                 drawGame();
-                 lastMove = moves[drawUntilMove - 1];
-                 drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
-                 if (game === 63 && moves.length > 1) {
-                     lastMove = moves[drawUntilMove - 2];
-                     drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
-                 }
-                 if (currentMove !== -1) {
-                     let cell = document.getElementById('' + currentMove);
-                     cell.style.background = '#FFF';
-                 }
-                 currentMove = newMove;
-             }
+            function selectMove(newMove) {
+               // alert("cell " + newMove);
+               let cell = document.getElementById('' + newMove);
+               cell.style.background = '#AAF';
+               resetAbstractBoard(abstractBoard);
+               drawUntilMove = newMove + 1;
+               if (game === 63 && drawUntilMove !== 1) {
+                  drawUntilMove += 1;
+               }
+               replayGame(abstractBoard, moves, drawUntilMove);
+               boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
+               boardContext.fill();
+               drawGrid(boardContext, boardColor, gridSize, true);
+               drawGame();
+               lastMove = moves[drawUntilMove - 1];
+               drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
+               if (game === 63 && moves.length > 1) {
+                  lastMove = moves[drawUntilMove - 2];
+                  drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
+               }
+               if (currentMove !== -1) {
+                  let cell = document.getElementById('' + currentMove);
+                  cell.style.background = '#FFF';
+               }
+               currentMove = newMove;
+            }
 
-             function changeCycle() {
-                 if (document.getElementById('cycleCheck').checked) {
-                     cycleStr = "&cycle";
-                 } else {
-                     cycleStr = "";
-                 }
-             }
+            function changeCycle() {
+               if (document.getElementById('cycleCheck').checked) {
+                  cycleStr = "&cycle";
+               } else {
+                  cycleStr = "";
+               }
+            }
 
-             function changeHidden() {
-                 if (document.getElementById('hideCheck').checked) {
-                     hideStr = "&hide=yes";
-                 } else {
-                     hideStr = "&hide=no";
-                 }
-             }
+            function changeHidden() {
+               if (document.getElementById('hideCheck').checked) {
+                  hideStr = "&hide=yes";
+               } else {
+                  hideStr = "&hide=no";
+               }
+            }
 
-             // function IsSelected()
-             // {
-             //    return currentRow==-1?false:true;
-             // }
+            // function IsSelected()
+            // {
+            //    return currentRow==-1?false:true;
+            // }
 
-             // function GetSelectedRow()
-             // {
-             //    return currentRow;
-             // }
+            // function GetSelectedRow()
+            // {
+            //    return currentRow;
+            // }
          </script>
 
 
@@ -573,155 +573,289 @@
 <script src="/gameServer/tb/gameScript.js"></script>
 
 <script type="text/javascript">
-    var moves = [<%=moves.substring(0, moves.length() - 1)%>];
-    var messages = [<%=messages%>];
-    var messageMoveNums = [<%=moveNums%>];
-    var active = <%=!"false".equals(myTurn)%>;
-    var game = <%= game.getGame() %>;
-    var myName = "<%= me %>";
-    var p1Name = "<%=p1.getName()%>";
-    var p2Name = "<%=p2.getName()%>";
-    var opponentName = "<%= (me.equals(p1.getName())?p2.getName():p1.getName()) %>";
-    var iAmP1 = <%=me.equals(p1.getName())%>;
+   var moves = [<%=moves.substring(0, moves.length() - 1)%>];
+   var messages = [<%=messages%>];
+   var messageMoveNums = [<%=moveNums%>];
+   var active = <%=!"false".equals(myTurn)%>;
+   var game = <%= game.getGame() %>;
+   var myName = "<%= me %>";
+   var p1Name = "<%=p1.getName()%>";
+   var p2Name = "<%=p2.getName()%>";
+   var opponentName = "<%= (me.equals(p1.getName())?p2.getName():p1.getName()) %>";
+   var iAmP1 = <%=me.equals(p1.getName())%>;
 
-    // var boardSize = 500;
+   // var boardSize = 500;
 
-    var gridSize = <%=gridSize%>;
-    var boardCanvas = document.getElementById("board");
-    var boardContext = boardCanvas.getContext("2d");
-    var indentWidth = (boardCanvas.width / (gridSize + 3)) / 2;
-    var indentHeight = (boardCanvas.height / (gridSize + 3)) / 2;
-    // var stepX = boardSize / (gridSize - 1);
-    // var stepY = boardSize / (gridSize - 1);
-    var stepX = 2 * indentWidth;
-    var stepY = 2 * indentHeight;
-    var boardColor;
-    var radius = stepX * 95 / 200;
-    var boardSize = boardCanvas.width - indentWidth * 2;
+   var gridSize = <%=gridSize%>;
+   var boardCanvas = document.getElementById("board");
+   var boardContext = boardCanvas.getContext("2d");
+   var indentWidth = (boardCanvas.width / (gridSize + 3)) / 2;
+   var indentHeight = (boardCanvas.height / (gridSize + 3)) / 2;
+   // var stepX = boardSize / (gridSize - 1);
+   // var stepY = boardSize / (gridSize - 1);
+   var stepX = 2 * indentWidth;
+   var stepY = 2 * indentHeight;
+   var boardColor;
+   var radius = stepX * 95 / 200;
+   var boardSize = boardCanvas.width - indentWidth * 2;
 
 
-    var drawUntilMove;
-    var playedMove;
-    var lastMove;
-    var rated = <%= game.isRated()%>;
-    var dPenteChoice = <%= game.getDPenteState() == 2 %>;
-    var dPenteSwap = <%= game.didDPenteSwap()%>;
-    var swap2passed = <%= game.didSwap2Pass()%>;
+   var drawUntilMove;
+   var playedMove;
+   var lastMove;
+   var rated = <%= game.isRated()%>;
+   var dPenteChoice = <%= game.getDPenteState() == 2 %>;
+   var dPenteSwap = <%= game.didDPenteSwap()%>;
+   var swap2passed = <%= game.didSwap2Pass()%>;
 
-    var stoneColor = true;
-    var trackingI = -1, trackingJ = -1;
-    var iRadius = 6 * radius / 4;
-    var cycleCheck = <%=((request.getParameter("cycle") != null)?"true":"false")%>;
-    var cycleStr = <%=((request.getParameter("cycle") != null)?"\"&cycle\"":"\"\"")%>;
-    var hideStr = "";
+   var stoneColor = true;
+   var trackingI = -1, trackingJ = -1;
+   var iRadius = 6 * radius / 4;
+   var cycleCheck = <%=((request.getParameter("cycle") != null)?"true":"false")%>;
+   var cycleStr = <%=((request.getParameter("cycle") != null)?"\"&cycle\"":"\"\"")%>;
+   var hideStr = "";
 
-    var touching = false;
+   var touching = false;
 
-    document.onkeydown = leftRight;
+   document.onkeydown = leftRight;
 
-    function init() {
-        switch (game) {
-            case 51:
-                boardColor = penteColor;
-                break;
-            case 53:
-                boardColor = keryPenteColor;
-                break;
-            case 55:
-                boardColor = gomokuColor;
-                break;
-            case 57:
-                boardColor = dPenteColor;
-                break;
-            case 59:
-                boardColor = gPenteColor;
-                break;
-            case 61:
-                boardColor = poofPenteColor;
-                break;
-            case 63:
-                boardColor = connect6Color;
-                break;
-            case 65:
-                boardColor = boatPenteColor;
-                break;
-            case 67:
-                boardColor = dkeryoPenteColor;
-                break;
-            case 69:
-            case 71:
-            case 73:
-                boardColor = goColor;
-                break;
-           case 75:
-              boardColor = oPenteColor;
-              break;
-           case 77:
-              boardColor = swap2PenteColor;
-              break;
-            default:
-                boardColor = penteColor;
-                break;
-        }
-        boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
-        interactionContext.clearRect(0, 0, interactionCanvas.width, interactionCanvas.height);
-        drawGrid(boardContext, boardColor, gridSize, true);
-        interactionCanvas.addEventListener("click", boardClick, false);
+   function init() {
+      switch (game) {
+         case 51:
+            boardColor = penteColor;
+            break;
+         case 53:
+            boardColor = keryPenteColor;
+            break;
+         case 55:
+            boardColor = gomokuColor;
+            break;
+         case 57:
+            boardColor = dPenteColor;
+            break;
+         case 59:
+            boardColor = gPenteColor;
+            break;
+         case 61:
+            boardColor = poofPenteColor;
+            break;
+         case 63:
+            boardColor = connect6Color;
+            break;
+         case 65:
+            boardColor = boatPenteColor;
+            break;
+         case 67:
+            boardColor = dkeryoPenteColor;
+            break;
+         case 69:
+         case 71:
+         case 73:
+            boardColor = goColor;
+            break;
+         case 75:
+            boardColor = oPenteColor;
+            break;
+         case 77:
+            boardColor = swap2PenteColor;
+            break;
+         default:
+            boardColor = penteColor;
+            break;
+      }
+      boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
+      interactionContext.clearRect(0, 0, interactionCanvas.width, interactionCanvas.height);
+      drawGrid(boardContext, boardColor, gridSize, true);
+      interactionCanvas.addEventListener("click", boardClick, false);
 
-        interactionCanvas.addEventListener("touchstart", touchStart, false);
-        interactionCanvas.addEventListener("touchend", touchEnd, false);
-        interactionCanvas.addEventListener("touchcancel", touchCancel, false);
-        interactionCanvas.addEventListener("touchleave", touchEnd, false);
-        interactionCanvas.addEventListener("touchmove", touchMove, false);
-        interactionContext.scale(2, 2);
+      interactionCanvas.addEventListener("touchstart", touchStart, false);
+      interactionCanvas.addEventListener("touchend", touchEnd, false);
+      interactionCanvas.addEventListener("touchcancel", touchCancel, false);
+      interactionCanvas.addEventListener("touchleave", touchEnd, false);
+      interactionCanvas.addEventListener("touchmove", touchMove, false);
+      interactionContext.scale(2, 2);
 
-        drawUntilMove = moves.length;
-        playedMove = -1;
-        lastMove = moves[drawUntilMove - 1];
+      drawUntilMove = moves.length;
+      playedMove = -1;
+      lastMove = moves[drawUntilMove - 1];
 
-        if (cycleCheck) {
-            document.getElementById("cycleCheck").checked = cycleCheck;
-        }
-    }
+      if (cycleCheck) {
+         document.getElementById("cycleCheck").checked = cycleCheck;
+      }
+   }
 
-    function touchStart(evt) {
-        touching = true;
-        if (game === 63) {
+   function touchStart(evt) {
+      touching = true;
+      if (game === 63) {
+         stoneColor = (((moves.length - 1) % 4) === 0);
+      } else {
+         stoneColor = ((moves.length % 2) === 1);
+      }
+      if ((drawUntilMove !== moves.length)) {
+         let newMoves = moves.slice(0);
+         if (game === 63) {
+            if (c6Move1 > -1) {
+               newMoves.push(c6Move1);
+            }
+         }
+         if ((game === 57 || game === 67 || game === 77) && moves.length === 0) {
+            if (dPenteMove1 === -1) {
+            } else if (dPenteMove2 === -1) {
+               newMoves.push(dPenteMove1);
+            } else if (dPenteMove3 === -1 || game === 77) {
+               newMoves.push(dPenteMove1);
+               newMoves.push(dPenteMove2);
+            } else {
+               newMoves.push(dPenteMove1);
+               newMoves.push(dPenteMove2);
+               newMoves.push(dPenteMove3);
+            }
+         }
+         if (game === 77 && moves.length === 3) {
+            if (dPenteMove1 === -1) {
+            } else {
+               newMoves.push(dPenteMove1);
+            }
+         }
+         if (game === 63) {
             stoneColor = (((moves.length - 1) % 4) === 0);
-        } else {
-            stoneColor = ((moves.length % 2) === 1);
-        }
-        if ((drawUntilMove !== moves.length)) {
+         } else {
+            stoneColor = ((newMoves.length % 2) === 1);
+         }
+         resetAbstractBoard(abstractBoard);
+         drawUntilMove = newMoves.length;
+         replayGame(abstractBoard, newMoves, drawUntilMove);
+         boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
+         boardContext.fill();
+         drawGrid(boardContext, boardColor, gridSize, true);
+         drawGame();
+         lastMove = moves[moves.length - 1];
+         drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
+         if (game === 63 && moves.length > 1) {
+            lastMove = moves[moves.length - 2];
+            drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
+         }
+      }
+
+      // var rect = boardCanvas.getBoundingClientRect();
+      // var offsetX = rect.left;
+      // var offsetY = rect.top;
+      // evt.preventDefault();
+      var touch = evt.changedTouches[0];
+
+      // var i = Math.floor((touch.clientX - indentWidth + stepX / 2 - offsetX) / stepX);
+      // var j = Math.floor((touch.clientY - indentHeight + stepY / 2 - offsetY) / stepY);
+      //
+      // var x = touch.clientX - offsetX;
+      // var y = touch.clientY - offsetY;
+
+      // if (i >= 0 && i < gridSize && j >= 0 && j < gridSize) {
+      //   evt.preventDefault();
+      //   interactionContext.drawImage(boardCanvas, -x/2 , -y/2);
+      // } else {
+      //   interactionContext.clearRect(0, 0, interactionCanvas.width, interactionCanvas.height);
+      // }
+
+
+      // document.getElementById("messageBox").innerHTML = "Started X = " + (touch.clientX - offsetX) + " Y = " + (touch.clientY - offsetY);
+
+   }
+
+   function touchMove(evt) {
+      let rect = boardCanvas.getBoundingClientRect();
+      let offsetX = rect.left + indentWidth + 2 * stepX;
+      let offsetY = rect.top + indentHeight + 2 * stepY;
+      if (evt.touches.length > 1) {
+         return;
+      }
+      evt.preventDefault();
+      let touch = evt.changedTouches[0];
+      let i = Math.floor((touch.clientX - indentWidth + stepX / 2 - offsetX) / stepX);
+      let j = Math.floor((touch.clientY - indentHeight + stepY / 2 - offsetY) / stepY);
+
+      // let i = Math.floor((touch.clientX - indentWidth - 2*stepX / 2 - offsetX) / stepX);
+      // let j = Math.floor((touch.clientY - indentHeight - 2*stepY / 2 - offsetY) / stepY);
+
+      let x = touch.clientX - offsetX;
+      let y = touch.clientY - offsetY;
+
+      if (i >= 0 && i < gridSize && j >= 0 && j < gridSize) {
+         interactionContext.drawImage(boardCanvas, -x / 2, -y / 2);
+         if (abstractBoard[i][j] === 0 && active === true) {
+            if ((trackingI !== i) || (trackingJ !== j)) {
+               drawInteractionStone(i, j, stoneColor);
+            }
+            interactionContext.drawImage(stoneCanvas, -x / 2, -y / 2);
+         }
+      } else {
+         interactionContext.clearRect(0, 0, interactionCanvas.width, interactionCanvas.height);
+      }
+   }
+
+   function touchCancel(evt) {
+      interactionContext.clearRect(0, 0, interactionCanvas.width, interactionCanvas.height);
+      playedMove = -1;
+      c6Move2 = -1;
+      dPenteMove3 = -1;
+      if (game === 63 && moves.length > 1) {
+         selectMove(drawUntilMove - 2);
+      } else {
+         selectMove(drawUntilMove - 1);
+      }
+   }
+
+   function touchEnd(evt) {
+      interactionContext.clearRect(0, 0, interactionCanvas.width, interactionCanvas.height);
+      let rect = boardCanvas.getBoundingClientRect();
+      let offsetX = rect.left + indentWidth + 2 * stepX;
+      let offsetY = rect.top + indentHeight + 2 * stepY;
+      // evt.preventDefault();
+      let touch = evt.changedTouches[0];
+      let i = Math.floor((touch.clientX - indentWidth + stepX / 2 - offsetX) / stepX);
+      let j = Math.floor((touch.clientY - indentHeight + stepY / 2 - offsetY) / stepY);
+
+      let x = touch.clientX - offsetX;
+      let y = touch.clientY - offsetY;
+
+      if (i >= 0 && i < gridSize && j >= 0 && j < gridSize) {
+         playedMove = j * gridSize + i;
+         if (abstractBoard[i][j] === 0 && active === true && playedMove !== koMove) {
             let newMoves = moves.slice(0);
             if (game === 63) {
-                if (c6Move1 > -1) {
-                    newMoves.push(c6Move1);
-                }
+               if (c6Move1 > -1) {
+                  newMoves.push(c6Move1);
+                  c6Move2 = playedMove;
+               } else {
+                  c6Move1 = playedMove;
+               }
             }
             if ((game === 57 || game === 67 || game === 77) && moves.length === 0) {
-                if (dPenteMove1 === -1) {
-                } else if (dPenteMove2 === -1) {
-                    newMoves.push(dPenteMove1);
-                } else if (dPenteMove3 === -1 || game === 77) {
-                    newMoves.push(dPenteMove1);
-                    newMoves.push(dPenteMove2);
-                } else {
-                    newMoves.push(dPenteMove1);
-                    newMoves.push(dPenteMove2);
-                    newMoves.push(dPenteMove3);
-                }
+               // alert("touch");
+               if (dPenteMove1 === -1) {
+                  dPenteMove1 = playedMove;
+               } else if (dPenteMove2 === -1) {
+                  newMoves.push(dPenteMove1);
+                  dPenteMove2 = playedMove;
+               } else if (dPenteMove3 === -1 || game === 77) {
+                  newMoves.push(dPenteMove1);
+                  newMoves.push(dPenteMove2);
+                  dPenteMove3 = playedMove;
+               } else {
+                  newMoves.push(dPenteMove1);
+                  newMoves.push(dPenteMove2);
+                  newMoves.push(dPenteMove3);
+                  dPenteMove4 = playedMove;
+               }
             }
-           if (game === 77 && moves.length === 3) {
-              if (dPenteMove1 === -1) {
-              } else {
-                 newMoves.push(dPenteMove1);
-              }
-           }
-            if (game === 63) {
-                stoneColor = (((moves.length - 1) % 4) === 0);
-            } else {
-                stoneColor = ((newMoves.length % 2) === 1);
+            if (game === 77 && moves.length === 3) {
+               if (dPenteMove1 === -1) {
+                  dPenteMove1 = playedMove;
+               } else {
+                  newMoves.push(dPenteMove1);
+                  dPenteMove2 = playedMove;
+               }
             }
+            newMoves.push(playedMove);
             resetAbstractBoard(abstractBoard);
             drawUntilMove = newMoves.length;
             replayGame(abstractBoard, newMoves, drawUntilMove);
@@ -732,594 +866,471 @@
             lastMove = moves[moves.length - 1];
             drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
             if (game === 63 && moves.length > 1) {
-                lastMove = moves[moves.length - 2];
-                drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
+               lastMove = moves[moves.length - 2];
+               drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
             }
-        }
-
-        // var rect = boardCanvas.getBoundingClientRect();
-        // var offsetX = rect.left;
-        // var offsetY = rect.top;
-        // evt.preventDefault();
-        var touch = evt.changedTouches[0];
-
-        // var i = Math.floor((touch.clientX - indentWidth + stepX / 2 - offsetX) / stepX);
-        // var j = Math.floor((touch.clientY - indentHeight + stepY / 2 - offsetY) / stepY);
-        //
-        // var x = touch.clientX - offsetX;
-        // var y = touch.clientY - offsetY;
-
-        // if (i >= 0 && i < gridSize && j >= 0 && j < gridSize) {
-        //   evt.preventDefault();
-        //   interactionContext.drawImage(boardCanvas, -x/2 , -y/2);
-        // } else {
-        //   interactionContext.clearRect(0, 0, interactionCanvas.width, interactionCanvas.height);
-        // }
-
-
-        // document.getElementById("messageBox").innerHTML = "Started X = " + (touch.clientX - offsetX) + " Y = " + (touch.clientY - offsetY);
-
-    }
-
-    function touchMove(evt) {
-        let rect = boardCanvas.getBoundingClientRect();
-        let offsetX = rect.left + indentWidth + 2 * stepX;
-        let offsetY = rect.top + indentHeight + 2 * stepY;
-        if (evt.touches.length > 1) {
-            return;
-        }
-        evt.preventDefault();
-        let touch = evt.changedTouches[0];
-        let i = Math.floor((touch.clientX - indentWidth + stepX / 2 - offsetX) / stepX);
-        let j = Math.floor((touch.clientY - indentHeight + stepY / 2 - offsetY) / stepY);
-
-        // let i = Math.floor((touch.clientX - indentWidth - 2*stepX / 2 - offsetX) / stepX);
-        // let j = Math.floor((touch.clientY - indentHeight - 2*stepY / 2 - offsetY) / stepY);
-
-        let x = touch.clientX - offsetX;
-        let y = touch.clientY - offsetY;
-
-        if (i >= 0 && i < gridSize && j >= 0 && j < gridSize) {
-            interactionContext.drawImage(boardCanvas, -x / 2, -y / 2);
-            if (abstractBoard[i][j] === 0 && active === true) {
-                if ((trackingI !== i) || (trackingJ !== j)) {
-                    drawInteractionStone(i, j, stoneColor);
-                }
-                interactionContext.drawImage(stoneCanvas, -x / 2, -y / 2);
-            }
-        } else {
-            interactionContext.clearRect(0, 0, interactionCanvas.width, interactionCanvas.height);
-        }
-    }
-
-    function touchCancel(evt) {
-        interactionContext.clearRect(0, 0, interactionCanvas.width, interactionCanvas.height);
-        playedMove = -1;
-        c6Move2 = -1;
-        dPenteMove3 = -1;
-        if (game === 63 && moves.length > 1) {
-            selectMove(drawUntilMove - 2);
-        } else {
-            selectMove(drawUntilMove - 1);
-        }
-    }
-
-    function touchEnd(evt) {
-        interactionContext.clearRect(0, 0, interactionCanvas.width, interactionCanvas.height);
-        let rect = boardCanvas.getBoundingClientRect();
-        let offsetX = rect.left + indentWidth + 2 * stepX;
-        let offsetY = rect.top + indentHeight + 2 * stepY;
-        // evt.preventDefault();
-        let touch = evt.changedTouches[0];
-        let i = Math.floor((touch.clientX - indentWidth + stepX / 2 - offsetX) / stepX);
-        let j = Math.floor((touch.clientY - indentHeight + stepY / 2 - offsetY) / stepY);
-
-        let x = touch.clientX - offsetX;
-        let y = touch.clientY - offsetY;
-
-        if (i >= 0 && i < gridSize && j >= 0 && j < gridSize) {
-            playedMove = j * gridSize + i;
-            if (abstractBoard[i][j] === 0 && active === true && playedMove !== koMove) {
-                let newMoves = moves.slice(0);
-                if (game === 63) {
-                    if (c6Move1 > -1) {
-                        newMoves.push(c6Move1);
-                        c6Move2 = playedMove;
-                    } else {
-                        c6Move1 = playedMove;
-                    }
-                }
-                if ((game === 57 || game === 67 || game === 77) && moves.length === 0) {
-                    // alert("touch");
-                    if (dPenteMove1 === -1) {
-                        dPenteMove1 = playedMove;
-                    } else if (dPenteMove2 === -1) {
-                        newMoves.push(dPenteMove1);
-                        dPenteMove2 = playedMove;
-                    } else if (dPenteMove3 === -1 || game === 77) {
-                        newMoves.push(dPenteMove1);
-                        newMoves.push(dPenteMove2);
-                        dPenteMove3 = playedMove;
-                    } else {
-                        newMoves.push(dPenteMove1);
-                        newMoves.push(dPenteMove2);
-                        newMoves.push(dPenteMove3);
-                        dPenteMove4 = playedMove;
-                    }
-                }
-               if (game === 77 && moves.length === 3) {
-                  if (dPenteMove1 === -1) {
-                     dPenteMove1 = playedMove;
-                  } else {
-                     newMoves.push(dPenteMove1);
-                     dPenteMove2 = playedMove;
-                  }
-               }
-               newMoves.push(playedMove);
-                resetAbstractBoard(abstractBoard);
-                drawUntilMove = newMoves.length;
-                replayGame(abstractBoard, newMoves, drawUntilMove);
-                boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
-                boardContext.fill();
-                drawGrid(boardContext, boardColor, gridSize, true);
-                drawGame();
-                lastMove = moves[moves.length - 1];
-                drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
-                if (game === 63 && moves.length > 1) {
-                    lastMove = moves[moves.length - 2];
-                    drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
-                }
-            } else {
-                playedMove = -1;
-                c6Move1 = -1;
-                c6Move2 = -1;
-                dPenteMove1 = -1;
-                dPenteMove2 = -1;
-                dPenteMove3 = -1;
-                dPenteMove4 = -1;
-
-                resetAbstractBoard(abstractBoard);
-                drawUntilMove = moves.length;
-                replayGame(abstractBoard, moves, drawUntilMove);
-                boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
-                boardContext.fill();
-                drawGrid(boardContext, boardColor, gridSize, true);
-                drawGame();
-                lastMove = moves[moves.length - 1];
-                drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
-                if (game === 63 && moves.length > 1) {
-                    lastMove = moves[moves.length - 2];
-                    drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
-                }
-                if (game === 63 && moves.length > 1) {
-                    selectMove(drawUntilMove - 2);
-                } else {
-                    selectMove(drawUntilMove - 1);
-                }
-            }
-
-            // document.getElementById("messageBox").innerHTML = "Recorded X = " + i + " Y = " + j;
-        } else {
+         } else {
             playedMove = -1;
+            c6Move1 = -1;
             c6Move2 = -1;
+            dPenteMove1 = -1;
+            dPenteMove2 = -1;
+            dPenteMove3 = -1;
             dPenteMove4 = -1;
+
+            resetAbstractBoard(abstractBoard);
+            drawUntilMove = moves.length;
+            replayGame(abstractBoard, moves, drawUntilMove);
+            boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
+            boardContext.fill();
+            drawGrid(boardContext, boardColor, gridSize, true);
+            drawGame();
+            lastMove = moves[moves.length - 1];
+            drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
             if (game === 63 && moves.length > 1) {
-                selectMove(drawUntilMove - 2);
+               lastMove = moves[moves.length - 2];
+               drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
+            }
+            if (game === 63 && moves.length > 1) {
+               selectMove(drawUntilMove - 2);
             } else {
-                selectMove(drawUntilMove - 1);
+               selectMove(drawUntilMove - 1);
             }
-        }
+         }
+
+         // document.getElementById("messageBox").innerHTML = "Recorded X = " + i + " Y = " + j;
+      } else {
+         playedMove = -1;
+         c6Move2 = -1;
+         dPenteMove4 = -1;
+         if (game === 63 && moves.length > 1) {
+            selectMove(drawUntilMove - 2);
+         } else {
+            selectMove(drawUntilMove - 1);
+         }
+      }
 
 
-    }
+   }
 
-    function boardClick(e) {
-        if (touching) {
-            return;
-        }
-        if (currentMove !== -1) {
-            let cell = document.getElementById('' + currentMove);
-            cell.style.background = '#FFF';
-        }
-        currentMove = -1;
-        let rect = boardCanvas.getBoundingClientRect();
-        let offsetX = rect.left;
-        let offsetY = rect.top;
-        let i = Math.floor((e.clientX - indentWidth - 2 * stepX / 2 - offsetX) / stepX);
-        let j = Math.floor((e.clientY - indentHeight - 2 * stepY / 2 - offsetY) / stepY);
-        if (i >= 0 && i < gridSize && j >= 0 && j < gridSize) {
-            if ((drawUntilMove !== moves.length)) {
-                resetAbstractBoard(abstractBoard);
-                drawUntilMove = moves.length;
-                replayGame(abstractBoard, moves, drawUntilMove);
-                boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
-                boardContext.fill();
-                drawGrid(boardContext, boardColor, gridSize, true);
-                drawGame();
-                lastMove = moves[moves.length - 1];
-                drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
-                if (game === 63 && moves.length > 1) {
-                    lastMove = moves[moves.length - 2];
-                    drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
-                }
-                document.getElementById("movesTable").scrollTop = document.getElementById("movesTable").scrollHeight;
+   function boardClick(e) {
+      if (touching) {
+         return;
+      }
+      if (currentMove !== -1) {
+         let cell = document.getElementById('' + currentMove);
+         cell.style.background = '#FFF';
+      }
+      currentMove = -1;
+      let rect = boardCanvas.getBoundingClientRect();
+      let offsetX = rect.left;
+      let offsetY = rect.top;
+      let i = Math.floor((e.clientX - indentWidth - 2 * stepX / 2 - offsetX) / stepX);
+      let j = Math.floor((e.clientY - indentHeight - 2 * stepY / 2 - offsetY) / stepY);
+      if (i >= 0 && i < gridSize && j >= 0 && j < gridSize) {
+         if ((drawUntilMove !== moves.length)) {
+            resetAbstractBoard(abstractBoard);
+            drawUntilMove = moves.length;
+            replayGame(abstractBoard, moves, drawUntilMove);
+            boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
+            boardContext.fill();
+            drawGrid(boardContext, boardColor, gridSize, true);
+            drawGame();
+            lastMove = moves[moves.length - 1];
+            drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
+            if (game === 63 && moves.length > 1) {
+               lastMove = moves[moves.length - 2];
+               drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
             }
-            playedMove = j * gridSize + i;
-            // alert("" + i + " and " + j + " and gridsize " + gridSize);
-            if (abstractBoard[i][j] === 0 && active === true && playedMove !== dPenteMove1 && playedMove !== dPenteMove2 && playedMove !== dPenteMove3 && playedMove !== dPenteMove4) {
-                let newMoves = moves.slice(0);
-                if (game === 63) {
-                    if (c6Move1 > -1) {
-                        newMoves.push(c6Move1);
-                        c6Move2 = playedMove;
-                    } else {
-                        c6Move1 = playedMove;
-                    }
-                }
-                if ((game === 57 || game === 67 || game === 77) && moves.length === 0) {
-                    // alert("click");
-                    if (dPenteMove1 === -1) {
-                        dPenteMove1 = playedMove;
-                    } else if (dPenteMove2 === -1) {
-                        newMoves.push(dPenteMove1);
-                        dPenteMove2 = playedMove;
-                    } else if (dPenteMove3 === -1 || game === 77) {
-                        newMoves.push(dPenteMove1);
-                        newMoves.push(dPenteMove2);
-                        dPenteMove3 = playedMove;
-                    } else {
-                        newMoves.push(dPenteMove1);
-                        newMoves.push(dPenteMove2);
-                        newMoves.push(dPenteMove3);
-                        dPenteMove4 = playedMove;
-                    }
-                }
-                if (game === 77 && moves.length === 3) {
-                   if (dPenteMove1 === -1) {
-                      dPenteMove1 = playedMove;
-                   } else {
-                      newMoves.push(dPenteMove1);
-                      dPenteMove2 = playedMove;
-                   }
-                }
-                newMoves.push(playedMove);
-                resetAbstractBoard(abstractBoard);
-                drawUntilMove = newMoves.length;
-                // alert("peep");
-                replayGame(abstractBoard, newMoves, drawUntilMove);
-                boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
-                boardContext.fill();
-                drawGrid(boardContext, boardColor, gridSize, true);
-                drawGame();
-                lastMove = moves[moves.length - 1];
-                drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
-                if (game === 63 && moves.length > 1) {
-                    lastMove = moves[moves.length - 2];
-                    drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
-                }
-            } else {
-                playedMove = -1;
-                c6Move1 = -1;
-                c6Move2 = -1;
-                dPenteMove1 = -1;
-                dPenteMove2 = -1;
-                dPenteMove3 = -1;
-                dPenteMove4 = -1;
-                if (game === 63 && moves.length > 1) {
-                    selectMove(drawUntilMove - 2);
-                } else {
-                    selectMove(drawUntilMove - 1);
-                }
-            }
-        }
-    }
-
-
-    function drawInteractionStone(i, j, color) {
-        trackingI = i;
-        trackingJ = j;
-        stoneContext.clearRect(0, 0, stoneCanvas.width, stoneCanvas.height);
-        let centerX = indentWidth + stepX * (i + 1) + stepX / 2;
-        let centerY = indentHeight + stepY * (j + 1) + stepY / 2;
-        stoneContext.save();
-        stoneContext.beginPath();
-        stoneContext.fillStyle = 'white';
-        stoneContext.strokeStyle = "#FFF";
-        stoneContext.lineWidth = 2;
-        stoneContext.moveTo(0, centerY);
-        stoneContext.lineTo(stoneCanvas.width, centerY);
-        stoneContext.moveTo(centerX, 0);
-        stoneContext.lineTo(centerX, stoneCanvas.height);
-        stoneContext.stroke();
-        // stoneContext.fill();
-        stoneContext.closePath();
-        stoneContext.beginPath();
-        stoneContext.arc(centerX, centerY, iRadius, 0, Math.PI * 2, true);
-        if (color === true) {
-            stoneContext.fillStyle = 'black';
-        } else {
-            stoneContext.fillStyle = 'white';
-        }
-        centerX -= iRadius / 8;
-        centerY -= iRadius / 8;
-        stoneContext.shadowColor = 'DimGray';
-        stoneContext.shadowBlur = 1;
-        stoneContext.shadowOffsetX = iRadius / 8;
-        stoneContext.shadowOffsetY = iRadius / 8;
-        if (color) {
-            let gradient = stoneContext.createRadialGradient(centerX, centerY, iRadius / 8, centerX, centerY, iRadius);
-            gradient.addColorStop(0, 'Grey');
-            gradient.addColorStop(1, 'Black');
-            stoneContext.fillStyle = gradient;
-        } else {
-            let gradient = stoneContext.createRadialGradient(centerX, centerY, 2 * iRadius / 4, centerX, centerY, iRadius);
-            gradient.addColorStop(0, 'White');
-            gradient.addColorStop(1, 'Gainsboro');
-            stoneContext.fillStyle = gradient;
-        }
-        stoneContext.fill();
-        // boardContext.lineWidth = 5;
-        // boardContext.strokeStyle = '#003300';
-        // boardContext.stroke();
-        stoneContext.closePath();
-        stoneContext.restore();
-    }
-
-
-    function replayGame(abstractBoard, movesList, until) {
-        whiteCaptures = 0;
-        blackCaptures = 0;
-        switch (game) {
-            case 51:
-                replayPenteGame(abstractBoard, movesList, until);
-                break;
-            case 53:
-                replayKeryoPenteGame(abstractBoard, movesList, until);
-                break;
-            case 55:
-                replayGomokuGame(abstractBoard, movesList, until);
-                break;
-            case 57:
-                replayPenteGame(abstractBoard, movesList, until);
-                break;
-            case 59:
-                replayGPenteGame(abstractBoard, movesList, until);
-                break;
-            case 61:
-                replayPoofPenteGame(abstractBoard, movesList, until);
-                break;
-            case 63:
-                replayConnect6Game(abstractBoard, movesList, until);
-                break;
-            case 65:
-                replayPenteGame(abstractBoard, movesList, until);
-                break;
-            case 67:
-                replayKeryoPenteGame(abstractBoard, movesList, until);
-                break;
-            case 69:
-            case 71:
-            case 73:
-                replayGoGame(abstractBoard, movesList, until);
-                break;
-            case 75:
-                replayOPenteGame(abstractBoard, movesList, until);
-                break;
-           case 77:
-              replayPenteGame(abstractBoard, movesList, until);
-              break;
-        }
-        // document.getElementById("messageBox").innerHTML = "message";
-        if (until <= moves.length) {
-            if (messageMoveNums.indexOf(until) !== -1) {
-                <% if (true) {
-                   DSGPlayerData d = null;
-                %>
-
-                let encMessage = messages[messageMoveNums.indexOf(until)];
-                // let message = encMessage.replace("\\",",");
-                let msgr = myName;
-                if (((until + 1) % 2) === 0) {
-                    msgr = p1Name;
-                    <%  d = p1; %>
-                } else {
-                    msgr = p2Name;
-                    <%  d = p2; %>
-                }
-                if (game === 63) {
-                    if ((Math.floor((until - 1) / 2) % 2) === 0) {
-                        msgr = p1Name;
-                    } else {
-                        msgr = p2Name;
-                    }
-                }
-                document.getElementById("messageBox").innerHTML = "<b>" + msgr + "</b>" + ": " + messages[messageMoveNums.indexOf(until)].replace("[host]", window.location.host);
-                <% } %>
-            } else {
-                document.getElementById("messageBox").innerHTML = "";
-            }
-        }
-    }
-
-
-    function goBack() {
-        if (drawUntilMove > 1) {
-            if (game === 63 && drawUntilMove > 1) {
-                if ((drawUntilMove % 2) === 1) {
-                    drawUntilMove = drawUntilMove - 1;
-                }
-                c6Move1 = -1;
-                c6Move2 = -1;
+            document.getElementById("movesTable").scrollTop = document.getElementById("movesTable").scrollHeight;
+         }
+         playedMove = j * gridSize + i;
+         // alert("" + i + " and " + j + " and gridsize " + gridSize);
+         if (abstractBoard[i][j] === 0 && active === true && playedMove !== dPenteMove1 && playedMove !== dPenteMove2 && playedMove !== dPenteMove3 && playedMove !== dPenteMove4) {
+            let newMoves = moves.slice(0);
+            if (game === 63) {
+               if (c6Move1 > -1) {
+                  newMoves.push(c6Move1);
+                  c6Move2 = playedMove;
+               } else {
+                  c6Move1 = playedMove;
+               }
             }
             if ((game === 57 || game === 67 || game === 77) && moves.length === 0) {
-                drawUntilMove = 2;
-                dPenteMove4 = -1;
-                dPenteMove3 = -1;
-                dPenteMove2 = -1;
-                dPenteMove1 = -1;
+               // alert("click");
+               if (dPenteMove1 === -1) {
+                  dPenteMove1 = playedMove;
+               } else if (dPenteMove2 === -1) {
+                  newMoves.push(dPenteMove1);
+                  dPenteMove2 = playedMove;
+               } else if (dPenteMove3 === -1 || game === 77) {
+                  newMoves.push(dPenteMove1);
+                  newMoves.push(dPenteMove2);
+                  dPenteMove3 = playedMove;
+               } else {
+                  newMoves.push(dPenteMove1);
+                  newMoves.push(dPenteMove2);
+                  newMoves.push(dPenteMove3);
+                  dPenteMove4 = playedMove;
+               }
             }
-            drawUntilMove = drawUntilMove - 1;
+            if (game === 77 && moves.length === 3) {
+               if (dPenteMove1 === -1) {
+                  dPenteMove1 = playedMove;
+               } else {
+                  newMoves.push(dPenteMove1);
+                  dPenteMove2 = playedMove;
+               }
+            }
+            newMoves.push(playedMove);
+            resetAbstractBoard(abstractBoard);
+            drawUntilMove = newMoves.length;
+            // alert("peep");
+            replayGame(abstractBoard, newMoves, drawUntilMove);
             boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
+            boardContext.fill();
             drawGrid(boardContext, boardColor, gridSize, true);
-            replayGame(abstractBoard, moves, drawUntilMove);
             drawGame();
-            lastMove = moves[drawUntilMove - 1];
+            lastMove = moves[moves.length - 1];
             drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
-            if (game === 63 && drawUntilMove > 1) {
-                lastMove = moves[drawUntilMove - 2];
-                drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
-                selectMove(drawUntilMove - 2);
-            } else {
-                selectMove(drawUntilMove - 1);
+            if (game === 63 && moves.length > 1) {
+               lastMove = moves[moves.length - 2];
+               drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
             }
-        }
-    }
+         } else {
+            playedMove = -1;
+            c6Move1 = -1;
+            c6Move2 = -1;
+            dPenteMove1 = -1;
+            dPenteMove2 = -1;
+            dPenteMove3 = -1;
+            dPenteMove4 = -1;
+            if (game === 63 && moves.length > 1) {
+               selectMove(drawUntilMove - 2);
+            } else {
+               selectMove(drawUntilMove - 1);
+            }
+         }
+      }
+   }
 
-    function goForward() {
-        if (drawUntilMove < moves.length) {
+
+   function drawInteractionStone(i, j, color) {
+      trackingI = i;
+      trackingJ = j;
+      stoneContext.clearRect(0, 0, stoneCanvas.width, stoneCanvas.height);
+      let centerX = indentWidth + stepX * (i + 1) + stepX / 2;
+      let centerY = indentHeight + stepY * (j + 1) + stepY / 2;
+      stoneContext.save();
+      stoneContext.beginPath();
+      stoneContext.fillStyle = 'white';
+      stoneContext.strokeStyle = "#FFF";
+      stoneContext.lineWidth = 2;
+      stoneContext.moveTo(0, centerY);
+      stoneContext.lineTo(stoneCanvas.width, centerY);
+      stoneContext.moveTo(centerX, 0);
+      stoneContext.lineTo(centerX, stoneCanvas.height);
+      stoneContext.stroke();
+      // stoneContext.fill();
+      stoneContext.closePath();
+      stoneContext.beginPath();
+      stoneContext.arc(centerX, centerY, iRadius, 0, Math.PI * 2, true);
+      if (color === true) {
+         stoneContext.fillStyle = 'black';
+      } else {
+         stoneContext.fillStyle = 'white';
+      }
+      centerX -= iRadius / 8;
+      centerY -= iRadius / 8;
+      stoneContext.shadowColor = 'DimGray';
+      stoneContext.shadowBlur = 1;
+      stoneContext.shadowOffsetX = iRadius / 8;
+      stoneContext.shadowOffsetY = iRadius / 8;
+      if (color) {
+         let gradient = stoneContext.createRadialGradient(centerX, centerY, iRadius / 8, centerX, centerY, iRadius);
+         gradient.addColorStop(0, 'Grey');
+         gradient.addColorStop(1, 'Black');
+         stoneContext.fillStyle = gradient;
+      } else {
+         let gradient = stoneContext.createRadialGradient(centerX, centerY, 2 * iRadius / 4, centerX, centerY, iRadius);
+         gradient.addColorStop(0, 'White');
+         gradient.addColorStop(1, 'Gainsboro');
+         stoneContext.fillStyle = gradient;
+      }
+      stoneContext.fill();
+      // boardContext.lineWidth = 5;
+      // boardContext.strokeStyle = '#003300';
+      // boardContext.stroke();
+      stoneContext.closePath();
+      stoneContext.restore();
+   }
+
+
+   function replayGame(abstractBoard, movesList, until) {
+      whiteCaptures = 0;
+      blackCaptures = 0;
+      switch (game) {
+         case 51:
+            replayPenteGame(abstractBoard, movesList, until);
+            break;
+         case 53:
+            replayKeryoPenteGame(abstractBoard, movesList, until);
+            break;
+         case 55:
+            replayGomokuGame(abstractBoard, movesList, until);
+            break;
+         case 57:
+            replayPenteGame(abstractBoard, movesList, until);
+            break;
+         case 59:
+            replayGPenteGame(abstractBoard, movesList, until);
+            break;
+         case 61:
+            replayPoofPenteGame(abstractBoard, movesList, until);
+            break;
+         case 63:
+            replayConnect6Game(abstractBoard, movesList, until);
+            break;
+         case 65:
+            replayPenteGame(abstractBoard, movesList, until);
+            break;
+         case 67:
+            replayKeryoPenteGame(abstractBoard, movesList, until);
+            break;
+         case 69:
+         case 71:
+         case 73:
+            replayGoGame(abstractBoard, movesList, until);
+            break;
+         case 75:
+            replayOPenteGame(abstractBoard, movesList, until);
+            break;
+         case 77:
+            replayPenteGame(abstractBoard, movesList, until);
+            break;
+      }
+      // document.getElementById("messageBox").innerHTML = "message";
+      if (until <= moves.length) {
+         if (messageMoveNums.indexOf(until) !== -1) {
+            <% if (true) {
+               DSGPlayerData d = null;
+            %>
+
+            let encMessage = messages[messageMoveNums.indexOf(until)];
+            // let message = encMessage.replace("\\",",");
+            let msgr = myName;
+            if (((until + 1) % 2) === 0) {
+               msgr = p1Name;
+               <%  d = p1; %>
+            } else {
+               msgr = p2Name;
+               <%  d = p2; %>
+            }
+            if (game === 63) {
+               if ((Math.floor((until - 1) / 2) % 2) === 0) {
+                  msgr = p1Name;
+               } else {
+                  msgr = p2Name;
+               }
+            }
+            document.getElementById("messageBox").innerHTML = "<b>" + msgr + "</b>" + ": " + messages[messageMoveNums.indexOf(until)].replace("[host]", window.location.host);
+            <% } %>
+         } else {
+            document.getElementById("messageBox").innerHTML = "";
+         }
+      }
+   }
+
+
+   function goBack() {
+      if (drawUntilMove > 1) {
+         if (game === 63 && drawUntilMove > 1) {
+            if ((drawUntilMove % 2) === 1) {
+               drawUntilMove = drawUntilMove - 1;
+            }
+            c6Move1 = -1;
+            c6Move2 = -1;
+         }
+         if ((game === 57 || game === 67 || game === 77) && moves.length === 0) {
+            drawUntilMove = 2;
+            dPenteMove4 = -1;
+            dPenteMove3 = -1;
+            dPenteMove2 = -1;
+            dPenteMove1 = -1;
+         }
+         drawUntilMove = drawUntilMove - 1;
+         boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
+         drawGrid(boardContext, boardColor, gridSize, true);
+         replayGame(abstractBoard, moves, drawUntilMove);
+         drawGame();
+         lastMove = moves[drawUntilMove - 1];
+         drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
+         if (game === 63 && drawUntilMove > 1) {
+            lastMove = moves[drawUntilMove - 2];
+            drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
+            selectMove(drawUntilMove - 2);
+         } else {
+            selectMove(drawUntilMove - 1);
+         }
+      }
+   }
+
+   function goForward() {
+      if (drawUntilMove < moves.length) {
+         drawUntilMove = drawUntilMove + 1;
+         if (game === 63 && drawUntilMove > 1) {
             drawUntilMove = drawUntilMove + 1;
-            if (game === 63 && drawUntilMove > 1) {
-                drawUntilMove = drawUntilMove + 1;
-            }
-            boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
-            drawGrid(boardContext, boardColor, gridSize, true);
-            replayGame(abstractBoard, moves, drawUntilMove);
-            drawGame();
-            lastMove = moves[drawUntilMove - 1];
+         }
+         boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
+         drawGrid(boardContext, boardColor, gridSize, true);
+         replayGame(abstractBoard, moves, drawUntilMove);
+         drawGame();
+         lastMove = moves[drawUntilMove - 1];
+         drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
+         if (game === 63 && drawUntilMove > 1) {
+            lastMove = moves[drawUntilMove - 2];
             drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
-            if (game === 63 && drawUntilMove > 1) {
-                lastMove = moves[drawUntilMove - 2];
-                drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
-                selectMove(drawUntilMove - 2);
-            } else {
-                selectMove(drawUntilMove - 1);
-            }
-        }
-    }
+            selectMove(drawUntilMove - 2);
+         } else {
+            selectMove(drawUntilMove - 1);
+         }
+      }
+   }
 
-    function submit() {
-        if (playedMove === -1) {
-            alert("No move played yet");
-        } else if (game === 63 && c6Move2 < 0) {
-            alert("You have to place 2 stones for Connect6");
-        } else if (game === 63 && c6Move2 > -1) {
-            if ((c6Move1 > -1) && (c6Move1 < 361) && (c6Move2 > -1) && (c6Move2 < 361) && (moves.indexOf(c6Move1) == -1) && (moves.indexOf(c6Move2) == -1) && (c6Move1 != c6Move2)) {
-                window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+
-                cycleStr + hideStr + "&moves=" + c6Move1 + "," + c6Move2 + "&message=" + encodeURIComponent(document.getElementById('message').value), "_self"
-               );
-            } else {
-                alert("Invalid Connect6 moves detected, please (reload and) try again");
-            }
-        } else if ((game === 57 || game === 67) && moves.length === 0 && (dPenteMove1 === -1 || dPenteMove2 === -1 || dPenteMove3 === -1 || dPenteMove4 === -1)) {
-            alert("You have to place 4 stones for D-Pente");
-        } else if ((game === 57 || game === 67) && moves.length === 0) {
-           if ((dPenteMove1 !== dPenteMove2) && (dPenteMove2 !== dPenteMove3) && (dPenteMove3 !== dPenteMove1) &&
-              (dPenteMove1 !== dPenteMove4) && (dPenteMove2 !== dPenteMove4) && (dPenteMove3 !== dPenteMove4)) {
-              window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+
-              cycleStr + hideStr + "&moves=" + dPenteMove1 + "," + dPenteMove2 + "," + dPenteMove3 + "," + dPenteMove4 + "&message=" + encodeURIComponent(document.getElementById('message').value), "_self"
-            );
-           } else {
-              alert("Invalid D-Pente moves detected, please (reload and) try again");
-           }
-        } else if (game === 77 && moves.length === 0) {
-           if ((dPenteMove1 !== dPenteMove2) && (dPenteMove2 !== dPenteMove3) && (dPenteMove3 !== dPenteMove1)) {
-              window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+
-              cycleStr + hideStr + "&moves=" + dPenteMove1 + "," + dPenteMove2 + "," + dPenteMove3 + "&message=" + encodeURIComponent(document.getElementById('message').value), "_self"
-               );
-           } else {
-              alert("Invalid Swap2-Pente moves detected, please (reload and) try again");
-           }
-        } else {
+   function submit() {
+      if (playedMove === -1) {
+         alert("No move played yet");
+      } else if (game === 63 && c6Move2 < 0) {
+         alert("You have to place 2 stones for Connect6");
+      } else if (game === 63 && c6Move2 > -1) {
+         if ((c6Move1 > -1) && (c6Move1 < 361) && (c6Move2 > -1) && (c6Move2 < 361) && (moves.indexOf(c6Move1) == -1) && (moves.indexOf(c6Move2) == -1) && (c6Move1 != c6Move2)) {
             window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+
-            cycleStr + hideStr + "&moves=" + playedMove + "&message=" + encodeURIComponent(document.getElementById('message').value), "_self"
-            );
-        }
-    }
+            cycleStr + hideStr + "&moves=" + c6Move1 + "," + c6Move2 + "&message=" + encodeURIComponent(document.getElementById('message').value), "_self"
+         )
+            ;
+         } else {
+            alert("Invalid Connect6 moves detected, please (reload and) try again");
+         }
+      } else if ((game === 57 || game === 67) && moves.length === 0 && (dPenteMove1 === -1 || dPenteMove2 === -1 || dPenteMove3 === -1 || dPenteMove4 === -1)) {
+         alert("You have to place 4 stones for D-Pente");
+      } else if ((game === 57 || game === 67) && moves.length === 0) {
+         if ((dPenteMove1 !== dPenteMove2) && (dPenteMove2 !== dPenteMove3) && (dPenteMove3 !== dPenteMove1) &&
+            (dPenteMove1 !== dPenteMove4) && (dPenteMove2 !== dPenteMove4) && (dPenteMove3 !== dPenteMove4)) {
+            window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+
+            cycleStr + hideStr + "&moves=" + dPenteMove1 + "," + dPenteMove2 + "," + dPenteMove3 + "," + dPenteMove4 + "&message=" + encodeURIComponent(document.getElementById('message').value), "_self"
+         )
+            ;
+         } else {
+            alert("Invalid D-Pente moves detected, please (reload and) try again");
+         }
+      } else if (game === 77 && moves.length === 0) {
+         if ((dPenteMove1 !== dPenteMove2) && (dPenteMove2 !== dPenteMove3) && (dPenteMove3 !== dPenteMove1)) {
+            window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+
+            cycleStr + hideStr + "&moves=" + dPenteMove1 + "," + dPenteMove2 + "," + dPenteMove3 + "&message=" + encodeURIComponent(document.getElementById('message').value), "_self"
+         )
+            ;
+         } else {
+            alert("Invalid Swap2-Pente moves detected, please (reload and) try again");
+         }
+      } else {
+         window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+
+         cycleStr + hideStr + "&moves=" + playedMove + "&message=" + encodeURIComponent(document.getElementById('message').value), "_self"
+      )
+         ;
+      }
+   }
 
-    function submitPass() {
-        window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+
-        cycleStr + hideStr + "&moves=" + (gridSize * gridSize) + "&message=" + encodeURIComponent(document.getElementById('message').value), "_self"
-      );
-    }
+   function submitPass() {
+      window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+
+      cycleStr + hideStr + "&moves=" + (gridSize * gridSize) + "&message=" + encodeURIComponent(document.getElementById('message').value), "_self"
+   )
+      ;
+   }
 
-    function dPentePlayAsP1() {
-       if (playedMove === -1) {
-          alert("You have to place a stone if you choose to play as P1.");
-       } else {
-          window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+
-          cycleStr + hideStr + "&moves=1," + playedMove + "&message=" + encodeURIComponent(document.getElementById('message').value), "_self"
-       );
-       }
-    }
+   function dPentePlayAsP1() {
+      if (playedMove === -1) {
+         alert("You have to place a stone if you choose to play as P1.");
+      } else {
+         window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+
+         cycleStr + hideStr + "&moves=1," + playedMove + "&message=" + encodeURIComponent(document.getElementById('message').value), "_self"
+      )
+         ;
+      }
+   }
 
-    function dPentePlayAsP2() {
-       if (playedMove > -1) {
-          alert("You placed a stone. Remove it first if you choose to play as P2.");
-       } else {
-          window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+
-          cycleStr + hideStr + "&moves=0&message=" + encodeURIComponent(document.getElementById('message').value), "_self"
-       );
-       }
-    }
+   function dPentePlayAsP2() {
+      if (playedMove > -1) {
+         alert("You placed a stone. Remove it first if you choose to play as P2.");
+      } else {
+         window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+
+         cycleStr + hideStr + "&moves=0&message=" + encodeURIComponent(document.getElementById('message').value), "_self"
+      )
+         ;
+      }
+   }
 
-    function swap2PlayAsP1() {
-       if (playedMove > -1) {
-          alert("You placed a stone. Remove it first if you choose to play as P1.");
-       } else {
-          window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+
-          cycleStr + hideStr + "&moves=0&message=" + encodeURIComponent(document.getElementById('message').value), "_self"
-       );
-       }
-    }
+   function swap2PlayAsP1() {
+      if (playedMove > -1) {
+         alert("You placed a stone. Remove it first if you choose to play as P1.");
+      } else {
+         window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+
+         cycleStr + hideStr + "&moves=0&message=" + encodeURIComponent(document.getElementById('message').value), "_self"
+      )
+         ;
+      }
+   }
 
-    function swap2PlayAsP2() {
-       if (playedMove === -1) {
-          alert("You have to place a stone if you choose to play as P2.");
-       } else {
-          window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+
-          cycleStr + hideStr + "&moves=1," + playedMove + "&message=" + encodeURIComponent(document.getElementById('message').value), "_self"
-       );
-       }
-    }
+   function swap2PlayAsP2() {
+      if (playedMove === -1) {
+         alert("You have to place a stone if you choose to play as P2.");
+      } else {
+         window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+
+         cycleStr + hideStr + "&moves=1," + playedMove + "&message=" + encodeURIComponent(document.getElementById('message').value), "_self"
+      )
+         ;
+      }
+   }
 
-    function swap2pass() {
-       if (dPenteMove1 !== dPenteMove2 && dPenteMove1 !== -1 && dPenteMove2 !== -1) {
-          window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+
-          cycleStr + hideStr + "&moves=2," + dPenteMove1 + "," + dPenteMove2 + "&message=" + encodeURIComponent(document.getElementById('message').value), "_self"
-          );
-       } else {
-          alert("You decided to pass the choice to swap to P1, you need to play 2 stones to do so");
-       }
-    }
+   function swap2pass() {
+      if (dPenteMove1 !== dPenteMove2 && dPenteMove1 !== -1 && dPenteMove2 !== -1) {
+         window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+
+         cycleStr + hideStr + "&moves=2," + dPenteMove1 + "," + dPenteMove2 + "&message=" + encodeURIComponent(document.getElementById('message').value), "_self"
+      )
+         ;
+      } else {
+         alert("You decided to pass the choice to swap to P1, you need to play 2 stones to do so");
+      }
+   }
 
-    function resign() {
-        window.open("/gameServer/tb/resign?command=confirm&gid=" +<%=game.getGid()%>, "_self");
-    }
+   function resign() {
+      window.open("/gameServer/tb/resign?command=confirm&gid=" +<%=game.getGid()%>, "_self");
+   }
 
-    function requestCancel() {
-        window.open("/gameServer/tb/cancel?command=confirm&sid="+<%= set.getSetId() %>+
-        "&gid="+<%=game.getGid()%>+
-        "&message=" + encodeURIComponent(document.getElementById('message').value), "_self"
-      );
-    }
+   function requestCancel() {
+      window.open("/gameServer/tb/cancel?command=confirm&sid="+<%= set.getSetId() %>+
+      "&gid="+<%=game.getGid()%>+
+      "&message=" + encodeURIComponent(document.getElementById('message').value), "_self"
+   )
+      ;
+   }
 
-    function requestUndo() {
-        window.open("/gameServer/tb/game?command=requestUndo&gid=" +<%=game.getGid()%>, "_self");
-    }
+   function requestUndo() {
+      window.open("/gameServer/tb/game?command=requestUndo&gid=" +<%=game.getGid()%>, "_self");
+   }
 
-    init();
-    replayGame(abstractBoard, moves, moves.length);
-    drawGame();
-    lastMove = moves[drawUntilMove - 1];
-    drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
-    if (game === 63 && moves.length > 1) {
-        lastMove = moves[drawUntilMove - 2];
-        drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
-        selectMove(drawUntilMove - 2);
-    } else {
-        selectMove(drawUntilMove - 1);
-    }
-    document.getElementById("movesTable").scrollTop = document.getElementById("movesTable").scrollHeight;
+   init();
+   replayGame(abstractBoard, moves, moves.length);
+   drawGame();
+   lastMove = moves[drawUntilMove - 1];
+   drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
+   if (game === 63 && moves.length > 1) {
+      lastMove = moves[drawUntilMove - 2];
+      drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
+      selectMove(drawUntilMove - 2);
+   } else {
+      selectMove(drawUntilMove - 1);
+   }
+   document.getElementById("movesTable").scrollTop = document.getElementById("movesTable").scrollHeight;
 </script>
 
 
@@ -1330,8 +1341,8 @@
    <td>
 
       <script type="text/javascript">
-          gameStr = "<%=(((gameId % 2) == 0)?"Speed ":"")+GridStateFactory.getGameName(gameId) %>";
-          coordinateAlphas = ["A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T"];
+         gameStr = "<%=(((gameId % 2) == 0)?"Speed ":"")+GridStateFactory.getGameName(gameId) %>";
+         coordinateAlphas = ["A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T"];
       </script>
       <script language="javascript" src="<%= request.getContextPath() %>/gameServer/js/database.js"></script>
       <a class="button" href="javascript:search2();"><span style="color:white">Search the DB</span></a>

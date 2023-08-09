@@ -1,19 +1,20 @@
-/** IYTMoveFilter.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * IYTMoveFilter.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.filter.iyt;
@@ -31,29 +32,29 @@ import org.pente.filter.*;
 public class IYTMoveFilter implements LineFilter {
 
     /** The filtered move */
-    private int 				move;
+    private int move;
 
     /** Flag if filtering was successful or not */
-    private boolean 			filterSuccess;
+    private boolean filterSuccess;
 
     /** Status flag */
-    private boolean 			processingBoard;
+    private boolean processingBoard;
     /** Status flag */
-    private boolean 			searchingForBoard;
+    private boolean searchingForBoard;
 
     /** The current coordinate being processed */
-    private int					x, y;
+    private int x, y;
 
     /** The dimensions of the game board */
-    private static Dimension	boardSize;
+    private static Dimension boardSize;
 
     /** The start of board indicator */
-    private final String 		START_BOARD = 				"Current state of this game";
-    private final int	 		START_BOARD_FIRST_OFFSET = 	-1;
-    private final int	 		ROW_LINE_OFFSET = 			-2;
+    private final String START_BOARD = "Current state of this game";
+    private final int START_BOARD_FIRST_OFFSET = -1;
+    private final int ROW_LINE_OFFSET = -2;
 
     /** The previous filter to call before filtering */
-    private LineFilter			prevFilter;
+    private LineFilter prevFilter;
 
     /** Use this constructor if this is the base filter in the chain */
     public IYTMoveFilter() {
@@ -101,7 +102,7 @@ public class IYTMoveFilter implements LineFilter {
         if (line == null || filterSuccess) {
             return line;
         }
-        
+
         int index = line.indexOf("var hiliteflag = \"");
         if (index != -1) {
             String line2 = line.substring(index + 18);

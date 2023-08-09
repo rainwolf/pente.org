@@ -1,19 +1,20 @@
-/** HttpGameStorer.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * HttpGameStorer.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.game;
@@ -172,55 +173,54 @@ playerData.setUserID(10000000000000L + playerData.getUserID());
      *  @gameFormat The format to send/receive games
      *  @context If any additional path info is needed before commands
      */
-    public HttpGameStorer(String host, int port, GameFormat gameFormat, 
-		String context, String userName, String password) {
+    public HttpGameStorer(String host, int port, GameFormat gameFormat,
+                          String context, String userName, String password) {
         super(host, port, gameFormat, context, userName, password);
     }
 
     //TODO this code is ugly
-	public Object[] loadVenueData() throws Exception {
+    public Object[] loadVenueData() throws Exception {
 
-		StringBuffer paramsBuffer = new StringBuffer();
+        StringBuffer paramsBuffer = new StringBuffer();
 
         StringBuffer requestBuffer = createHttpRequest(paramsBuffer, "/venues");
         Socket s = null;
         int len = 0;
-        try
-        {
-        	s = getHttpResponseSocket(requestBuffer);
+        try {
+            s = getHttpResponseSocket(requestBuffer);
             // read past the http headers to the data
             InputStream in = s.getInputStream();
-            int l=0;
+            int l = 0;
             StringBuffer headerBuf = new StringBuffer();
             while (true) {
-            	char c = (char) in.read();
-            	headerBuf.append(c);
-            	if (l == 0 && c == '\r') l++;
-            	else if (l == 1 && c == '\n') l++;
-            	else if (l == 2 && c == '\r') l++;
-            	else if (l == 3 && c == '\n') break;
-            	else l = 0;
+                char c = (char) in.read();
+                headerBuf.append(c);
+                if (l == 0 && c == '\r') l++;
+                else if (l == 1 && c == '\n') l++;
+                else if (l == 2 && c == '\r') l++;
+                else if (l == 3 && c == '\n') break;
+                else l = 0;
             }
             String headers[] = headerBuf.toString().split("\r\n");
 
-        	for (int i = 1; i < headers.length; i++) {
-        		if (headers[i].toLowerCase().startsWith("content-length:")) {
-            		len = Integer.parseInt(headers[i].substring(16,
-            			headers[i].length()));
-            	}
+            for (int i = 1; i < headers.length; i++) {
+                if (headers[i].toLowerCase().startsWith("content-length:")) {
+                    len = Integer.parseInt(headers[i].substring(16,
+                            headers[i].length()));
+                }
             }
-            
+
         } catch (Exception e) {
-        	if (s != null) {
-        		s.close();
-            	s = null;
-        	}
+            if (s != null) {
+                s.close();
+                s = null;
+            }
         }
-        
-        return new Object[] { s, len };
-        
-	}
-	
+
+        return new Object[]{s, len};
+
+    }
+
     // not implemented yet
     public boolean gameAlreadyStored(GameData gameData) throws Exception {
         return false;
@@ -240,11 +240,9 @@ playerData.setUserID(10000000000000L + playerData.getUserID());
         int status = getHttpResponseCode(response);
         if (status == HttpConstants.STATUS_OK) {
             return true;
-        }
-        else if (status == HttpConstants.STATUS_NOT_FOUND) {
+        } else if (status == HttpConstants.STATUS_NOT_FOUND) {
             return false;
-        }
-        else {
+        } else {
             throw new HttpGameStorerException(status + " - " + response);
         }
     }
@@ -257,8 +255,8 @@ playerData.setUserID(10000000000000L + playerData.getUserID());
 
         StringBuffer paramsBuffer = new StringBuffer();
         paramsBuffer.append(HttpGameServer.GAME_ID).append("=").append(data.getGameID()).append("&").
-                     append(HttpGameServer.GAME_FORMAT).append("=").append(gameFormat.getClass().getName()).append("&").
-                     append(HttpGameServer.GAME_DATA).append("=");
+                append(HttpGameServer.GAME_FORMAT).append("=").append(gameFormat.getClass().getName()).append("&").
+                append(HttpGameServer.GAME_DATA).append("=");
 
         StringBuffer gameBuffer = new StringBuffer();
         gameFormat.format(data, gameBuffer);
@@ -285,7 +283,7 @@ playerData.setUserID(10000000000000L + playerData.getUserID());
 
         StringBuffer paramsBuffer = new StringBuffer();
         paramsBuffer.append(HttpGameServer.GAME_ID).append("=").append(gameID).append("&").
-                     append(HttpGameServer.GAME_FORMAT).append("=").append(gameFormat.getClass().getName());
+                append(HttpGameServer.GAME_FORMAT).append("=").append(gameFormat.getClass().getName());
 
         StringBuffer requestBuffer = createHttpRequest(paramsBuffer, HttpGameServer.LOAD_GAME);
         StringBuffer responseBuffer = sendHttpRequest(requestBuffer);
@@ -296,8 +294,7 @@ playerData.setUserID(10000000000000L + playerData.getUserID());
             responseBuffer = getHttpResponse(responseBuffer);
 
             gameFormat.parse(gameData, responseBuffer);
-        }
-        else {
+        } else {
             throw new HttpGameStorerException(status + " - " + responseBuffer.toString());
         }
 
@@ -314,7 +311,7 @@ playerData.setUserID(10000000000000L + playerData.getUserID());
 
         StringBuffer paramsBuffer = new StringBuffer();
         paramsBuffer.append(HttpGameServer.PLAYER_ID).append("=").append(playerID).append("&").
-                     append(HttpGameServer.PLAYER_SITE).append("=").append(site);
+                append(HttpGameServer.PLAYER_SITE).append("=").append(site);
 
         StringBuffer requestBuffer = createHttpRequest(paramsBuffer, HttpGameServer.LOAD_PLAYER);
         StringBuffer responseBuffer = sendHttpRequest(requestBuffer);
@@ -322,11 +319,9 @@ playerData.setUserID(10000000000000L + playerData.getUserID());
         int status = getHttpResponseCode(responseBuffer.toString());
         if (status == HttpConstants.STATUS_OK) {
             return true;
-        }
-        else if (status == HttpConstants.STATUS_NOT_FOUND) {
+        } else if (status == HttpConstants.STATUS_NOT_FOUND) {
             return false;
-        }
-        else {
+        } else {
             throw new HttpGameStorerException(status + " - " + responseBuffer.toString());
         }
     }
@@ -341,7 +336,7 @@ playerData.setUserID(10000000000000L + playerData.getUserID());
 
         StringBuffer paramsBuffer = new StringBuffer();
         paramsBuffer.append(HttpGameServer.PLAYER_NAME).append("=").append(name).append("&").
-                     append(HttpGameServer.PLAYER_SITE).append("=").append(site);
+                append(HttpGameServer.PLAYER_SITE).append("=").append(site);
 
         StringBuffer requestBuffer = createHttpRequest(paramsBuffer, HttpGameServer.LOAD_PLAYER);
         StringBuffer responseBuffer = sendHttpRequest(requestBuffer);
@@ -349,11 +344,9 @@ playerData.setUserID(10000000000000L + playerData.getUserID());
         int status = getHttpResponseCode(responseBuffer.toString());
         if (status == HttpConstants.STATUS_OK) {
             return true;
-        }
-        else if (status == HttpConstants.STATUS_NOT_FOUND) {
+        } else if (status == HttpConstants.STATUS_NOT_FOUND) {
             return false;
-        }
-        else {
+        } else {
             throw new HttpGameStorerException(status + " - " + responseBuffer.toString());
         }
     }
@@ -368,8 +361,8 @@ playerData.setUserID(10000000000000L + playerData.getUserID());
         StringBuffer paramsBuffer = new StringBuffer();
         try {
             paramsBuffer.append(HttpGameServer.PLAYER_ID).append("=").append(data.getUserID()).append("&").
-                         append(HttpGameServer.PLAYER_NAME).append("=").append(data.getUserIDName()).append("&").
-                         append(HttpGameServer.PLAYER_SITE).append("=").append(URLEncoder.encode(site, "UTF-8"));
+                    append(HttpGameServer.PLAYER_NAME).append("=").append(data.getUserIDName()).append("&").
+                    append(HttpGameServer.PLAYER_SITE).append("=").append(URLEncoder.encode(site, "UTF-8"));
         } catch (UnsupportedEncodingException e) {
         }
         StringBuffer requestBuffer = createHttpRequest(paramsBuffer, HttpGameServer.STORE_PLAYER);
@@ -392,7 +385,7 @@ playerData.setUserID(10000000000000L + playerData.getUserID());
 
         StringBuffer paramsBuffer = new StringBuffer();
         paramsBuffer.append(HttpGameServer.PLAYER_ID).append("=").append(playerID).append("&").
-                     append(HttpGameServer.PLAYER_SITE).append("=").append(site);
+                append(HttpGameServer.PLAYER_SITE).append("=").append(site);
 
         StringBuffer requestBuffer = createHttpRequest(paramsBuffer, HttpGameServer.LOAD_PLAYER);
         StringBuffer responseBuffer = sendHttpRequest(requestBuffer);
@@ -402,15 +395,14 @@ playerData.setUserID(10000000000000L + playerData.getUserID());
 
             responseBuffer = getHttpResponse(responseBuffer);
 
-            Hashtable<String,String> params = new Hashtable<String,String>();
+            Hashtable<String, String> params = new Hashtable<String, String>();
             HttpUtilities.parseParams(responseBuffer.toString(), params);
             playerData.setUserIDName(params.get(HttpGameServer.PLAYER_NAME));
             String userID = params.get(HttpGameServer.PLAYER_ID);
             if (userID != null) {
                 playerData.setUserID(Long.parseLong(userID));
             }
-        }
-        else {
+        } else {
             throw new HttpGameStorerException(status + " - " + responseBuffer.toString());
         }
 
@@ -429,7 +421,7 @@ playerData.setUserID(10000000000000L + playerData.getUserID());
 
         StringBuffer paramsBuffer = new StringBuffer();
         paramsBuffer.append(HttpGameServer.PLAYER_NAME).append("=").append(name).append("&").
-                     append(HttpGameServer.PLAYER_SITE).append("=").append(site);
+                append(HttpGameServer.PLAYER_SITE).append("=").append(site);
 
         StringBuffer requestBuffer = createHttpRequest(paramsBuffer, HttpGameServer.LOAD_PLAYER);
         StringBuffer responseBuffer = sendHttpRequest(requestBuffer);
@@ -439,15 +431,14 @@ playerData.setUserID(10000000000000L + playerData.getUserID());
 
             responseBuffer = getHttpResponse(responseBuffer);
 
-            Hashtable<String,String> params = new Hashtable<String,String>();
+            Hashtable<String, String> params = new Hashtable<String, String>();
             HttpUtilities.parseParams(responseBuffer.toString(), params);
             playerData.setUserIDName(params.get(HttpGameServer.PLAYER_NAME));
             String userID = params.get(HttpGameServer.PLAYER_ID);
             if (userID != null) {
                 playerData.setUserID(Long.parseLong(userID));
             }
-        }
-        else {
+        } else {
             throw new HttpGameStorerException(status + " - " + responseBuffer.toString());
         }
 

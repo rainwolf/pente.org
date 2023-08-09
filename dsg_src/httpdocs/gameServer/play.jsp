@@ -1,7 +1,6 @@
-
 <% if (request.getAttribute("name") != null) {
-    response.sendRedirect("/gameServer/index.jsp");
-   } %>
+   response.sendRedirect("/gameServer/index.jsp");
+} %>
 <%--
 <%@ page import="java.util.*,
                  org.pente.gameServer.client.web.*,

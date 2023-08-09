@@ -1,22 +1,22 @@
+<%! private static int year;
 
-<%! private static int year; 
-static {
-   Calendar now = Calendar.getInstance();
-   year = now.get(Calendar.YEAR);
-}
+   static {
+      Calendar now = Calendar.getInstance();
+      year = now.get(Calendar.YEAR);
+   }
 %>
-	<div id="footer">
-		<div id="footer-left">
-			Copyright &copy; 1999-<%= year %> Pente.org. All rights reserved. |
-			<a href="/help/helpWindow.jsp?file=privacyPolicy">Privacy</a> |
-			<a href="/help/helpWindow.jsp?file=ratedPolicy"> Terms of Service</a> |
-			<a href="/gameServer/links.jsp">Links</a> |
-            <a href="/gameServer/about.jsp">About</a><br>
-			Created by: <a href="http://www.hewittsoft.com/">Hewitt Software Development</a>
-		</div>
-		<div id="footer-right">
-		</div>
-	</div>
+<div id="footer">
+   <div id="footer-left">
+      Copyright &copy; 1999-<%= year %> Pente.org. All rights reserved. |
+      <a href="/help/helpWindow.jsp?file=privacyPolicy">Privacy</a> |
+      <a href="/help/helpWindow.jsp?file=ratedPolicy"> Terms of Service</a> |
+      <a href="/gameServer/links.jsp">Links</a> |
+      <a href="/gameServer/about.jsp">About</a><br>
+      Created by: <a href="http://www.hewittsoft.com/">Hewitt Software Development</a>
+   </div>
+   <div id="footer-right">
+   </div>
+</div>
 </div>
 
 <%--<script>--%>

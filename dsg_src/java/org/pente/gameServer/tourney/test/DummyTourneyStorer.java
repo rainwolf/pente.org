@@ -13,7 +13,7 @@ import org.pente.gameServer.tourney.TourneyStorer;
 public class DummyTourneyStorer implements TourneyStorer {
 
     private Category log4j = Category.getInstance(
-        DoubleEliminationFormat.class.getName());
+            DoubleEliminationFormat.class.getName());
 
     public List getUpcomingTournies() throws Throwable {
         return null;
@@ -53,12 +53,12 @@ public class DummyTourneyStorer implements TourneyStorer {
 
     public void insertMatch(TourneyMatch tourneyMatch) throws Throwable {
         log4j.debug("dummy.insertMatch(" + tourneyMatch.getPlayer1().getName() +
-            ", " + tourneyMatch.getPlayer2().getName() + ")");
+                ", " + tourneyMatch.getPlayer2().getName() + ")");
     }
 
     public void updateMatch(TourneyMatch tourneyMatch) throws Throwable {
         log4j.debug("dummy.updateMatch(" + tourneyMatch.getPlayer1().getName() +
-            ", " + tourneyMatch.getPlayer2().getName() + "r=" + tourneyMatch.getResult() + ")");
+                ", " + tourneyMatch.getPlayer2().getName() + "r=" + tourneyMatch.getResult() + ")");
     }
 
     public void updateMatches(List tourneyMatches, Tourney t) throws Throwable {

@@ -1,19 +1,20 @@
-/** GameData.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * GameData.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.game;
@@ -221,38 +222,44 @@ public interface GameData extends MoveData {
      *  @param swapped True if players swapped.
      */
     public void setSwapped(boolean swapped);
-    
+
     /** Return whether or not players swapped in the game (D-Pente)
      *  @return boolean True if players swapped
      */
     public boolean didPlayersSwap();
 
     public boolean didSwap2Pass();
+
     public void setSwap2Pass(boolean swap2pass);
 
 
-	public boolean isPrivateGame();
-	public void setPrivateGame(boolean privateGame);
-    
+    public boolean isPrivateGame();
+
+    public void setPrivateGame(boolean privateGame);
+
     /** Determine if this game data equals another game data
      *  @param obj The object to compare this to
      *  @return boolean True if the obj equals this game data
      */
     public boolean equals(Object obj);
-    
+
     public void setSid(long sid);
+
     public long getSid();
-    
+
     public static final String STATUS_TIMEOUT = "T";
     public static final String STATUS_WIN = "W";
     public static final String STATUS_RESIGN = "R";
     public static final String STATUS_FORCE_RESIGN = "F";
+
     public String getStatus();
+
     public void setStatus(String status);
 
     public void setMoveTimes(List<Time> times);
+
     public List<Time> getMoveTimes();
-    
+
 //	public boolean isEditable();
 //
 //	public void setEditable(boolean editable);

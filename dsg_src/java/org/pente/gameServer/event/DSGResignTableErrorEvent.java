@@ -6,12 +6,12 @@ public class DSGResignTableErrorEvent extends AbstractDSGTableErrorEvent {
         super();
     }
 
-	public DSGResignTableErrorEvent(String player, int table, int error) {
-		super(player, table, error);
-	}
-	
-	public String toString() {
-		return "resign " + super.toString();
-	}
+    public DSGResignTableErrorEvent(String player, int table, int error) {
+        super(player, table, error);
+    }
+
+    public String toString() {
+        return "resign " + super.toString();
+    }
 }
 

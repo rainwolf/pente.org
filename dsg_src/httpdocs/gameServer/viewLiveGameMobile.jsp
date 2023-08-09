@@ -157,7 +157,8 @@
 
 <% if (meData.showAds()) { %>
 <center>
-   <script>(adsbygoogle = window.adsbygoogle || []).requestNonPersonalizedAds =<%=(personalizeAds ? "0" : "1")%>
+   <script>(adsbygoogle = window.adsbygoogle || []).requestNonPersonalizedAds =
+   <%=(personalizeAds ? "0" : "1")%>
    </script>
    <div id="senseReplace" style="width:728px;height:90px;" top="50%"></div>
    <%@include file="728x90ad.jsp" %>

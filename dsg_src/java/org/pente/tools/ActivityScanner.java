@@ -6,6 +6,7 @@ import java.text.*;
 
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
+
 import org.jfree.data.xy.*;
 import org.jfree.chart.*;
 import org.jfree.chart.axis.*;
@@ -17,9 +18,9 @@ import org.jfree.chart.plot.*;
 public class ActivityScanner {
 
     private static final DateFormat dateFormat = new SimpleDateFormat(
-        "yyyy-MM-dd");
+            "yyyy-MM-dd");
     private static final DateFormat timeFormat = new SimpleDateFormat(
-        "yyyy-MM-dd HH:mm:ss,S");
+            "yyyy-MM-dd HH:mm:ss,S");
 
     private File inFiles[];
     private File outFile;
@@ -27,7 +28,7 @@ public class ActivityScanner {
 
 
     public static void main(String[] args) throws IOException, ParseException {
-        
+
         File inFiles[] = new File[args.length - 1];
         for (int i = 0; i < inFiles.length; i++) {
             inFiles[i] = new File(args[i]);
@@ -38,19 +39,19 @@ public class ActivityScanner {
         scanner.createChart();
     }
 
-    
-    public ActivityScanner(File inFiles[], File outFile) {
-        
-        this.inFiles = inFiles;
-        this.outFile  = outFile;
-        
-   }
 
-    
+    public ActivityScanner(File inFiles[], File outFile) {
+
+        this.inFiles = inFiles;
+        this.outFile = outFile;
+
+    }
+
+
     private int findStartCount() throws IOException {
         int startCount = 0;
         BufferedReader in = new BufferedReader(new InputStreamReader(
-            new FileInputStream(inFiles[0])));
+                new FileInputStream(inFiles[0])));
 
         String line = null;
         int countLoggedIn = 0;
@@ -61,53 +62,51 @@ public class ActivityScanner {
 
             if (type.equals("join")) {
                 countLoggedIn++;
-            }
-            else if (type.equals("exit")) {
+            } else if (type.equals("exit")) {
                 countLoggedIn--;
                 if (countLoggedIn < startCount) {
                     startCount = countLoggedIn;
                 }
             }
         }
-    
+
         in.close();
-        
+
         return -startCount;
     }
-    
-    private XYDataset getDataSet() throws IOException, ParseException  {
+
+    private XYDataset getDataSet() throws IOException, ParseException {
 
         int countLoggedIn = findStartCount();
-        
+
         DefaultTableXYDataset dataset = new DefaultTableXYDataset();
         Date firstStartDate = dateFormat.parse(inFiles[0].getName().substring(13));
-        
+
         for (int i = 0; i < 1; i++) {
 
             String date = inFiles[i].getName().substring(13);
             Date startDate = dateFormat.parse(date);
             XYSeries dataSeries = new XYSeries(date,
                     true, false);
-            
+
             BufferedReader in = new BufferedReader(new InputStreamReader(
-                new FileInputStream(inFiles[i])));
-           
+                    new FileInputStream(inFiles[i])));
+
             String line = null;
             while ((line = in.readLine()) != null) {
                 String type = line.substring(26, 30);
                 if (type.equals("sess")) continue;
                 if (type.charAt(0) > '0' && type.charAt(0) < '9') continue;
-    
+
                 Date newDate = timeFormat.parse(line.substring(0, 23));
                 long time = newDate.getTime() - startDate.getTime() + firstStartDate.getTime();
                 //Date dd = new Date(time);
                 //String ds = timeFormat.format(dd);
-                
+
                 if (type.equals("join")) {
                     countLoggedIn++;
                     dataSeries.add(time, countLoggedIn);
-                }
-                else if (type.equals("exit")) {
+                } else if (type.equals("exit")) {
                     countLoggedIn--;
                     dataSeries.add(time, countLoggedIn);
                 }
@@ -115,13 +114,13 @@ public class ActivityScanner {
             in.close();
             dataset.addSeries(dataSeries);
         }
-        
+
         return dataset;
     }
-    
-    private Color colors[] = new Color[] { 
-            Color.red, Color.blue, Color.green, Color.yellow };
-    
+
+    private Color colors[] = new Color[]{
+            Color.red, Color.blue, Color.green, Color.yellow};
+
     private void createChart() {
         try {
             XYDataset dataset = getDataSet();

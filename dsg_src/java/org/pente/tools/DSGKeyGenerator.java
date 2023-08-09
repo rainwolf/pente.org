@@ -8,7 +8,7 @@ public class DSGKeyGenerator {
 
     private final static String CIPHER_TRANS = "DESede/CBC/PKCS5Padding";
     private final static String KEY_GEN_TRANS = "DESede";
-    
+
     public static void main(String[] args) throws Throwable {
 
         if (args.length != 1) {
@@ -27,19 +27,19 @@ public class DSGKeyGenerator {
         encryptCipher.init(Cipher.ENCRYPT_MODE, key);
 
         SecretKeyFactory keyfactory = SecretKeyFactory.getInstance(
-            KEY_GEN_TRANS);
+                KEY_GEN_TRANS);
         DESedeKeySpec keyspec =
-            (DESedeKeySpec) keyfactory.getKeySpec(key, DESedeKeySpec.class);
+                (DESedeKeySpec) keyfactory.getKeySpec(key, DESedeKeySpec.class);
         byte[] rawkey = keyspec.getKey();
 
         DataOutputStream out = new DataOutputStream(
-            new FileOutputStream(keyFile));
-        byte[] iv = encryptCipher.getIV(); 
+                new FileOutputStream(keyFile));
+        byte[] iv = encryptCipher.getIV();
         out.writeInt(iv.length);
         out.write(iv);
         out.write(rawkey);
         out.close();
-        
+
         System.out.println("New key written to " + args[0]);
     }
 }

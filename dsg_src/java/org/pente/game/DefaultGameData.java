@@ -1,19 +1,20 @@
-/** DefaultGameData.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * DefaultGameData.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.game;
@@ -28,71 +29,71 @@ import java.util.*;
 public class DefaultGameData implements GameData {
 
     /** Name of the game */
-    protected String        game;
+    protected String game;
 
     /** Game unique id */
-    protected long          gameID;
+    protected long gameID;
 
     /** Name of the site */
-    protected String        site;
+    protected String site;
 
     /** Short name of the site */
-    protected String        shortSite;
+    protected String shortSite;
 
     /** www URL of a site */
-    protected String        siteURL;
+    protected String siteURL;
 
     /** Name of the event */
-    protected String        event;
+    protected String event;
 
     /** Name of the round */
-    protected String        round;
+    protected String round;
 
     /** Name of the section */
-    protected String        section;
+    protected String section;
 
     /** Date of the game */
-    protected Date          date;
+    protected Date date;
 
     /** True if the game was timed */
-    protected boolean       timed;
+    protected boolean timed;
 
     /** The initial time allowed for the game */
-    protected int           initialTime;
+    protected int initialTime;
 
     /** The incremental time added after each move */
-    protected int           incrementalTime;
+    protected int incrementalTime;
 
     /** True if the game was rated */
-    protected boolean       rated;
+    protected boolean rated;
 
     /** Player 1 info */
-    protected PlayerData    player1Data;
+    protected PlayerData player1Data;
 
     /** Player 2 info */
-    protected PlayerData    player2Data;
+    protected PlayerData player2Data;
 
     /** Winner of the game */
-    protected int           winner;
+    protected int winner;
 
     /** Moves of the game */
-    protected Vector        gameMoves;
+    protected Vector gameMoves;
 
     /** Did players swap */
-    protected boolean       swapped;
+    protected boolean swapped;
 
     /** Did players swap */
-    protected boolean       swap2Pass;
+    protected boolean swap2Pass;
 
     /** Is game private */
-    protected boolean		privateGame;
+    protected boolean privateGame;
 
     private long sid;
     private String status;
-    
-	private boolean editable;
-	private boolean stored;
-	
+
+    private boolean editable;
+    private boolean stored;
+
     /** Initialize moves vector, set winner to unkown */
     public DefaultGameData() {
         gameMoves = new Vector();
@@ -326,9 +327,9 @@ public class DefaultGameData implements GameData {
         return player2Data;
     }
 
-    public boolean isVsComputer() {        
+    public boolean isVsComputer() {
         return player1Data.getType() == PlayerData.COMPUTER ||
-               player2Data.getType() == PlayerData.COMPUTER;
+                player2Data.getType() == PlayerData.COMPUTER;
     }
 
 
@@ -352,7 +353,7 @@ public class DefaultGameData implements GameData {
     public void setSwapped(boolean swapped) {
         this.swapped = swapped;
     }
-    
+
     /** Return whether or not players swapped in the game (D-Pente)
      *  @return boolean True if players swapped
      */
@@ -386,7 +387,7 @@ public class DefaultGameData implements GameData {
      *  @param num The sequence number of the move
      */
     public int getMove(int num) {
-        return ((Integer)gameMoves.elementAt(num)).intValue();
+        return ((Integer) gameMoves.elementAt(num)).intValue();
     }
 
     /** Get the number of moves for this game
@@ -403,7 +404,7 @@ public class DefaultGameData implements GameData {
         }
         return m;
     }
-    
+
     /** Determine if this game data equals another game data
      *  @param obj The object to compare this to
      *  @return boolean True if the obj equals this game data
@@ -493,56 +494,58 @@ public class DefaultGameData implements GameData {
 
         if (obj1 == null) {
             return obj2 == null;
-        }
-        else {
+        } else {
             return obj1.equals(obj2);
         }
     }
 
-	public boolean isPrivateGame() {
-		return privateGame;
-	}
+    public boolean isPrivateGame() {
+        return privateGame;
+    }
 
-	public void setPrivateGame(boolean privateGame) {
-		this.privateGame = privateGame;
-	}
+    public void setPrivateGame(boolean privateGame) {
+        this.privateGame = privateGame;
+    }
 
-	public boolean isEditable() {
-		return editable;
-	}
+    public boolean isEditable() {
+        return editable;
+    }
 
-	public void setEditable(boolean editable) {
-		this.editable = editable;
-	}
+    public void setEditable(boolean editable) {
+        this.editable = editable;
+    }
 
-	public boolean isStored() {
-		return stored;
-	}
+    public boolean isStored() {
+        return stored;
+    }
 
-	public void setStored(boolean stored) {
-		this.stored = stored;
-	}
+    public void setStored(boolean stored) {
+        this.stored = stored;
+    }
 
-	public long getSid() {
-		return sid;
-	}
+    public long getSid() {
+        return sid;
+    }
 
-	public void setSid(long sid) {
-		this.sid = sid;
-	}
+    public void setSid(long sid) {
+        this.sid = sid;
+    }
 
     public String getStatus() {
-    	return status;
+        return status;
     }
+
     public void setStatus(String status) {
-    	this.status = status;
+        this.status = status;
     }
-    
+
     private List<Time> moveTimes;
+
     public void setMoveTimes(List<Time> times) {
-    	this.moveTimes = times;
+        this.moveTimes = times;
     }
+
     public List<Time> getMoveTimes() {
-    	return moveTimes;
+        return moveTimes;
     }
 }

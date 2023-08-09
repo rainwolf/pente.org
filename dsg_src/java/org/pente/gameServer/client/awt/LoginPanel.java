@@ -1,19 +1,20 @@
-/** LoginPanel.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * LoginPanel.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.gameServer.client.awt;
@@ -30,15 +31,15 @@ import org.pente.gameServer.client.*;
  */
 public class LoginPanel extends Panel implements LoginComponent {
 
-    private static final String LOGIN =             "Login";
+    private static final String LOGIN = "Login";
 
-    private String              loginMsg;
-    private TextArea            loginText;
-    private TextField           loginName;
-    private TextField           loginPassword;
-    private Choice              loginRoom;
-    
-    private Vector              listeners = new Vector();
+    private String loginMsg;
+    private TextArea loginText;
+    private TextField loginName;
+    private TextField loginPassword;
+    private Choice loginRoom;
+
+    private Vector listeners = new Vector();
 
     /** Constructor.
      *  @param gameStyle A GameStyle object to setup the appropriate style for the panel.
@@ -46,7 +47,7 @@ public class LoginPanel extends Panel implements LoginComponent {
     public LoginPanel(final Vector activeServers, GameStyles gameStyle) {
 
         loginMsg = new String("Pente.org Login\n\n" +
-                              "Enter your user name and password to login.\n");
+                "Enter your user name and password to login.\n");
 
         loginText = new TextArea(loginMsg, 5, 35, TextArea.SCROLLBARS_NONE);
         loginText.setBackground(Color.white);
@@ -75,7 +76,7 @@ public class LoginPanel extends Panel implements LoginComponent {
         }
         Label loginRoomLabel = new Label("Game Room");
         loginRoomLabel.setForeground(gameStyle.foreGround);
-        
+
         class LoginActionListener implements ActionListener {
 
             public void actionPerformed(ActionEvent e) {
@@ -85,11 +86,10 @@ public class LoginPanel extends Panel implements LoginComponent {
                 int port = 0;
                 if (activeServers.size() == 1) {
                     port = ((ServerData) activeServers.elementAt(0)).getPort();
-                }
-                else {
+                } else {
                     port = ((ServerData) activeServers.elementAt(loginRoom.getSelectedIndex())).getPort();
                 }
-                
+
                 for (int i = 0; i < listeners.size(); i++) {
                     LoginListener loginListener = (LoginListener) listeners.elementAt(i);
                     loginListener.login(name, password, port);
@@ -100,7 +100,6 @@ public class LoginPanel extends Panel implements LoginComponent {
         ActionListener loginActionListener = new LoginActionListener();
         loginPassword.addActionListener(loginActionListener);
         loginButton.addActionListener(loginActionListener);
-
 
 
         Panel controlsPanel = new Panel();
@@ -140,7 +139,7 @@ public class LoginPanel extends Panel implements LoginComponent {
             gbc.gridx = 3;
             gbc.gridy = ++gridy;
             controlsPanel.add(loginRoomLabel, gbc);
-    
+
             gbc.gridx = 4;
             gbc.gridy = gridy;
             controlsPanel.add(loginRoom, gbc);
@@ -173,14 +172,14 @@ public class LoginPanel extends Panel implements LoginComponent {
         loginName.setText("");
         loginPassword.setText("");
         loginText.setText(loginMsg + "\n" +
-                          "You are already logged in\n"+
-                          "If you got disconnected, try again in a minute.");
+                "You are already logged in\n" +
+                "If you got disconnected, try again in a minute.");
     }
 
     public void showInvalidLogin() {
 
         loginText.setText(loginMsg + "\n" +
-                          "User name or Password incorrect, try again.");
+                "User name or Password incorrect, try again.");
     }
 
     public void showValidLogin() {
@@ -189,12 +188,12 @@ public class LoginPanel extends Panel implements LoginComponent {
         loginPassword.setText("");
         loginText.setText(loginMsg);
     }
-    
+
     public void showPrivateRoom() {
-    	
-    	loginName.setText("");
+
+        loginName.setText("");
         loginPassword.setText("");
-        
+
         loginText.setText(loginMsg + "\n" +
                 "This is a private room and you do not have access.");
     }

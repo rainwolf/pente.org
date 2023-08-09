@@ -1,19 +1,20 @@
-/** HttpGameServerThread.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * HttpGameServerThread.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.gameDatabase;
@@ -35,13 +36,14 @@ public class HttpGameServerThread implements Runnable {
 
     private static final int MAX_MOVES = 20;
 
-    private Socket              socket;
-    private GameStorer          gameStorer;
-    private GameFormat          gameFormat;
-    private GameStorerSearcher  gameStorerSearcher;
+    private Socket socket;
+    private GameStorer gameStorer;
+    private GameFormat gameFormat;
+    private GameStorerSearcher gameStorerSearcher;
 
     // setup initial request data for html client 1st hit
     private static final GameStorerSearchRequestData startRequestData;
+
     static {
         startRequestData = new SimpleGameStorerSearchRequestData();
         startRequestData.addMove(180);
@@ -61,7 +63,7 @@ public class HttpGameServerThread implements Runnable {
 
     public void run() {
 
-        BufferedReader  in = null;
+        BufferedReader in = null;
         //BufferedWriter  out = null;
         //BufferedWriter  zipOut = null;
         OutputStream out = null;
@@ -84,7 +86,7 @@ public class HttpGameServerThread implements Runnable {
             // maybe i should put this in another class?  is it worth it?
             String requestHeader = in.readLine();
 
-System.out.println(requestHeader);
+            System.out.println(requestHeader);
 
             // get the method and request
             StringTokenizer requestTokenizer = new StringTokenizer(requestHeader, " ");
@@ -105,14 +107,12 @@ System.out.println(requestHeader);
             String header = null;
             while (true) {
                 header = in.readLine();
-System.out.println(header);
+                System.out.println(header);
                 if (header == null) {
                     return;
-                }
-                else if (header.equals("")) {
+                } else if (header.equals("")) {
                     break;
-                }
-                else {
+                } else {
                     int headerIndex = header.indexOf(":");
                     if (headerIndex >= 0) {
 
@@ -122,8 +122,7 @@ System.out.println(header);
 
                         if (headerName.toLowerCase().equals(HttpConstants.CONTENT_LENGTH.toLowerCase())) {
                             contentLength = Integer.parseInt(headerValue);
-                        }
-                        else if (headerName.toLowerCase().equals("accept-encoding")) {
+                        } else if (headerName.toLowerCase().equals("accept-encoding")) {
                             StringTokenizer encodingTokenizer = new StringTokenizer(headerValue, ",");
                             while (encodingTokenizer.hasMoreTokens()) {
 
@@ -135,8 +134,7 @@ System.out.println(header);
                                     if (encodingValue.charAt(qIndex + 2) != '0') {
                                         encoding = encodingValue.substring(0, qIndex);
                                     }
-                                }
-                                else {
+                                } else {
                                     encoding = encodingValue;
                                 }
 
@@ -157,7 +155,7 @@ System.out.println(header);
                 char postChars[] = new char[contentLength];
                 in.read(postChars, 0, contentLength);
                 paramStr = new String(postChars);
-System.out.println(paramStr);
+                System.out.println(paramStr);
                 HttpUtilities.parseParams(paramStr, params);
             }
 
@@ -176,19 +174,16 @@ System.out.println(paramStr);
                 // ns4.7 can't handle gzipped images even though it sends the header
                 // but ie5 and ns6.01 can...
                 sendFile(out, imageFile, HttpConstants.CONTENT_TYPE_GIF, false);
-            }
-            else if (request.endsWith(".js")) {
+            } else if (request.endsWith(".js")) {
                 File jsFile = new File(jsDir, request.substring(1));
 
                 // ns4.7 can't handle gzipped javascript files even though it sends the header
                 // but ie5 and ns6.01 can...
                 sendFile(out, jsFile, HttpConstants.CONTENT_TYPE_JS, false);
-            }
-            else if (request.endsWith(".html")) {
+            } else if (request.endsWith(".html")) {
                 File htmlFile = new File(htmlDir, request.substring(1));
                 sendFile(out, htmlFile, HttpConstants.CONTENT_TYPE_HTML, gzipOutput);
-            }
-            else if (request.equals(HttpGameServer.GAME_ALREADY_STORED)) {
+            } else if (request.equals(HttpGameServer.GAME_ALREADY_STORED)) {
 
                 int status = HttpConstants.STATUS_SERVER_ERROR;
                 String response = "";
@@ -209,8 +204,7 @@ System.out.println(paramStr);
                 }
 
                 sendResponse(out, status, response, HttpConstants.CONTENT_TYPE_TEXT, gzipOutput);
-            }
-            else if (request.equals(HttpGameServer.LOAD_GAME)) {
+            } else if (request.equals(HttpGameServer.LOAD_GAME)) {
 
                 int status = HttpConstants.STATUS_SERVER_ERROR;
                 String response = "";
@@ -233,8 +227,7 @@ System.out.println(paramStr);
 
                                 status = HttpConstants.STATUS_OK;
                                 response = buffer.toString();
-                            }
-                            else {
+                            } else {
                                 status = HttpConstants.STATUS_NOT_FOUND;
                                 response = "Game not found: " + gameIDStr;
                             }
@@ -242,20 +235,17 @@ System.out.println(paramStr);
                             status = HttpConstants.STATUS_NOT_FOUND;
                             response = "Game not found: " + gameIDStr;
                         }
-                    }
-                    else {
+                    } else {
                         status = HttpConstants.STATUS_BAD_REQUEST;
                         response = "Invalid request: Missing " + HttpGameServer.GAME_ID;
                     }
-                }
-                else {
+                } else {
                     status = HttpConstants.STATUS_BAD_REQUEST;
-                    response = "Invalid request: Missing, Invalid, or unsupported " + HttpGameServer.GAME_FORMAT + " - " +gameFormatClass;
+                    response = "Invalid request: Missing, Invalid, or unsupported " + HttpGameServer.GAME_FORMAT + " - " + gameFormatClass;
                 }
 
                 sendResponse(out, status, response, HttpConstants.CONTENT_TYPE_TEXT, gzipOutput);
-            }
-            else if (request.equals(HttpGameServer.STORE_GAME)) {
+            } else if (request.equals(HttpGameServer.STORE_GAME)) {
 
                 int status = HttpConstants.STATUS_SERVER_ERROR;
                 String response = "";
@@ -277,22 +267,18 @@ System.out.println(paramStr);
 
                         status = HttpConstants.STATUS_OK;
                         response = "Game stored successfully: " + gameIDStr;
-                    }
-                    else {
+                    } else {
                         status = HttpConstants.STATUS_BAD_REQUEST;
                         response = "Invalid request: Missing ";
                         response += (gameIDStr == null) ? HttpGameServer.GAME_ID : HttpGameServer.GAME_DATA;
                     }
-                }
-                else {
+                } else {
                     status = HttpConstants.STATUS_BAD_REQUEST;
-                    response = "Invalid request: Missing, Invalid, or unsupported " + HttpGameServer.GAME_FORMAT + " - " +gameFormatClass;
+                    response = "Invalid request: Missing, Invalid, or unsupported " + HttpGameServer.GAME_FORMAT + " - " + gameFormatClass;
                 }
 
                 sendResponse(out, status, response, HttpConstants.CONTENT_TYPE_TEXT, gzipOutput);
-            }
-
-            else if (request.equals(HttpGameServer.SEARCH)) {
+            } else if (request.equals(HttpGameServer.SEARCH)) {
 
                 int status = HttpConstants.STATUS_SERVER_ERROR;
                 String response = "";
@@ -301,8 +287,7 @@ System.out.println(paramStr);
                 GameStorerSearchRequestData requestData = null;
                 if (((String) params.get(HttpGameServer.SEARCH_START_PARAM)) != null) {
                     requestData = startRequestData;
-                }
-                else {
+                } else {
                     requestData = new SimpleGameStorerSearchRequestData();
                     requestData = (GameStorerSearchRequestData) httpObjectFormat.parse(requestData, new StringBuffer(paramStr));
                 }
@@ -322,13 +307,11 @@ System.out.println(paramStr);
                         status = HttpConstants.STATUS_OK;
                         response = buffer.toString();
                         contentType = responseFormat.getContentType();
-                    }
-                    else {
+                    } else {
                         status = HttpConstants.STATUS_BAD_REQUEST;
                         response = "Invalid request: No moves specified";
                     }
-                }
-                else {
+                } else {
                     status = HttpConstants.STATUS_BAD_REQUEST;
                     response = "Invalid request: parse exception";
                 }
@@ -336,7 +319,7 @@ System.out.println(paramStr);
                 sendResponse(out, status, response, contentType, gzipOutput);
             }
 
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
 
             int status = HttpConstants.STATUS_SERVER_ERROR;
@@ -345,9 +328,24 @@ System.out.println(paramStr);
             sendResponse(out, status, response, HttpConstants.CONTENT_TYPE_TEXT, gzipOutput);
 
         } finally {
-            if (out != null)    { try { out.close();    } catch(IOException e) {}}
-            if (in != null)     { try { in.close();     } catch(IOException e) {}}
-            if (socket != null) { try { socket.close(); } catch(IOException e) {}}
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException e) {
+                }
+            }
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                }
+            }
+            if (socket != null) {
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                }
+            }
         }
     }
 
@@ -355,14 +353,11 @@ System.out.println(paramStr);
 
         if (gameFormatClass == null) {
             return null;
-        }
-        else if (gameFormatClass.equals("org.pente.filter.iyt.game.IYTPGNGameFormat")) {
+        } else if (gameFormatClass.equals("org.pente.filter.iyt.game.IYTPGNGameFormat")) {
             return new IYTGameData();
-        }
-        else if (gameFormatClass.equals("org.pente.game.PGNGameFormat")) {
+        } else if (gameFormatClass.equals("org.pente.game.PGNGameFormat")) {
             return new DefaultGameData();
-        }
-        else {
+        } else {
             return null;
         }
     }
@@ -393,7 +388,7 @@ System.out.println(paramStr);
             // be closed in calling method
             out.close();
 
-        } catch(IOException ex) {
+        } catch (IOException ex) {
             ex.printStackTrace();
         }
     }
@@ -411,8 +406,7 @@ System.out.println(paramStr);
 
             if (zip) {
                 out.write(new String("Content-Encoding: gzip" + HttpConstants.END_LINE).getBytes());
-            }
-            else {
+            } else {
                 out.write(new String("Content-Length: ").getBytes());
                 out.write(new Long(file.length()).toString().getBytes());
                 out.write(HttpConstants.END_LINE.getBytes());
@@ -461,10 +455,13 @@ System.out.println(paramStr);
             // be closed in calling method
             out.close();
 
-        } catch(IOException ex) {
+        } catch (IOException ex) {
         } finally {
             if (fileInputStream != null) {
-                try {  fileInputStream.close(); } catch(IOException ex) {}
+                try {
+                    fileInputStream.close();
+                } catch (IOException ex) {
+                }
             }
         }
     }

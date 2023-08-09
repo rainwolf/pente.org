@@ -11,12 +11,13 @@ public class ActiveServerLoader {
     public static void main(String args[]) throws Throwable {
         getActiveServers("localhost");
     }
+
     public static Vector getActiveServers(String host) throws IOException,
-        MalformedURLException {
+            MalformedURLException {
 
         URL url = new URL("https", host, "/gameServer/activeServers");
         BufferedReader in = new BufferedReader(new InputStreamReader(
-            (InputStream) url.openConnection().getInputStream()));
+                (InputStream) url.openConnection().getInputStream()));
         Vector<ServerData> servers = new Vector<ServerData>();
         String s = null;
         while ((s = in.readLine()) != null) {
@@ -26,7 +27,7 @@ public class ActiveServerLoader {
             d.setName(s.substring(i + 1));
             servers.addElement(d);
         }
-        
+
         return servers;
     }
 }

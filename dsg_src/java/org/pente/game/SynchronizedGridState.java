@@ -1,19 +1,20 @@
-/** SynchronizedGridState.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * SynchronizedGridState.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.game;
@@ -23,7 +24,7 @@ import java.awt.Point;
 public class SynchronizedGridState implements GridState {
 
     /** The base grid state that does the real work */
-    protected GridState   gridState;
+    protected GridState gridState;
 
     /** Wrap this grid state around another grid state
      *  @param gridState The base grid state to call all methods on
@@ -52,10 +53,11 @@ public class SynchronizedGridState implements GridState {
     public synchronized boolean isGameOver() {
         return gridState.isGameOver();
     }
+
     public synchronized int getWinner() {
         return gridState.getWinner();
     }
-    
+
     /** Clears the grid state */
     public synchronized void clear() {
         gridState.clear();
@@ -64,6 +66,7 @@ public class SynchronizedGridState implements GridState {
     public synchronized int getGridSizeX() {
         return gridState.getGridSizeX();
     }
+
     public synchronized int getGridSizeY() {
         return gridState.getGridSizeY();
     }
@@ -86,7 +89,7 @@ public class SynchronizedGridState implements GridState {
     public synchronized int getNumMoves() {
         return gridState.getNumMoves();
     }
-    
+
     /** Get a move for this board
      *  @param num The sequence number of the move
      */
@@ -113,8 +116,9 @@ public class SynchronizedGridState implements GridState {
     }
 
     public int getColor(int moveNum) {
-    	return gridState.getColor(moveNum);
+        return gridState.getColor(moveNum);
     }
+
     /** Get info about a position
      *  @param position The position on the board
      *  @return int The value associated with this position
@@ -189,12 +193,15 @@ public class SynchronizedGridState implements GridState {
     public synchronized long getHash() {
         return gridState.getHash();
     }
+
     public synchronized long getHash(int index) {
         return gridState.getHash(index);
     }
+
     public synchronized long[][] getHashes() {
-    	return gridState.getHashes();
+        return gridState.getHashes();
     }
+
     public void updateHash(HashCalculator calc) {
         gridState.updateHash(calc);
     }
@@ -202,17 +209,20 @@ public class SynchronizedGridState implements GridState {
     public synchronized int getRotation() {
         return gridState.getRotation();
     }
+
     public synchronized int getRotation(int index) {
         return gridState.getRotation(index);
     }
+
     public synchronized int[] getRotations() {
-    	return gridState.getRotations();
+        return gridState.getRotations();
     }
 
 
     public synchronized int rotateMove(int move, int newRotation) {
         return gridState.rotateMove(move, newRotation);
     }
+
     public synchronized int rotateMoveToLocalRotation(int move, int newRotation) {
         return gridState.rotateMoveToLocalRotation(move, newRotation);
     }
@@ -228,9 +238,10 @@ public class SynchronizedGridState implements GridState {
     }
 
     public synchronized int[] getAllPossibleRotations(int move, int newRotation) {
-    	return gridState.getAllPossibleRotations(move, newRotation);
+        return gridState.getAllPossibleRotations(move, newRotation);
     }
+
     public void printBoard() {
-    	gridState.printBoard();
+        gridState.printBoard();
     }
 }

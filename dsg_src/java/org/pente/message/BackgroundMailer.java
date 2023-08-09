@@ -11,62 +11,66 @@ import org.pente.gameServer.core.*;
 
 public class BackgroundMailer extends BackgroundWorker {
 
-    private static Category log4j = 
-        Category.getInstance(BackgroundMailer.class.getName());
-    
+    private static Category log4j =
+            Category.getInstance(BackgroundMailer.class.getName());
+
     private String smtpHost;
     private int smtpPort;
     private String smtpUser;
     private String smtpPassword;
-    
-	private DSGPlayerStorer dsgPlayerStorer;
-	public BackgroundMailer(String smtpHost, int smtpPort,
-		String smtpUser, String smtpPassword, DSGPlayerStorer dsgPlayerStorer) {
-		super("Mailer");
-		
-		this.smtpHost = smtpHost;
-		this.smtpPort = smtpPort;
-		this.smtpUser = smtpUser;
-		this.smtpPassword = smtpPassword;
-		this.dsgPlayerStorer = dsgPlayerStorer;
-	}
 
-	class Work {
-		DSGMessage message;
-		boolean ccSender, email;
-		public Work(DSGMessage message, boolean email, boolean ccSender) {
-			this.message = message;
-			this.ccSender = ccSender;
+    private DSGPlayerStorer dsgPlayerStorer;
+
+    public BackgroundMailer(String smtpHost, int smtpPort,
+                            String smtpUser, String smtpPassword, DSGPlayerStorer dsgPlayerStorer) {
+        super("Mailer");
+
+        this.smtpHost = smtpHost;
+        this.smtpPort = smtpPort;
+        this.smtpUser = smtpUser;
+        this.smtpPassword = smtpPassword;
+        this.dsgPlayerStorer = dsgPlayerStorer;
+    }
+
+    class Work {
+        DSGMessage message;
+        boolean ccSender, email;
+
+        public Work(DSGMessage message, boolean email, boolean ccSender) {
+            this.message = message;
+            this.ccSender = ccSender;
             this.email = email;
-		}
-	}
-	public void mail(DSGMessage message, boolean email, boolean ccSender) {
-		doWork(new Work(message, email, ccSender));
-	}
-	public void internalDoWork(Object obj) {
-		Work w = (Work) obj;
-		DSGMessage m = w.message;
+        }
+    }
 
-		try {
-			log4j.info("Email message " + m.getMid() + ", cc=" + w.ccSender);
-			
-			Properties props = new Properties();
-			props.put("mail.smtp.host", smtpHost);
-			props.put("mail.smtp.user", smtpUser);
-			props.put("mail.smtp.password", smtpPassword);
-			props.put("mail.smtp.auth", "true");
+    public void mail(DSGMessage message, boolean email, boolean ccSender) {
+        doWork(new Work(message, email, ccSender));
+    }
 
-	        Session session = Session.getDefaultInstance(props, null);
-	        MimeMessage message = new MimeMessage(session);
+    public void internalDoWork(Object obj) {
+        Work w = (Work) obj;
+        DSGMessage m = w.message;
 
-		    DSGPlayerData fromData = dsgPlayerStorer.loadPlayer(m.getFromPid());
-		    DSGPlayerData toData = dsgPlayerStorer.loadPlayer(m.getToPid());
-		    
-		    if (!toData.isActive()) {
-		        return;
+        try {
+            log4j.info("Email message " + m.getMid() + ", cc=" + w.ccSender);
+
+            Properties props = new Properties();
+            props.put("mail.smtp.host", smtpHost);
+            props.put("mail.smtp.user", smtpUser);
+            props.put("mail.smtp.password", smtpPassword);
+            props.put("mail.smtp.auth", "true");
+
+            Session session = Session.getDefaultInstance(props, null);
+            MimeMessage message = new MimeMessage(session);
+
+            DSGPlayerData fromData = dsgPlayerStorer.loadPlayer(m.getFromPid());
+            DSGPlayerData toData = dsgPlayerStorer.loadPlayer(m.getToPid());
+
+            if (!toData.isActive()) {
+                return;
             }
 
-	        message.setFrom(new InternetAddress(smtpUser, fromData.getName()));
+            message.setFrom(new InternetAddress(smtpUser, fromData.getName()));
             if (w.email) {
                 message.addRecipient(Message.RecipientType.TO,
                         new InternetAddress(toData.getEmail(), toData.getName()));
@@ -80,30 +84,30 @@ public class BackgroundMailer extends BackgroundWorker {
                             new InternetAddress(fromData.getEmail(), fromData.getName()));
                 }
             }
-	        //message.addRecipient(Message.RecipientType.BCC,
-	        //	new InternetAddress("dweebo@pente.org", "dweebo"));
-	        
-	        message.setSubject("Pente.org Message: " + m.getSubject());
-	        message.setSentDate(m.getCreationDate());
-	        message.setReplyTo(new Address[] { new InternetAddress("noreply@pente.org") });
+            //message.addRecipient(Message.RecipientType.BCC,
+            //	new InternetAddress("dweebo@pente.org", "dweebo"));
 
-	        String body = m.getBody() + "\n\n" +
-	        	"This message was sent through http://pente.org.\n" +
-	        	"DO NOT REPLY VIA EMAIL, instead view and reply at " +
-	        	"https://pente.org/gameServer/mymessages?command=view&mid=" + m.getMid() + 
-	        	"\n \n Email settings can be changed at https://pente.org/gameServer/myprofile/prefs";
-		    message.setText(body);
+            message.setSubject("Pente.org Message: " + m.getSubject());
+            message.setSentDate(m.getCreationDate());
+            message.setReplyTo(new Address[]{new InternetAddress("noreply@pente.org")});
 
-	        Transport transport = session.getTransport("smtp");
-	        transport.connect(smtpHost, smtpPort, smtpUser, smtpPassword);
-	        transport.sendMessage(message, message.getAllRecipients());
-	        transport.close();
+            String body = m.getBody() + "\n\n" +
+                    "This message was sent through http://pente.org.\n" +
+                    "DO NOT REPLY VIA EMAIL, instead view and reply at " +
+                    "https://pente.org/gameServer/mymessages?command=view&mid=" + m.getMid() +
+                    "\n \n Email settings can be changed at https://pente.org/gameServer/myprofile/prefs";
+            message.setText(body);
 
-       } catch (DSGPlayerStoreException dpse) {
-    		log4j.error("Problem loading players to send dsg message " +
-        		m.getMid(), dpse);
+            Transport transport = session.getTransport("smtp");
+            transport.connect(smtpHost, smtpPort, smtpUser, smtpPassword);
+            transport.sendMessage(message, message.getAllRecipients());
+            transport.close();
+
+        } catch (DSGPlayerStoreException dpse) {
+            log4j.error("Problem loading players to send dsg message " +
+                    m.getMid(), dpse);
         } catch (Throwable t) {
-        	log4j.error("Problem sending dsg message " + m.getMid(), t);
+            log4j.error("Problem sending dsg message " + m.getMid(), t);
         }
-	}
+    }
 }

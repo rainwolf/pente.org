@@ -1,19 +1,20 @@
-/** PBEMGameFormat.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * PBEMGameFormat.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.game;
@@ -32,15 +33,15 @@ public class PBEMGameFormat implements GameFormat {
     public static final String SITE_NAME = "Richard's PBeM Server";
 
     /** The line separator used by the format */
-    private String  lineSeparator;
+    private String lineSeparator;
 
     /** The format used for dates */
-    private static final DateFormat     dateFormat = new SimpleDateFormat("MMM dd HH:mm");
+    private static final DateFormat dateFormat = new SimpleDateFormat("MMM dd HH:mm");
 
     /** The year must be known by the client who is parsing the data
      *  since the year isn't included in the date in this format.
      */
-    private int     year;
+    private int year;
 
 
     /** Create with the specified line separator and year
@@ -61,11 +62,9 @@ public class PBEMGameFormat implements GameFormat {
 
         if (obj == null) {
             return null;
-        }
-        else if (!(obj instanceof GameData)) {
+        } else if (!(obj instanceof GameData)) {
             throw new IllegalArgumentException("Object not GameData");
-        }
-        else {
+        } else {
             return (GameData) obj;
         }
     }
@@ -109,8 +108,7 @@ public class PBEMGameFormat implements GameFormat {
 
             if (state == START && line.startsWith("Game won by")) {
                 winner = line.substring(12, line.length() - 1);
-            }
-            else if (state == START && line.indexOf("rating") != -1) {
+            } else if (state == START && line.indexOf("rating") != -1) {
 
                 StringTokenizer ratingTokenizer = new StringTokenizer(line, " ");
                 String nameStr = ratingTokenizer.nextToken();
@@ -128,7 +126,7 @@ public class PBEMGameFormat implements GameFormat {
 
                     try {
                         rating = Integer.parseInt(ratingStr);
-                    } catch(NumberFormatException ex) {
+                    } catch (NumberFormatException ex) {
                         isNumber = false;
                     }
 
@@ -137,8 +135,7 @@ public class PBEMGameFormat implements GameFormat {
                             player1Data.setRating(rating);
                             player1Data.setUserIDName(nameStr);
                             break;
-                        }
-                        else if (player2Data.getRating() == 0) {
+                        } else if (player2Data.getRating() == 0) {
                             player2Data.setRating(rating);
                             player2Data.setUserIDName(nameStr);
                             state = DONE_RATINGS;
@@ -146,8 +143,7 @@ public class PBEMGameFormat implements GameFormat {
                         }
                     }
                 }
-            }
-            else if (state == DONE_RATINGS) {
+            } else if (state == DONE_RATINGS) {
 
                 line = lineTokenizer.nextToken();
 
@@ -159,27 +155,23 @@ public class PBEMGameFormat implements GameFormat {
                 if (player1.equals(player1Data.getUserIDName())) {
                     data.setPlayer1Data(player1Data);
                     data.setPlayer2Data(player2Data);
-                }
-                else {
+                } else {
                     data.setPlayer1Data(player2Data);
                     data.setPlayer2Data(player1Data);
                 }
 
                 if (data.getPlayer1Data().getUserIDName().equals(winner)) {
                     data.setWinner(GameData.PLAYER1);
-                }
-                else {
+                } else {
                     data.setWinner(GameData.PLAYER2);
                 }
 
                 state = DONE_PLAYERS;
-            }
-            else if (state == DONE_PLAYERS) {
+            } else if (state == DONE_PLAYERS) {
 
                 if (line.startsWith(data.getPlayer1Data().getUserIDName())) {
                     state = DONE_MOVES;
-                }
-                else {
+                } else {
 
                     StringTokenizer moveTokenizer = new StringTokenizer(line, " ");
 
@@ -191,8 +183,7 @@ public class PBEMGameFormat implements GameFormat {
                         if (skip) {
                             skip = false;
                             continue;
-                        }
-                        else {
+                        } else {
                             skip = true;
                         }
 
@@ -201,8 +192,7 @@ public class PBEMGameFormat implements GameFormat {
                         }
                     }
                 }
-            }
-            else if (state == DONE_MOVES) {
+            } else if (state == DONE_MOVES) {
 
                 if (line.startsWith("Game ended......")) {
 

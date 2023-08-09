@@ -1,19 +1,20 @@
-/** GameStorerSearchResponseMoveDataComparator.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * GameStorerSearchResponseMoveDataComparator.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.gameDatabase;
@@ -24,9 +25,9 @@ import org.pente.game.*;
 
 public class GameStorerSearchResponseMoveDataComparator implements Comparator {
 
-    public static final int     SORT_POSITION = 0;
-    public static final int     SORT_GAMES = 1;
-    public static final int     SORT_PERCENTAGE = 2;
+    public static final int SORT_POSITION = 0;
+    public static final int SORT_GAMES = 1;
+    public static final int SORT_PERCENTAGE = 2;
 
     private int sortField;
 
@@ -37,7 +38,7 @@ public class GameStorerSearchResponseMoveDataComparator implements Comparator {
     public int compare(Object obj1, Object obj2) {
 
         if (!(obj1 instanceof GameStorerSearchResponseMoveData) ||
-            !(obj2 instanceof GameStorerSearchResponseMoveData)) {
+                !(obj2 instanceof GameStorerSearchResponseMoveData)) {
             throw new IllegalArgumentException("Invalid objects");
         }
 
@@ -47,28 +48,28 @@ public class GameStorerSearchResponseMoveDataComparator implements Comparator {
 
         switch (sortField) {
 
-        case SORT_POSITION:
-            compareResult = comparePositions(moveData1, moveData2);
-            break;
+            case SORT_POSITION:
+                compareResult = comparePositions(moveData1, moveData2);
+                break;
 
-        case SORT_GAMES:
-            compareResult = -compareGames(moveData1, moveData2);
-            if (compareResult == 0) {
-                compareResult = -comparePercentages(moveData1, moveData2);
-            }
-            if (compareResult == 0) {
-                compareResult = -comparePositions(moveData1, moveData2);
-            }
-            break;
-
-        case SORT_PERCENTAGE:
-            compareResult = -comparePercentages(moveData1, moveData2);
-            if (compareResult == 0) {
+            case SORT_GAMES:
                 compareResult = -compareGames(moveData1, moveData2);
-            }
-            if (compareResult == 0) {
-                compareResult = -comparePositions(moveData1, moveData2);
-            }
+                if (compareResult == 0) {
+                    compareResult = -comparePercentages(moveData1, moveData2);
+                }
+                if (compareResult == 0) {
+                    compareResult = -comparePositions(moveData1, moveData2);
+                }
+                break;
+
+            case SORT_PERCENTAGE:
+                compareResult = -comparePercentages(moveData1, moveData2);
+                if (compareResult == 0) {
+                    compareResult = -compareGames(moveData1, moveData2);
+                }
+                if (compareResult == 0) {
+                    compareResult = -comparePositions(moveData1, moveData2);
+                }
         }
 
         return compareResult;
@@ -86,8 +87,7 @@ public class GameStorerSearchResponseMoveDataComparator implements Comparator {
 
         if (alpha1.equals(alpha2)) {
             return new Integer(numeric1).compareTo(new Integer(numeric2));
-        }
-        else {
+        } else {
             return move1.compareTo(move2);
         }
     }

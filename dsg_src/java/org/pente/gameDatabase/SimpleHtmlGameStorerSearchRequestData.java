@@ -41,14 +41,15 @@ public class SimpleHtmlGameStorerSearchRequestData extends SimpleGameStorerSearc
             startZippedPartNum = Integer.parseInt(startZippedPartNumStr);
         }
     }
+
     public String getGameStorerSearchResponseParams() {
         String params = null;
         try {
             params = URLEncoder.encode(
-                ZIPPED_PART_NUM_PARAM + "=" + startZippedPartNum, "UTF-8");
+                    ZIPPED_PART_NUM_PARAM + "=" + startZippedPartNum, "UTF-8");
         } catch (UnsupportedEncodingException e) {
         }
-        
+
         return params;
     }
 

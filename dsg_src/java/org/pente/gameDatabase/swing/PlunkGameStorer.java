@@ -11,32 +11,38 @@ import org.pente.game.*;
 
 public abstract class PlunkGameStorer {
 
-    /** The name of the table with the player information */
+    /**
+     * The name of the table with the player information
+     */
     protected static final String PLAYER_TABLE = "player";
 
     protected static final Vector PLAYER_TABLES = new Vector();
+
     static {
         PLAYER_TABLES.addElement(PLAYER_TABLE);
         PLAYER_TABLES.addElement(MySQLGameVenueStorer.GAME_SITE_TABLE);
     }
 
-    protected DBHandler                     dbHandler;
-    protected PlunkGameVenueStorer               gameVenueStorer;
+    protected DBHandler dbHandler;
+    protected PlunkGameVenueStorer gameVenueStorer;
 
     public PlunkGameStorer(DBHandler dbHandler, PlunkGameVenueStorer gameVenueStorer) throws Exception {
         this.dbHandler = dbHandler;
         this.gameVenueStorer = gameVenueStorer;
     }
 
-    /** Make sure the database handler is destroyed
+    /**
+     * Make sure the database handler is destroyed
      */
     public void destroy() {
         dbHandler.destroy();
     }
 
-    /** Store the game information
-     *  @param data The GameData for a game
-     *  @exception Exception If the game can't be stored
+    /**
+     * Store the game information
+     *
+     * @param data The GameData for a game
+     * @throws Exception If the game can't be stored
      */
     public void storeGame(PlunkGameData data, GameDbData db) throws Exception {
 
@@ -45,13 +51,13 @@ public abstract class PlunkGameStorer {
         try {
 
             con = dbHandler.getConnection();
-            
+
 
             if (data.getSite() == null || data.getSite().equals("")) {
-            	data.setSite("Unknown");
+                data.setSite("Unknown");
             }
             GameSiteData siteData = gameVenueStorer.getGameSiteData(
-               GridStateFactory.getGameId(data.getGame()), data.getSite());
+                    GridStateFactory.getGameId(data.getGame()), data.getSite());
             if (siteData == null) {
                 siteData = new SimpleGameSiteData();
                 siteData.setName(data.getSite());
@@ -60,72 +66,70 @@ public abstract class PlunkGameStorer {
                 //with that site in a different database (that currently has no
                 //games of that site, then we need to add the site data to the
                 //dbdata...
-                gameVenueStorer.addGameSiteData(db, 
-                    GridStateFactory.getGameId(data.getGame()), siteData);
+                gameVenueStorer.addGameSiteData(db,
+                        GridStateFactory.getGameId(data.getGame()), siteData);
             }
 
             if (data.getEvent() == null || data.getEvent().equals("")) {
-            	data.setEvent("Unknown");
+                data.setEvent("Unknown");
             }
             GameEventData eventData = gameVenueStorer.getGameEventData(
-                GridStateFactory.getGameId(data.getGame()), data.getEvent(),
-                data.getSite());
+                    GridStateFactory.getGameId(data.getGame()), data.getEvent(),
+                    data.getSite());
             if (eventData == null) {
                 eventData = new SimpleGameEventData();
                 eventData.setName(data.getEvent());
                 // this also updates the event id
                 gameVenueStorer.addGameEventData(
-                    GridStateFactory.getGameId(data.getGame()),
-                    eventData, siteData.getName());
+                        GridStateFactory.getGameId(data.getGame()),
+                        eventData, siteData.getName());
             }
             if (data.getRound() != null && !data.getRound().equals("")) {
-	            boolean newRound = true;
-	            for (Iterator it = eventData.getGameRoundData().iterator(); it.hasNext();) {
-	            	GameRoundData rd = (GameRoundData) it.next();
-	            	if (rd.getName().equals(data.getRound())) {
-	            		newRound = false;
-	            		break;
-	            	}
-	            }
-	            if (newRound) {
-	            	eventData.addGameRoundData(new SimpleGameRoundData(data.getRound()));
-	            }
+                boolean newRound = true;
+                for (Iterator it = eventData.getGameRoundData().iterator(); it.hasNext(); ) {
+                    GameRoundData rd = (GameRoundData) it.next();
+                    if (rd.getName().equals(data.getRound())) {
+                        newRound = false;
+                        break;
+                    }
+                }
+                if (newRound) {
+                    eventData.addGameRoundData(new SimpleGameRoundData(data.getRound()));
+                }
             }
-	        
+
             if (data.getPlayer1Data() == null || data.getPlayer1Data().getUserIDName() == null) {
-            	PlayerData p1 = new DefaultPlayerData();
-            	p1.setUserIDName("Unknown");
-            	data.setPlayer1Data(p1);
+                PlayerData p1 = new DefaultPlayerData();
+                p1.setUserIDName("Unknown");
+                data.setPlayer1Data(p1);
             }
-            PlayerData p = loadPlayer(con, data.getPlayer1Data().getUserIDName(), 
-            	data.getSite());
+            PlayerData p = loadPlayer(con, data.getPlayer1Data().getUserIDName(),
+                    data.getSite());
             if (p == null) {
-            	data.getPlayer1Data().setUserID(0);
+                data.getPlayer1Data().setUserID(0);
                 storePlayer(con, data.getPlayer1Data(), data.getSite());
+            } else {
+                data.getPlayer1Data().setUserID(p.getUserID());
             }
-            else {
-            	data.getPlayer1Data().setUserID(p.getUserID());
-            }
-            
+
 
             if (data.getPlayer2Data() == null || data.getPlayer2Data().getUserIDName() == null) {
-            	PlayerData p2 = new DefaultPlayerData();
-            	p2.setUserIDName("Unknown");
-            	data.setPlayer2Data(p2);
+                PlayerData p2 = new DefaultPlayerData();
+                p2.setUserIDName("Unknown");
+                data.setPlayer2Data(p2);
             }
-            p = loadPlayer(con, data.getPlayer2Data().getUserIDName(), 
-                data.getSite());
+            p = loadPlayer(con, data.getPlayer2Data().getUserIDName(),
+                    data.getSite());
             if (p == null) {
-            	data.getPlayer2Data().setUserID(0);
+                data.getPlayer2Data().setUserID(0);
                 storePlayer(con, data.getPlayer2Data(), data.getSite());
-            }
-            else {
-            	data.getPlayer2Data().setUserID(p.getUserID());
+            } else {
+                data.getPlayer2Data().setUserID(p.getUserID());
             }
 
             // add the game
             storeGame(con, data, db.getID());
-            
+
             data.setStored(true);
 
         } finally {
@@ -136,20 +140,24 @@ public abstract class PlunkGameStorer {
     }
 
 
-    /** Add the game to the database, implemented by individual game subclasses
-     *  and called by storeGame(GameData)
-     *  @param con A database connection
-     *  @param data The GameData for a game
-     *  @exception Exception If the game can't be added
+    /**
+     * Add the game to the database, implemented by individual game subclasses
+     * and called by storeGame(GameData)
+     *
+     * @param con  A database connection
+     * @param data The GameData for a game
+     * @throws Exception If the game can't be added
      */
     public abstract void storeGame(Connection con, PlunkGameData data, int db) throws Exception;
 
 
-    /** Checks to see if the player has already been stored
-     *  @param playerID The unique player id
-     *  @param site The site the player is registered for
-     *  @return boolean Flag if player has been stored
-     *  @exception Exception If the player cannot be checked
+    /**
+     * Checks to see if the player has already been stored
+     *
+     * @param playerID The unique player id
+     * @param site     The site the player is registered for
+     * @return boolean Flag if player has been stored
+     * @throws Exception If the player cannot be checked
      */
     public boolean playerAlreadyStored(long playerID, String site) throws Exception {
 
@@ -170,11 +178,13 @@ public abstract class PlunkGameStorer {
         return stored;
     }
 
-    /** Checks if a player exists in the database
-     *  @param con A database connection
-     *  @param playerID The unique player id
-     *  @param site The site the player is registered for
-     *  @exception Exception If there is a problem checking for a player
+    /**
+     * Checks if a player exists in the database
+     *
+     * @param con      A database connection
+     * @param playerID The unique player id
+     * @param site     The site the player is registered for
+     * @throws Exception If there is a problem checking for a player
      */
     public boolean playerAlreadyStored(Connection con, long playerID, String site) throws Exception {
 
@@ -187,12 +197,11 @@ public abstract class PlunkGameStorer {
             int siteID = gameVenueStorer.getSiteID(site);
             if (siteID == -1) {
                 exists = false;
-            }
-            else {
+            } else {
                 stmt = con.prepareStatement("select 1 " +
-                                            "from " + PLAYER_TABLE + " " +
-                                            "where pid = ? " +
-                                            "and site_id = ?");
+                        "from " + PLAYER_TABLE + " " +
+                        "where pid = ? " +
+                        "and site_id = ?");
                 stmt.setLong(1, playerID);
                 stmt.setInt(2, siteID);
 
@@ -201,18 +210,30 @@ public abstract class PlunkGameStorer {
             }
 
         } finally {
-            if (result != null) { try { result.close(); } catch(SQLException ex) {} }
-            if (stmt != null) { try { stmt.close(); } catch(SQLException ex) {} }
+            if (result != null) {
+                try {
+                    result.close();
+                } catch (SQLException ex) {
+                }
+            }
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException ex) {
+                }
+            }
         }
 
         return exists;
     }
 
-    /** Checks to see if the player has already been stored
-     *  @param name The players name
-     *  @param site The site the player is registered for
-     *  @return boolean Flag if player has been stored
-     *  @exception Exception If the player cannot be checked
+    /**
+     * Checks to see if the player has already been stored
+     *
+     * @param name The players name
+     * @param site The site the player is registered for
+     * @return boolean Flag if player has been stored
+     * @throws Exception If the player cannot be checked
      */
     public boolean playerAlreadyStored(String name, String site) throws Exception {
 
@@ -233,12 +254,14 @@ public abstract class PlunkGameStorer {
         return stored;
     }
 
-    /** Checks to see if the player has already been stored
-     *  @param con A database connection
-     *  @param name The players name
-     *  @param site The site the player is registered for
-     *  @return boolean Flag if player has been stored
-     *  @exception Exception If the player cannot be checked
+    /**
+     * Checks to see if the player has already been stored
+     *
+     * @param con  A database connection
+     * @param name The players name
+     * @param site The site the player is registered for
+     * @return boolean Flag if player has been stored
+     * @throws Exception If the player cannot be checked
      */
     public boolean playerAlreadyStored(Connection con, String name, String site) throws Exception {
 
@@ -250,12 +273,11 @@ public abstract class PlunkGameStorer {
             int siteID = gameVenueStorer.getSiteID(site);
             if (siteID == -1) {
                 exists = false;
-            }
-            else {
+            } else {
                 stmt = con.prepareStatement("select 1 " +
-                                            "from " + PLAYER_TABLE + " " +
-                                            "where name = ? " +
-                                            "and site_id = ?");
+                        "from " + PLAYER_TABLE + " " +
+                        "where name = ? " +
+                        "and site_id = ?");
                 stmt.setString(1, name);
                 stmt.setInt(2, siteID);
 
@@ -264,16 +286,28 @@ public abstract class PlunkGameStorer {
             }
 
         } finally {
-            if (result != null) { try { result.close(); } catch(SQLException ex) {} }
-            if (stmt != null) { try { stmt.close(); } catch(SQLException ex) {} }
+            if (result != null) {
+                try {
+                    result.close();
+                } catch (SQLException ex) {
+                }
+            }
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException ex) {
+                }
+            }
         }
 
         return exists;
     }
 
-    /** Stores the player information
-     *  @param data The PlayerData for a game
-     *  @exception If the player cannot be stored
+    /**
+     * Stores the player information
+     *
+     * @param data The PlayerData for a game
+     * @throws If the player cannot be stored
      */
     public void storePlayer(PlayerData data, String site) throws Exception {
 
@@ -291,13 +325,15 @@ public abstract class PlunkGameStorer {
         }
     }
 
-    /** Add a player to the database
-     *  @param con A database connection
-     *  @param playerData Information about a player
-     *  @exception Exception If the player can't be added
+    /**
+     * Add a player to the database
+     *
+     * @param con        A database connection
+     * @param playerData Information about a player
+     * @throws Exception If the player can't be added
      */
     public void storePlayer(Connection con, PlayerData playerData,
-        String site) throws Exception {
+                            String site) throws Exception {
 
         PreparedStatement stmt = null;
         ResultSet result = null;
@@ -308,8 +344,8 @@ public abstract class PlunkGameStorer {
             int siteID = gameVenueStorer.getSiteID(site);
 
             if (playerAlreadyStored(con, playerData.getUserIDName(), site) ||
-                (playerData.getUserID() != 0 && playerAlreadyStored(
-                 con, playerData.getUserID(), site))) {
+                    (playerData.getUserID() != 0 && playerAlreadyStored(
+                            con, playerData.getUserID(), site))) {
                 return;
             }
 
@@ -317,15 +353,15 @@ public abstract class PlunkGameStorer {
             if (playerData.getUserID() == 0) {
 
                 stmt = con.prepareStatement("select max(pid) + 1 " +
-                                            "from " + PLAYER_TABLE + " " +
-                                            "where pid >= 60000000000000");
+                        "from " + PLAYER_TABLE + " " +
+                        "where pid >= 60000000000000");
 
                 result = stmt.executeQuery();
                 if (result.next()) {
-                	long l = result.getLong(1);
-                	if (l < 60000000000000L) {
-                		l = 60000000000000L;
-                	}
+                    long l = result.getLong(1);
+                    if (l < 60000000000000L) {
+                        l = 60000000000000L;
+                    }
                     playerData.setUserID(l);
                 }
 
@@ -341,8 +377,8 @@ public abstract class PlunkGameStorer {
             }
 
             stmt = con.prepareStatement("insert into " + PLAYER_TABLE + " " +
-                                        "(pid, name, site_id, name_lower) " +
-                                        "values(?, ?, ?, lower(?))");
+                    "(pid, name, site_id, name_lower) " +
+                    "values(?, ?, ?, lower(?))");
 
             stmt.setLong(1, playerData.getUserID());
             stmt.setString(2, playerData.getUserIDName());
@@ -352,15 +388,27 @@ public abstract class PlunkGameStorer {
             stmt.executeUpdate();
 
         } finally {
-            if (result != null) { try { result.close(); } catch(SQLException ex) {} }
-            if (stmt != null) { try { stmt.close(); } catch(SQLException ex) {} }
+            if (result != null) {
+                try {
+                    result.close();
+                } catch (SQLException ex) {
+                }
+            }
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException ex) {
+                }
+            }
         }
     }
 
-    /** Loads the player information
-     *  @param playerID The unique player id
-     *  @return PlayerData The player data
-     *  @exception If the player cannot be stored
+    /**
+     * Loads the player information
+     *
+     * @param playerID The unique player id
+     * @return PlayerData The player data
+     * @throws If the player cannot be stored
      */
     public PlayerData loadPlayer(long playerID, String site) throws Exception {
 
@@ -381,11 +429,13 @@ public abstract class PlunkGameStorer {
         return playerData;
     }
 
-    /** Loads the player information
-     *  @param con A database connection to load the player from
-     *  @param playerID The unique player id
-     *  @return PlayerData The player data
-     *  @exception If the player cannot be stored
+    /**
+     * Loads the player information
+     *
+     * @param con      A database connection to load the player from
+     * @param playerID The unique player id
+     * @return PlayerData The player data
+     * @throws If the player cannot be stored
      */
     public PlayerData loadPlayer(Connection con, long playerID, String site) throws Exception {
 
@@ -399,9 +449,9 @@ public abstract class PlunkGameStorer {
             if (siteID != -1) {
 
                 stmt = con.prepareStatement("select name " +
-                                            "from " + PLAYER_TABLE + " " +
-                                            "where pid = ? " +
-                                            "and site_id = ?");
+                        "from " + PLAYER_TABLE + " " +
+                        "where pid = ? " +
+                        "and site_id = ?");
                 stmt.setLong(1, playerID);
                 stmt.setInt(2, siteID);
 
@@ -416,18 +466,30 @@ public abstract class PlunkGameStorer {
             }
 
         } finally {
-            if (stmt != null) { try { stmt.close(); } catch(SQLException ex) {} }
-            if (result != null) { try { result.close(); } catch(SQLException ex) {} }
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException ex) {
+                }
+            }
+            if (result != null) {
+                try {
+                    result.close();
+                } catch (SQLException ex) {
+                }
+            }
         }
 
         return playerData;
     }
 
-    /** Loads the player information
-     *  @param name The players name
-     *  @param site The site the player is registered for
-     *  @return PlayerData The player data
-     *  @exception If the player cannot be stored
+    /**
+     * Loads the player information
+     *
+     * @param name The players name
+     * @param site The site the player is registered for
+     * @return PlayerData The player data
+     * @throws If the player cannot be stored
      */
     public PlayerData loadPlayer(String name, String site) throws Exception {
 
@@ -448,12 +510,14 @@ public abstract class PlunkGameStorer {
         return playerData;
     }
 
-    /** Loads the player information
-     *  @param con A database connection to load the player from
-     *  @param name The players name
-     *  @param site The site the player is registered for
-     *  @return PlayerData The player data
-     *  @exception If the player cannot be stored
+    /**
+     * Loads the player information
+     *
+     * @param con  A database connection to load the player from
+     * @param name The players name
+     * @param site The site the player is registered for
+     * @return PlayerData The player data
+     * @throws If the player cannot be stored
      */
     public PlayerData loadPlayer(Connection con, String name, String site) throws Exception {
 
@@ -466,9 +530,9 @@ public abstract class PlunkGameStorer {
             if (siteID > 0) {
 
                 stmt = con.prepareStatement("select pid " +
-                                            "from " + PLAYER_TABLE + " " +
-                                            "where name = ? " +
-                                            "and site_id = ?");
+                        "from " + PLAYER_TABLE + " " +
+                        "where name = ? " +
+                        "and site_id = ?");
                 stmt.setString(1, name);
                 stmt.setInt(2, siteID);
 
@@ -487,8 +551,18 @@ public abstract class PlunkGameStorer {
             //if (con != null) {
             //    MySQLDBHandler.unLockTables(con);
             //}
-            if (stmt != null) { try { stmt.close(); } catch(SQLException ex) {} }
-            if (result != null) { try { result.close(); } catch(SQLException ex) {} }
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException ex) {
+                }
+            }
+            if (result != null) {
+                try {
+                    result.close();
+                } catch (SQLException ex) {
+                }
+            }
         }
 
         return playerData;

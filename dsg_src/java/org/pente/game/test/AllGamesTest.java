@@ -15,7 +15,7 @@ public class AllGamesTest extends TestCase {
         suite.addTestSuite(GomokuStateTest.class);
         suite.addTestSuite(PenteStateTest.class);
         suite.addTestSuite(PoofPenteTest.class);
-        
+
         return suite;
     }
 }

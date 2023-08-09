@@ -1,19 +1,20 @@
-/** IYTGameBuilder.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * IYTGameBuilder.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.filter.iyt;
@@ -34,22 +35,22 @@ import org.pente.filter.iyt.game.*;
 public class IYTGameBuilder implements FilterListener, Runnable {
 
     /** The request string used at iyt */
-    private String              request;
+    private String request;
 
     /** The parameters to send with the request */
-    private Hashtable           params;
+    private Hashtable params;
 
     /** The cookies needed to send the request to iyt */
-    private Hashtable           cookies;
+    private Hashtable cookies;
 
     /** The game id used by iyt to specify a game */
-    private String              gameID;
+    private String gameID;
 
     /** The game data that we are building */
-    private GameData            gameData;
+    private GameData gameData;
 
     /** The game filter used to build the game with a FilterController */
-    private IYTGameFilter       gameFilter;
+    private IYTGameFilter gameFilter;
 
     /** For testing purposes you can call this builder directly
      *  with the game id and your cookie to attempt to build a game
@@ -59,8 +60,7 @@ public class IYTGameBuilder implements FilterListener, Runnable {
 
         if (args.length != 4) {
             System.err.println("usage: <game id> <cookie> <db property file> <redirected host>");
-        }
-        else {
+        } else {
 
             // get the info from the command line
             String gameID = args[0];
@@ -141,11 +141,11 @@ public class IYTGameBuilder implements FilterListener, Runnable {
 
         // create the filter controller with the game filter
         FilterController httpFilterController = new HttpFilterController("GET",
-                                                                         IYTConstants.HOST,
-                                                                         request,
-                                                                         params,
-                                                                         cookies,
-                                                                         gameFilter);
+                IYTConstants.HOST,
+                request,
+                params,
+                cookies,
+                gameFilter);
         FilterController filterController = new RetryFilterController(httpFilterController, 2, 60);
         filterController.addListener(this);
         filterController.run();
@@ -165,8 +165,7 @@ public class IYTGameBuilder implements FilterListener, Runnable {
 
         if (success) {
             gameData = gameFilter.getGameData();
-        }
-        else {
+        } else {
             ex.printStackTrace();
         }
     }

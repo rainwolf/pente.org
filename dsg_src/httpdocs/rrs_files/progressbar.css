@@ -1,24 +1,28 @@
 .pb {
     font-size: 12px;
     text-align: center;
-    height:71px;
-    margin:0;
+    height: 71px;
+    margin: 0;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
     border-radius: 4px;
-    float:left;
+    float: left;
 }
+
 .pb div {
     margin: 10px;
     height: 30px;
 }
+
 .pb p {
-    text-indent:-9999px;
+    text-indent: -9999px;
 }
+
 .pb-active {
-    background-color:#d6d3ff;
-    font-weight:bold;
+    background-color: #d6d3ff;
+    font-weight: bold;
 }
+
 .pb-activearrow {
     border-color: transparent transparent transparent #d6d3ff;
     _border-right-color: pink;
@@ -26,10 +30,12 @@
     _border-top-color: pink;
     _filter: chroma(color=pink);
 }
+
 .pb-inactive {
-    background-color:#e4e4e4;
-    font-weight:normal;
+    background-color: #e4e4e4;
+    font-weight: normal;
 }
+
 .pb-inactivearrow {
     border-color: transparent transparent transparent #e4e4e4;
     _border-right-color: pink;
@@ -37,18 +43,20 @@
     _border-top-color: pink;
     _filter: chroma(color=pink);
 }
+
 .pb-arrowrect {
-    width:5px;
-    height:16px;
-    float:left;
-    margin-top:28px;
+    width: 5px;
+    height: 16px;
+    float: left;
+    margin-top: 28px;
 }
+
 .pb-arrowtri {
     border-style: solid;
-    border-width:15px;
-    height:0px;
-    width:0px;
-    float:left;
-    margin-top:20px;
-    margin-right:-15px;
+    border-width: 15px;
+    height: 0px;
+    width: 0px;
+    float: left;
+    margin-top: 20px;
+    margin-right: -15px;
 }

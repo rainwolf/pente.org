@@ -90,6 +90,7 @@ public class MySQLTourneyStorer implements TourneyStorer {
 
         return signup;
     }
+
     public List<Tourney> getCurrentTournies()
             throws Throwable {
 
@@ -128,6 +129,7 @@ public class MySQLTourneyStorer implements TourneyStorer {
 
         return current;
     }
+
     public List<Tourney> getCompletedTournies() throws Throwable {
 
         Connection con = null;
@@ -250,14 +252,11 @@ public class MySQLTourneyStorer implements TourneyStorer {
             stmt.setTimestamp(6, t);
             if (tourney.getFormat() instanceof RoundRobinFormat) {
                 stmt.setInt(7, 1);
-            }
-            else if (tourney.getFormat() instanceof DoubleEliminationFormat) {
+            } else if (tourney.getFormat() instanceof DoubleEliminationFormat) {
                 stmt.setInt(7, 3);
-            }
-            else if (tourney.getFormat() instanceof SingleEliminationFormat) {
+            } else if (tourney.getFormat() instanceof SingleEliminationFormat) {
                 stmt.setInt(7, 2);
-            }
-            else if (tourney.getFormat() instanceof SwissFormat) {
+            } else if (tourney.getFormat() instanceof SwissFormat) {
                 stmt.setInt(7, 4);
             }
             stmt.setString(8, tourney.isSpeed() ? "Y" : "N");
@@ -270,7 +269,7 @@ public class MySQLTourneyStorer implements TourneyStorer {
                             "(event_id, pid) " +
                             "values(?, ?)");
             stmt.setInt(1, tourney.getEventID());
-            for (Iterator it = tourney.getDirectors().iterator(); it.hasNext();) {
+            for (Iterator it = tourney.getDirectors().iterator(); it.hasNext(); ) {
                 stmt.setLong(2, ((Long) it.next()).longValue());
                 stmt.execute();
             }
@@ -331,7 +330,7 @@ public class MySQLTourneyStorer implements TourneyStorer {
 
                 results = stmt.executeQuery();
                 while (results.next()) {
-                    TourneyMatch match =  new TourneyMatch();
+                    TourneyMatch match = new TourneyMatch();
                     match.setEvent(eid);
                     match.setMatchID(results.getLong(1));
                     match.setRound(results.getInt(2));
@@ -376,8 +375,7 @@ public class MySQLTourneyStorer implements TourneyStorer {
 
                         currentRound = new TourneyRound(match.getRound());
                         currentSection = tourney.createSection(1);
-                    }
-                    else if (match.getSection() > currentSection.getSection()) {
+                    } else if (match.getSection() > currentSection.getSection()) {
 
                         currentRound.addSection(currentSection);
                         currentSection = tourney.createSection(match.getSection());
@@ -437,6 +435,7 @@ public class MySQLTourneyStorer implements TourneyStorer {
             }
         }
     }
+
     public void removePlayerFromTourney(long pid, int eid) throws Throwable {
         Connection con = null;
         PreparedStatement stmt = null;
@@ -460,7 +459,9 @@ public class MySQLTourneyStorer implements TourneyStorer {
         }
     }
 
-    /** get List of TourneyPlayerData for all players in a tourney */
+    /**
+     * get List of TourneyPlayerData for all players in a tourney
+     */
     public List getTourneyPlayers(int eid)
             throws Throwable {
 
@@ -488,7 +489,7 @@ public class MySQLTourneyStorer implements TourneyStorer {
                 t.setName(results.getString(2));
                 t.setSeed(results.getInt(3));
                 t.setTotalGames(results.getInt(4));
-                t.setRating((int)Math.round(results.getDouble(5)));
+                t.setRating((int) Math.round(results.getDouble(5)));
                 players.add(t);
             }
 
@@ -499,11 +500,9 @@ public class MySQLTourneyStorer implements TourneyStorer {
 
                     if (t1.getTotalGames() > 19 && t2.getTotalGames() < 20) {
                         return -1;
-                    }
-                    else if (t1.getTotalGames() < 20 && t2.getTotalGames() > 19) {
+                    } else if (t1.getTotalGames() < 20 && t2.getTotalGames() > 19) {
                         return 1;
-                    }
-                    else {
+                    } else {
                         return (int) (t2.getRating() - t1.getRating());
                     }
                 }
@@ -587,14 +586,11 @@ public class MySQLTourneyStorer implements TourneyStorer {
                 int format = results.getInt(9);
                 if (format == 1) {
                     details.setFormat(new RoundRobinFormat());
-                }
-                else if (format == 2) {
+                } else if (format == 2) {
                     details.setFormat(new SingleEliminationFormat());
-                }
-                else if (format == 3) {
+                } else if (format == 3) {
                     details.setFormat(new DoubleEliminationFormat());
-                }
-                else if (format == 4) {
+                } else if (format == 4) {
                     details.setFormat(new SwissFormat());
                 }
                 details.setSpeed(results.getString(10).equals("Y"));
@@ -703,7 +699,9 @@ public class MySQLTourneyStorer implements TourneyStorer {
         return match;
     }
 
-    /** based on sorted list of players, update seeds in db */
+    /**
+     * based on sorted list of players, update seeds in db
+     */
     public List setInitialSeeds(int eid)
             throws Throwable {
 
@@ -742,9 +740,9 @@ public class MySQLTourneyStorer implements TourneyStorer {
     public void insertRound(TourneyRound round)
             throws Throwable {
 
-        for (Iterator sections = round.getSections().iterator(); sections.hasNext();) {
+        for (Iterator sections = round.getSections().iterator(); sections.hasNext(); ) {
             TourneySection s = (TourneySection) sections.next();
-            for (Iterator matches = s.getMatches().iterator(); matches.hasNext();) {
+            for (Iterator matches = s.getMatches().iterator(); matches.hasNext(); ) {
                 TourneyMatch m = (TourneyMatch) matches.next();
                 insertMatch(m);
             }
@@ -768,8 +766,7 @@ public class MySQLTourneyStorer implements TourneyStorer {
             stmt.setLong(4, tourneyMatch.getPlayer1().getPlayerID());
             if (tourneyMatch.isBye()) {
                 stmt.setLong(5, 0);
-            }
-            else {
+            } else {
                 stmt.setLong(5, tourneyMatch.getPlayer2().getPlayerID());
             }
             stmt.setInt(6, tourneyMatch.getSeq());
@@ -829,11 +826,11 @@ public class MySQLTourneyStorer implements TourneyStorer {
         try {
             con = dbHandler.getConnection();
             stmt = con.prepareStatement("update dsg_player_game set tourney_winner=? where pid = ? and computer = 'N' and game = ?");
-            stmt.setString(1, ""+crown);
+            stmt.setString(1, "" + crown);
             stmt.setLong(2, pid);
             stmt.setInt(3, game);
             stmt.executeUpdate();
-            
+
         } finally {
 
             if (stmt != null) {
@@ -853,7 +850,7 @@ public class MySQLTourneyStorer implements TourneyStorer {
             con = dbHandler.getConnection();
             stmt = con.prepareStatement("update dsg_player_game set tourney_winner='0' where pid = ? and tourney_winner=? and computer = 'N' and game = ?");
             stmt.setLong(1, pid);
-            stmt.setString(2, ""+crown);
+            stmt.setString(2, "" + crown);
             stmt.setInt(3, game);
             stmt.executeUpdate();
 
@@ -865,11 +862,16 @@ public class MySQLTourneyStorer implements TourneyStorer {
             if (con != null) {
                 dbHandler.freeConnection(con);
             }
-        } 
+        }
     }
 
     // not implemented here
-    public void updateMatches(List tourneyMatches, Tourney t) throws Throwable {}
-    public void addTourneyListener(TourneyListener listener) {}
-    public void removeTourneyListener(TourneyListener listener) {}
+    public void updateMatches(List tourneyMatches, Tourney t) throws Throwable {
+    }
+
+    public void addTourneyListener(TourneyListener listener) {
+    }
+
+    public void removeTourneyListener(TourneyListener listener) {
+    }
 }

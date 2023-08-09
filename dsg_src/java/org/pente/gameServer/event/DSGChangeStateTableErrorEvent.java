@@ -2,7 +2,7 @@ package org.pente.gameServer.event;
 
 public class DSGChangeStateTableErrorEvent extends DSGChangeStateTableEvent {
 
-	private int error;
+    private int error;
 
     public DSGChangeStateTableErrorEvent() {
         super();
@@ -10,19 +10,20 @@ public class DSGChangeStateTableErrorEvent extends DSGChangeStateTableEvent {
 
     public DSGChangeStateTableErrorEvent(String player, int table, int error) {
         super(player, table);
-        
+
         setError(error);
     }
-	
-	public void setError(int error) {
-		this.error = error;
-	}
-	public int getError() {
-		return error;
-	}
-	
-	public String toString() {
-		return super.toString() + " error " + getError();
-	}
+
+    public void setError(int error) {
+        this.error = error;
+    }
+
+    public int getError() {
+        return error;
+    }
+
+    public String toString() {
+        return super.toString() + " error " + getError();
+    }
 }
 
