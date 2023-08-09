@@ -515,6 +515,11 @@ public class ServerTable {
                     ((PenteState) gridState).didDPenteSwap(), true),
                     player);
             }
+            if (game == GridStateFactory.SWAP2PENTE_GAME || game == GridStateFactory.SPEED_SWAP2PENTE_GAME) {
+                dsgEventRouter.routeEvent(
+                    new DSGSwap2PassTableEvent(null, tableNum, true),
+                    player);
+            }
 
 			sendMoves(player);
 
@@ -1089,31 +1094,37 @@ public class ServerTable {
         }
         else {
             int seat = getPlayerSeat(swapEvent.getPlayer());
-            if (seat != 2) {
+            if ((seat != 2 && (game == GridStateFactory.DPENTE_GAME ||
+                game == GridStateFactory.SPEED_DPENTE_GAME ||
+                game == GridStateFactory.DKERYO_GAME ||
+                game == GridStateFactory.SPEED_DKERYO_GAME) && gridState.getNumMoves() == 4)
+                || (seat != 2 && (game == GridStateFactory.SWAP2PENTE_GAME ||
+                game == GridStateFactory.SPEED_SWAP2PENTE_GAME) && gridState.getNumMoves() == 3)
+                || (seat != 1 && (game == GridStateFactory.SWAP2PENTE_GAME ||
+                game == GridStateFactory.SPEED_SWAP2PENTE_GAME) && gridState.getNumMoves() == 5)
+            ) {
                 error = DSGTableErrorEvent.NOT_SITTING;
             }
             else if (state != DSGGameStateTableEvent.GAME_IN_PROGRESS) {
                 error = DSGTableErrorEvent.NO_GAME_IN_PROGRESS;
-            }
-            else if ((game != GridStateFactory.DPENTE_GAME &&
-                      game != GridStateFactory.SPEED_DPENTE_GAME &&
-                    game != GridStateFactory.DKERYO_GAME &&
-                    game != GridStateFactory.SPEED_DKERYO_GAME) ||
-                     gridState.getNumMoves() != 4 ||
-                     ((PenteState) gridState).wasDPenteSwapDecisionMade()) {
-                error = DSGTableErrorEvent.UNKNOWN;
-            } else if ((game != GridStateFactory.SWAP2PENTE_GAME &&
-                    game != GridStateFactory.SPEED_SWAP2PENTE_GAME) ||
-                    (!(gridState.getNumMoves() == 3 || gridState.getNumMoves() != 5)) ||
-                    ((PenteState) gridState).wasDPenteSwapDecisionMade()) {
+            } else if (
+                    !((game == GridStateFactory.DPENTE_GAME ||
+                    game == GridStateFactory.SPEED_DPENTE_GAME ||
+                    game == GridStateFactory.DKERYO_GAME ||
+                    game == GridStateFactory.SPEED_DKERYO_GAME) &&
+                    gridState.getNumMoves() == 4 && !((PenteState) gridState).wasDPenteSwapDecisionMade()) &&
+                    !((game == GridStateFactory.SWAP2PENTE_GAME || game == GridStateFactory.SPEED_SWAP2PENTE_GAME) &&
+                    (gridState.getNumMoves() == 3 || gridState.getNumMoves() == 5) &&
+                    !((PenteState) gridState).wasDPenteSwapDecisionMade())
+            ) {
                 error = DSGTableErrorEvent.UNKNOWN;
             }
             else {
-                
+
                 // cancel any undo requests from player 1 since we already decided
                 // to swap or not, it's too late
                 undoRequested = false;
-                
+
                 // swap the players
                 if (swapEvent.wantsToSwap()) {
                     DSGPlayerData tmp = playingPlayers[1];
@@ -1127,8 +1138,8 @@ public class ServerTable {
                 if (timed) {
                     timers[gridState.getCurrentPlayer()].stop();
                     timers[gridState.getCurrentPlayer()].incrementMillis(
-                        (int) pingManager.getPingTime(swapEvent.getPlayer()));
-                    
+                            (int) pingManager.getPingTime(swapEvent.getPlayer()));
+
                     // swap player times
                     if (swapEvent.wantsToSwap()) {
                         int s1 = timers[1].getSeconds();
@@ -1141,8 +1152,8 @@ public class ServerTable {
                 }
 
                 ((PenteState) gridState).dPenteSwapDecisionMade(
-                    swapEvent.wantsToSwap());
-                    
+                        swapEvent.wantsToSwap());
+
                 if (timed) {
                     timers[gridState.getCurrentPlayer()].go();
                 }
@@ -1155,7 +1166,41 @@ public class ServerTable {
         }
     }
 
-	protected void copySittingPlayersToPlayingPlayers() {
+    public void handleSwap2Pass(DSGSwap2PassTableEvent swap2PassEvent) {
+        int error = NO_ERROR;
+        if (!isPlayerInTable(swap2PassEvent.getPlayer())) {
+            error = DSGTableErrorEvent.NOT_IN_TABLE;
+        } else {
+            int seat = getPlayerSeat(swap2PassEvent.getPlayer());
+            if (seat != 2) {
+                error = DSGTableErrorEvent.NOT_SITTING;
+            }
+            else if (state != DSGGameStateTableEvent.GAME_IN_PROGRESS) {
+                error = DSGTableErrorEvent.NO_GAME_IN_PROGRESS;
+            } else if ((game != GridStateFactory.SWAP2PENTE_GAME && game != GridStateFactory.SPEED_SWAP2PENTE_GAME) ||
+                        (gridState.getNumMoves() != 3) || ((PenteState) gridState).wasDPenteSwapDecisionMade()) {
+                error = DSGTableErrorEvent.UNKNOWN;
+            }
+            else {
+                // cancel any undo requests from player 1 since we already decided
+                // to swap or not, it's too late
+                undoRequested = false;
+
+                ((PenteState) gridState).setSwap2Pass(true);
+
+                if (timed) {
+                    timers[gridState.getCurrentPlayer()].go();
+                }
+
+                broadcastMainRoom(swap2PassEvent);
+            }
+        }
+        if (error != NO_ERROR) {
+            log4j.info(psid() + "Swap2Pass Event error: " + error);
+        }
+    }
+
+    protected void copySittingPlayersToPlayingPlayers() {
 		for (int i = 1; i < playingPlayers.length; i++) {
 			playingPlayers[i] = sittingPlayers[i];
             
@@ -2864,8 +2909,7 @@ public class ServerTable {
         // (if forced resign, don't swap)
         // (if d-pente and already swapped, don't swap back)
         if (game == GridStateFactory.DPENTE_GAME || game == GridStateFactory.SPEED_DPENTE_GAME
-            || game == GridStateFactory.DKERYO_GAME || game == GridStateFactory.SPEED_DKERYO_GAME
-            || game == GridStateFactory.SWAP2PENTE_GAME || game == GridStateFactory.SPEED_SWAP2PENTE_GAME) {
+            || game == GridStateFactory.DKERYO_GAME || game == GridStateFactory.SPEED_DKERYO_GAME) {
             if (((PenteState) gridState).didDPenteSwap()) {
                 return; // already swapped seats
             }
