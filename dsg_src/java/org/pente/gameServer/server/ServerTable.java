@@ -515,7 +515,8 @@ public class ServerTable {
                     ((PenteState) gridState).didDPenteSwap(), true),
                     player);
             }
-            if (game == GridStateFactory.SWAP2PENTE_GAME || game == GridStateFactory.SPEED_SWAP2PENTE_GAME) {
+            if ((game == GridStateFactory.SWAP2PENTE_GAME || game == GridStateFactory.SPEED_SWAP2PENTE_GAME)
+                && ((PenteState) gridState).didSwap2Pass()) {
                 dsgEventRouter.routeEvent(
                     new DSGSwap2PassTableEvent(null, tableNum, true),
                     player);
@@ -1186,6 +1187,13 @@ public class ServerTable {
                 // to swap or not, it's too late
                 undoRequested = false;
 
+                // update timers after swap decision
+                if (timed) {
+                    timers[gridState.getCurrentPlayer()].stop();
+                    timers[gridState.getCurrentPlayer()].incrementMillis(
+                            (int) pingManager.getPingTime(swap2PassEvent.getPlayer()));
+                }
+
                 ((PenteState) gridState).setSwap2Pass(true);
 
                 if (timed) {
@@ -1564,9 +1572,10 @@ public class ServerTable {
                             // not. if p1 requests undo and accepted, reset p2's clock
                             // to initial time
                             if ((game == GridStateFactory.DPENTE_GAME ||
-                                    game == GridStateFactory.SPEED_DPENTE_GAME ||
-                                    game == GridStateFactory.DKERYO_GAME || game == GridStateFactory.SPEED_DKERYO_GAME) &&
-                                    gridState.getNumMoves() == 4) {
+                                game == GridStateFactory.SPEED_DPENTE_GAME ||
+                                game == GridStateFactory.DKERYO_GAME ||
+                                game == GridStateFactory.SPEED_DKERYO_GAME) &&
+                                gridState.getNumMoves() == 4) {
                                 Time newTime2 =
                                         new Time(timers[newCurrentPlayer].getMinutes(),
                                                 timers[newCurrentPlayer].getSeconds());
