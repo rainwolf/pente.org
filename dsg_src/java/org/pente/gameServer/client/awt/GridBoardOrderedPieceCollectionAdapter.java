@@ -1,19 +1,20 @@
-/** GridBoardOrderedPieceCollectionAdapter.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * GridBoardOrderedPieceCollectionAdapter.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.gameServer.client.awt;
@@ -26,11 +27,11 @@ import org.pente.gameServer.client.*;
 import org.pente.gameServer.core.*;
 
 public class GridBoardOrderedPieceCollectionAdapter extends OrderedPieceCollectionAdapter
-    implements GridBoardComponent, GridBoardListener {
+        implements GridBoardComponent, GridBoardListener {
 
-    private GridBoardComponent  gridBoardComponent;
+    private GridBoardComponent gridBoardComponent;
 
-    private Vector              listeners;
+    private Vector listeners;
 
     // this is what the client has set the thinking piece to
     // be.  However sometimes this component must set the actual
@@ -40,11 +41,11 @@ public class GridBoardOrderedPieceCollectionAdapter extends OrderedPieceCollecti
     // but if the client is allowed to make moves while viewing history
     // then that pretty much overrides above
     private boolean allowMovesWhileViewingHistory;
-    
+
     public GridBoardOrderedPieceCollectionAdapter(
-        GridBoardComponent basePieceCollection,
-        boolean allowMovesWhileViewingHistory) {
-        
+            GridBoardComponent basePieceCollection,
+            boolean allowMovesWhileViewingHistory) {
+
         super(basePieceCollection);
 
         this.gridBoardComponent = basePieceCollection;
@@ -59,6 +60,7 @@ public class GridBoardOrderedPieceCollectionAdapter extends OrderedPieceCollecti
     public int getGridWidth() {
         return gridBoardComponent.getGridWidth();
     }
+
     public void setGridWidth(int width) {
         gridBoardComponent.setGridWidth(width);
     }
@@ -66,6 +68,7 @@ public class GridBoardOrderedPieceCollectionAdapter extends OrderedPieceCollecti
     public int getGridHeight() {
         return gridBoardComponent.getGridHeight();
     }
+
     public void setGridHeight(int height) {
         gridBoardComponent.setGridHeight(height);
     }
@@ -73,6 +76,7 @@ public class GridBoardOrderedPieceCollectionAdapter extends OrderedPieceCollecti
     public boolean getOnGrid() {
         return gridBoardComponent.getOnGrid();
     }
+
     public void setOnGrid(boolean onGrid) {
         gridBoardComponent.setOnGrid(onGrid);
     }
@@ -80,19 +84,23 @@ public class GridBoardOrderedPieceCollectionAdapter extends OrderedPieceCollecti
     public void setBackgroundColor(int color) {
         gridBoardComponent.setBackgroundColor(color);
     }
+
     public void setGridColor(int color) {
         gridBoardComponent.setGridColor(color);
     }
+
     public void setHighlightColor(int color) {
         gridBoardComponent.setHighlightColor(color);
     }
+
     public void setGameNameColor(int color) {
         gridBoardComponent.setGameNameColor(color);
     }
 
-	public void setMessage(String message) {
-		gridBoardComponent.setMessage(message);
-	}
+    public void setMessage(String message) {
+        gridBoardComponent.setMessage(message);
+    }
+
     public void setGameName(String gameName) {
         gridBoardComponent.setGameName(gameName);
     }
@@ -125,20 +133,23 @@ public class GridBoardOrderedPieceCollectionAdapter extends OrderedPieceCollecti
     public void setDrawInnerCircles(boolean drawInnerCircles) {
         gridBoardComponent.setDrawInnerCircles(drawInnerCircles);
     }
+
     public void setDrawGoDots(boolean drawGoDots) {
         gridBoardComponent.setDrawGoDots(drawGoDots);
     }
+
     public void setDrawCoordinates(boolean drawCoordinates) {
         gridBoardComponent.setDrawCoordinates(drawCoordinates);
     }
 
     public void setBoardInsets(int l, int t, int r, int b) {
-        gridBoardComponent.setBoardInsets(l,t,r,b);
+        gridBoardComponent.setBoardInsets(l, t, r, b);
     }
 
     public void addGridBoardListener(GridBoardListener listener) {
         listeners.addElement(listener);
     }
+
     public void removeGridBoardListener(GridBoardListener listener) {
         listeners.removeElement(listener);
     }
@@ -146,9 +157,11 @@ public class GridBoardOrderedPieceCollectionAdapter extends OrderedPieceCollecti
     public void addPiece(GridPiece gridPiece) {
         //throw new UnsupportedOperationException("Unsupported: Use addPiece(GridPiece gridPiece, int turn) instead.");
     }
+
     public void updatePiecePlayer(int x, int y, int player) {
         //throw new UnsupportedOperationException("Unsupported: Use addPiece(GridPiece gridPiece, int turn) instead.");
     }
+
     public void removePiece(GridPiece gridPiece) {
         //throw new UnsupportedOperationException("Unsupported: Use removePiece(GridPiece gridPiece, int turn) instead.");
     }
@@ -157,25 +170,26 @@ public class GridBoardOrderedPieceCollectionAdapter extends OrderedPieceCollecti
     // GridBoardListener
     public void gridClicked(int x, int y, int button) {
 
-		// moved out because of deadlock issues
-		synchronized(this) {
-			if (!viewingCurrent) {
-				return;
-			}
-		}
+        // moved out because of deadlock issues
+        synchronized (this) {
+            if (!viewingCurrent) {
+                return;
+            }
+        }
 
         for (int i = 0; i < listeners.size(); i++) {
             GridBoardListener l = (GridBoardListener) listeners.elementAt(i);
             l.gridClicked(x, y, button);
         }
     }
+
     public void gridMoved(int x, int y) {
 
-		synchronized (this) {
-			if (!viewingCurrent) {
-				return;
-			}
-		}
+        synchronized (this) {
+            if (!viewingCurrent) {
+                return;
+            }
+        }
 
         for (int i = 0; i < listeners.size(); i++) {
             GridBoardListener l = (GridBoardListener) listeners.elementAt(i);
@@ -190,14 +204,15 @@ public class GridBoardOrderedPieceCollectionAdapter extends OrderedPieceCollecti
 
         if (viewingCurrent) {
             gridBoardComponent.setHighlightPiece(getHighlightPiece(currentTurn));
-        }
-        else {
+        } else {
             gridBoardComponent.setNewMovesAvailable(true);
         }
     }
+
     public synchronized void removePiece(GridPiece gridPiece, int turn) {
         super.removePiece(gridPiece, turn);
     }
+
     public synchronized void undoLastTurn() {
 
         super.undoLastTurn();
@@ -220,22 +235,24 @@ public class GridBoardOrderedPieceCollectionAdapter extends OrderedPieceCollecti
             gridBoardComponent.setNewMovesAvailable(false);
         }
     }
+
     public synchronized void visitPreviousTurn() {
         super.visitPreviousTurn();
 
         gridBoardComponent.setHighlightPiece(getHighlightPiece(currentTurn));
         if (viewingCurrent) {
             gridBoardComponent.setThinkingPieceVisible(clientThinkingPieceVisible);
-        }
-        else {
+        } else {
             gridBoardComponent.setThinkingPieceVisible(false);
         }
     }
+
     public synchronized void visitFirstTurn() {
         super.visitFirstTurn();
 
         gridBoardComponent.setThinkingPieceVisible(false);
     }
+
     public synchronized void visitLastTurn() {
         super.visitLastTurn();
 
@@ -243,6 +260,7 @@ public class GridBoardOrderedPieceCollectionAdapter extends OrderedPieceCollecti
         gridBoardComponent.setThinkingPieceVisible(clientThinkingPieceVisible);
         gridBoardComponent.setNewMovesAvailable(false);
     }
+
     public synchronized void visitTurn(int turn) {
         super.visitTurn(turn);
 
@@ -250,8 +268,7 @@ public class GridBoardOrderedPieceCollectionAdapter extends OrderedPieceCollecti
         if (viewingCurrent) {
             gridBoardComponent.setThinkingPieceVisible(clientThinkingPieceVisible);
             gridBoardComponent.setNewMovesAvailable(false);
-        }
-        else {
+        } else {
             gridBoardComponent.setThinkingPieceVisible(false);
         }
     }
@@ -272,15 +289,17 @@ public class GridBoardOrderedPieceCollectionAdapter extends OrderedPieceCollecti
 
         return null;
     }
-    
+
     public void setCursor(int cursor) {
-    	gridBoardComponent.setCursor(cursor);
+        gridBoardComponent.setCursor(cursor);
     }
+
     public void destroy() {
-    	gridBoardComponent.destroy();
+        gridBoardComponent.destroy();
     }
+
     public void refresh() {
-    	gridBoardComponent.refresh();
+        gridBoardComponent.refresh();
     }
-    
+
 }

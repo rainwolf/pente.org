@@ -14,13 +14,13 @@ import org.apache.log4j.*;
 //and of going back/forth and viewing default node
 
 public class NodeBoardController implements NodeBoardListener,
-    OrderedPieceCollection {
+        OrderedPieceCollection {
 
     private static final Category log4j = Category.getInstance(
-        NodeBoardController.class.getName());
-    
+            NodeBoardController.class.getName());
+
     private boolean defaultOn = false;
-    
+
     // model
     private Node current = null;
     private Node prevDefault = null;
@@ -28,7 +28,7 @@ public class NodeBoardController implements NodeBoardListener,
     private List nodes = new ArrayList(50);
     private int nodeInView = -1;
     private boolean viewOnly = false;
-    
+
     // view
     private AWTNodeEditor editor;
     private AWTBoard board;
@@ -37,14 +37,14 @@ public class NodeBoardController implements NodeBoardListener,
         this.nodeSearcher = nodeSearcher;
         this.viewOnly = viewOnly;
     }
-    
+
     public void registerView(AWTNodeEditor editor, AWTBoard board) {
         this.editor = editor;
         this.board = board;
         board.addNodeBoardListener(this);
         board.getCoordinatesList().addOrderedPieceCollectionVisitListener(this);
     }
-    
+
     public void load() {
 
         try {
@@ -59,18 +59,19 @@ public class NodeBoardController implements NodeBoardListener,
 //            board.addMove(178);
 //            board.addMove(182);
 //            board.addMove(177);
-            
+
             current = nodeSearcher.loadPosition(board.getGridState());
             nodes.add(current);
             nodeInView = 1;
             editor.setComment(current.getComment());
             board.drawPotentialMoves(current);
             prevDefault = current.getDefaultNextMove();
-            
+
         } catch (NodeSearchException nse) {
             nse.printStackTrace();
         }
     }
+
     public void store() {
         try {
             current.setComment(editor.getComment());
@@ -79,6 +80,7 @@ public class NodeBoardController implements NodeBoardListener,
             ne.printStackTrace();
         }
     }
+
     public void destroy() {
         nodeSearcher.destroy();
     }
@@ -89,32 +91,31 @@ public class NodeBoardController implements NodeBoardListener,
         // clear out moves
         if (defaultOn) {
             board.clearPotentialMoves();
-        }
-        else {
+        } else {
             board.drawPotentialMoves(current);
         }
     }
 
     public void addMove(int position, int type) {
         try {
-            
+
             //TODO sanity-check that there is already a nextMove in the same position
             // as the default move.  otherwise the opponent could play his
             // next move where the default is and it would break
             if (defaultOn) {
                 //do something different for default nodes
-                Node n = new SimpleNode(position, 
-                    board.getGridState().getCurrentPlayer(), Node.TYPE_WIN);
+                Node n = new SimpleNode(position,
+                        board.getGridState().getCurrentPlayer(), Node.TYPE_WIN);
                 n.setHash(0); // hash doesn't matter for default nodes
                 // the rotation we want is actually the rotation of the
                 // previous move
                 n.setRotation(board.getGridState().getRotation(
-                    board.getGridState().getNumMoves() - 2));
+                        board.getGridState().getNumMoves() - 2));
                 nodeSearcher.storeAll();
                 current.setDefaultNextMove(n);
 
                 defaultOn = false;
-                
+
                 // don't actually make a move on the board when adding a default
                 return;
             }
@@ -125,13 +126,13 @@ public class NodeBoardController implements NodeBoardListener,
             // again by adding a move, if so just call visitNextTurn() and return
             // and possibly change the type of the node
             board.addMove(position);
-            
+
             Node existing = nodeSearcher.loadPosition(
-                board.getGridState().getHash());
+                    board.getGridState().getHash());
             if (existing != null) {
                 System.out.println("existing move exists");
                 if (existing.getType() != type) {
-                    System.out.println("new type="+type);
+                    System.out.println("new type=" + type);
                     existing.setType(type);
                 }
 //                String cm = existing.getComment();
@@ -139,60 +140,59 @@ public class NodeBoardController implements NodeBoardListener,
 //                    System.out.println("new comment="+editor.getComment());
 //                    existing.setComment(editor.getComment());
 //                }
-                
+
                 existing.setParent(current);
                 current = existing;
                 editor.setComment(current.getComment());
                 board.drawPotentialMoves(current);
                 prevDefault = current.getDefaultNextMove();
-                
+
                 //if (existing.nodeNeedsWrite()) {
                 //    nodeSearcher.storePosition(existing);
                 //}
-            }
-            else if (prevDefault != null) {
-                
+            } else if (prevDefault != null) {
+
                 // create temporary node and add the default node as a next move
                 // hopefully this node won't get saved by hibernate
                 Node n = new SimpleNode(0, 0, Node.TYPE_LOSE);
                 n.addNextMove(prevDefault);
                 current = n;
-            }
-            else if (!viewOnly) {
-                
+            } else if (!viewOnly) {
+
                 System.out.println("creating new move");
                 Node n = new SimpleNode(position,
-                    3 - board.getGridState().getCurrentPlayer(), type);
+                        3 - board.getGridState().getCurrentPlayer(), type);
                 n.setDepth(board.getGridState().getNumMoves());
                 n.setHash(board.getGridState().getHash());
                 // the rotation we want is actually the rotation BEFORE
                 // adding this move
                 n.setRotation(board.getGridState().getRotation(
-                    board.getGridState().getNumMoves() - 2));
+                        board.getGridState().getNumMoves() - 2));
 
                 n.setComment(editor.getComment());
-                
+
                 current.addNextMove(n);
                 current = n;
                 prevDefault = null;
-                
+
                 nodeSearcher.storePosition(n);
             }
-            
+
             trimPath();
             nodes.add(current);
-            nodeInView++;            
-            
+            nodeInView++;
+
         } catch (Throwable t) {
             t.printStackTrace();
         }
     }
+
     public void deleteMove(int position) {
         Node n = current.getNextMove(position);
         if (n != null) {
             current.removeNextMove(n);
             board.clearPotentialMove(n);
-            
+
             // if delete down current local path, truncate it
             // if viewing leaf, return
             if (nodeInView == nodes.size() - 1) {
@@ -205,7 +205,7 @@ public class NodeBoardController implements NodeBoardListener,
             }
         }
     }
-    
+
     private void trimPath() {
         while (nodeInView != nodes.size() - 1) {
             nodes.remove(nodeInView + 1);
@@ -214,28 +214,39 @@ public class NodeBoardController implements NodeBoardListener,
 
     // OrderedPieceCollection implementation
     // Used to allow user to travel back in history and view potential moves
-    public void addPiece(GridPiece gridPiece, int turn) {}
-    public void removePiece(GridPiece gridPiece, int turn) {}
-    public void undoLastTurn() {}
-    public void clearPieces() {}
+    public void addPiece(GridPiece gridPiece, int turn) {
+    }
+
+    public void removePiece(GridPiece gridPiece, int turn) {
+    }
+
+    public void undoLastTurn() {
+    }
+
+    public void clearPieces() {
+    }
 
     public void visitNextTurn() {
         if (nodeInView == nodes.size() - 1) return;
         visitTurn(nodeInView + 1);
     }
+
     public void visitPreviousTurn() {
         if (nodeInView <= 0) return;
         visitTurn(nodeInView - 1);
     }
+
     public void visitFirstTurn() {
         if (nodeInView <= 0) return;
         nodeInView = 0;// don't need to do anything else because
         // visitNextTurn() will be called right after this
     }
+
     public void visitLastTurn() {
         if (nodeInView == nodes.size() - 1) return;
         visitTurn(nodes.size() - 1);
     }
+
     public void visitTurn(int turn) {
         board.clearPotentialMoves();
         nodeInView = turn;
@@ -244,27 +255,34 @@ public class NodeBoardController implements NodeBoardListener,
         board.getGridBoard().setThinkingPieceVisible(true);
         editor.setComment(current.getComment() + "\n" + current.getHash());
     }
-    
+
 
     // experimental pente analyzer stuff
     public void singleScan() {
-        
-        Scanner scanner = new Scanner(nodeSearcher, 
-            board.getGridState(), current);
+
+        Scanner scanner = new Scanner(nodeSearcher,
+                board.getGridState(), current);
         scanner.singleScan();
     }
 
     public void scan(int maxDepth, int maxNodes) {
 
-        Scanner scanner = new Scanner(nodeSearcher, 
-            board.getGridState(), current);
+        Scanner scanner = new Scanner(nodeSearcher,
+                board.getGridState(), current);
         //scanner.scan(maxDepth, maxNodes);
         scanner.scanBest(maxNodes);
     }
-    
+
     //not implemented for simple scanner
-    public void stop() { }
-    public void visitNextScanned() {}
-    public void visitPrevScanned() {}
-    public void scanCompleted() {}
+    public void stop() {
+    }
+
+    public void visitNextScanned() {
+    }
+
+    public void visitPrevScanned() {
+    }
+
+    public void scanCompleted() {
+    }
 }

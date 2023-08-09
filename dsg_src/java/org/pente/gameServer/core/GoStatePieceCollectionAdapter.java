@@ -13,33 +13,37 @@ import java.util.Vector;
 
 public class GoStatePieceCollectionAdapter extends GoState {
 
-    protected Vector  listeners;
-    protected Vector  gridPieces;
-    
+    protected Vector listeners;
+    protected Vector gridPieces;
+
     private GoState shadowState;
 
     public GoStatePieceCollectionAdapter() {
         this(19, 19);
     }
 
-    /** Create an empty pente state wrapped around the given GridState
-     *  @param gridState The base GridState to use
+    /**
+     * Create an empty pente state wrapped around the given GridState
+     *
+     * @param gridState The base GridState to use
      */
     public GoStatePieceCollectionAdapter(GridState gridState) {
         super(gridState);
-    
+
         listeners = new Vector();
         gridPieces = new Vector();
     }
 
-    /** Create a pente state with a certain board size
-     *  @param boardSize The board size
+    /**
+     * Create a pente state with a certain board size
+     *
+     * @param boardSize The board size
      */
     public GoStatePieceCollectionAdapter(int boardSizeX, int boardSizeY) {
         super(boardSizeX, boardSizeY);
 
         shadowState = new GoState(boardSizeX, boardSizeY);
-        
+
         listeners = new Vector();
         gridPieces = new Vector();
     }
@@ -48,11 +52,14 @@ public class GoStatePieceCollectionAdapter extends GoState {
     public void addOrderedPieceCollectionListener(OrderedPieceCollection pieceCollection) {
         listeners.addElement(pieceCollection);
     }
+
     public void removePieceCollectionListener(OrderedPieceCollection pieceCollection) {
         listeners.removeElement(pieceCollection);
     }
 
-    /** Clears the grid state */
+    /**
+     * Clears the grid state
+     */
     public void clear() {
         super.clear();
         shadowState.clear();
@@ -64,17 +71,19 @@ public class GoStatePieceCollectionAdapter extends GoState {
         }
     }
 
-    /** Add a move for this board
-     *  @param move An integer representation of a move
+    /**
+     * Add a move for this board
+     *
+     * @param move An integer representation of a move
      */
     public synchronized void addMove(int move) {
 
         GridPiece p = null;
         // add grid piece
         p = new SimpleGridPiece();
-        if (markStones && move<passMove) {
+        if (markStones && move < passMove) {
             int dp = getPosition(move);
-            p.setPlayer(3-dp+3);
+            p.setPlayer(3 - dp + 3);
         } else {
             p.setPlayer(getCurrentColor());
         }
@@ -99,9 +108,11 @@ public class GoStatePieceCollectionAdapter extends GoState {
 
     public synchronized boolean isValidMove(int move, int player) {
         return shadowState.isValidMove(move, player);
-    }    
+    }
 
-    /** Undo the last move */
+    /**
+     * Undo the last move
+     */
     public synchronized void undoMove() {
 
         for (int i = 0; i < gridPieces.size(); i++) {
@@ -116,7 +127,7 @@ public class GoStatePieceCollectionAdapter extends GoState {
 //        super.undoMove();
         initWithState(shadowState);
 
-        
+
         for (int i = 0; i < listeners.size(); i++) {
             OrderedPieceCollection o = (OrderedPieceCollection) listeners.elementAt(i);
             o.undoLastTurn();
@@ -147,14 +158,13 @@ public class GoStatePieceCollectionAdapter extends GoState {
     }
 
 
-
     private synchronized void initWithState(GoState state) {
         this.groupsByPlayerAndID = new HashMap<>(state.getGroupsByPlayerAndID());
         this.stoneGroupIDsByPlayer = new HashMap<>(state.getStoneGroupIDsByPlayer());
         this.koMove = state.getKoMove();
         this.markStones = state.isMarkStones();
         this.evaluateStones = state.isEvaluateStones();
-        
+
         for (int i = 0; i < 3; ++i) {
             captures[i] = state.captures[i];
         }
@@ -168,23 +178,23 @@ public class GoStatePieceCollectionAdapter extends GoState {
                 capturedMoves[i][j] = state.capturedMoves[i][j];
             }
         }
-        
+
         ((SimpleGridState) gridState).setMoves(shadowState.getGridState().getMovesVector());
 
         positionHashes = new ArrayList<>(state.getPositionHashes());
         deadStones = new ArrayList<>(state.getDeadStones());
         for (int i = 0; i < getGridSizeX(); i++) {
             for (int j = 0; j < getGridSizeY(); j++) {
-                setPosition(i,j, state.getPosition(i,j));
+                setPosition(i, j, state.getPosition(i, j));
             }
         }
     }
-    
+
     public int getCurrentColor() {
         if (markStones) {
             return 3;
         }
-        return 3 - gridState.getCurrentColor(); 
+        return 3 - gridState.getCurrentColor();
     }
 
     // overridden
@@ -192,11 +202,11 @@ public class GoStatePieceCollectionAdapter extends GoState {
         super.captureMove(move, capturePlayer);
         removePieces(move);
     }
-    
+
     private synchronized void removePieces(int move) {
         if (move < passMove) {
             Coord p = convertMove(move);
-            int x  = p.x;
+            int x = p.x;
             int y = p.y;
             y = super.getGridSizeY() - y - 1;
             for (int i = gridPieces.size() - 1; i >= 0; i--) {
@@ -214,16 +224,16 @@ public class GoStatePieceCollectionAdapter extends GoState {
             }
         }
     }
-    
+
     protected void addDeadStone(int deadStone) {
         int player = 0;
-        if (deadStone<passMove) {
+        if (deadStone < passMove) {
             player = getPosition(deadStone);
         }
         super.addDeadStone(deadStone);
         if (deadStone < passMove) {
             removePieces(deadStone);
-            
+
 //            GridPiece p = null;
 //            p = new SimpleGridPiece();
 //            p.setPlayer(player);

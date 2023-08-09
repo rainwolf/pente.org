@@ -22,7 +22,7 @@ public class FollowerServlet extends HttpServlet {
 
     private static final Category log4j =
             Category.getInstance(FollowerServlet.class.getName());
-    
+
     private DSGFollowerStorer followerStorer;
     private DSGPlayerStorer dsgPlayerStorer;
     private ServletContext ctx;
@@ -66,7 +66,7 @@ public class FollowerServlet extends HttpServlet {
             playerData = dsgPlayerStorer.loadPlayer(player);
         } catch (DSGPlayerStoreException e) {
             e.printStackTrace();
-            log4j.error("FollowerServlet error loading player: "+player);
+            log4j.error("FollowerServlet error loading player: " + player);
             handleError(request, response, "database error, try again later");
             return;
         }
@@ -81,7 +81,7 @@ public class FollowerServlet extends HttpServlet {
                 try {
                     List<Long> following = followerStorer.getFollowing(playerData.getPlayerID());
                     if (following.size() > followingLimit) {
-                        handleError(request, response, "You've reached the limit("+followingLimit+") for non-subscribers. Subscribers can follow an unlimited number of players.");
+                        handleError(request, response, "You've reached the limit(" + followingLimit + ") for non-subscribers. Subscribers can follow an unlimited number of players.");
                         return;
                     }
                 } catch (DSGFollowerStoreException e) {
@@ -94,7 +94,7 @@ public class FollowerServlet extends HttpServlet {
                 followPlayerData = dsgPlayerStorer.loadPlayer(follow);
             } catch (DSGPlayerStoreException e) {
                 e.printStackTrace();
-                log4j.error("FollowerServlet error loading follow player: "+follow);
+                log4j.error("FollowerServlet error loading follow player: " + follow);
                 handleError(request, response, "database error, try again later");
                 return;
             }
@@ -110,13 +110,13 @@ public class FollowerServlet extends HttpServlet {
                 return;
             }
         }
-        
+
         if (unFollow != null) {
             try {
                 unFollowPlayerData = dsgPlayerStorer.loadPlayer(unFollow);
             } catch (DSGPlayerStoreException e) {
                 e.printStackTrace();
-                log4j.error("FollowerServlet error loading unfollow player: "+unFollow);
+                log4j.error("FollowerServlet error loading unfollow player: " + unFollow);
                 handleError(request, response, "database error, try again later");
                 return;
             }
@@ -135,7 +135,7 @@ public class FollowerServlet extends HttpServlet {
         }
 
         if (follow != null && followPlayerData != null) {
-            response.sendRedirect("/gameServer/profile?viewName="+followPlayerData.getName());
+            response.sendRedirect("/gameServer/profile?viewName=" + followPlayerData.getName());
         } else {
             if (request.getParameter("social") != null) {
                 String game = request.getParameter("game");
@@ -162,7 +162,7 @@ public class FollowerServlet extends HttpServlet {
                 }
                 getServletContext().getRequestDispatcher("/gameServer/followersing.jsp").forward(request, response);
             } else if (unFollow != null) {
-                response.sendRedirect("/gameServer/profile?viewName="+unFollowPlayerData.getName());
+                response.sendRedirect("/gameServer/profile?viewName=" + unFollowPlayerData.getName());
             } else {
                 response.sendRedirect("/gameServer/index.jsp");
             }

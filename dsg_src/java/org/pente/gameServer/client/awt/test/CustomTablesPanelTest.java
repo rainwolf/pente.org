@@ -12,21 +12,21 @@ import org.pente.gameServer.event.*;
 public class CustomTablesPanelTest {
 
     private static final GameStyles gameStyle = new GameStyles(
-        new Color(0, 0, 153), //board back
-        new Color(188, 188, 188), //button back
-        Color.white, //button fore
-        new Color(64, 64, 64), //new Color(0, 102, 255), //button disabled
-        Color.white, //player 1 back
-        Color.black, //player 1 fore
-        Color.black, //player 2 back
-        Color.white, //player 2 fore
-        new Color(51, 102, 204)); //watcher
-    
+            new Color(0, 0, 153), //board back
+            new Color(188, 188, 188), //button back
+            Color.white, //button fore
+            new Color(64, 64, 64), //new Color(0, 102, 255), //button disabled
+            Color.white, //player 1 back
+            Color.black, //player 1 fore
+            Color.black, //player 2 back
+            Color.white, //player 2 fore
+            new Color(51, 102, 204)); //watcher
+
     public static void main(String[] args) {
-        
+
         final Frame f = new Frame("CustomTablePanel");
         f.setLayout(new BorderLayout(2, 2));
-        
+
         DSGPlayerData me = new SimpleDSGPlayerData();
         me.setName("dweebo");
         me.setPlayerType(DSGPlayerData.HUMAN);
@@ -55,7 +55,7 @@ public class CustomTablesPanelTest {
         sitP.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 panel.sitPlayer(Integer.parseInt(pTable.getText()), pName.getText(),
-                    Integer.parseInt(pSeat.getText()));
+                        Integer.parseInt(pSeat.getText()));
             }
         });
         Button standP = new Button("Stand Player");
@@ -76,7 +76,6 @@ public class CustomTablesPanelTest {
         addPlayerPanel.add(removeP);
         addPlayerPanel.add(sitP);
         addPlayerPanel.add(standP);
-        
 
 
         Button addT = new Button("Add Table");
@@ -98,13 +97,13 @@ public class CustomTablesPanelTest {
 
         final Checkbox rated = new Checkbox("Rated");
         rated.setState(true);
-        
+
         final Checkbox timed = new Checkbox("Timed");
         timed.setState(true);
-        
+
         final Checkbox tableType = new Checkbox("Public");
         tableType.setState(true);
-        
+
         final TextField initialT = new TextField();
         final TextField incrementalT = new TextField();
         final Choice gameChoice = new Choice();
@@ -117,19 +116,19 @@ public class CustomTablesPanelTest {
                 DSGChangeStateTableEvent stateEvent = new DSGChangeStateTableEvent();
                 stateEvent.setGame(gameChoice.getSelectedIndex());
                 stateEvent.setIncrementalSeconds(Integer.parseInt(
-                    incrementalT.getText()));
+                        incrementalT.getText()));
                 stateEvent.setInitialMinutes(Integer.parseInt(
-                    initialT.getText()));
+                        initialT.getText()));
                 stateEvent.setRated(rated.getState());
                 stateEvent.setTimed(timed.getState());
                 stateEvent.setTableType(tableType.getState() ? DSGChangeStateTableEvent.TABLE_TYPE_PUBLIC :
-                    DSGChangeStateTableEvent.TABLE_TYPE_PRIVATE);
-                
+                        DSGChangeStateTableEvent.TABLE_TYPE_PRIVATE);
+
                 panel.changeTableState(Integer.parseInt(pTable.getText()),
-                    stateEvent);
+                        stateEvent);
             }
         });
-        
+
         Panel statePanel = new Panel();
         statePanel.add(rated);
         statePanel.add(timed);
@@ -149,18 +148,18 @@ public class CustomTablesPanelTest {
         controls.add(statePanel);
 
         f.add(controls, "South");
-        
-        
+
+
         panel.addTableJoinListener(new TableJoinListener() {
             public void joinTable(int tableNum) {
                 System.out.println("join table " + tableNum);
             }
         });
-        
+
         f.pack();
         f.setLocation(100, 100);
         f.setVisible(true);
-        
+
         f.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
                 f.dispose();

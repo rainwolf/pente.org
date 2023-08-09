@@ -11,11 +11,11 @@ public class PreferenceHandler {
 
     private DSGEventSource dsgEventSource;
     private DSGEventListener dsgEventListener;
-    
+
     public PreferenceHandler(
-        DSGEventSource dsgEventSource,
-        DSGEventListener dsgEventListener) {
-        
+            DSGEventSource dsgEventSource,
+            DSGEventListener dsgEventListener) {
+
         this.dsgEventSource = dsgEventSource;
         this.dsgEventListener = dsgEventListener;
 
@@ -28,11 +28,11 @@ public class PreferenceHandler {
             }
         });
     }
-    
+
     private synchronized void receivePref(DSGPlayerPreference pref) {
         prefs.addElement(pref);
     }
-    
+
     public void storePref(String prefName, Object prefValue) {
         synchronized (this) {
             boolean found = false;
@@ -43,16 +43,16 @@ public class PreferenceHandler {
                     p.setValue(prefValue);
                 }
             }
-            
+
             if (!found) {
                 prefs.addElement(new DSGPlayerPreference(prefName, prefValue));
             }
         }
 
         dsgEventListener.eventOccurred(new DSGPreferenceEvent(
-            new DSGPlayerPreference(prefName, prefValue)));
+                new DSGPlayerPreference(prefName, prefValue)));
     }
-    
+
     public synchronized Object getPref(String prefName) {
         for (int i = 0; i < prefs.size(); i++) {
             DSGPlayerPreference p = (DSGPlayerPreference) prefs.elementAt(i);

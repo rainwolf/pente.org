@@ -10,6 +10,7 @@ public class DSGFollowerStoreException extends ChainedException {
     public DSGFollowerStoreException(String message) {
         super(message);
     }
+
     public DSGFollowerStoreException(String message, Throwable cause) {
         super(message, cause);
     }

@@ -1,95 +1,291 @@
-    .heading { font-weight: bold; font-size: 1.2em; margin: 10px 0 10px 0; }
-    .separator { margin:10px 100px 0px 100px; width: 540px; color: blue; text-align: left; }
-    #content {  border:1px solid blue; }
-    #content TD {vertical-align:top; font-size:10pt; }
-    #content TR { height:22px; }
-    #content TR.even {background-color:#dddddd; }
-    #content TR.odd  {background-color:#ffffff }
-    #content TR.new {background-color:#ffffcc }
+.heading {
+    font-weight: bold;
+    font-size: 1.2em;
+    margin: 10px 0 10px 0;
+}
 
-    #controlDiv TD { text-align:center; font-size:9pt; font-family: Arial;  }
-    #controlDiv select {font-size:.7em; font-family:courier,fixedsys; }
-    #controlDiv input {font-size:.7em; font-family:courier,fixedsys; }
-    TH {vertical-align: bottom; }
-    .box { text-decoration:none; background-color: #ffffcc; font-size:.8em; font-weight: bold ; color: #800000; padding: 10px; border:2px inset #3333CC; vertical-align:middle; text-align:left; position:relative;left:0px;width:500; }
+.separator {
+    margin: 10px 100px 0px 100px;
+    width: 540px;
+    color: blue;
+    text-align: left;
+}
 
-    #pageDiv {text-align:center; font-size:9pt; font-family: Arial; font-weight:bold;margin-top:1px;}
-    button { height:20px; font-size: 12px; font-family: Arial; }
+#content {
+    border: 1px solid blue;
+}
+
+#content TD {
+    vertical-align: top;
+    font-size: 10pt;
+}
+
+#content TR {
+    height: 22px;
+}
+
+#content TR.even {
+    background-color: #dddddd;
+}
+
+#content TR.odd {
+    background-color: #ffffff
+}
+
+#content TR.new {
+    background-color: #ffffcc
+}
+
+#controlDiv TD {
+    text-align: center;
+    font-size: 9pt;
+    font-family: Arial;
+}
+
+#controlDiv select {
+    font-size: .7em;
+    font-family: courier, fixedsys;
+}
+
+#controlDiv input {
+    font-size: .7em;
+    font-family: courier, fixedsys;
+}
+
+TH {
+    vertical-align: bottom;
+}
+
+.box {
+    text-decoration: none;
+    background-color: #ffffcc;
+    font-size: .8em;
+    font-weight: bold;
+    color: #800000;
+    padding: 10px;
+    border: 2px inset #3333CC;
+    vertical-align: middle;
+    text-align: left;
+    position: relative;
+    left: 0px;
+    width: 500;
+}
+
+#pageDiv {
+    text-align: center;
+    font-size: 9pt;
+    font-family: Arial;
+    font-weight: bold;
+    margin-top: 1px;
+}
+
+button {
+    height: 20px;
+    font-size: 12px;
+    font-family: Arial;
+}
 
 
-    .header { font-weight: bold; font-size: 18pt; margin-top: 20px; margin-bottom: 15px; margin-left: 15px; }
-    .box { text-decoration:none; background-color: #ffffcc; font-size:.8em;
-                font-weight: bold ; color: #800000; padding: 5px; border:2px solid #1c1c75;
-                vertical-align:middle; text-align:left; position:relative; left:0px; width:800px;
-                margin-left: auto; margin-right: auto; margin-bottom: 10px;}
-    .alertMsg { float: left; width: 200px; text-align: center; }
-    .alertLink { color: blue; text-decoration: underline; }
+.header {
+    font-weight: bold;
+    font-size: 18pt;
+    margin-top: 20px;
+    margin-bottom: 15px;
+    margin-left: 15px;
+}
 
-    .mostRecent { background-color: #ffffcc; }
+.box {
+    text-decoration: none;
+    background-color: #ffffcc;
+    font-size: .8em;
+    font-weight: bold;
+    color: #800000;
+    padding: 5px;
+    border: 2px solid #1c1c75;
+    vertical-align: middle;
+    text-align: left;
+    position: relative;
+    left: 0px;
+    width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 10px;
+}
 
-    .centerText { text-align: center; vertical-align: top; }
+.alertMsg {
+    float: left;
+    width: 200px;
+    text-align: center;
+}
 
-    .descriptionTitle { font-weight: bold; font-size: 18pt; margin-top: 5px; margin-bottom: 10px; }
+.alertLink {
+    color: blue;
+    text-decoration: underline;
+}
 
-    .secReviewTitle { font-weight: bold; font-size: 18pt; margin-top: 10px; margin-bottom: 3px; margin-left: 44px;}
-    .rpeortResponseMenu { text-align: left; margin-left: 60px; }
+.mostRecent {
+    background-color: #ffffcc;
+}
 
-    #popUpDiv { width: 100%; position: fixed; position: absolute; top: 270px; z-index: 9002; display: none; margin-left: 0; margin-right: 0; }
-    #stateDescription { margin-left: 175px; width: 500px; background: white; border: 1px solid black; padding: 10px;    }
+.centerText {
+    text-align: center;
+    vertical-align: top;
+}
 
-    ul.noBullets li {font-size: 14pt; margin-bottom: 10px; }
-    ul.noBullets { list-style: none; }
+.descriptionTitle {
+    font-weight: bold;
+    font-size: 18pt;
+    margin-top: 5px;
+    margin-bottom: 10px;
+}
 
-    #logout { font-size: 10pt; font-weight: bold; }
+.secReviewTitle {
+    font-weight: bold;
+    font-size: 18pt;
+    margin-top: 10px;
+    margin-bottom: 3px;
+    margin-left: 44px;
+}
+
+.rpeortResponseMenu {
+    text-align: left;
+    margin-left: 60px;
+}
+
+#popUpDiv {
+    width: 100%;
+    position: fixed;
+    position: absolute;
+    top: 270px;
+    z-index: 9002;
+    display: none;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+#stateDescription {
+    margin-left: 175px;
+    width: 500px;
+    background: white;
+    border: 1px solid black;
+    padding: 10px;
+}
+
+ul.noBullets li {
+    font-size: 14pt;
+    margin-bottom: 10px;
+}
+
+ul.noBullets {
+    list-style: none;
+}
+
+#logout {
+    font-size: 10pt;
+    font-weight: bold;
+}
 
 
+fieldset {
+    padding: 15px;
+    margin-top: 10px;
+    margin-bottom: 25px;
+    color: black;
+    width: 840px;
+}
 
-    fieldset { padding: 15px; margin-top: 10px; margin-bottom: 25px; color: black; width: 840px;}
-    legend {font-size: 12pt; font-weight: bold; color: black; }
+legend {
+    font-size: 12pt;
+    font-weight: bold;
+    color: black;
+}
 
-    .indentLeft { margin-left: 5px; }
+.indentLeft {
+    margin-left: 5px;
+}
 
-     table.addressTable tr td { padding: 2px; }
-     hr.emailDivider { color: #aeaeae; background-color: #aeaeae; border: none; height: 1px; margin: 0 auto 10px auto; }
-     hr.noDivider { display: none;}
-     a.link { text-decoration: underline; color: blue; }
-     a.link:hover { cursor: pointer; }
-     .emailTable { margin-bottom: 10px; }
-     .hide {display:none;}
-     .show {display:show;}
+table.addressTable tr td {
+    padding: 2px;
+}
 
-     input.emailinput{ height: 20px; font-size:9pt; width:435px;}
-     input.invalid { color: red; background-color:yellow; font-style:italic; }
-     input.value { color: black; background-color: #ffffff; }
+hr.emailDivider {
+    color: #aeaeae;
+    background-color: #aeaeae;
+    border: none;
+    height: 1px;
+    margin: 0 auto 10px auto;
+}
 
-     .label {
-        float: left;
-        margin-bottom:5px;
-     }
+hr.noDivider {
+    display: none;
+}
 
-     div.outerDiv {
-        float:left;
-        min-width: 100%;
-        width: expression( ($('fieldset').width() - $('.outerDiv').parent('fieldset').css('margin-left').replace("px", "") - 10) + "px");
-     }
+a.link {
+    text-decoration: underline;
+    color: blue;
+}
 
-     div.fieldInputCont {
-        float:left;
-        margin:0 10px 10px 0;
-     }
+a.link:hover {
+    cursor: pointer;
+}
 
-     div.elementDiv {
-        margin-top: 5px;
-     }
+.emailTable {
+    margin-bottom: 10px;
+}
 
-     span.remove {
-        display: inline;
-        margin-left:15px;
-     }
+.hide {
+    display: none;
+}
 
-     label.fieldInput {
-        display: inline;
-        float:left;
-        clear:left;
-        width:200px;
-     }
+.show {
+    display: show;
+}
+
+input.emailinput {
+    height: 20px;
+    font-size: 9pt;
+    width: 435px;
+}
+
+input.invalid {
+    color: red;
+    background-color: yellow;
+    font-style: italic;
+}
+
+input.value {
+    color: black;
+    background-color: #ffffff;
+}
+
+.label {
+    float: left;
+    margin-bottom: 5px;
+}
+
+div.outerDiv {
+    float: left;
+    min-width: 100%;
+    width: expression( ($('fieldset').width() - $('.outerDiv').parent('fieldset').css('margin-left').replace("px", "") - 10) + "px");
+}
+
+div.fieldInputCont {
+    float: left;
+    margin: 0 10px 10px 0;
+}
+
+div.elementDiv {
+    margin-top: 5px;
+}
+
+span.remove {
+    display: inline;
+    margin-left: 15px;
+}
+
+label.fieldInput {
+    display: inline;
+    float: left;
+    clear: left;
+    width: 200px;
+}

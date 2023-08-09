@@ -12,9 +12,9 @@ import org.pente.gameServer.core.*;
 
 public class DonationServlet extends HttpServlet {
 
-	private static final Category cat = Category.getInstance(DonationServlet.class.getName());
+    private static final Category cat = Category.getInstance(DonationServlet.class.getName());
 
-	public static final String DONATION_LIST = "donationList";
+    public static final String DONATION_LIST = "donationList";
 
     private DSGPlayerStorer dsgPlayerStorer;
 
@@ -35,37 +35,36 @@ public class DonationServlet extends HttpServlet {
 
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response)
-        throws ServletException, IOException {
+            throws ServletException, IOException {
         doPost(request, response);
     }
 
     public void doPost(HttpServletRequest request,
                        HttpServletResponse response)
-        throws ServletException, IOException {
-    
+            throws ServletException, IOException {
+
         String redirectPage = "/gameServer/subscribe.jsp";
         String lineSeparator = "\n";
 
-		String command = request.getParameter("command");
-		if (command != null && command.equals("thanks")) {
-			redirectPage = "/gameServer/donations-thanks.jsp";
-			
-			// possibly add donation data to db here
-		}
-		else {
-			
-			List<DSGDonationData> donations = null;
-			try {
-				donations = dsgPlayerStorer.getAllPlayersWhoDonated();
-			} catch (DSGPlayerStoreException e) {
-				cat.error("Problem loading donation list.", e);
-				donations = new Vector<DSGDonationData>();
-			}
-			
-			request.setAttribute(DONATION_LIST, donations);
-		}
+        String command = request.getParameter("command");
+        if (command != null && command.equals("thanks")) {
+            redirectPage = "/gameServer/donations-thanks.jsp";
 
-		getServletContext().getRequestDispatcher(redirectPage).forward(request, response);
+            // possibly add donation data to db here
+        } else {
+
+            List<DSGDonationData> donations = null;
+            try {
+                donations = dsgPlayerStorer.getAllPlayersWhoDonated();
+            } catch (DSGPlayerStoreException e) {
+                cat.error("Problem loading donation list.", e);
+                donations = new Vector<DSGDonationData>();
+            }
+
+            request.setAttribute(DONATION_LIST, donations);
+        }
+
+        getServletContext().getRequestDispatcher(redirectPage).forward(request, response);
     }
 }
 

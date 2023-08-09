@@ -9,12 +9,12 @@ public class ActivityTableData {
     private long hashCode;
     private int moves[];
     private boolean rated;
-    
+
     private static final GridCoordinates gridCoordinates =
-        new AlphaNumericGridCoordinates(19, 19);
-    
+            new AlphaNumericGridCoordinates(19, 19);
+
     public ActivityTableData(long serverId, int tableNum, long hashCode,
-        int moves[], boolean rated) {
+                             int moves[], boolean rated) {
         this.serverId = serverId;
         this.tableNum = tableNum;
         this.hashCode = hashCode;
@@ -25,15 +25,19 @@ public class ActivityTableData {
     public long getServerId() {
         return serverId;
     }
+
     public int getTableNum() {
         return tableNum;
     }
+
     public long getHashCode() {
         return hashCode;
     }
+
     public void setHashCode(long hashCode) {
         this.hashCode = hashCode;
     }
+
     public String getMoves() {
         String m = "";
         if (moves == null) return m;
@@ -45,16 +49,19 @@ public class ActivityTableData {
         }
         return m;
     }
+
     public void setMoves(int moves[]) {
         this.moves = moves;
     }
+
     public int getNumMoves() {
         return moves.length;
     }
+
     public boolean isRated() {
         return rated;
     }
-    
+
     public String toString() {
         String s = "[";
         if (serverId != -1) {

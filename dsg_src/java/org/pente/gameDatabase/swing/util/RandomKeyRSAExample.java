@@ -12,12 +12,10 @@ import javax.crypto.Cipher;
 /**
  * RSA example with random key generation.
  */
-public class RandomKeyRSAExample
-{
+public class RandomKeyRSAExample {
     public static void main(
-        String[]    args)
-        throws Exception
-    {
+            String[] args)
+            throws Exception {
     	/*
 		Security.addProvider(new BouncyCastleProvider());
         byte[]           input = "hello".getBytes();

@@ -25,13 +25,13 @@ public class ActiveServersServlet extends HttpServlet {
                 ctx.getAttribute(Resources.class.getName());
         SessionListener sessionListener = (SessionListener) ctx.getAttribute(SessionListener.class.getName());
         List<WhosOnlineRoom> rooms = WhosOnline.getPlayers(resources, sessionListener);
-        
+
         PrintWriter out = new PrintWriter(response.getOutputStream());
         response.setContentType("text/plain");
 
         log4j.info("sending active servers");
 
-        for (Iterator it = resources.getServerData().iterator(); it.hasNext();) {
+        for (Iterator it = resources.getServerData().iterator(); it.hasNext(); ) {
             ServerData data = (ServerData) it.next();
             String serverName = data.getName();
             log4j.info(data.getPort() + " " + serverName);

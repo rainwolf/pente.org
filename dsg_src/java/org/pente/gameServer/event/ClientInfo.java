@@ -9,11 +9,11 @@ public class ClientInfo implements Serializable {
     private String javaClassVersion;
     private String os;
     private String osVersion;
-    
+
     public String toString() {
         return "[browser=" + browser + " java.version=" + javaVersion +
-            " java.class.version=" + javaClassVersion + " os=" + os + 
-            " os.version=" + osVersion + "]";
+                " java.class.version=" + javaClassVersion + " os=" + os +
+                " os.version=" + osVersion + "]";
     }
 
     public String getBrowser() {

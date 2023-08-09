@@ -21,8 +21,8 @@ import org.pente.turnBased.*;
 
 public class ViewGameServlet extends HttpServlet {
 
-	private static final Category log4j = Category.getInstance(
-		ViewGameServlet.class.getName());
+    private static final Category log4j = Category.getInstance(
+            ViewGameServlet.class.getName());
 
     private Resources resources;
 
@@ -34,15 +34,15 @@ public class ViewGameServlet extends HttpServlet {
 
             ServletContext ctx = config.getServletContext();
             resources = (Resources) ctx.getAttribute(Resources.class.getName());
-            
+
         } catch (Throwable t) {
             log4j.error("Problem in init()", t);
         }
     }
-    
+
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response)
-        throws ServletException, IOException {
+            throws ServletException, IOException {
         doPost(request, response);
     }
 
@@ -51,75 +51,75 @@ public class ViewGameServlet extends HttpServlet {
     // e, optional means to embed
     public void doPost(HttpServletRequest request,
                        HttpServletResponse response)
-        throws ServletException, IOException {
+            throws ServletException, IOException {
 
         String redirectPage = "/gameServer/viewLiveGame.jsp";
         if (request.getParameter("mobile") != null) {
             redirectPage = "/gameServer/viewLiveGameMobile.jsp";
         }
         try {
-        	String gidStr = (String) request.getParameter("g");
-            
-        	long gid = -1;
-        	if (gidStr != null) {
-	        	try {
-		        	gid = Long.parseLong(gidStr);
-	        	} catch (NumberFormatException n) {}
-        	}
-        	if (gid == -1) {
-        		log4j.error("ViewGameServlet, gid not found or invalid");
-        		handleError(request, response,
-        			"Game id invalid, please try again.", redirectPage);
-        		return;
-        	}
+            String gidStr = (String) request.getParameter("g");
 
-	        String player = (String) request.getAttribute("name");
-	        DSGPlayerData playerData = null;
-        	try {
-	        	playerData = resources.getDsgPlayerStorer().
-	        		loadPlayer(player);
+            long gid = -1;
+            if (gidStr != null) {
+                try {
+                    gid = Long.parseLong(gidStr);
+                } catch (NumberFormatException n) {
+                }
+            }
+            if (gid == -1) {
+                log4j.error("ViewGameServlet, gid not found or invalid");
+                handleError(request, response,
+                        "Game id invalid, please try again.", redirectPage);
+                return;
+            }
 
-        	} catch (DSGPlayerStoreException dpse) {
-        		log4j.error("Error getting attach", dpse);
-        	}
-        	
-        	GameData game = new DefaultGameData();
-        	resources.getGameStorer().loadGame(gid, game);
-        	
-        	if (game.isPrivateGame() && 
-        		playerData.getPlayerID() != game.getPlayer1Data().getUserID() &&
-        		playerData.getPlayerID() != game.getPlayer2Data().getUserID()) {
-        		log4j.error("Illegal access to private game " + player + " " + game.getGameID());
-        		handleError(request, response, "Game id invalid, please try again.", redirectPage);
-        		return;
-        	}
-        	
-        	TBGame tbGame = resources.getTbGameStorer().loadGame(gid);
+            String player = (String) request.getAttribute("name");
+            DSGPlayerData playerData = null;
+            try {
+                playerData = resources.getDsgPlayerStorer().
+                        loadPlayer(player);
 
-        	
-        	
-			request.setAttribute("game", game);
-			if (tbGame != null) {
-				request.setAttribute("tbGame", tbGame);
-			}
+            } catch (DSGPlayerStoreException dpse) {
+                log4j.error("Error getting attach", dpse);
+            }
 
-			if (request.getParameter("e") != null) {
-				redirectPage = "/gameServer/viewLiveGameEmbed.jsp";
-			}
-			getServletContext().getRequestDispatcher(redirectPage).forward(
-	            request, response);
+            GameData game = new DefaultGameData();
+            resources.getGameStorer().loadGame(gid, game);
+
+            if (game.isPrivateGame() &&
+                    playerData.getPlayerID() != game.getPlayer1Data().getUserID() &&
+                    playerData.getPlayerID() != game.getPlayer2Data().getUserID()) {
+                log4j.error("Illegal access to private game " + player + " " + game.getGameID());
+                handleError(request, response, "Game id invalid, please try again.", redirectPage);
+                return;
+            }
+
+            TBGame tbGame = resources.getTbGameStorer().loadGame(gid);
+
+
+            request.setAttribute("game", game);
+            if (tbGame != null) {
+                request.setAttribute("tbGame", tbGame);
+            }
+
+            if (request.getParameter("e") != null) {
+                redirectPage = "/gameServer/viewLiveGameEmbed.jsp";
+            }
+            getServletContext().getRequestDispatcher(redirectPage).forward(
+                    request, response);
 
         } catch (Throwable t) {
-        	log4j.error("ViewGamesServlet, unknown error", t);
-        	handleError(request, response, "Unknown error.", redirectPage);
+            log4j.error("ViewGamesServlet, unknown error", t);
+            handleError(request, response, "Unknown error.", redirectPage);
         }
     }
-    
-	private void handleError(HttpServletRequest request,
-            HttpServletResponse response, String errorMessage, String redirectPage) throws ServletException,
+
+    private void handleError(HttpServletRequest request,
+                             HttpServletResponse response, String errorMessage, String redirectPage) throws ServletException,
             IOException {
-		request.setAttribute("error", errorMessage);
-       	getServletContext().getRequestDispatcher(redirectPage).forward(
-            request, response);
-	}
+        request.setAttribute("error", errorMessage);
+        getServletContext().getRequestDispatcher(redirectPage).forward(
+                request, response);
+    }
 }

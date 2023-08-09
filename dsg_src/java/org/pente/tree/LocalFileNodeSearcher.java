@@ -9,10 +9,10 @@ import org.pente.game.GridStateFactory;
 public class LocalFileNodeSearcher extends LocalNodeSearcher {
 
     private String fileName;
-    
+
     public LocalFileNodeSearcher(String fileName)
-        throws ClassNotFoundException, IOException, NodeSearchException {
-        
+            throws ClassNotFoundException, IOException, NodeSearchException {
+
         this.fileName = fileName;
 
         Node n = null;
@@ -21,7 +21,7 @@ public class LocalFileNodeSearcher extends LocalNodeSearcher {
         if (!f.exists()) {
             n = SimpleNode.createRoot();
             GridState state = GridStateFactory.createGridState(
-                GridStateFactory.PENTE);
+                    GridStateFactory.PENTE);
 
             Node move1 = new SimpleNode(180, 1, Node.TYPE_UNKNOWN);
             state.addMove(180);
@@ -32,22 +32,21 @@ public class LocalFileNodeSearcher extends LocalNodeSearcher {
             //setRoot(n);
             setRoot(move1);
             storeAll();
-        }
-        else {
+        } else {
             ObjectInputStream in = new ObjectInputStream(
-                new FileInputStream(fileName));
+                    new FileInputStream(fileName));
             n = (SimpleNode) in.readObject();
             in.close();
             setRoot(n);
         }
     }
 
-    public void storeAll() throws NodeSearchException{
+    public void storeAll() throws NodeSearchException {
 
         ObjectOutputStream out = null;
         try {
             out = new ObjectOutputStream(
-                new FileOutputStream(fileName));
+                    new FileOutputStream(fileName));
             out.writeObject(root);
             out.close();
 
@@ -55,19 +54,23 @@ public class LocalFileNodeSearcher extends LocalNodeSearcher {
             throw new NodeSearchException("Local store problem", ie);
         } finally {
             if (out != null) {
-                try { out.close(); } catch (IOException ie) {}
+                try {
+                    out.close();
+                } catch (IOException ie) {
+                }
             }
         }
     }
 
-    /** storing to file, no way to store just updates to this node so
-     *  just store everything again
+    /**
+     * storing to file, no way to store just updates to this node so
+     * just store everything again
      */
     public void storePosition(Node node) throws NodeSearchException {
         storeAll();
     }
 
     public void destroy() {
-        
+
     }
 }

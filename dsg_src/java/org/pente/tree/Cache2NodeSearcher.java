@@ -7,14 +7,14 @@ import org.apache.log4j.Category;
 import org.pente.game.GridState;
 
 public class Cache2NodeSearcher implements NodeSearcher {
-    
+
     private static final Category log4j = Category.getInstance(
-        Cache2NodeSearcher.class.getName());
-    
+            Cache2NodeSearcher.class.getName());
+
     public NodeSearcher baseSearcher;
     private Node root;
     private Map<Long, Node> nodes = new HashMap<Long, Node>();
-    
+
     public Cache2NodeSearcher(NodeSearcher baseSearcher) {
         this.baseSearcher = baseSearcher;
     }
@@ -49,6 +49,7 @@ public class Cache2NodeSearcher implements NodeSearcher {
 
         return n;
     }
+
     private void cache(Node n) {
         if (n != null) {
             // store in cache
@@ -58,10 +59,10 @@ public class Cache2NodeSearcher implements NodeSearcher {
                 nodes.put(n2.getHash(), n2);
             }
             if (n.getHash() != 0) { //if not root
-            	Node p = nodes.get(n.getParentHash());
-            	if (p != null) {
-            		p.addNextMove(n);
-            	}
+                Node p = nodes.get(n.getParentHash());
+                if (p != null) {
+                    p.addNextMove(n);
+                }
             }
         }
     }
@@ -84,10 +85,10 @@ public class Cache2NodeSearcher implements NodeSearcher {
     public void storeAll() throws NodeSearchException {
         storeChanged(root);
     }
-    
+
     private void storeChanged(Node n) throws NodeSearchException {
         if (n.nodeNeedsWrite()) {
-            log4j.info("store("+n.getHash()+")");
+            log4j.info("store(" + n.getHash() + ")");
             baseSearcher.storePosition(n);
         }
         for (Node n2 : n.getNextMoves()) {

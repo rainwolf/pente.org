@@ -11,15 +11,15 @@ public class HibernateEditor {
     public static void main(String[] args) throws Throwable {
 
         BasicConfigurator.configure();
-        
+
         NodeSearcher nodeSearcher = new LocalFileNodeSearcher(args[0]);
         //NodeSearcher nodeSearcher = new CacheNodeSearcher(
         //    new HibernateNodeSearcher(false));
         final NodeBoardController controller = new NodeBoardController(
-            nodeSearcher, false);
+                nodeSearcher, false);
 
         final AWTNodeEditor editor = new AWTNodeEditor(
-            controller, "Tree", false);
+                controller, "Tree", false);
 
         final Frame frame = new Frame();
         frame.setSize(550, 500);

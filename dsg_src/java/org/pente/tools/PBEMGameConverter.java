@@ -1,19 +1,20 @@
-/** PBEMGameConverter.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * PBEMGameConverter.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.tools;
@@ -27,10 +28,10 @@ import org.apache.log4j.*;
 
 public class PBEMGameConverter {
 
-    private File        gameDir;
-    private GameFormat  gameFormat;
-    private GameStorer  gameStorer;
-    private DBHandler   dbHandler;
+    private File gameDir;
+    private GameFormat gameFormat;
+    private GameStorer gameStorer;
+    private DBHandler dbHandler;
 
     private String event;
     private String round;
@@ -46,24 +47,24 @@ public class PBEMGameConverter {
         BasicConfigurator.configure();
 
         PBEMGameConverter pbemConverter = new PBEMGameConverter(
-            Integer.parseInt(args[4]));
-        
+                Integer.parseInt(args[4]));
+
         String user = args[0];
         String password = args[1];
         String db = args[2];
         String host = args[3];
         pbemConverter.dbHandler = new MySQLDBHandler(user, password, db, host);
         GameVenueStorer gameVenueStorer = new MySQLGameVenueStorer(
-            pbemConverter.dbHandler);
+                pbemConverter.dbHandler);
         pbemConverter.gameStorer = new MySQLPenteGameStorer(
-            pbemConverter.dbHandler, gameVenueStorer);
+                pbemConverter.dbHandler, gameVenueStorer);
 
         pbemConverter.gameDir = new File(args[5]);
         pbemConverter.event = args[6];
         pbemConverter.round = args[7];
         pbemConverter.section = args[8];
 
- 
+
         pbemConverter.loadGames();
 
 
@@ -87,8 +88,7 @@ public class PBEMGameConverter {
                     gameStorer.storeGame(data);
 
                     System.out.println("loaded " + files[i] + " ok");
-                }
-                else {
+                } else {
                     System.out.println("not loaded " + files[i] + " ok");
                 }
             }
@@ -99,7 +99,7 @@ public class PBEMGameConverter {
 
         File gameFile = new File(gameDir, file);
         FileReader reader = null;
-        GameData gameData  = null;
+        GameData gameData = null;
 
         try {
             // read game into a StringBuffer
@@ -112,8 +112,7 @@ public class PBEMGameConverter {
                 int length = reader.read(chars);
                 if (length == -1) {
                     break;
-                }
-                else {
+                } else {
                     buffer.append(chars);
                 }
             }
@@ -132,7 +131,7 @@ public class PBEMGameConverter {
                 if (gameData.getGame() != null && gameData.getGame().equals("Pro-Pente")) {
                     gameData.setGame("Pente");
                 }
-                
+
                 PlayerStorer playerStorer = (PlayerStorer) gameStorer;
                 if (playerStorer.playerAlreadyStored(gameData.getPlayer1Data().getUserIDName(), PBEMGameFormat.SITE_NAME)) {
                     PlayerData player1Data = playerStorer.loadPlayer(gameData.getPlayer1Data().getUserIDName(), PBEMGameFormat.SITE_NAME);

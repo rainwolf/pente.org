@@ -13,24 +13,24 @@ import org.pente.gameServer.event.DSGPreferenceEvent;
 public class AllowTbAccessAllDonors {
 
 
-	public static void main(String[] args) throws Throwable {
+    public static void main(String[] args) throws Throwable {
 
-		BasicConfigurator.configure();
+        BasicConfigurator.configure();
 
         DBHandler dbHandler = new MySQLDBHandler(
-            args[0], args[1], args[2], args[3]);
+                args[0], args[1], args[2], args[3]);
 
-		GameVenueStorer gameVenueStorer = new MySQLGameVenueStorer(dbHandler);
-		DSGPlayerStorer dsgPlayerStorer = new MySQLDSGPlayerStorer(dbHandler,
-			gameVenueStorer);
+        GameVenueStorer gameVenueStorer = new MySQLGameVenueStorer(dbHandler);
+        DSGPlayerStorer dsgPlayerStorer = new MySQLDSGPlayerStorer(dbHandler,
+                gameVenueStorer);
 
-		DSGPlayerPreference pref = 
-			new DSGPlayerPreference("tb", new Boolean(true));
-		for (Iterator d = dsgPlayerStorer.getAllPlayersWhoDonated().iterator();
-			 d.hasNext();) {
-			SimpleDSGDonationData s = (SimpleDSGDonationData) d.next();
-			dsgPlayerStorer.storePlayerPreference(s.getPid(), pref);
-		}
-	}
+        DSGPlayerPreference pref =
+                new DSGPlayerPreference("tb", new Boolean(true));
+        for (Iterator d = dsgPlayerStorer.getAllPlayersWhoDonated().iterator();
+             d.hasNext(); ) {
+            SimpleDSGDonationData s = (SimpleDSGDonationData) d.next();
+            dsgPlayerStorer.storePlayerPreference(s.getPid(), pref);
+        }
+    }
 
 }

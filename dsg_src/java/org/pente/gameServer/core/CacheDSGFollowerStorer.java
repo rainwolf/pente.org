@@ -22,16 +22,21 @@ public class CacheDSGFollowerStorer implements DSGFollowerStorer {
     private Map<Long, List<Long>> followerGraph;
     private Map<Long, List<Long>> followingGraph;
 
-    public CacheDSGFollowerStorer(MySQLDSGFollowerStorer baseStorer, 
+    public CacheDSGFollowerStorer(MySQLDSGFollowerStorer baseStorer,
                                   NotificationServer notificationServer,
                                   DSGPlayerStorer playerStorer) {
         this.baseStorer = baseStorer;
         this.notificationServer = notificationServer;
         this.playerStorer = playerStorer;
     }
-    public Map<Long, List<Long>> getFollowerGraph() { return followerGraph; }
-    public Map<Long, List<Long>> getFollowingGraph() { return followingGraph; }
 
+    public Map<Long, List<Long>> getFollowerGraph() {
+        return followerGraph;
+    }
+
+    public Map<Long, List<Long>> getFollowingGraph() {
+        return followingGraph;
+    }
 
 
     @Override

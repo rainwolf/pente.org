@@ -11,30 +11,33 @@ public class SingleEliminationFormat extends AbstractTourneyFormat {
         return "Single-Elimination";
     }
 
-    /** does seed-based matchup
-     *  provides bye to highest seed who hasn't already received a bye in earlier
-     *  rounds
-     * 
-     *  impossible to match up players again in later rounds since is single
-     *  elimination
+    /**
+     * does seed-based matchup
+     * provides bye to highest seed who hasn't already received a bye in earlier
+     * rounds
+     * <p>
+     * impossible to match up players again in later rounds since is single
+     * elimination
      */
     public TourneyRound createFirstRound(List<TourneyPlayerData> players, Tourney tourney) {
         return createRound(players, tourney, 1);
     }
     // createNextRound implements in AbstractTourneyFormat
 
-    /** updates number of byes in whole tourney */
+    /**
+     * updates number of byes in whole tourney
+     */
     void updatePlayerData(Tourney tourney) {
-        for (Iterator it = tourney.getRound(1).getPlayers().iterator(); it.hasNext();) {
+        for (Iterator it = tourney.getRound(1).getPlayers().iterator(); it.hasNext(); ) {
             TourneyPlayerData p = (TourneyPlayerData) it.next();
             p.reset();
         }
 
-        for (Iterator it = tourney.getRounds().iterator(); it.hasNext();) {
+        for (Iterator it = tourney.getRounds().iterator(); it.hasNext(); ) {
             TourneyRound r = (TourneyRound) it.next();
-            for (Iterator it2 = r.getSections().iterator(); it2.hasNext();) {
+            for (Iterator it2 = r.getSections().iterator(); it2.hasNext(); ) {
                 SingleEliminationSection s = (SingleEliminationSection) it2.next();
-                for (Iterator it3 = s.getSingleEliminationMatches().iterator(); it3.hasNext();) {
+                for (Iterator it3 = s.getSingleEliminationMatches().iterator(); it3.hasNext(); ) {
                     SingleEliminationMatch m = (SingleEliminationMatch) it3.next();
                     if (m.isBye()) {
                         m.getPlayer1().incrementByes();
@@ -53,20 +56,20 @@ public class SingleEliminationFormat extends AbstractTourneyFormat {
             else return p1.getSeed() - p2.getSeed();
         }
     };
-    
+
     TourneyRound createRound(List<TourneyPlayerData> players, Tourney tourney, int rnd) {
 
         TourneyRound round = new TourneyRound(rnd);
         TourneySection section = new SingleEliminationSection(1); //everyone always in section 1
         round.addSection(section);
-        
+
         int currentPlayer = 0;
 
         // get bye info
         if (rnd > 1) {
             updatePlayerData(tourney);
         }
-        
+
         // uneven players, highest seed without a bye yet gets it
         if (players.size() % 2 == 1) {
             // first round we know seed1 gets the bye
@@ -100,9 +103,9 @@ public class SingleEliminationFormat extends AbstractTourneyFormat {
             m.setPlayer2(p2);
             m.setSeq(1);
             section.addMatch(m);
-            
+
             // now add match with players swapped
-            
+
             if (tourney.getGame() != GridStateFactory.GO &&
                     tourney.getGame() != GridStateFactory.GO9 &&
                     tourney.getGame() != GridStateFactory.GO13 &&
@@ -124,9 +127,9 @@ public class SingleEliminationFormat extends AbstractTourneyFormat {
                 m.setSeq(1);
                 section.addMatch(m);
             }
-            
+
             // if (GridStateFactory.isTurnbasedGame(tourney.getGame())) {
-                
+
             //     TBGame g1 = new TBGame();
             //     g1.setGame(tourney.getGame());
             //     g1.setEventId(tourney.getEventID());
@@ -163,9 +166,9 @@ public class SingleEliminationFormat extends AbstractTourneyFormat {
             //     section.addSet(set);
             // }
         }
-        
+
         section.init();
-        
+
         return round;
     }
 
@@ -196,7 +199,7 @@ public class SingleEliminationFormat extends AbstractTourneyFormat {
             more[1].setPlayer1(original.getPlayer2());
             more[1].setPlayer2(original.getPlayer1());
         }
-        
+
         return more;
     }
 }

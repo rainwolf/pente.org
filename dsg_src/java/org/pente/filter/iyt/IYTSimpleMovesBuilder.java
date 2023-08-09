@@ -1,19 +1,20 @@
-/** IYTSimpleMovesBuilder.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * IYTSimpleMovesBuilder.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.filter.iyt;
@@ -41,30 +42,30 @@ import org.pente.game.*;
 public class IYTSimpleMovesBuilder implements IYTMovesBuilder, FilterListener {
 
     /** The current move filter */
-    private IYTMoveFilter 	    currentFilter;
+    private IYTMoveFilter currentFilter;
     /** The current filter controller */
-    private FilterController	currentFilterController;
+    private FilterController currentFilterController;
 
     /** The game data to store moves in */
-    private GameData 			gameData;
+    private GameData gameData;
 
     /** The number of moves to get */
-    private int                 numMoves;
+    private int numMoves;
 
     /** Flag to tell if done or not */
-    private boolean				done;
+    private boolean done;
 
     /** Flag to tell if the building process was successful or not */
-    private boolean				success;
+    private boolean success;
 
     /** The exception that was thrown if the !success */
-    private Exception			ex;
+    private Exception ex;
 
     /** The http parameters to use for iyt */
-    private Hashtable			params;
+    private Hashtable params;
 
     /** The cookies to use to connect to iyt */
-    private Hashtable           cookies;
+    private Hashtable cookies;
 
 
     /** Creates a new IYTSimpleMovesBuilder
@@ -96,14 +97,13 @@ public class IYTSimpleMovesBuilder implements IYTMovesBuilder, FilterListener {
                 // wait for all threads to complete and then return game
                 try {
                     wait();
-                } catch(InterruptedException ex) {
+                } catch (InterruptedException ex) {
                 }
             }
 
             if (success) {
                 return gameData;
-            }
-            else {
+            } else {
                 throw ex;
             }
         }
@@ -122,11 +122,11 @@ public class IYTSimpleMovesBuilder implements IYTMovesBuilder, FilterListener {
 
         currentFilter = new IYTMoveFilter();
         HttpFilterController httpFilterController = new HttpFilterController("GET",
-                                                                             IYTConstants.HOST,
-                                                                             IYTConstants.GAME_REQUEST,
-                                                                             params,
-                                                                             cookies,
-                                                                             currentFilter);
+                IYTConstants.HOST,
+                IYTConstants.GAME_REQUEST,
+                params,
+                cookies,
+                currentFilter);
         currentFilterController = new RetryFilterController(httpFilterController, RetryFilterController.INFINITE_RETRIES, 60);
         currentFilterController.addListener(this);
 
@@ -156,7 +156,7 @@ public class IYTSimpleMovesBuilder implements IYTMovesBuilder, FilterListener {
             // for some reason, no move was found
             if (!currentFilter.wasMoveFiltered()) {
 
-                synchronized(this) {
+                synchronized (this) {
 
                     // if game not completely downloaded
                     if (gameData.getNumMoves() < numMoves) {
@@ -173,14 +173,13 @@ public class IYTSimpleMovesBuilder implements IYTMovesBuilder, FilterListener {
                     done = true;
                     notify();
                 }
-            }
-            else {
+            } else {
                 // record the move in the game data
                 gameData.addMove(currentFilter.getMove());
 
                 // if we're done, notify
                 if (gameData.getNumMoves() == numMoves) {
-                    synchronized(this) {
+                    synchronized (this) {
                         this.success = true;
                         done = true;
                         notify();
@@ -194,7 +193,7 @@ public class IYTSimpleMovesBuilder implements IYTMovesBuilder, FilterListener {
         }
         // not successful, some exception caught
         else {
-            synchronized(this) {
+            synchronized (this) {
                 this.success = false;
                 done = true;
                 this.ex = ex;

@@ -10,8 +10,8 @@ public class DSGUndoRequestTableEvent extends AbstractDSGTableEvent {
         super(player, table);
     }
 
-	public String toString() {
-		return "undo request " + super.toString();
-	}
+    public String toString() {
+        return "undo request " + super.toString();
+    }
 }
 

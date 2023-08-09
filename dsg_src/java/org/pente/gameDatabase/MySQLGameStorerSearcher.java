@@ -1,19 +1,20 @@
-/** MySQLGameStorerSearcher.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * MySQLGameStorerSearcher.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.gameDatabase;
@@ -32,16 +33,16 @@ import org.apache.log4j.*;
 
 public class MySQLGameStorerSearcher implements GameStorerSearcher {
 
-	private static final Category log4j = Category.getInstance(
-		MySQLGameStorerSearcher.class.getName());
+    private static final Category log4j = Category.getInstance(
+            MySQLGameStorerSearcher.class.getName());
 
-    private DBHandler           dbHandler;
-    private GameStorer          gameStorer;
-    private GameVenueStorer     gameVenueStorer;
-    
+    private DBHandler dbHandler;
+    private GameStorer gameStorer;
+    private GameVenueStorer gameVenueStorer;
+
     private String game_table = "pente_game";
     private String move_table = "pente_move";
-    
+
     public MySQLGameStorerSearcher(DBHandler dbHandler, GameStorer gameStorer, GameVenueStorer gameVenueStorer) throws Exception {
 
         this.dbHandler = dbHandler;
@@ -51,7 +52,7 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
 
 
     public void search(GameStorerSearchRequestData requestData, GameStorerSearchResponseData responseData) throws Exception {
-long startTime = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
         Connection con = null, extraCon = null;
 
         responseData.setGameStorerSearchRequestData(requestData);
@@ -63,25 +64,25 @@ long startTime = System.currentTimeMillis();
         StringBuffer filterOptionsFrom2 = new StringBuffer();
         StringBuffer filterOptionsWhere2 = new StringBuffer();
         Vector filterOptionsParams2 = new Vector();
-        
-        GameStorerSearchRequestFilterData filterData = requestData.getGameStorerSearchRequestFilterData();
-        
-		boolean includeGameTable = initFilterOptions(
-			filterData, 1, filterOptionsFrom, filterOptionsWhere, filterOptionsParams);
 
-       boolean union = false;
-        if ((filterData.getPlayer1Name() != null && 
-        	 filterData.getPlayer1Name().trim().length() > 0 &&
-        	 filterData.getPlayer1Seat() == filterData.SEAT_ALL) ||
-        	(filterData.getPlayer2Name() != null &&
-             filterData.getPlayer2Name().trim().length() > 0 &&
-        	 filterData.getPlayer2Seat() == filterData.SEAT_ALL)) {
-        	union = true;
-        	includeGameTable = true;
-        	initFilterOptions(
-                filterData, 2, filterOptionsFrom2, filterOptionsWhere2, filterOptionsParams2);
+        GameStorerSearchRequestFilterData filterData = requestData.getGameStorerSearchRequestFilterData();
+
+        boolean includeGameTable = initFilterOptions(
+                filterData, 1, filterOptionsFrom, filterOptionsWhere, filterOptionsParams);
+
+        boolean union = false;
+        if ((filterData.getPlayer1Name() != null &&
+                filterData.getPlayer1Name().trim().length() > 0 &&
+                filterData.getPlayer1Seat() == filterData.SEAT_ALL) ||
+                (filterData.getPlayer2Name() != null &&
+                        filterData.getPlayer2Name().trim().length() > 0 &&
+                        filterData.getPlayer2Seat() == filterData.SEAT_ALL)) {
+            union = true;
+            includeGameTable = true;
+            initFilterOptions(
+                    filterData, 2, filterOptionsFrom2, filterOptionsWhere2, filterOptionsParams2);
         }
-		
+
         try {
             con = dbHandler.getConnection();
             extraCon = dbHandler.getConnection();
@@ -108,7 +109,7 @@ long startTime = System.currentTimeMillis();
                     },
                     () -> {
                         try {
-                            return getMatchingGames(requestData, responseData, 
+                            return getMatchingGames(requestData, responseData,
                                     filterOptionsFrom, finalIncludeGameTable, filterOptionsWhereTmp,
                                     filterOptionsParams, filterOptionsFrom2, filterOptionsWhere2,
                                     filterOptionsParams2, finalUnion, finalExtraCon);
@@ -121,7 +122,7 @@ long startTime = System.currentTimeMillis();
             List<Integer> lists = tasks
                     .map(CompletableFuture::supplyAsync)
                     .map(CompletableFuture::join).collect(Collectors.toList());
-            
+
             totalGameCount = lists.get(0);
 
             requestData.getGameStorerSearchRequestFilterData().setTotalGameNum(
@@ -132,9 +133,9 @@ long startTime = System.currentTimeMillis();
             dbHandler.freeConnection(con);
             dbHandler.freeConnection(extraCon);
         }
-long endTime = System.currentTimeMillis();
-long totalTime = endTime - startTime;
-log4j.debug("search time: " + totalTime);
+        long endTime = System.currentTimeMillis();
+        long totalTime = endTime - startTime;
+        log4j.debug("search time: " + totalTime);
     }
 
     private int getTotalGameCount(GameStorerSearchRequestData requestData, GameStorerSearchResponseData responseData, Connection con, StringBuffer filterOptionsFrom, StringBuffer filterOptionsWhere, Vector filterOptionsParams, StringBuffer filterOptionsFrom2, StringBuffer filterOptionsWhere2, Vector filterOptionsParams2, boolean includeGameTable, boolean union, int totalGameCount) throws Exception {
@@ -148,66 +149,66 @@ log4j.debug("search time: " + totalTime);
     }
 
     private void addGameTable(StringBuffer filterOptionsFrom,
-		StringBuffer filterOptionsWhere) {
+                              StringBuffer filterOptionsWhere) {
 
-		filterOptionsFrom.append(", " + game_table + " g ");
-		filterOptionsWhere.append("and m.gid = g.gid ");
-	}
-	
+        filterOptionsFrom.append(", " + game_table + " g ");
+        filterOptionsWhere.append("and m.gid = g.gid ");
+    }
+
     protected boolean initFilterOptions(GameStorerSearchRequestFilterData filterData,
-			 int unionIndex,
-			 StringBuffer filterOptionsFrom,
-			 StringBuffer filterOptionsWhere,
-			 Vector filterOptionsParams) throws Exception {
+                                        int unionIndex,
+                                        StringBuffer filterOptionsFrom,
+                                        StringBuffer filterOptionsWhere,
+                                        Vector filterOptionsParams) throws Exception {
 
-		boolean includeGameTable = false;
+        boolean includeGameTable = false;
 
-		GameSiteData siteData = null;
+        GameSiteData siteData = null;
         if (filterData.getSite() != null && filterData.getSite().trim().length() > 0) {
 
             siteData = gameVenueStorer.getGameSiteData(
-                filterData.getGame(), filterData.getSite());
+                    filterData.getGame(), filterData.getSite());
             if (siteData != null) {
-				addGameTable(filterOptionsFrom, filterOptionsWhere);
-				includeGameTable = true;
+                addGameTable(filterOptionsFrom, filterOptionsWhere);
+                includeGameTable = true;
                 filterOptionsWhere.append("and g.site_id = ? ");
                 filterOptionsParams.addElement(new Integer(siteData.getSiteID()));
             }
         }
         if (filterData.getEvent() != null && filterData.getEvent().trim().length() > 0 &&
-            !filterData.getEvent().equals(GameEventData.ALL_EVENTS) && !filterData.getEvent().equals("-")) {
+                !filterData.getEvent().equals(GameEventData.ALL_EVENTS) && !filterData.getEvent().equals("-")) {
 
-			if (!includeGameTable) {
-				addGameTable(filterOptionsFrom, filterOptionsWhere);
-				includeGameTable = true;
-			}
+            if (!includeGameTable) {
+                addGameTable(filterOptionsFrom, filterOptionsWhere);
+                includeGameTable = true;
+            }
 
             filterOptionsWhere.append(" and g.event_id = ? ");
-			GameEventData e = gameVenueStorer.getGameEventData(filterData.getGame(),
-				filterData.getEvent(), filterData.getSite());
+            GameEventData e = gameVenueStorer.getGameEventData(filterData.getGame(),
+                    filterData.getEvent(), filterData.getSite());
             filterOptionsParams.addElement(e.getEventID());
         }
         if (filterData.getRound() != null && filterData.getRound().trim().length() > 0 &&
-            !filterData.getRound().equals(GameRoundData.ALL_ROUNDS) && !filterData.getRound().equals("-")) {
+                !filterData.getRound().equals(GameRoundData.ALL_ROUNDS) && !filterData.getRound().equals("-")) {
 
-			if (!includeGameTable) {
-				addGameTable(filterOptionsFrom, filterOptionsWhere);
-				includeGameTable = true;
-			}
+            if (!includeGameTable) {
+                addGameTable(filterOptionsFrom, filterOptionsWhere);
+                includeGameTable = true;
+            }
             filterOptionsWhere.append("and g.round = ? ");
             filterOptionsParams.addElement(filterData.getRound());
         }
         if (filterData.getSection() != null && filterData.getSection().trim().length() > 0 &&
-            !filterData.getSection().equals(GameSectionData.ALL_SECTIONS) && !filterData.getSection().equals("-")) {
+                !filterData.getSection().equals(GameSectionData.ALL_SECTIONS) && !filterData.getSection().equals("-")) {
 
-			if (!includeGameTable) {
-				addGameTable(filterOptionsFrom, filterOptionsWhere);
-				includeGameTable = true;
-			}
+            if (!includeGameTable) {
+                addGameTable(filterOptionsFrom, filterOptionsWhere);
+                includeGameTable = true;
+            }
             filterOptionsWhere.append("and g.section = ? ");
             filterOptionsParams.addElement(filterData.getSection());
         }
-        
+
         boolean createOrPlayers = filterData.isP1OrP2() &&
                 (filterData.getPlayer1Name() != null && filterData.getPlayer1Name().trim().length() > 0) &&
                 (filterData.getPlayer2Name() != null && filterData.getPlayer2Name().trim().length() > 0);
@@ -216,30 +217,29 @@ log4j.debug("search time: " + totalTime);
             filterOptionsFrom.append(", player p1 ");
 
             String pStr = filterData.getPlayer1Name().toLowerCase();
-            
-			if (!includeGameTable) {
-				addGameTable(filterOptionsFrom, filterOptionsWhere);
-				includeGameTable = true;
-			}
-			if (filterData.getPlayer1Seat() == GameStorerSearchRequestFilterData.SEAT_ALL) {
-				filterOptionsWhere.append("and g.player" + unionIndex + "_pid = p1.pid ");
-			}
-			else {
-				filterOptionsWhere.append("and g.player" + filterData.getPlayer1Seat() + "_pid = p1.pid ");
-			}
-			
-			if (siteData != null) {
-				filterOptionsWhere.append("and p1.site_id = " + siteData.getSiteID() + " ");
-			}
-			
-			//filterOptionsWhere.append("and p1.name_lower = '" + 
-			//	filterData.getPlayer1Name().toLowerCase() + "' ");
+
+            if (!includeGameTable) {
+                addGameTable(filterOptionsFrom, filterOptionsWhere);
+                includeGameTable = true;
+            }
+            if (filterData.getPlayer1Seat() == GameStorerSearchRequestFilterData.SEAT_ALL) {
+                filterOptionsWhere.append("and g.player" + unionIndex + "_pid = p1.pid ");
+            } else {
+                filterOptionsWhere.append("and g.player" + filterData.getPlayer1Seat() + "_pid = p1.pid ");
+            }
+
+            if (siteData != null) {
+                filterOptionsWhere.append("and p1.site_id = " + siteData.getSiteID() + " ");
+            }
+
+            //filterOptionsWhere.append("and p1.name_lower = '" +
+            //	filterData.getPlayer1Name().toLowerCase() + "' ");
 
             if (!createOrPlayers) {
                 String[] pStrArray = pStr.split(",");
                 filterOptionsWhere.append("and (");
                 boolean fst = true;
-                for(String s: pStrArray) {
+                for (String s : pStrArray) {
                     if (fst) {
                         fst = false;
                     } else {
@@ -263,28 +263,27 @@ log4j.debug("search time: " + totalTime);
             String pStr = filterData.getPlayer2Name().toLowerCase();
 
             if (!includeGameTable) {
-				addGameTable(filterOptionsFrom, filterOptionsWhere);
-				includeGameTable = true;
-			}
-			if (filterData.getPlayer1Seat() == GameStorerSearchRequestFilterData.SEAT_ALL) {
-				filterOptionsWhere.append("and g.player" + (3 - unionIndex) + "_pid = p2.pid ");
-			}
-			else {
-				filterOptionsWhere.append("and g.player" + filterData.getPlayer2Seat() + "_pid = p2.pid ");
-			}
-			
-			if (siteData != null) {
-				filterOptionsWhere.append("and p2.site_id = " + siteData.getSiteID() + " ");
-			}
-			
+                addGameTable(filterOptionsFrom, filterOptionsWhere);
+                includeGameTable = true;
+            }
+            if (filterData.getPlayer1Seat() == GameStorerSearchRequestFilterData.SEAT_ALL) {
+                filterOptionsWhere.append("and g.player" + (3 - unionIndex) + "_pid = p2.pid ");
+            } else {
+                filterOptionsWhere.append("and g.player" + filterData.getPlayer2Seat() + "_pid = p2.pid ");
+            }
+
+            if (siteData != null) {
+                filterOptionsWhere.append("and p2.site_id = " + siteData.getSiteID() + " ");
+            }
+
             //filterOptionsWhere.append("and p2.name_lower = '" + 
-           	//	filterData.getPlayer2Name().toLowerCase() + "' ");
+            //	filterData.getPlayer2Name().toLowerCase() + "' ");
 
             if (!createOrPlayers) {
                 String[] pStrArray = pStr.split(",");
                 filterOptionsWhere.append("and (");
                 boolean fst = true;
-                for(String s: pStrArray) {
+                for (String s : pStrArray) {
                     if (fst) {
                         fst = false;
                     } else {
@@ -307,7 +306,7 @@ log4j.debug("search time: " + totalTime);
             String[] p1StrArray = p1Str.split(",");
             filterOptionsWhere.append("and (");
             boolean fst = true;
-            for(String s: p1StrArray) {
+            for (String s : p1StrArray) {
                 if (fst) {
                     fst = false;
                 } else {
@@ -324,7 +323,7 @@ log4j.debug("search time: " + totalTime);
             }
             String p2Str = filterData.getPlayer2Name().toLowerCase();
             String[] p2StrArray = p2Str.split(",");
-            for(String s: p2StrArray) {
+            for (String s : p2StrArray) {
                 filterOptionsWhere.append("or  ");
                 String sTrimmed = s.trim();
                 if (sTrimmed.contains("*")) {
@@ -339,18 +338,18 @@ log4j.debug("search time: " + totalTime);
         }
 
         if (filterData.getAfterDate() != null) {
-			if (!includeGameTable) {
-				addGameTable(filterOptionsFrom, filterOptionsWhere);
-				includeGameTable = true;
-			}
+            if (!includeGameTable) {
+                addGameTable(filterOptionsFrom, filterOptionsWhere);
+                includeGameTable = true;
+            }
             filterOptionsWhere.append("and g.play_date > ? ");
             filterOptionsParams.addElement(new Timestamp(filterData.getAfterDate().getTime()));
         }
         if (filterData.getBeforeDate() != null) {
-			if (!includeGameTable) {
-				addGameTable(filterOptionsFrom, filterOptionsWhere);
-				includeGameTable = true;
-			}
+            if (!includeGameTable) {
+                addGameTable(filterOptionsFrom, filterOptionsWhere);
+                includeGameTable = true;
+            }
             filterOptionsWhere.append("and g.play_date < ? ");
             filterOptionsParams.addElement(new Timestamp(filterData.getBeforeDate().getTime()));
         }
@@ -376,7 +375,7 @@ log4j.debug("search time: " + totalTime);
             filterOptionsWhere.append("and g.player2_rating > ? ");
             filterOptionsParams.addElement(filterData.getRatingP2Above());
         }
-        
+
         if (filterData.isExcludeTimeOuts()) {
             if (!includeGameTable) {
                 addGameTable(filterOptionsFrom, filterOptionsWhere);
@@ -412,41 +411,39 @@ log4j.debug("search time: " + totalTime);
             if (param instanceof Integer) {
                 Integer p = (Integer) param;
                 stmt.setInt(startParam + i, p.intValue());
-            }
-            else if (param instanceof Timestamp) {
+            } else if (param instanceof Timestamp) {
                 Timestamp t = (Timestamp) param;
                 stmt.setTimestamp(startParam + i, t);
-            }
-            else {
+            } else {
                 stmt.setString(startParam + i, param.toString());
             }
         }
     }
 
     protected int getSearchResults(GameStorerSearchRequestData requestData,
-                                    GameStorerSearchResponseData responseData,
-                                    StringBuffer filterOptionsFrom,
-                                    boolean includeGameTable,
-                                    StringBuffer filterOptionsWhere,
-                                    Vector filterOptionsParams,
-                                    StringBuffer filterOptionsFrom2,
-                                    StringBuffer filterOptionsWhere2,
-                                    Vector filterOptionsParams2,
-                                    boolean union,
-                                    Connection con) throws Exception {
+                                   GameStorerSearchResponseData responseData,
+                                   StringBuffer filterOptionsFrom,
+                                   boolean includeGameTable,
+                                   StringBuffer filterOptionsWhere,
+                                   Vector filterOptionsParams,
+                                   StringBuffer filterOptionsFrom2,
+                                   StringBuffer filterOptionsWhere2,
+                                   Vector filterOptionsParams2,
+                                   boolean union,
+                                   Connection con) throws Exception {
 
         PreparedStatement stmt = null;
         ResultSet result = null;
         Hashtable moveResponses = new Hashtable();
-		int totalGameCount = 0;
+        int totalGameCount = 0;
         int game = requestData.getGameStorerSearchRequestFilterData().getGame();
         GridState state = GridStateFactory.createGridState(
                 requestData.getGameStorerSearchRequestFilterData().getGame(),
                 requestData);
         responseData.setRotation(state.getRotation());
         long hash = state.getHash();
-		int currentPlayer = requestData.getNumMoves() % 2 + 1;
-		
+        int currentPlayer = requestData.getNumMoves() % 2 + 1;
+
         try {
 
 //			String qryString = 
@@ -458,60 +455,59 @@ log4j.debug("search time: " + totalTime);
 //				(includeGameTable ? "and g.game = m.game " : "") +
 //				filterOptionsWhere.toString() +
 //				"group by m.next_move, m.rotation, m.winner";
-			String qryString = null;
-        	if (!union) {
-				qryString = 
-					"select m.next_move, m.rotation, m.winner, count(*) " +
-					"from " + move_table + " m " + filterOptionsFrom.toString() +
-					"where m.hash_key = " + hash + " " +
-					"and m.move_num = " + (requestData.getNumMoves() - 1) + " " +
-					"and m.game = " + game + " " +
-					(includeGameTable ? "and g.game = " + game + " " : "") + //thinking is that the game table might be primary table if filtering by certain things
-					filterOptionsWhere.toString() +
-					"group by m.next_move, m.rotation, m.winner";
-        	}
-        	else {
-				qryString = 
-					"select nextm, rot, win, count(*) " +
-					"from ( " +
-					"select * from (select m.next_move as nextm, m.rotation as rot, m.winner as win " +
-					"from " + move_table + " m " + filterOptionsFrom.toString() +
-					"where m.hash_key = " + hash + " " +
-					"and m.move_num = " + (requestData.getNumMoves() - 1) + " " +
-					"and m.game = " + game + " " +
-					"and g.game = " + game + " " +
-					filterOptionsWhere.toString() + ") as d1 " +
-					"union all " +
-					"select * from (select m.next_move as nextm, m.rotation as rot, m.winner as win " +
-					"from " + move_table + " m " + filterOptionsFrom2.toString() +
-					"where m.hash_key = " + hash + " " +
-					"and m.move_num = " + (requestData.getNumMoves() - 1) + " " +
-					"and m.game = " + game + " " +
-					"and g.game = " + game + " " +
-					filterOptionsWhere2.toString() + ") as d2 " +
-					") as main group by nextm, rot, win";
-			}
-			log4j.debug("queryString (getSearchResults) :" + qryString);
+            String qryString = null;
+            if (!union) {
+                qryString =
+                        "select m.next_move, m.rotation, m.winner, count(*) " +
+                                "from " + move_table + " m " + filterOptionsFrom.toString() +
+                                "where m.hash_key = " + hash + " " +
+                                "and m.move_num = " + (requestData.getNumMoves() - 1) + " " +
+                                "and m.game = " + game + " " +
+                                (includeGameTable ? "and g.game = " + game + " " : "") + //thinking is that the game table might be primary table if filtering by certain things
+                                filterOptionsWhere.toString() +
+                                "group by m.next_move, m.rotation, m.winner";
+            } else {
+                qryString =
+                        "select nextm, rot, win, count(*) " +
+                                "from ( " +
+                                "select * from (select m.next_move as nextm, m.rotation as rot, m.winner as win " +
+                                "from " + move_table + " m " + filterOptionsFrom.toString() +
+                                "where m.hash_key = " + hash + " " +
+                                "and m.move_num = " + (requestData.getNumMoves() - 1) + " " +
+                                "and m.game = " + game + " " +
+                                "and g.game = " + game + " " +
+                                filterOptionsWhere.toString() + ") as d1 " +
+                                "union all " +
+                                "select * from (select m.next_move as nextm, m.rotation as rot, m.winner as win " +
+                                "from " + move_table + " m " + filterOptionsFrom2.toString() +
+                                "where m.hash_key = " + hash + " " +
+                                "and m.move_num = " + (requestData.getNumMoves() - 1) + " " +
+                                "and m.game = " + game + " " +
+                                "and g.game = " + game + " " +
+                                filterOptionsWhere2.toString() + ") as d2 " +
+                                ") as main group by nextm, rot, win";
+            }
+            log4j.debug("queryString (getSearchResults) :" + qryString);
 
             stmt = con.prepareStatement(qryString);
 
 
             //stmt.setInt(2, requestData.getNumMoves() - 1);
-			//stmt.setInt(3, requestData.getGameStorerSearchRequestFilterData().getGame());
-            
-			//int currentPlayer = requestData.getNumMoves() % 2 + 1;
+            //stmt.setInt(3, requestData.getGameStorerSearchRequestFilterData().getGame());
+
+            //int currentPlayer = requestData.getNumMoves() % 2 + 1;
 
             //GridState state = GridStateFactory.createGridState(
             //    requestData.getGameStorerSearchRequestFilterData().getGame(),
             //    requestData);
             //long hash = state.getHash();
 
-System.out.println("hash_key = " + hash);
-System.out.println("rotation = " + state.getRotation());
-System.out.println("move_num = " + (requestData.getNumMoves() - 1));
+            System.out.println("hash_key = " + hash);
+            System.out.println("rotation = " + state.getRotation());
+            System.out.println("move_num = " + (requestData.getNumMoves() - 1));
 
             //stmt.setLong(1, hash);
-			int i = 1;
+            int i = 1;
             setFilterOptionsParams(stmt, filterOptionsParams, i);
             if (union) {
                 i += filterOptionsParams.size();
@@ -530,11 +526,11 @@ System.out.println("move_num = " + (requestData.getNumMoves() - 1));
                 int rotation = result.getInt(2);
                 int winner = result.getInt(3);
                 int count = result.getInt(4);
-				totalGameCount += count;
-				
-				if (move == 361) continue;
-				//indicates game ended at this point
-				//but still include in total game count
+                totalGameCount += count;
+
+                if (move == 361) continue;
+                //indicates game ended at this point
+                //but still include in total game count
 
 //System.out.println("move before rot, " + move);
                 if (requestData.getNumMoves() == 0) {
@@ -581,21 +577,21 @@ System.out.println("move_num = " + (requestData.getNumMoves() - 1));
                 stmt.close();
             }
         }
-		return totalGameCount;
+        return totalGameCount;
     }
 
-    
+
     protected int getMatchingGames(GameStorerSearchRequestData requestData,
-                                    GameStorerSearchResponseData responseData,
+                                   GameStorerSearchResponseData responseData,
 //                                    int totalGameCount,
-                                    StringBuffer filterOptionsFrom,
-                                    boolean includeGameTable,
-                                    StringBuffer filterOptionsWhere,
-                                    Vector filterOptionsParams,                                    StringBuffer filterOptionsFrom2,
-                                    StringBuffer filterOptionsWhere2,
-                                    Vector filterOptionsParams2,
-                                    boolean union,
-                                    Connection con) throws Exception {
+                                   StringBuffer filterOptionsFrom,
+                                   boolean includeGameTable,
+                                   StringBuffer filterOptionsWhere,
+                                   Vector filterOptionsParams, StringBuffer filterOptionsFrom2,
+                                   StringBuffer filterOptionsWhere2,
+                                   Vector filterOptionsParams2,
+                                   boolean union,
+                                   Connection con) throws Exception {
 
         PreparedStatement stmt = null;
         ResultSet results = null;
@@ -609,16 +605,16 @@ System.out.println("move_num = " + (requestData.getNumMoves() - 1));
 
             String limitStart = Integer.toString(startGameNum);
             String limitLen = Integer.toString(endGameNum - startGameNum);
-            
+
             GridState state = GridStateFactory.createGridState(
                     requestData.getGameStorerSearchRequestFilterData().getGame(),
                     requestData);
             long hash = state.getHash();
             int gm = requestData.getGameStorerSearchRequestFilterData().getGame();
 
-			if (!includeGameTable) {
-				addGameTable(filterOptionsFrom, filterOptionsWhere);
-			}
+            if (!includeGameTable) {
+                addGameTable(filterOptionsFrom, filterOptionsWhere);
+            }
 //			String qryString = 
 //				"select m.gid " +
 //				"from " + move_table + " m " + filterOptionsFrom.toString() +
@@ -628,56 +624,54 @@ System.out.println("move_num = " + (requestData.getNumMoves() - 1));
 //				"and g.game = m.game " +
 //				filterOptionsWhere.toString() +
 //				"order by m.play_date desc ";
-			
 
-			//qryString += "limit " + limitStart + ", " + limitLen;
-			
-			String qryString = null;
 
-        	if (!union) {
-        		qryString =
-					"select m.gid " +
-					"from " + move_table + " m " + filterOptionsFrom.toString() +
-					"where m.hash_key = " + hash + " " +
-					"and m.move_num = " + (requestData.getNumMoves() - 1) + " " +
-					"and m.game = " + gm + " " +
-					(includeGameTable ? "and g.game = " + gm + " " : "") +
-					filterOptionsWhere.toString() +
-					"order by m.play_date desc " +
-					"limit " + limitStart + ", " + limitLen;
-        	}
-        	else {
-        		qryString =
-					"select gid from ( " +
-					"select m.gid as gid, m.play_date as play_d " +
-					"from " + move_table + " m " + filterOptionsFrom.toString() +
-					"where m.hash_key = " + hash + " " +
-					"and m.move_num = " + (requestData.getNumMoves() - 1) + " " +
-					"and m.game = " + gm + " " +
-					"and g.game = " + gm + " " +
-					filterOptionsWhere.toString() +
-					"union all " +
-					"select m.gid, m.play_date as play_d " +
-					"from " + move_table + " m " + filterOptionsFrom2.toString() +
-					"where m.hash_key = " + hash + " " +
-					"and m.move_num = " + (requestData.getNumMoves() - 1) + " " +
-					"and m.game = " + gm + " " +
-					"and g.game = " + gm + " " +
-					filterOptionsWhere2.toString() +
-					") as main order by play_d desc " +
-					"limit " + limitStart + ", " + limitLen;
-        	}
+            //qryString += "limit " + limitStart + ", " + limitLen;
+
+            String qryString = null;
+
+            if (!union) {
+                qryString =
+                        "select m.gid " +
+                                "from " + move_table + " m " + filterOptionsFrom.toString() +
+                                "where m.hash_key = " + hash + " " +
+                                "and m.move_num = " + (requestData.getNumMoves() - 1) + " " +
+                                "and m.game = " + gm + " " +
+                                (includeGameTable ? "and g.game = " + gm + " " : "") +
+                                filterOptionsWhere.toString() +
+                                "order by m.play_date desc " +
+                                "limit " + limitStart + ", " + limitLen;
+            } else {
+                qryString =
+                        "select gid from ( " +
+                                "select m.gid as gid, m.play_date as play_d " +
+                                "from " + move_table + " m " + filterOptionsFrom.toString() +
+                                "where m.hash_key = " + hash + " " +
+                                "and m.move_num = " + (requestData.getNumMoves() - 1) + " " +
+                                "and m.game = " + gm + " " +
+                                "and g.game = " + gm + " " +
+                                filterOptionsWhere.toString() +
+                                "union all " +
+                                "select m.gid, m.play_date as play_d " +
+                                "from " + move_table + " m " + filterOptionsFrom2.toString() +
+                                "where m.hash_key = " + hash + " " +
+                                "and m.move_num = " + (requestData.getNumMoves() - 1) + " " +
+                                "and m.game = " + gm + " " +
+                                "and g.game = " + gm + " " +
+                                filterOptionsWhere2.toString() +
+                                ") as main order by play_d desc " +
+                                "limit " + limitStart + ", " + limitLen;
+            }
 
             log4j.debug("queryString (getMatchingGames) : " + qryString);
 
             stmt = con.prepareStatement(qryString);
 
 
-			
-log4j.debug("hash="+hash);
-log4j.debug("move_num="+ (requestData.getNumMoves() - 1));
-			int i = 1;
-			//stmt.setInt(1, requestData.getGameStorerSearchRequestFilterData().getGame());
+            log4j.debug("hash=" + hash);
+            log4j.debug("move_num=" + (requestData.getNumMoves() - 1));
+            int i = 1;
+            //stmt.setInt(1, requestData.getGameStorerSearchRequestFilterData().getGame());
             //stmt.setLong(2, hash);
             //stmt.setInt(3, requestData.getNumMoves() - 1);
             setFilterOptionsParams(stmt, filterOptionsParams, i);
@@ -692,8 +686,8 @@ log4j.debug("move_num="+ (requestData.getNumMoves() - 1));
 
             int cnt = 0;
             while (results.next()) {
-        		gids.add(new Long(results.getLong(1)));
-        		log4j.debug(results.getLong(1));
+                gids.add(new Long(results.getLong(1)));
+                log4j.debug(results.getLong(1));
             }
 
             if (results != null) {
@@ -702,7 +696,7 @@ log4j.debug("move_num="+ (requestData.getNumMoves() - 1));
             if (stmt != null) {
                 stmt.close();
             }
-			
+
 
 //			requestData.getGameStorerSearchRequestFilterData().setTotalGameNum(
 //				totalGameCount);
@@ -719,7 +713,7 @@ log4j.debug("move_num="+ (requestData.getNumMoves() - 1));
 
             // load matched games into response object
             List<GameData> games = ((MySQLPenteGameStorer) gameStorer).loadGames(con, gids);
-            for (GameData game: games) {
+            for (GameData game : games) {
                 responseData.addGame(game);
             }
 

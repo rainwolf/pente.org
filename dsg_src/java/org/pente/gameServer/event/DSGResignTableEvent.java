@@ -10,8 +10,8 @@ public class DSGResignTableEvent extends AbstractDSGTableEvent {
         super(player, table);
     }
 
-	public String toString() {
-		return "resign " + super.toString();
-	}
+    public String toString() {
+        return "resign " + super.toString();
+    }
 }
 

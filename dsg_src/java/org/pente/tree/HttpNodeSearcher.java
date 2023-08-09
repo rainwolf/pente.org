@@ -12,13 +12,13 @@ public class HttpNodeSearcher implements NodeSearcher {
     private int port;
     private String path;
     private Node root;
-    
+
     public HttpNodeSearcher(String host, int port, String path) throws NodeSearchException {
         this.host = host;
         this.port = port;
         this.path = path;
     }
-    
+
     public Node loadAll() throws NodeSearchException {
         root = loadPosition(82592);
         return root;
@@ -35,6 +35,7 @@ public class HttpNodeSearcher implements NodeSearcher {
     public Node loadPosition(GridState state) throws NodeSearchException {
         throw new UnsupportedOperationException("not implemented yet.");
     }
+
     public Node loadPosition(long hash) throws NodeSearchException {
 
         ObjectInputStream in = null;
@@ -42,16 +43,19 @@ public class HttpNodeSearcher implements NodeSearcher {
         try {
             URL remoteNodeURL = new URL("http", host, port, path + "/" + hash);
             in = new ObjectInputStream(
-                remoteNodeURL.openStream());
+                    remoteNodeURL.openStream());
             n = (Node) in.readObject();
 
             in.close();
         } catch (Throwable t) {
-            throw new NodeSearchException("Can't retrieve node from: " + 
-                host + ", " + path, t);
+            throw new NodeSearchException("Can't retrieve node from: " +
+                    host + ", " + path, t);
         } finally {
             if (in != null) {
-                try { in.close(); } catch (IOException ie) {}
+                try {
+                    in.close();
+                } catch (IOException ie) {
+                }
             }
         }
         return n;

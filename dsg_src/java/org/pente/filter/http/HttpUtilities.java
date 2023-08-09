@@ -1,19 +1,20 @@
-/** AbstractFilterController.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * AbstractFilterController.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.filter.http;
@@ -41,7 +42,7 @@ public class HttpUtilities {
             String value = "";
             try {
                 value = decode(oneParamTokenizer.nextToken()).trim();
-            } catch(NoSuchElementException ex) {
+            } catch (NoSuchElementException ex) {
             }
 
             // if multiple parameters share the same name, put them in a vector
@@ -50,15 +51,13 @@ public class HttpUtilities {
                 if (exists instanceof Vector) {
                     Vector vec = (Vector) exists;
                     vec.addElement(value);
-                }
-                else {
+                } else {
                     Vector vec = new Vector();
                     vec.addElement(exists);
                     vec.addElement(value);
                     params.put(name, vec);
                 }
-            }
-            else {
+            } else {
                 params.put(name, value);
             }
         }
@@ -81,10 +80,9 @@ public class HttpUtilities {
                     break;
                 case '%':
                     try {
-                        sb.append((char)Integer.parseInt(
-                                        s.substring(i + 1, i + 3), 16));
-                    }
-                    catch (NumberFormatException e) {
+                        sb.append((char) Integer.parseInt(
+                                s.substring(i + 1, i + 3), 16));
+                    } catch (NumberFormatException e) {
                         throw new IllegalArgumentException();
                     }
                     i += 2;

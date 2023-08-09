@@ -1,19 +1,20 @@
-/** Server.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * Server.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.gameServer.server;
@@ -39,8 +40,8 @@ import javax.websocket.Session;
  */
 public class Server {
 
-    protected static Category log4j = 
-        Category.getInstance(Server.class.getName());
+    protected static Category log4j =
+            Category.getInstance(Server.class.getName());
 
     protected Resources resources;
     protected volatile boolean running = true;
@@ -50,7 +51,7 @@ public class Server {
     protected int port;
     protected ServerSocket gameServerSocket;
     protected Thread gameThread;
-    
+
     protected DSGPlayerStorerLoginHandler loginHandler;
     protected RegisterHandler registerHandler;
     protected CacheDSGPlayerStorer dsgPlayerStorer;
@@ -63,7 +64,7 @@ public class Server {
     protected MySQLDSGReturnEmailStorer returnEmailStorer;
 
     protected List tables;
-    
+
     protected SynchronizedServerMainRoom mainRoom;
 
     protected PingManager pingManager;
@@ -71,16 +72,16 @@ public class Server {
 
     protected ServerAIController aiController;
     protected Collection aiDataCollection;
-    
+
     protected PasswordHelper passwordHelper;
     protected ActivityLogger activityLogger;
 
     protected GameEventData gameEvent;
 
     protected CacheKOTHStorer kothStorer;
-    
+
     protected DSGFollowerStorer followerStorer;
-    
+
 //    protected ServerContainer serverContainer;
 //
 //    public void setServerContainer(ServerContainer serverContainer) {
@@ -92,7 +93,7 @@ public class Server {
 
         this.resources = resources;
         this.dsgPlayerStorer = resources.getDsgPlayerStorer();
-		this.serverStatsHandler = resources.getServerStatsHandler();
+        this.serverStatsHandler = resources.getServerStatsHandler();
         this.returnEmailStorer = resources.getReturnEmailStorer();
         this.gameStorer = resources.getGameStorer();
         this.fileGameStorer = resources.getFileGameStorer();
@@ -111,31 +112,31 @@ public class Server {
             ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
             gameServerSocket = ssf.createServerSocket(port);
         } catch (Throwable t) {
-            log4j.error("Server [" + name + "], could not listen on port: " + 
-                port + ".", t);
+            log4j.error("Server [" + name + "], could not listen on port: " +
+                    port + ".", t);
             return;
         }
-        
+
         // can these be shared also?
         loginHandler = new DSGPlayerStorerLoginHandler(dsgPlayerStorer);
         registerHandler = new DSGPlayerStorerRegisterHandler(dsgPlayerStorer);
 
         // initialize per server stuff
         DSGEventToPlayerRouter baseRouter = new SimpleDSGEventToPlayerRouter();
-        dsgEventToPlayerRouter = 
-            new LoggingDSGEventToPlayerRouter(
-                serverData.getServerId(), serverStatsHandler, baseRouter);
+        dsgEventToPlayerRouter =
+                new LoggingDSGEventToPlayerRouter(
+                        serverData.getServerId(), serverStatsHandler, baseRouter);
         pingManager = new DSGEventPingManager(dsgEventToPlayerRouter); // don't log ping events
 
 
         tables = new ArrayList(5);
         tables.add(new Object());//dummy 1st table
-        
+
         mainRoom = new SynchronizedServerMainRoom(
-            this, resources, dsgEventToPlayerRouter);
+                this, resources, dsgEventToPlayerRouter);
         dsgPlayerStorer.addPlayerDataChangeListener(mainRoom);
         dsgPlayerStorer.addIgnoreDataChangeListener(mainRoom);
-        
+
         aiController = new ServerAIController(this, passwordHelper);
         initAiData(resources.getAiConfigFile());
 
@@ -145,24 +146,24 @@ public class Server {
                 while (running) {
                     try {
                         Socket socket = gameServerSocket.accept();
-                        
+
                         // don't wait for more messages to come in before sending
                         // because server sends many short messages
-                        socket.setTcpNoDelay(true); 
+                        socket.setTcpNoDelay(true);
                         // timeout after 30 seconds
                         // this should be ok because we send pings every 15 seconds
                         //socket.setSoTimeout(30 * 1000); 
-                                             
+
                         addPlayerSocket(socket);
 
                     } catch (Throwable t) {
                         if (running) {
                             log4j.error("Error accepting game socket " +
-                                "connection [" + name + "].", t);
+                                    "connection [" + name + "].", t);
                         }
                     }
                 }
-                
+
                 // close socket
                 try {
                     gameServerSocket.close();
@@ -179,16 +180,15 @@ public class Server {
     }
 
     public boolean allowAccess(String player) {
-    	return !serverData.isPrivateServer() || serverData.getPlayers().contains(player);
+        return !serverData.isPrivateServer() || serverData.getPlayers().contains(player);
     }
-    
+
     public void initAiData(String aiConfigFile) {
 
         /** tournament tables don't allow ai games */
         if (serverData.isTournament()) {
             aiDataCollection = new ArrayList();
-        }
-        else {
+        } else {
             AIConfigurator configurator = new XMLAIConfigurator();
             try {
                 aiDataCollection = configurator.getAIData(aiConfigFile);
@@ -199,9 +199,9 @@ public class Server {
         }
     }
 
-//    For WebSockets
+    //    For WebSockets
     public WebSocketDSGEventHandler addPlayerWebSocketSession(Session session) {
-        WebSocketDSGEventHandler socketDSGEventHandler = 
+        WebSocketDSGEventHandler socketDSGEventHandler =
                 new WebSocketDSGEventHandler(session);
         log4j.info("Websocket Connection from " + socketDSGEventHandler.getHostAddress());
         ServerPlayer serverPlayer =
@@ -218,34 +218,34 @@ public class Server {
         socketDSGEventHandler.addListener(serverPlayer);
         return socketDSGEventHandler;
     }
-    
-//    For TCP sockets
+
+    //    For TCP sockets
     public void addPlayerSocket(Socket socket) {
 
-        ServerSocketDSGEventHandler socketDSGEventHandler = 
-            new ServerSocketDSGEventHandler(socket);
+        ServerSocketDSGEventHandler socketDSGEventHandler =
+                new ServerSocketDSGEventHandler(socket);
         log4j.info("Connection from " + socketDSGEventHandler.getHostAddress());
-        
-        ServerPlayer serverPlayer = 
-            new ServerPlayer(this,
-                             dsgEventToPlayerRouter,
-                             socketDSGEventHandler,
-                             dsgPlayerStorer,
-                             loginHandler,
-                             pingManager,
-                             serverStatsHandler,
-                             aiDataCollection,
-                             passwordHelper,
-                             activityLogger);
+
+        ServerPlayer serverPlayer =
+                new ServerPlayer(this,
+                        dsgEventToPlayerRouter,
+                        socketDSGEventHandler,
+                        dsgPlayerStorer,
+                        loginHandler,
+                        pingManager,
+                        serverStatsHandler,
+                        aiDataCollection,
+                        passwordHelper,
+                        activityLogger);
         socketDSGEventHandler.addListener(serverPlayer);
     }
-    
-    public void addPlayerListener(DSGEventListener listener, String name, 
-        boolean isHuman) {
-        
+
+    public void addPlayerListener(DSGEventListener listener, String name,
+                                  boolean isHuman) {
+
         // add route to player for events from the server
         dsgEventToPlayerRouter.addRoute(listener, name);
-        
+
         if (isHuman) {
 
             // add the player to the ping manager
@@ -255,50 +255,54 @@ public class Server {
             serverStatsHandler.playerJoined();
         }
     }
+
     public void bootPlayer(String name, int minutes) {
-    	final SocketDSGEventHandler s = removePlayerListener(name, true);
-    	loginHandler.bootPlayer(name, minutes);
-    	
-    	if (s != null) { //ai shoudln't happen
-	    	// just in case client doesn't close the socket
-	    	// do it here
-			new Thread(new Runnable() {
-				public void run() {
-	
-					// sleep for 3 seconds to give booted player a chance to
-					// receive message that they were booted before closing socket
-					try {
-						Thread.sleep(3000);
-					} catch (InterruptedException ie) {}
-					
-			    	s.destroy();
-				}
-			}).run();
-    	}
+        final SocketDSGEventHandler s = removePlayerListener(name, true);
+        loginHandler.bootPlayer(name, minutes);
+
+        if (s != null) { //ai shoudln't happen
+            // just in case client doesn't close the socket
+            // do it here
+            new Thread(new Runnable() {
+                public void run() {
+
+                    // sleep for 3 seconds to give booted player a chance to
+                    // receive message that they were booted before closing socket
+                    try {
+                        Thread.sleep(3000);
+                    } catch (InterruptedException ie) {
+                    }
+
+                    s.destroy();
+                }
+            }).run();
+        }
     }
+
     public SocketDSGEventHandler removePlayerListener(String name, boolean isHuman) {
         DSGEventListener l = dsgEventToPlayerRouter.removeRoute(name);
-        
+
         SocketDSGEventHandler s = null;
         if (l instanceof SocketDSGEventHandler) {
-        	s = (SocketDSGEventHandler) l;
+            s = (SocketDSGEventHandler) l;
         }
-        	
+
 
         if (isHuman) {
             pingManager.removePlayer(name);
             serverStatsHandler.playerExited();
         }
-        
+
         return s;
     }
-    
+
     public void routeEventToMainRoom(DSGEvent event) {
         mainRoom.eventOccurred(event);
     }
+
     public void routeEventToTable(DSGEvent event, int tableNum) {
         if (event instanceof DSGJoinTableEvent &&
-            tableNum == DSGJoinTableEvent.CREATE_NEW_TABLE) {
+                tableNum == DSGJoinTableEvent.CREATE_NEW_TABLE) {
             try {
                 tableNum = createNewTable((DSGJoinTableEvent) event);
                 ((DSGJoinTableEvent) event).setTable(tableNum);
@@ -314,6 +318,7 @@ public class Server {
             ((SynchronizedServerTable) tables.get(tableNum)).eventOccurred(event);
         }
     }
+
     public void routeEventToAllTables(DSGEvent event) {
         synchronized (tables) {
             for (int i = 1; i < tables.size(); i++) {
@@ -324,6 +329,7 @@ public class Server {
             }
         }
     }
+
     public int createNewTable(DSGJoinTableEvent joinEvent) throws Throwable {
 
         int newTableNum = -1;
@@ -343,22 +349,22 @@ public class Server {
             }
 
             SynchronizedServerTable newT = new SynchronizedServerTable(this,
-                resources,
-                aiController, newTableNum, dsgEventToPlayerRouter, dsgPlayerStorer,
-                pingManager, fileGameStorer, gameStorer, playerStorer,
-                serverStatsHandler, returnEmailStorer, mainRoomPlayers,
-                activityLogger, joinEvent, kothStorer);
+                    resources,
+                    aiController, newTableNum, dsgEventToPlayerRouter, dsgPlayerStorer,
+                    pingManager, fileGameStorer, gameStorer, playerStorer,
+                    serverStatsHandler, returnEmailStorer, mainRoomPlayers,
+                    activityLogger, joinEvent, kothStorer);
 
             if (newTableNum == tables.size()) {
                 tables.add(newT);
-            }
-            else {
+            } else {
                 tables.set(newTableNum, newT);
             }
         }
 
         return newTableNum;
     }
+
     public void removeTable(int tableNum) {
         synchronized (tables) {
             SynchronizedServerTable t = (SynchronizedServerTable) tables.get(tableNum);
@@ -368,15 +374,16 @@ public class Server {
             }
         }
     }
-    
-    
+
+
     public DSGPlayerStorer getDSGPlayerStorer() {
         return dsgPlayerStorer;
     }
+
     public RegisterHandler getRegisterHandler() {
         return registerHandler;
     }
-    
+
     public void destroy() {
 
         try {
@@ -387,11 +394,11 @@ public class Server {
             if (gameServerSocket != null) {
                 gameServerSocket.close();
             }
-            
+
         } catch (Throwable t) {
             log4j.error("Error stopping server threads [" + name + ".", t);
         }
-        
+
         synchronized (tables) {
             for (int i = 1; i < tables.size(); i++) {
                 SynchronizedServerTable t = (SynchronizedServerTable) tables.get(i);
@@ -407,15 +414,18 @@ public class Server {
             mainRoom.destroy();
         }
         if (pingManager != null) {
-	        pingManager.destroy();
+            pingManager.destroy();
         }
     }
+
     public ServerData getServerData() {
         return serverData;
     }
+
     public void setServerData(ServerData serverData) {
         this.serverData = serverData;
     }
+
     public Tourney getTourney() {
         Tourney tourney = null;
         try {

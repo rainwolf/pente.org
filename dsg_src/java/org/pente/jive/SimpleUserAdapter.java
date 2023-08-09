@@ -14,26 +14,26 @@ import org.apache.log4j.*;
 /**
  * An abstract adapter class to aid in creating custom user implementations. The
  * "set" methods in this class throw UnsupportedOperationExceptions, which means
- * the external user store will be read-only. You should extend this class to 
+ * the external user store will be read-only. You should extend this class to
  * create your own User implementation and only override the methods of interest.<p>
- *
+ * <p>
  * If your user store doesn't support all the fields present in the User interface
  * (such as the name visible and email visible flags), you should use hardcoded
  * values in your implementation or load and store these values from somewhere else.<p>
- * 
- * User objects have "extended properties", which is a way to allow arbitrary data 
- * to be attached to users. It's generally advisable to use the jiveUserProp table 
+ * <p>
+ * User objects have "extended properties", which is a way to allow arbitrary data
+ * to be attached to users. It's generally advisable to use the jiveUserProp table
  * that is built into the Jive database schema to store this information. This adapter
  * class implements all the logic necessary to load and store properties from the
  * jiveUserProp database table.
- * 
+ *
  * @author Jive Software, 2003
  */
 public abstract class SimpleUserAdapter implements User, Cacheable {
 
     private static final Category log4j =
-        Category.getInstance(SimpleUserAdapter.class.getName());
-        
+            Category.getInstance(SimpleUserAdapter.class.getName());
+
     // Database queries for property loading and setting.
 
     private static final String LOAD_PROPERTIES =
@@ -64,19 +64,19 @@ public abstract class SimpleUserAdapter implements User, Cacheable {
 
     // User Interface -- note, Javadoc descriptions are left off so that
     // they will be copied from the User interface.
-    
+
     public long getID() {
         return ID;
     }
-    
+
     public String getUsername() {
         return username;
     }
-    
+
     public String getName() {
         return name;
     }
-    
+
     public void setName(String name) {
         // Setting user data not supported.
         throw new UnsupportedOperationException();
@@ -96,7 +96,7 @@ public abstract class SimpleUserAdapter implements User, Cacheable {
         // Setting user data not supported.
         throw new UnsupportedOperationException();
     }
-    
+
     public String getEmail() {
         return StringUtils.escapeHTMLTags(email);
     }
@@ -104,30 +104,30 @@ public abstract class SimpleUserAdapter implements User, Cacheable {
     public void setEmail(String email) {
         // Setting user data not supported.
         throw new UnsupportedOperationException();
-    }        
+    }
 
     public boolean isNameVisible() {
         return nameVisible;
     }
-    
+
     public void setNameVisible(boolean visible) throws UnauthorizedException {
         // Setting user data not supported.
         throw new UnsupportedOperationException();
     }
-    
+
     public boolean isEmailVisible() {
         return emailVisible;
     }
-    
+
     public void setEmailVisible(boolean visible) throws UnauthorizedException {
         // Setting user data not supported.
         throw new UnsupportedOperationException();
     }
-    
+
     public Date getCreationDate() {
         return creationDate;
     }
-    
+
     public void setCreationDate(Date creationDate) throws UnauthorizedException {
         // Setting user data not supported.
         throw new UnsupportedOperationException();
@@ -136,7 +136,7 @@ public abstract class SimpleUserAdapter implements User, Cacheable {
     public Date getModificationDate() {
         return modificationDate;
     }
-    
+
     public void setModificationDate(Date modificationDate) throws UnauthorizedException {
         // Setting user data not supported.
         throw new UnsupportedOperationException();
@@ -149,7 +149,7 @@ public abstract class SimpleUserAdapter implements User, Cacheable {
                 loadPropertiesFromDb();
             }
         }
-        return (String)properties.get(name);
+        return (String) properties.get(name);
     }
 
     public void setProperty(String name, String value) throws UnauthorizedException {
@@ -183,8 +183,7 @@ public abstract class SimpleUserAdapter implements User, Cacheable {
                 UserEvent event = new UserEvent(UserEvent.USER_MODIFIED, this, params);
                 EventDispatcher.getInstance().notifyListeners(event);
             }
-        }
-        else {
+        } else {
             properties.put(name, value);
             insertPropertyIntoDb(name, value);
 
@@ -199,7 +198,7 @@ public abstract class SimpleUserAdapter implements User, Cacheable {
             EventDispatcher.getInstance().notifyListeners(event);
         }
     }
-    
+
     public void deleteProperty(String name) throws UnauthorizedException {
         // Lazy-load properties.
         synchronized (propertiesLock) {
@@ -232,7 +231,7 @@ public abstract class SimpleUserAdapter implements User, Cacheable {
         }
         return Collections.unmodifiableSet(properties.keySet()).iterator();
     }
-    
+
     public boolean isAuthorized(long permissionType) {
         // Always return true. A protection proxy will wrap the User
         // object to provide real permissions checking.
@@ -245,15 +244,14 @@ public abstract class SimpleUserAdapter implements User, Cacheable {
         if (authToken.getUserID() == ID) {
             log4j.debug("getPermissions return USER_ADMIN_PERMS");
             return USER_ADMIN_PERMS;
-        }
-        else {
+        } else {
             log4j.debug("getPermissions return NO_PERMS");
             return NO_PERMS;
         }
     }
-    
+
     // Cacheable Interface
-    
+
     public int getCachedSize() {
         // Every item put into cache must be able to calculate it's own size. The "size" of 
         // the object is calculated by adding up the sizes of all its member variables.
@@ -273,7 +271,7 @@ public abstract class SimpleUserAdapter implements User, Cacheable {
 
         return size;
     }
-    
+
     // Other Methods
 
     public String toString() {
@@ -281,7 +279,7 @@ public abstract class SimpleUserAdapter implements User, Cacheable {
     }
 
     public int hashCode() {
-        return (int)ID;
+        return (int) ID;
     }
 
     public boolean equals(Object object) {
@@ -289,9 +287,8 @@ public abstract class SimpleUserAdapter implements User, Cacheable {
             return true;
         }
         if (object != null && object instanceof User) {
-            return ID == ((User)object).getID();
-        }
-        else {
+            return ID == ((User) object).getID();
+        } else {
             return false;
         }
     }
@@ -309,16 +306,26 @@ public abstract class SimpleUserAdapter implements User, Cacheable {
             pstmt = con.prepareStatement(LOAD_PROPERTIES);
             pstmt.setLong(1, ID);
             ResultSet rs = pstmt.executeQuery();
-            while(rs.next()) {
+            while (rs.next()) {
                 properties.put(rs.getString(1), rs.getString(2));
             }
-        }
-        catch (SQLException e) { Log.error(e); }
-        finally {
-            try { if (pstmt != null) { pstmt.close(); } }
-            catch (Exception e) { Log.error(e); }
-            try { if (con != null) { con.close(); } }
-            catch (Exception e) { Log.error(e); }
+        } catch (SQLException e) {
+            Log.error(e);
+        } finally {
+            try {
+                if (pstmt != null) {
+                    pstmt.close();
+                }
+            } catch (Exception e) {
+                Log.error(e);
+            }
+            try {
+                if (con != null) {
+                    con.close();
+                }
+            } catch (Exception e) {
+                Log.error(e);
+            }
         }
     }
 
@@ -335,13 +342,23 @@ public abstract class SimpleUserAdapter implements User, Cacheable {
             pstmt.setLong(1, ID);
             pstmt.setString(2, name);
             pstmt.execute();
-        }
-        catch (SQLException e) { Log.error(e); }
-        finally {
-            try { if (pstmt != null) { pstmt.close(); } }
-            catch (Exception e) { Log.error(e); }
-            try { if (con != null) { con.close(); } }
-            catch (Exception e) { Log.error(e); }
+        } catch (SQLException e) {
+            Log.error(e);
+        } finally {
+            try {
+                if (pstmt != null) {
+                    pstmt.close();
+                }
+            } catch (Exception e) {
+                Log.error(e);
+            }
+            try {
+                if (con != null) {
+                    con.close();
+                }
+            } catch (Exception e) {
+                Log.error(e);
+            }
         }
     }
 
@@ -359,13 +376,23 @@ public abstract class SimpleUserAdapter implements User, Cacheable {
             pstmt.setString(2, name);
             pstmt.setString(3, value);
             pstmt.executeUpdate();
-        }
-        catch (SQLException e) { Log.error(e); }
-        finally {
-            try { if (pstmt != null) { pstmt.close(); } }
-            catch (Exception e) { Log.error(e); }
-            try { if (con != null) { con.close(); } }
-            catch (Exception e) { Log.error(e); }
+        } catch (SQLException e) {
+            Log.error(e);
+        } finally {
+            try {
+                if (pstmt != null) {
+                    pstmt.close();
+                }
+            } catch (Exception e) {
+                Log.error(e);
+            }
+            try {
+                if (con != null) {
+                    con.close();
+                }
+            } catch (Exception e) {
+                Log.error(e);
+            }
         }
     }
 
@@ -383,13 +410,23 @@ public abstract class SimpleUserAdapter implements User, Cacheable {
             pstmt.setString(2, name);
             pstmt.setLong(3, ID);
             pstmt.executeUpdate();
-        }
-        catch (SQLException e) { Log.error(e); }
-        finally {
-            try { if (pstmt != null) { pstmt.close(); } }
-            catch (Exception e) { Log.error(e); }
-            try { if (con != null) { con.close(); } }
-            catch (Exception e) { Log.error(e); }
+        } catch (SQLException e) {
+            Log.error(e);
+        } finally {
+            try {
+                if (pstmt != null) {
+                    pstmt.close();
+                }
+            } catch (Exception e) {
+                Log.error(e);
+            }
+            try {
+                if (con != null) {
+                    con.close();
+                }
+            } catch (Exception e) {
+                Log.error(e);
+            }
         }
     }
 }

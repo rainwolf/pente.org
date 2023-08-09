@@ -10,22 +10,22 @@ public class RandUtil {
     }
 
     public static long[][] readValues(String file) throws IOException {
-        
+
         long r[][] = new long[2][361];
         DataInputStream in = new DataInputStream(new FileInputStream(file));
 
-        long r2[]=new long[1460];
+        long r2[] = new long[1460];
         for (int i = 0; i < 1460; i++) {
-            r2[i]=in.readLong();
+            r2[i] = in.readLong();
             System.out.println(r2[i] + "L,");
         }
-        for (int i=0;i<1460;i++){
-            for(int j=0;j<1460;j++){
-                if (i==j)continue;
-                if (r2[i]==r2[j]) System.out.println("equals ");
+        for (int i = 0; i < 1460; i++) {
+            for (int j = 0; j < 1460; j++) {
+                if (i == j) continue;
+                if (r2[i] == r2[j]) System.out.println("equals ");
             }
         }
-        
+
 //        for (int i = 0; i < 2; i++) {
 //            
 //            for (int j = 0; j < 361; j++) {

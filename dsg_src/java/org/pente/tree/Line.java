@@ -18,14 +18,14 @@ class Line implements Cloneable {
     int positions[] = new int[20];
     int moves[] = new int[20];
     int move = 0;
-    
+
     //TODO get rid of this, maybe just put them in moves
     int thirdOuterMoves[] = new int[2]; //hack to get move 3rd out
     int thirdOuterPositions[] = new int[2];
 
     int groups[] = new int[3];
     int numGroups = 0;
-    
+
     // can't find X___X (move to middle would be good)
     // a 0X_X or 0X__X isn't considered a threat yet either
     // X_XXX_X was correctly classified as 2 closed-fours
@@ -34,9 +34,9 @@ class Line implements Cloneable {
     public List findThreat() {
 
         op = 3 - p;
-        
+
         List threats = new ArrayList(1);
-        
+
         Threat t = new Threat();
         t.movesToWin = 10;
         t.player = p;
@@ -51,7 +51,7 @@ class Line implements Cloneable {
                 t.addNext(positions[i]);
             }
         }
-        
+
         // junit check
         if (myLen == 1) {
             return null;
@@ -72,11 +72,11 @@ class Line implements Cloneable {
                 // *0XX**
                 // junit check
                 else if (moves[1] == op) {
-                    
+
                     //_X0XX or XX0XX, not 0X0XX
                     // junit check
                     if (moves[0] == p && (thirdOuterMoves[0] == p ||
-                                          thirdOuterMoves[0] == 0)) {
+                            thirdOuterMoves[0] == 0)) {
                         //threats.add(t);
                         Threat t2 = new Threat();
                         t2.player = p;
@@ -95,8 +95,7 @@ class Line implements Cloneable {
                         }
                         threats.add(t2);
                         return threats;
-                    }
-                    else {
+                    } else {
                         return null;
                     }
                 }
@@ -107,7 +106,7 @@ class Line implements Cloneable {
                     //XX0X, XX0XX yes, XX0XX0 not
                     // junit check
                     if (moves[len - 1] == p && (thirdOuterMoves[1] == p ||
-                                                thirdOuterMoves[1] == 0)) {
+                            thirdOuterMoves[1] == 0)) {
                         //threats.add(t);
                         Threat t2 = new Threat();
                         t2.player = p;
@@ -126,15 +125,14 @@ class Line implements Cloneable {
                         }
                         threats.add(t2);
                         return threats;
-                    }
-                    else {
+                    } else {
                         return null;
                     }
                 }
                 // junit check
                 // 0_XX_0 or W_XX_0, etc.
-                else if ((moves[0] == op || moves[0] == 4) && 
-                         (moves[len - 1] == op || moves[len - 1] == 4)) {
+                else if ((moves[0] == op || moves[0] == 4) &&
+                        (moves[len - 1] == op || moves[len - 1] == 4)) {
                     return null;
                 }
                 // *_XX_*
@@ -159,7 +157,7 @@ class Line implements Cloneable {
                 // 0X_X or 0X__X, don't worry about it for now i guess
                 // junit check
                 if (moves[1] == op || moves[len - 2] == op ||
-                    moves[1] == 4 || moves[len - 2] == 4) {
+                        moves[1] == 4 || moves[len - 2] == 4) {
                     return null;
                 }
                 t.type = Threat.TYPE_POTENTIAL_THREE_SPLIT;
@@ -181,7 +179,7 @@ class Line implements Cloneable {
         else if (myLen == 3 && len == 9 && gaps == 2) {
             t.type = Threat.TYPE_POTENTIAL_FOUR;
             t.movesToWin = 3;
-            
+
             // TODO in case of X__XX, would maybe consider
             // playing X__XX0 in response...
         }
@@ -213,8 +211,8 @@ class Line implements Cloneable {
         //*0XXX_0 = perhaps a block
         // junit check
         else if (myLen == 3 && len == 7 && gaps == 0 && moves[1] == op
-            && moves[len - 2] == 0) {
-            
+                && moves[len - 2] == 0) {
+
             //*OXXX__
             // junit check
             if (moves[len - 1] == 0) {
@@ -231,7 +229,7 @@ class Line implements Cloneable {
                 t.movesToWin = 0;//no direct way to win
                 t.type = Threat.TYPE_BLOCKED;
             }
-            
+
             //X0XXX_*
             // junit check
             if (moves[0] == p) {
@@ -268,7 +266,7 @@ class Line implements Cloneable {
                 t.movesToWin = 0;//no direct way to win
                 t.type = Threat.TYPE_BLOCKED;
             }
-            
+
             //*_XXX0X
             // junit check
             if (moves[len - 1] == p) {
@@ -288,8 +286,8 @@ class Line implements Cloneable {
         // *0_00X*  or *00_0X*
         // junit check
         else if (myLen == 3 && gaps == 1 &&
-                 ((moves[1] == op && moves[len - 2] == 0) ||
-                  (moves[1] == 0 && moves[len - 2] == op))) {
+                ((moves[1] == op && moves[len - 2] == 0) ||
+                        (moves[1] == 0 && moves[len - 2] == op))) {
 
             t.type = Threat.TYPE_POTENTIAL_FOUR;
             t.typeSinceBlocked = Threat.TYPE_POTENTIAL_THREE_SPLIT;
@@ -315,17 +313,16 @@ class Line implements Cloneable {
         else if (myLen == 3 && gaps < 2 && moves[1] == 0 && moves[len - 2] == 0) {
 
             // junit check
-            if (gaps == 0 && 
-                (moves[0] == op || moves[0] == 4) && 
-                (moves[len - 1] == op || moves[len - 1] == 4)) { // 0_XXX_0
+            if (gaps == 0 &&
+                    (moves[0] == op || moves[0] == 4) &&
+                    (moves[len - 1] == op || moves[len - 1] == 4)) { // 0_XXX_0
                 t.type = Threat.TYPE_POTENTIAL_FOUR;
                 t.movesToWin = 3;
                 t.addNext(positions[1]);
                 t.addNext(positions[len - 2]);
                 t.addResp(positions[1]);
                 t.addResp(positions[len - 2]);
-            }
-            else {
+            } else {
 
                 // junit check
                 t.type = Threat.TYPE_TRIA;
@@ -336,12 +333,11 @@ class Line implements Cloneable {
                     // junit check
                     if (moves[0] == op || moves[0] == 4) {
                         t.addResp(positions[len - 1]);
-                    }
-                    else { // 12XXX3?
+                    } else { // 12XXX3?
                         t.addNext(positions[1]);
                         t.addNext(positions[0]);
                         t.addNext(positions[len - 2]);
-                        
+
                         t.addResp(positions[1]);
                         t.addResp(positions[0]);
                         t.addResp(positions[len - 2]);
@@ -350,8 +346,7 @@ class Line implements Cloneable {
                     // junit check
                     if (moves[len - 1] == op || moves[len - 1] == 4) {
                         t.addResp(positions[0]);
-                    }
-                    else { //?3XXX12
+                    } else { //?3XXX12
                         t.addNext(positions[len - 2]);
                         t.addNext(positions[len - 1]);
                         t.addNext(positions[1]);
@@ -370,19 +365,19 @@ class Line implements Cloneable {
                     t.addResp(positions[len - 2]);
                 }
             }
-                
+
         }
 
         // detects _XXXX_ and 0XXXX_ (four needs to be blocked)
         // detects against 0XXXX0 (doesn't need block)
         // detects *X_XXX* or *XX_XX* (needs a block)
         else if (myLen >= 4) {
-            
+
             // 0XXXX0
             // junit check
-            if (gaps == 0 && 
-                (moves[1] == op || moves[1] == 4) &&
-                (moves[len - 2] == op || moves[len - 2] == 4)) {
+            if (gaps == 0 &&
+                    (moves[1] == op || moves[1] == 4) &&
+                    (moves[len - 2] == op || moves[len - 2] == 4)) {
                 t.type = Threat.TYPE_BLOCKED;
                 t.typeSinceBlocked = Threat.TYPE_TRIA;
                 t.blockedMovesToWin = 1;
@@ -398,29 +393,27 @@ class Line implements Cloneable {
                     t.next.clear();
                     t.resps.clear();
                     t.movesToWin = 1;
-                    if (moves[l+1] == 0 && moves[l+6] == 0) {
+                    if (moves[l + 1] == 0 && moves[l + 6] == 0) {
                         t.type = Threat.TYPE_OPEN_FOUR;
-                        t.addNext(positions[l+1]);
-                        t.addNext(positions[l+6]);
-                        t.addResp(positions[l+1]);
-                        t.addResp(positions[l+6]);
-                    }
-                    else if (moves[l+1] == 0){
+                        t.addNext(positions[l + 1]);
+                        t.addNext(positions[l + 6]);
+                        t.addResp(positions[l + 1]);
+                        t.addResp(positions[l + 6]);
+                    } else if (moves[l + 1] == 0) {
                         t.type = Threat.TYPE_CLOSED_FOUR;
-                        t.addNext(positions[l+1]);
-                        t.addResp(positions[l+1]);
-                    }
-                    else { //moves[l+6]==0
+                        t.addNext(positions[l + 1]);
+                        t.addResp(positions[l + 1]);
+                    } else { //moves[l+6]==0
                         t.type = Threat.TYPE_CLOSED_FOUR;
-                        t.addNext(positions[l+6]);
-                        t.addResp(positions[l+6]);
+                        t.addNext(positions[l + 6]);
+                        t.addResp(positions[l + 6]);
                     }
                     threats.add(t);
                     return threats;
                 }
                 l += groups[i] + 1;
             }
-            
+
             // XX__XX
             if (gaps == 2 && numGroups == 3 && groups[1] == 0) {
                 t.type = Threat.TYPE_POTENTIAL_FOUR;
@@ -438,14 +431,11 @@ class Line implements Cloneable {
                 return threats;
             }
 
-            
-
 
             // junit check
             if (gaps == 0 && moves[1] == 0 && moves[len - 2] == 0) {
                 t.type = Threat.TYPE_OPEN_FOUR;
-            }
-            else {
+            } else {
                 t.type = Threat.TYPE_CLOSED_FOUR;
             }
             t.movesToWin = 1;
@@ -463,15 +453,14 @@ class Line implements Cloneable {
                     t.addResp(positions[len - 2]);
                 }
             }
-        }            
-        else {
+        } else {
             return null;
         }
 
         threats.add(t);
         return threats;
     }
-    
+
     public List split() {
 
         // after creating line, scan moves in line
@@ -489,7 +478,7 @@ class Line implements Cloneable {
         // XXX_XX = 3g2, = closed 4
         // XXX__XXX = 3g0g3 = separate trias
         // XXX__XX = 3g0g2 = XXX_ and XX
-        
+
         // rules for splitting lines
         // 1. if less than 3 groups (less than 2 gaps) return line
         // 2. if group of line == 4, keep only those 4 in line
@@ -506,7 +495,7 @@ class Line implements Cloneable {
 
 
         List lines = new ArrayList(1);
-        
+
         if (numGroups < 3) {
             lines.add(this);
             return lines;
@@ -531,8 +520,9 @@ class Line implements Cloneable {
                 l.thirdOuterMoves[1] = l.moves[10];
                 l.thirdOuterPositions[1] = l.positions[10];
                 lines.add(l);
-                
-            } catch (CloneNotSupportedException c) {}
+
+            } catch (CloneNotSupportedException c) {
+            }
         }
         //***_X_XXX, cut out the ***
         if (groups[1] != 0 && (groups[1] + groups[2] == 4)) {
@@ -552,10 +542,11 @@ class Line implements Cloneable {
                 l.myLen = 4;
                 l.gaps = 1;
                 lines.add(l);
-                
-            } catch (CloneNotSupportedException c) {}
+
+            } catch (CloneNotSupportedException c) {
+            }
         }
-        
+
         if (groups[0] + groups[1] == 3) {
             split = true;
             try {
@@ -574,8 +565,9 @@ class Line implements Cloneable {
                 l.thirdOuterPositions[1] = l.positions[l.len + 1];
                 l.myLen = 3;
                 lines.add(l);
-                
-            } catch (CloneNotSupportedException c) {}
+
+            } catch (CloneNotSupportedException c) {
+            }
         }
         if (groups[1] + groups[2] == 3) {
             split = true;
@@ -605,17 +597,18 @@ class Line implements Cloneable {
                 l.thirdOuterPositions[1] = l.positions[l.len + 1];
                 l.myLen = 3;
                 lines.add(l);
-                
-            } catch (CloneNotSupportedException c) {}
+
+            } catch (CloneNotSupportedException c) {
+            }
         }
-        
+
         if (!split) {
             lines.add(this);
         }
-        
+
         return lines;
     }
-    
+
     public Object clone() throws CloneNotSupportedException {
         Line l = (Line) super.clone();
         l.moves = new int[20];
@@ -631,10 +624,10 @@ class Line implements Cloneable {
         l.thirdOuterMoves[1] = thirdOuterMoves[1];
         l.thirdOuterPositions[0] = thirdOuterPositions[0];
         l.thirdOuterPositions[1] = thirdOuterPositions[1];
-        
+
         return l;
     }
-    
+
 //    public String toString() {
 //        //if (!log4j.isDebugEnabled()) return "";
 //        

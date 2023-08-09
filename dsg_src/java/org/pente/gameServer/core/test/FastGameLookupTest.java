@@ -11,23 +11,23 @@ import org.pente.gameServer.core.*;
 public class FastGameLookupTest {
 
 
-	public static void main(String[] args) throws Throwable {
+    public static void main(String[] args) throws Throwable {
 
-		BasicConfigurator.configure();
+        BasicConfigurator.configure();
 
         DBHandler dbHandler = new MySQLDBHandler(
-            args[0], args[1], args[2], args[3]);
+                args[0], args[1], args[2], args[3]);
 
-		GameVenueStorer gameVenueStorer = new MySQLGameVenueStorer(dbHandler);
-		FastMySQLDSGGameLookup lookup = new FastMySQLDSGGameLookup(dbHandler,
-			gameVenueStorer);
-		
-		List<GameData> games = lookup.search(
-				"dweebo", 22000000000002L, 0, 22000000000002L,1, 0, 100);
-		for (GameData d : games) {
-			System.out.println(d.getGameID() + ": " + d.getPlayer1Data().getUserIDName() + 
-				" vs. " + d.getPlayer2Data().getUserIDName() + ", " + d.getWinner());
-		}
-	}
+        GameVenueStorer gameVenueStorer = new MySQLGameVenueStorer(dbHandler);
+        FastMySQLDSGGameLookup lookup = new FastMySQLDSGGameLookup(dbHandler,
+                gameVenueStorer);
+
+        List<GameData> games = lookup.search(
+                "dweebo", 22000000000002L, 0, 22000000000002L, 1, 0, 100);
+        for (GameData d : games) {
+            System.out.println(d.getGameID() + ": " + d.getPlayer1Data().getUserIDName() +
+                    " vs. " + d.getPlayer2Data().getUserIDName() + ", " + d.getWinner());
+        }
+    }
 
 }

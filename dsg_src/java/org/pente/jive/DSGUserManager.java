@@ -17,7 +17,7 @@ import org.pente.game.*;
 public class DSGUserManager implements UserManager {
 
     private static final Category log4j =
-        Category.getInstance(DSGUserManager.class.getName());
+            Category.getInstance(DSGUserManager.class.getName());
 
     private DSGPlayerStorer dsgPlayerStorer;
 
@@ -26,10 +26,10 @@ public class DSGUserManager implements UserManager {
         DBHandler JIVE_DB_HANDLER = new JiveDBHandler();
         try {
             GameVenueStorer gameVenueStorer =
-                new MySQLGameVenueStorer(JIVE_DB_HANDLER);
+                    new MySQLGameVenueStorer(JIVE_DB_HANDLER);
             dsgPlayerStorer =
-                new MySQLDSGPlayerStorer(JIVE_DB_HANDLER, gameVenueStorer);
-            
+                    new MySQLDSGPlayerStorer(JIVE_DB_HANDLER, gameVenueStorer);
+
         } catch (Throwable t) {
             t.printStackTrace();
         }
@@ -48,9 +48,9 @@ public class DSGUserManager implements UserManager {
     }
 
 
-	public User getUser(long userId) throws UserNotFoundException {
+    public User getUser(long userId) throws UserNotFoundException {
 
-		log4j.debug("getUser " + userId);
+        log4j.debug("getUser " + userId);
         User user = (User) UserManagerFactory.userCache.get(new Long(userId));
         if (user == null) {
             log4j.debug("not cached");
@@ -60,7 +60,7 @@ public class DSGUserManager implements UserManager {
                     throw new UserNotFoundException("User not found");
                 }
                 user = new DSGUser(dsgPlayerData);
-            
+
             } catch (DSGPlayerStoreException e) {
                 throw new UserNotFoundException("DSGPlayerStoreException", e);
             }
@@ -69,7 +69,7 @@ public class DSGUserManager implements UserManager {
         }
 
         return user;
-	}
+    }
 
 
     public User getUser(String username) throws UserNotFoundException {
@@ -97,7 +97,7 @@ public class DSGUserManager implements UserManager {
                 userIDLong = new Long(user.getID());
                 UserManagerFactory.userCache.put(userIDLong, user);
                 UserManagerFactory.userIDCache.put(username, userIDLong);
-            	log4j.info(user.getName()+":"+user.getID());
+                log4j.info(user.getName() + ":" + user.getID());
             } catch (DSGPlayerStoreException e) {
                 throw new UserNotFoundException("DSGPlayerStoreException", e);
             }
@@ -107,7 +107,7 @@ public class DSGUserManager implements UserManager {
     }
 
 
-	// not used
+    // not used
     public void deleteUser(User user) throws UnauthorizedException {
         throw new UnsupportedOperationException("Unable to delete users in external table");
     }
@@ -125,20 +125,25 @@ public class DSGUserManager implements UserManager {
             if (rs.next()) {
                 count = rs.getInt(1);
             }
-        }
-        catch( SQLException sqle ) {
+        } catch (SQLException sqle) {
             sqle.printStackTrace();
-        }
-        finally {
-            try {  pstmt.close();   }
-            catch (Exception e) { e.printStackTrace(); }
-            try {  con.close();   }
-            catch (Exception e) { e.printStackTrace(); }
+        } finally {
+            try {
+                pstmt.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            try {
+                con.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         return count;
     }
 
     private static final String ALL_USERS = "select pid from dsg_player";
+
     public Iterator users() {
 
         LongList users = new LongList(500);
@@ -155,19 +160,30 @@ public class DSGUserManager implements UserManager {
             while (rs.next()) {
                 users.add(rs.getLong(1));
             }
-        }
-        catch (SQLException e) { Log.error(e); }
-        finally {
-            try { if (pstmt != null) { pstmt.close(); } }
-            catch (Exception e) { Log.error(e); }
-            try { if (con != null) { con.close(); } }
-            catch (Exception e) { Log.error(e); }
+        } catch (SQLException e) {
+            Log.error(e);
+        } finally {
+            try {
+                if (pstmt != null) {
+                    pstmt.close();
+                }
+            } catch (Exception e) {
+                Log.error(e);
+            }
+            try {
+                if (con != null) {
+                    con.close();
+                }
+            } catch (Exception e) {
+                Log.error(e);
+            }
         }
         return new UserIterator(users.toArray());
     }
 
 
     private static final String SOME_USERS = "select pid from dsg_player limit ?, ?";
+
     public Iterator users(int startIndex, int numResults) {
 
         LongList users = new LongList();
@@ -184,24 +200,35 @@ public class DSGUserManager implements UserManager {
             while (rs.next()) {
                 users.add(rs.getLong(1));
             }
-        }
-        catch (SQLException e) { Log.error(e); }
-        finally {
-            try { if (pstmt != null) { pstmt.close(); } }
-            catch (Exception e) { Log.error(e); }
-            try { if (con != null) { con.close(); } }
-            catch (Exception e) { Log.error(e); }
+        } catch (SQLException e) {
+            Log.error(e);
+        } finally {
+            try {
+                if (pstmt != null) {
+                    pstmt.close();
+                }
+            } catch (Exception e) {
+                Log.error(e);
+            }
+            try {
+                if (con != null) {
+                    con.close();
+                }
+            } catch (Exception e) {
+                Log.error(e);
+            }
         }
         return new UserIterator(users.toArray());
     }
-    
+
     public void updateUser(DSGPlayerData data) {
-    	
-		try {
-    		DSGUser u = (DSGUser) getUser(data.getPlayerID());
-    		if (u != null) {
-    			u.updateUser(data);
-    		}
-		} catch (UserNotFoundException unne) {}
+
+        try {
+            DSGUser u = (DSGUser) getUser(data.getPlayerID());
+            if (u != null) {
+                u.updateUser(data);
+            }
+        } catch (UserNotFoundException unne) {
+        }
     }
 }

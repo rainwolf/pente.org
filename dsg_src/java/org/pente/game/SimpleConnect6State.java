@@ -1,32 +1,33 @@
-/** SimpleGomokuState.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * SimpleGomokuState.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.game;
 
 import java.awt.Point;
 
-public class SimpleConnect6State extends GridStateDecorator 
-    implements GridState, HashCalculator {
+public class SimpleConnect6State extends GridStateDecorator
+        implements GridState, HashCalculator {
 
-    private int[]   surrounding;
+    private int[] surrounding;
     private boolean allowOverlines = true;
     private int winner;
-    
+
     public SimpleConnect6State() {
         this(19, 19);
     }
@@ -38,7 +39,7 @@ public class SimpleConnect6State extends GridStateDecorator
         super(gridState);
 
         int boardSizeX = gridState.getGridSizeX();
-        surrounding = new int[] { -1, -boardSizeX - 1, -boardSizeX, -boardSizeX + 1 };
+        surrounding = new int[]{-1, -boardSizeX - 1, -boardSizeX, -boardSizeX + 1};
     }
 
     /** Create a gomoku state with a certain board size
@@ -47,7 +48,7 @@ public class SimpleConnect6State extends GridStateDecorator
     public SimpleConnect6State(int boardSizeX, int boardSizeY) {
         super(boardSizeX, boardSizeY);
 
-        surrounding = new int[] { -1, -boardSizeX - 1, -boardSizeX, -boardSizeX + 1 };
+        surrounding = new int[]{-1, -boardSizeX - 1, -boardSizeX, -boardSizeX + 1};
     }
 
     /** Create a new gomoku grid state with a specified size and add the moves
@@ -65,26 +66,25 @@ public class SimpleConnect6State extends GridStateDecorator
 
     public GridState getInstance(MoveData moveData) {
         SimpleConnect6State state = new SimpleConnect6State(moveData,
-            gridState.getGridSizeX(), gridState.getGridSizeY());
+                gridState.getGridSizeX(), gridState.getGridSizeY());
 
         return state;
     }
 
-    
 
     public int getCurrentPlayer() {
-    	return getColor(getNumMoves());
+        return getColor(getNumMoves());
     }
 
 
     public int getColor(int moveNum) {
-    	return ((moveNum + 1) / 2) % 2 + 1;
+        return ((moveNum + 1) / 2) % 2 + 1;
     }
 
     public int getCurrentColor() {
-    	return getCurrentPlayer();
+        return getCurrentPlayer();
     }
-    
+
     /** same as super but need it to call THIS classes getCurrentPlayer
      *  and to reset the board with the correct value
      */
@@ -94,15 +94,17 @@ public class SimpleConnect6State extends GridStateDecorator
         setPosition(move, p);
         updateHash(this);
     }
+
     public void undoMove(int move) {
-    	super.undoMove();
-    	updateHash(this);
+        super.undoMove();
+        updateHash(this);
     }
 
     public long calcHash(long cHash, int p, int move, int rot) {
-        cHash ^= ZobristUtil.rand[p-1][rotateMove(move, rot)];
+        cHash ^= ZobristUtil.rand[p - 1][rotateMove(move, rot)];
         return cHash;
     }
+
     /** same as super but need it to call THIS classes getCurrentPlayer */
     public boolean isValidMove(int move, int player) {
 
@@ -123,6 +125,7 @@ public class SimpleConnect6State extends GridStateDecorator
 
         return true;
     }
+
     /** Converts a single variable move to its x,y coordinates
      *  @param move The move to convert
      *  @return Coord A point variable with x and y set
@@ -132,34 +135,36 @@ public class SimpleConnect6State extends GridStateDecorator
     }
 
     public void checkOutOfBounds(int move) {
-    	Coord p = convertMove(move);
+        Coord p = convertMove(move);
         checkOutOfBounds(p.x, p.y);
     }
+
     public void checkOutOfBounds(int x, int y) {
         if (x < 0 || x >= gridState.getGridSizeX() ||
-            y < 0 || y >= gridState.getGridSizeY()) {
+                y < 0 || y >= gridState.getGridSizeY()) {
             throw new IllegalArgumentException("Out of bounds: " + x + ", " + y + " max = " + (19 - 1) + ", " + (19 - 1));
         }
     }
-    
+
     /** Determine if the game is over
      *  @return boolean True if game is over
      */
     public boolean isGameOver() {
-        
+
         if (getNumMoves() < 11) {
             return false;
         }
 
         int lines[] = new int[4];
         int lastMove = getMove(getNumMoves() - 1);
-        
+
         int lastMovePlayer = getColor(getNumMoves() - 1);
         int maxMove = gridState.getGridSizeX() * gridState.getGridSizeY() - 1;
         int direction = 1;
 
         for (int k = 0; k < 2; k++) {
-            checkSurrounding: for (int i = 0; i < surrounding.length; i++) {
+            checkSurrounding:
+            for (int i = 0; i < surrounding.length; i++) {
 
                 int newMove = lastMove;
                 for (int j = 0; j < gridState.getGridSizeX(); j++) {
@@ -170,7 +175,7 @@ public class SimpleConnect6State extends GridStateDecorator
 
                     // if passes over side
                     if ((oldX == 0 && newX == gridState.getGridSizeX() - 1) ||
-                        (oldX == gridState.getGridSizeX() - 1 && newX == 0)) {
+                            (oldX == gridState.getGridSizeX() - 1 && newX == 0)) {
                         continue checkSurrounding;
                     }
 
@@ -190,8 +195,7 @@ public class SimpleConnect6State extends GridStateDecorator
             if (!allowOverlines && lines[i] == 5) {
                 winner = getColor(getNumMoves() - 1);
                 return true;
-            }
-            else if (allowOverlines && lines[i] >= 5) {
+            } else if (allowOverlines && lines[i] >= 5) {
                 winner = getColor(getNumMoves() - 1);
                 return true;
             }
@@ -207,11 +211,9 @@ public class SimpleConnect6State extends GridStateDecorator
     public int getWinner() {
         if (isGameOver() && winner == 0) {
             return 0;
-        }
-        else if (isGameOver()) {
+        } else if (isGameOver()) {
             return winner;
-        }
-        else {
+        } else {
             return 0;
         }
     }
@@ -222,8 +224,8 @@ public class SimpleConnect6State extends GridStateDecorator
      *  @return boolean True if the player can request an undo
      */
     public boolean canPlayerUndo(int player) {
-		return getNumMoves() > 1 &&
-			getColor(getNumMoves() - 1) == player;
+        return getNumMoves() > 1 &&
+                getColor(getNumMoves() - 1) == player;
     }
 
     public void printBoard() {

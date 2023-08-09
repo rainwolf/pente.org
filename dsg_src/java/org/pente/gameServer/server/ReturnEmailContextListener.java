@@ -9,8 +9,8 @@ import org.pente.gameServer.core.*;
 
 public class ReturnEmailContextListener implements ServletContextListener {
 
-    private static Category log4j = 
-        Category.getInstance(ReturnEmailContextListener.class.getName());
+    private static Category log4j =
+            Category.getInstance(ReturnEmailContextListener.class.getName());
 
     private static final int SLEEP_TIME = 1000 * 60 * 1;
 
@@ -28,24 +28,24 @@ public class ReturnEmailContextListener implements ServletContextListener {
                 log4j.info("Email not enabled, not starting returned email scanner.");
                 return;
             }
-            
-            DSGPlayerStorer dsgPlayerStorer = 
-                (DSGPlayerStorer) ctx.getAttribute(DSGPlayerStorer.class.getName());
-            DBHandler dbHandler = 
-                (DBHandler) ctx.getAttribute(DBHandler.class.getName());
+
+            DSGPlayerStorer dsgPlayerStorer =
+                    (DSGPlayerStorer) ctx.getAttribute(DSGPlayerStorer.class.getName());
+            DBHandler dbHandler =
+                    (DBHandler) ctx.getAttribute(DBHandler.class.getName());
             final ReturnEmailScanner scanner = new ReturnEmailScanner(
-                dbHandler, dsgPlayerStorer);
+                    dbHandler, dsgPlayerStorer);
 
             thread = new Thread(new Runnable() {
                 public void run() {
                     while (running) {
-                        
+
                         try {
                             scanner.scanEmails();
                         } catch (Throwable t) {
                             log4j.error("Problem scanning emails.", t);
                         }
-                        
+
                         try {
                             Thread.sleep(SLEEP_TIME);
                         } catch (InterruptedException ex) {
@@ -59,7 +59,7 @@ public class ReturnEmailContextListener implements ServletContextListener {
             log4j.error("Problem in contextInitialized()", t);
         }
     }
-    
+
     public void contextDestroyed(ServletContextEvent servletContextEvent) {
         running = false;
         if (thread != null) {

@@ -47,7 +47,7 @@ public class MySQLKOTHStorer implements KOTHStorer {
                 //     stmt.setString(3, "King of the Hill");
                 // }
                 stmt.setString(3, "King of the Hill");
-    
+
                 result = stmt.executeQuery();
 
                 if (result.next()) {
@@ -83,7 +83,7 @@ public class MySQLKOTHStorer implements KOTHStorer {
             try {
                 con = dbHandler.getConnection();
                 con.setAutoCommit(false);
-                
+
                 int i = 0;
                 long hill_id = hill.getHillID();
                 stmt = con.prepareStatement(
@@ -104,10 +104,10 @@ public class MySQLKOTHStorer implements KOTHStorer {
                 }
 
                 stmt.executeBatch();
-                
+
                 con.commit();
                 con.setAutoCommit(true);
-                
+
 //                int [] numUpdates=prepStmt.executeBatch();
 //                for (int i=0; i < numUpdates.length; i++) {
 //                    if (numUpdates[i] == -2)
@@ -135,7 +135,7 @@ public class MySQLKOTHStorer implements KOTHStorer {
         }
     }
 
-    public Map<Integer, Hill> loadHills()  throws KOTHException {
+    public Map<Integer, Hill> loadHills() throws KOTHException {
         Map<Integer, Hill> hills = new HashMap<>();
 
         Connection con = null;
@@ -151,7 +151,7 @@ public class MySQLKOTHStorer implements KOTHStorer {
 
                 while (result.next()) {
                     int hill_id = result.getInt(1);
-                    long pid  = result.getLong(2);
+                    long pid = result.getLong(2);
                     int step_idx = result.getInt(3);
                     java.util.Date lastGameDate = new Date(result.getTimestamp(4).getTime());
                     if (hill == null || hill.getHillID() != hill_id) {

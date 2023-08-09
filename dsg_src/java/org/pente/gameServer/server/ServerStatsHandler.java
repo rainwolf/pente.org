@@ -1,19 +1,20 @@
-/** ServerStatsHandler.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * ServerStatsHandler.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.gameServer.server;
@@ -31,7 +32,7 @@ public class ServerStatsHandler {
     private int events = 0;
 
     private Date startDate = new Date();
-    
+
     public synchronized void gamePlayed() {
         games++;
     }
@@ -40,8 +41,9 @@ public class ServerStatsHandler {
         logins++;
         if (++currentPlayers > maxPlayers) {
             maxPlayers = currentPlayers;
-        }        
+        }
     }
+
     public synchronized void playerExited() {
         currentPlayers--;
         if (currentPlayers < 0) {
@@ -52,14 +54,14 @@ public class ServerStatsHandler {
     public synchronized void eventProcessed() {
         events++;
     }
-    
+
     public int getCurrentPlayers() {
         return currentPlayers;
     }
-    
+
     public synchronized DSGServerStatsEvent handleServerStatsRequest(String player) {
 
         return new DSGServerStatsEvent(
-            logins, games, maxPlayers, events, startDate);
+                logins, games, maxPlayers, events, startDate);
     }
 }

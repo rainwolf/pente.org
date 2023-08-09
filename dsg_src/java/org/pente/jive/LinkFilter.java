@@ -13,7 +13,7 @@ import com.jivesoftware.util.StringUtils;
 
 public class LinkFilter implements Filter {
 
-	private boolean newWindowEnabled = false;
+    private boolean newWindowEnabled = false;
     private ArrayList<String> schemes = new ArrayList<String>();
 
     // define a preset default set of schemes
@@ -32,17 +32,17 @@ public class LinkFilter implements Filter {
             return string;
         }
 
-        int length            = string.length();
+        int length = string.length();
         StringBuffer filtered = new StringBuffer((int) (length * 1.5));
-        ArrayList urlBlocks   = new ArrayList(5);
+        ArrayList urlBlocks = new ArrayList(5);
 
         // search for url's such as [url=..]text[/url] or [url ..]text[/url]
         int start = string.indexOf("[url");
         while (start != -1 && (start + 5 < length)) {
             // check to verify we're not in another block
             if (withinAnotherBlock(urlBlocks, start)) {
-                    start = string.indexOf("[url", start + 5);
-                    continue;
+                start = string.indexOf("[url", start + 5);
+                continue;
             }
 
             int end = string.indexOf("[/url]", start + 5);
@@ -67,8 +67,7 @@ public class LinkFilter implements Filter {
                     URLBlock block = new URLBlock(start, end + 5, url, description);
                     urlBlocks.add(block);
                 }
-            }
-            else {
+            } else {
                 url = description = u.substring(startTagClose + 1, u.length() - 6);
                 // Check the user entered URL for a "javascript:" or "file:" link. Only
                 // append the user entered link if it doesn't contain 'javascript:' and 'file:'
@@ -93,7 +92,7 @@ public class LinkFilter implements Filter {
                 int end = start;
 
                 // check context, don't handle patterns preceded by any of '"<=
-        		if (start > 0) {
+                if (start > 0) {
                     char c = string.charAt(start - 1);
 
                     if (c == '\'' || c == '"' || c == '<' || c == '=') {
@@ -104,8 +103,8 @@ public class LinkFilter implements Filter {
 
                 // check to verify we're not in another block
                 if (withinAnotherBlock(urlBlocks, start)) {
-                        start = string.indexOf(scheme, start + scheme.length());
-                        continue;
+                    start = string.indexOf(scheme, start + scheme.length());
+                    continue;
                 }
 
                 // find the end of the url
@@ -116,7 +115,7 @@ public class LinkFilter implements Filter {
                     switch (c) {
                         case ' ':
                             end = cur;
-                             break;
+                            break;
                         case '\t':
                             end = cur;
                             break;
@@ -151,7 +150,7 @@ public class LinkFilter implements Filter {
                     //System.out.println("url to end of block");
                 }
 
-                URLBlock block = new URLBlock(start, end-1, string.substring(start, end));
+                URLBlock block = new URLBlock(start, end - 1, string.substring(start, end));
                 urlBlocks.add(block);
 
                 start = string.indexOf(scheme, end);
@@ -182,15 +181,14 @@ public class LinkFilter implements Filter {
             filtered.append('>');
             if (block.getDescription().length() > 0) {
                 filtered.append(chain.applyFilters(currentIndex, block.getDescription()));
-            }
-            else {
+            } else {
                 filtered.append(block.getUrl());
             }
             filtered.append("</a>");
         }
 
         if (last < string.length() - 1) {
-             filtered.append(chain.applyFilters(currentIndex, string.substring(last)));
+            filtered.append(chain.applyFilters(currentIndex, string.substring(last)));
         }
 
         return filtered.toString();

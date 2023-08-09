@@ -1,19 +1,20 @@
-/** MySQLGameStorer.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * MySQLGameStorer.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.game;
@@ -37,13 +38,14 @@ public abstract class MySQLGameStorer implements PlayerStorer, GameStorer {
     protected static final String PLAYER_TABLE = "player";
 
     protected static final Vector PLAYER_TABLES = new Vector();
+
     static {
         PLAYER_TABLES.addElement(PLAYER_TABLE);
         PLAYER_TABLES.addElement(MySQLGameVenueStorer.GAME_SITE_TABLE);
     }
 
-    protected DBHandler                     dbHandler;
-    protected GameVenueStorer               gameVenueStorer;
+    protected DBHandler dbHandler;
+    protected GameVenueStorer gameVenueStorer;
 
     public MySQLGameStorer(DBHandler dbHandler, GameVenueStorer gameVenueStorer) throws Exception {
         this.dbHandler = dbHandler;
@@ -139,12 +141,11 @@ public abstract class MySQLGameStorer implements PlayerStorer, GameStorer {
             int siteID = gameVenueStorer.getSiteID(site);
             if (siteID == -1) {
                 exists = false;
-            }
-            else {
+            } else {
                 stmt = con.prepareStatement("select 1 " +
-                                            "from " + PLAYER_TABLE + " " +
-                                            "where pid = ? " +
-                                            "and site_id = ?");
+                        "from " + PLAYER_TABLE + " " +
+                        "where pid = ? " +
+                        "and site_id = ?");
                 stmt.setLong(1, playerID);
                 stmt.setInt(2, siteID);
 
@@ -153,8 +154,18 @@ public abstract class MySQLGameStorer implements PlayerStorer, GameStorer {
             }
 
         } finally {
-            if (result != null) { try { result.close(); } catch(SQLException ex) {} }
-            if (stmt != null) { try { stmt.close(); } catch(SQLException ex) {} }
+            if (result != null) {
+                try {
+                    result.close();
+                } catch (SQLException ex) {
+                }
+            }
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException ex) {
+                }
+            }
         }
 
         return exists;
@@ -202,12 +213,11 @@ public abstract class MySQLGameStorer implements PlayerStorer, GameStorer {
             int siteID = gameVenueStorer.getSiteID(site);
             if (siteID == -1) {
                 exists = false;
-            }
-            else {
+            } else {
                 stmt = con.prepareStatement("select 1 " +
-                                            "from " + PLAYER_TABLE + " " +
-                                            "where name = ? " +
-                                            "and site_id = ?");
+                        "from " + PLAYER_TABLE + " " +
+                        "where name = ? " +
+                        "and site_id = ?");
                 stmt.setString(1, name);
                 stmt.setInt(2, siteID);
 
@@ -216,8 +226,18 @@ public abstract class MySQLGameStorer implements PlayerStorer, GameStorer {
             }
 
         } finally {
-            if (result != null) { try { result.close(); } catch(SQLException ex) {} }
-            if (stmt != null) { try { stmt.close(); } catch(SQLException ex) {} }
+            if (result != null) {
+                try {
+                    result.close();
+                } catch (SQLException ex) {
+                }
+            }
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException ex) {
+                }
+            }
         }
 
         return exists;
@@ -249,7 +269,7 @@ public abstract class MySQLGameStorer implements PlayerStorer, GameStorer {
      *  @exception Exception If the player can't be added
      */
     public void storePlayer(Connection con, PlayerData playerData,
-        String site) throws Exception {
+                            String site) throws Exception {
 
         PreparedStatement stmt = null;
         ResultSet result = null;
@@ -260,8 +280,8 @@ public abstract class MySQLGameStorer implements PlayerStorer, GameStorer {
             int siteID = gameVenueStorer.getSiteID(site);
 
             if (playerAlreadyStored(con, playerData.getUserIDName(), site) ||
-                (playerData.getUserID() != 0 && playerAlreadyStored(
-                 con, playerData.getUserID(), site))) {
+                    (playerData.getUserID() != 0 && playerAlreadyStored(
+                            con, playerData.getUserID(), site))) {
                 return;
             }
 
@@ -269,8 +289,8 @@ public abstract class MySQLGameStorer implements PlayerStorer, GameStorer {
             if (playerData.getUserID() == 0) {
 
                 stmt = con.prepareStatement("select max(pid) + 1 " +
-                                            "from " + PLAYER_TABLE + " " +
-                                            "where site_id = ?");
+                        "from " + PLAYER_TABLE + " " +
+                        "where site_id = ?");
                 stmt.setInt(1, siteID);
 
                 result = stmt.executeQuery();
@@ -290,8 +310,8 @@ public abstract class MySQLGameStorer implements PlayerStorer, GameStorer {
             }
 
             stmt = con.prepareStatement("insert into " + PLAYER_TABLE + " " +
-                                        "(pid, name, site_id, name_lower) " +
-                                        "values(?, ?, ?, lower(?))");
+                    "(pid, name, site_id, name_lower) " +
+                    "values(?, ?, ?, lower(?))");
 
             stmt.setLong(1, playerData.getUserID());
             stmt.setString(2, playerData.getUserIDName());
@@ -301,8 +321,18 @@ public abstract class MySQLGameStorer implements PlayerStorer, GameStorer {
             stmt.executeUpdate();
 
         } finally {
-            if (result != null) { try { result.close(); } catch(SQLException ex) {} }
-            if (stmt != null) { try { stmt.close(); } catch(SQLException ex) {} }
+            if (result != null) {
+                try {
+                    result.close();
+                } catch (SQLException ex) {
+                }
+            }
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException ex) {
+                }
+            }
         }
     }
 
@@ -348,9 +378,9 @@ public abstract class MySQLGameStorer implements PlayerStorer, GameStorer {
             if (siteID != -1) {
 
                 stmt = con.prepareStatement("select name " +
-                                            "from " + PLAYER_TABLE + " " +
-                                            "where pid = ? " +
-                                            "and site_id = ?");
+                        "from " + PLAYER_TABLE + " " +
+                        "where pid = ? " +
+                        "and site_id = ?");
                 stmt.setLong(1, playerID);
                 stmt.setInt(2, siteID);
 
@@ -365,8 +395,18 @@ public abstract class MySQLGameStorer implements PlayerStorer, GameStorer {
             }
 
         } finally {
-            if (stmt != null) { try { stmt.close(); } catch(SQLException ex) {} }
-            if (result != null) { try { result.close(); } catch(SQLException ex) {} }
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException ex) {
+                }
+            }
+            if (result != null) {
+                try {
+                    result.close();
+                } catch (SQLException ex) {
+                }
+            }
         }
 
         return playerData;
@@ -415,9 +455,9 @@ public abstract class MySQLGameStorer implements PlayerStorer, GameStorer {
             if (siteID > 0) {
 
                 stmt = con.prepareStatement("select pid " +
-                                            "from " + PLAYER_TABLE + " " +
-                                            "where name = ? " +
-                                            "and site_id = ?");
+                        "from " + PLAYER_TABLE + " " +
+                        "where name = ? " +
+                        "and site_id = ?");
                 stmt.setString(1, name);
                 stmt.setInt(2, siteID);
 
@@ -436,8 +476,18 @@ public abstract class MySQLGameStorer implements PlayerStorer, GameStorer {
             //if (con != null) {
             //    MySQLDBHandler.unLockTables(con);
             //}
-            if (stmt != null) { try { stmt.close(); } catch(SQLException ex) {} }
-            if (result != null) { try { result.close(); } catch(SQLException ex) {} }
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException ex) {
+                }
+            }
+            if (result != null) {
+                try {
+                    result.close();
+                } catch (SQLException ex) {
+                }
+            }
         }
 
         return playerData;

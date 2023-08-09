@@ -23,7 +23,7 @@ public class TournamentServlet extends HttpServlet {
 
     private static final Category log4j =
             Category.getInstance(TournamentServlet.class.getName());
-    
+
     private TourneyStorer tourneyStorer;
     private ServletContext ctx;
 
@@ -71,7 +71,7 @@ public class TournamentServlet extends HttpServlet {
             handleError(request, response, "no action specified");
             return;
         }
-        
+
         int eid = Integer.parseInt(eidStr);
         if (crownCommand.equals("assign")) {
             try {

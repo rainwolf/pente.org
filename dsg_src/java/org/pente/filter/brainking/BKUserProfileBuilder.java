@@ -19,8 +19,7 @@ public class BKUserProfileBuilder implements FilterListener, Runnable {
 
         if (args.length != 2) {
             System.err.println("usage: BKUserProfileBuilder <player> <cookie>");
-        }
-        else {
+        } else {
             String playerID = args[0];
             String cookie = args[1];
 
@@ -35,18 +34,18 @@ public class BKUserProfileBuilder implements FilterListener, Runnable {
         init(playerID, cookie);
     }
 
-/*
-    public BKUserProfileBuilder(PlayerData playerData, Hashtable cookies) {
+    /*
+        public BKUserProfileBuilder(PlayerData playerData, Hashtable cookies) {
 
-        this.playerData = playerData;
-        this.cookies = cookies;
+            this.playerData = playerData;
+            this.cookies = cookies;
 
-        params = new Hashtable();
-        params.put(BKConstants.USER_PROFILE_PARAM, Long.toString(playerData.getUserID()));
+            params = new Hashtable();
+            params.put(BKConstants.USER_PROFILE_PARAM, Long.toString(playerData.getUserID()));
 
-        bkUserProfileFilter = new BKUserProfileFilter(playerData);
-    }
-*/
+            bkUserProfileFilter = new BKUserProfileFilter(playerData);
+        }
+    */
     private void init(String playerID, String cookie) {
 
         BKLogin login = new BKLogin(cookie);
@@ -61,25 +60,28 @@ public class BKUserProfileBuilder implements FilterListener, Runnable {
         bkUserProfileFilter = new BKUserProfileFilter(playerData);
     }
 
-    /** Return the player data
-     *  @return PlayerData The player data built
+    /**
+     * Return the player data
+     *
+     * @return PlayerData The player data built
      */
     public PlayerData getPlayerData() {
         return playerData;
     }
 
-    /** Could be run in a new thread
-     *  Sends a request to iyt to get the user profile screen and filter it
+    /**
+     * Could be run in a new thread
+     * Sends a request to iyt to get the user profile screen and filter it
      */
     public synchronized void run() {
 
         FilterController filterController = new HttpFilterController(
-            "GET",
-            BKConstants.HOST,
-            BKConstants.USER_PROFILE_REQUEST,
-            params,
-            cookies,
-            bkUserProfileFilter);
+                "GET",
+                BKConstants.HOST,
+                BKConstants.USER_PROFILE_REQUEST,
+                params,
+                cookies,
+                bkUserProfileFilter);
         filterController.run();
     }
 

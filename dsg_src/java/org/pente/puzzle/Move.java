@@ -7,57 +7,61 @@ import org.pente.gameServer.core.SimpleGridPiece;
 
 public class Move {
 
-	private int position;
-	private int player;
-	
-	// this is used for both solving/challenging
-	private List<Move> next;
+    private int position;
+    private int player;
 
-	// this is used when challenging only i think
-	private Move genericMove;
-	
-	public Move() {
-	}
-	public Move(int position, int player) {
-		this.position = position;
-		this.player = player;
-	}
-	
-	public int getX() {
-		return position % 19;
-	}
-	public int getY() {
-		return 18 - position / 19;
-	}
-	public int getPosition() {
-		return position;
-	}
+    // this is used for both solving/challenging
+    private List<Move> next;
 
-	public void setPosition(int position) {
-		this.position = position;
-	}
+    // this is used when challenging only i think
+    private Move genericMove;
 
-	public int getPlayer() {
-		return player;
-	}
+    public Move() {
+    }
 
-	public void setPlayer(int player) {
-		this.player = player;
-	}
+    public Move(int position, int player) {
+        this.position = position;
+        this.player = player;
+    }
 
-	public void addNext(Move m) {
-		if (next == null) {
-			next = new ArrayList<Move>();
-		}
-		next.add(m);
-	}
-	public List<Move> getNext() {
-		return next;
-	}
+    public int getX() {
+        return position % 19;
+    }
 
-	public void setNext(List<Move> next) {
-		this.next = next;
-	}
+    public int getY() {
+        return 18 - position / 19;
+    }
+
+    public int getPosition() {
+        return position;
+    }
+
+    public void setPosition(int position) {
+        this.position = position;
+    }
+
+    public int getPlayer() {
+        return player;
+    }
+
+    public void setPlayer(int player) {
+        this.player = player;
+    }
+
+    public void addNext(Move m) {
+        if (next == null) {
+            next = new ArrayList<Move>();
+        }
+        next.add(m);
+    }
+
+    public List<Move> getNext() {
+        return next;
+    }
+
+    public void setNext(List<Move> next) {
+        this.next = next;
+    }
 //
 //	public void addGenericNext(Move m) {
 //		if (genericNext == null) {

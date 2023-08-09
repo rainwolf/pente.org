@@ -10,26 +10,26 @@ import org.pente.game.*;
 
 public class GameBoardTestPanel extends Panel {
 
-    private GridBoardCanvas                         canvas;
-    private GridBoardOrderedPieceCollectionAdapter  gridBoard;
-    private GridState                               gridState;
-    private GameOptionsDialog                        options;
-    private CoordinatesListPanel                    coordsList;
-    private ChatComponent                           chatComponent;
-    private PlayerListComponent                     playerListComponent;
+    private GridBoardCanvas canvas;
+    private GridBoardOrderedPieceCollectionAdapter gridBoard;
+    private GridState gridState;
+    private GameOptionsDialog options;
+    private CoordinatesListPanel coordsList;
+    private ChatComponent chatComponent;
+    private PlayerListComponent playerListComponent;
 
-    private Button                              	undoButton;
-    private Button                              	clearButton;
+    private Button undoButton;
+    private Button clearButton;
 
-// temp
-        int players = 0;
+    // temp
+    int players = 0;
 
     public GameBoardTestPanel(GameStyles gameStyle) {
 
         // setup canvas
         canvas = new PenteBoardCanvas();
         gridBoard = new PenteBoardOrderedPieceCollectionAdapter(
-            (PenteBoardComponent) canvas, false);
+                (PenteBoardComponent) canvas, false);
 
         gridBoard.setGridHeight(19);
         gridBoard.setGridWidth(19);
@@ -39,7 +39,7 @@ public class GameBoardTestPanel extends Panel {
         gridBoard.setBackgroundColor(new Color(37, 186, 255).getRGB());
         // coordinates list
         coordsList = new CoordinatesListPanel(
-        	gameStyle, 2, new AWTDSGButton());
+                gameStyle, 2, new AWTDSGButton());
         coordsList.setGame(GridStateFactory.CONNECT6);
         coordsList.setPlayer(1, "peter");
         coordsList.setPlayer(2, "dweebo");
@@ -62,22 +62,22 @@ public class GameBoardTestPanel extends Panel {
         penteState.addOrderedPieceCollectionListener(gridBoard);
         penteState.addOrderedPieceCollectionListener(coordsList);
         // for keryo
-        penteState.setCaptureLengths(new int[] {2, 3});
+        penteState.setCaptureLengths(new int[]{2, 3});
         penteState.setCapturesToWin(15);
 
-	    PoofPenteStatePieceCollectionAdapter poofPenteState = new PoofPenteStatePieceCollectionAdapter(new SimpleGomokuState(19, 19));
-	    poofPenteState.addOrderedPieceCollectionListener(gridBoard);
-	    poofPenteState.addOrderedPieceCollectionListener(coordsList);
+        PoofPenteStatePieceCollectionAdapter poofPenteState = new PoofPenteStatePieceCollectionAdapter(new SimpleGomokuState(19, 19));
+        poofPenteState.addOrderedPieceCollectionListener(gridBoard);
+        poofPenteState.addOrderedPieceCollectionListener(coordsList);
 
-	    GridStatePieceCollectionAdapter connect6State = new GridStatePieceCollectionAdapter(
-	    	new SimpleConnect6State(19, 19));
-	    connect6State.addOrderedPieceCollectionListener(gridBoard);
-	    connect6State.addOrderedPieceCollectionListener(coordsList);
+        GridStatePieceCollectionAdapter connect6State = new GridStatePieceCollectionAdapter(
+                new SimpleConnect6State(19, 19));
+        connect6State.addOrderedPieceCollectionListener(gridBoard);
+        connect6State.addOrderedPieceCollectionListener(coordsList);
 
-	    PenteStatePieceCollectionAdapter boatPenteState = new PenteStatePieceCollectionAdapter(
-	    	new SimpleGomokuState(19, 19));
-	    boatPenteState.addOrderedPieceCollectionListener(gridBoard);
-	    
+        PenteStatePieceCollectionAdapter boatPenteState = new PenteStatePieceCollectionAdapter(
+                new SimpleGomokuState(19, 19));
+        boatPenteState.addOrderedPieceCollectionListener(gridBoard);
+
         gridState = boatPenteState;
 
         gridBoard.setThinkingPiecePlayer(1);
@@ -176,8 +176,8 @@ public class GameBoardTestPanel extends Panel {
 
 
         setBackground(gameStyle.boardBack);
-        
-        
+
+
     }
 
 
@@ -190,14 +190,14 @@ public class GameBoardTestPanel extends Panel {
     public static void main(String args[]) {
 
         GameStyles gameStyle = new GameStyles(new Color(0, 0, 153), //board back
-                                              new Color(51, 102, 204), //button back
-                                              Color.white, //button fore
-                                              new Color(64, 64, 64), //new Color(0, 102, 255), //button disabled
-                                              Color.white, //player 1 back
-                                              Color.black, //player 1 fore
-                                              Color.black, //player 2 back
-                                              Color.white, //player 2 fore
-                                              new Color(51, 102, 204)); //watcher
+                new Color(51, 102, 204), //button back
+                Color.white, //button fore
+                new Color(64, 64, 64), //new Color(0, 102, 255), //button disabled
+                Color.white, //player 1 back
+                Color.black, //player 1 fore
+                Color.black, //player 2 back
+                Color.white, //player 2 fore
+                new Color(51, 102, 204)); //watcher
 
         final GridState boatPenteState = GridStateFactory.createGridState(GridStateFactory.BOAT_PENTE);
 
@@ -208,12 +208,13 @@ public class GameBoardTestPanel extends Panel {
                 if (panel.gridState.isValidMove(move, panel.gridState.getCurrentPlayer())) {
                     panel.gridState.addMove(move);
                     panel.gridBoard.setThinkingPiecePlayer(panel.gridState.getCurrentPlayer());
-                    
+
                     boatPenteState.addMove(move);
                     System.out.println("game over = " + boatPenteState.isGameOver());
                     System.out.println("winner = " + boatPenteState.getWinner());
                 }
             }
+
             public void gridMoved(int x, int y) {
             }
         }
@@ -243,7 +244,7 @@ public class GameBoardTestPanel extends Panel {
         d.setPlayerType(DSGPlayerData.HUMAN);
         d.setNameColor(Color.red);
         panel.playerListComponent.addPlayer(d);
-        
+
         panel.playerListComponent.setOwner("dweebo");
 
 
@@ -254,7 +255,7 @@ public class GameBoardTestPanel extends Panel {
         f.setSize(800, 600);
         f.setLocation(100, 100);
 
-        
+
         f.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
                 f.dispose();

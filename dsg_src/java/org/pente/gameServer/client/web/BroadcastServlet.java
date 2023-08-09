@@ -1,8 +1,8 @@
 package org.pente.gameServer.client.web;
 
 /**
-* Created by waliedothman on 01/02/2017.
-*/
+ * Created by waliedothman on 01/02/2017.
+ */
 
 import org.apache.log4j.Category;
 import org.pente.gameServer.core.*;
@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
-public class BroadcastServlet  extends HttpServlet {
+public class BroadcastServlet extends HttpServlet {
     private static final String errorRedirectPage = "/gameServer/error.jsp";
 
 
@@ -113,9 +113,9 @@ public class BroadcastServlet  extends HttpServlet {
             message.setFromPid(playerData.getPlayerID());
             message.setToPid(pid);
             message.setSubject("live game room alert");
-            message.setBody("I'm looking for players to play live " + game + " games.\n\n"+
-                    "Reply to this message if interested.\n\n"+
-                    "You are receiving this message because you are following "+player+
+            message.setBody("I'm looking for players to play live " + game + " games.\n\n" +
+                    "Reply to this message if interested.\n\n" +
+                    "You are receiving this message because you are following " + player +
                     "\n\nThis is an automated server message.");
             try {
                 dsgMessageStorer.createMessage(message);

@@ -8,10 +8,10 @@ import org.pente.gameServer.event.*;
 public class LoginLoadTest {
 
     private static final String[] PLAYERS = new String[]
-        { "dweebo", "peter", "hewitt", "speed_dw" };
+            {"dweebo", "peter", "hewitt", "speed_dw"};
 
     public static void main(final String[] args) {
-        
+
         // create 4 player threads
         for (int i = 0; i < PLAYERS.length; i++) {
             final int ii = i;
@@ -32,7 +32,7 @@ public class LoginLoadTest {
                                 Thread.sleep(2000);
                             } catch (InterruptedException i) {
                             }
-                            
+
                             handler.eventOccurred(new DSGJoinTableEvent(null, DSGJoinTableEvent.CREATE_NEW_TABLE));
                             // sleep 2 seconds to receive login events
                             try {
@@ -54,19 +54,19 @@ public class LoginLoadTest {
                             handler.eventOccurred(new DSGJoinTableEvent(null, DSGJoinTableEvent.CREATE_NEW_TABLE));
 
                             handler.eventOccurred(new DSGJoinTableEvent(null, ii));
-                            handler.eventOccurred(new DSGJoinTableEvent(null, (ii*2+3)%24));
+                            handler.eventOccurred(new DSGJoinTableEvent(null, (ii * 2 + 3) % 24));
                             try {
                                 Thread.sleep(500);
                             } catch (InterruptedException i) {
-                            }                            
-                            handler.eventOccurred(new DSGSitTableEvent(null, (ii*2+3)%24, 1));
+                            }
+                            handler.eventOccurred(new DSGSitTableEvent(null, (ii * 2 + 3) % 24, 1));
                             handler.eventOccurred(new DSGSitTableEvent(null, ii, 22));
                             try {
                                 Thread.sleep(500);
                             } catch (InterruptedException i) {
                             }
                             handler.eventOccurred(new DSGPlayTableEvent(null, ii));
-                            handler.eventOccurred(new DSGPlayTableEvent(null, (ii*2+3)%24));
+                            handler.eventOccurred(new DSGPlayTableEvent(null, (ii * 2 + 3) % 24));
 
                             handler.eventOccurred(new DSGTextTableEvent(null, ii, "test"));
                             handler.eventOccurred(new DSGTextMainRoomEvent(null, "test"));
@@ -87,14 +87,17 @@ public class LoginLoadTest {
                             handler = null;
                         }
                         if (socket != null) {
-                            try { socket.close(); } catch (IOException e) {}
+                            try {
+                                socket.close();
+                            } catch (IOException e) {
+                            }
                             socket = null;
                         }
                     }
                 }
             });
             t.start();
-            
+
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {

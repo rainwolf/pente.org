@@ -7,7 +7,7 @@ public class DSGClientErrorEvent extends AbstractDSGEvent {
     public DSGClientErrorEvent(Throwable t) {
         this.throwable = t;
     }
-	
+
     public Throwable getThrowable() {
         return throwable;
     }

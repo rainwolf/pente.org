@@ -25,21 +25,21 @@ public class AppletNodeViewer extends Applet {
 
             setLayout(new BorderLayout());
             add("Center", viewer);
-            
+
         } catch (NodeSearchException nse) {
             System.err.println("Error creating http node searcher");
             nse.printStackTrace();
         }
     }
-    
+
     public void start() {
         controller.load();
     }
-    
+
     public void stop() {
-        
+
     }
-    
+
     public void destroy() {
         viewer.destroy();
         controller.destroy();

@@ -17,20 +17,20 @@ public class AddAIDialog extends Dialog {
     private int game;
 
     public AddAIDialog(
-        Frame frame,
-        GameStyles gameStyle,
-        final ActionListener addAIListener,
-        int game,
-        Vector aiData) {
+            Frame frame,
+            GameStyles gameStyle,
+            final ActionListener addAIListener,
+            int game,
+            Vector aiData) {
 
         super(frame, "Play Computer", false);
- 
+
         this.aiData = aiData;
         this.game = game;
-        
+
         Label nameLabel = new Label("Opponent");
         nameLabel.setForeground(gameStyle.foreGround);
-        
+
         aiChoice = new Choice();
         aiChoice.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
@@ -38,12 +38,12 @@ public class AddAIDialog extends Dialog {
             }
         });
         updateNames();
-        
+
         Label levelLabel = new Label("Level");
         levelLabel.setForeground(gameStyle.foreGround);
         levelChoice = new Choice();
         updateLevels();
-        
+
         Label seatLabel = new Label("Seat");
         seatLabel.setForeground(gameStyle.foreGround);
         seatChoice = new Choice();
@@ -52,7 +52,7 @@ public class AddAIDialog extends Dialog {
 
 
         Panel computerOptionsPanel = new Panel();
-        computerOptionsPanel.setLayout(new GridLayout(3, 2, 5, 5));        
+        computerOptionsPanel.setLayout(new GridLayout(3, 2, 5, 5));
         computerOptionsPanel.setBackground(gameStyle.boardBack);
         computerOptionsPanel.add(nameLabel);
         computerOptionsPanel.add(aiChoice);
@@ -68,7 +68,7 @@ public class AddAIDialog extends Dialog {
                 dispose();
             }
         });
-        
+
         Button cancelButton = gameStyle.createDSGButton("Cancel");
         ActionListener disposer = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -82,39 +82,39 @@ public class AddAIDialog extends Dialog {
         panel.setLayout(new BorderLayout());
         panel.setBackground(gameStyle.boardBack);
         panel.setLayout(new GridBagLayout());
-		
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(2, 2, 2, 2);
-		
+
         gbc.gridy = 1;
-		gbc.gridx = 1;
-		gbc.gridwidth = 2;
-		//gbc.weightx = 1;
-		//gbc.weighty = 1;
+        gbc.gridx = 1;
+        gbc.gridwidth = 2;
+        //gbc.weightx = 1;
+        //gbc.weighty = 1;
         gbc.fill = GridBagConstraints.NONE;
         panel.add(computerOptionsPanel, gbc);
-        
+
         gbc.gridy = 2;
-		gbc.gridx = 1;
-		gbc.gridwidth = 1;
-		gbc.weightx = 1;
+        gbc.gridx = 1;
+        gbc.gridwidth = 1;
+        gbc.weightx = 1;
         gbc.anchor = GridBagConstraints.EAST;
         panel.add(inviteButton, gbc);
 
         gbc.gridy = 2;
         gbc.gridx = 2;
-		gbc.weightx = 1;
+        gbc.weightx = 1;
         gbc.anchor = GridBagConstraints.WEST;
         panel.add(cancelButton, gbc);
 
         setLayout(new BorderLayout());
         setBackground(gameStyle.boardBack);
         add("Center", panel);
-        
+
         pack();
         centerDialog(frame);
         setVisible(true);
-        
+
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
                 dispose();
@@ -133,8 +133,8 @@ public class AddAIDialog extends Dialog {
     }
 
     private void updateLevels() {
-       levelChoice.removeAll();
-       
+        levelChoice.removeAll();
+
         for (int i = 0; i < aiData.size(); i++) {
             AIData d = (AIData) aiData.elementAt(i);
             if (d.getName().equals(aiChoice.getSelectedItem())) {
@@ -149,25 +149,25 @@ public class AddAIDialog extends Dialog {
 
         Point location = new Point();
         location.x = frame.getLocation().x +
-                     (frame.getSize().width + frame.getInsets().right - frame.getInsets().left) / 2 -
-                     getSize().width / 2;
+                (frame.getSize().width + frame.getInsets().right - frame.getInsets().left) / 2 -
+                getSize().width / 2;
         location.y = frame.getLocation().y +
-                     (frame.getSize().height + frame.getInsets().top - frame.getInsets().bottom) / 2 -
-                     (getSize().height + getInsets().top - getInsets().bottom) / 2;
+                (frame.getSize().height + frame.getInsets().top - frame.getInsets().bottom) / 2 -
+                (getSize().height + getInsets().top - getInsets().bottom) / 2;
         setLocation(location);
     }
 
     public AIData getData() {
-        
+
         AIData data = (AIData) getAIData(aiChoice.getSelectedItem()).clone();
 
         data.setLevel(levelChoice.getSelectedIndex() + 1);
         data.setSeat(seatChoice.getSelectedIndex() + 1);
         data.setGame(game);
-        
+
         return data;
     }
-    
+
     public AIData getAIData(String name) {
         for (int i = 0; i < aiData.size(); i++) {
             AIData data = (AIData) aiData.elementAt(i);

@@ -4,6 +4,7 @@ package org.pente.tree;
 public class CacheNodeSearcher extends LocalNodeSearcher {
 
     private HibernateNodeSearcher hibernateNodeSearcher;
+
     public CacheNodeSearcher(HibernateNodeSearcher hibernateNodeSearcher) {
         super();
 
@@ -15,7 +16,7 @@ public class CacheNodeSearcher extends LocalNodeSearcher {
         setRoot(n);
         return n;
     }
-    
+
     public void storeAll() throws NodeSearchException {
         hibernateNodeSearcher.storeAll();
     }

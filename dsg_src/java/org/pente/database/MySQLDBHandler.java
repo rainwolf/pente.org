@@ -1,19 +1,20 @@
-/** MySQLDBHandler.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * MySQLDBHandler.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 
@@ -37,16 +38,16 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 public class MySQLDBHandler implements DBHandler {
 
     /** A boolean true is stored in the database with this constant */
-    public static final String YES =    "Y";
+    public static final String YES = "Y";
 
     /** A boolean false is stored in the database with this constant */
-    public static final String NO =     "N";
+    public static final String NO = "N";
 
     private static final Category log4j = Category.getInstance(
-        MySQLDBHandler.class.getName());
+            MySQLDBHandler.class.getName());
 
     private DataSource dataSource;
-    
+
     public MySQLDBHandler(String user, String password, String db) throws Throwable {
         this(user, password, db, "localhost");
     }
@@ -63,24 +64,24 @@ public class MySQLDBHandler implements DBHandler {
 //        basicDataSource.setUrl("jdbc:mysql://" + host + "/" + db + "?useServerPrepStmts=true");
 
 //        dataSource = basicDataSource;
-        log4j.info("MySQLDBHandler("+user+","+password+","+db+","+host);
-    	MysqlDataSource ds = new MysqlDataSource();
-    	ds.setUser(user);
-    	ds.setPassword(password);
-    	ds.setDatabaseName(db);
-    	ds.setUseServerPreparedStmts(true);
-    	ds.setUrl("jdbc:mysql://" + host + "/" + db);
-    	
-    	dataSource = ds;
+        log4j.info("MySQLDBHandler(" + user + "," + password + "," + db + "," + host);
+        MysqlDataSource ds = new MysqlDataSource();
+        ds.setUser(user);
+        ds.setPassword(password);
+        ds.setDatabaseName(db);
+        ds.setUseServerPreparedStmts(true);
+        ds.setUrl("jdbc:mysql://" + host + "/" + db);
+
+        dataSource = ds;
     }
 
     public MySQLDBHandler(boolean jndi, String resourceName) throws Throwable {
 
         Context ctx = new InitialContext();
-        if (ctx == null ) {
+        if (ctx == null) {
             throw new Exception("No Context in MySQLDBHandler");
         }
-    
+
         log4j.info("Creating MySQLDBHandler.");
         dataSource = (DataSource) ctx.lookup("java:comp/env/jdbc/" + resourceName);
     }

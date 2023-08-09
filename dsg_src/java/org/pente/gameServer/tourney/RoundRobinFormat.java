@@ -5,7 +5,7 @@ import java.util.*;
 public class RoundRobinFormat extends AbstractTourneyFormat {
 
     private static final int MAX_PLAYERS_IN_SECTION = 4;
-    
+
     public String getName() {
         return "Round-Robin";
     }
@@ -15,27 +15,28 @@ public class RoundRobinFormat extends AbstractTourneyFormat {
     }
     // createNextRound implements in AbstractTourneyFormat
 
-    /** Expects the players to have been seeded already
-     *  and expects them to be sorted accordingly
-     *  @param players List of TourneyPlayerData
-     *  @return TourneyRound
-     */    
+    /**
+     * Expects the players to have been seeded already
+     * and expects them to be sorted accordingly
+     *
+     * @param players List of TourneyPlayerData
+     * @return TourneyRound
+     */
     TourneyRound createRound(List<TourneyPlayerData> players, Tourney tourney, int rnd) {
         TourneyRound round = new TourneyRound(rnd);
         round.setTourney(tourney);
-        
+
         int maxPlayersInSection = MAX_PLAYERS_IN_SECTION;
         int numSections = 0;
         if (players.size() <= 6) {
             numSections = 1;
             maxPlayersInSection = 6;
+        } else {
+            // number of sections depends on # players and max section size of 5
+            numSections = (players.size() + MAX_PLAYERS_IN_SECTION - 1) /
+                    MAX_PLAYERS_IN_SECTION;
         }
-        else {
-        // number of sections depends on # players and max section size of 5
-            numSections = (players.size() + MAX_PLAYERS_IN_SECTION - 1) / 
-                MAX_PLAYERS_IN_SECTION;
-        }
-        
+
         // initially place player data in appropriate section
         List<TourneyPlayerData> sections[] = new List[numSections];
 
@@ -70,8 +71,8 @@ public class RoundRobinFormat extends AbstractTourneyFormat {
 //        shuffle the layers of the sections to let luck help prevent repeated match ups.
         if (numSections > 1) {
             for (int i = 0; i < maxPlayersInSection; i++) {
-                int ub = Math.min(i*numSections + numSections, players.size());
-                List<TourneyPlayerData> list = players.subList(i*numSections, ub);
+                int ub = Math.min(i * numSections + numSections, players.size());
+                List<TourneyPlayerData> list = players.subList(i * numSections, ub);
                 Collections.shuffle(list);
                 for (int j = 0; j < list.size(); j++) {
                     sections[j].add(list.get(j));
@@ -80,7 +81,7 @@ public class RoundRobinFormat extends AbstractTourneyFormat {
         } else {
             sections[0].addAll(players);
         }
-        
+
         // now for each section, create matches
         for (int i = 0; i < numSections; i++) {
             for (int j = 0; j < sections[i].size(); j++) {
@@ -99,7 +100,7 @@ public class RoundRobinFormat extends AbstractTourneyFormat {
                 }
             }
         }
-        
+
         round.init();
 
         return round;

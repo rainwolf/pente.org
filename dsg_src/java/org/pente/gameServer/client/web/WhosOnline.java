@@ -1,6 +1,7 @@
 package org.pente.gameServer.client.web;
 
 import java.util.*;
+
 import org.pente.gameServer.core.*;
 import org.pente.gameServer.server.*;
 
@@ -27,8 +28,7 @@ public class WhosOnline {
                     ActivityData d2 = (ActivityData) o2;
                     if (d1.getServerId() != d2.getServerId()) {
                         return (int) (d1.getServerId() - d2.getServerId());
-                    }
-                    else {
+                    } else {
                         return d1.getPlayerName().compareTo(d2.getPlayerName());
                     }
                 }
@@ -41,7 +41,7 @@ public class WhosOnline {
                 if (d[i].getServerId() != currentServerId) {
                     currentServerId = d[i].getServerId();
                     sd = resources.getServerData((int) currentServerId);
-                    room = new WhosOnlineRoom(sd.getName(),  new ArrayList<DSGPlayerData>());
+                    room = new WhosOnlineRoom(sd.getName(), new ArrayList<DSGPlayerData>());
                     rooms.add(room);
                 }
                 DSGPlayerData dsgPlayerData = null;
@@ -49,8 +49,7 @@ public class WhosOnline {
                     dsgPlayerData = new SimpleDSGPlayerData();
                     dsgPlayerData.setName(d[i].getPlayerName());
                     dsgPlayerData.setGuest(true);
-                }
-                else {
+                } else {
                     dsgPlayerData = dsgPlayerStorer.loadPlayer(d[i].getPlayerName());
                 }
                 if (seen.size() > 0 && seen.contains(d[i].getPlayerName())) {
@@ -91,9 +90,10 @@ public class WhosOnline {
 
         return rooms;
     }
+
     public static List<WhosOnlineRoom> getPlayers(long pid,
-            Resources resources,
-            SessionListener sessionListener) {
+                                                  Resources resources,
+                                                  SessionListener sessionListener) {
 
         ActivityLogger activityLogger = resources.getActivityLogger();
         DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
@@ -114,8 +114,7 @@ public class WhosOnline {
                     ActivityData d2 = (ActivityData) o2;
                     if (d1.getServerId() != d2.getServerId()) {
                         return (int) (d1.getServerId() - d2.getServerId());
-                    }
-                    else {
+                    } else {
                         return d1.getPlayerName().compareTo(d2.getPlayerName());
                     }
                 }
@@ -128,7 +127,7 @@ public class WhosOnline {
                 if (d[i].getServerId() != currentServerId) {
                     currentServerId = d[i].getServerId();
                     sd = resources.getServerData((int) currentServerId);
-                    room = new WhosOnlineRoom(sd.getName(),  new ArrayList<DSGPlayerData>());
+                    room = new WhosOnlineRoom(sd.getName(), new ArrayList<DSGPlayerData>());
                     rooms.add(room);
                 }
                 DSGPlayerData dsgPlayerData = null;
@@ -136,8 +135,7 @@ public class WhosOnline {
                     dsgPlayerData = new SimpleDSGPlayerData();
                     dsgPlayerData.setName(d[i].getPlayerName());
                     dsgPlayerData.setGuest(true);
-                }
-                else {
+                } else {
                     dsgPlayerData = dsgPlayerStorer.loadPlayer(d[i].getPlayerName());
                 }
                 room.getPlayers().add(dsgPlayerData);

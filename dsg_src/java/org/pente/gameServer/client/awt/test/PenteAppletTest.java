@@ -13,9 +13,9 @@ public class PenteAppletTest {
     public static void main(String[] args) {
 
         Thread.setDefaultUncaughtExceptionHandler(
-            new DefaultExceptionHandler());
-        
-		final String host = args[0];
+                new DefaultExceptionHandler());
+
+        final String host = args[0];
         final Frame f = new Frame("PenteApplet");
         final PenteApplet applet = new PenteApplet();
 
@@ -23,7 +23,7 @@ public class PenteAppletTest {
             public String getParameter(String key) {
                 return System.getProperties().getProperty(key);
             }
-            
+
             public boolean isActive() {
                 return true;
             }

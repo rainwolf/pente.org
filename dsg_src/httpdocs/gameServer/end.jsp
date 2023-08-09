@@ -1,6 +1,6 @@
-      </td>
-    </tr>
-  </table>
+</td>
+</tr>
+</table>
 </div>
 
 <%@include file="../bottom.jsp" %>

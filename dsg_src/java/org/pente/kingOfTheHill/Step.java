@@ -10,7 +10,7 @@ import java.util.Date;
 public class Step {
 
     private List<Player> players;
-    
+
     public Step() {
         players = new ArrayList<Player>();
     }
@@ -30,15 +30,17 @@ public class Step {
         Player player = new Player(playerID, new Date());
         players.add(player);
     }
+
     public void addPlayer(Player player) {
         if (players == null) {
             players = new ArrayList<Player>();
         }
         players.add(player);
     }
+
     public boolean removePlayer(long playerID) {
         if (players != null) {
-            for (Iterator<Player> iterator = players.iterator(); iterator.hasNext();) {
+            for (Iterator<Player> iterator = players.iterator(); iterator.hasNext(); ) {
                 Player player = iterator.next();
                 if (player.getPid() == playerID) {
                     iterator.remove();

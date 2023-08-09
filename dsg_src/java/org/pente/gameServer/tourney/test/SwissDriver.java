@@ -12,24 +12,24 @@ public class SwissDriver {
 
     private static Category log4j = Category.getInstance(
             SwissDriver.class.getName());
-    
+
     public static void main(String[] args) throws Throwable {
-        
+
         BasicConfigurator.configure();
 
         DBHandler dbHandler = new MySQLDBHandler(
-            args[0], args[1], args[2], args[3]);
+                args[0], args[1], args[2], args[3]);
 
         MySQLTourneyStorer storer = new MySQLTourneyStorer(dbHandler, null);
         CacheTourneyStorer tourneyStorer = new CacheTourneyStorer(storer);
 //        
         Tourney t = storer.getTourney(1142);
         for (Iterator it = ((SingleEliminationSection) t.getRound(1).
-        		getSection(1)).getSingleEliminationMatches().iterator(); it.hasNext();) {
-        	
-        	SingleEliminationMatch m = (SingleEliminationMatch) it.next();
-        	System.out.println(m.getPlayer1().getName() + " " +
-        		m.getResultStr() + " " + m.getPlayer2().getName());
+                getSection(1)).getSingleEliminationMatches().iterator(); it.hasNext(); ) {
+
+            SingleEliminationMatch m = (SingleEliminationMatch) it.next();
+            System.out.println(m.getPlayer1().getName() + " " +
+                    m.getResultStr() + " " + m.getPlayer2().getName());
         }
 
     }

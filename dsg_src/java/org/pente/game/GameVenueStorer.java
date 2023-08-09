@@ -1,19 +1,20 @@
-/** GameVenueStorer.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * GameVenueStorer.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.game;
@@ -44,7 +45,7 @@ public interface GameVenueStorer {
 
     //public String getGameSiteData(int sid) throws Exception;
     public int getSiteID(String name) throws Exception;
-    
+
     /** Get the data for a site from its unique id and associated game
      *  Use this when 
      *  @param game The game this site is associated with
@@ -71,7 +72,7 @@ public interface GameVenueStorer {
      *  @throws Exception If the game site data can't be added
      */
     public void addGameSiteData(int game, GameSiteData gameSiteData)
-        throws Exception;
+            throws Exception;
 
 
     /** Get the data for an event from its unique id.  Note that events are always

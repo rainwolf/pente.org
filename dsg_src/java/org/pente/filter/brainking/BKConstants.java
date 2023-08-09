@@ -11,12 +11,12 @@ public class BKConstants {
 
     static final String USER_PROFILE_REQUEST = "/game/Profile";
     static final String USER_PROFILE_PARAM = "u";
-    
+
     public static final Hashtable getCookies(String uid) {
         Hashtable defaults = new Hashtable();
         defaults.put("lang", "en");
         defaults.put("uid", uid);
-        
+
         return defaults;
     }
 }

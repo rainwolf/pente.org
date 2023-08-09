@@ -1,19 +1,20 @@
-/** SimpleGameStorerSearchResponseFormat.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * SimpleGameStorerSearchResponseFormat.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.gameDatabase;
@@ -87,12 +88,12 @@ public class SimpleGameStorerSearchResponseFormat implements GameStorerSearchRes
         }
     }
 
-    private static final String     paramSeparator =        "&";
-    private static final String     moveDelimiter =         ",";
+    private static final String paramSeparator = "&";
+    private static final String moveDelimiter = ",";
 
-    private static final String     REQUEST_PARAM =         "request";
-    private static final String     MOVE_RESULTS_PARAM =    "move_results";
-    private static final String     GAME_PARAM =            "game";
+    private static final String REQUEST_PARAM = "request";
+    private static final String MOVE_RESULTS_PARAM = "move_results";
+    private static final String GAME_PARAM = "game";
 
     public String getContentType() {
         return HttpConstants.CONTENT_TYPE_TEXT;
@@ -102,11 +103,9 @@ public class SimpleGameStorerSearchResponseFormat implements GameStorerSearchRes
 
         if (obj == null) {
             return null;
-        }
-        else if (!(obj instanceof GameStorerSearchResponseData)) {
+        } else if (!(obj instanceof GameStorerSearchResponseData)) {
             throw new IllegalArgumentException("Object not GameStorerSearchResponseData");
-        }
-        else {
+        } else {
             return (GameStorerSearchResponseData) obj;
         }
     }
@@ -115,13 +114,13 @@ public class SimpleGameStorerSearchResponseFormat implements GameStorerSearchRes
 
         try {
             GameStorerSearchResponseData responseData = convertObject(data);
-    
+
             formatRequestData(responseData.getGameStorerSearchRequestData(), buffer);
             buffer.append(paramSeparator);
             buffer.append("rotation=" + responseData.getRotation());
             buffer.append(paramSeparator);
             formatMoveResults(responseData, buffer, true);
-    
+
             if (!responseData.getGames().isEmpty()) {
                 buffer.append(paramSeparator);
                 formatGames(responseData, buffer, true);
@@ -133,8 +132,8 @@ public class SimpleGameStorerSearchResponseFormat implements GameStorerSearchRes
     }
 
     public StringBuffer formatRequestData(
-        GameStorerSearchRequestData data, StringBuffer buffer)
-        throws UnsupportedEncodingException {
+            GameStorerSearchRequestData data, StringBuffer buffer)
+            throws UnsupportedEncodingException {
 
         SimpleGameStorerSearchRequestFormat requestFormat = new SimpleGameStorerSearchRequestFormat();
         StringBuffer buf = new StringBuffer();
@@ -148,8 +147,8 @@ public class SimpleGameStorerSearchResponseFormat implements GameStorerSearchRes
     }
 
     public StringBuffer formatMoveResults(
-        GameStorerSearchResponseData data, StringBuffer buffer, boolean encode)
-        throws UnsupportedEncodingException {
+            GameStorerSearchResponseData data, StringBuffer buffer, boolean encode)
+            throws UnsupportedEncodingException {
 
         if (encode) {
             buffer.append(MOVE_RESULTS_PARAM);
@@ -172,17 +171,16 @@ public class SimpleGameStorerSearchResponseFormat implements GameStorerSearchRes
 
         if (encode) {
             buffer.append(URLEncoder.encode(resultsBuf.toString(), "UTF-8"));
-        }
-        else {
+        } else {
             buffer.append(resultsBuf.toString());
         }
 
         return buffer;
     }
 
-    public StringBuffer formatGames(GameStorerSearchResponseData data, 
-		StringBuffer buffer, boolean encode) 
-		throws UnsupportedEncodingException {
+    public StringBuffer formatGames(GameStorerSearchResponseData data,
+                                    StringBuffer buffer, boolean encode)
+            throws UnsupportedEncodingException {
 
         PGNGameFormat gameFormat = new PGNGameFormat();
         Enumeration games = data.getGames().elements();
@@ -204,13 +202,12 @@ public class SimpleGameStorerSearchResponseFormat implements GameStorerSearchRes
             buffer.append(GAME_PARAM);
             buffer.append("=");
             StringBuffer tmp = new StringBuffer();
-			gameFormat.format(gameData, tmp);
-			if (encode) {
-				buffer.append(URLEncoder.encode(tmp.toString(), "UTF-8"));
-			}
-			else {
-				buffer.append(tmp);
-			}
+            gameFormat.format(gameData, tmp);
+            if (encode) {
+                buffer.append(URLEncoder.encode(tmp.toString(), "UTF-8"));
+            } else {
+                buffer.append(tmp);
+            }
         }
         return buffer;
     }
@@ -243,13 +240,13 @@ public class SimpleGameStorerSearchResponseFormat implements GameStorerSearchRes
         try {
             rotationStr = (String) params.get("rotation");
             if (rotationStr != null) {
-            	int rotation = Integer.parseInt(rotationStr);
-            	responseData.setRotation(rotation);
+                int rotation = Integer.parseInt(rotationStr);
+                responseData.setRotation(rotation);
             }
         } catch (Exception ex) {
             throw new ParseException("ParseException on rotation", 0);
         }
-        
+
         // parse move results
         String moveResults = null;
         try {
@@ -286,8 +283,7 @@ public class SimpleGameStorerSearchResponseFormat implements GameStorerSearchRes
                     gameData.setGameID(Long.parseLong((String) gameIDsVec.elementAt(i)));
                     responseData.addGame(gameData);
                 }
-            }
-            else if (games instanceof String) {
+            } else if (games instanceof String) {
                 GameData gameData = new DefaultGameData();
                 gameData = (GameData) gameFormat.parse(gameData, new StringBuffer((String) games));
                 gameData.setGameID(Long.parseLong((String) gids));

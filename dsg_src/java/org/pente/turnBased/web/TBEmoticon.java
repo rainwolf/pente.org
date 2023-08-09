@@ -2,9 +2,9 @@
  * $RCSfile: Emoticon.java,v $
  * $Revision: 1.5 $
  * $Date: 2002/10/12 16:31:45 $
- *
+ * <p>
  * Copyright (C) 1999-2002 CoolServlets, Inc. All rights reserved.
- *
+ * <p>
  * This software is the proprietary information of CoolServlets, Inc.
  * Use is subject to license terms.
  */
@@ -47,23 +47,23 @@ import com.jivesoftware.base.*;
  */
 public class TBEmoticon implements Filter {
 
-    private static String imageHappy    = "happy.gif";
-    private static String imageSad      = "sad.gif";
-    private static String imageGrin     = "grin.gif";
-    private static String imageLove     = "love.gif";
+    private static String imageHappy = "happy.gif";
+    private static String imageSad = "sad.gif";
+    private static String imageGrin = "grin.gif";
+    private static String imageLove = "love.gif";
     private static String imageMischief = "mischief.gif";
-    private static String imageCool     = "cool.gif";
-    private static String imageDevil    = "devil.gif";
-    private static String imageSilly    = "silly.gif";
-    private static String imageAngry    = "angry.gif";
-    private static String imageLaugh    = "laugh.gif";
-    private static String imageWink     = "wink.gif";
-    private static String imageBlush    = "blush.gif";
-    private static String imageCry      = "cry.gif";
+    private static String imageCool = "cool.gif";
+    private static String imageDevil = "devil.gif";
+    private static String imageSilly = "silly.gif";
+    private static String imageAngry = "angry.gif";
+    private static String imageLaugh = "laugh.gif";
+    private static String imageWink = "wink.gif";
+    private static String imageBlush = "blush.gif";
+    private static String imageCry = "cry.gif";
     private static String imageConfused = "confused.gif";
-    private static String imageShocked  = "shocked.gif";
-    private static String imagePlain    = "plain.gif";
-    private String imageURL      = "http://[host]/gameServer/forums/images/emoticons";
+    private static String imageShocked = "shocked.gif";
+    private static String imagePlain = "plain.gif";
+    private String imageURL = "http://[host]/gameServer/forums/images/emoticons";
 
     // Placeholders for the built image tags
     private static String imgHappy;
@@ -104,18 +104,18 @@ public class TBEmoticon implements Filter {
         StringBuffer filtered = new StringBuffer(string.length() + 100);
         char[] chars = string.toCharArray();
 
-        int	length1 = length - 1;
-        int	length2 = length - 2;
+        int length1 = length - 1;
+        int length2 = length - 2;
 
         int index = -1, i = 0, oldend = 0;
-		String imgTag;
+        String imgTag;
 
         // Replace each of the emoticons, expanded search for performance
         while (++index < length1) {
-			// no tag found yet...
-			imgTag = null;
+            // no tag found yet...
+            imgTag = null;
 
-			switch (chars[i = index]) {
+            switch (chars[i = index]) {
                 case ']':
                     // "]:)"
                     if (i < length2 && chars[++i] == ':' && chars[++i] == ')') {
@@ -205,39 +205,39 @@ public class TBEmoticon implements Filter {
                     }
                     break;
                 case 'B':
-                        // "B-)"
-                        if (i < length2 && chars[++i] == '-' && chars[++i] == ')') {
-                            imgTag = imgCool;
-                        }
+                    // "B-)"
+                    if (i < length2 && chars[++i] == '-' && chars[++i] == ')') {
+                        imgTag = imgCool;
+                    }
                     break;
                 case 'X':
-                        // "X-("
-                        if (i < length2 && chars[++i] == '-' && chars[++i] == '(') {
-                            imgTag = imgAngry;
-                        }
+                    // "X-("
+                    if (i < length2 && chars[++i] == '-' && chars[++i] == '(') {
+                        imgTag = imgAngry;
+                    }
                     break;
                 case '?':
-                        // "?:|"
-                        if (i < length2 && chars[++i] == ':' && chars[++i] == '|') {
-                            imgTag = imgConfused;
-                        }
+                    // "?:|"
+                    if (i < length2 && chars[++i] == ':' && chars[++i] == '|') {
+                        imgTag = imgConfused;
+                    }
                     break;
                 default:
                     break;
             }
 
-			// if we found one, replace
-			if (imgTag != null) {
-		        filtered.append(chars, oldend, index-oldend);
-		        filtered.append(imgTag);
+            // if we found one, replace
+            if (imgTag != null) {
+                filtered.append(chars, oldend, index - oldend);
+                filtered.append(imgTag);
 
-				oldend = i + 1;
-		        index = i;
-        	}
+                oldend = i + 1;
+                index = i;
+            }
         }
 
         if (oldend < length) {
-	        filtered.append(chars, oldend, length-oldend);
+            filtered.append(chars, oldend, length - oldend);
         }
 
         return chain.applyFilters(currentIndex, filtered.toString());
@@ -260,11 +260,11 @@ public class TBEmoticon implements Filter {
      * @param imageURL the base URL for emoticon images.
      */
     public void setImageURL(String imageURL) {
-		if (imageURL != null && imageURL.length() > 0) {
-			if (imageURL.charAt(imageURL.length()-1) == '/') {
-                imageURL = imageURL.substring(0, imageURL.length()-1);
-			}
-		}
+        if (imageURL != null && imageURL.length() > 0) {
+            if (imageURL.charAt(imageURL.length() - 1) == '/') {
+                imageURL = imageURL.substring(0, imageURL.length() - 1);
+            }
+        }
         this.imageURL = imageURL;
 
         // rebuild the image tags
@@ -275,30 +275,30 @@ public class TBEmoticon implements Filter {
      * Build image tags
      */
     private void buildImageTags() {
-        imgHappy    = buildURL(imageHappy);
-        imgSad      = buildURL(imageSad);
-        imgGrin     = buildURL(imageGrin);
-        imgLove     = buildURL(imageLove);
+        imgHappy = buildURL(imageHappy);
+        imgSad = buildURL(imageSad);
+        imgGrin = buildURL(imageGrin);
+        imgLove = buildURL(imageLove);
         imgMischief = buildURL(imageMischief);
-        imgCool     = buildURL(imageCool);
-        imgDevil    = buildURL(imageDevil);
-        imgSilly    = buildURL(imageSilly);
-        imgAngry    = buildURL(imageAngry);
-        imgLaugh    = buildURL(imageLaugh);
-        imgWink     = buildURL(imageWink);
-        imgBlush    = buildURL(imageBlush);
-        imgCry      = buildURL(imageCry);
+        imgCool = buildURL(imageCool);
+        imgDevil = buildURL(imageDevil);
+        imgSilly = buildURL(imageSilly);
+        imgAngry = buildURL(imageAngry);
+        imgLaugh = buildURL(imageLaugh);
+        imgWink = buildURL(imageWink);
+        imgBlush = buildURL(imageBlush);
+        imgCry = buildURL(imageCry);
         imgConfused = buildURL(imageConfused);
-        imgShocked  = buildURL(imageShocked);
-        imgPlain    = buildURL(imagePlain);
+        imgShocked = buildURL(imageShocked);
+        imgPlain = buildURL(imagePlain);
     }
 
-	/**
+    /**
      * Returns an HTML image tag using the base image URL and image name.
      */
     private String buildURL(String imageName) {
-	    String tag = "<img border=\"0\" src=\"" + imageURL + "/" + imageName + "\" alt=\"\">";
+        String tag = "<img border=\"0\" src=\"" + imageURL + "/" + imageName + "\" alt=\"\">";
 
-		return tag;
+        return tag;
     }
 }

@@ -1,19 +1,20 @@
-/** SimpleDSGEventToPlayerRouter.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * SimpleDSGEventToPlayerRouter.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.gameServer.server;
@@ -25,32 +26,34 @@ import org.pente.gameServer.event.*;
 
 public class SimpleDSGEventToPlayerRouter implements DSGEventToPlayerRouter {
 
-	private Hashtable players;
+    private Hashtable players;
 
-	public SimpleDSGEventToPlayerRouter() {
-		players = new Hashtable();
-	}
-	
-	public synchronized void addRoute(DSGEventListener dsgEventListener, String name) {
-		players.put(name, dsgEventListener);
-	}
-	public DSGEventListener removeRoute(String name) {
-		return (DSGEventListener) players.remove(name);
-	}
-	public synchronized DSGEventListener getRoute(String name) {
-		return (DSGEventListener) players.get(name);
-	}
+    public SimpleDSGEventToPlayerRouter() {
+        players = new Hashtable();
+    }
 
-	public void routeEvent(DSGEvent dsgEvent, String name) {
+    public synchronized void addRoute(DSGEventListener dsgEventListener, String name) {
+        players.put(name, dsgEventListener);
+    }
+
+    public DSGEventListener removeRoute(String name) {
+        return (DSGEventListener) players.remove(name);
+    }
+
+    public synchronized DSGEventListener getRoute(String name) {
+        return (DSGEventListener) players.get(name);
+    }
+
+    public void routeEvent(DSGEvent dsgEvent, String name) {
 
         DSGEventListener dsgEventListener = null;
         synchronized (this) {
-    		dsgEventListener = (DSGEventListener)
-    			players.get(name);
+            dsgEventListener = (DSGEventListener)
+                    players.get(name);
         }
 
-		if (dsgEventListener != null) {
-			dsgEventListener.eventOccurred(dsgEvent);
-		}
-	}
+        if (dsgEventListener != null) {
+            dsgEventListener.eventOccurred(dsgEvent);
+        }
+    }
 }

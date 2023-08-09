@@ -1,96 +1,77 @@
-$(document).ready(function()
-{
-    $("#statementBox").hover(
+$(document).ready(function () {
+   $("#statementBox").hover(
+      function () {
+         $("#stateDescription").html(statementDescription);
+         $("#popUpDiv").show();
+      },
 
-        function()
-        {
-            $("#stateDescription").html(statementDescription);
-            $("#popUpDiv").show();
-        },
+      function () {
+         $("#popUpDiv").hide();
+      }
+   );
 
-        function()
-        {
-            $("#popUpDiv").hide();
-        }
-    );
+   $("#disputeBox").hover(
+      function () {
+         $("#stateDescription").html(disputeDescription);
+         $("#popUpDiv").show();
+      },
 
-    $("#disputeBox").hover(
+      function () {
+         $("#popUpDiv").hide();
+      }
+   );
 
-        function()
-        {
-            $("#stateDescription").html(disputeDescription);
-            $("#popUpDiv").show();
-        },
+   $("#secReviewRequestBox").hover(
+      function () {
+         $("#stateDescription").html(secReviewRequestDescription);
+         $("#popUpDiv").show();
+      },
 
-        function()
-        {
-            $("#popUpDiv").hide();
-        }
-    );
+      function () {
+         $("#popUpDiv").hide();
+      }
+   );
 
-    $("#secReviewRequestBox").hover(
+   $("#supportDocsProcessedBox").hover(
+      function () {
+         $("#stateDescription").html(supportDocsProcessedDescription);
+         $("#popUpDiv").show();
+      },
 
-        function()
-        {
-            $("#stateDescription").html(secReviewRequestDescription);
-            $("#popUpDiv").show();
-        },
+      function () {
+         $("#popUpDiv").hide();
+      }
+   );
 
-        function()
-        {
-            $("#popUpDiv").hide();
-        }
-    );
+   $("#caseUnderReviewBox").hover(
+      function () {
+         $("#stateDescription").html(caseUnderReviewDescription);
+         $("#popUpDiv").show();
+      },
 
-    $("#supportDocsProcessedBox").hover(
+      function () {
+         $("#popUpDiv").hide();
+      }
+   );
 
-        function()
-        {
-            $("#stateDescription").html(supportDocsProcessedDescription);
-            $("#popUpDiv").show();
-        },
+   $("#decisionBox").hover(
+      function () {
+         $("#stateDescription").html(decisionDescription);
+         $("#popUpDiv").show();
+      },
 
-        function()
-        {
-            $("#popUpDiv").hide();
-        }
-    );
+      function () {
+         $("#popUpDiv").hide();
+      }
+   );
 
-    $("#caseUnderReviewBox").hover(
-
-        function()
-        {
-            $("#stateDescription").html(caseUnderReviewDescription);
-            $("#popUpDiv").show();
-        },
-
-        function()
-        {
-            $("#popUpDiv").hide();
-        }
-    );
-
-    $("#decisionBox").hover(
-
-        function()
-        {
-            $("#stateDescription").html(decisionDescription);
-            $("#popUpDiv").show();
-        },
-
-        function()
-        {
-            $("#popUpDiv").hide();
-        }
-    );
-
-    // Set the hidden text for the secretarial review images
-    $("#statementDesc").append(statementDescriptionText);
-    $("#disputeDesc").append(disputeDescriptionText);
-    $("#secReviewRequestDesc").append(secReviewRequestDescriptionText);
-    $("#supportDocsProcessedDesc").append(supportDocsProcessedDescriptionText);
-    $("#caseUnderReviewDesc").append(caseUnderReviewDescriptionText);
-    $("#decisionDesc").append(decisionDescriptionText);
+   // Set the hidden text for the secretarial review images
+   $("#statementDesc").append(statementDescriptionText);
+   $("#disputeDesc").append(disputeDescriptionText);
+   $("#secReviewRequestDesc").append(secReviewRequestDescriptionText);
+   $("#supportDocsProcessedDesc").append(supportDocsProcessedDescriptionText);
+   $("#caseUnderReviewDesc").append(caseUnderReviewDescriptionText);
+   $("#decisionDesc").append(decisionDescriptionText);
 });
 
 // Set the descriptions for the various phases in the Secretarial Review process

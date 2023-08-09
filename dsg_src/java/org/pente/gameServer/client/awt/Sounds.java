@@ -5,12 +5,13 @@ import java.util.Hashtable;
 
 public class Sounds {
 
-	private Hashtable sounds = new Hashtable();
-	
-	public void addSound(AudioClip sound, String name) {
-		sounds.put(name, sound);
-	}
-	public AudioClip getSound(String name) {
-		return (AudioClip) sounds.get(name);
-	}
+    private Hashtable sounds = new Hashtable();
+
+    public void addSound(AudioClip sound, String name) {
+        sounds.put(name, sound);
+    }
+
+    public AudioClip getSound(String name) {
+        return (AudioClip) sounds.get(name);
+    }
 }

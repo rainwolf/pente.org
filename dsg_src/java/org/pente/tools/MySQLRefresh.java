@@ -4,9 +4,10 @@ import java.io.*;
 import java.text.*;
 import java.util.*;
 
-/** Basically a script to restart the database and check the tables for
- *  any corruption.  Started as a simple batch file but ms-dos can't redirect
- *  stderr and myisamchk prints out all its important info to stderr.
+/**
+ * Basically a script to restart the database and check the tables for
+ * any corruption.  Started as a simple batch file but ms-dos can't redirect
+ * stderr and myisamchk prints out all its important info to stderr.
  */
 public class MySQLRefresh {
 
@@ -34,16 +35,16 @@ public class MySQLRefresh {
 
         // should probably replace these hardcoded values
         fileOutputStream.write(("Shutting down mysqld server" + lineSeparator).getBytes());
-        runProcess(true, fileOutputStream, new String[] { mysqlHome + "/bin/mysqladmin", "-u" + mysqlUser, "-p" + mysqlPasswd, "shutdown" });
+        runProcess(true, fileOutputStream, new String[]{mysqlHome + "/bin/mysqladmin", "-u" + mysqlUser, "-p" + mysqlPasswd, "shutdown"});
 
         fileOutputStream.write(("Checking database tables [dsg]" + lineSeparator).getBytes());
-        runProcess(true, fileOutputStream, new String[] { mysqlHome + "/bin/myisamchk", "--fast", "--silent", mysqlHome + "/data/dsg/*.MYI" });
+        runProcess(true, fileOutputStream, new String[]{mysqlHome + "/bin/myisamchk", "--fast", "--silent", mysqlHome + "/data/dsg/*.MYI"});
 
         fileOutputStream.write(("Checking database tables [mysql]" + lineSeparator).getBytes());
-        runProcess(true, fileOutputStream, new String[] { mysqlHome + "/bin/myisamchk", "--fast", "--silent", mysqlHome + "/data/mysql/*.MYI" });
+        runProcess(true, fileOutputStream, new String[]{mysqlHome + "/bin/myisamchk", "--fast", "--silent", mysqlHome + "/data/mysql/*.MYI"});
 
         fileOutputStream.write(("Starting mysqld server" + lineSeparator).getBytes());
-        runProcess(false, fileOutputStream, new String[] { mysqlHome + "/bin/mysqld-opt", "--log-bin=update-bin" });
+        runProcess(false, fileOutputStream, new String[]{mysqlHome + "/bin/mysqld-opt", "--log-bin=update-bin"});
 
         fileOutputStream.flush();
         fileOutputStream.close();
@@ -104,8 +105,7 @@ public class MySQLRefresh {
                     writer.write(c);
                     writer.flush();
                 }
-            }
-            catch (IOException ioe) {
+            } catch (IOException ioe) {
                 ioe.printStackTrace(new PrintWriter(writer));
             }
         }

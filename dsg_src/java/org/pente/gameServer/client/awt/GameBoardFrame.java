@@ -1,19 +1,20 @@
-/** GameBoardFrame.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * GameBoardFrame.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.gameServer.client.awt;
@@ -82,7 +83,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
     private Sounds sounds;
 
 
-    private Choice      gameChoice;
+    private Choice gameChoice;
 
     private static final String PLAY = "Play";
     private static final String UNDO = "Undo";
@@ -108,7 +109,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
     private DSGDialog swapDialog;
     private MiddleSetDialog middleSetDialog;
     private DSGDialog acceptGoStateDialog;
-    
+
     private GameOptions gameOptions;
 
     private Checkbox ratedCheck;
@@ -221,7 +222,6 @@ public class GameBoardFrame extends Frame implements TableComponent,
         gameOptionsButton.addActionListener(this);
 
 
-
         ItemListener changeStateListener = new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 sendChangeTableState();
@@ -293,7 +293,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
         playerGameTimers[1].addGameTimerListener(timerUp);
         playerGameTimers[2].addGameTimerListener(timerUp);
 
-        Panel underBoard=new Panel();
+        Panel underBoard = new Panel();
         underBoard.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
         underBoard.add(sit1Button);
         underBoard.add(playerTimerLabels[1]);
@@ -338,7 +338,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
             inviteList.removePlayer(d.getName());
         }
 
-        for (Enumeration e = playerDataCache.getAllPlayers(); e.hasMoreElements();) {
+        for (Enumeration e = playerDataCache.getAllPlayers(); e.hasMoreElements(); ) {
             DSGPlayerData d = (DSGPlayerData) e.nextElement();
             if (d.isComputer()) {
                 inviteList.removePlayer(d.getName());
@@ -467,7 +467,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
             gameOptions.setPlayerColor(GameOptions.RED, 3);
             gameOptions.setPlayerColor(GameOptions.TRANSPARENT_WHITE, 4);
             gameOptions.setPlayerColor(GameOptions.TRANSPARENT_BLACK, 5);
-            
+
             gameOptions.setDraw3DPieces(true);
             gameOptions.setPlaySound(true);
             gameOptions.setShowLastMove(true);
@@ -475,7 +475,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
             com.google.gson.internal.LinkedTreeMap pref = (com.google.gson.internal.LinkedTreeMap) preferenceHandler.getPref("gameOptions");
             gameOptions = new SimpleGameOptions(5);
             ArrayList colors = (ArrayList) pref.get("colors");
-            for ( int i = 0; i < 3; i++ ) {
+            for (int i = 0; i < 3; i++) {
                 gameOptions.setPlayerColor(((Double) colors.get(i)).intValue(), i);
             }
             gameOptions.setPlayerColor(GameOptions.RED, 3);
@@ -543,7 +543,6 @@ public class GameBoardFrame extends Frame implements TableComponent,
         bottomCoordsPanel.add(gameInSetPanel, "South");
         coordsPanel.add(coordinatesList, "West");
         coordsPanel.add(bottomCoordsPanel, "South");
-
 
 
         Panel panel = new InsetPanel(2, 2, 2, 2);
@@ -615,12 +614,10 @@ public class GameBoardFrame extends Frame implements TableComponent,
             if (sizePref.height <= screenSize.height &&
                     sizePref.width <= screenSize.width) {
                 setSize(sizePref);
-            }
-            else {
+            } else {
                 sizePref = getSize();
             }
-        }
-        else {
+        } else {
             sizePref = getSize();
         }
         initialSize = sizePref;
@@ -649,19 +646,17 @@ public class GameBoardFrame extends Frame implements TableComponent,
                 clickedPlay = true;
                 updateMessage();
             }
-        }
-        else if (event.getActionCommand().equals(PASS)) {
+        } else if (event.getActionCommand().equals(PASS)) {
             if ((game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO ||
                     game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9 ||
                     game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13) &&
                     playerType != PLAYERTYPE_NOT_SITTING &&
                     gameBoard.getGridState().getCurrentPlayer() == playerType &&
                     state == DSGGameStateTableEvent.GAME_IN_PROGRESS) {
-                int passMove = gameBoard.getGridBoardComponent().getGridWidth()*gameBoard.getGridBoardComponent().getGridWidth();
+                int passMove = gameBoard.getGridBoardComponent().getGridWidth() * gameBoard.getGridBoardComponent().getGridWidth();
                 dsgEventListener.eventOccurred(new DSGMoveTableEvent(playerName, tableNum, passMove));
             }
-        }
-        else if (event.getActionCommand().equals(SCORE)) {
+        } else if (event.getActionCommand().equals(SCORE)) {
             if ((game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO ||
                     game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9 ||
                     game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13) &&
@@ -669,39 +664,32 @@ public class GameBoardFrame extends Frame implements TableComponent,
 //                    playerType != PLAYERTYPE_NOT_SITTING &&
 //                    gameBoard.getGridState().getCurrentPlayer() == playerType &&
 //                    state == DSGGameStateTableEvent.GAME_IN_PROGRESS
-                    ) {
-                GoState s = (GoState) gameBoard.getGridState(); 
+            ) {
+                GoState s = (GoState) gameBoard.getGridState();
                 gameBoard.getGridBoardComponent().setTerritory(s.getTerritories());
                 gameBoard.getGridBoardComponent().setMessage(s.getScoreMessage());
             }
-        }
-        else if (event.getActionCommand().equals(UNDO)) {
+        } else if (event.getActionCommand().equals(UNDO)) {
             if (playerType != PLAYERTYPE_NOT_SITTING &&
                     gameBoard.getGridState().canPlayerUndo(playerType)) {
                 dsgEventListener.eventOccurred(new DSGUndoRequestTableEvent(
                         null, tableNum));
             }
-        }
-        else if (event.getActionCommand().equals(CANCEL)) {
+        } else if (event.getActionCommand().equals(CANCEL)) {
             if (playerType != PLAYERTYPE_NOT_SITTING) {
                 dsgEventListener.eventOccurred(new DSGCancelRequestTableEvent(null, tableNum));
             }
-        }
-        else if (event.getActionCommand().equals(EMAIL)) {
+        } else if (event.getActionCommand().equals(EMAIL)) {
             chatArea.newSystemMessage("email game request sent");
             dsgEventListener.eventOccurred(
                     new DSGEmailGameRequestTableEvent(null, tableNum));
-        }
-        else if (event.getActionCommand().equals(SIT1)) {
+        } else if (event.getActionCommand().equals(SIT1)) {
             dsgEventListener.eventOccurred(new DSGSitTableEvent(null, tableNum, 1));
-        }
-        else if (event.getActionCommand().equals(SIT2)) {
+        } else if (event.getActionCommand().equals(SIT2)) {
             dsgEventListener.eventOccurred(new DSGSitTableEvent(null, tableNum, 2));
-        }
-        else if (event.getActionCommand().equals(STAND)) {
+        } else if (event.getActionCommand().equals(STAND)) {
             dsgEventListener.eventOccurred(new DSGStandTableEvent(null, tableNum));
-        }
-        else if (event.getActionCommand().equals(SET_TIME)) {
+        } else if (event.getActionCommand().equals(SET_TIME)) {
             if (setTimeButton.isEnabled()) {
                 new SetTimerDialog(
                         GameBoardFrame.this,
@@ -711,8 +699,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
                         timerMinutes,
                         timerIncremental);
             }
-        }
-        else if (event.getActionCommand().equals(RESIGN)) {
+        } else if (event.getActionCommand().equals(RESIGN)) {
             if (state != DSGGameStateTableEvent.NO_GAME_IN_PROGRESS &&
                     playerType != PLAYERTYPE_NOT_SITTING) {
                 if (resignDialog != null) {
@@ -729,8 +716,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
                 });
                 resignDialog.setVisible(true);
             }
-        }
-        else if (event.getActionCommand().equals(OPTIONS)) {
+        } else if (event.getActionCommand().equals(OPTIONS)) {
             GameOptionsDialog options = new GameOptionsDialog(
                     GameBoardFrame.this,
                     gameStyle,
@@ -746,8 +732,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
                     }
                 }
             });
-        }
-        else if (event.getActionCommand().equals("Boot Player")) {
+        } else if (event.getActionCommand().equals("Boot Player")) {
             if (bootDialog != null) {
                 bootDialog.dispose();
             }
@@ -761,8 +746,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
                         }
                     }, false
             );
-        }
-        else if (event.getActionCommand().equals("Invite Player")) {
+        } else if (event.getActionCommand().equals("Invite Player")) {
             if (inviteDialog != null) {
                 inviteDialog.dispose();
             }
@@ -778,8 +762,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
                         }
                     }
             );
-        }
-        else if (event.getActionCommand().equals("Play Computer")) {
+        } else if (event.getActionCommand().equals("Play Computer")) {
             if (addAIDialog != null) {
                 addAIDialog.dispose();
             }
@@ -794,14 +777,14 @@ public class GameBoardFrame extends Frame implements TableComponent,
                     game, aiData);
         }
     }
+
     private class GridBoardController implements GridBoardListener {
 
         public void gridMoved(int x, int y) {
 
             if (state != DSGGameStateTableEvent.GAME_IN_PROGRESS) {
                 gameBoard.getGridBoard().setThinkingPieceVisible(false);
-            }
-            else {
+            } else {
                 int move = (gameBoard.getGridBoard().getGridHeight() - y - 1) *
                         gameBoard.getGridBoard().getGridWidth() + x;
                 gameBoard.getGridBoard().setThinkingPieceVisible(
@@ -922,8 +905,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
                 tableType = changeStateEvent.getTableType();
                 if (changeStateEvent.isTablePrivate()) {
                     tableTypeChoice.select("Private");
-                }
-                else {
+                } else {
                     tableTypeChoice.select("Public");
                 }
             }
@@ -934,8 +916,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
                         (DSGChangeStateTableErrorEvent) changeStateEvent;
                 if (error.getError() == DSGTableErrorEvent.COMPUTER_SITTING) {
                     chatArea.newSystemMessage("games against computers can't be rated or timed.");
-                }
-                else if (error.getError() == DSGTableErrorEvent.TOURNAMENT_GAME) {
+                } else if (error.getError() == DSGTableErrorEvent.TOURNAMENT_GAME) {
                     chatArea.newSystemMessage("can't change game settings for a " +
                             "tournament game");
                 }
@@ -1010,8 +991,8 @@ public class GameBoardFrame extends Frame implements TableComponent,
             gameBoard.getGridBoard().setDrawInnerCircles(false);
             gameBoard.getGridBoard().setDrawGoDots(true);
             gameBoard.getGridBoard().setThinkingPiecePlayer(2);
-            ((GridBoardCanvas)gameBoard.getGridBoardComponent()).calculateGridSize();
-            for (GridCoordinates gc: coordinates) {
+            ((GridBoardCanvas) gameBoard.getGridBoardComponent()).calculateGridSize();
+            for (GridCoordinates gc : coordinates) {
                 gc.setGridSize(gameBoard.getGridBoard().getGridWidth());
             }
         } else {
@@ -1020,8 +1001,8 @@ public class GameBoardFrame extends Frame implements TableComponent,
             gameBoard.getGridBoard().setDrawInnerCircles(true);
             gameBoard.getGridBoard().setDrawGoDots(false);
             gameBoard.getGridBoard().setThinkingPiecePlayer(1);
-            ((GridBoardCanvas)gameBoard.getGridBoardComponent()).calculateGridSize();
-            for (GridCoordinates gc: coordinates) {
+            ((GridBoardCanvas) gameBoard.getGridBoardComponent()).calculateGridSize();
+            for (GridCoordinates gc : coordinates) {
                 gc.setGridSize(gameBoard.getGridBoard().getGridWidth());
             }
         }
@@ -1051,8 +1032,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
     private void updateTimedLabel() {
         if (timed) {
             timedLabel.setText("Timer: " + timerMinutes + "/" + timerIncremental);
-        }
-        else {
+        } else {
             timedLabel.setText("Timer: no");
         }
     }
@@ -1106,7 +1086,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
                 chatArea.newSystemMessage("point and click on the board to make your moves");
             }
             if (playerType == 1 && (game == GridStateFactory.DPENTE ||
-                    game == GridStateFactory.SPEED_DPENTE || 
+                    game == GridStateFactory.SPEED_DPENTE ||
                     game == GridStateFactory.DKERYO || game == GridStateFactory.SPEED_DKERYO)) {
                 chatArea.newSystemMessage("place the first four stones, then " +
                         "your opponent will get a chance to swap seats");
@@ -1179,8 +1159,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
                             }
                         }
                     }
-                }
-                else if (stateEvent.getState() == DSGGameStateTableEvent.NO_GAME_IN_PROGRESS) {
+                } else if (stateEvent.getState() == DSGGameStateTableEvent.NO_GAME_IN_PROGRESS) {
 
                     bootList.addPlayer(playerDataCache.getPlayer(
                             sittingPlayers[i]));
@@ -1270,13 +1249,11 @@ public class GameBoardFrame extends Frame implements TableComponent,
             // of d-pente and player 2 still needs to decide to swap
             showSwapDialog();
             showGoStateDialog();
-        }
-        else if (state == DSGGameStateTableEvent.WAIT_GAME_TWO_OF_SET &&
+        } else if (state == DSGGameStateTableEvent.WAIT_GAME_TWO_OF_SET &&
                 stateEvent.getState() == DSGGameStateTableEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN) {
 
             state = stateEvent.getState();
-        }
-        else if (state == DSGGameStateTableEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN &&
+        } else if (state == DSGGameStateTableEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN &&
                 stateEvent.getState() == DSGGameStateTableEvent.WAIT_GAME_TWO_OF_SET) {
 
             updateGameInset(stateEvent);
@@ -1323,8 +1300,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
                 if (e.getActionCommand().equals("Resign")) {
                     dsgEventListener.eventOccurred(
                             new DSGResignTableEvent(playerName, tableNum));
-                }
-                else {
+                } else {
                     int action = e.getActionCommand().startsWith("Cancel") ?
                             DSGForceCancelResignTableEvent.CANCEL :
                             DSGForceCancelResignTableEvent.RESIGN;
@@ -1343,8 +1319,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
             gameNumInSet = 0;
             gameInSetLabel.setText("");
             gameInSetLayout.show(gameInSetPanel, "game");
-        }
-        else {
+        } else {
             if (setTimer == null || !setTimer.isRunning()) {
                 gameInSetLabel.setText("Game " + gameNumInSet + " of 2");
                 gameInSetLayout.show(gameInSetPanel, "set");
@@ -1355,11 +1330,13 @@ public class GameBoardFrame extends Frame implements TableComponent,
     public void receivePlayerPlaying(DSGSetPlayingPlayerTableEvent setPlayingPlayerEvent) {
         playingPlayers[setPlayingPlayerEvent.getSeat()] = setPlayingPlayerEvent.getPlayer();
     }
+
     /** if play clicked play successfully */
     public void receivePlay(DSGPlayTableEvent playEvent) {
         clickedPlay = true;
         updateMessage();
     }
+
     /** if player clicked play but received error */
     public void receivePlayError(DSGPlayTableErrorEvent playErrorEvent) {
         clickedPlay = false;
@@ -1430,7 +1407,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
             acceptGoStateDialog = null;
         }
         if (gameBoard.getGridState() instanceof GoStatePieceCollectionAdapter) {
-            ((GoStatePieceCollectionAdapter)gameBoard.getGridState()).rejectAndContinue();
+            ((GoStatePieceCollectionAdapter) gameBoard.getGridState()).rejectAndContinue();
             gameBoard.getGridBoardComponent().setThinkingPiecePlayer(gameBoard.getGridState().getCurrentColor());
             switchTimers();
         }
@@ -1454,8 +1431,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
                         boolean swap = false;
                         if (e.getActionCommand().equals("Player 1") && playerType == 2) {
                             swap = true;
-                        }
-                        else if (e.getActionCommand().equals("Player 2") && playerType == 1) {
+                        } else if (e.getActionCommand().equals("Player 2") && playerType == 1) {
                             swap = true;
                         }
 
@@ -1470,36 +1446,34 @@ public class GameBoardFrame extends Frame implements TableComponent,
                     }
                 });
                 swapDialog.setVisible(true);
-            }
-            else {
+            } else {
                 chatArea.newSystemMessage("waiting for " + sittingPlayers[2] +
                         " to decide whether to swap seats or not");
             }
         }
     }
-    
+
     private void showGoStateDialog() {
 //        System.out.println("showGoStateDialog before show");
         if ((game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO ||
                 game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9 ||
-                game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13) && 
-                ((GoState)gameBoard.getGridState()).isEvaluateStones() &&
+                game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13) &&
+                ((GoState) gameBoard.getGridState()).isEvaluateStones() &&
                 gameBoard.getGridState().getCurrentPlayer() == playerType &&
                 !gameBoard.getGridState().isGameOver()) {
             if (acceptGoStateDialog != null) {
                 acceptGoStateDialog.dispose();
             }
-            String txt = ((GoState)gameBoard.getGridState()).getScoreMessage();
+            String txt = ((GoState) gameBoard.getGridState()).getScoreMessage();
             acceptGoStateDialog = DSGDialogFactory.createGoStateDialog(this, gameStyle, txt);
             acceptGoStateDialog.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
 //                    System.out.println("showGoStateDialog action "+e.getActionCommand());
                     if (e.getActionCommand().equals("Accept")) {
-                        int passMove = gameBoard.getGridState().getGridSizeX()*gameBoard.getGridState().getGridSizeX();
+                        int passMove = gameBoard.getGridState().getGridSizeX() * gameBoard.getGridState().getGridSizeX();
                         dsgEventListener.eventOccurred(new DSGMoveTableEvent(playerName, tableNum, passMove));
-                    }
-                    else if (e.getActionCommand().equals("Reject")) {
+                    } else if (e.getActionCommand().equals("Reject")) {
 //                        System.out.println("showGoStateDialog action reject ");
                         dsgEventListener.eventOccurred(new DSGRejectGoStateEvent(playerName, tableNum));
                     }
@@ -1509,19 +1483,19 @@ public class GameBoardFrame extends Frame implements TableComponent,
             acceptGoStateDialog.setVisible(true);
         }
     }
-    
+
     private void showGoMessage() {
         if ((game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO ||
                 game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9 ||
-                game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13) 
-                && (gameBoard.getGridState() instanceof GoState) 
+                game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13)
+                && (gameBoard.getGridState() instanceof GoState)
                 && gameBoard.getGridState().getCurrentPlayer() == playerType) {
             GoState s = (GoState) gameBoard.getGridState();
             if (!s.isEvaluateStones() && s.isMarkStones() && s.doublePass()) {
                 chatArea.newSystemMessage("Your opponent has made a pass. Mark the dead stones and end with a pass.");
             }
         }
-        
+
     }
 
     public void receiveTimerChange(DSGTimerChangeTableEvent timerChangeEvent) {
@@ -1550,8 +1524,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
                     sittingPlayers[2] != null) && amSitting()) {
                 if (state == DSGGameStateTableEvent.NO_GAME_IN_PROGRESS) {
                     message = "Click Play to begin game";
-                }
-                else {
+                } else {
                     message = "Game 1 completed, click play to begin game 2";
                 }
             }
@@ -1561,15 +1534,14 @@ public class GameBoardFrame extends Frame implements TableComponent,
                         "Play Computer";
             }
             // a seat is open and i'm not sitting
-            else if (sittingPlayers[1] == null || sittingPlayers[2] == null){
+            else if (sittingPlayers[1] == null || sittingPlayers[2] == null) {
                 message = "Click Sit 1 or Sit 2 to begin game";
             }
             // two other players sitting, nothing for me to do
             else {
                 message = null;
             }
-        }
-        else if (amSitting() &&
+        } else if (amSitting() &&
                 state == DSGGameStateTableEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN) {
             message = "Waiting for your opponent to return...";
         }
@@ -1624,8 +1596,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
                 standEvent.getError() == DSGExitTableErrorEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN) {
 
             chatArea.newSystemMessage("you can't stand when a game is in progress");
-        }
-        else if (standEvent.getError() == DSGExitTableErrorEvent.WAIT_GAME_TWO_OF_SET) {
+        } else if (standEvent.getError() == DSGExitTableErrorEvent.WAIT_GAME_TWO_OF_SET) {
 
             chatArea.newSystemMessage("you can't stand in the middle of a rated set of 2 games");
         }
@@ -1681,8 +1652,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
                 playerGameTimers[2].adjust(m1, s1);
             }
 
-        }
-        else if (!swapEvent.isSilent()){
+        } else if (!swapEvent.isSilent()) {
             chatArea.newSystemMessage(sittingPlayers[2] + " has decided not " +
                     "to swap seats, it's now " + sittingPlayers[1] + "'s turn");
         }
@@ -1719,6 +1689,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
             inviteList.removePlayer(joinEvent.getPlayer());
         }
     }
+
     public void receivePlayerExit(DSGExitTableEvent exitEvent) {
         playerList.removePlayer(exitEvent.getPlayer());
 
@@ -1737,13 +1708,11 @@ public class GameBoardFrame extends Frame implements TableComponent,
             //should be handled by the TableController so don't repeat here
             //destroy();
             //dispose();
-        }
-        else if (showJoinExitMessagesPref == null ||
+        } else if (showJoinExitMessagesPref == null ||
                 showJoinExitMessagesPref.booleanValue()) {
             if (exitEvent.wasBooted()) {
                 chatArea.newSystemMessage(exitEvent.getPlayer() + " was booted from the table and cannot return for 5 minutes");
-            }
-            else {
+            } else {
                 chatArea.newSystemMessage(exitEvent.getPlayer() + " has left the table");
             }
         }
@@ -1755,6 +1724,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
             inviteList.addPlayer(joinEvent.getDSGPlayerData());
         }
     }
+
     public void receivePlayerExitMainRoom(DSGExitMainRoomEvent exitEvent) {
         inviteList.removePlayer(exitEvent.getPlayer());
     }
@@ -1765,8 +1735,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
 
             chatArea.newSystemMessage("you can't exit a game in progress, " +
                     "if you must go, first resign or request to cancel the game");
-        }
-        else if (exitErrorEvent.getError() == DSGExitTableErrorEvent.WAIT_GAME_TWO_OF_SET) {
+        } else if (exitErrorEvent.getError() == DSGExitTableErrorEvent.WAIT_GAME_TWO_OF_SET) {
 
             chatArea.newSystemMessage("you can't exit in the middle of a rated set of 2 games, " +
                     "if you must go, first resign or request to cancel the set");
@@ -1788,8 +1757,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
                         "invite or boot players";
             }
             chatArea.newSystemMessage(msg);
-        }
-        else {
+        } else {
             chatArea.newSystemMessage(player + " is the owner of this table");
         }
 
@@ -1810,6 +1778,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
         tableTypeChoice.setEnabled(true);
         updatePlayAIControls();
     }
+
     private void updateOwnerFields() {
 
         boolean enabled = (state == DSGGameStateTableEvent.NO_GAME_IN_PROGRESS) ? owner : false;
@@ -1831,6 +1800,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
     public void receiveText(DSGTextTableEvent textEvent) {
         chatArea.newChatMessage(textEvent.getText(), textEvent.getPlayer());
     }
+
     public void receiveSystemMessage(DSGSystemMessageTableEvent systemMessageEvent) {
         chatArea.newSystemMessage(systemMessageEvent.getMessage());
     }
@@ -1911,8 +1881,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
 
         if (timeUpEvent.isSet()) {
             createPlayerReturnTimeUpDialog(true);
-        }
-        else if (playerReturnTimeUpDialog != null) {
+        } else if (playerReturnTimeUpDialog != null) {
             playerReturnTimeUpDialog.timeHasExpired();
         }
     }
@@ -1937,8 +1906,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
     public void receiveStartSetTimerEvent(DSGStartSetTimerEvent timerEvent) {
         if (setTimer != null) {
             setTimer.stop();
-        }
-        else {
+        } else {
             setTimer = new SimpleGameTimer();
         }
         int minutes = (int) (timerEvent.getTimeLeft() / 1000 / 60);
@@ -1970,8 +1938,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
     public Dimension getNewTableSizePref() {
         if (!initialSize.equals(getSize())) {
             return getSize();
-        }
-        else {
+        } else {
             return null;
         }
     }

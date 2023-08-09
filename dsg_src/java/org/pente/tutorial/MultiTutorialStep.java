@@ -1,21 +1,22 @@
 package org.pente.tutorial;
 
-/** MultiTutorialStep.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * MultiTutorialStep.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 import java.util.*;
@@ -23,24 +24,24 @@ import java.util.*;
 public class MultiTutorialStep extends AbstractTutorialStep {
 
     private Vector steps;
-    
+
     public MultiTutorialStep() {
         steps = new Vector();
     }
 
-    
+
     public void addTutorialStep(TutorialStep step) {
         steps.addElement(step);
     }
-    
+
     public void go() {
-        
+
         for (int i = 0; i < steps.size(); i++) {
             TutorialStep s = (TutorialStep) steps.elementAt(i);
             s.go();
         }
     }
-    
+
     public void init(TutorialController controller, TutorialScreen screen) {
 
         for (int i = 0; i < steps.size(); i++) {
@@ -49,7 +50,7 @@ public class MultiTutorialStep extends AbstractTutorialStep {
         }
     }
 
-    
+
     /**
      * @see org.pente.tutorial.TutorialStep#getName()
      */
@@ -62,7 +63,7 @@ public class MultiTutorialStep extends AbstractTutorialStep {
         TutorialStep s = (TutorialStep) steps.elementAt(0);
         return s.getName();
     }
-    
+
     /**
      * @see org.pente.tutorial.TutorialActionListener#moveMade(int, int)
      */

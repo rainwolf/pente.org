@@ -1,10 +1,10 @@
-<% 
+<%
    {
-       if (dsgPlayerGameData.getTotalGames() > 0) {	%>
-	<img src="/gameServer/images/<%= dsgPlayerGameData.getRatingGif() %>" title="<%= GridStateFactory.getDisplayName(dsgPlayerGameData.getGame()) %>"> <%= (int) Math.round(dsgPlayerGameData.getRating()) %>
-<%     }
-       else { %> 
-         &nbsp; 
-    <% }
-   }
+      if (dsgPlayerGameData.getTotalGames() > 0) { %>
+<img src="/gameServer/images/<%= dsgPlayerGameData.getRatingGif() %>"
+     title="<%= GridStateFactory.getDisplayName(dsgPlayerGameData.getGame()) %>"> <%= (int) Math.round(dsgPlayerGameData.getRating()) %>
+<% } else { %>
+&nbsp;
+<% }
+}
 %>

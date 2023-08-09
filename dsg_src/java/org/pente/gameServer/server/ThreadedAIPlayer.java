@@ -1,19 +1,20 @@
-/** ThreadedAIPlayer.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * ThreadedAIPlayer.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.gameServer.server;
@@ -26,12 +27,12 @@ import org.pente.gameServer.event.*;
  *  This class is to be used by code that wraps an AIPlayer
  *  implementation to run in a separate thread and communicate
  *  through a callback interface.
- * 
+ *
  *  The point of having a threaded AI player is that AI's
  *  will certainly take a long time to think and generate a move.
  *  If the AI didn't run in a separate thread it would tie up
  *  the server room.
- *  
+ *
  *  If a player requests an undo, the AIPlayer is interrupted
  *  and should throw an InterruptedException from getMove().  This threaded
  *  AI player will guarantee that undoMove(), addMove() and getMove()
@@ -51,16 +52,16 @@ class ThreadedAIPlayer implements AIPlayer, Runnable {
     private int moveNum;
 
     private static final long MOVE_SLEEP_TIME = 5000;
-    
+
     public ThreadedAIPlayer(
-        AIPlayer aiPlayer,
-        ThreadedAIPlayerCallback callback) {
+            AIPlayer aiPlayer,
+            ThreadedAIPlayerCallback callback) {
 
         this.aiPlayer = aiPlayer;
         this.callback = callback;
-        
+
         events = new ArrayList();
-        
+
         alive = true;
         thread = new Thread(this, "AIPlayerThread");
         thread.start();
@@ -82,6 +83,7 @@ class ThreadedAIPlayer implements AIPlayer, Runnable {
         this.seat = seat;
         aiPlayer.setSeat(seat);
     }
+
     public void setOption(String optionName, String optionValue) {
         aiPlayer.setOption(optionName, optionValue);
     }
@@ -95,34 +97,35 @@ class ThreadedAIPlayer implements AIPlayer, Runnable {
         events.add(new DSGMoveTableEvent("", 0, move));
         notifyAll();
     }
-    
+
     public synchronized void undoMove() {
 
         events.add(new DSGUndoRequestTableEvent("", 0));
         aiPlayer.stopThinking();
         notifyAll();
     }
-    
+
     public int getMove() {
         throw new UnsupportedOperationException(
-            "getMove() is not supported, instead your AIPlayerCallback " +
-            "will have its receiveMove(int) method called");
+                "getMove() is not supported, instead your AIPlayerCallback " +
+                        "will have its receiveMove(int) method called");
     }
+
     public void stopThinking() {
         aiPlayer.stopThinking();
     }
-    
+
     public synchronized void destroy() {
 
         alive = false;
         thread.interrupt();
         aiPlayer.stopThinking();
     }
-    
+
     public void run() {
-        
+
         while (alive) {
-            
+
             // block here until events come in that need to be processed
             DSGEvent event = null;
             synchronized (this) {
@@ -136,22 +139,22 @@ class ThreadedAIPlayer implements AIPlayer, Runnable {
                         }
                     }
                 }
-                
+
                 event = (DSGEvent) events.remove(0);
             }
-            
+
             if (event instanceof DSGMoveTableEvent) {
                 DSGMoveTableEvent moveEvent = (DSGMoveTableEvent) event;
-                
+
                 moveNum++;
                 aiPlayer.addMove(moveEvent.getMove());
-                
+
                 if (isMyTurn()) {
                     try {
 
                         if (moveNum > 1) {
-                	        //sleep to allow opponent to request undo
-                        	Thread.sleep(MOVE_SLEEP_TIME);
+                            //sleep to allow opponent to request undo
+                            Thread.sleep(MOVE_SLEEP_TIME);
                         }
 
                         int move = aiPlayer.getMove();
@@ -160,8 +163,7 @@ class ThreadedAIPlayer implements AIPlayer, Runnable {
                     } catch (InterruptedException e) {
                     }
                 }
-            }
-            else if (event instanceof DSGUndoRequestTableEvent) {
+            } else if (event instanceof DSGUndoRequestTableEvent) {
                 // don't undo the move if its not my turn!
                 // timing issues could make it happen that a move
                 // gets sent out just as an undo request comes in
@@ -169,8 +171,7 @@ class ThreadedAIPlayer implements AIPlayer, Runnable {
                     moveNum--;
                     aiPlayer.undoMove();
                     callback.receiveUndoReply(true);
-                }
-                else {
+                } else {
                     callback.receiveUndoReply(false);
                 }
             }

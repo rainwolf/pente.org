@@ -1,19 +1,20 @@
-/** PenteBoardOrderedPieceCollectionAdapter.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * PenteBoardOrderedPieceCollectionAdapter.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.gameServer.client.awt;
@@ -26,9 +27,9 @@ public class PenteBoardOrderedPieceCollectionAdapter extends GridBoardOrderedPie
     PenteBoardComponent penteBoardComponent;
 
     public PenteBoardOrderedPieceCollectionAdapter(
-        PenteBoardComponent basePieceCollection,
-        boolean allowMovesWhileViewingHistory) {
-        
+            PenteBoardComponent basePieceCollection,
+            boolean allowMovesWhileViewingHistory) {
+
         super(basePieceCollection, allowMovesWhileViewingHistory);
 
         this.penteBoardComponent = basePieceCollection;
@@ -41,6 +42,7 @@ public class PenteBoardOrderedPieceCollectionAdapter extends GridBoardOrderedPie
             penteBoardComponent.incrementCaptures(3 - gridPiece.getPlayer());
         }
     }
+
     public synchronized void undoLastTurn() {
 
         // look for pieces that were removed in the last turn
@@ -60,6 +62,7 @@ public class PenteBoardOrderedPieceCollectionAdapter extends GridBoardOrderedPie
 
         super.visitNextTurn();
     }
+
     public synchronized void visitPreviousTurn() {
         if (currentTurn > 0) {
             changeCaptures(currentTurn, false);
@@ -82,6 +85,7 @@ public class PenteBoardOrderedPieceCollectionAdapter extends GridBoardOrderedPie
 
         super.visitLastTurn();
     }
+
     public synchronized void visitTurn(int turn) {
 
         if (turn < 0 || turn > maxTurn || turn == currentTurn) {
@@ -93,7 +97,7 @@ public class PenteBoardOrderedPieceCollectionAdapter extends GridBoardOrderedPie
             for (int i = 0; i < pieceActions.size(); i++) {
                 GridPieceAction action = (GridPieceAction) pieceActions.elementAt(i);
                 if (action.getTurn() <= turn &&
-                    action.getTurn() > currentTurn) {
+                        action.getTurn() > currentTurn) {
                     if (action.getAction() == GridPieceAction.REMOVE) {
                         penteBoardComponent.incrementCaptures(3 - action.getGridPiece().getPlayer());
                     }
@@ -105,7 +109,7 @@ public class PenteBoardOrderedPieceCollectionAdapter extends GridBoardOrderedPie
             for (int i = pieceActions.size() - 1; i >= 0; i--) {
                 GridPieceAction action = (GridPieceAction) pieceActions.elementAt(i);
                 if (action.getTurn() > turn &&
-                    action.getTurn() <= currentTurn) {
+                        action.getTurn() <= currentTurn) {
                     if (action.getAction() == GridPieceAction.REMOVE) {
                         penteBoardComponent.decrementCaptures(3 - action.getGridPiece().getPlayer());
                     }
@@ -123,8 +127,7 @@ public class PenteBoardOrderedPieceCollectionAdapter extends GridBoardOrderedPie
                 if (action.getAction() == GridPieceAction.REMOVE) {
                     if (increment) {
                         penteBoardComponent.incrementCaptures(3 - action.getGridPiece().getPlayer());
-                    }
-                    else {
+                    } else {
                         penteBoardComponent.decrementCaptures(3 - action.getGridPiece().getPlayer());
                     }
                 }

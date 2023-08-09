@@ -16,7 +16,7 @@ public class AITester {
         Category.getInstance(BestFirstScanner.class.getName()).setLevel(Level.INFO);
         Category.getInstance(PenteAnalyzer.class.getName()).setLevel(Level.ERROR);
         Category.getInstance(PositionAnalysis.class.getName()).setLevel(Level.INFO);
-        
+
 //        DBHandler dbHandler = new MySQLDBHandler(args[0], args[1], args[2], args[3]);
 //        NodeSearcher nodeSearcher = new Cache2NodeSearcher(
 //            new MySQLNodeSearcher(dbHandler));
@@ -24,7 +24,7 @@ public class AITester {
         final AIBoardController controller = new AIBoardController();
 
         final AWTNodeEditor editor = new AWTNodeEditor(
-            controller, "Tree", false);
+                controller, "Tree", false);
 
         final Frame frame = new Frame();
         frame.setSize(850, 700);

@@ -7,33 +7,34 @@ import java.sql.Statement;
 
 public class HSQLDBHandler implements DBHandler {
 
-	private String path;
-	
-	public HSQLDBHandler(String path) throws Exception {
-		this.path = path;
-		Class.forName("org.hsqldb.jdbcDriver");
-	}
-	
-	public void destroy() {
-		Connection con = null;
-		try {
-			con = getConnection();
-			Statement st = con.createStatement();
+    private String path;
 
-			st.execute("SHUTDOWN");
-			con.close();
-			
-		} catch (SQLException se) {}
+    public HSQLDBHandler(String path) throws Exception {
+        this.path = path;
+        Class.forName("org.hsqldb.jdbcDriver");
+    }
 
-	}
+    public void destroy() {
+        Connection con = null;
+        try {
+            con = getConnection();
+            Statement st = con.createStatement();
 
-	public void freeConnection(Connection con) throws SQLException {
-		con.close();
-	}
+            st.execute("SHUTDOWN");
+            con.close();
 
-	public Connection getConnection() throws SQLException {
-		return DriverManager.getConnection(
-			"jdbc:hsqldb:file:" + path,"sa",""); 
-	}
+        } catch (SQLException se) {
+        }
+
+    }
+
+    public void freeConnection(Connection con) throws SQLException {
+        con.close();
+    }
+
+    public Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(
+                "jdbc:hsqldb:file:" + path, "sa", "");
+    }
 
 }

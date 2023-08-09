@@ -11,34 +11,34 @@ import java.awt.RenderingHints;
 import javax.swing.*;
 
 public class NumberMovesIcon implements Icon {
-	
-	public static Color white[] = { new Color(220, 220, 220), new Color(240, 240, 240) };
-	
+
+    public static Color white[] = {new Color(220, 220, 220), new Color(240, 240, 240)};
+
     private int diameter;
-    
 
-	public NumberMovesIcon(int r) {
-		diameter = r;
-	}
 
-	public int getIconHeight() {
-		return diameter;
-	}
+    public NumberMovesIcon(int r) {
+        diameter = r;
+    }
 
-	public int getIconWidth() {
-		return diameter;
-	}
+    public int getIconHeight() {
+        return diameter;
+    }
 
-	public void paintIcon(Component comp, Graphics g, int x, int y) {
+    public int getIconWidth() {
+        return diameter;
+    }
 
-        Graphics2D g2 = (Graphics2D)g;
+    public void paintIcon(Component comp, Graphics g, int x, int y) {
+
+        Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-              RenderingHints.VALUE_ANTIALIAS_ON);
+                RenderingHints.VALUE_ANTIALIAS_ON);
 
         //int r = width - 1;
         //int offset = width < 30 ? 1 : 2;
-        
-        Color c[] = white; 
+
+        Color c[] = white;
 
 
         //int darkWidth = r - 1;
@@ -49,7 +49,7 @@ public class NumberMovesIcon implements Icon {
         // don't show selected color behind icon if selected
         //g2.setColor(UIManager.getColor("Tree.textBackground"));
         //g2.fillRect(x, y, diameter, diameter);
-        
+
         fillOval(g2, x, y, diameter - 1, c[0]);  // dark
         fillOval(g2, x + 1, y + 1, diameter - 3, c[1]); // light
         //fillOval(g2, x + reflectionOffset, y + reflectionOffset, reflectionWidth, Color.white); // reflection
@@ -70,10 +70,10 @@ public class NumberMovesIcon implements Icon {
         g2.setFont(f);
         FontMetrics fm = g.getFontMetrics();
 
-        g2.drawString("1", 
-        	x + (diameter / 2) - fm.stringWidth("1") / 2, 
-        	y + diameter - 5);
-	}
+        g2.drawString("1",
+                x + (diameter / 2) - fm.stringWidth("1") / 2,
+                y + diameter - 5);
+    }
 
     private void fillOval(Graphics g, int x, int y, int r, Color c) {
         g.setColor(c);

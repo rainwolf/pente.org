@@ -13,13 +13,13 @@ import org.pente.gameServer.core.*;
 
 public class StatsServlet extends HttpServlet {
 
-    private static Category 		cat = Category.getInstance(StatsServlet.class.getName());
+    private static Category cat = Category.getInstance(StatsServlet.class.getName());
 
-	private static final String		PLAYER_STATS_ERROR_PAGE = "/gameServer/statsError.jsp";
-	private static final String		PLAYER_STATS_DISPLAY_PAGE = "/gameServer/stats.jsp";
+    private static final String PLAYER_STATS_ERROR_PAGE = "/gameServer/statsError.jsp";
+    private static final String PLAYER_STATS_DISPLAY_PAGE = "/gameServer/stats.jsp";
 
-	private static DBHandler 		dbHandler;
-	private static DSGPlayerStorer	dsgPlayerStorer;
+    private static DBHandler dbHandler;
+    private static DSGPlayerStorer dsgPlayerStorer;
 
     public void init(ServletConfig config) throws ServletException {
 
@@ -37,54 +37,52 @@ public class StatsServlet extends HttpServlet {
 
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response)
-        throws ServletException, IOException {
-            doPost(request, response);
+            throws ServletException, IOException {
+        doPost(request, response);
     }
 
     public void doPost(HttpServletRequest request,
                        HttpServletResponse response)
-        throws ServletException, IOException {
+            throws ServletException, IOException {
 
-		String command = request.getParameter("command");
-		if (command == null) {
-		}
-		else if (command.equals("playerStats")) {
-			String nextPage = PLAYER_STATS_DISPLAY_PAGE;
-			try {
-				
-				StatsData statsData = new StatsData();
-				statsData.initialize(request);
-				if (!statsData.isValidSearch()) {
-					nextPage = PLAYER_STATS_ERROR_PAGE;
-				}
-				else {
-					Vector searchResults = dsgPlayerStorer.search(
-                        statsData.getGame(),
-                        statsData.getSortField(), 
-                        statsData.getStartNum(), 
-                        statsData.getLength(), 
-                        statsData.getIncludeProvisional(), 
-                        statsData.getIncludeInactive(),
-                        statsData.getPlayerType());
+        String command = request.getParameter("command");
+        if (command == null) {
+        } else if (command.equals("playerStats")) {
+            String nextPage = PLAYER_STATS_DISPLAY_PAGE;
+            try {
 
-					statsData.setResults(searchResults);
-					int numResults = dsgPlayerStorer.getNumPlayers(
-                        statsData.getGame(), 
-                        statsData.getIncludeProvisional(), 
-                        statsData.getIncludeInactive(),
-                        statsData.getPlayerType());
-					
-                    statsData.setNumResults(numResults);			
-					request.setAttribute("statsData", statsData);
-				}
+                StatsData statsData = new StatsData();
+                statsData.initialize(request);
+                if (!statsData.isValidSearch()) {
+                    nextPage = PLAYER_STATS_ERROR_PAGE;
+                } else {
+                    Vector searchResults = dsgPlayerStorer.search(
+                            statsData.getGame(),
+                            statsData.getSortField(),
+                            statsData.getStartNum(),
+                            statsData.getLength(),
+                            statsData.getIncludeProvisional(),
+                            statsData.getIncludeInactive(),
+                            statsData.getPlayerType());
 
-			} catch (Throwable t) {
-				cat.error("Error showing player stats", t);
-				nextPage = PLAYER_STATS_ERROR_PAGE;
-			}
-			
-			getServletContext().getRequestDispatcher(nextPage).forward(request, response);
-		}
+                    statsData.setResults(searchResults);
+                    int numResults = dsgPlayerStorer.getNumPlayers(
+                            statsData.getGame(),
+                            statsData.getIncludeProvisional(),
+                            statsData.getIncludeInactive(),
+                            statsData.getPlayerType());
+
+                    statsData.setNumResults(numResults);
+                    request.setAttribute("statsData", statsData);
+                }
+
+            } catch (Throwable t) {
+                cat.error("Error showing player stats", t);
+                nextPage = PLAYER_STATS_ERROR_PAGE;
+            }
+
+            getServletContext().getRequestDispatcher(nextPage).forward(request, response);
+        }
     }
 }
 

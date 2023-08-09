@@ -1,19 +1,20 @@
-/** GameOptionsFrame.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * GameOptionsFrame.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.gameServer.client.awt;
@@ -26,18 +27,18 @@ import org.pente.gameServer.client.*;
 
 public class GameOptionsDialog extends Dialog {
 
-    private static final String APPLY =         "Apply";
-    private static final String CLOSE =         "Ok";
-    private static final String SOUND =         "Audio alert";
-    private static final String LAST_MOVE =     "Last Move";
-    private static final String PIECES_3D =     "Use 3D Pieces";
+    private static final String APPLY = "Apply";
+    private static final String CLOSE = "Ok";
+    private static final String SOUND = "Audio alert";
+    private static final String LAST_MOVE = "Last Move";
+    private static final String PIECES_3D = "Use 3D Pieces";
 
-    private Vector              listeners = new Vector();
+    private Vector listeners = new Vector();
 
     public GameOptionsDialog(Frame frame,
-    						GameStyles gameStyle,
-                            final GameOptions gameOptions,
-                            int maxPlayers) {
+                             GameStyles gameStyle,
+                             final GameOptions gameOptions,
+                             int maxPlayers) {
 
         super(frame, "Game Options", false);
 
@@ -93,7 +94,7 @@ public class GameOptionsDialog extends Dialog {
 
         class UpdateGameOptions implements ActionListener {
             public void actionPerformed(ActionEvent e) {
-    
+
                 gameOptions.setPlayerColor(player1Colors.getSelectedIndex(), 1);
                 gameOptions.setPlayerColor(player2Colors.getSelectedIndex(), 2);
                 gameOptions.setDraw3DPieces(draw3DCheck.getState());
@@ -147,6 +148,7 @@ public class GameOptionsDialog extends Dialog {
     public void addGameOptionsChangeListener(GameOptionsChangeListener listener) {
         listeners.addElement(listener);
     }
+
     public void removeGameOptionsChangeListener(GameOptionsChangeListener listener) {
         listeners.removeElement(listener);
     }
@@ -154,17 +156,17 @@ public class GameOptionsDialog extends Dialog {
     public Insets getInsets() {
         return new Insets(30, 30, 30, 30);
     }
-    
-	private void centerDialog(Frame frame) {
 
-		Point location = new Point();
-		location.x = frame.getLocation().x +
-				     (frame.getSize().width + frame.getInsets().right - frame.getInsets().left) / 2 -
-				     getSize().width / 2;
-		location.y = frame.getLocation().y +
-				     (frame.getSize().height + frame.getInsets().top - frame.getInsets().bottom) / 2 -
-				     (getSize().height + getInsets().top - getInsets().bottom) / 2;
-		setLocation(location);
-	}
+    private void centerDialog(Frame frame) {
+
+        Point location = new Point();
+        location.x = frame.getLocation().x +
+                (frame.getSize().width + frame.getInsets().right - frame.getInsets().left) / 2 -
+                getSize().width / 2;
+        location.y = frame.getLocation().y +
+                (frame.getSize().height + frame.getInsets().top - frame.getInsets().bottom) / 2 -
+                (getSize().height + getInsets().top - getInsets().bottom) / 2;
+        setLocation(location);
+    }
 }
 

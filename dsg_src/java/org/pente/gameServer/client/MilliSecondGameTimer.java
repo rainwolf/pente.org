@@ -4,12 +4,12 @@ import java.util.*;
 
 public class MilliSecondGameTimer implements GameTimer {
 
-	private int startMinutes;
-	private int startSeconds;
+    private int startMinutes;
+    private int startSeconds;
 
-	private long timeLeft;
-	private long startTime;
-	private long tempTimeElapsed;
+    private long timeLeft;
+    private long startTime;
+    private long tempTimeElapsed;
 
     private Vector listeners;
 
@@ -17,40 +17,43 @@ public class MilliSecondGameTimer implements GameTimer {
     private Thread thread;
     private boolean running;
     private boolean alive;
-    
+
     private String state;
 
-	public MilliSecondGameTimer(String threadName) {
+    public MilliSecondGameTimer(String threadName) {
         alive = true;
         listeners = new Vector();
         timeLock = new Object();
 
         thread = new Thread(new LocalRunnable(), "MilliSecondGameTimer " + threadName);
         thread.start();
-	}
+    }
 
-	public boolean isRunning() {
-		return running;
-	}
-	
+    public boolean isRunning() {
+        return running;
+    }
+
     public void addGameTimerListener(GameTimerListener listener) {
-    	listeners.addElement(listener);
+        listeners.addElement(listener);
     }
+
     public void removeGameTimerListener(GameTimerListener listener) {
-    	listeners.removeElement(listener);
+        listeners.removeElement(listener);
     }
+
     private void timeChanged(long localTimeLeft) {
 
         for (int i = 0; i < listeners.size(); i++) {
             GameTimerListener listener = (GameTimerListener) listeners.elementAt(i);
-            listener.timeChanged(convertMillisToMinutes(localTimeLeft), 
-            				     convertMillisToSeconds(localTimeLeft));
+            listener.timeChanged(convertMillisToMinutes(localTimeLeft),
+                    convertMillisToSeconds(localTimeLeft));
         }
     }
 
     public void setStartMinutes(int minutes) {
         this.startMinutes = minutes;
     }
+
     public int getStartMinutes() {
         return startMinutes;
     }
@@ -58,72 +61,86 @@ public class MilliSecondGameTimer implements GameTimer {
     public void setStartSeconds(int seconds) {
         this.startSeconds = seconds;
     }
+
     public int getStartSeconds() {
         return startSeconds;
     }
 
-	private long getStartMillis() {
-		return convertMinutesToMillis(startMinutes) +
-			   convertSecondsToMillis(startSeconds);
-	}
+    private long getStartMillis() {
+        return convertMinutesToMillis(startMinutes) +
+                convertSecondsToMillis(startSeconds);
+    }
 
     public int getMinutes() {
-    	synchronized (timeLock) {
-	        return convertMillisToMinutes(timeLeft);
-    	}
+        synchronized (timeLock) {
+            return convertMillisToMinutes(timeLeft);
+        }
     }
 
     public int getSeconds() {
         synchronized (timeLock) {
-        	return convertMillisToSeconds(timeLeft);
+            return convertMillisToSeconds(timeLeft);
         }
     }
 
-	private static int convertMillisToMinutes(long millis) {
+    private static int convertMillisToMinutes(long millis) {
         int seconds = (int) Math.ceil((double) millis / 1000);
-		return seconds / 60;
-	}
-	private static int convertMillisToSeconds(long millis) {
-		return (int) Math.ceil((double) millis % 60000 / 1000) % 60;
-	}
-	private static long convertMinutesToMillis(int minutes) {
-		return minutes * 60000;
-	}
-	private static long convertSecondsToMillis(int seconds) {
-		return seconds * 1000;
-	}
-
-	/** Only call this method when the timer is stopped */
-	public void incrementMillis(int incrementMillis) {
-		long localTimeLeft;
-		synchronized (timeLock) {
-
-			tempTimeElapsed -= incrementMillis;
-        	startTime -= incrementMillis;
-			timeLeft += incrementMillis;
-
-			localTimeLeft = timeLeft;
-		}
-		timeChanged(localTimeLeft);
-	}
-	/** Only call this method when the timer is stopped */
-    public void increment(int incrementSeconds) {
-    	incrementMillis((int) convertSecondsToMillis(incrementSeconds));
+        return seconds / 60;
     }
 
-	/** Only call this method when the timer is stopped */
-    public void adjust(int newMinutes, int newSeconds) {
-    	adjust(newMinutes, newSeconds, 0);
+    private static int convertMillisToSeconds(long millis) {
+        return (int) Math.ceil((double) millis % 60000 / 1000) % 60;
     }
-	/** Only call this method when the timer is stopped */
-    public void adjust(int newMinutes, int newSeconds, int newMillis) {
-		long localTimeLeft;
+
+    private static long convertMinutesToMillis(int minutes) {
+        return minutes * 60000;
+    }
+
+    private static long convertSecondsToMillis(int seconds) {
+        return seconds * 1000;
+    }
+
+    /**
+     * Only call this method when the timer is stopped
+     */
+    public void incrementMillis(int incrementMillis) {
+        long localTimeLeft;
         synchronized (timeLock) {
-        	long newTime = convertMinutesToMillis(newMinutes) +
-            			   convertSecondsToMillis(newSeconds) +
-            			   newMillis;
-        	tempTimeElapsed = getStartMillis() - newTime;
-        	startTime = System.currentTimeMillis() - tempTimeElapsed;
+
+            tempTimeElapsed -= incrementMillis;
+            startTime -= incrementMillis;
+            timeLeft += incrementMillis;
+
+            localTimeLeft = timeLeft;
+        }
+        timeChanged(localTimeLeft);
+    }
+
+    /**
+     * Only call this method when the timer is stopped
+     */
+    public void increment(int incrementSeconds) {
+        incrementMillis((int) convertSecondsToMillis(incrementSeconds));
+    }
+
+    /**
+     * Only call this method when the timer is stopped
+     */
+    public void adjust(int newMinutes, int newSeconds) {
+        adjust(newMinutes, newSeconds, 0);
+    }
+
+    /**
+     * Only call this method when the timer is stopped
+     */
+    public void adjust(int newMinutes, int newSeconds, int newMillis) {
+        long localTimeLeft;
+        synchronized (timeLock) {
+            long newTime = convertMinutesToMillis(newMinutes) +
+                    convertSecondsToMillis(newSeconds) +
+                    newMillis;
+            tempTimeElapsed = getStartMillis() - newTime;
+            startTime = System.currentTimeMillis() - tempTimeElapsed;
             timeLeft = newTime;
 
             localTimeLeft = timeLeft;
@@ -132,13 +149,15 @@ public class MilliSecondGameTimer implements GameTimer {
     }
 
 
-	/** Only call this method when the timer is stopped */
+    /**
+     * Only call this method when the timer is stopped
+     */
     public void reset() {
-    	long localTimeLeft;
+        long localTimeLeft;
         synchronized (timeLock) {
-        	tempTimeElapsed = 0;
-        	timeLeft = convertMinutesToMillis(startMinutes) +
-        			   convertSecondsToMillis(startSeconds);
+            tempTimeElapsed = 0;
+            timeLeft = convertMinutesToMillis(startMinutes) +
+                    convertSecondsToMillis(startSeconds);
             localTimeLeft = timeLeft;
         }
         timeChanged(localTimeLeft);
@@ -148,7 +167,7 @@ public class MilliSecondGameTimer implements GameTimer {
 
         synchronized (timeLock) {
 
-			startTime = System.currentTimeMillis();
+            startTime = System.currentTimeMillis();
 
             if (thread == null) {
                 thread = new Thread(new LocalRunnable(), "MilliSecondGameTimer");
@@ -163,16 +182,16 @@ public class MilliSecondGameTimer implements GameTimer {
     public void stop() {
 
         synchronized (timeLock) {
-        	if (running) {
-        		
-        		tempTimeElapsed += System.currentTimeMillis() - startTime;
-        		timeLeft = getStartMillis() - tempTimeElapsed;
+            if (running) {
 
-	            running = false;
- 	   	 	    if (thread != null) {
-  	     	     	thread.interrupt();
-   	     	    }
-        	}
+                tempTimeElapsed += System.currentTimeMillis() - startTime;
+                timeLeft = getStartMillis() - tempTimeElapsed;
+
+                running = false;
+                if (thread != null) {
+                    thread.interrupt();
+                }
+            }
         }
     }
 
@@ -190,60 +209,58 @@ public class MilliSecondGameTimer implements GameTimer {
             }
         }
     }
-    
+
     private class LocalRunnable implements Runnable {
-    	public void run() {
+        public void run() {
 
-			long normalSleepTime = 1000;
-			long nextSleepTime = normalSleepTime;
+            long normalSleepTime = 1000;
+            long nextSleepTime = normalSleepTime;
 
-	        while (true) {
+            while (true) {
 
-	            synchronized (timeLock) {
-                    
-                    if (!alive) {
-                        return;
-                    }
-
-	                while (!running && alive) {
-	                    try {
-	                    	state = "not running, waiting";
-	                        timeLock.wait();
-	                    } catch (InterruptedException ex) {
-	                    }
-	                }
+                synchronized (timeLock) {
 
                     if (!alive) {
                         return;
                     }
 
-	            	if (timeLeft < 0) {
-	            		nextSleepTime = 0;
-	            	}
-	            	else {
-						long actualTimeElapsed = System.currentTimeMillis() - startTime + tempTimeElapsed;
-						long timeElapsed = getStartMillis() - timeLeft;
-						long diff = actualTimeElapsed - timeElapsed;
-						if (normalSleepTime > Math.abs(diff)) {
-							nextSleepTime = normalSleepTime - diff;
-						}
-						else {
-							nextSleepTime = diff - normalSleepTime;
-						}
+                    while (!running && alive) {
+                        try {
+                            state = "not running, waiting";
+                            timeLock.wait();
+                        } catch (InterruptedException ex) {
+                        }
+                    }
+
+                    if (!alive) {
+                        return;
+                    }
+
+                    if (timeLeft < 0) {
+                        nextSleepTime = 0;
+                    } else {
+                        long actualTimeElapsed = System.currentTimeMillis() - startTime + tempTimeElapsed;
+                        long timeElapsed = getStartMillis() - timeLeft;
+                        long diff = actualTimeElapsed - timeElapsed;
+                        if (normalSleepTime > Math.abs(diff)) {
+                            nextSleepTime = normalSleepTime - diff;
+                        } else {
+                            nextSleepTime = diff - normalSleepTime;
+                        }
 
                         if (nextSleepTime < 0) {
-							nextSleepTime = 0;
-						}
-	            	}
-	            }
+                            nextSleepTime = 0;
+                        }
+                    }
+                }
 
-	            try {
-	            	state = "running, sleeping " + nextSleepTime;
-	                Thread.sleep(nextSleepTime);
-	            } catch (InterruptedException ex) {
-	            }
-	
-	            synchronized (timeLock) {
+                try {
+                    state = "running, sleeping " + nextSleepTime;
+                    Thread.sleep(nextSleepTime);
+                } catch (InterruptedException ex) {
+                }
+
+                synchronized (timeLock) {
 
                     if (!alive) {
                         return;
@@ -251,8 +268,8 @@ public class MilliSecondGameTimer implements GameTimer {
                         continue;
                     }
 
-					timeLeft -= normalSleepTime;
-	            }
+                    timeLeft -= normalSleepTime;
+                }
 
                 // stop the timer when time is less than 0
                 if (timeLeft <= 0) {
@@ -263,15 +280,15 @@ public class MilliSecondGameTimer implements GameTimer {
                 }
 
                 timeChanged(timeLeft);
-	        }
-    	}
+            }
+        }
     }
-    
+
     public String getState() {
-    	synchronized (timeLock) {
-	    	String s = state + ", running=" + running + ", alive=" + alive +
-	    		", timeLeft=" + timeLeft + ", tempTimeElapsed=" + tempTimeElapsed; 
-	    	return s;
-    	}
+        synchronized (timeLock) {
+            String s = state + ", running=" + running + ", alive=" + alive +
+                    ", timeLeft=" + timeLeft + ", tempTimeElapsed=" + tempTimeElapsed;
+            return s;
+        }
     }
 }

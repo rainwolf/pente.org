@@ -49,12 +49,12 @@ public class CacheKOTHStorer implements KOTHStorer {
 
         removeStalePlayersTimer = new Timer();
         removeStalePlayersTimer.scheduleAtFixedRate(
-                new RemoveStalePlayersRunnable(), 5L*60*1000, 24L * 3600 * 1000);
+                new RemoveStalePlayersRunnable(), 5L * 60 * 1000, 24L * 3600 * 1000);
     }
+
     public void setTbStorer(CacheTBStorer tbStorer) {
         this.tbStorer = tbStorer;
     }
-
 
 
     public int getEventId(int game) {
@@ -84,7 +84,7 @@ public class CacheKOTHStorer implements KOTHStorer {
                 hills.put(hill_id, hill);
             }
             return hill;
-        } 
+        }
         return null;
     }
 
@@ -97,7 +97,7 @@ public class CacheKOTHStorer implements KOTHStorer {
         if (hill != null) {
             return hill.myStep(pid);
         }
-        return  -1;
+        return -1;
     }
 
     private void storeHill(int hillId) {
@@ -265,9 +265,9 @@ public class CacheKOTHStorer implements KOTHStorer {
 
         public void run() {
             Date lastMonth = new Date();
-            lastMonth.setTime(lastMonth.getTime() - (31L*3600*24*1000));
+            lastMonth.setTime(lastMonth.getTime() - (31L * 3600 * 24 * 1000));
             Date hundredDays = new Date();
-            hundredDays.setTime(hundredDays.getTime() - (100L*3600*24*1000));
+            hundredDays.setTime(hundredDays.getTime() - (100L * 3600 * 24 * 1000));
 //            boolean altered = false;
             synchronized (cacheKotHLock) {
                 for (int tbGame : tbGames) {
@@ -288,7 +288,7 @@ public class CacheKOTHStorer implements KOTHStorer {
                             Date lastDate = player.getLastGame();
                             if (lastDate != null && (
                                     (!subscriber && lastDate.before(lastMonth)) ||
-                                    (subscriber && lastDate.before(hundredDays)))) {
+                                            (subscriber && lastDate.before(hundredDays)))) {
                                 removePlayer(tbGame, player.getPid());
 //                                baseStorer.removePlayerFromHill(hill.getHillID(), player.getPid());
 //                                hill.removePlayer(player.getPid());
@@ -322,7 +322,7 @@ public class CacheKOTHStorer implements KOTHStorer {
                             //                        Date lastDate = baseStorer.getLastGameDate(hill.getHillID(), pid);
                             if (lastDate != null && (
                                     (!subscriber && lastDate.before(lastMonth)) ||
-                                    (subscriber && lastDate.before(hundredDays)))) {
+                                            (subscriber && lastDate.before(hundredDays)))) {
                                 removePlayer(liveGame, player.getPid());
 //                                baseStorer.removePlayerFromHill(hill.getHillID(), player.getPid());
 //                                hill.removePlayer(player.getPid());
@@ -374,12 +374,12 @@ public class CacheKOTHStorer implements KOTHStorer {
             if (playerData == null) {
                 return false;
             }
-            boolean subscriber = playerData.hasPlayerDonated(); 
+            boolean subscriber = playerData.hasPlayerDonated();
             if (subscriber) {
                 limit = 4;
             }
             int ongoingGames = 0;
-            
+
             List<TBSet> setsPlaying = tbStorer.loadSets(pid);
             for (TBSet set : setsPlaying) {
                 if (subscriber && set.getGame1().getEventId() == hill_id && (set.getState() == TBSet.STATE_ACTIVE || set.getState() == TBSet.STATE_NOT_STARTED)) {

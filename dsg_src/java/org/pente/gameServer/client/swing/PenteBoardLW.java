@@ -30,84 +30,83 @@ import org.pente.gameServer.client.*;
 import org.pente.gameServer.core.*;
 
 public class PenteBoardLW extends JComponent implements PenteBoardComponent,
-    GridCoordinatesChangeListener, GameOptionsChangeListener
-{
+        GridCoordinatesChangeListener, GameOptionsChangeListener {
 
-    int     captureAreaWidth;
-    int     captures[];
-    
+    int captureAreaWidth;
+    int captures[];
+
     // the number of grids on the x axis
-    protected int             gridWidth;
+    protected int gridWidth;
 
     // number of grids on the y axis
-    protected int             gridHeight;
+    protected int gridHeight;
 
     // if true, the pieces show up ontop of the grid lines
     // if false, the pieces show up in between the grid lines
-    protected boolean         piecesOnGrid;
+    protected boolean piecesOnGrid;
 
     // the width of the beveled edge around the whole board
-    protected int             beveledEdge;
+    protected int beveledEdge;
 
     // space after beveled edge that won't be
     // used to draw the grid lines of the board
-    protected Insets          insets;
+    protected Insets insets;
 
     // space used for the coordinates
-    Dimension       coordinatesDimensions;
+    Dimension coordinatesDimensions;
 
     // the left over space between the edge of the
     // insets and the beginning of the grid lines of the board
-    Dimension       edgeLeftOvers;
+    Dimension edgeLeftOvers;
 
     // the width of a piece on the board
-    protected int             gridPieceSize;
+    protected int gridPieceSize;
 
 
-    private String          gameName;
-    protected Vector        gridPieces;
-    protected GridPiece     highlightPiece;
-    protected GridPiece     thinkingPiece;
-    private GridPiece       oldThinkingPiece;
-    private boolean         showThinkingPiece;
-    private boolean         newMovesAvailable;
-    private boolean         showNewMovesAvailable;
-    private GameTimer       showNewMovesAvailableTimer;
-    private boolean         drawInnerCircles;
-    private boolean         drawCoordinates = true;
+    private String gameName;
+    protected Vector gridPieces;
+    protected GridPiece highlightPiece;
+    protected GridPiece thinkingPiece;
+    private GridPiece oldThinkingPiece;
+    private boolean showThinkingPiece;
+    private boolean newMovesAvailable;
+    private boolean showNewMovesAvailable;
+    private GameTimer showNewMovesAvailableTimer;
+    private boolean drawInnerCircles;
+    private boolean drawCoordinates = true;
 
-    protected GameOptions   gameOptions;
-    GridCoordinates         gridCoordinates;
+    protected GameOptions gameOptions;
+    GridCoordinates gridCoordinates;
 
-    protected boolean       boardDirty = true;
-    boolean                 emptyBoardDirty = true;
-    protected Object        drawLock = new Object();
+    protected boolean boardDirty = true;
+    boolean emptyBoardDirty = true;
+    protected Object drawLock = new Object();
 
-    private Dimension       currentSize;
+    private Dimension currentSize;
 
-    Image                   emptyBoardImage;
-    Graphics                emptyBoardGraphics;
-    Image                   boardImage;
-    Graphics                boardGraphics;
+    Image emptyBoardImage;
+    Graphics emptyBoardGraphics;
+    Image boardImage;
+    Graphics boardGraphics;
 
-    private Color           backGroundColor;
-    private Color           gridColor;
-    private Color           gameNameColor;
-    private Color           highlightColor;
-	protected Color         shadowColor;
+    private Color backGroundColor;
+    private Color gridColor;
+    private Color gameNameColor;
+    private Color highlightColor;
+    protected Color shadowColor;
 
     // move listeners
-    private Vector          listeners;
+    private Vector listeners;
 
     private static final Font MESSAGE_FONT = new Font("Arial", Font.PLAIN, 12);
-    private String          message;
-	private boolean			hideMessage = false;
+    private String message;
+    private boolean hideMessage = false;
 
-	private String player1Name, player2Name;
-	
-	//TODO make gridlines darker/bolder
-	//TODO show highlight behind fancy pieces
-	
+    private String player1Name, player2Name;
+
+    //TODO make gridlines darker/bolder
+    //TODO show highlight behind fancy pieces
+
     public PenteBoardLW() {
 
         listeners = new Vector();
@@ -145,13 +144,14 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
         captures = new int[3];
     }
 
-	public boolean isOpaque() {
+    public boolean isOpaque() {
         return true;
     }
 
     public int getGridWidth() {
         return gridWidth;
     }
+
     public void setGridWidth(int width) {
         this.gridWidth = width;
     }
@@ -159,6 +159,7 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
     public int getGridHeight() {
         return gridHeight;
     }
+
     public void setGridHeight(int height) {
         this.gridHeight = height;
     }
@@ -166,6 +167,7 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
     public boolean getOnGrid() {
         return piecesOnGrid;
     }
+
     public void setOnGrid(boolean onGrid) {
         this.piecesOnGrid = onGrid;
     }
@@ -178,12 +180,15 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
         this.backGroundColor = new Color(color);
         gameNameColor = backGroundColor.darker();
     }
+
     public void setGridColor(int color) {
         this.gridColor = new Color(color);
     }
+
     public void setHighlightColor(int color) {
         this.highlightColor = new Color(color);
     }
+
     public void setGameNameColor(int color) {
         this.gameNameColor = new Color(color);
     }
@@ -194,7 +199,7 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
         }
         repaint();
     }
-    
+
     public void setGameName(String gameName) {
         synchronized (drawLock) {
             this.gameName = gameName;
@@ -205,7 +210,7 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
 
     @Override
     public void setTerritory(Map<Integer, List<Integer>> territory) {
-        
+
     }
 
     public void setHighlightPiece(GridPiece gridPiece) {
@@ -213,7 +218,7 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
             this.highlightPiece = gridPiece;
             emptyBoardDirty = true;
         }
-        
+
         repaint();
     }
 
@@ -260,8 +265,7 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
                         });
                     }
                     showNewMovesAvailableTimer.go();
-                }
-                else {
+                } else {
                     synchronized (drawLock) {
                         if (showNewMovesAvailableTimer != null) {
                             showNewMovesAvailableTimer.stop();
@@ -288,15 +292,18 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
         this.drawCoordinates = drawCoordinates;
     }
 
-    public void setBoardInsets(int l,int t,int r,int b) {
-        this.insets = new Insets(l,t,r,b);
+    public void setBoardInsets(int l, int t, int r, int b) {
+        this.insets = new Insets(l, t, r, b);
     }
+
     public void setCursor(int type) {
-    	setCursor(Cursor.getPredefinedCursor(type));
+        setCursor(Cursor.getPredefinedCursor(type));
     }
+
     public void addGridBoardListener(GridBoardListener listener) {
         listeners.addElement(listener);
     }
+
     public void removeGridBoardListener(GridBoardListener listener) {
         listeners.removeElement(listener);
     }
@@ -314,23 +321,24 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
     }
 
     public void updatePiecePlayer(int x, int y, int player) {
-    	//System.out.println(gridPieces.size() + " update piece player " + x + "," + y + "," + player);
-    	int count = 0;
-    	synchronized (drawLock) {
-    		for (int i = 0; i < gridPieces.size(); i++) {
-    			GridPiece p = (GridPiece) gridPieces.elementAt(i);
-    			if (p.getX() == x && p.getY() == y) {
-    				p.setPlayer(player);
-    				boardDirty = true;
-    				count++;
-    			}
-    		}
-    		if (boardDirty) {
-    			repaint();
-    		}
-			//System.out.println("found " + count);
-    	}
+        //System.out.println(gridPieces.size() + " update piece player " + x + "," + y + "," + player);
+        int count = 0;
+        synchronized (drawLock) {
+            for (int i = 0; i < gridPieces.size(); i++) {
+                GridPiece p = (GridPiece) gridPieces.elementAt(i);
+                if (p.getX() == x && p.getY() == y) {
+                    p.setPlayer(player);
+                    boardDirty = true;
+                    count++;
+                }
+            }
+            if (boardDirty) {
+                repaint();
+            }
+            //System.out.println("found " + count);
+        }
     }
+
     public void removePiece(GridPiece gridPiece) {
         synchronized (drawLock) {
             gridPieces.removeElement(gridPiece);
@@ -338,6 +346,7 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
         }
         repaint();
     }
+
     public void clearPieces() {
         synchronized (drawLock) {
             gridPieces.removeAllElements();
@@ -370,16 +379,16 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
 
     // Canvas
 
-	public Dimension getMinimumSize() {
+    public Dimension getMinimumSize() {
         return new Dimension(200, 200);
     }
- 
-	public Dimension getPreferredSize() {
+
+    public Dimension getPreferredSize() {
         return new Dimension(400, 400);
     }
-    
- 
-	public void addNotify() {
+
+
+    public void addNotify() {
         super.addNotify();
 
         emptyBoardImage = createImage(1, 1);
@@ -390,6 +399,7 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
         boardGraphics = boardImage.getGraphics();
         boardGraphics.setClip(0, 0, 1, 1);
     }
+
     public void destroy() {
 
         if (emptyBoardGraphics != null) {
@@ -416,32 +426,32 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
     }
 
 
-
-	public void update(Graphics g) {
+    public void update(Graphics g) {
         paint(g);
     }
 
-	public void refresh() {
-		synchronized (drawLock) {
-			boardDirty = true;
-		}
-		repaint();
-	}
+    public void refresh() {
+        synchronized (drawLock) {
+            boardDirty = true;
+        }
+        repaint();
+    }
+
     public void myPaint(Graphics g, int width, int height) {
 
-        Graphics2D g2 = (Graphics2D)g;
+        Graphics2D g2 = (Graphics2D) g;
 //      Antialiasing for smooth surfaces.
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-              RenderingHints.VALUE_ANTIALIAS_ON);
-    	
-    	setSize(width, height);
+                RenderingHints.VALUE_ANTIALIAS_ON);
+
+        setSize(width, height);
         emptyBoardGraphics = g;
         calculateGridSize();
         drawEmptyBoard(g);
         drawBoard(g);
     }
- 
-	public void paintComponent(Graphics g) {
+
+    public void paintComponent(Graphics g) {
 
         if (emptyBoardGraphics != null) {
             try {
@@ -449,7 +459,7 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
 
                     Dimension size = getSize();
                     if (size.width != currentSize.width ||
-                        size.height != currentSize.height) {
+                            size.height != currentSize.height) {
 
                         sizeChanged(size.width, size.height);
                         calculateGridSize();
@@ -462,15 +472,13 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
                         drawBoard(emptyBoardImage, boardGraphics);
                         g.setClip(0, 0, currentSize.width, currentSize.height);
                         g.drawImage(boardImage, 0, 0, this);
-                    }
-                    else if (boardDirty) {
+                    } else if (boardDirty) {
                         drawBoard(emptyBoardImage, boardGraphics);
                         g.setClip(0, 0, currentSize.width, currentSize.height);
                         g.drawImage(boardImage, 0, 0, this);
-                    }
-                    else {
+                    } else {
                         if (oldThinkingPiece.getX() >= 0 &&
-                            oldThinkingPiece.getY() >= 0) {
+                                oldThinkingPiece.getY() >= 0) {
                             int x = getStartX() + oldThinkingPiece.getX() * gridPieceSize;
                             int y = getStartY() + (gridHeight - oldThinkingPiece.getY() - 2) * gridPieceSize;
 
@@ -487,65 +495,66 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
                     // if the client wants to show thinking piece
                     // and thinking piece is on the board
                     if (showThinkingPiece &&
-                        thinkingPiece.getX() >= 0 &&
-                        thinkingPiece.getY() >= 0) {
+                            thinkingPiece.getX() >= 0 &&
+                            thinkingPiece.getY() >= 0) {
                         drawPiece(g, thinkingPiece);
                     }
 
                     if (message != null && !hideMessage) {
                         int x = currentSize.width;
-                        int y = getStartY() + 17 * gridPieceSize; 
-    
+                        int y = getStartY() + 17 * gridPieceSize;
+
                         g.setFont(MESSAGE_FONT);
                         FontMetrics fm = g.getFontMetrics(MESSAGE_FONT);
                         int mWidth = fm.stringWidth(message);
                         int mHeight = fm.getMaxAscent() +
-                                      fm.getLeading();
+                                fm.getLeading();
 
                         g.setColor(Color.white);
                         g.fillRect(x / 2 - mWidth / 2 - 10, y - mHeight / 2 - 10,
-                            mWidth + 20, mHeight + 20);
+                                mWidth + 20, mHeight + 20);
                         g.setColor(Color.black);
                         g.drawRect(x / 2 - mWidth / 2 - 10, y - mHeight / 2 - 10,
-                            mWidth + 20, mHeight + 20);
-                        g.drawRect(x / 2 - mWidth / 2 - 9,  y - mHeight / 2 - 9,
-                            mWidth + 18, mHeight + 18);
-                    
+                                mWidth + 20, mHeight + 20);
+                        g.drawRect(x / 2 - mWidth / 2 - 9, y - mHeight / 2 - 9,
+                                mWidth + 18, mHeight + 18);
+
                         x = (x / 2) - 100 + ((200 - mWidth) / 2);
                         y = y + mHeight / 2;
                         g.drawString(message, x, y);
                     }
-                    
+
                 }
             } catch (Throwable t) {
                 t.printStackTrace(System.err);
             }
-            
+
         }
     }
+
     private Rectangle getMessageDimensions() {
 
-		int x = currentSize.width;
-		int y = getStartY() + 17 * gridPieceSize; 
-		FontMetrics fm = getFontMetrics(MESSAGE_FONT);
-		int mWidth = fm.stringWidth(message);
-		int mHeight = fm.getMaxAscent() +
-        			  fm.getLeading();
+        int x = currentSize.width;
+        int y = getStartY() + 17 * gridPieceSize;
+        FontMetrics fm = getFontMetrics(MESSAGE_FONT);
+        int mWidth = fm.stringWidth(message);
+        int mHeight = fm.getMaxAscent() +
+                fm.getLeading();
 
-		return new Rectangle(x / 2 - mWidth / 2 - 10, y - mHeight / 2 - 10,
-			mWidth + 20, mHeight + 20);
+        return new Rectangle(x / 2 - mWidth / 2 - 10, y - mHeight / 2 - 10,
+                mWidth + 20, mHeight + 20);
     }
-    
+
     protected void sizeChanged(int x, int y) {
 
         if (emptyBoardImage != null &&
-            x != 0 && y != 0) {
+                x != 0 && y != 0) {
 
             // need a bigger image
             Rectangle rec = emptyBoardGraphics.getClipBounds();
             if (rec != null &&
-                (rec.width < x ||
-                 rec.height < y)) {
+                    (rec.width < x ||
+                            rec.height < y)) {
                 if (emptyBoardGraphics != null) {
                     emptyBoardGraphics.dispose();
                     emptyBoardGraphics = null;
@@ -582,7 +591,7 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
         }
     }
 
-	
+
     protected void drawEmptyBoard(Graphics g) {
 //System.out.println("drawEmptyBoard()");
         if (gridPieceSize < 0) {
@@ -621,18 +630,18 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
         g.setColor(backGroundColor);
         g.clearRect(0, 0, size.width, size.height);
 
-        for (int i = 0;  i < beveledEdge; i++) {
+        for (int i = 0; i < beveledEdge; i++) {
             g.fill3DRect(i, i, size.width - 2 * i, size.height - 2 * i, true);
         }
     }
 
     void drawEmptyBoardGameName(Graphics g) {
 
-    	if (gameName == null) return;
-        Graphics2D g2 = (Graphics2D)g;
+        if (gameName == null) return;
+        Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-              RenderingHints.VALUE_ANTIALIAS_ON);
-        
+                RenderingHints.VALUE_ANTIALIAS_ON);
+
         int gridSizePx = gridPieceSize * (gridWidth - 1);
         int gridSizePy = gridPieceSize * (gridHeight - 1);
 
@@ -666,54 +675,54 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
         g.setColor(gameNameColor);
         g.drawString(gameName, x, y);
     }
+
     void drawPlayerNames(Graphics g) {
 
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-              RenderingHints.VALUE_ANTIALIAS_ON);
-
+                RenderingHints.VALUE_ANTIALIAS_ON);
 
 
         FontMetrics fm;
-        
-	   	int fontSize = 12;
-	    if (gridPieceSize > 14) {
-	        fontSize += 2;
-	    }
-	    if (gridPieceSize > 24) {
-	        fontSize += 2;
-	    }
+
+        int fontSize = 12;
+        if (gridPieceSize > 14) {
+            fontSize += 2;
+        }
+        if (gridPieceSize > 24) {
+            fontSize += 2;
+        }
         Font f = new Font("Arial", Font.BOLD, fontSize);
         fm = g.getFontMetrics(f);
         //height = fm.get();
-        
-   		// Derive a new font using a rotatation transform
-   		AffineTransform fontAT = new AffineTransform();
-   		fontAT.rotate(Math.PI / 2);
-   		f = f.deriveFont(fontAT);
-    	g2.setFont(f);
+
+        // Derive a new font using a rotatation transform
+        AffineTransform fontAT = new AffineTransform();
+        fontAT.rotate(Math.PI / 2);
+        f = f.deriveFont(fontAT);
+        g2.setFont(f);
 
         if (player1Name != null) {
-        	g2.setColor(Color.WHITE);
+            g2.setColor(Color.WHITE);
 
-       		int x = beveledEdge + insets.left + edgeLeftOvers.width;
-       		int p1X = x + fm.getDescent();//3=kludge(gridPieceSize/2 - height) / 2;
-       		int p1Y = getStartY() + 15 + (captures[1] * gridPieceSize/2) + 10;
-    	
-        	g2.drawString(player1Name, p1X, p1Y);
+            int x = beveledEdge + insets.left + edgeLeftOvers.width;
+            int p1X = x + fm.getDescent();//3=kludge(gridPieceSize/2 - height) / 2;
+            int p1Y = getStartY() + 15 + (captures[1] * gridPieceSize / 2) + 10;
+
+            g2.drawString(player1Name, p1X, p1Y);
         }
         if (player2Name != null) {
-        	g2.setColor(Color.BLACK);
-        	
-        	int x = getStartX() + gridPieceSize * (gridWidth - 1) + coordinatesDimensions.width;
-       		int p2X = x + fm.getDescent();//3=kludge(gridPieceSize/2 - height) / 2;
-       		int p2Y = getStartY() + 15 + (captures[2] * gridPieceSize/2) + 10;
-    	
-        	g2.drawString(player2Name, p2X, p2Y);
+            g2.setColor(Color.BLACK);
+
+            int x = getStartX() + gridPieceSize * (gridWidth - 1) + coordinatesDimensions.width;
+            int p2X = x + fm.getDescent();//3=kludge(gridPieceSize/2 - height) / 2;
+            int p2Y = getStartY() + 15 + (captures[2] * gridPieceSize / 2) + 10;
+
+            g2.drawString(player2Name, p2X, p2Y);
         }
-        
+
     }
-    
+
     void drawEmptyBoardGrid(Graphics g) {
 
         Color middleColor = showNewMovesAvailable ? Color.red : Color.black;
@@ -730,9 +739,8 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
         for (int i = 0; i < gridWidth; i++) {
 
             if (drawDifferentMiddleLine && i == gridWidth / 2) {
-                 g.setColor(middleColor);
-            }
-            else {
+                g.setColor(middleColor);
+            } else {
                 g.setColor(gridColor);
             }
 
@@ -747,9 +755,8 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
         for (int i = 0; i < gridHeight; i++) {
 
             if (drawDifferentMiddleLine && i == gridHeight / 2) {
-                 g.setColor(middleColor);
-            }
-            else {
+                g.setColor(middleColor);
+            } else {
                 g.setColor(gridColor);
             }
 
@@ -815,12 +822,10 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
                 if (piecesOnGrid) {
                     if (i == gridWidth - 1) {
                         x2 -= fm.stringWidth(h);
-                    }
-                    else if (i != 0) {
+                    } else if (i != 0) {
                         x2 -= fm.stringWidth(h) / 2;
                     }
-                }
-                else {
+                } else {
                     x2 += gridPieceSize / 2 - fm.stringWidth(h) / 2;
                 }
                 g.drawString(h, x2, y);
@@ -842,20 +847,17 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
                 if (piecesOnGrid) {
                     if (i == gridHeight - 1) {
                         y2 += height;
-                    }
-                    else if (i != 0) {
+                    } else if (i != 0) {
                         y2 += height / 2;
                     }
-                }
-                else {
+                } else {
                     y2 += height / 2 + gridPieceSize / 2;
                 }
 
                 int x2 = x;
                 if (j == 0) {
                     x2 -= fm.stringWidth(v) + 1;
-                }
-                else {
+                } else {
                     x2 += 1;
                 }
 
@@ -866,7 +868,7 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
         }
     }
 
-    
+
     void drawBoard(Image emptyBoardImage, Graphics boardGraphics) {
 //System.out.println("drawBoard()");
         boardGraphics.drawImage(emptyBoardImage, 0, 0, this);
@@ -874,7 +876,7 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
         drawBoard(boardGraphics);
 
         drawPlayerNames(boardGraphics);
-        
+
         boardDirty = false;
     }
 
@@ -894,47 +896,47 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
             x -= gridPieceSize / 2;
             y += gridPieceSize / 2;
         }
-        Graphics2D g2 = (Graphics2D)g;
+        Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-              RenderingHints.VALUE_ANTIALIAS_ON);
-        
+                RenderingHints.VALUE_ANTIALIAS_ON);
+
         if (gameOptions.getDraw3DPieces()) {
             //draw3DPiece(g, new Point(x, y), c, highlightColor, gridPieceSize);
 
 
             if (highlightColor != null) {
-            	int width = gridPieceSize < 30 ? gridPieceSize + 4 : gridPieceSize + 6;
+                int width = gridPieceSize < 30 ? gridPieceSize + 4 : gridPieceSize + 6;
                 int offset = gridPieceSize < 30 ? 1 : 2;
-            	fillOval(g, x - offset, y - offset, width, highlightColor);
+                fillOval(g, x - offset, y - offset, width, highlightColor);
             }
-            fillOval(g, x + 2, y + 2, gridPieceSize-1, shadowColor); // shadow
-            
+            fillOval(g, x + 2, y + 2, gridPieceSize - 1, shadowColor); // shadow
+
             g2.drawImage(pieces[p.getPlayer()], x, y, this);
-        }
-        else {
+        } else {
             draw2DPiece(g, new Point(x, y), c[1], highlightColor, gridPieceSize);
         }
     }
 
     protected BufferedImage pieces[] = new BufferedImage[3];
-	   private BufferedImage drawBufferedPiece(int dimension, int player) {
+
+    private BufferedImage drawBufferedPiece(int dimension, int player) {
 
 //			First, we create a new image and set it to anti-aliased mode:
 
-		  
-	      // new RGB image with transparency channel
-	      BufferedImage image = new BufferedImage(dimension, dimension,
-	            BufferedImage.TYPE_INT_ARGB);
 
-	      // create new graphics and set anti-aliasing hint
-	      Graphics2D graphics = (Graphics2D) image.getGraphics().create();
-	      graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-	            RenderingHints.VALUE_ANTIALIAS_ON);
+        // new RGB image with transparency channel
+        BufferedImage image = new BufferedImage(dimension, dimension,
+                BufferedImage.TYPE_INT_ARGB);
+
+        // create new graphics and set anti-aliasing hint
+        Graphics2D graphics = (Graphics2D) image.getGraphics().create();
+        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
 
 
-	      graphics.rotate(-Math.PI/6,dimension/2,dimension/2);
-	      
-	      // nice soft blue
+        graphics.rotate(-Math.PI / 6, dimension / 2, dimension / 2);
+
+        // nice soft blue
 	      /*
 	      Color topFillColor = new Color(185,221,236);
 	      Color midFillColor = new Color(104,199,230);
@@ -942,8 +944,8 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
 	      Color topShineColor = new Color(225,245,253);
 	      Color bottomShineColor = new Color(225,245,253);
 	      */
-	      
-	      // decent black
+
+        // decent black
 	      /*
 	      Color topFillColor = new Color(32,32,32);
 	      Color midFillColor = new Color(16,16,16);
@@ -951,160 +953,157 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
 	      Color topShineColor = new Color(225,245,253);
 	      Color bottomShineColor = new Color(225,245,253);
 	      */
-	      
-	      Color topFillColor = new Color(216,216,216);
-	      Color midFillColor = new Color(200,200,200);
-	      Color botFillColor = new Color(184,184,184);
-	      Color topShineColor = Color.white;
-	      Color bottomShineColor = Color.white;
-	      
-	      if (player == 2) {
 
-		      topFillColor = new Color(32,32,32);
-		      midFillColor = new Color(16,16,16);
-		      botFillColor = Color.black;
-		      topShineColor = new Color(160,160,160);
-		      bottomShineColor = new Color(160,160,160);
-		      //topShineColor = new Color(225,245,253); //too shiny
-		      //bottomShineColor = new Color(225,245,253);
-	      }
-	      
-	      GradientPaint back = new GradientPaint(0, 0, topFillColor,
-	    		 dimension, dimension, botFillColor);
-	      graphics.setPaint(back);
+        Color topFillColor = new Color(216, 216, 216);
+        Color midFillColor = new Color(200, 200, 200);
+        Color botFillColor = new Color(184, 184, 184);
+        Color topShineColor = Color.white;
+        Color bottomShineColor = Color.white;
 
-	      Shape s = new Ellipse2D.Double(0, 0, dimension - 1,
-		           dimension - 1);
-	      graphics.fill(s);
-	      graphics.clip(s);
+        if (player == 2) {
 
-	      
+            topFillColor = new Color(32, 32, 32);
+            midFillColor = new Color(16, 16, 16);
+            botFillColor = Color.black;
+            topShineColor = new Color(160, 160, 160);
+            bottomShineColor = new Color(160, 160, 160);
+            //topShineColor = new Color(225,245,253); //too shiny
+            //bottomShineColor = new Color(225,245,253);
+        }
 
-	      
-	      /** part 1 */
-	      int width = dimension;
-	      int height = dimension;
-	      //int shineHeight = (int) (height / 1.8);
-	      int shineHeight = height;
-	      //int kernelSize = 12;
-	      int kernelSize = (int) Math.min(12, Math.pow(Math
-	            .min(width, height), 0.8) / 4);
-	      if (kernelSize == 0)
-	         kernelSize = 1;
-	      BufferedImage ghostContour = getBlankImage(width + 2 * kernelSize,
-	            height + 2 * kernelSize);
-	      Graphics2D ghostGraphics = (Graphics2D) ghostContour.getGraphics()
-	            .create();
-	      ghostGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-	            RenderingHints.VALUE_ANTIALIAS_ON);
+        GradientPaint back = new GradientPaint(0, 0, topFillColor,
+                dimension, dimension, botFillColor);
+        graphics.setPaint(back);
 
-	      ghostGraphics.setStroke(new BasicStroke(2 * kernelSize));
-	      ghostGraphics.setColor(Color.black);
-	      ghostGraphics.translate(kernelSize, kernelSize);
-	      ghostGraphics.draw(s);
+        Shape s = new Ellipse2D.Double(0, 0, dimension - 1,
+                dimension - 1);
+        graphics.fill(s);
+        graphics.clip(s);
+
+
+        /** part 1 */
+        int width = dimension;
+        int height = dimension;
+        //int shineHeight = (int) (height / 1.8);
+        int shineHeight = height;
+        //int kernelSize = 12;
+        int kernelSize = (int) Math.min(12, Math.pow(Math
+                .min(width, height), 0.8) / 4);
+        if (kernelSize == 0)
+            kernelSize = 1;
+        BufferedImage ghostContour = getBlankImage(width + 2 * kernelSize,
+                height + 2 * kernelSize);
+        Graphics2D ghostGraphics = (Graphics2D) ghostContour.getGraphics()
+                .create();
+        ghostGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
+
+        ghostGraphics.setStroke(new BasicStroke(2 * kernelSize));
+        ghostGraphics.setColor(Color.black);
+        ghostGraphics.translate(kernelSize, kernelSize);
+        ghostGraphics.draw(s);
 
 
 //			      graphics.drawImage(ghostContour, 0, 0, width - 1, shineHeight,
 //			    	         kernelSize, kernelSize, kernelSize + width - 1, kernelSize
 //			    	         + shineHeight, null);
 
-	      
-	      /** part 2 **/
-	      
-	      int kernelMatrixSize = (2 * kernelSize + 1) * (2 * kernelSize + 1);
-	      float[] kernelData = new float[kernelMatrixSize];
-	      for (int i = 0; i < kernelMatrixSize; i++)
-	         kernelData[i] = 1.0f / kernelMatrixSize;
-	      Kernel kernel = new Kernel(2 * kernelSize, 2 * kernelSize,
-	            kernelData);
-	      ConvolveOp convolve = new ConvolveOp(kernel);
-	      BufferedImage blurredGhostContour = getBlankImage(width + 2
-	            * kernelSize, height + 2 * kernelSize);
-	      convolve.filter(ghostContour, blurredGhostContour);
+
+        /** part 2 **/
+
+        int kernelMatrixSize = (2 * kernelSize + 1) * (2 * kernelSize + 1);
+        float[] kernelData = new float[kernelMatrixSize];
+        for (int i = 0; i < kernelMatrixSize; i++)
+            kernelData[i] = 1.0f / kernelMatrixSize;
+        Kernel kernel = new Kernel(2 * kernelSize, 2 * kernelSize,
+                kernelData);
+        ConvolveOp convolve = new ConvolveOp(kernel);
+        BufferedImage blurredGhostContour = getBlankImage(width + 2
+                * kernelSize, height + 2 * kernelSize);
+        convolve.filter(ghostContour, blurredGhostContour);
 
 
 //			      graphics.drawImage(blurredGhostContour, 0, 0, width - 1, shineHeight,
 //			    	         kernelSize, kernelSize, kernelSize + width - 1, kernelSize
 //			    	         + shineHeight, null);
 
-	      
-	      /** part 3 **/
-	      
-	      BufferedImage reverseGhostContour = getBlankImage(width + 2
-		         * kernelSize, height + 2 * kernelSize);
-		   Graphics2D reverseGraphics = (Graphics2D) reverseGhostContour
-		         .getGraphics();
-		   Color bottomShineColorTransp = new Color(bottomShineColor.getRed(),
-		         bottomShineColor.getGreen(), bottomShineColor.getBlue(), 32);
-		   GradientPaint gradientShine = new GradientPaint(0, kernelSize,
-		         topShineColor, 0, kernelSize + shineHeight,
-		         bottomShineColorTransp);
-		   reverseGraphics.setPaint(gradientShine);
-		   reverseGraphics.fillRect(0, kernelSize, width + 2 * kernelSize,
-		         kernelSize + shineHeight);
-		   reverseGraphics.setComposite(AlphaComposite.DstOut);
-		   reverseGraphics.drawImage(blurredGhostContour, 0, 0, null);
-		   
-		   
-		   
-	      graphics.drawImage(reverseGhostContour, 0, 0, width - 1, shineHeight,
-	    	         kernelSize, kernelSize, kernelSize + width - 1, kernelSize
-	    	         + shineHeight, null);
-		     
-		      
-		   /** part 4 */
-		      
-		   BufferedImage overGhostContour = getBlankImage(width + 2
-		         * kernelSize, height + 2 * kernelSize);
-		   Graphics2D overGraphics = (Graphics2D) overGhostContour
-		         .getGraphics();
-		   overGraphics.setPaint(new GradientPaint(0, kernelSize,
-		         topFillColor, 0, kernelSize + height / 2, midFillColor));
-		   overGraphics.fillRect(kernelSize, kernelSize, kernelSize + width,
-		         kernelSize + shineHeight);
-		   overGraphics.setComposite(AlphaComposite.DstIn);
-		   overGraphics.drawImage(blurredGhostContour, 0, 0, null);
-		   
 
-		   graphics.drawImage(overGhostContour, 0, 0, width - 1, shineHeight,
-		         kernelSize, kernelSize, kernelSize + width - 1, kernelSize
-		         + shineHeight, null);
+        /** part 3 **/
 
-		   
-
-	      // dispose
-      reverseGraphics.dispose();
-		  overGraphics.dispose();
-		  ghostGraphics.dispose();
-	      graphics.dispose();
+        BufferedImage reverseGhostContour = getBlankImage(width + 2
+                * kernelSize, height + 2 * kernelSize);
+        Graphics2D reverseGraphics = (Graphics2D) reverseGhostContour
+                .getGraphics();
+        Color bottomShineColorTransp = new Color(bottomShineColor.getRed(),
+                bottomShineColor.getGreen(), bottomShineColor.getBlue(), 32);
+        GradientPaint gradientShine = new GradientPaint(0, kernelSize,
+                topShineColor, 0, kernelSize + shineHeight,
+                bottomShineColorTransp);
+        reverseGraphics.setPaint(gradientShine);
+        reverseGraphics.fillRect(0, kernelSize, width + 2 * kernelSize,
+                kernelSize + shineHeight);
+        reverseGraphics.setComposite(AlphaComposite.DstOut);
+        reverseGraphics.drawImage(blurredGhostContour, 0, 0, null);
 
 
-	      return image;
-	   }
-		public static BufferedImage getBlankImage(int width, int height) {
+        graphics.drawImage(reverseGhostContour, 0, 0, width - 1, shineHeight,
+                kernelSize, kernelSize, kernelSize + width - 1, kernelSize
+                        + shineHeight, null);
 
 
-			BufferedImage image = new BufferedImage(width, height,
-					BufferedImage.TYPE_INT_ARGB);
+        /** part 4 */
 
-			// get graphics and set hints
-			Graphics2D graphics = (Graphics2D) image.getGraphics().create();
+        BufferedImage overGhostContour = getBlankImage(width + 2
+                * kernelSize, height + 2 * kernelSize);
+        Graphics2D overGraphics = (Graphics2D) overGhostContour
+                .getGraphics();
+        overGraphics.setPaint(new GradientPaint(0, kernelSize,
+                topFillColor, 0, kernelSize + height / 2, midFillColor));
+        overGraphics.fillRect(kernelSize, kernelSize, kernelSize + width,
+                kernelSize + shineHeight);
+        overGraphics.setComposite(AlphaComposite.DstIn);
+        overGraphics.drawImage(blurredGhostContour, 0, 0, null);
 
-			graphics.setColor(new Color(0, 0, 0, 0));
-			graphics.setComposite(AlphaComposite.Src);
-			graphics.fillRect(0, 0, width, height);
-			graphics.dispose();
 
-			return image;
-		}
-    
-    
+        graphics.drawImage(overGhostContour, 0, 0, width - 1, shineHeight,
+                kernelSize, kernelSize, kernelSize + width - 1, kernelSize
+                        + shineHeight, null);
+
+
+        // dispose
+        reverseGraphics.dispose();
+        overGraphics.dispose();
+        ghostGraphics.dispose();
+        graphics.dispose();
+
+
+        return image;
+    }
+
+    public static BufferedImage getBlankImage(int width, int height) {
+
+
+        BufferedImage image = new BufferedImage(width, height,
+                BufferedImage.TYPE_INT_ARGB);
+
+        // get graphics and set hints
+        Graphics2D graphics = (Graphics2D) image.getGraphics().create();
+
+        graphics.setColor(new Color(0, 0, 0, 0));
+        graphics.setComposite(AlphaComposite.Src);
+        graphics.fillRect(0, 0, width, height);
+        graphics.dispose();
+
+        return image;
+    }
+
+
     void draw2DPiece(Graphics g, Point p, Color c, Color highlightColor, int r) {
 
-        Graphics2D g2 = (Graphics2D)g;
+        Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-              RenderingHints.VALUE_ANTIALIAS_ON);
-        
+                RenderingHints.VALUE_ANTIALIAS_ON);
+
         int width = r < 30 ? r + 3 : r + 5;
         int offset = r < 30 ? 1 : 2;
         if (highlightColor != null) {
@@ -1117,14 +1116,14 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
 
     void draw3DPiece(Graphics g, Point p, Color c[], Color highlightColor, int r) {
 
-        Graphics2D g2 = (Graphics2D)g;
+        Graphics2D g2 = (Graphics2D) g;
 
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-              RenderingHints.VALUE_ANTIALIAS_ON);
-        
+                RenderingHints.VALUE_ANTIALIAS_ON);
+
         int width = r < 30 ? r + 4 : r + 6;
         int offset = r < 30 ? 1 : 2;
-        
+
         if (highlightColor != null) {
             fillOval(g, p.x - offset, p.y - offset, width, highlightColor); // highlight
         }
@@ -1138,7 +1137,7 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
         fillOval(g, p.x, p.y, darkWidth, c[0]);  // dark
         fillOval(g, p.x + 1, p.y + 1, lightWidth, c[1]); // light
         fillOval(g, p.x + reflectionOffset, p.y + reflectionOffset, reflectionWidth, Color.white); // reflection
-    
+
     }
 
     protected void fillOval(Graphics g, int x, int y, int r, Color c) {
@@ -1161,19 +1160,18 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
         }
 
         if (x < 0) {
-        	return null;
-        }        
-        
+            return null;
+        }
+
         x /= gridPieceSize;
         y /= gridPieceSize;
         y = gridHeight - 1 - y;
-        
+
         int piecesOnGridOffset = (piecesOnGrid) ? 0 : 1;
         if (x >= 0 && x < gridWidth - piecesOnGridOffset &&
-            y >= 0 && y < gridHeight - piecesOnGridOffset) {
+                y >= 0 && y < gridHeight - piecesOnGridOffset) {
             return new Point(x, y);
-        }
-        else {
+        } else {
             return null;
         }
     }
@@ -1185,7 +1183,7 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
         // mouse clicks are only registered when click down/up in same
         // place, doesn't always happen when moves are being made quickly
 
-		public void mousePressed(MouseEvent e) {
+        public void mousePressed(MouseEvent e) {
 
             boolean gridClicked = false;
             Point gridMove = null;
@@ -1201,20 +1199,21 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
             if (gridClicked) {
                 for (int i = 0; i < listeners.size(); i++) {
                     GridBoardListener l = (GridBoardListener) listeners.elementAt(i);
-                    
+
                     // which button pressed changed in 1.4
                     l.gridClicked(gridMove.x, gridMove.y, e.getModifiers());
                 }
             }
         }
-		public void mouseExited(MouseEvent e) {
-			setThinkingPieceVisible(false);
-		}
+
+        public void mouseExited(MouseEvent e) {
+            setThinkingPieceVisible(false);
+        }
     }
 
     class ThinkingPieceMoveGenerator extends MouseMotionAdapter {
 
-		public void mouseMoved(MouseEvent e) {
+        public void mouseMoved(MouseEvent e) {
 
             boolean gridMoved = false;
             Point gridMove = null;
@@ -1230,14 +1229,13 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
                         thinkingPiece.setX(-1);
                         thinkingPiece.setY(-1);
                         repaint();
-                        
+
                         gridMoved = true;
                         gridMove = new Point(-1, -1);
                     }
-                }
-                else {
+                } else {
                     if (gridMove.x != thinkingPiece.getX() ||
-                        gridMove.y != thinkingPiece.getY()) {
+                            gridMove.y != thinkingPiece.getY()) {
 
                         oldThinkingPiece.setX(thinkingPiece.getX());
                         oldThinkingPiece.setY(thinkingPiece.getY());
@@ -1246,24 +1244,23 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
                         thinkingPiece.setY(gridMove.y);
 
                         gridMoved = true;
-                        
+
                         repaint();
                     }
                 }
             }
-            
+
             if (message != null) {
-            	Rectangle r = getMessageDimensions();
-            	if (!hideMessage && r.contains(e.getX(), e.getY())) {
-            		hideMessage = true;
+                Rectangle r = getMessageDimensions();
+                if (!hideMessage && r.contains(e.getX(), e.getY())) {
+                    hideMessage = true;
                     repaint();
-            	}
-            	else if (hideMessage && !r.contains(e.getX(), e.getY())) {
-            		hideMessage = false;
-            		repaint();
-            	}
+                } else if (hideMessage && !r.contains(e.getX(), e.getY())) {
+                    hideMessage = false;
+                    repaint();
+                }
             }
-            
+
             // moved out of synchronized block due to deadlock
             if (gridMoved) {
                 for (int i = 0; i < listeners.size(); i++) {
@@ -1272,8 +1269,9 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
                 }
             }
         }
-		
+
     }
+
     public void incrementCaptures(int player) {
         synchronized (drawLock) {
             captures[player]++;
@@ -1281,6 +1279,7 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
         }
         repaint();
     }
+
     public void decrementCaptures(int player) {
         synchronized (drawLock) {
             captures[player]--;
@@ -1300,14 +1299,13 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
 
         // get coordinates width/height
         if (drawCoordinates) {
-	        Font f = new Font("Helvetica", Font.PLAIN, 10);
-	        FontMetrics fm = emptyBoardGraphics.getFontMetrics(f);
-	        coordinatesDimensions.width = fm.stringWidth("10") + 2;
-	        coordinatesDimensions.height = fm.getAscent() + 2;
-        }
-        else {
-        	coordinatesDimensions.width = 0;
-        	coordinatesDimensions.height = 0;
+            Font f = new Font("Helvetica", Font.PLAIN, 10);
+            FontMetrics fm = emptyBoardGraphics.getFontMetrics(f);
+            coordinatesDimensions.width = fm.stringWidth("10") + 2;
+            coordinatesDimensions.height = fm.getAscent() + 2;
+        } else {
+            coordinatesDimensions.width = 0;
+            coordinatesDimensions.height = 0;
         }
         // end coordinates
 
@@ -1320,12 +1318,12 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
 
         int oldGPS = gridPieceSize;
         gridPieceSize = gridPieceSizeWidth < gridPieceSizeHeight ?
-            gridPieceSizeWidth : gridPieceSizeHeight;
+                gridPieceSizeWidth : gridPieceSizeHeight;
         // end gridpiecesize
-        
+
         if (oldGPS != gridPieceSize) {
-        	pieces[1] = drawBufferedPiece(gridPieceSize, 1);
-        	pieces[2] = drawBufferedPiece(gridPieceSize, 2);
+            pieces[1] = drawBufferedPiece(gridPieceSize, 1);
+            pieces[2] = drawBufferedPiece(gridPieceSize, 2);
         }
 
         captureAreaWidth = gridPieceSize / 2;
@@ -1334,6 +1332,7 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
         edgeLeftOvers.width = (size.width - gridPieceSize * gridWidth) / 2;
         edgeLeftOvers.height = (size.height - gridPieceSize * (gridHeight - 1)) / 2;
     }
+
     protected void drawBoard(Graphics boardGraphics) {
         // draw highlight piece below other pieces
         if (gameOptions.getShowLastMove()) {
@@ -1356,7 +1355,7 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
 
             drawPiece(boardGraphics, piece);
         }
-        
+
         int x = beveledEdge + insets.left + edgeLeftOvers.width;
         int y = getStartY();
 
@@ -1364,76 +1363,74 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
         for (int i = 0; i < captures[1]; i++) {
             //int maxj = captures[1] >= 2 * (i + 1) ? 2 : 1;
             //for (int j = 0; j < maxj; j++) {
-                if (gameOptions.getDraw3DPieces()) {
+            if (gameOptions.getDraw3DPieces()) {
 
-                	fillOval(boardGraphics, x + 1, y + i * gridPieceSize/2 + 1, gridPieceSize/2-1, shadowColor); // shadow
-                    
-                	boardGraphics.drawImage(drawBufferedPiece(gridPieceSize/2, 2), x, y + i * gridPieceSize/2, this);
-                	//draw3DPiece(boardGraphics, new Point(x + j * gridPieceSize, y + i * gridPieceSize), c, null, gridPieceSize);
-                }
-                else {
-                    draw2DPiece(boardGraphics, new Point(x, y + i * gridPieceSize), c[1], null, gridPieceSize);
-                }
+                fillOval(boardGraphics, x + 1, y + i * gridPieceSize / 2 + 1, gridPieceSize / 2 - 1, shadowColor); // shadow
+
+                boardGraphics.drawImage(drawBufferedPiece(gridPieceSize / 2, 2), x, y + i * gridPieceSize / 2, this);
+                //draw3DPiece(boardGraphics, new Point(x + j * gridPieceSize, y + i * gridPieceSize), c, null, gridPieceSize);
+            } else {
+                draw2DPiece(boardGraphics, new Point(x, y + i * gridPieceSize), c[1], null, gridPieceSize);
+            }
             //}
         }
-        
-	   	int fontSize = 8;
-	    if (gridPieceSize > 14) {
-	        fontSize += 2;
-	    }
-	    if (gridPieceSize > 24) {
-	        fontSize += 2;
-	    }
+
+        int fontSize = 8;
+        if (gridPieceSize > 14) {
+            fontSize += 2;
+        }
+        if (gridPieceSize > 24) {
+            fontSize += 2;
+        }
         Font f = new Font("Helvetica", Font.PLAIN, fontSize);
         FontMetrics fm = emptyBoardGraphics.getFontMetrics(f);
         if (captures[1] > 0) {
             boardGraphics.setFont(f);
             boardGraphics.setColor(Color.red);
-            int capNumX = x + (gridPieceSize/2 - fm.stringWidth(Integer.toString(captures[1]))) / 2;
-        	int capNumY = getStartY() + (captures[1] * gridPieceSize/2) + 10;
-        	boardGraphics.drawString(Integer.toString(captures[1]), capNumX, capNumY);
+            int capNumX = x + (gridPieceSize / 2 - fm.stringWidth(Integer.toString(captures[1]))) / 2;
+            int capNumY = getStartY() + (captures[1] * gridPieceSize / 2) + 10;
+            boardGraphics.drawString(Integer.toString(captures[1]), capNumX, capNumY);
         }
-        
+
         x = getStartX() + gridPieceSize * (gridWidth - 1) + coordinatesDimensions.width;
         y = getStartY();
         c = GameStyles.colors[gameOptions.getPlayerColor(1)];
         for (int i = 0; i < captures[2]; i++) {
             //int maxj = captures[2] >= 2 * (i + 1) ? 2 : 1;
-           // for (int j = 0; j < maxj; j++) {
-                if (gameOptions.getDraw3DPieces()) {
-                	fillOval(boardGraphics, x + 1, y + i * gridPieceSize/2 + 1, gridPieceSize/2-1, shadowColor); // shadow
+            // for (int j = 0; j < maxj; j++) {
+            if (gameOptions.getDraw3DPieces()) {
+                fillOval(boardGraphics, x + 1, y + i * gridPieceSize / 2 + 1, gridPieceSize / 2 - 1, shadowColor); // shadow
 
-                	boardGraphics.drawImage(drawBufferedPiece(gridPieceSize/2, 1), x, y + i * gridPieceSize/2, this);
-                	//draw3DPiece(boardGraphics, new Point(x + j * gridPieceSize, y + i * gridPieceSize), c, null, gridPieceSize);
-                }
-                else {
-                    draw2DPiece(boardGraphics, new Point(x, y + i * gridPieceSize/2), c[1], null, gridPieceSize/2);
-                }
+                boardGraphics.drawImage(drawBufferedPiece(gridPieceSize / 2, 1), x, y + i * gridPieceSize / 2, this);
+                //draw3DPiece(boardGraphics, new Point(x + j * gridPieceSize, y + i * gridPieceSize), c, null, gridPieceSize);
+            } else {
+                draw2DPiece(boardGraphics, new Point(x, y + i * gridPieceSize / 2), c[1], null, gridPieceSize / 2);
+            }
             //}
         }
         if (captures[2] > 0) {
             boardGraphics.setFont(f);
             boardGraphics.setColor(Color.red);
-            int capNumX = x + (gridPieceSize/2 - fm.stringWidth(Integer.toString(captures[2]))) / 2;
-        	int capNumY = getStartY() + (captures[2] * gridPieceSize/2) + 10;
-        	boardGraphics.drawString(Integer.toString(captures[2]), capNumX, capNumY);
+            int capNumX = x + (gridPieceSize / 2 - fm.stringWidth(Integer.toString(captures[2]))) / 2;
+            int capNumY = getStartY() + (captures[2] * gridPieceSize / 2) + 10;
+            boardGraphics.drawString(Integer.toString(captures[2]), capNumX, capNumY);
         }
     }
 
-	public void setPlayer1Name(String player1Name) {
-		synchronized (drawLock) {
-			boardDirty = true;
-			this.player1Name = player1Name;
-		}
-		repaint();
-	}
+    public void setPlayer1Name(String player1Name) {
+        synchronized (drawLock) {
+            boardDirty = true;
+            this.player1Name = player1Name;
+        }
+        repaint();
+    }
 
-	public void setPlayer2Name(String player2Name) {
-		synchronized (drawLock) {
-			boardDirty = true;
-			this.player2Name = player2Name;
-		}
-		repaint();
-	}
-    
+    public void setPlayer2Name(String player2Name) {
+        synchronized (drawLock) {
+            boardDirty = true;
+            this.player2Name = player2Name;
+        }
+        repaint();
+    }
+
 }

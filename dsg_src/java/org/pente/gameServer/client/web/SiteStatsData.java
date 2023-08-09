@@ -6,27 +6,30 @@ import org.pente.gameServer.server.*;
 
 public class SiteStatsData {
 
-	private ServerStatsHandler serverStatsHandler;
-	private GameStats gameStats;
-	
-	public SiteStatsData(
-		ServerStatsHandler serverStatsHandler,
-		GameStats gameStats) {
+    private ServerStatsHandler serverStatsHandler;
+    private GameStats gameStats;
 
-	    this.serverStatsHandler = serverStatsHandler;
-	    this.gameStats = gameStats;
-	}
+    public SiteStatsData(
+            ServerStatsHandler serverStatsHandler,
+            GameStats gameStats) {
 
-	public int getNumPlayers() {
+        this.serverStatsHandler = serverStatsHandler;
+        this.gameStats = gameStats;
+    }
+
+    public int getNumPlayers() {
         return gameStats.getNumDSGPlayers();
-	}
-	public int getNumGames() {
-	    return gameStats.getNumDSGGames();
-	}
-	public int getNumCurrentPlayers() {
+    }
+
+    public int getNumGames() {
+        return gameStats.getNumDSGGames();
+    }
+
+    public int getNumCurrentPlayers() {
         return serverStatsHandler.getCurrentPlayers();
-	}
-	public int getNumTbGames() {
-		return gameStats.getNumTbGames();
-	}
+    }
+
+    public int getNumTbGames() {
+        return gameStats.getNumTbGames();
+    }
 }

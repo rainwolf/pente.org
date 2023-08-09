@@ -1,19 +1,20 @@
-/** CoordinatesListPanel.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * CoordinatesListPanel.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.gameServer.client.awt;
@@ -27,56 +28,56 @@ import org.pente.gameServer.client.*;
 import org.pente.gameServer.core.*;
 
 public class CoordinatesListPanel extends Panel
-    implements CoordinatesListComponent,
-               OrderedPieceCollection,
-               GridCoordinatesChangeListener,
-               GameOptionsChangeListener {
+        implements CoordinatesListComponent,
+        OrderedPieceCollection,
+        GridCoordinatesChangeListener,
+        GameOptionsChangeListener {
 
-    private String              players[];
+    private String players[];
 
     private int game;
-    
-    private Vector              gridPieces;
-    private Object              drawLock;
 
-    private int                 currentTurn;
-    private boolean             viewingCurrent;
+    private Vector gridPieces;
+    private Object drawLock;
 
-    private int                 startRow;
-    private int                 headerHeight;
-    private int                 rowHeight;
-    private int                 visibleRows;
-    private Dimension           minSize;
-    private Dimension           currentSize;
-    private boolean             scrollbarVisible;
+    private int currentTurn;
+    private boolean viewingCurrent;
 
-    private boolean             imageDirty;
+    private int startRow;
+    private int headerHeight;
+    private int rowHeight;
+    private int visibleRows;
+    private Dimension minSize;
+    private Dimension currentSize;
+    private boolean scrollbarVisible;
 
-    private Image               coordsImage;
-    private Graphics            coordsGraphics;
+    private boolean imageDirty;
 
-    private Scrollbar           scrollbar;
-    private Panel               navigatePanel;
+    private Image coordsImage;
+    private Graphics coordsGraphics;
 
-    private Color               highlightColor;
+    private Scrollbar scrollbar;
+    private Panel navigatePanel;
 
-    private static final int    numberOffset = 20;
-    private static final int    minRows = 15;
-    private static final int    offsetToButtons = 0;
+    private Color highlightColor;
 
-    private static final Font   playerFont = new Font("Arial", Font.PLAIN, 12);
-    private static final Font   coordsFont = new Font("Arial", Font.PLAIN, 12);
+    private static final int numberOffset = 20;
+    private static final int minRows = 15;
+    private static final int offsetToButtons = 0;
 
-    private GameOptions         gameOptions;
-    private GridCoordinates     coordinates;
+    private static final Font playerFont = new Font("Arial", Font.PLAIN, 12);
+    private static final Font coordsFont = new Font("Arial", Font.PLAIN, 12);
 
-    private Vector              listeners;
+    private GameOptions gameOptions;
+    private GridCoordinates coordinates;
 
-    public CoordinatesListPanel(GameStyles gameStyle, int maxPlayers, 
-    	DSGButton buttonMaker) {
+    private Vector listeners;
+
+    public CoordinatesListPanel(GameStyles gameStyle, int maxPlayers,
+                                DSGButton buttonMaker) {
 
 
-    	players = new String[maxPlayers + 1];
+        players = new String[maxPlayers + 1];
         gridPieces = new Vector();
         drawLock = new Object();
 
@@ -207,11 +208,11 @@ public class CoordinatesListPanel extends Panel
 
 
     // CoordinatesListComponent
-	public void setGame(int game) {
-		this.game = game;
-	}
+    public void setGame(int game) {
+        this.game = game;
+    }
 
-	public void setPlayer(int playerNum, String playerName) {
+    public void setPlayer(int playerNum, String playerName) {
         synchronized (drawLock) {
             players[playerNum] = playerName;
             imageDirty = true;
@@ -219,27 +220,29 @@ public class CoordinatesListPanel extends Panel
 
         repaint();
     }
-    
+
     public void removePlayer(String playerName) {
-    	synchronized (drawLock) {
-    		for (int i = 0; i < players.length; i++) {
-    			if (players[i] != null && players[i].equals(playerName)) {
-    				players[i] = null;
-    				imageDirty = true;
-    				break;
-    			}
-    		}
-    	}
-    	
-    	repaint();
+        synchronized (drawLock) {
+            for (int i = 0; i < players.length; i++) {
+                if (players[i] != null && players[i].equals(playerName)) {
+                    players[i] = null;
+                    imageDirty = true;
+                    break;
+                }
+            }
+        }
+
+        repaint();
     }
 
     public void setHighlightColor(Color color) {
         highlightColor = color;
     }
+
     public void addOrderedPieceCollectionVisitListener(OrderedPieceCollection collection) {
         listeners.addElement(collection);
     }
+
     public void removeOrderedPieceCollectionVisitListener(OrderedPieceCollection collection) {
         listeners.removeElement(collection);
     }
@@ -308,8 +311,7 @@ public class CoordinatesListPanel extends Panel
 
                 if (viewingCurrent) {
                     currentTurn--;
-                }
-                else if (currentTurn == gridPieces.size()) {
+                } else if (currentTurn == gridPieces.size()) {
                     viewingCurrent = true;
                 }
 
@@ -408,9 +410,10 @@ public class CoordinatesListPanel extends Panel
             repaint();
         }
     }
+
     public void visitTurn(int turn) {
 
-        synchronized (drawLock)	{
+        synchronized (drawLock) {
             if (turn < 0 || turn > gridPieces.size()) {
                 return;
             }
@@ -420,8 +423,7 @@ public class CoordinatesListPanel extends Panel
             imageDirty = true;
             if (currentTurn == gridPieces.size()) {
                 viewingCurrent = true;
-            }
-            else {
+            } else {
                 viewingCurrent = false;
             }
             repaint();
@@ -440,6 +442,7 @@ public class CoordinatesListPanel extends Panel
         coordsGraphics.setClip(0, 0, minSize.width, minSize.height);
         setSize(getMinimumSize());
     }
+
     public void destroy() {
         if (coordsGraphics != null) {
             coordsGraphics.dispose();
@@ -455,12 +458,12 @@ public class CoordinatesListPanel extends Panel
 
         FontMetrics fontMetrics = getFontMetrics(playerFont);
         headerHeight = fontMetrics.getMaxAscent() +
-                       fontMetrics.getMaxDescent() +
-                       fontMetrics.getLeading();
+                fontMetrics.getMaxDescent() +
+                fontMetrics.getLeading();
 
         fontMetrics = getFontMetrics(coordsFont);
         rowHeight = fontMetrics.getMaxAscent() +
-                    fontMetrics.getLeading();
+                fontMetrics.getLeading();
 
         int width = fontMetrics.stringWidth("AAAAAAAAAA") * 2 + numberOffset;
         int height = headerHeight + rowHeight * minRows + offsetToButtons;
@@ -469,7 +472,7 @@ public class CoordinatesListPanel extends Panel
 
     public Dimension getPreferredSize() {
 
-    	int w = navigatePanel.getPreferredSize().width;
+        int w = navigatePanel.getPreferredSize().width;
 
         int rows = getNumRows();
         if (rows < minRows) {
@@ -481,39 +484,41 @@ public class CoordinatesListPanel extends Panel
         if (scrollbarVisible) {
             width += scrollbar.getSize().width;
         }
-        
+
         return new Dimension(width, height + navigatePanel.getSize().height);
 
     }
+
     public Dimension getMinimumSize() {
 
-    	int w = navigatePanel.getMinimumSize().width;
+        int w = navigatePanel.getMinimumSize().width;
 
         int width = Math.max(w, minSize.width);
         if (scrollbarVisible) {
             width += scrollbar.getSize().width;
         }
-        
+
         return new Dimension(width, minSize.height + navigatePanel.getSize().height);
 
     }
 
-	public void setSize(Dimension size) {
-		super.setSize(size);
-		imageDirty = true;
-		repaint();
-	}
-	public void setSize(int x, int y) {
-		super.setSize(x, y);
-		imageDirty = true;
-		repaint();
-	}
+    public void setSize(Dimension size) {
+        super.setSize(size);
+        imageDirty = true;
+        repaint();
+    }
+
+    public void setSize(int x, int y) {
+        super.setSize(x, y);
+        imageDirty = true;
+        repaint();
+    }
 
     // overridden to make scrollbar not extend into player names section
     public Insets getInsets() {
         // this was causing deadlock?
         //synchronized (drawLock) {
-            return new Insets(headerHeight + 2, 0, 0, 2);
+        return new Insets(headerHeight + 2, 0, 0, 2);
         //}
     }
 
@@ -522,7 +527,7 @@ public class CoordinatesListPanel extends Panel
         synchronized (drawLock) {
 
             calculateFontMetrics();
-            
+
             visibleRows = (y - navigatePanel.getSize().height - headerHeight - offsetToButtons - 5) / rowHeight;
 
             if (visibleRows <= 0) {
@@ -535,13 +540,13 @@ public class CoordinatesListPanel extends Panel
             scrollbar.setValue(startRow);
 
             if (coordsImage != null &&
-                x != 0 && y != 0) {
+                    x != 0 && y != 0) {
 
                 // need a bigger image
                 Rectangle rec = coordsGraphics.getClipBounds();
                 if (rec != null &&
-                    (rec.width < x ||
-                     rec.height < y)) {
+                        (rec.width < x ||
+                                rec.height < y)) {
                     destroy();
                     coordsImage = createImage(x, y);
                     coordsGraphics = coordsImage.getGraphics();
@@ -589,7 +594,7 @@ public class CoordinatesListPanel extends Panel
                     if (imageDirty) {
                         Dimension size = getSize();
                         if (size.width != currentSize.width ||
-                            size.height != currentSize.height) {
+                                size.height != currentSize.height) {
                             sizeChanged(size.width, size.height);
                             currentSize = size;
                         }
@@ -600,7 +605,7 @@ public class CoordinatesListPanel extends Panel
 
                 g.drawImage(coordsImage, 0, 0, this);
 
-            } catch(Throwable t) {
+            } catch (Throwable t) {
                 t.printStackTrace();
             }
         }
@@ -670,7 +675,7 @@ public class CoordinatesListPanel extends Panel
 
         g.setFont(coordsFont);
         int endRow = getEndRow();
-		for (int i = startRow, rowNum = 0; i < endRow; i++, rowNum++) {
+        for (int i = startRow, rowNum = 0; i < endRow; i++, rowNum++) {
 
             // draw the move number
             g.setColor(Color.black);
@@ -684,8 +689,7 @@ public class CoordinatesListPanel extends Panel
                 g.setColor(Color.black);
                 g.drawRect(numberOffset + 1, headerHeight + rowNum * rowHeight + 1, halfWidth - 2, rowHeight);
                 g.setColor(Color.white);
-            }
-            else {
+            } else {
                 g.setColor(Color.black);
             }
 
@@ -705,8 +709,7 @@ public class CoordinatesListPanel extends Panel
                     g.setColor(Color.black);
                     g.drawRect(numberOffset + halfWidth, headerHeight + rowNum * rowHeight + 1, halfWidth - 3, rowHeight);
                     g.setColor(Color.white);
-                }
-                else {
+                } else {
                     g.setColor(Color.black);
                 }
 
@@ -717,91 +720,87 @@ public class CoordinatesListPanel extends Panel
     // end Canvas
 
     public int getCurrentTurn() {
-    	return currentTurn;
+        return currentTurn;
     }
 
     // y is 0 based
     // x = 1 or 2
     private int getCurrentTurn(int x, int y) {
-    	if (game == GridStateFactory.CONNECT6 ||
-    		game == GridStateFactory.SPEED_CONNECT6 ||
-    		game == GridStateFactory.TB_CONNECT6) {
-    		
-    		if (startRow == 0 && x == 1 && y == 0) return 1;
-    		int t = 0;
-    		if (startRow > 0) {
-    			t = startRow * 4;
-    		}
-    		t += y * 4 + (x - 1) * 2;
-    		return t;
-    	}
-    	else {
-        	return startRow * 2 + y * 2 + x;
-    	}
+        if (game == GridStateFactory.CONNECT6 ||
+                game == GridStateFactory.SPEED_CONNECT6 ||
+                game == GridStateFactory.TB_CONNECT6) {
+
+            if (startRow == 0 && x == 1 && y == 0) return 1;
+            int t = 0;
+            if (startRow > 0) {
+                t = startRow * 4;
+            }
+            t += y * 4 + (x - 1) * 2;
+            return t;
+        } else {
+            return startRow * 2 + y * 2 + x;
+        }
     }
+
     // private convenience methods
     private int getCurrentRow() {
         if (currentTurn == 0) {
             return 0;
-        }
-        else {
+        } else {
 
-        	if (game == GridStateFactory.CONNECT6 ||
-        		game == GridStateFactory.SPEED_CONNECT6 ||
-        		game == GridStateFactory.TB_CONNECT6) {
-        		if (currentTurn == 0) return 0;
-        		else return currentTurn / 4 + 1;
-        	}
-        	else {
-	            return currentTurn / 2 - 1 + currentTurn % 2 + 1;
-    	    }
-	    }
+            if (game == GridStateFactory.CONNECT6 ||
+                    game == GridStateFactory.SPEED_CONNECT6 ||
+                    game == GridStateFactory.TB_CONNECT6) {
+                if (currentTurn == 0) return 0;
+                else return currentTurn / 4 + 1;
+            } else {
+                return currentTurn / 2 - 1 + currentTurn % 2 + 1;
+            }
+        }
     }
+
     private int getCurrentPlayer() {
         if (currentTurn == 0) {
             return 0;
-        }
-        else {
+        } else {
 
-        	if (game == GridStateFactory.CONNECT6 ||
-        		game == GridStateFactory.SPEED_CONNECT6 ||
-        		game == GridStateFactory.TB_CONNECT6) {
-				return (currentTurn / 2) % 2 + 1;
-        	}
-        	else {
-	            return (currentTurn - 1) % 2 + 1;
-    	    }
-	    }
+            if (game == GridStateFactory.CONNECT6 ||
+                    game == GridStateFactory.SPEED_CONNECT6 ||
+                    game == GridStateFactory.TB_CONNECT6) {
+                return (currentTurn / 2) % 2 + 1;
+            } else {
+                return (currentTurn - 1) % 2 + 1;
+            }
+        }
     }
+
     private int getNumRows() {
         if (gridPieces.size() == 0) {
             return 0;
-        }
-        else {
-        	if (game == GridStateFactory.CONNECT6 ||
-            	game == GridStateFactory.SPEED_CONNECT6 ||
-            	game == GridStateFactory.TB_CONNECT6) {
-            	if (gridPieces.size() == 0) return 0;
-            	else return gridPieces.size() / 4 + 1;
+        } else {
+            if (game == GridStateFactory.CONNECT6 ||
+                    game == GridStateFactory.SPEED_CONNECT6 ||
+                    game == GridStateFactory.TB_CONNECT6) {
+                if (gridPieces.size() == 0) return 0;
+                else return gridPieces.size() / 4 + 1;
+            } else {
+                return gridPieces.size() / 2 + gridPieces.size() % 2;
             }
-        	else {
-	        	return gridPieces.size() / 2 + gridPieces.size() % 2;
-    	    }
-    	}
+        }
     }
+
     private int getEndRow() {
 
         int endRow = startRow + visibleRows;
         int actualEndRow = 0;
-    	if (game == GridStateFactory.CONNECT6 ||
-            game == GridStateFactory.SPEED_CONNECT6 ||
-            game == GridStateFactory.TB_CONNECT6) {
+        if (game == GridStateFactory.CONNECT6 ||
+                game == GridStateFactory.SPEED_CONNECT6 ||
+                game == GridStateFactory.TB_CONNECT6) {
             if (gridPieces.size() == 0) actualEndRow = 0;
             else actualEndRow = gridPieces.size() / 4 + 1;
+        } else {
+            actualEndRow = gridPieces.size() / 2 + gridPieces.size() % 2;
         }
-        else {
-        	actualEndRow = gridPieces.size() / 2 + gridPieces.size() % 2;
-    	}
 
         if (endRow > actualEndRow) {
             endRow = actualEndRow;
@@ -809,13 +808,13 @@ public class CoordinatesListPanel extends Panel
 
         return endRow;
     }
+
     private void updateStartRow() {
         int currentRow = getCurrentRow();
 
         if (currentRow < startRow) {
             startRow = currentRow;
-        }
-        else if (currentRow >= (startRow + visibleRows)) {
+        } else if (currentRow >= (startRow + visibleRows)) {
             startRow = currentRow - visibleRows;
         }
 
@@ -827,57 +826,55 @@ public class CoordinatesListPanel extends Panel
             startRow = 0;
         }
     }
+
     private void updateScrollbarMaximum() {
 
         int max = getNumRows() - visibleRows + 1;
         if (max < 0) {
-           max = 0;
+            max = 0;
         }
         scrollbar.setMaximum(max);
     }
 
     private String getTurnText(int row, int player) {
 
-    	if (game == GridStateFactory.CONNECT6 ||
-    		game == GridStateFactory.SPEED_CONNECT6 ||
-    		game == GridStateFactory.TB_CONNECT6) {
-    		
-			if (row == 0) {
-				if (player == 1) {
-					return getMoveText(0);
-				}
-				else {
-	                String s1 = getMoveText(1);
-	                String s2 = getMoveText(2);
-	                if (!s2.equals("")) {
-	                	s1 += "-" + s2;
-	                }
-					return s1;
-				}
-			}
-			else {
-				int i = 3 + (row - 1) * 4 + (player - 1) * 2;
+        if (game == GridStateFactory.CONNECT6 ||
+                game == GridStateFactory.SPEED_CONNECT6 ||
+                game == GridStateFactory.TB_CONNECT6) {
+
+            if (row == 0) {
+                if (player == 1) {
+                    return getMoveText(0);
+                } else {
+                    String s1 = getMoveText(1);
+                    String s2 = getMoveText(2);
+                    if (!s2.equals("")) {
+                        s1 += "-" + s2;
+                    }
+                    return s1;
+                }
+            } else {
+                int i = 3 + (row - 1) * 4 + (player - 1) * 2;
                 String s1 = getMoveText(i);
                 String s2 = getMoveText(i + 1);
                 if (!s2.equals("")) {
-                	s1 += "-" + s2;
+                    s1 += "-" + s2;
                 }
-				return s1;
-			}
-    	}
-    	else {
-			int i = 2 * row + player - 1;
-			return getMoveText(i);
-    	}    	
+                return s1;
+            }
+        } else {
+            int i = 2 * row + player - 1;
+            return getMoveText(i);
+        }
     }
+
     private String getMoveText(int moveNum) {
-    	if (gridPieces.size() <= moveNum) {
-    		return "";
-    	}
-    	else {
-			GridPiece p = (GridPiece) gridPieces.elementAt(moveNum);
-			return coordinates.getCoordinate(p.getX(), p.getY());
-    	}
+        if (gridPieces.size() <= moveNum) {
+            return "";
+        } else {
+            GridPiece p = (GridPiece) gridPieces.elementAt(moveNum);
+            return coordinates.getCoordinate(p.getX(), p.getY());
+        }
     }
     // end convenience
 }

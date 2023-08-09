@@ -10,8 +10,8 @@ public class DSGCancelRequestTableEvent extends AbstractDSGTableEvent {
         super(player, table);
     }
 
-	public String toString() {
-		return "cancel request " + super.toString();
-	}
+    public String toString() {
+        return "cancel request " + super.toString();
+    }
 }
 

@@ -1,19 +1,20 @@
-/** IYTSpider.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * IYTSpider.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.filter.iyt;
@@ -38,10 +39,10 @@ public class IYTSpider {
     public static void main(String args[]) throws Throwable {
 
         BasicConfigurator.configure();
-        
+
         if (args.length < 3) {
             System.err.println("usage: IYTSpider <tournament id nbr> <cookie> " +
-                "<db user> <db passwd> <db name> <db host>");
+                    "<db user> <db passwd> <db name> <db host>");
             System.exit(-1);
         }
 
@@ -53,7 +54,7 @@ public class IYTSpider {
 
         GameStorer gameStorer = null;
         PlayerStorer playerStorer = null;
-        
+
         DBHandler dbHandler = new MySQLDBHandler(args[2], args[3], args[4], args[5]);
         GameVenueStorer gameVenueStorer = new MySQLGameVenueStorer(dbHandler);
         gameStorer = new MySQLPenteGameStorer(dbHandler, gameVenueStorer);
@@ -86,8 +87,7 @@ public class IYTSpider {
                 }
 
                 bufferedReader.close();
-            }
-            else {
+            } else {
 
                 // for each round in the tournament
                 for (int i = 1; i < 6; i++) {
@@ -136,24 +136,23 @@ public class IYTSpider {
                             if (storedData.getWinner() == GameData.UNKNOWN) {
                                 buildGame = true;
                             }
-                        }
-                        else {
+                        } else {
                             buildGame = true;
                         }
 
                         if (buildGame) {
 
                             IYTGameBuilder gameBuilder = new IYTGameBuilder(gameIDStr,
-                                                                            IYTConstants.GAME_REQUEST,
-                                                                            gameStorer,
-                                                                            playerStorer,
-                                                                            myPlayerData,
-                                                                            cookies,
-                                                                            "");
+                                    IYTConstants.GAME_REQUEST,
+                                    gameStorer,
+                                    playerStorer,
+                                    myPlayerData,
+                                    cookies,
+                                    "");
                             gameBuilder.run();
                         }
 
-                    } catch(Exception ex) {
+                    } catch (Exception ex) {
                         ex.printStackTrace(System.err);
                     }
                 }

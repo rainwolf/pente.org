@@ -7,21 +7,21 @@ import org.pente.gameDatabase.swing.PlunkGameData;
 
 public class PenteOrgGameImporter extends GameImporterAdapter {
 
-	public boolean attemptImport(InputStream in, GameImporterListener l) {
-		boolean imported = false;
+    public boolean attemptImport(InputStream in, GameImporterListener l) {
+        boolean imported = false;
 
-		PGNGameFormat gf = new PGNGameFormat("\r\n", "MM/dd/yyyy");
-		
-		try {
-			PlunkGameData gd = gf.parse(in);
-			imported = true;
-			
-			l.gameRead(gd, "PGN");
-			
-		} catch (Throwable t) {
-			//t.printStackTrace();
-		}
-		
-		return imported;
-	}
+        PGNGameFormat gf = new PGNGameFormat("\r\n", "MM/dd/yyyy");
+
+        try {
+            PlunkGameData gd = gf.parse(in);
+            imported = true;
+
+            l.gameRead(gd, "PGN");
+
+        } catch (Throwable t) {
+            //t.printStackTrace();
+        }
+
+        return imported;
+    }
 }

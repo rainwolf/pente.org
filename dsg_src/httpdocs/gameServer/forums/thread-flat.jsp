@@ -1,9 +1,9 @@
 <%
-/**
- * $RCSfile: thread-flat.jsp,v $
- * $Revision: 1.27.4.1 $
- * $Date: 2003/02/04 00:17:50 $
- */
+   /**
+    * $RCSfile: thread-flat.jsp,v $
+    * $Revision: 1.27.4.1 $
+    * $Date: 2003/02/04 00:17:50 $
+    */
 %>
 
 <%@ page import="com.jivesoftware.forum.action.ForumThreadAction,
@@ -15,9 +15,9 @@
                  com.jivesoftware.forum.action.util.Guest,
                  com.jivesoftware.util.ByteFormat,
                  java.text.*,
-		 org.pente.gameServer.client.web.*,
-                  org.pente.gameServer.core.*,
-		 org.pente.gameServer.server.*"
+                 org.pente.gameServer.client.web.*,
+                 org.pente.gameServer.core.*,
+                 org.pente.gameServer.server.*"
 %>
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="java.util.List" %>
@@ -28,150 +28,154 @@
 <%@ taglib uri="jivetags" prefix="jive" %>
 
 <%! private static final NumberFormat nf = NumberFormat.getNumberInstance(); %>
-<%  // Get the action and other variables for this view.
-    ForumThreadAction action = (ForumThreadAction)getAction(request);
-    ForumFactory forumFactory = action.getForumFactory();
-    Forum forum = action.getForum();
-    ForumThread thread = action.getThread();
+<% // Get the action and other variables for this view.
+   ForumThreadAction action = (ForumThreadAction) getAction(request);
+   ForumFactory forumFactory = action.getForumFactory();
+   Forum forum = action.getForum();
+   ForumThread thread = action.getThread();
 
 %>
 
-<jsp:include page="header.jsp" flush="true" />
+<jsp:include page="header.jsp" flush="true"/>
 
 <%
-int views = 0;
-{
-	// update the views using dweebo's id to avoid unauthorizedexception
-	AuthToken auth = new DSGAuthToken(22000000000002L);
-	ForumFactory ff = ForumFactory.getInstance(auth);
-	ForumThread t = ff.getForum(forum.getID()).getThread(thread.getID());
-	String viewsStr = t.getProperty("views");
-	if (viewsStr != null) {
-	    try { views = Integer.parseInt(viewsStr); } catch (NumberFormatException n) {}
-	}
-	
-	if (request.getAttribute("spider") == null) {
-	    views++;
-	    t.setProperty("views", Integer.toString(views));
-	}
-}
+   int views = 0;
+   {
+      // update the views using dweebo's id to avoid unauthorizedexception
+      AuthToken auth = new DSGAuthToken(22000000000002L);
+      ForumFactory ff = ForumFactory.getInstance(auth);
+      ForumThread t = ff.getForum(forum.getID()).getThread(thread.getID());
+      String viewsStr = t.getProperty("views");
+      if (viewsStr != null) {
+         try {
+            views = Integer.parseInt(viewsStr);
+         } catch (NumberFormatException n) {
+         }
+      }
+
+      if (request.getAttribute("spider") == null) {
+         views++;
+         t.setProperty("views", Integer.toString(views));
+      }
+   }
 %>
 
 <table cellpadding="0" cellspacing="0" border="0" width="100%">
-<tr valign="top">
-    <td width="98%">
+   <tr valign="top">
+      <td width="98%">
 
-        <%-- Breadcrumbs (customizable via the admin tool) --%>
+         <%-- Breadcrumbs (customizable via the admin tool) --%>
 
-        <jsp:include page="breadcrumbs.jsp" flush="true" />
+         <jsp:include page="breadcrumbs.jsp" flush="true"/>
 
-        <%-- Forum name and brief info about the forum --%>
+         <%-- Forum name and brief info about the forum --%>
 
-        <p>
+         <p>
         <span class="jive-page-title">
         <%-- Topic: [topic name] --%>
-        <jive:i18n key="global.topic" /><jive:i18n key="global.colon" />
+        <jive:i18n key="global.topic"/><jive:i18n key="global.colon"/>
         <%= thread.getName() %>
         </span>
-        <br>
-        <%-- Replies: [reply count] --%>
-        <jive:i18n key="global.replies" /><jive:i18n key="global.colon" />
-        <%= action.getNumberFormat().format(thread.getMessageCount()-1) %> &nbsp;
+            <br>
+            <%-- Replies: [reply count] --%>
+            <jive:i18n key="global.replies"/><jive:i18n key="global.colon"/>
+            <%= action.getNumberFormat().format(thread.getMessageCount() - 1) %> &nbsp;
 
-        Views: <%= nf.format(views) %> &nbsp;
-        
-        <%-- Pages: [page count] --%>
-        <jive:i18n key="global.pages" /><jive:i18n key="global.colon" />
-        <%= action.getNumberFormat().format(action.getNumPages()) %> &nbsp;
+            Views: <%= nf.format(views) %> &nbsp;
 
-        <%-- Last Post --%>
-        <%  if (thread.getMessageCount() > 1) {
-                ForumMessage lastPost = SkinUtils.getLastPost(thread);
-                if (lastPost != null) {
-        %>
-                <%-- Last Post: --%>
-                <jive:i18n key="global.last_post" /><jive:i18n key="global.colon" />
-                <%= action.getDateFormat().format(thread.getModificationDate()) %>
-    
-                <%-- by: [username, linked to the last post] --%>
-                <jive:i18n key="global.by" /><jive:i18n key="global.colon" />
-    
-                <%  if (lastPost.getUser() != null) { %>
-    
-                    <a href="thread.jspa?forumID=<%= forum.getID() %>&threadID=<%= thread.getID() %>&messageID=<%= lastPost.getID() %>#<%= lastPost.getID() %>"
-                     ><%= lastPost.getUser().getUsername() %></a>
-    
-                <%  } else {
-                        Guest guest = new Guest();
-                        guest.setMessage(lastPost);
-                %>
-                    <span class="jive-guest">
+            <%-- Pages: [page count] --%>
+            <jive:i18n key="global.pages"/><jive:i18n key="global.colon"/>
+            <%= action.getNumberFormat().format(action.getNumPages()) %> &nbsp;
+
+            <%-- Last Post --%>
+            <% if (thread.getMessageCount() > 1) {
+               ForumMessage lastPost = SkinUtils.getLastPost(thread);
+               if (lastPost != null) {
+            %>
+            <%-- Last Post: --%>
+            <jive:i18n key="global.last_post"/><jive:i18n key="global.colon"/>
+            <%= action.getDateFormat().format(thread.getModificationDate()) %>
+
+            <%-- by: [username, linked to the last post] --%>
+            <jive:i18n key="global.by"/><jive:i18n key="global.colon"/>
+
+            <% if (lastPost.getUser() != null) { %>
+
+            <a href="thread.jspa?forumID=<%= forum.getID() %>&threadID=<%= thread.getID() %>&messageID=<%= lastPost.getID() %>#<%= lastPost.getID() %>"
+            ><%= lastPost.getUser().getUsername() %>
+            </a>
+
+            <% } else {
+               Guest guest = new Guest();
+               guest.setMessage(lastPost);
+            %>
+            <span class="jive-guest">
                 <nobr>
                     <a href="thread.jspa?forumID=<%= forum.getID() %>&threadID=<%= thread.getID() %>&messageID=<%= lastPost.getID() %>#<%= lastPost.getID() %>"
-                     ><%= guest.getDisplay() %> &raquo;</a>
+                    ><%= guest.getDisplay() %> &raquo;</a>
                 </nobr>
                     </span>
-    
-        <%          }
-                }
+
+            <% }
             }
-        %>
-        </p>
+            }
+            %>
+         </p>
 
-        <%-- print out a message if this thread is archived --%>
-        <%  if (action.isArchived()) { %>
+         <%-- print out a message if this thread is archived --%>
+         <% if (action.isArchived()) { %>
 
-            <table class="jive-info-message" cellpadding="3" cellspacing="0" border="0" width="350">
+         <table class="jive-info-message" cellpadding="3" cellspacing="0" border="0" width="350">
             <tr valign="top">
-                <td width="1%"><img src="images/archived-16x16.gif" width="16" height="16" border="0"></td>
-                <td width="99%">
+               <td width="1%"><img src="images/archived-16x16.gif" width="16" height="16" border="0"></td>
+               <td width="99%">
                     <span class="jive-info-text">
-                    <jive:i18n key="thread.topic_archived_description" />
+                    <jive:i18n key="thread.topic_archived_description"/>
                     </span>
-                </td>
+               </td>
             </tr>
-            </table>
-            <br><br>
+         </table>
+         <br><br>
 
-        <%  } %>
+         <% } %>
 
-        <%-- print out a message if this thread is locked --%>
-        <%  if (action.isLocked()) { %>
+         <%-- print out a message if this thread is locked --%>
+         <% if (action.isLocked()) { %>
 
-            <table class="jive-info-message" cellpadding="3" cellspacing="0" border="0" width="350">
+         <table class="jive-info-message" cellpadding="3" cellspacing="0" border="0" width="350">
             <tr valign="top">
-                <td width="1%"><img src="images/lock-16x16.gif" width="16" height="16" border="0"></td>
-                <td width="99%">
+               <td width="1%"><img src="images/lock-16x16.gif" width="16" height="16" border="0"></td>
+               <td width="99%">
                     <span class="jive-info-text">
-                    <jive:i18n key="thread.topic_locked_description" />
+                    <jive:i18n key="thread.topic_locked_description"/>
                     </span>
-                </td>
+               </td>
             </tr>
-            </table>
-            <br><br>
+         </table>
+         <br><br>
 
-        <%  } %>
+         <% } %>
 
-    </td>
-    <td width="1%"><img src="images/blank.gif" width="10" height="1" border="0"></td>
-    <td width="1%">
+      </td>
+      <td width="1%"><img src="images/blank.gif" width="10" height="1" border="0"></td>
+      <td width="1%">
 
-        <%@ include file="accountbox.jsp" %>
+         <%@ include file="accountbox.jsp" %>
 
-    </td>
-</tr>
+      </td>
+   </tr>
 </table>
 
 <jive:property if="watches.enabled">
 
-    <ww:if test="pageUser">
+   <ww:if test="pageUser">
 
-        <%  if (action.getForumFactory().getWatchManager().isWatched(action.getPageUser(), thread)) { %>
+      <% if (action.getForumFactory().getWatchManager().isWatched(action.getPageUser(), thread)) { %>
 
-            <table class="jive-info-message" cellpadding="3" cellspacing="0" border="0" width="100%">
-            <tr valign="top">
-                <td width="1%"><img src="images/info-16x16.gif" width="16" height="16" border="0"></td>
-                <td width="99%">
+      <table class="jive-info-message" cellpadding="3" cellspacing="0" border="0" width="100%">
+         <tr valign="top">
+            <td width="1%"><img src="images/info-16x16.gif" width="16" height="16" border="0"></td>
+            <td width="99%">
 
                     <span class="jive-info-text">
 
@@ -179,21 +183,21 @@ int views = 0;
                         You are watching this topic. To remove this watch, click "Stop Watching Topic"
                         below.
                     --%>
-                    <jive:i18n key="thread.watch_description" />
+                    <jive:i18n key="thread.watch_description"/>
 
                     <%-- Watch Options --%>
-                    (<a href="editwatches!default.jspa"><jive:i18n key="global.watch_options" /></a>)
+                    (<a href="editwatches!default.jspa"><jive:i18n key="global.watch_options"/></a>)
 
                     </span>
 
-                </td>
-            </tr>
-            </table>
-            <br>
+            </td>
+         </tr>
+      </table>
+      <br>
 
-        <%  } %>
+      <% } %>
 
-    </ww:if>
+   </ww:if>
 
 </jive:property>
 
@@ -202,64 +206,64 @@ int views = 0;
 <br>
 
 <table cellpadding="3" cellspacing="2" border="0" width="100%">
-<tr>
-    <td width="1%" nowrap>
-        <a href="forum.jspa?forumID=<%= forum.getID() %>"
+   <tr>
+      <td width="1%" nowrap>
+         <a href="forum.jspa?forumID=<%= forum.getID() %>"
          ><img src="images/back-to-16x16.gif" width="16" height="16" border="0"></a>
-    </td>
-    <td width="1%" nowrap>
-        <%-- Back to Topic List --%>
-        <span class="jive-button-label">
+      </td>
+      <td width="1%" nowrap>
+         <%-- Back to Topic List --%>
+         <span class="jive-button-label">
         <a href="forum.jspa?forumID=<%= forum.getID() %>"
-         ><jive:i18n key="thread.back_to_topic" /></a>
+        ><jive:i18n key="thread.back_to_topic"/></a>
         </span>
-    </td>
-    <td align="right" width="98%">
+      </td>
+      <td align="right" width="98%">
 
-        <jive:cache id="nextPrev">
+         <jive:cache id="nextPrev">
 
-            <%  if (action.getHasPreviousThread() || action.getHasNextThread()) { %>
+            <% if (action.getHasPreviousThread() || action.getHasNextThread()) { %>
 
-                <%-- Topics: --%>
-                <jive:i18n key="global.topics" /><jive:i18n key="global.colon" />
-                [
+            <%-- Topics: --%>
+            <jive:i18n key="global.topics"/><jive:i18n key="global.colon"/>
+            [
 
-                <%  if (action.getHasPreviousThread()) { %>
+            <% if (action.getHasPreviousThread()) { %>
 
-                    <%-- Previous --%>
-                    <a href="thread.jspa?forumID=<%= action.getPreviousThread().getForum().getID() %>&threadID=<%= action.getPreviousThread().getID() %>&tstart=<%= action.getPrevTstart() %>"
-                     ><jive:i18n key="global.previous" /></a>
+            <%-- Previous --%>
+            <a href="thread.jspa?forumID=<%= action.getPreviousThread().getForum().getID() %>&threadID=<%= action.getPreviousThread().getID() %>&tstart=<%= action.getPrevTstart() %>"
+            ><jive:i18n key="global.previous"/></a>
 
-                <%  } else { %>
+            <% } else { %>
 
-                    <%-- Previous --%>
-                    <jive:i18n key="global.previous" />
+            <%-- Previous --%>
+            <jive:i18n key="global.previous"/>
 
-                <%  } %>
+            <% } %>
 
-                |
+            |
 
-                <%  if (action.getHasNextThread()) { %>
+            <% if (action.getHasNextThread()) { %>
 
-                    <%-- Next --%>
-                    <a href="thread.jspa?forumID=<%= action.getNextThread().getForum().getID() %>&threadID=<%= action.getNextThread().getID() %>&tstart=<%= action.getNextTstart() %>"
-                     ><jive:i18n key="global.next" /></a>
+            <%-- Next --%>
+            <a href="thread.jspa?forumID=<%= action.getNextThread().getForum().getID() %>&threadID=<%= action.getNextThread().getID() %>&tstart=<%= action.getNextTstart() %>"
+            ><jive:i18n key="global.next"/></a>
 
-                <%  } else { %>
+            <% } else { %>
 
-                    <%-- Next --%>
-                    <jive:i18n key="global.next" />
+            <%-- Next --%>
+            <jive:i18n key="global.next"/>
 
-                <%  } %>
+            <% } %>
 
-                ]
+            ]
 
-            <%  } %>
+            <% } %>
 
-        </jive:cache>
+         </jive:cache>
 
-    </td>
-</tr>
+      </td>
+   </tr>
 </table>
 
 <span class="jive-message-list">
@@ -269,56 +273,57 @@ int views = 0;
 
         <jive:cache id="paginator">
 
-            <%-- Replies: --%>
-            <jive:i18n key="global.replies" /><jive:i18n key="global.colon" />
-            <%= action.getNumberFormat().format(thread.getMessageCount()-1) %> &nbsp;
+           <%-- Replies: --%>
+           <jive:i18n key="global.replies"/><jive:i18n key="global.colon"/>
+           <%= action.getNumberFormat().format(thread.getMessageCount() - 1) %> &nbsp;
 
-            Views: <%= nf.format(views) %> &nbsp;
+           Views: <%= nf.format(views) %> &nbsp;
 
-            <%-- Pages: --%>
-            <jive:i18n key="global.pages" /><jive:i18n key="global.colon" />
-            <%= action.getNumberFormat().format(action.getNumPages()) %> &nbsp;
+           <%-- Pages: --%>
+           <jive:i18n key="global.pages"/><jive:i18n key="global.colon"/>
+           <%= action.getNumberFormat().format(action.getNumPages()) %> &nbsp;
 
-            <%  if (action.getNumPages() > 1) { %>
+           <% if (action.getNumPages() > 1) { %>
 
-                <span class="jive-paginator">
+           <span class="jive-paginator">
                 [
-                <%  if (action.getPreviousPage()) { %>
+                <% if (action.getPreviousPage()) { %>
 
                     <%-- Previous --%>
                     <a href="thread.jspa?forumID=<%= forum.getID() %>&threadID=<%= thread.getID() %>&start=<%= action.getPreviousPageStart() %>&tstart=<%= action.getTstart() %>"
-                     ><jive:i18n key="global.previous" /></a> |
+                    ><jive:i18n key="global.previous"/></a> |
 
-                <%  } %>
+                <% } %>
 
-                <%  Page[] pages = action.getPages();
-                    for (int i=0; i<pages.length; i++) {
+                <% Page[] pages = action.getPages();
+                   for (int i = 0; i < pages.length; i++) {
                 %>
-                    <%  if (pages[i] == null) { %>
+                    <% if (pages[i] == null) { %>
 
-                        <jive:i18n key="global.elipse" />
+                        <jive:i18n key="global.elipse"/>
 
-                    <%  } else { %>
+                    <% } else { %>
 
                         <a href="thread.jspa?forumID=<%= forum.getID() %>&threadID=<%= thread.getID() %>&start=<%= pages[i].getStart() %>&tstart=<%= action.getTstart() %>"
-                         class="<%= ((action.getStart()==pages[i].getStart())?"jive-current":"") %>"
-                         ><%= pages[i].getNumber() %></a>
+                           class="<%= ((action.getStart()==pages[i].getStart())?"jive-current":"") %>"
+                        ><%= pages[i].getNumber() %></a>
 
                      <% } %>
 
-                <%  } %>
+                <% } %>
 
-                <%  if (action.getNextPage()) { %>
+                <% if (action.getNextPage()) { %>
 
                     <%-- Next --%>
-                    | <a href="thread.jspa?forumID=<%= forum.getID() %>&threadID=<%= thread.getID() %>&start=<%= action.getNextPageStart() %>&tstart=<%= action.getTstart() %>"
-                     ><jive:i18n key="global.next" /></a>
+                    | <a
+              href="thread.jspa?forumID=<%= forum.getID() %>&threadID=<%= thread.getID() %>&start=<%= action.getNextPageStart() %>&tstart=<%= action.getTstart() %>"
+           ><jive:i18n key="global.next"/></a>
 
-                <%  } %>
+                <% } %>
                 ]
                 </span>
 
-            <%  } %>
+           <% } %>
 
         </jive:cache>
 
@@ -372,8 +377,8 @@ DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
     
 
 <center>
-    <script>(adsbygoogle=window.adsbygoogle||[]).requestNonPersonalizedAds=<%=(personalizeAds?"0":"1")%></script>
-    <div id = "senseReplace" style="width:728px;height:90px;" top="50%"> </div>
+    <script>(adsbygoogle = window.adsbygoogle || []).requestNonPersonalizedAds =<%=(personalizeAds ? "0" : "1")%></script>
+    <div id="senseReplace" style="width:728px;height:90px;" top="50%"> </div>
     <%@ include file="../728x90ad.jsp" %>
     <script type="text/javascript">
         addLoadEvent(sensePage);
@@ -395,7 +400,7 @@ DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
             <td width="1%" nowrap>
 
                 <span class="jive-paginator-bottom">
-                <jive:cache id="paginator" />
+                <jive:cache id="paginator"/>
                 </span>
 
             </td>
@@ -404,12 +409,12 @@ DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
                 <tr>
                     <td>
                         <a href="forum.jspa?forumID=<%= forum.getID() %>"
-                         ><img src="images/back-to-16x16.gif" width="16" height="16" border="0"></a>
+                        ><img src="images/back-to-16x16.gif" width="16" height="16" border="0"></a>
                     <td>
                         <%-- Back to Topic List --%>
                         <span class="jive-button-label">
                         <a href="forum.jspa?forumID=<%= forum.getID() %>"
-                         ><jive:i18n key="thread.back_to_topic" /></a>
+                        ><jive:i18n key="thread.back_to_topic"/></a>
                         </span>
                     </td>
                 </tr>
@@ -417,7 +422,7 @@ DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
             </td>
             <td width="1%" nowrap>
 
-                <jive:cache id="nextPrev" />
+                <jive:cache id="nextPrev"/>
 
             </td>
         </tr>
@@ -428,4 +433,4 @@ DSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
 </table>
 </span>
 
-<jsp:include page="footer.jsp" flush="true" />
+<jsp:include page="footer.jsp" flush="true"/>

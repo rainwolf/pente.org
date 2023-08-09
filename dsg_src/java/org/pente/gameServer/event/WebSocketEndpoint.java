@@ -8,13 +8,13 @@ import javax.websocket.server.ServerEndpointConfig;
 public class WebSocketEndpoint extends Endpoint {
 
     WebSocketConfigurator wcfg;
-    
+
     @Override
     public void onOpen(final Session session, EndpointConfig config) {
         ServerEndpointConfig scfg = (ServerEndpointConfig) config;
         wcfg = (WebSocketConfigurator) scfg.getConfigurator();
         wcfg.addSession(session);
-        
+
         session.addMessageHandler(new MessageHandler.Whole<String>() {
             @Override
             public void onMessage(String msg) {

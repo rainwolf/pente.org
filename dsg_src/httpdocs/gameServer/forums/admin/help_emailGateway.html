@@ -1,267 +1,267 @@
 <a name="top"></a>
 
 <font size="-1"><b><a name="inboundhost" style="text-decoration:none;"
- ></a>Host (inbound)</b></font>
+></a>Host (inbound)</b></font>
 <ul>
     <font size="-1">
-    The host that Jive should connect to for retrieving email messages
-    for this forum.
+        The host that Jive should connect to for retrieving email messages
+        for this forum.
     </font>
 </ul>
 
 <font size="-1"><b><a name="inboundusername" style="text-decoration:none;"
- ></a>POP3 account username</b></font>
+></a>POP3 account username</b></font>
 <ul>
     <font size="-1">
-    Enter the username associated with the mailbox this gateway is going to retrieve
-    messages from. Often this is the first portion of an email address (the 'test' in
-    test@testing.com).
+        Enter the username associated with the mailbox this gateway is going to retrieve
+        messages from. Often this is the first portion of an email address (the 'test' in
+        test@testing.com).
     </font>
 </ul>
 
 <font size="-1"><b><a name="inboundpassword" style="text-decoration:none;"
- ></a>POP3 account password</b></font>
+></a>POP3 account password</b></font>
 <ul>
     <font size="-1">
-    Enter the password associated with the username entered previously.
+        Enter the password associated with the username entered previously.
     </font>
 </ul>
 
 <font size="-1"><b><a name="inboundport" style="text-decoration:none;"
- ></a>Server Port</b></font>
+></a>Server Port</b></font>
 <ul>
     <font size="-1">
-    POP3 servers by default are configured to use port 110. It is possible however
-    that the server may be configured to use another port. If that is the case, you
-    can configure the email gateway to use that port when connecting to the POP3
-    server by setting this property.
+        POP3 servers by default are configured to use port 110. It is possible however
+        that the server may be configured to use another port. If that is the case, you
+        can configure the email gateway to use that port when connecting to the POP3
+        server by setting this property.
     </font>
 </ul>
 
 <font size="-1"><b><a name="delete" style="text-decoration:none;"
- ></a>Delete messages from server</b></font>
+></a>Delete messages from server</b></font>
 <ul>
     <font size="-1">
-    Normally the email gateway will leave messages on the POP3 server instead of
-    automatically deleting them upon retrieval. However, if the gateway is the only
-    mail client that retrieves messages from the server, you should configure the
-    gateway to delete the messages so that message retrieval is fast and server
-    resources are conserved. In the case of POP3, this is especially the case since
-    the gateway always downloads every message on the server before deciding which
-    messages to import.
+        Normally the email gateway will leave messages on the POP3 server instead of
+        automatically deleting them upon retrieval. However, if the gateway is the only
+        mail client that retrieves messages from the server, you should configure the
+        gateway to delete the messages so that message retrieval is fast and server
+        resources are conserved. In the case of POP3, this is especially the case since
+        the gateway always downloads every message on the server before deciding which
+        messages to import.
     </font>
 </ul>
 
 <font size="-1"><b><a name="attachments" style="text-decoration:none;"
- ></a>Allow import/export of attachments</b></font>
+></a>Allow import/export of attachments</b></font>
 <ul>
     <font size="-1">
-    Setting this property to true will allow this gateway to import and export attachments
-    to messages. Importing of attachments will honor any attachment settings you have made.
-    <br><i>Note: importing of attachments that cross multiple messages is not supported</i>
+        Setting this property to true will allow this gateway to import and export attachments
+        to messages. Importing of attachments will honor any attachment settings you have made.
+        <br><i>Note: importing of attachments that cross multiple messages is not supported</i>
     </font>
 </ul>
 
 <font size="-1"><b><a name="subjectcheck" style="text-decoration:none;"
- ></a>Enabled threading via subject line matching</b></font>
+></a>Enabled threading via subject line matching</b></font>
 <ul>
     <font size="-1">
-    Setting this property to true will allow this gateway to attempt to create threads through
-    matching the subject line with subject lines of messages already imported in the last 60
-    days. This is a fall back method of threading when the primary method of using the threading
-    headers that normally occur in mail messages are not found.<p>
+        Setting this property to true will allow this gateway to attempt to create threads through
+        matching the subject line with subject lines of messages already imported in the last 60
+        days. This is a fall back method of threading when the primary method of using the threading
+        headers that normally occur in mail messages are not found.<p>
 
-    Subject line matching will only occur is the subject of the message being imported starts
-    with "re:" (case ignored, configurable). If that is not the case, threading via subject line
-    matching will not occur.
+        Subject line matching will only occur is the subject of the message being imported starts
+        with "re:" (case ignored, configurable). If that is not the case, threading via subject line
+        matching will not occur.
     </font>
 </ul>
 
 <font size="-1"><b><a name="tempparent" style="text-decoration:none;"
- ></a>Temporary Parent Body</b></font>
+></a>Temporary Parent Body</b></font>
 <ul>
     <font size="-1">
-    It's possible with email accounts, mailing lists and newsgroups to get a response
-    to a message before getting the original message. If this happens and only the
-    child message is available at the time of the gateway import, Jive must still have
-    a way to establish a correct parent/child relationship. Therefore, a temporary fake
-    parent message is created using an extrapolated subject from the child, and a body
-    with the value given by this property. By default, this value will be an empty
-    string. However, you may wish to create a short message that explains the nature of
-    the fake parent message to the user.<br>
-    On subsequent imports when a real parent message is found, the fake data will be
-    replaced with the correct subject and body.
+        It's possible with email accounts, mailing lists and newsgroups to get a response
+        to a message before getting the original message. If this happens and only the
+        child message is available at the time of the gateway import, Jive must still have
+        a way to establish a correct parent/child relationship. Therefore, a temporary fake
+        parent message is created using an extrapolated subject from the child, and a body
+        with the value given by this property. By default, this value will be an empty
+        string. However, you may wish to create a short message that explains the nature of
+        the fake parent message to the user.<br>
+        On subsequent imports when a real parent message is found, the fake data will be
+        replaced with the correct subject and body.
     </font>
 </ul>
 
 <font size="-1"><b><a name="debug" style="text-decoration:none;"
- ></a>Debug</b></font>
+></a>Debug</b></font>
 <ul>
     <font size="-1">
-    Setting this property to true will cause the email gateway to output debugging
-    information to the standard output stream. Where that stream show up depends on
-    your application server, but often it shows up either on the console or in a file
-    called stdout.log
+        Setting this property to true will cause the email gateway to output debugging
+        information to the standard output stream. Where that stream show up depends on
+        your application server, but often it shows up either on the console or in a file
+        called stdout.log
     </font>
 </ul>
 
 <font size="-1"><b><a name="outboundhost" style="text-decoration:none;"
- ></a>Host (outbound)</b></font>
+></a>Host (outbound)</b></font>
 <ul>
     <font size="-1">
-    The SMTP host that Jive should connect to for sending email messages
-    for this forum.
+        The SMTP host that Jive should connect to for sending email messages
+        for this forum.
     </font>
 </ul>
 
 <font size="-1"><b><a name="outboundport" style="text-decoration:none;"
- ></a>SMTP Server Port</b></font>
+></a>SMTP Server Port</b></font>
 <ul>
     <font size="-1">
-    SMTP servers by default are configured to use port 25 for connections. It is
-    possible however that the SMTP server may be configured to use another port. If
-    that is the case, you can configure the email gateway to use that port when
-    connecting to the SMTP server by setting this property.
+        SMTP servers by default are configured to use port 25 for connections. It is
+        possible however that the SMTP server may be configured to use another port. If
+        that is the case, you can configure the email gateway to use that port when
+        connecting to the SMTP server by setting this property.
     </font>
 </ul>
 
 <font size="-1"><b><a name="outboundssl" style="text-decoration:none;"
- ></a>SSL</b></font>
+></a>SSL</b></font>
 <ul>
     <font size="-1">
-    If the SMTP server the email gateway is configured to connect to requires a SSL
-    encrypted connection, you can configure the email gateway to use SSL when
-    connecting to the SMTP server by setting this property.
-    <br><i>Note: The gateway SSL support does not validate the certificates the
-    SMTP server provides. This means that you should be certain about the
-    server you are connecting to before setting this property to true.</i>
+        If the SMTP server the email gateway is configured to connect to requires a SSL
+        encrypted connection, you can configure the email gateway to use SSL when
+        connecting to the SMTP server by setting this property.
+        <br><i>Note: The gateway SSL support does not validate the certificates the
+        SMTP server provides. This means that you should be certain about the
+        server you are connecting to before setting this property to true.</i>
     </font>
 </ul>
 
 <font size="-1"><b><a name="outboundusername" style="text-decoration:none;"
- ></a>SMTP server username</b></font>
+></a>SMTP server username</b></font>
 <ul>
     <font size="-1">
-    If the SMTP server the email gateway is configured to connect to requires a
-    username, you can configure the email gateway to use a username when connecting
-    to the SMTP server by setting this property.
+        If the SMTP server the email gateway is configured to connect to requires a
+        username, you can configure the email gateway to use a username when connecting
+        to the SMTP server by setting this property.
     </font>
 </ul>
 
 <font size="-1"><b><a name="outboundpassword" style="text-decoration:none;"
- ></a>SMTP server password</b></font>
+></a>SMTP server password</b></font>
 <ul>
     <font size="-1">
-    If the SMTP server the newsgroup gateway is configured to connect to requires a
-    password, you can configure the email gateway to use a password when connecting
-    to the SMTP server by setting this property.
+        If the SMTP server the newsgroup gateway is configured to connect to requires a
+        password, you can configure the email gateway to use a password when connecting
+        to the SMTP server by setting this property.
     </font>
 </ul>
 
 <font size="-1"><b><a name="defaultfrom" style="text-decoration:none;"
- ></a>Default "From" address</b></font>
+></a>Default "From" address</b></font>
 <ul>
     <font size="-1">
-    This is the address that Jive will use when exporting guest messages or all
-    messages if the "Honor user email preference" is set to false.
+        This is the address that Jive will use when exporting guest messages or all
+        messages if the "Honor user email preference" is set to false.
     </font>
 </ul>
 
 <font size="-1"><b><a name="replyto" style="text-decoration:none;"
- ></a>"Reply-To" address</b></font>
+></a>"Reply-To" address</b></font>
 <ul>
     <font size="-1">
-    Email messages can have a reply-to address that is different than the from address.
-    Oftentimes this is used my mailing lists so that all replies to a message go back
-    to the list. Enter a Reply-To address here if you want replies to messages sent out
-    to go to a different address than the Default "From" address.
+        Email messages can have a reply-to address that is different than the from address.
+        Oftentimes this is used my mailing lists so that all replies to a message go back
+        to the list. Enter a Reply-To address here if you want replies to messages sent out
+        to go to a different address than the Default "From" address.
     </font>
 </ul>
 
 <font size="-1"><b><a name="defaultfrom" style="text-decoration:none;"
- ></a>"To" address</b></font>
+></a>"To" address</b></font>
 <ul>
     <font size="-1">
-    This is the email address that Jive will send exported messages to.
+        This is the email address that Jive will send exported messages to.
     </font>
 </ul>
 
 <font size="-1"><b><a name="organization" style="text-decoration:none;"
- ></a>Organization</b></font>
+></a>Organization</b></font>
 <ul>
     <font size="-1">
-    Email messages can have an "Organization" header set which will show up in many
-    popular mail readers such as Microsoft Outlook. Setting this property will cause
-    outbound email messages to have the Organization header set to the value you enter.
+        Email messages can have an "Organization" header set which will show up in many
+        popular mail readers such as Microsoft Outlook. Setting this property will cause
+        outbound email messages to have the Organization header set to the value you enter.
     </font>
 </ul>
 
 <font size="-1"><b><a name="onlyusedefaultfromaddress" style="text-decoration:none;"
- ></a>Only use Default "From" address</b></font>
+></a>Only use Default "From" address</b></font>
 <ul>
     <font size="-1">
-    Setting this property to true will cause this gateway to only use the 'Default
-    "From" address' property to fill the from field in outbound emails - ignoring
-    all user email addresses and settings. The property defaults to false.
+        Setting this property to true will cause this gateway to only use the 'Default
+        "From" address' property to fill the from field in outbound emails - ignoring
+        all user email addresses and settings. The property defaults to false.
     </font>
 </ul>
 
 <font size="-1"><b><a name="honouremail" style="text-decoration:none;"
- ></a>Honor user email preference</b></font>
+></a>Honor user email preference</b></font>
 <ul>
     <font size="-1">
-    Setting this property to true (the default) will cause this gateway to honor user
-    preferences to either show or hide their email address depending on the user
-    preferences. If the user chooses to not show their email address and this property
-    is set to true, the email gateway will use the 'Default "From" address' property as
-    the from address. Setting this property to false will use the user's email address
-    as the from address regardless of the users preferences.
+        Setting this property to true (the default) will cause this gateway to honor user
+        preferences to either show or hide their email address depending on the user
+        preferences. If the user chooses to not show their email address and this property
+        is set to true, the email gateway will use the 'Default "From" address' property as
+        the from address. Setting this property to false will use the user's email address
+        as the from address regardless of the users preferences.
     </font>
 </ul>
 
 <font size="-1"><b><a name="importafter" style="text-decoration:none;"
- ></a>Import messages after</b></font>
+></a>Import messages after</b></font>
 <ul>
     <font size="-1">
-    Setting this property to a date in the format of dd/mm/yyyy will cause the gateway to
-    import messages that have a date equal to or newer than the date specified.
-    <br><i>Note: this option is only available when importing a gateway once.</i>
+        Setting this property to a date in the format of dd/mm/yyyy will cause the gateway to
+        import messages that have a date equal to or newer than the date specified.
+        <br><i>Note: this option is only available when importing a gateway once.</i>
     </font>
 </ul>
 
 <font size="-1"><b><a name="exportafter" style="text-decoration:none;"
- ></a>Export messages after</b></font>
+></a>Export messages after</b></font>
 <ul>
     <font size="-1">
-    Setting this property to a date in the format of dd/mm/yyyy will cause the gateway to
-    export messages that have a creation date as old or older than the date specified. One
-    note is that the gateway will export a whole thread if any of the messages in the thread
-    meet the date criteria. This is done so that the consistency of the thread is preserved.
-    <br><i>Note: this option is only available when exporting a gateway once.</i>
+        Setting this property to a date in the format of dd/mm/yyyy will cause the gateway to
+        export messages that have a creation date as old or older than the date specified. One
+        note is that the gateway will export a whole thread if any of the messages in the thread
+        meet the date criteria. This is done so that the consistency of the thread is preserved.
+        <br><i>Note: this option is only available when exporting a gateway once.</i>
     </font>
 </ul>
 
 <font size="-1"><b><a name="allowexportagain" style="text-decoration:none;"
- ></a>Allow messages to be exported again</b></font>
+></a>Allow messages to be exported again</b></font>
 <ul>
     <font size="-1">
-    Setting this property to true will cause this gateway to reexport messages that have
-    already either been imported through the gateway or exported through the gateway.
-    <br><i>Note: that Jive created messages are never exported, even if this property is set
-    to true.</i>
-    <br><i>Note: this option is only available when exporting a gateway once.</i>
+        Setting this property to true will cause this gateway to reexport messages that have
+        already either been imported through the gateway or exported through the gateway.
+        <br><i>Note: that Jive created messages are never exported, even if this property is set
+        to true.</i>
+        <br><i>Note: this option is only available when exporting a gateway once.</i>
     </font>
 </ul>
 
 <font size="-1"><b><a name="updatemessageid" style="text-decoration:none;"
- ></a>Update email message ID stored in Jive</b></font>
+></a>Update email message ID stored in Jive</b></font>
 <ul>
     <font size="-1">
-    Setting this property to true will cause the gateway to update the messageID message
-    property stored in Jive upon export of a message. By default, the messageID is stored
-    in Jive so that the message won't be reexported or reimported.
-    <br><i>Note: This setting has no effect unless the 'Allow messages to be exported
-    again' property is also set to true.
-    <br><i>Note: this option is only available when exporting a gateway once.</i>
+        Setting this property to true will cause the gateway to update the messageID message
+        property stored in Jive upon export of a message. By default, the messageID is stored
+        in Jive so that the message won't be reexported or reimported.
+        <br><i>Note: This setting has no effect unless the 'Allow messages to be exported
+        again' property is also set to true.
+        <br><i>Note: this option is only available when exporting a gateway once.</i>
     </font>
 </ul>

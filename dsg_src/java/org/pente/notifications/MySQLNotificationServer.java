@@ -22,7 +22,8 @@ public class MySQLNotificationServer implements NotificationServer {
         this.dbHandler = dbHandler;
     }
 
-    /** Make sure the database handler is destroyed
+    /**
+     * Make sure the database handler is destroyed
      */
     public void destroy() {
         dbHandler.destroy();
@@ -39,7 +40,7 @@ public class MySQLNotificationServer implements NotificationServer {
         } else if (device == ANDROID) {
             table = "notifications_android";
         }
-        
+
         try {
             try {
                 con = dbHandler.getConnection();
@@ -60,7 +61,7 @@ public class MySQLNotificationServer implements NotificationServer {
                 }
             }
         } catch (Throwable t) {
-            throw new NotificationServerException("registerDevice of "+pid+" problem", t);
+            throw new NotificationServerException("registerDevice of " + pid + " problem", t);
         }
     }
 
@@ -105,7 +106,7 @@ public class MySQLNotificationServer implements NotificationServer {
                 }
             }
         } catch (Throwable t) {
-            throw new NotificationServerException("getTokens for "+pid+" problem", t);
+            throw new NotificationServerException("getTokens for " + pid + " problem", t);
         }
         return tokensMap;
     }
@@ -139,7 +140,7 @@ public class MySQLNotificationServer implements NotificationServer {
                 }
             }
         } catch (Throwable t) {
-            throw new NotificationServerException("removeInvalidToken of "+pid+" problem", t);
+            throw new NotificationServerException("removeInvalidToken of " + pid + " problem", t);
         }
     }
 
@@ -190,7 +191,7 @@ public class MySQLNotificationServer implements NotificationServer {
 
         Date twoWeeksAgo = new Date();
         long timeMillis = twoWeeksAgo.getTime();
-        twoWeeksAgo.setTime(timeMillis - 1000L*3600*24*15);
+        twoWeeksAgo.setTime(timeMillis - 1000L * 3600 * 24 * 15);
 
         try {
             try {

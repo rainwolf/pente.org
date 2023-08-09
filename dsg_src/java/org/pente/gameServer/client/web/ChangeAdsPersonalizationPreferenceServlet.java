@@ -17,8 +17,8 @@ import java.io.IOException;
 
 public class ChangeAdsPersonalizationPreferenceServlet extends HttpServlet {
 
-	private static final Category log4j =
-        Category.getInstance(ChangeProfileServlet.class.getName());
+    private static final Category log4j =
+            Category.getInstance(ChangeProfileServlet.class.getName());
 
     private DSGPlayerStorer dsgPlayerStorer;
 
@@ -39,53 +39,53 @@ public class ChangeAdsPersonalizationPreferenceServlet extends HttpServlet {
 
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response)
-        throws ServletException, IOException {
+            throws ServletException, IOException {
         doPost(request, response);
     }
 
     public void doPost(final HttpServletRequest request,
                        final HttpServletResponse response)
-        throws ServletException, IOException {
+            throws ServletException, IOException {
 
-		String redirectPage = "/gameServer/mobile/empty.jsp";
-		String changeProfileError = null;
-		String changeProfileSuccess = null;
+        String redirectPage = "/gameServer/mobile/empty.jsp";
+        String changeProfileError = null;
+        String changeProfileSuccess = null;
         DSGPlayerData dsgPlayerData = null;
 
-		
+
         try {
-            
+
             String name = (String) request.getAttribute("name");
             if (name == null) {
                 log4j.error("ChangeAdsPersonalizationPreferenceServlet failed: name=null");
                 return;
             }
-			log4j.info("ChangeAdsPersonalizationPreferenceServlet: name=" + name);
-			
+            log4j.info("ChangeAdsPersonalizationPreferenceServlet: name=" + name);
+
             dsgPlayerData = dsgPlayerStorer.loadPlayer(name);
             if (dsgPlayerData == null || !dsgPlayerData.isActive()) {
                 log4j.error("ChangeAdsPersonalizationPreferenceServlet failed: player invalid: " + name);
                 return;
             }
 
-			String email = (String) request.getParameter("personalizeAds");
+            String email = (String) request.getParameter("personalizeAds");
             boolean emailDsgMessages = email != null && email.equals("Y");
-			DSGPlayerPreference p = new DSGPlayerPreference(
-					"personalizeAds", new Boolean(emailDsgMessages));
-				dsgPlayerStorer.storePlayerPreference(
-					dsgPlayerData.getPlayerID(), p);
+            DSGPlayerPreference p = new DSGPlayerPreference(
+                    "personalizeAds", new Boolean(emailDsgMessages));
+            dsgPlayerStorer.storePlayerPreference(
+                    dsgPlayerData.getPlayerID(), p);
 
         } catch (DSGPlayerStoreException e) {
-        	changeProfileError = "Database error.";
-		    log4j.error("ChangeAdsPersonalizationPreferenceServlet error.", e);
+            changeProfileError = "Database error.";
+            log4j.error("ChangeAdsPersonalizationPreferenceServlet error.", e);
         } catch (Throwable t) {
-        	changeProfileError = "Unknown error, contact dweebo.";
-        	log4j.error("ChangeAdsPersonalizationPreferenceServlet error.", t);
+            changeProfileError = "Unknown error, contact dweebo.";
+            log4j.error("ChangeAdsPersonalizationPreferenceServlet error.", t);
         }
-        	
+
         request.setAttribute("dsgPlayerData", dsgPlayerData);
-		request.setAttribute("changeProfileError", changeProfileError);
-		request.setAttribute("changeProfileSuccess", changeProfileSuccess);
-		getServletContext().getRequestDispatcher(redirectPage).forward(request, response);
+        request.setAttribute("changeProfileError", changeProfileError);
+        request.setAttribute("changeProfileSuccess", changeProfileSuccess);
+        getServletContext().getRequestDispatcher(redirectPage).forward(request, response);
     }
 }

@@ -1,19 +1,20 @@
-/** SimpleGameEventData.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * SimpleGameEventData.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.game;
@@ -30,30 +31,30 @@ import org.pente.gameServer.client.web.SiteStatsData;
 public class SimpleGameEventData implements GameEventData, Serializable {
 
     /** The unique id for this event */
-    private int     id;
+    private int id;
 
     /** The name of this event */
-    private String  name;
-    
+    private String name;
+
     /** The associated game */
     private int game;
-    
+
     /** The list of rounds in this event */
-    private Vector  rounds;
+    private Vector rounds;
 
     private GameSiteData siteData;
-    
+
     public GameSiteData getSiteData() {
-		return siteData;
-	}
+        return siteData;
+    }
 
 
-	public void setSiteData(GameSiteData siteData) {
-		this.siteData = siteData;
-	}
+    public void setSiteData(GameSiteData siteData) {
+        this.siteData = siteData;
+    }
 
 
-	/** Create the empty list of rounds */
+    /** Create the empty list of rounds */
     public SimpleGameEventData() {
         rounds = new Vector();
     }
@@ -76,6 +77,7 @@ public class SimpleGameEventData implements GameEventData, Serializable {
     public int getGame() {
         return game;
     }
+
     public void setGame(int game) {
         this.game = game;
     }
@@ -93,7 +95,7 @@ public class SimpleGameEventData implements GameEventData, Serializable {
     public void setEventID(int eventID) {
         this.id = eventID;
     }
-    
+
     /** Add a round to this event
      *  @param GameRoundData The round data
      */
@@ -107,7 +109,7 @@ public class SimpleGameEventData implements GameEventData, Serializable {
     public Vector getGameRoundData() {
         return rounds;
     }
-    
+
     /** used since game event data reused for pente applet
      *  no need to send round info down to client
      */
@@ -133,14 +135,14 @@ public class SimpleGameEventData implements GameEventData, Serializable {
 
         return cloned;
     }
-    
+
     public String toString() {
-    	String eName = name;
-		if (eName.length() > 28) {
-			eName = eName.substring(0, 25) + "...";
-		}
-		eName = "<html><body><font size=-3>" + 
-			eName + "</font></body></html>";
-		return eName;
+        String eName = name;
+        if (eName.length() > 28) {
+            eName = eName.substring(0, 25) + "...";
+        }
+        eName = "<html><body><font size=-3>" +
+                eName + "</font></body></html>";
+        return eName;
     }
 }

@@ -10,16 +10,16 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 public class GameTableRenderer extends DefaultTableCellRenderer {
 
-	@Override
-	public Component getTableCellRendererComponent(JTable table, Object value, 
-		boolean isSelected, boolean hasFocus, int row, int col) {
+    @Override
+    public Component getTableCellRendererComponent(JTable table, Object value,
+                                                   boolean isSelected, boolean hasFocus, int row, int col) {
 
-		ImageIcon i = new ImageIcon(GameReviewBoard.class.getResource("images/" +
-			SimpleDSGPlayerGameData.getRatingsGifRatingOnly(((Integer)value).intValue())));
+        ImageIcon i = new ImageIcon(GameReviewBoard.class.getResource("images/" +
+                SimpleDSGPlayerGameData.getRatingsGifRatingOnly(((Integer) value).intValue())));
 
-		setIcon(i);
+        setIcon(i);
 
-		return super.getTableCellRendererComponent(
-			table, value, isSelected, hasFocus, row, col);
-	}
+        return super.getTableCellRendererComponent(
+                table, value, isSelected, hasFocus, row, col);
+    }
 }

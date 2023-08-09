@@ -1,32 +1,33 @@
-/** SimpleGomokuState.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * SimpleGomokuState.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.game;
 
-public class SimpleGomokuState extends GridStateDecorator 
-    implements GomokuState, HashCalculator {
+public class SimpleGomokuState extends GridStateDecorator
+        implements GomokuState, HashCalculator {
 
-    private int[]   surrounding;
+    private int[] surrounding;
     private boolean allowOverlines = false;
     private boolean doHashes = false;
-    
+
     private int winner;
-    
+
     public SimpleGomokuState() {
         this(19, 19);
     }
@@ -38,7 +39,7 @@ public class SimpleGomokuState extends GridStateDecorator
         super(gridState);
 
         int boardSizeX = gridState.getGridSizeX();
-        surrounding = new int[] { -1, -boardSizeX - 1, -boardSizeX, -boardSizeX + 1 };
+        surrounding = new int[]{-1, -boardSizeX - 1, -boardSizeX, -boardSizeX + 1};
     }
 
     /** Create a gomoku state with a certain board size
@@ -47,7 +48,7 @@ public class SimpleGomokuState extends GridStateDecorator
     public SimpleGomokuState(int boardSizeX, int boardSizeY) {
         super(boardSizeX, boardSizeY);
 
-        surrounding = new int[] { -1, -boardSizeX - 1, -boardSizeX, -boardSizeX + 1 };
+        surrounding = new int[]{-1, -boardSizeX - 1, -boardSizeX, -boardSizeX + 1};
     }
 
     /** Create a new gomoku grid state with a specified size and add the moves
@@ -56,7 +57,7 @@ public class SimpleGomokuState extends GridStateDecorator
      *  @param boardSize The size of the board
      */
     public SimpleGomokuState(MoveData data, int boardSizeX, int boardSizeY,
-        boolean doHashes) {
+                             boolean doHashes) {
         this(boardSizeX, boardSizeY);
 
         this.doHashes = doHashes;
@@ -68,18 +69,19 @@ public class SimpleGomokuState extends GridStateDecorator
     public void setDoHashes(boolean doHashes) {
         this.doHashes = doHashes;
     }
-    
+
     public GridState getInstance(MoveData moveData) {
         SimpleGomokuState state = new SimpleGomokuState(moveData,
-            gridState.getGridSizeX(), gridState.getGridSizeY(), doHashes);
+                gridState.getGridSizeX(), gridState.getGridSizeY(), doHashes);
         state.allowOverlines(allowOverlines);
-        
+
         return state;
     }
 
     public void allowOverlines(boolean allow) {
         allowOverlines = allow;
     }
+
     public boolean areOverlinesAllowed() {
         return allowOverlines;
     }
@@ -90,31 +92,33 @@ public class SimpleGomokuState extends GridStateDecorator
             gridState.updateHash(this);
         }
     }
+
     public void undoMove() {
-    	gridState.undoMove();
+        gridState.undoMove();
         if (doHashes) {
             gridState.updateHash(this);
         }
     }
-    
+
     /** Determine if the game is over
      *  @return boolean True if game is over
      */
     public boolean isGameOver() {
-        
+
         if (getNumMoves() == 0) {
             return false;
         }
 
         int lines[] = new int[4];
         int lastMove = getMove(getNumMoves() - 1);
-        
+
         int lastMovePlayer = getCurrentColor() == 1 ? 2 : 1;
         int maxMove = gridState.getGridSizeX() * gridState.getGridSizeY() - 1;
         int direction = 1;
 
         for (int k = 0; k < 2; k++) {
-            checkSurrounding: for (int i = 0; i < surrounding.length; i++) {
+            checkSurrounding:
+            for (int i = 0; i < surrounding.length; i++) {
 
                 int newMove = lastMove;
                 for (int j = 0; j < gridState.getGridSizeX(); j++) {
@@ -125,7 +129,7 @@ public class SimpleGomokuState extends GridStateDecorator
 
                     // if passes over side
                     if ((oldX == 0 && newX == gridState.getGridSizeX() - 1) ||
-                        (oldX == gridState.getGridSizeX() - 1 && newX == 0)) {
+                            (oldX == gridState.getGridSizeX() - 1 && newX == 0)) {
                         continue checkSurrounding;
                     }
 
@@ -145,8 +149,7 @@ public class SimpleGomokuState extends GridStateDecorator
             if (!allowOverlines && lines[i] == 4) {
                 winner = 3 - getCurrentPlayer();
                 return true;
-            }
-            else if (allowOverlines && lines[i] >= 4) {
+            } else if (allowOverlines && lines[i] >= 4) {
                 winner = 3 - getCurrentPlayer();
                 return true;
             }
@@ -156,19 +159,17 @@ public class SimpleGomokuState extends GridStateDecorator
         if (getNumMoves() == 361) {
             return true;
         }
-        
+
         return false;
     }
 
     public int getWinner() {
-        
+
         if (isGameOver() && winner == 0) {
             return 0;
-        }
-        else if (isGameOver()) {
+        } else if (isGameOver()) {
             return winner;
-        }
-        else {
+        } else {
             return 0;
         }
     }
@@ -182,15 +183,17 @@ public class SimpleGomokuState extends GridStateDecorator
 
         if (gridState.canPlayerUndo(player)) {
             return gridState.getCurrentPlayer() != player &&
-                   gridState.getNumMoves() > 1;
+                    gridState.getNumMoves() > 1;
         }
 
         return false;
     }
+
     public long calcHash(long cHash, int p, int move, int rot) {
-        cHash ^= ZobristUtil.rand[p-1][rotateMove(move, rot)];
+        cHash ^= ZobristUtil.rand[p - 1][rotateMove(move, rot)];
         return cHash;
     }
+
     public void printBoard() {
         ((SimpleGridState) gridState).printBoard();
     }

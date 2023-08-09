@@ -1,19 +1,20 @@
-/** HttpFilterController.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * HttpFilterController.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.filter.http;
@@ -37,13 +38,13 @@ public class HttpFilterController extends AbstractFilterController {
     private static Category cat = Category.getInstance(HttpFilterController.class.getName());
 
     /** The host the http server is running on */
-    protected String        host;
+    protected String host;
 
     /** The request string to send to the http server */
-    protected String		requestString;
+    protected String requestString;
 
     /** The line filter to use for filtering before returning filtered lines */
-    protected LineFilter	lineFilter;
+    protected LineFilter lineFilter;
 
 
     public static void main(String args[]) throws Exception {
@@ -55,26 +56,24 @@ public class HttpFilterController extends AbstractFilterController {
 
 //        writer.write("GET /search?search_data_format_in=dsg.gameDatabase.SimpleGameStorerSearchFormat&search_data_format_out=dsg.gameDatabase.HtmlGameStorerSearchFormat&search_data=K10%2C HTTP/1.0\r\n\r\n");
 //writer.write("GET /test_post.html HTTP/1.1\r\n\r\n");
-writer.write("GET /dsg_db/iyt/ HTTP/1.0\r\n\r\n");
+        writer.write("GET /dsg_db/iyt/ HTTP/1.0\r\n\r\n");
         writer.flush();
-boolean write = true;
+        boolean write = true;
         byte[] bytes;
         while (true) {
             bytes = new byte[512];
             int len = in.read(bytes, 0, 512);
 
-                //System.out.println(len);
+            //System.out.println(len);
             if (len == -1) {
                 break;
-            }
-            else {
+            } else {
 
                 if (write == true) {
                     System.out.write(bytes, 0, len);
                     out.write(bytes, 0, len);
                     out.flush();
-                }
-                else {
+                } else {
                     /*
                     String str = new String(bytes);
                     int index = str.indexOf("\r\n\r\n");
@@ -165,18 +164,17 @@ boolean write = true;
         // send cookies as a header
         if (cookies.size() > 0) {
             requestString += HttpConstants.END_LINE +
-                             cookieString;
+                    cookieString;
         }
 
         // if the post method, send parameters after other http headers
         // and set the content length as a header
         if (method.equals("POST") && params.size() > 0) {
             requestString += HttpConstants.END_LINE +
-                             HttpConstants.CONTENT_LENGTH + ": " + paramString.length() + HttpConstants.END_LINE +
-                             HttpConstants.END_LINE +
-                             paramString + HttpConstants.END_LINE;
-        }
-        else {
+                    HttpConstants.CONTENT_LENGTH + ": " + paramString.length() + HttpConstants.END_LINE +
+                    HttpConstants.END_LINE +
+                    paramString + HttpConstants.END_LINE;
+        } else {
             requestString += HttpConstants.END_LINE + HttpConstants.END_LINE;
         }
 
@@ -187,11 +185,11 @@ boolean write = true;
     /** Perform the filtering */
     public void run() {
 
-        Socket 			socket = null;
-        BufferedWriter 	out = null;
-        BufferedReader 	in = null;
-        boolean			success = true;
-        Exception		ex = null;
+        Socket socket = null;
+        BufferedWriter out = null;
+        BufferedReader in = null;
+        boolean success = true;
+        Exception ex = null;
 
         try {
             // connect to the http server
@@ -230,13 +228,22 @@ boolean write = true;
         } finally {
 
             if (out != null) {
-                try { out.close(); } catch(IOException e) {}
+                try {
+                    out.close();
+                } catch (IOException e) {
+                }
             }
             if (in != null) {
-                try { in.close(); } catch(IOException e) {}
+                try {
+                    in.close();
+                } catch (IOException e) {
+                }
             }
             if (socket != null) {
-                try { socket.close(); } catch(IOException e) {}
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                }
             }
 
             // notify filter listeners that filtering is done

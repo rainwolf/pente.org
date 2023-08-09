@@ -63,9 +63,10 @@ public class Hill {
             }
         }
     }
+
     public boolean removePlayer(long playerID) {
         if (steps != null) {
-            for (Iterator<Step> iterator = steps.iterator(); iterator.hasNext();) {
+            for (Iterator<Step> iterator = steps.iterator(); iterator.hasNext(); ) {
                 Step step = iterator.next();
                 if (step.removePlayer(playerID)) {
                     if (step.getPlayers().size() == 0) {
@@ -114,7 +115,7 @@ public class Hill {
                     break;
                 }
             }
-            for (Iterator<Step> iterator = steps.iterator(); iterator.hasNext();) {
+            for (Iterator<Step> iterator = steps.iterator(); iterator.hasNext(); ) {
                 Step step = iterator.next();
                 if (step != null && step.getPlayers().size() == 0) {
                     iterator.remove();

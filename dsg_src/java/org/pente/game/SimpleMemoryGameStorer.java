@@ -1,19 +1,20 @@
-/** SimpleMemoryGameStorer.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * SimpleMemoryGameStorer.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.game;
@@ -29,13 +30,13 @@ import java.util.*;
 public class SimpleMemoryGameStorer implements GameStorer, PlayerStorer {
 
     /** stores hashtables of players indexed by names */
-    private Hashtable   siteNames;
+    private Hashtable siteNames;
 
     /** stores hashtables of players indexed by player id */
-    private Hashtable   sitePlayerIDs;
+    private Hashtable sitePlayerIDs;
 
     /** stores game data */
-    private Hashtable   games;
+    private Hashtable games;
 
     /** Initialize the Hashtables */
     public SimpleMemoryGameStorer() {
@@ -91,8 +92,7 @@ public class SimpleMemoryGameStorer implements GameStorer, PlayerStorer {
         Hashtable players = (Hashtable) sitePlayerIDs.get(site);
         if (players == null) {
             return false;
-        }
-        else {
+        } else {
             return players.containsKey(new Long(playerID));
         }
     }
@@ -107,8 +107,7 @@ public class SimpleMemoryGameStorer implements GameStorer, PlayerStorer {
         Hashtable players = (Hashtable) siteNames.get(site);
         if (players == null) {
             return false;
-        }
-        else {
+        } else {
             return players.containsKey(name);
         }
     }
@@ -146,8 +145,7 @@ public class SimpleMemoryGameStorer implements GameStorer, PlayerStorer {
         Hashtable players = (Hashtable) sitePlayerIDs.get(site);
         if (players == null) {
             return null;
-        }
-        else {
+        } else {
             return (PlayerData) players.get(new Long(playerID));
         }
     }
@@ -162,8 +160,7 @@ public class SimpleMemoryGameStorer implements GameStorer, PlayerStorer {
         Hashtable players = (Hashtable) siteNames.get(site);
         if (players == null) {
             return null;
-        }
-        else {
+        } else {
             return (PlayerData) players.get(name);
         }
     }

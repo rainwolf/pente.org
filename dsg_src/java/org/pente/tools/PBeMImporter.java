@@ -10,10 +10,10 @@ import org.apache.log4j.*;
 
 public class PBeMImporter {
 
-    private File        gameDir;
-    private GameFormat  gameFormat;
-    private GameStorer  gameStorer;
-    private DBHandler   dbHandler;
+    private File gameDir;
+    private GameFormat gameFormat;
+    private GameStorer gameStorer;
+    private DBHandler dbHandler;
 
     public static void main(String[] args) throws Throwable {
 
@@ -52,35 +52,35 @@ public class PBeMImporter {
             if (file.isFile()) {
                 GameData data = loadGame(files[i]);
 
-                if (i%500 == 0) {
+                if (i % 500 == 0) {
                     System.out.println("Pausing... press enter to continue");
                     scan.nextLine();
                 }
 
                 if (data != null) {
-                    
+
                     try {
                         gameStorer.storeGame(data);
                     } catch (Exception e) {
                         e.printStackTrace();
-                        file.renameTo(new File(gameDir+"1", files[i]));  
+                        file.renameTo(new File(gameDir + "1", files[i]));
                     }
 
                     System.out.println("loaded " + files[i] + " ok");
-                }
-                else {
+                } else {
                     System.out.println("not loaded " + files[i] + " ok");
                 }
             }
         }
     }
 
-    private static final long BASE_GID=31000000001170L;
+    private static final long BASE_GID = 31000000001170L;
+
     public GameData loadGame(String file) throws Exception {
 
         File gameFile = new File(gameDir, file);
         FileReader reader = null;
-        GameData gameData  = null;
+        GameData gameData = null;
 
         try {
             // read game into a StringBuffer
@@ -93,8 +93,7 @@ public class PBeMImporter {
                 int length = reader.read(chars);
                 if (length == -1) {
                     break;
-                }
-                else {
+                } else {
                     buffer.append(chars);
                 }
             }
@@ -109,7 +108,7 @@ public class PBeMImporter {
 
                 gameData.setSite("Richard's PBeM Server");
 
-                long gid = new Long(file.substring(5, file.length()-4)).longValue();
+                long gid = new Long(file.substring(5, file.length() - 4)).longValue();
                 gameData.setGameID(BASE_GID + gid);
                 System.out.println("gid " + gid);
 

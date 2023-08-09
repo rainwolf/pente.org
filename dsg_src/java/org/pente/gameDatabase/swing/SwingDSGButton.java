@@ -8,27 +8,29 @@ import org.pente.gameServer.client.*;
 
 public class SwingDSGButton implements DSGButton {
 
-	private JButton button;
-	
-	public SwingDSGButton() {}
-	
-	public SwingDSGButton(String text, GameStyles gameStyles) {
+    private JButton button;
 
-		button = new JButton(text);
-		button.setBackground(gameStyles.boardBack);
-		button.setForeground(gameStyles.buttonFore);
-		button.setFont(new Font("Dialog", Font.PLAIN, 10));
-	}
-	public DSGButton createButton(String text, GameStyles gameStyles) {
-		return new SwingDSGButton(text, gameStyles);
-	}
+    public SwingDSGButton() {
+    }
 
-	public void addActionListener(ActionListener listener) {
-		button.addActionListener(listener);
-	}
+    public SwingDSGButton(String text, GameStyles gameStyles) {
 
-	public Component getButton() {
-		return button;
-	}
+        button = new JButton(text);
+        button.setBackground(gameStyles.boardBack);
+        button.setForeground(gameStyles.buttonFore);
+        button.setFont(new Font("Dialog", Font.PLAIN, 10));
+    }
+
+    public DSGButton createButton(String text, GameStyles gameStyles) {
+        return new SwingDSGButton(text, gameStyles);
+    }
+
+    public void addActionListener(ActionListener listener) {
+        button.addActionListener(listener);
+    }
+
+    public Component getButton() {
+        return button;
+    }
 
 }

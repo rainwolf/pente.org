@@ -1,19 +1,20 @@
-/** SimpleMySQLGameStats.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * SimpleMySQLGameStats.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.gameDatabase;
@@ -27,16 +28,16 @@ import org.pente.turnBased.TBGame;
 
 public class SimpleMySQLGameStats implements GameStats {
 
-    private int             numGames;
-    private int             numDSGGames;
-    private int             numMoves;
-    private int             numPlayers;
-    private int				numDSGPlayers;
-    private int             numSites;
-    private int				numTbGames;
-    
-    private DBHandler       dbHandler;
-    private StatsUpdater    statsUpdater;
+    private int numGames;
+    private int numDSGGames;
+    private int numMoves;
+    private int numPlayers;
+    private int numDSGPlayers;
+    private int numSites;
+    private int numTbGames;
+
+    private DBHandler dbHandler;
+    private StatsUpdater statsUpdater;
 
     private static Category cat = Category.getInstance(SimpleMySQLGameStats.class.getName());
 
@@ -47,7 +48,7 @@ public class SimpleMySQLGameStats implements GameStats {
 
         try {
             Thread.sleep(1000 * 30);
-        } catch(InterruptedException ex) {
+        } catch (InterruptedException ex) {
         }
 
         stats.destroy();
@@ -71,23 +72,29 @@ public class SimpleMySQLGameStats implements GameStats {
     public int getNumGames() {
         return numGames;
     }
+
     public int getNumDSGGames() {
         return numDSGGames;
     }
+
     public int getNumMoves() {
         return numMoves;
     }
+
     public int getNumPlayers() {
         return numPlayers;
     }
+
     public int getNumDSGPlayers() {
         return numDSGPlayers;
     }
+
     public int getNumSites() {
         return numSites;
     }
+
     public int getNumTbGames() {
-    	return numTbGames;
+        return numTbGames;
     }
 
     /** Gets the stats from the database.  Called by the StatsUpdater thread */
@@ -105,8 +112,8 @@ public class SimpleMySQLGameStats implements GameStats {
 
             // get num games
             stmt = con.prepareStatement(
-                "select count(*) " +
-                "from pente_game");
+                    "select count(*) " +
+                            "from pente_game");
             result = stmt.executeQuery();
 
             if (result.next()) {
@@ -122,8 +129,9 @@ public class SimpleMySQLGameStats implements GameStats {
 
             // get num DSG games
             stmt = con.prepareStatement(
-                "select count(*) " +
-                "from pente_game " +                "where site_id = 2");
+                    "select count(*) " +
+                            "from pente_game " +
+                            "where site_id = 2");
             result = stmt.executeQuery();
 
             if (result.next()) {
@@ -136,12 +144,12 @@ public class SimpleMySQLGameStats implements GameStats {
             if (stmt != null) {
                 stmt.close();
             }
-            
+
             // get num tb games
             stmt = con.prepareStatement(
-                "select count(*) " +
-                "from tb_game " +
-                "where state = '" + TBGame.STATE_ACTIVE + "'" );
+                    "select count(*) " +
+                            "from tb_game " +
+                            "where state = '" + TBGame.STATE_ACTIVE + "'");
             result = stmt.executeQuery();
 
             if (result.next()) {
@@ -157,9 +165,9 @@ public class SimpleMySQLGameStats implements GameStats {
 
             // get num moves
             stmt = con.prepareStatement(
-                "select count(*) " +
-                "from pente_move, pente_game " +
-                "where pente_move.gid = pente_game.gid");
+                    "select count(*) " +
+                            "from pente_move, pente_game " +
+                            "where pente_move.gid = pente_game.gid");
             result = stmt.executeQuery();
 
             if (result.next()) {
@@ -190,7 +198,7 @@ public class SimpleMySQLGameStats implements GameStats {
 
             // get num players
             stmt = con.prepareStatement("select count(*) from player " +
-            	"where site_id = 2");
+                    "where site_id = 2");
             result = stmt.executeQuery();
 
             if (result.next()) {
@@ -235,9 +243,9 @@ public class SimpleMySQLGameStats implements GameStats {
 
     private class StatsUpdater implements Runnable {
 
-        private int                 delay;
-        private Thread              thread;
-        private volatile boolean    running = true;
+        private int delay;
+        private Thread thread;
+        private volatile boolean running = true;
 
         private StatsUpdater(int delay) {
             this.delay = delay;

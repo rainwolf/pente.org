@@ -9,49 +9,49 @@ import org.pente.database.DBHandler;
 import org.apache.log4j.*;
 
 public class MySQLServerStorer {
-    
+
     private static final Category log4j = Category.getInstance(
-        MySQLServerStorer.class.getName());
-    
+            MySQLServerStorer.class.getName());
+
     public static void addServer(DBHandler dbHandler, ServerData data)
-        throws Throwable {
-        
+            throws Throwable {
+
         Connection con = null;
         PreparedStatement stmt = null;
         ResultSet result = null;
         try {
             con = dbHandler.getConnection();
             stmt = con.prepareStatement(
-                "insert into dsg_server " +
-                "(name, port, tournament, active, creation_date, last_mod_date, private) " +
-                "values(?, ?, ?, 'Y', sysdate(), sysdate(), ?)");
+                    "insert into dsg_server " +
+                            "(name, port, tournament, active, creation_date, last_mod_date, private) " +
+                            "values(?, ?, ?, 'Y', sysdate(), sysdate(), ?)");
             stmt.setString(1, data.getName());
             stmt.setInt(2, data.getPort());
             stmt.setString(3, data.isTournament() ? "Y" : "N");
             stmt.setString(4, data.isPrivateServer() ? "Y" : "N");
             stmt.executeUpdate();
-            
+
             stmt.close();
             stmt = con.prepareStatement("select max(id) from dsg_server");
             result = stmt.executeQuery();
             result.next();
             data.setServerId(result.getInt(1));
             stmt.close();
-            
+
             // insert into dsg_server_games
             stmt = con.prepareStatement("insert into dsg_server_game " +
-                "values(?, ?, ?)");
-            for (Iterator it = data.getGameEvents().iterator(); it.hasNext();) {
+                    "values(?, ?, ?)");
+            for (Iterator it = data.getGameEvents().iterator(); it.hasNext(); ) {
                 GameEventData g = (GameEventData) it.next();
                 stmt.setInt(1, data.getServerId());
                 stmt.setInt(2, g.getEventID());
                 stmt.setInt(3, g.getGame());
                 stmt.execute();
             }
-            
+
             stmt.close();
             stmt = con.prepareStatement("insert into dsg_server_message " +
-                "values(?, ?, ?)");
+                    "values(?, ?, ?)");
             for (int i = 0; i < data.getLoginMessages().size(); i++) {
                 String message = (String) data.getLoginMessages().get(i);
                 stmt.setInt(1, data.getServerId());
@@ -59,7 +59,7 @@ public class MySQLServerStorer {
                 stmt.setString(3, message);
                 stmt.execute();
             }
-            
+
         } finally {
             if (result != null) {
                 result.close();
@@ -72,22 +72,22 @@ public class MySQLServerStorer {
             }
         }
     }
-    
+
     public static void removeServer(DBHandler dbHandler, long id)
-        throws Throwable {
-    
+            throws Throwable {
+
         Connection con = null;
         PreparedStatement stmt = null;
         ResultSet result = null;
         try {
             con = dbHandler.getConnection();
             stmt = con.prepareStatement(
-                "update dsg_server " +
-                "set active='N', last_mod_date=sysdate() " +
-                "where id=?");
+                    "update dsg_server " +
+                            "set active='N', last_mod_date=sysdate() " +
+                            "where id=?");
             stmt.setLong(1, id);
             stmt.executeUpdate();
-    
+
         } finally {
             if (result != null) {
                 result.close();
@@ -100,10 +100,10 @@ public class MySQLServerStorer {
             }
         }
     }
-    
+
     public static List getActiveServers(DBHandler dbHandler,
-        GameVenueStorer gameVenueStorer) throws Throwable {
-        
+                                        GameVenueStorer gameVenueStorer) throws Throwable {
+
         Connection con = null;
         PreparedStatement stmt = null;
         PreparedStatement stmt2 = null;
@@ -117,25 +117,25 @@ public class MySQLServerStorer {
         try {
             con = dbHandler.getConnection();
             stmt = con.prepareStatement(
-                "select id, name, port, tournament, private " +
-                "from dsg_server " +
-                "where active='Y'");
+                    "select id, name, port, tournament, private " +
+                            "from dsg_server " +
+                            "where active='Y'");
             stmt2 = con.prepareStatement(
-                "select g.game, g.event_id, e.name " +
-                "from dsg_server_game g, game_event e " +
-                "where g.server_id = ? " +
-                "and g.event_id = e.eid");
+                    "select g.game, g.event_id, e.name " +
+                            "from dsg_server_game g, game_event e " +
+                            "where g.server_id = ? " +
+                            "and g.event_id = e.eid");
             stmt3 = con.prepareStatement(
-                "select message " +
-                "from dsg_server_message " +
-                "where server_id = ? " +
-                "order by message_seq");
+                    "select message " +
+                            "from dsg_server_message " +
+                            "where server_id = ? " +
+                            "order by message_seq");
             stmt4 = con.prepareStatement(
-                "select p.name " +
-                "from player p, dsg_server_access a " +
-                "where a.server_id = ? " +
-                "and a.pid = p.pid");
-            
+                    "select p.name " +
+                            "from player p, dsg_server_access a " +
+                            "where a.server_id = ? " +
+                            "and a.pid = p.pid");
+
             result = stmt.executeQuery();
             while (result.next()) {
                 ServerData d = new ServerData();
@@ -157,7 +157,7 @@ public class MySQLServerStorer {
                     d.addGameEvent(g);
                 }
                 result2.close();
-                
+
                 // get login messages
                 stmt3.setInt(1, d.getServerId());
                 result3 = stmt3.executeQuery();
@@ -165,13 +165,13 @@ public class MySQLServerStorer {
                     d.addLoginMessage(result3.getString(1));
                 }
                 result3.close();
-                
+
                 if (d.isPrivateServer()) {
-	                stmt4.setInt(1, d.getServerId());
-	                result4 = stmt4.executeQuery();
-	                while (result4.next()) {
-	                	d.addPlayer(result4.getString(1));
-	                }
+                    stmt4.setInt(1, d.getServerId());
+                    result4 = stmt4.executeQuery();
+                    while (result4.next()) {
+                        d.addPlayer(result4.getString(1));
+                    }
                 }
             }
 
@@ -201,74 +201,73 @@ public class MySQLServerStorer {
         return servers;
     }
 
-    public static void addPlayerAccess(DBHandler dbHandler, ServerData data, DSGPlayerData player) 
-    	throws SQLException {
+    public static void addPlayerAccess(DBHandler dbHandler, ServerData data, DSGPlayerData player)
+            throws SQLException {
         Connection con = null;
         PreparedStatement stmt = null;
         try {
             con = dbHandler.getConnection();
             stmt = con.prepareStatement(
-                "insert into dsg_server_access " +
-                "(server_id, pid) " +
-                "values(?, ?)");
+                    "insert into dsg_server_access " +
+                            "(server_id, pid) " +
+                            "values(?, ?)");
             stmt.setInt(1, data.getServerId());
             stmt.setLong(2, player.getPlayerID());
             stmt.executeUpdate();
+        } finally {
+
+            if (stmt != null) {
+                stmt.close();
+            }
+
+            if (con != null) {
+                dbHandler.freeConnection(con);
+            }
         }
-        finally {
-        
-	        if (stmt != null) {
-	            stmt.close();
-	        }
-	        
-	        if (con != null) {
-	            dbHandler.freeConnection(con);
-	        }
-	    }
     }
-    public static void removePlayerAccess(DBHandler dbHandler, ServerData data, DSGPlayerData player) 
-    	throws SQLException {
-    	Connection con = null;
+
+    public static void removePlayerAccess(DBHandler dbHandler, ServerData data, DSGPlayerData player)
+            throws SQLException {
+        Connection con = null;
         PreparedStatement stmt = null;
         try {
             con = dbHandler.getConnection();
             stmt = con.prepareStatement(
-                "delete from dsg_server_access " +
-                "where server_id = ? and pid = ?");
+                    "delete from dsg_server_access " +
+                            "where server_id = ? and pid = ?");
             stmt.setInt(1, data.getServerId());
             stmt.setLong(2, player.getPlayerID());
             stmt.executeUpdate();
+        } finally {
+
+            if (stmt != null) {
+                stmt.close();
+            }
+
+            if (con != null) {
+                dbHandler.freeConnection(con);
+            }
         }
-        finally {
-        
-	        if (stmt != null) {
-	            stmt.close();
-	        }
-	        
-	        if (con != null) {
-	            dbHandler.freeConnection(con);
-	        }
-	    }
     }
-    
+
     public static void updateServerMessages(DBHandler dbHandler, ServerData data)
-        throws Throwable {
-    
+            throws Throwable {
+
         Connection con = null;
         PreparedStatement stmt = null;
         try {
             con = dbHandler.getConnection();
-            
+
             stmt = con.prepareStatement(
-                "delete from dsg_server_message " +
-                "where server_id = ?");
+                    "delete from dsg_server_message " +
+                            "where server_id = ?");
             stmt.setInt(1, data.getServerId());
             stmt.executeUpdate();
-            
+
             stmt.close();
-            
+
             stmt = con.prepareStatement("insert into dsg_server_message " +
-                "values(?, ?, ?)");
+                    "values(?, ?, ?)");
             for (int i = 0; i < data.getLoginMessages().size(); i++) {
                 String message = (String) data.getLoginMessages().get(i);
                 stmt.setInt(1, data.getServerId());
@@ -276,7 +275,7 @@ public class MySQLServerStorer {
                 stmt.setString(3, message);
                 stmt.execute();
             }
-            
+
         } finally {
             if (stmt != null) {
                 stmt.close();

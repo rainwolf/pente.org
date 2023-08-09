@@ -12,14 +12,14 @@ public class DSGAddAITableEvent extends AbstractDSGTableEvent {
 
     public DSGAddAITableEvent(String player, int table, AIData aiData) {
         super(player, table);
-        
+
         this.aiData = aiData;
     }
 
     public AIData getAIData() {
         return aiData;
     }
-    
+
     public String toString() {
         return "add ai " + aiData + " " + super.toString();
     }

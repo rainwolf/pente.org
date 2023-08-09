@@ -3,22 +3,25 @@
 <html>
 <head><title>Jive Forums 3 - PJA documentation</title>
     <style type="text/css">
-    BODY, TD, P, UL, OL, LI, .header, .subheader {
-        font-family : arial,helvetica,sans-serif;
-        font-size : 90%;
-    }
-    TT, CODE, PRE {
-        font-size : 9pt;
-        color : #009900;
-        font-weight : bold;
-    }
-    .header {
-        font-size : 110%;
-        font-weight : bold;
-    }
-    .subheader {
-        font-weight : bold;
-    }
+        BODY, TD, P, UL, OL, LI, .header, .subheader {
+            font-family: arial, helvetica, sans-serif;
+            font-size: 90%;
+        }
+
+        TT, CODE, PRE {
+            font-size: 9pt;
+            color: #009900;
+            font-weight: bold;
+        }
+
+        .header {
+            font-size: 110%;
+            font-weight: bold;
+        }
+
+        .subheader {
+            font-weight: bold;
+        }
     </style>
 </head>
 
@@ -30,20 +33,20 @@ Jive Forums 3 - PJA Documentation
 <hr size="0">
 
 <p>
-In UNIX, Java requires the use of the display to create images. This is a
-limitation of the Java AWT libraries that is fixed in the new JDK 1.4 release.
-Until then there are two possible solutions for applications such as
-Jive Forums, which run in a Java application server. It is possible to set the
-<tt>DISPLAY</tt> environment variable and have a writeable display that Java can
-use. However, this is not a good solution for most servers as it creates
-security problems and is an ungainly solution at best. The solution we recommend
-is the use of a toolkit such as PJA (Pure Java AWT).
+    In UNIX, Java requires the use of the display to create images. This is a
+    limitation of the Java AWT libraries that is fixed in the new JDK 1.4 release.
+    Until then there are two possible solutions for applications such as
+    Jive Forums, which run in a Java application server. It is possible to set the
+    <tt>DISPLAY</tt> environment variable and have a writeable display that Java can
+    use. However, this is not a good solution for most servers as it creates
+    security problems and is an ungainly solution at best. The solution we recommend
+    is the use of a toolkit such as PJA (Pure Java AWT).
 </p>
 
 <p>
-Before you attempt to install PJA, please run the Server-Side Graphics Capability
-test on the Report Configuration page of the Jive Forums Admin tool. This test
-will determine if you need to install PJA.
+    Before you attempt to install PJA, please run the Server-Side Graphics Capability
+    test on the Report Configuration page of the Jive Forums Admin tool. This test
+    will determine if you need to install PJA.
 </p>
 
 <span class="subheader">
@@ -51,11 +54,11 @@ General Java Setup
 </span>
 
 <p>
-To use PJA, you'll first need to download the latest release from
-<a href="http://www.eteks.com/pja/en/" target="_new">http://www.eteks.com/pja/en/</a>.
-For purposes of this example installation, we'll assume you have Java installed
-in <tt>/opt/java</tt> and an application server
-installed in <tt>/opt/&lt;appServer&gt;</tt>.
+    To use PJA, you'll first need to download the latest release from
+    <a href="http://www.eteks.com/pja/en/" target="_new">http://www.eteks.com/pja/en/</a>.
+    For purposes of this example installation, we'll assume you have Java installed
+    in <tt>/opt/java</tt> and an application server
+    installed in <tt>/opt/&lt;appServer&gt;</tt>.
 </p>
 
 <ol>
@@ -66,12 +69,12 @@ installed in <tt>/opt/&lt;appServer&gt;</tt>.
 </ol>
 
 <p>
-To add the <tt>pja.jar</tt> file to your "bootclasspath" directory
-you will need to set three Java system properties that will allow your
-application server's Java instance to find and use PJA properly.  If you wish
-to set these options on the command line as arguments to the java executable,
-it would look like the following (ignore the backslashes, they are there to
-represent that the newline is irrelevant):
+    To add the <tt>pja.jar</tt> file to your "bootclasspath" directory
+    you will need to set three Java system properties that will allow your
+    application server's Java instance to find and use PJA properly. If you wish
+    to set these options on the command line as arguments to the java executable,
+    it would look like the following (ignore the backslashes, they are there to
+    represent that the newline is irrelevant):
 </p>
 
 <pre>
@@ -117,16 +120,16 @@ Specific Application Server Setup
 </ul>
 
 <p>
-Under other application servers these setting can be made from GUI configuration
-tools. In JRun, for instance, you are given a web based administration page.
-Under the "Java Settings" section you are allowed to add Java arguments.
-That is where you'd want to put the arguments described above.
+    Under other application servers these setting can be made from GUI configuration
+    tools. In JRun, for instance, you are given a web based administration page.
+    Under the "Java Settings" section you are allowed to add Java arguments.
+    That is where you'd want to put the arguments described above.
 </p>
 
 <p>
-If you've followed all the documentation above and have problems, please
-post a support question in the
-<a href="http://www.jivesoftware.com/jive/" target="_new">Jive Software Support Forums</a>.
+    If you've followed all the documentation above and have problems, please
+    post a support question in the
+    <a href="http://www.jivesoftware.com/jive/" target="_new">Jive Software Support Forums</a>.
 </p>
 
 </body>

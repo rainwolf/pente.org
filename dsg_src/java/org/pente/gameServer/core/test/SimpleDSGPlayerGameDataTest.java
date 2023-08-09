@@ -6,23 +6,24 @@ import org.pente.gameServer.core.*;
 
 public class SimpleDSGPlayerGameDataTest extends TestCase {
 
-	private static final double delta = 0.00001d;
-	private static final double k = 32;
-	
+    private static final double delta = 0.00001d;
+    private static final double k = 32;
+
     public static void main(String[] args) {
-        junit.textui.TestRunner.main(new String[] {
-            SimpleDSGPlayerGameDataTest.class.getName()
+        junit.textui.TestRunner.main(new String[]{
+                SimpleDSGPlayerGameDataTest.class.getName()
         });
     }
 
     public static Test suite() {
         return new TestSuite(SimpleDSGPlayerGameDataTest.class);
     }
+
     public SimpleDSGPlayerGameDataTest(String name) {
         super(name);
     }
 
-   
+
     public void testGameOverOneProvisionalOneNot() {
 
         DSGPlayerGameData dpgd1 = new SimpleDSGPlayerGameData();
@@ -152,27 +153,26 @@ public class SimpleDSGPlayerGameDataTest extends TestCase {
         assertEquals(2, dpgd2.getWins());
         assertEquals(1, dpgd2.getLosses());
         assertEquals(2, dpgd2.getStreak());
-        
+
         assertEquals(3, dpgd1.getTotalGames());
     }
-    
-    public void testProvisionalPlayerLosesRatingsUpProblem()
-    {
+
+    public void testProvisionalPlayerLosesRatingsUpProblem() {
         DSGPlayerGameData dpgd1 = new SimpleDSGPlayerGameData();
         dpgd1.setWins(1);
         dpgd1.setLosses(1);
         dpgd1.setRating(998d);
-        
-        
+
+
         DSGPlayerGameData dpgd2 = new SimpleDSGPlayerGameData();
         dpgd2.setWins(20);
         dpgd2.setLosses(2);
         dpgd2.setRating(1892d);
-        
+
         DSGPlayerGameData dpgd3 = dpgd1.getCopy();
-        
+
         dpgd1.gameOver(DSGPlayerGameData.LOSS, dpgd2, k);
         assertEquals("Provisional player's rating should be same.",
-            998d, dpgd1.getRating(), 0.00d);
+                998d, dpgd1.getRating(), 0.00d);
     }
 }

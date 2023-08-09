@@ -1,19 +1,20 @@
-/** MySQLGameVenueStorer.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * MySQLGameVenueStorer.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.game;
@@ -29,12 +30,12 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
 
     private static Category log4j = Category.getInstance(
             MySQLGameVenueStorer.class.getName());
-    
+
     public static final String GAME_SITE_TABLE = "game_site";
     public static final String GAME_EVENT_TABLE = "game_event";
 
-    private DBHandler   dbHandler;
-    private Vector      tree;
+    private DBHandler dbHandler;
+    private Vector tree;
 
     /** The names of all tables, used to lock them at one time */
     protected static final Vector<String> ALL_TABLES = new Vector<String>();
@@ -47,19 +48,19 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
 
     public static void main(String args[]) throws Throwable {
         BasicConfigurator.configure();
-        
+
         long startTime = System.currentTimeMillis();
 
         DBHandler dbHandler = new MySQLDBHandler(
-            args[0], args[1], args[2], args[3]);
+                args[0], args[1], args[2], args[3]);
         MySQLGameVenueStorer storer = new MySQLGameVenueStorer(dbHandler);
 
         System.out.println("time = " + (System.currentTimeMillis() - startTime));
-        
+
         GameSiteData s = storer.getGameSiteData(1, 1);
         GameEventData e = storer.getGameEventData(1, 1, s.getName());
         org.pente.gameDatabase.GameVenueJSFormat jsFormat =
-            new org.pente.gameDatabase.GameVenueJSFormat();
+                new org.pente.gameDatabase.GameVenueJSFormat();
         jsFormat.format(storer.getGameTree());
         //System.out.println(jsFormat.format(storer.getSiteTree()).toString());
     }
@@ -101,7 +102,7 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
         String round;
         String section;
     }
-        
+
     private void updateGameTree(DBHandler dbHandler) throws Exception {
 
         log4j.info("MySQLGameVenueStorer.updateGameTree() started");
@@ -114,17 +115,17 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
         try {
             con = dbHandler.getConnection();
 
-            GameTreeData    lastGame = null;
-            GameSiteData    lastSite = null;
-            GameEventData   lastEvent = null;
-            GameRoundData   lastRound = null;
-            
+            GameTreeData lastGame = null;
+            GameSiteData lastSite = null;
+            GameEventData lastEvent = null;
+            GameRoundData lastRound = null;
+
             // get all combinations of games+sites+events+rounds+sections
             // uses index on pente_game, pretty quick
             stmt = con.prepareStatement(
-                "select distinct game, site_id, event_id, round, section " +
-                "from pente_game " +
-                "order by game, site_id, event_id, round, section");
+                    "select distinct game, site_id, event_id, round, section " +
+                            "from pente_game " +
+                            "order by game, site_id, event_id, round, section");
             result = stmt.executeQuery();
             List<Data> data = new ArrayList<Data>(3000);
             while (result.next()) {
@@ -138,10 +139,10 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
             }
             result.close();
             stmt.close();
-            
+
             // get all unique site data
             stmt = con.prepareStatement(
-                "select sid, name, short_name, URL from game_site");
+                    "select sid, name, short_name, URL from game_site");
             List<GameSiteData> siteData = new ArrayList<GameSiteData>(5);
             result = stmt.executeQuery();
             while (result.next()) {
@@ -154,13 +155,13 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
             }
             result.close();
             stmt.close();
-            
+
             stmt = con.prepareStatement("select eid, name, game from game_event " +
-                "order by eid");
-            
-            
+                    "order by eid");
+
+
             long start = System.currentTimeMillis();
-            
+
             // get all events in order of eid
             Map<Integer, GameEventData> eventData = new HashMap<Integer, GameEventData>(400);
             result = stmt.executeQuery();
@@ -171,17 +172,19 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
                 e.setGame(result.getInt(3));
                 eventData.put(e.getEventID(), e);
             }
-            
-            
+
+
             GameEventData ced = null;
             int ceid = -1;
-            
+
             // associate sitedata, eventdata with data
-            outer2: for (Iterator<Data> it = data.iterator(); it.hasNext();) {
+            outer2:
+            for (Iterator<Data> it = data.iterator(); it.hasNext(); ) {
                 long startTime = System.currentTimeMillis();
                 Data d = it.next();
                 // associate sitedata
-                outer : for (GameSiteData s : siteData) {
+                outer:
+                for (GameSiteData s : siteData) {
                     if (d.siteId == s.getSiteID()) {
                         d.siteData = s;
                         break outer;
@@ -192,11 +195,10 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
                     it.remove();
                     continue outer2;
                 }
-                
+
                 if (ceid == d.eventId) {
                     d.eventData = ced;
-                }
-                else {
+                } else {
                     ceid = d.eventId;
                     ced = eventData.get(ceid);
                     d.eventData = ced;
@@ -206,8 +208,8 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
                         continue outer2;
                     }
                 }
-                
-                
+
+
 //              if (ceid == d.eventId) {
 //                  d.eventData = ced;
 //              }
@@ -231,40 +233,34 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
 //              }
             }
             log4j.debug("get eid time=" + (System.currentTimeMillis() - start));
-            
+
             start = System.currentTimeMillis();
             // sort by game, site name, event name, round, section
             Collections.sort(data, new Comparator<Data>() {
                 public int compare(Data d1, Data d2) {
                     if (d1.game != d2.game) {
                         return d1.game - d2.game;
-                    }
-                    else {
+                    } else {
                         if (d1.siteData != d2.siteData) {
                             return d1.siteData.getName().compareTo(
-                                d2.siteData.getName());
-                        }
-                        else {
+                                    d2.siteData.getName());
+                        } else {
                             if (d1.eventData != d2.eventData) {
                                 return d1.eventData.getName().compareTo(
-                                    d2.eventData.getName());
-                            }
-                            else {
+                                        d2.eventData.getName());
+                            } else {
                                 if (d1.round == null) {
                                     if (d2.round == null) return 1;
                                     else return 0;
                                 } else if (d2.round == null) {
                                     return 1;
-                                }
-                                else if (!d1.round.equals(d2.round)) {
+                                } else if (!d1.round.equals(d2.round)) {
                                     return d1.round.compareTo(d2.round);
-                                }
-                                else {
+                                } else {
                                     if (d1.section == null) {
                                         if (d2.section == null) return 1;
                                         else return 0;
-                                    }
-                                    else {
+                                    } else {
                                         return d1.section.compareTo(d2.section);
                                     }
                                 }
@@ -310,7 +306,7 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
                     lastEvent = null;
                     lastRound = null;
                 }
-                
+
                 int sid = d.siteId;
                 if (lastSite == null || sid != lastSite.getSiteID()) {
 
@@ -342,9 +338,9 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
                 if (section != null) {
                     lastRound.addGameSectionData(new SimpleGameSectionData(section));
                 }
-                
+
                 log4j.debug("Loaded game=" + game + " site=" + sid + " event=" +
-                    eid + " round=" + round + " section=" + section);
+                        eid + " round=" + round + " section=" + section);
             }
 
         } finally {
@@ -363,17 +359,17 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
         synchronized (tree) {
             tree = newTree;
         }
-        
+
         log4j.info("MySQLGameVenueStorer.updateGameTree() done");
     }
 
     public int getSiteID(String name) {
-        
+
         synchronized (tree) {
 
             for (int i = 0; i < tree.size(); i++) {
                 GameTreeData gameTreeData = (GameTreeData) tree.get(i);
-                for (Iterator sites = gameTreeData.getGameSiteData().iterator(); sites.hasNext();) {
+                for (Iterator sites = gameTreeData.getGameSiteData().iterator(); sites.hasNext(); ) {
                     GameSiteData gameSiteData = (GameSiteData) sites.next();
                     if (gameSiteData.getName().equals(name)) {
                         return gameSiteData.getSiteID();
@@ -391,14 +387,14 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
 
             GameTreeData gameTreeData;
             if (game > 50) {
-                gameTreeData = (GameTreeData) tree.get(game- 1 - 50);
+                gameTreeData = (GameTreeData) tree.get(game - 1 - 50);
             } else {
-                gameTreeData = (GameTreeData) tree.get(game- 1);
+                gameTreeData = (GameTreeData) tree.get(game - 1);
             }
             if (gameTreeData == null) {
                 return null;
             }
-            for (Iterator sites = gameTreeData.getGameSiteData().iterator(); sites.hasNext();) {
+            for (Iterator sites = gameTreeData.getGameSiteData().iterator(); sites.hasNext(); ) {
                 GameSiteData gameSiteData = (GameSiteData) sites.next();
                 if (gameSiteData.getSiteID() == sid) {
                     return gameSiteData;
@@ -414,14 +410,14 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
         synchronized (tree) {
             GameTreeData gameTreeData;
             if (game > 50) {
-                gameTreeData = (GameTreeData) tree.get(game- 1 - 50);
+                gameTreeData = (GameTreeData) tree.get(game - 1 - 50);
             } else {
-                gameTreeData = (GameTreeData) tree.get(game- 1);
+                gameTreeData = (GameTreeData) tree.get(game - 1);
             }
             if (gameTreeData == null) {
                 return null;
             }
-            for (Iterator sites = gameTreeData.getGameSiteData().iterator(); sites.hasNext();) {
+            for (Iterator sites = gameTreeData.getGameSiteData().iterator(); sites.hasNext(); ) {
                 GameSiteData gameSiteData = (GameSiteData) sites.next();
                 if (gameSiteData.getName().equals(name)) {
                     return gameSiteData;
@@ -433,7 +429,7 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
     }
 
     public void addGameSiteData(int game, GameSiteData gameSiteData)
-        throws Exception {
+            throws Exception {
 
         Connection con = null;
         PreparedStatement stmt = null;
@@ -443,8 +439,8 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
 
             // insert site info into db
             stmt = con.prepareStatement("insert into " + GAME_SITE_TABLE + " " +
-                                        "(name, short_name, URL) " +
-                                        "values(?, ?, ?)");
+                    "(name, short_name, URL) " +
+                    "values(?, ?, ?)");
 
             stmt.setString(1, gameSiteData.getName());
             stmt.setString(2, gameSiteData.getShortSite());
@@ -456,8 +452,8 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
                 stmt.close();
             }
             stmt = con.prepareStatement("select sid " +
-                                        "from " + GAME_SITE_TABLE + " " +
-                                        "where name = ?");
+                    "from " + GAME_SITE_TABLE + " " +
+                    "where name = ?");
             stmt.setString(1, gameSiteData.getName());
             result = stmt.executeQuery();
             if (result.next()) {
@@ -473,9 +469,24 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
             }
 
         } finally {
-            if (result != null) { try { result.close(); } catch(SQLException ex) {} }
-            if (stmt != null) { try { stmt.close(); } catch(SQLException ex) {} }
-            if (con != null) { try { dbHandler.freeConnection(con); } catch (Exception ex) {} }
+            if (result != null) {
+                try {
+                    result.close();
+                } catch (SQLException ex) {
+                }
+            }
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException ex) {
+                }
+            }
+            if (con != null) {
+                try {
+                    dbHandler.freeConnection(con);
+                } catch (Exception ex) {
+                }
+            }
         }
     }
 
@@ -519,8 +530,8 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
         return null;
     }
 
-    public void addGameEventData(int game, 
-        GameEventData gameEventData, String site) throws Exception {
+    public void addGameEventData(int game,
+                                 GameEventData gameEventData, String site) throws Exception {
 
         Connection con = null;
         PreparedStatement stmt = null;
@@ -533,8 +544,8 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
             // insert event info into db
             con = dbHandler.getConnection();
             stmt = con.prepareStatement("insert into " + GAME_EVENT_TABLE + " " +
-                                        "(name, site_id, game) " +
-                                        "values(?, ?, ?)");
+                    "(name, site_id, game) " +
+                    "values(?, ?, ?)");
 
             stmt.setString(1, gameEventData.getName());
             stmt.setInt(2, siteData.getSiteID());
@@ -546,10 +557,10 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
                 stmt.close();
             }
             stmt = con.prepareStatement("select eid " +
-                                        "from " + GAME_EVENT_TABLE + " " +
-                                        "where name = ? " +
-                                        "and site_id = ? " +
-                                        "and game = ?");
+                    "from " + GAME_EVENT_TABLE + " " +
+                    "where name = ? " +
+                    "and site_id = ? " +
+                    "and game = ?");
             stmt.setString(1, gameEventData.getName());
             stmt.setInt(2, siteData.getSiteID());
             stmt.setInt(3, game);
@@ -564,9 +575,24 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
             }
 
         } finally {
-            if (result != null) { try { result.close(); } catch(SQLException ex) {} }
-            if (stmt != null) { try { stmt.close(); } catch(SQLException ex) {} }
-            if (con != null) { try { dbHandler.freeConnection(con); } catch (Exception ex) {} }
+            if (result != null) {
+                try {
+                    result.close();
+                } catch (SQLException ex) {
+                }
+            }
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException ex) {
+                }
+            }
+            if (con != null) {
+                try {
+                    dbHandler.freeConnection(con);
+                } catch (Exception ex) {
+                }
+            }
         }
     }
 }

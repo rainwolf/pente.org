@@ -79,7 +79,7 @@ public class DSGEventWrapper {
 
     public DSGEventWrapper(Object o) {
         Field[] fields = DSGEventWrapper.class.getDeclaredFields();
-        for(Field f : fields){
+        for (Field f : fields) {
             f.setAccessible(true);
             if (o.getClass().getName().equals(f.getType().getName())) {
                 try {
@@ -94,7 +94,7 @@ public class DSGEventWrapper {
 
     public Object getEncodedEvent() {
         Field[] fields = this.getClass().getDeclaredFields();
-        for(Field f : fields){
+        for (Field f : fields) {
             f.setAccessible(true);
             try {
                 Object v = f.get(this);
@@ -117,8 +117,6 @@ public class DSGEventWrapper {
         Gson gson = gsonBuilder.create();
         return gson.toJson(this);
     }
-
-
 
 
     public DSGAddAITableEvent getDsgAddAITableEvent() {
@@ -425,8 +423,13 @@ public class DSGEventWrapper {
         this.dsgPreferenceEvent = dsgPreferenceEvent;
     }
 
-    public DSGRejectGoStateEvent getDsgRejectGoStateEvent() { return dsgRejectGoStateEvent; }
-    public void setDsgRejectGoStateEvent(DSGRejectGoStateEvent dsgRejectGoStateEvent) { this.dsgRejectGoStateEvent = dsgRejectGoStateEvent; }
+    public DSGRejectGoStateEvent getDsgRejectGoStateEvent() {
+        return dsgRejectGoStateEvent;
+    }
+
+    public void setDsgRejectGoStateEvent(DSGRejectGoStateEvent dsgRejectGoStateEvent) {
+        this.dsgRejectGoStateEvent = dsgRejectGoStateEvent;
+    }
 
     public DSGResignTableErrorEvent getDsgResignTableErrorEvent() {
         return dsgResignTableErrorEvent;

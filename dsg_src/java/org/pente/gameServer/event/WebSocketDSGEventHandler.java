@@ -16,16 +16,16 @@ public class WebSocketDSGEventHandler extends ServerSocketDSGEventHandler {
     Session session;
     Vector listeners = new Vector();
     SynchronizedQueue outputQueue = new SynchronizedQueue();
-    
-    
+
+
     public WebSocketDSGEventHandler(Session session) {
-        
+
         running = true;
         writeObjectThread = new Thread(
                 new MessageWriter(), "WebSocketDSGEventHandler [writer]");
         writeObjectThread.start();
-        
-        
+
+
         this.session = session;
     }
 
@@ -34,7 +34,7 @@ public class WebSocketDSGEventHandler extends ServerSocketDSGEventHandler {
     public synchronized void eventOccurred(DSGEvent dsgEvent) {
         dsgEvent.setCurrentTime();
 
-        outputQueue.add(dsgEvent);        
+        outputQueue.add(dsgEvent);
     }
 
     class MessageWriter implements Runnable {
@@ -88,19 +88,17 @@ public class WebSocketDSGEventHandler extends ServerSocketDSGEventHandler {
             if (obj == null) {
                 handleError(null);
                 return;
-            }
-            else if (!(obj instanceof DSGEvent)) {
+            } else if (!(obj instanceof DSGEvent)) {
                 handleError(null);
                 return;
-            }
-            else {
+            } else {
                 notifyListeners((DSGEvent) obj);
             }
             // on any throwable stop the thread
         } catch (Throwable th) {
             t = th;
         }
-        
+
         if (t != null) {
             handleError(t);
         }
@@ -110,6 +108,7 @@ public class WebSocketDSGEventHandler extends ServerSocketDSGEventHandler {
     public void addListener(DSGEventListener dsgEventListener) {
         listeners.addElement(dsgEventListener);
     }
+
     @Override
     public void removeListener(DSGEventListener dsgEventListener) {
         listeners.removeElement(dsgEventListener);
@@ -120,7 +119,7 @@ public class WebSocketDSGEventHandler extends ServerSocketDSGEventHandler {
             ((DSGEventListener) listeners.elementAt(i)).eventOccurred(dsgEvent);
         }
     }
-    
+
     @Override
     public void destroy() {
         try {
@@ -128,12 +127,13 @@ public class WebSocketDSGEventHandler extends ServerSocketDSGEventHandler {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        super.destroy();        
+        super.destroy();
     }
-    
-    @Override public void handleError(Throwable t) {
+
+    @Override
+    public void handleError(Throwable t) {
         destroy();
-        super.handleError(t);    
+        super.handleError(t);
     }
 
 

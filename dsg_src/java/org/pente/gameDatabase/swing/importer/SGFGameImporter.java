@@ -5,13 +5,13 @@ import java.io.InputStream;
 public class SGFGameImporter extends GameImporterAdapter {
 
 
-	public boolean attemptImport(InputStream in, GameImporterListener l) {
-		boolean imported = false;
+    public boolean attemptImport(InputStream in, GameImporterListener l) {
+        boolean imported = false;
 
-		SGFGameFormat gf = new SGFGameFormat("\r\n", "MM/dd/yyyy");
-		
-		try {
-			imported = gf.parse2(in, l);
+        SGFGameFormat gf = new SGFGameFormat("\r\n", "MM/dd/yyyy");
+
+        try {
+            imported = gf.parse2(in, l);
 			
 			/*
 			// if more than 5 items imported then save them
@@ -79,11 +79,11 @@ public class SGFGameImporter extends GameImporterAdapter {
 				}
 			}
 			*/
-			
-		} catch (Throwable t) {
-			t.printStackTrace();
-		}
-		
-		return imported;
-	}
+
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+
+        return imported;
+    }
 }

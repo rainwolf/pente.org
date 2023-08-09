@@ -1,5 +1,5 @@
-<% 
-String name = (String) request.getAttribute("name");
+<%
+   String name = (String) request.getAttribute("name");
 %>
 
 <html>

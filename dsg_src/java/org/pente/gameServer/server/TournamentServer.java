@@ -1,19 +1,20 @@
-/** Server.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * Server.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.gameServer.server;
@@ -54,7 +55,7 @@ public class TournamentServer extends Server {
     protected boolean noNeedForBreak = false;
 
     public TournamentServer(Resources resources,
-                  ServerData serverData) throws Throwable {
+                            ServerData serverData) throws Throwable {
 
         super(resources, serverData);
         tournament = getTourney();
@@ -62,7 +63,7 @@ public class TournamentServer extends Server {
             initNewRound();
         }
     }
-    
+
     @Override
     public void routeEventToTable(DSGEvent event, int tableNum) {
         if (event instanceof DSGJoinTableEvent &&
@@ -82,7 +83,7 @@ public class TournamentServer extends Server {
             noNeedForBreak = false;
             startNewRoundNow();
         } else {
-            mainRoom.eventOccurred(new DSGSystemMessageTableEvent(0, "BREAK: New round starts in "+ROUND_PAUSE+" minutes."));
+            mainRoom.eventOccurred(new DSGSystemMessageTableEvent(0, "BREAK: New round starts in " + ROUND_PAUSE + " minutes."));
             if (ROUND_PAUSE > 1) {
                 for (int i = ROUND_PAUSE - 1; i > 0; i--) {
                     Timer t = new Timer();
@@ -90,7 +91,7 @@ public class TournamentServer extends Server {
                     t.schedule(new TimerTask() {
                         @Override
                         public void run() {
-                            mainRoom.eventOccurred(new DSGSystemMessageTableEvent(0, finalI + " minutes left before round " + (tournament.getNumRounds()+1) + " starts."));
+                            mainRoom.eventOccurred(new DSGSystemMessageTableEvent(0, finalI + " minutes left before round " + (tournament.getNumRounds() + 1) + " starts."));
                         }
                     }, 1000L * 60 * (ROUND_PAUSE - finalI));
                 }
@@ -105,17 +106,17 @@ public class TournamentServer extends Server {
             }, 1000L * 60 * ROUND_PAUSE);
         }
     }
-    
+
     protected void startNewRoundNow() {
         pid2tables = new ConcurrentHashMap<>();
         table2matches = new ConcurrentHashMap<>();
         tournamentPlayers = new HashSet<>();
-        for (TourneyPlayerData p: tournament.getLastRound().getPlayers()) {
+        for (TourneyPlayerData p : tournament.getLastRound().getPlayers()) {
             tournamentPlayers.add(p.getName());
         }
         matches = new ArrayList<>();
-        for (TourneySection section: tournament.getLastRound().getSections()) {
-            for (TourneyMatch match: section.getMatches()) {
+        for (TourneySection section : tournament.getLastRound().getSections()) {
+            for (TourneyMatch match : section.getMatches()) {
                 if (!match.hasBeenPlayed()) {
                     matches.add(match);
                 }
@@ -123,8 +124,7 @@ public class TournamentServer extends Server {
         }
         attemptMatchStart(null);
     }
-    
-    
+
 
     public synchronized void removeTable(int tableNum) {
         TourneyMatch match = table2matches.get(tableNum);
@@ -138,14 +138,14 @@ public class TournamentServer extends Server {
         }
         super.removeTable(tableNum);
     }
-    
+
     public void matchOnJoin(DSGPlayerData playerData) {
         if (tournament.getNumRounds() == 0 || !tournamentPlayers.contains(playerData.getName()) || pid2tables.get(playerData.getPlayerID()) != null) {
             return;
         }
         attemptMatchStart(playerData.getPlayerID());
     }
-    
+
     private synchronized void attemptMatchStart(Long pid) {
         Thread thread = new Thread(new Runnable() {
             @Override
@@ -155,7 +155,7 @@ public class TournamentServer extends Server {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                for (TourneyMatch match: matches) {
+                for (TourneyMatch match : matches) {
                     if (match.hasBeenPlayed()) {
                         continue;
                     }
@@ -205,21 +205,21 @@ public class TournamentServer extends Server {
             }
         });
         thread.start();
-    } 
-    
+    }
+
     protected void removePlayerFromTables(String player) {
-        for (Integer tableNum: table2matches.keySet()) {
+        for (Integer tableNum : table2matches.keySet()) {
             SynchronizedServerTable syncedTable = (SynchronizedServerTable) this.tables.get(tableNum);
             ServerTable table = syncedTable.getServerTable();
             Vector<DSGPlayerData> playersInTable = table.playersInTable;
-            for (DSGPlayerData p: playersInTable) {
+            for (DSGPlayerData p : playersInTable) {
                 if (p != null && p.getName().equals(player)) {
                     syncedTable.eventOccurred(new DSGExitTableEvent(player, tableNum, false, false));
                 }
             }
         }
     }
-    
+
     public synchronized void startWait() {
         if (tournament.isComplete()) {
             return;
@@ -229,13 +229,13 @@ public class TournamentServer extends Server {
             if (tournament.getNumRounds() == 1) {
                 pause = FIRST_ROUND_WAIT;
             }
-            mainRoom.eventOccurred(new DSGSystemMessageTableEvent(0, "No more possible matches with the present players. In "+pause+" minutes, the next round will start, unless new matches become possible."));
+            mainRoom.eventOccurred(new DSGSystemMessageTableEvent(0, "No more possible matches with the present players. In " + pause + " minutes, the next round will start, unless new matches become possible."));
             if (pause > 1) {
                 if (waitAnnouncementTimers == null) {
                     waitAnnouncementTimers = new ArrayList<>();
                 }
                 if (waitAnnouncementTimers.size() > 0) {
-                    for (Iterator<Timer> iterator = waitAnnouncementTimers.iterator(); iterator.hasNext();) {
+                    for (Iterator<Timer> iterator = waitAnnouncementTimers.iterator(); iterator.hasNext(); ) {
                         Timer t = iterator.next();
                         t.cancel();
                         iterator.remove();
@@ -247,7 +247,7 @@ public class TournamentServer extends Server {
                     t.schedule(new TimerTask() {
                         @Override
                         public void run() {
-                            mainRoom.eventOccurred(new DSGSystemMessageTableEvent(0, finalI + " minutes left before round " + (tournament.getNumRounds()+1) + " starts."));
+                            mainRoom.eventOccurred(new DSGSystemMessageTableEvent(0, finalI + " minutes left before round " + (tournament.getNumRounds() + 1) + " starts."));
                         }
                     }, 1000L * 60 * (pause - finalI));
                     waitAnnouncementTimers.add(t);
@@ -263,6 +263,7 @@ public class TournamentServer extends Server {
             }, 1000L * 60 * ROUND_PAUSE);
         }
     }
+
     public synchronized void stopWait() {
         if (timeoutBeforeNextRoundTimer != null) {
             timeoutBeforeNextRoundTimer.cancel();
@@ -270,7 +271,7 @@ public class TournamentServer extends Server {
         }
         if (waitAnnouncementTimers != null) {
             if (waitAnnouncementTimers.size() > 0) {
-                for (Iterator<Timer> iterator = waitAnnouncementTimers.iterator(); iterator.hasNext();) {
+                for (Iterator<Timer> iterator = waitAnnouncementTimers.iterator(); iterator.hasNext(); ) {
                     Timer t = iterator.next();
                     t.cancel();
                     iterator.remove();
@@ -278,9 +279,9 @@ public class TournamentServer extends Server {
             }
         }
     }
-    
+
     public synchronized void forfeitRemainingMatches() {
-        for (TourneyMatch match: matches) {
+        for (TourneyMatch match : matches) {
             if (match.hasBeenPlayed()) {
                 continue;
             }
@@ -306,10 +307,10 @@ public class TournamentServer extends Server {
             }
         }
     }
-    
-    
+
+
     public void destroy() {
         stopWait();
-        super.destroy(); 
+        super.destroy();
     }
 }

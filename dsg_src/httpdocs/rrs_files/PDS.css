@@ -8,30 +8,31 @@
     background-repeat: no-repeat;
     padding: 0;
     margin: 0;
-    width:121px;
-    height:62px;
+    width: 121px;
+    height: 62px;
     text-align: center;
-    vertical-align:middle;
+    vertical-align: middle;
     line-height: 18px;
 }
 
 .activearrow {
     background-image: url('./images/activearrow.gif');
-     width:26px;
-    height:62px;
+    width: 26px;
+    height: 62px;
 }
 
 .bullet {
     background-image: url('./images/bullet.gif');
-    width:20px;
-    height:25px;
+    width: 20px;
+    height: 25px;
     font-family: Trebuchet MS;
     font-size: 22px;
     color: rgb(241, 190, 54);
-    text-align:center;
-    vertical-align:middle;
+    text-align: center;
+    vertical-align: middle;
     font-weight: bold;
 }
+
 .idlebox {
     font-family: Trebuchet MS;
     font-size: 16px;
@@ -42,17 +43,17 @@
     background-repeat: no-repeat;
     padding: 0;
     margin: 0;
-    width:121px;
-    height:62px;
+    width: 121px;
+    height: 62px;
     text-align: center;
-    vertical-align:middle;
+    vertical-align: middle;
     line-height: 18px;
 }
 
 .idlearrow {
     background-image: url('./images/idlearrow.gif');
-     width:26px;
-    height:62px;
+    width: 26px;
+    height: 62px;
 }
 
 .dynlongbutton {
@@ -76,12 +77,12 @@
 
 }
 
-a.dynlongbutton:visited,a.dynshortbutton:visited,a.dynnavbutton:visited {
+a.dynlongbutton:visited, a.dynshortbutton:visited, a.dynnavbutton:visited {
     color: rgb(241, 190, 54);
-    text-decoration:none;
+    text-decoration: none;
 }
 
-.dynshortbutton,.dynshortbuttonhelp {
+.dynshortbutton, .dynshortbuttonhelp {
     font-family: Trebuchet MS;
     font-size: 12px;
     background-image: url('./images/BlankShortButton.gif');
@@ -136,9 +137,22 @@ a.dynlongbutton:visited,a.dynshortbutton:visited,a.dynnavbutton:visited {
     position: relative;
 }
 
-.navarrow { position: absolute; left: 98px; top:3px; font-weight: bold; }
-a.dynnavbutton:hover .navarrow { color : rgb(241, 190, 54) ; display: inline;  }
-a.dynnavbutton .navarrow { color : rgb(64, 16, 112); display : inline; }
+.navarrow {
+    position: absolute;
+    left: 98px;
+    top: 3px;
+    font-weight: bold;
+}
+
+a.dynnavbutton:hover .navarrow {
+    color: rgb(241, 190, 54);
+    display: inline;
+}
+
+a.dynnavbutton .navarrow {
+    color: rgb(64, 16, 112);
+    display: inline;
+}
 
 .smalltext {
     font-size: 8pt;
@@ -149,13 +163,13 @@ a.dynnavbutton .navarrow { color : rgb(64, 16, 112); display : inline; }
 }
 
 .twoline span {
-   font-size: 8pt;
-   display: block;
-   line-height: 10px;
-   text-indent: 0px;
-   margin-top: 0px;
-   padding-top: 3px;
-   padding-left: 8px;
+    font-size: 8pt;
+    display: block;
+    line-height: 10px;
+    text-indent: 0px;
+    margin-top: 0px;
+    padding-top: 3px;
+    padding-left: 8px;
 }
 
 .banner {
@@ -226,30 +240,32 @@ a.dynnavbutton .navarrow { color : rgb(64, 16, 112); display : inline; }
     font-size: 12pt;
 }
 
-.NPDBEntityBar, .NPDBEntityBarWide{
+.NPDBEntityBar, .NPDBEntityBarWide {
     background-color: #ccccff;
-    width:740px;
-    margin:0;
+    width: 740px;
+    margin: 0;
     font-family: arial;
     font-size: 12pt;
 }
 
 .NPDBEntityBarWide {
-    width:850px;
+    width: 850px;
 }
 
 .NPDBSQBar {
     background-color: #ccccff;
-    width:740px;
-    margin:0;
+    width: 740px;
+    margin: 0;
     font-family: arial;
     font-size: 12pt;
 }
 
-form { margin: 0}
+form {
+    margin: 0
+}
 
-.nowrap{
-    white-space:nowrap;
+.nowrap {
+    white-space: nowrap;
 }
 
 .pageoptionheading {

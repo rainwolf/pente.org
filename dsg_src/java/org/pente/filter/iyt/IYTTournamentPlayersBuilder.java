@@ -1,19 +1,20 @@
-/** IYTTournamentPlayersBuilder.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * IYTTournamentPlayersBuilder.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.filter.iyt;
@@ -34,19 +35,19 @@ import org.pente.filter.http.*;
 public class IYTTournamentPlayersBuilder implements Runnable {
 
     /** The Vector to store player ids in */
-    private Vector      players;
+    private Vector players;
 
     /** The tournament id to get players from */
-    private int         tournamentID;
+    private int tournamentID;
 
     /** The type of game to get players for */
-    private int         gameTypeID;
+    private int gameTypeID;
 
     /** The round to get players from */
-    private int         round;
+    private int round;
 
     /** Cookies used to connect to iyt */
-    private Hashtable   cookies;
+    private Hashtable cookies;
 
     /** Creates an IYTTournamentGamesBuilder with a new vector of player ids
      *  @param tournamentID The tournament id
@@ -71,6 +72,7 @@ public class IYTTournamentPlayersBuilder implements Runnable {
     public Vector getPlayers() {
         return players;
     }
+
     /** Creates an IYTTournamentPlayerssFilter and uses it with a HttpFilterController
      *  to filter out player ids
      */
@@ -87,11 +89,11 @@ public class IYTTournamentPlayersBuilder implements Runnable {
         params.put("r", Integer.toString(round));
 
         FilterController httpFilterController = new HttpFilterController("GET",
-                                                                         IYTConstants.HOST,
-                                                                         IYTConstants.ROUND_REQUEST,
-                                                                         params,
-                                                                         cookies,
-                                                                         filter);
+                IYTConstants.HOST,
+                IYTConstants.ROUND_REQUEST,
+                params,
+                cookies,
+                filter);
         FilterController filterController = new RetryFilterController(httpFilterController, RetryFilterController.INFINITE_RETRIES, 60);
         filterController.run();
     }

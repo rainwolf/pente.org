@@ -1,19 +1,20 @@
-/** AbstractHttpStorer.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * AbstractHttpStorer.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.game;
@@ -40,20 +41,20 @@ public abstract class AbstractHttpStorer {
     //private static Category cat = Category.getInstance(AbstractHttpStorer.class.getName());
 
     /** The host where the http game server is running */
-    protected String      host;
+    protected String host;
 
     /** The port number where the http game server is running */
-    protected int         port;
+    protected int port;
 
     /** Any request string that is common before all game storer commands */
-    protected String      context;
+    protected String context;
 
-	protected String	  cookie;
-	protected String 	  userName;
-	protected String	  password;
-	
+    protected String cookie;
+    protected String userName;
+    protected String password;
+
     /** The game format used to load/store games */
-    protected GameFormat  gameFormat;
+    protected GameFormat gameFormat;
 
     /** Create a new http game storer
      *  @param host The host to connect to
@@ -70,21 +71,22 @@ public abstract class AbstractHttpStorer {
      *  @gameFormat The format to send/receive games
      *  @startRequestStr If any additional path info is needed before commands
      */
-    public AbstractHttpStorer(String host, int port, GameFormat gameFormat, 
-		String context, String userName, String password) {
+    public AbstractHttpStorer(String host, int port, GameFormat gameFormat,
+                              String context, String userName, String password) {
         this.host = host;
         this.port = port;
         this.gameFormat = gameFormat;
         this.context = context;
-		this.userName = userName;
-		this.password = password;
+        this.userName = userName;
+        this.password = password;
     }
+
     public AbstractHttpStorer(String host, int port, String userName, String password) {
-    	this.host = host;
-    	this.port = port;
-    	this.userName = userName;
-    	this.password = password;
-    	context = "";
+        this.host = host;
+        this.port = port;
+        this.userName = userName;
+        this.password = password;
+        context = "";
     }
 
     /** Get a connection to the http server
@@ -102,28 +104,28 @@ public abstract class AbstractHttpStorer {
      */
     protected StringBuffer createHttpRequest(StringBuffer params, String request) {
 
-		StringBuffer cookieBuffer = new StringBuffer(
-			"Cookie: name2=").append(userName).append(", password2=").append(password);
-		if (cookie != null) {
-			cookieBuffer.append(", JSESSIONID=").append(cookie);
-		}
-		cookieBuffer.append(HttpConstants.END_LINE);
-		
+        StringBuffer cookieBuffer = new StringBuffer(
+                "Cookie: name2=").append(userName).append(", password2=").append(password);
+        if (cookie != null) {
+            cookieBuffer.append(", JSESSIONID=").append(cookie);
+        }
+        cookieBuffer.append(HttpConstants.END_LINE);
+
         StringBuffer requestBuffer = new StringBuffer(HttpGameServer.METHOD).append(" ").
-                                     append(context + request).append(" HTTP/1.0").
-                                     append(HttpConstants.END_LINE).
+                append(context + request).append(" HTTP/1.0").
+                append(HttpConstants.END_LINE).
 
-                                     // host is needed by servers with virtual hosts (eg. dsg.ebizhostingsolutions.com)
-                                     append("Host: ").append(host).append(HttpConstants.END_LINE).
+                // host is needed by servers with virtual hosts (eg. dsg.ebizhostingsolutions.com)
+                        append("Host: ").append(host).append(HttpConstants.END_LINE).
 
-                                     // content-type is needed by tomcat
-                                     append("Content-Type: application/x-www-form-urlencoded").append(HttpConstants.END_LINE).
+                // content-type is needed by tomcat
+                        append("Content-Type: application/x-www-form-urlencoded").append(HttpConstants.END_LINE).
 
-                                     append(cookieBuffer).
-                                     
-                                     append(HttpConstants.CONTENT_LENGTH).append(": ").append(params.length()).
-                                     append(HttpConstants.END_LINE).append(HttpConstants.END_LINE).
-                                     append(params.toString());
+                append(cookieBuffer).
+
+                append(HttpConstants.CONTENT_LENGTH).append(": ").append(params.length()).
+                append(HttpConstants.END_LINE).append(HttpConstants.END_LINE).
+                append(params.toString());
 
         return requestBuffer;
     }
@@ -154,17 +156,17 @@ public abstract class AbstractHttpStorer {
         } catch (Exception e) {
             e.printStackTrace();
             if (socket != null) {
-            	socket.close();
-            	socket = null;
+                socket.close();
+                socket = null;
             }
             throw e;
-        } 
+        }
 
-		//TODO set cookie for faster future searches
-		
+        //TODO set cookie for faster future searches
+
         return socket;
     }
-    
+
     /** Writes the request to the http server through a socket connection
      *  and reads the response into a StringBuffer which it returns.
      *  @param request The request to the server
@@ -210,8 +212,8 @@ public abstract class AbstractHttpStorer {
             }
         }
 
-		//TODO set cookie for faster future searches
-		
+        //TODO set cookie for faster future searches
+
         return response;
     }
 
@@ -241,25 +243,25 @@ public abstract class AbstractHttpStorer {
 
         StringBuffer response = new StringBuffer(responseBuf.toString());
         int endHeaders = response.toString().indexOf(HttpConstants.END_LINE + HttpConstants.END_LINE);
-        
+
         // detect jsessionid in case it changes
         String headersStr = response.substring(0, endHeaders);
         String headers[] = headersStr.split("\r\n");
-		for (int i = 1; i < headers.length; i++) {
-			if (headers[i].toLowerCase().startsWith("set-cookie: jsessionid=")) {
-        		int j = headers[i].indexOf(';');
-        		if (j != -1) {
-        			cookie = headers[i].substring(0, j);
-        			System.out.println("sessionid="+cookie);
-        		}
-			}
-		}
-		
+        for (int i = 1; i < headers.length; i++) {
+            if (headers[i].toLowerCase().startsWith("set-cookie: jsessionid=")) {
+                int j = headers[i].indexOf(';');
+                if (j != -1) {
+                    cookie = headers[i].substring(0, j);
+                    System.out.println("sessionid=" + cookie);
+                }
+            }
+        }
+
         response.replace(0, endHeaders + 4, "");
         return response;
     }
 
-	public void setCookie(String cookie) {
-		this.cookie = cookie;
-	}
+    public void setCookie(String cookie) {
+        this.cookie = cookie;
+    }
 }

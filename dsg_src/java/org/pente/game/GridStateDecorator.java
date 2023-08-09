@@ -1,19 +1,20 @@
-/** GridStateDecorator.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * GridStateDecorator.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.game;
@@ -30,7 +31,7 @@ import java.awt.*;
 public abstract class GridStateDecorator implements GridState {
 
     /** The base grid state that does the real work */
-    protected GridState   gridState;
+    protected GridState gridState;
 
     /** Wrap this grid state around another grid state
      *  @param gridState The base grid state to call all methods on
@@ -67,6 +68,7 @@ public abstract class GridStateDecorator implements GridState {
     public boolean isGameOver() {
         return gridState.isGameOver();
     }
+
     public int getWinner() {
         return gridState.getWinner();
     }
@@ -79,6 +81,7 @@ public abstract class GridStateDecorator implements GridState {
     public int getGridSizeX() {
         return gridState.getGridSizeX();
     }
+
     public int getGridSizeY() {
         return gridState.getGridSizeY();
     }
@@ -112,7 +115,7 @@ public abstract class GridStateDecorator implements GridState {
     public int[] getMoves() {
         return gridState.getMoves();
     }
-    
+
     /** Get which color it is
      *  @return int The current player (1, 2, etc.)
      */
@@ -121,8 +124,9 @@ public abstract class GridStateDecorator implements GridState {
     }
 
     public int getColor(int moveNum) {
-    	return gridState.getColor(moveNum);
+        return gridState.getColor(moveNum);
     }
+
     /** Get whose turn it is
      *  @return int The current player (1, 2, etc.)
      */
@@ -204,39 +208,48 @@ public abstract class GridStateDecorator implements GridState {
     public long getHash() {
         return gridState.getHash();
     }
+
     public long getHash(int index) {
         return gridState.getHash(index);
     }
+
     public long[][] getHashes() {
-    	return gridState.getHashes();
+        return gridState.getHashes();
     }
+
     public void updateHash(HashCalculator calc) {
-        gridState.updateHash(calc); 
+        gridState.updateHash(calc);
     }
-    
+
     public int getRotation() {
         return gridState.getRotation();
     }
+
     public int getRotation(int index) {
         return gridState.getRotation(index);
     }
+
     public int[] getRotations() {
-    	return gridState.getRotations();
+        return gridState.getRotations();
     }
 
     public int rotateMove(int move, int newRotation) {
         return gridState.rotateMove(move, newRotation);
     }
+
     public int rotateMoveToLocalRotation(int move, int newRotation) {
         return gridState.rotateMoveToLocalRotation(move, newRotation);
     }
+
     public int getFirstMoveRotation(int move) {
         return gridState.getFirstMoveRotation(move);
     }
+
     public int rotateFirstMove(int move, int rotation) {
         return gridState.rotateFirstMove(move, rotation);
     }
+
     public int[] getAllPossibleRotations(int move, int newRotation) {
-    	return gridState.getAllPossibleRotations(move, newRotation);
+        return gridState.getAllPossibleRotations(move, newRotation);
     }
 }

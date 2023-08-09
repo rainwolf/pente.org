@@ -1,21 +1,22 @@
 package org.pente.tutorial;
 
-/** SimpleTutorialScreen.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * SimpleTutorialScreen.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 import java.awt.*;
@@ -28,18 +29,18 @@ import org.pente.gameServer.client.*;
 import org.pente.gameServer.client.awt.*;
 
 public class SimpleTutorialScreen extends Panel
-    implements TutorialScreen, GridBoardListener {
+        implements TutorialScreen, GridBoardListener {
 
     public static void main(String args[]) {
 
         final Frame f = new Frame("SimpleTutorialScreen");
 
-        TutorialController controller = 
-            new SimpleTutorialBuilder().buildTutorial();
+        TutorialController controller =
+                new SimpleTutorialBuilder().buildTutorial();
         final SimpleTutorialScreen panel = new SimpleTutorialScreen(
-            controller.getSections());
+                controller.getSections());
         controller.setTutorialScreen(panel);
-        
+
         f.add(panel, "Center");
 
         f.setSize(480, 600);
@@ -64,34 +65,34 @@ public class SimpleTutorialScreen extends Panel
     //private PenteStatePieceCollectionAdapter penteState;
 
     private int game;
-    private GridBoardCanvas                         gridBoardCanvas;
-    private GridBoardOrderedPieceCollectionAdapter  gridBoard;
-    private GridState                               gridState;
+    private GridBoardCanvas gridBoardCanvas;
+    private GridBoardOrderedPieceCollectionAdapter gridBoard;
+    private GridState gridState;
 
-    private GridState                               gridStates[];
-    private GridBoardOrderedPieceCollectionAdapter  gridBoards[];
+    private GridState gridStates[];
+    private GridBoardOrderedPieceCollectionAdapter gridBoards[];
 
     private TextArea textArea;
     private Label stepLabel;
     private Label stepNumberLabel;
     private Choice sectionChoice;
-    
+
     private TutorialActionListener tutorialActionListener;
 
     private static final GridCoordinates coordinates[] = {
-        new AlphaNumericGridCoordinates(19, 19),
-        new TraditionalGridCoordinates(19, 19) };
+            new AlphaNumericGridCoordinates(19, 19),
+            new TraditionalGridCoordinates(19, 19)};
 
-	private static final GameStyles gameStyles =
-        new GameStyles(new Color(44, 134, 47), //board back
-                       new Color(188, 188, 188), //button back
-                       Color.black, //button fore
-                       new Color(64, 64, 64), //new Color(0, 102, 255), //button disabled
-                       Color.white, //player 1 back
-                       Color.black, //player 1 fore
-                       Color.black, //player 2 back
-                       Color.white, //player 2 fore
-                       new Color(188, 188, 188)); //watcher
+    private static final GameStyles gameStyles =
+            new GameStyles(new Color(44, 134, 47), //board back
+                    new Color(188, 188, 188), //button back
+                    Color.black, //button fore
+                    new Color(64, 64, 64), //new Color(0, 102, 255), //button disabled
+                    Color.white, //player 1 back
+                    Color.black, //player 1 fore
+                    Color.black, //player 2 back
+                    Color.white, //player 2 fore
+                    new Color(188, 188, 188)); //watcher
 
 
     /**
@@ -111,41 +112,41 @@ public class SimpleTutorialScreen extends Panel
         PenteBoardCanvas penteCanvas = new PenteBoardCanvas();
         penteCanvas.gridCoordinatesChanged(coordinates[0]);
         penteCanvas.gameOptionsChanged(gameOptions);
-        
+
         gridBoardCanvas = penteCanvas;
         gridBoardCanvas.addGridBoardListener(this);
         // end setup canvas
-        
+
         // setup adapters
-        GridBoardOrderedPieceCollectionAdapter penteAdapter = 
-            new PenteBoardOrderedPieceCollectionAdapter(penteCanvas, false);
+        GridBoardOrderedPieceCollectionAdapter penteAdapter =
+                new PenteBoardOrderedPieceCollectionAdapter(penteCanvas, false);
         penteAdapter.setGridHeight(19);
         penteAdapter.setGridWidth(19);
         penteAdapter.setOnGrid(true);
         penteAdapter.setThinkingPiecePlayer(1);
         penteAdapter.setThinkingPieceVisible(false);
         penteAdapter.setDrawInnerCircles(true);
-        
-        gridBoards = new GridBoardOrderedPieceCollectionAdapter[] { penteAdapter, penteAdapter, penteAdapter, penteAdapter };
+
+        gridBoards = new GridBoardOrderedPieceCollectionAdapter[]{penteAdapter, penteAdapter, penteAdapter, penteAdapter};
         gridBoard = gridBoards[0];
         // end setup adapters
-        
+
         // setup grid states
         PenteStatePieceCollectionAdapter penteState = new PenteStatePieceCollectionAdapter(new SimpleGomokuState(19, 19));
         penteState.addOrderedPieceCollectionListener(penteAdapter);
-        
+
         PenteStatePieceCollectionAdapter keryoState = new PenteStatePieceCollectionAdapter(new SimpleGomokuState(19, 19));
-        keryoState.setCaptureLengths(new int[] {2, 3});
+        keryoState.setCaptureLengths(new int[]{2, 3});
         keryoState.setCapturesToWin(15);
         keryoState.addOrderedPieceCollectionListener(penteAdapter);
-        
+
         PenteStatePieceCollectionAdapter gpenteState = new PenteStatePieceCollectionAdapter(new SimpleGomokuState(19, 19));
         gpenteState.setGPenteRules(true);
         gpenteState.addOrderedPieceCollectionListener(penteAdapter);
-        
+
         GridStatePieceCollectionAdapter gomokuState = new GridStatePieceCollectionAdapter(new SimpleGomokuState(19, 19));
         gomokuState.addOrderedPieceCollectionListener(penteAdapter);
-        
+
         //PENTE 1
         //SPEED PENTE 2
         //KERYO 3
@@ -159,13 +160,13 @@ public class SimpleTutorialScreen extends Panel
         //POOF PENTE 11
         //SPEED POOF PENTE 12
         // insert nulls to match up with GridStateFactory.game ids
-        gridStates = new GridState[] { null/*0 index is empty*/,
-            new SynchronizedPenteState(penteState), null /*speed pente*/,
-            new SynchronizedPenteState(keryoState), null /*speed keryo*/,
-            new SynchronizedGridState(gomokuState),null /*speed gomoku*/,
-            null, null, /*d-pente*/
-            new SynchronizedPenteState(gpenteState), null /*speed gpente*/,
-            null, null};
+        gridStates = new GridState[]{null/*0 index is empty*/,
+                new SynchronizedPenteState(penteState), null /*speed pente*/,
+                new SynchronizedPenteState(keryoState), null /*speed keryo*/,
+                new SynchronizedGridState(gomokuState), null /*speed gomoku*/,
+                null, null, /*d-pente*/
+                new SynchronizedPenteState(gpenteState), null /*speed gpente*/,
+                null, null};
         gridState = gridStates[GridStateFactory.PENTE];
         gridBoard.setGameName(GridStateFactory.getGameName(GridStateFactory.PENTE));
         game = GridStateFactory.PENTE;
@@ -175,9 +176,9 @@ public class SimpleTutorialScreen extends Panel
         textArea = new TextArea("", 8, 10, TextArea.SCROLLBARS_VERTICAL_ONLY);
         textArea.setEditable(false);
         textArea.setBackground(Color.white);
-        
+
         sectionChoice = new Choice();
-        for (; sectionNames.hasMoreElements();) {
+        for (; sectionNames.hasMoreElements(); ) {
             String section = (String) sectionNames.nextElement();
             sectionChoice.add(section);
         }
@@ -186,7 +187,7 @@ public class SimpleTutorialScreen extends Panel
                 tutorialActionListener.switchSection(sectionChoice.getSelectedItem());
             }
         });
-        
+
         Panel navigatePanel = new Panel();
         Button prevButton = gameStyles.createDSGButton("<<");
         prevButton.addActionListener(new ActionListener() {
@@ -204,7 +205,7 @@ public class SimpleTutorialScreen extends Panel
         stepLabel.setForeground(Color.black);
         stepNumberLabel = new Label("1 of 1", Label.CENTER);
         stepNumberLabel.setForeground(Color.black);
-        
+
         navigatePanel.setLayout(new GridBagLayout());
         GridBagConstraints navGbc = new GridBagConstraints();
         navGbc.insets = new Insets(1, 1, 1, 1);
@@ -212,7 +213,7 @@ public class SimpleTutorialScreen extends Panel
         navGbc.gridy = 1;
         navGbc.fill = GridBagConstraints.NONE;
         navigatePanel.add(sectionChoice, navGbc);
-        
+
         navGbc.gridx++;
         navGbc.weightx = 1;
         navGbc.fill = GridBagConstraints.HORIZONTAL;
@@ -228,8 +229,8 @@ public class SimpleTutorialScreen extends Panel
 
         navGbc.gridx++;
         navigatePanel.add(nextButton, navGbc);
-        
-        
+
+
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(3, 3, 3, 3);
@@ -239,18 +240,18 @@ public class SimpleTutorialScreen extends Panel
         gbc.weighty = 8;
         gbc.fill = GridBagConstraints.BOTH;
         add(gridBoardCanvas, gbc);
-        
+
         gbc.gridy++;
         gbc.weightx = 0;
         gbc.weighty = 0;
         add(navigatePanel, gbc);
-        
+
         gbc.gridy++;
         gbc.weighty = 2;
         add(textArea, gbc);
-        
+
         setBackground(Color.white);
-        
+
         clear();
     }
 
@@ -265,9 +266,9 @@ public class SimpleTutorialScreen extends Panel
         gridBoardCanvas.setThinkingPiecePlayer(1);
         gridBoard.clearPieces();
         gridState.clear();
-    	gridBoardCanvas.setMessage(null);
+        gridBoardCanvas.setMessage(null);
     }
-    
+
     public void destroy() {
         gridBoardCanvas.destroy();
     }
@@ -277,13 +278,13 @@ public class SimpleTutorialScreen extends Panel
      */
     public void addMove(int move) {
 
-    	gridBoardCanvas.setMessage(null);
+        gridBoardCanvas.setMessage(null);
         gridState.addMove(move);
         gridBoard.setThinkingPiecePlayer(gridState.getCurrentColor());
     }
-    
+
     public void addMove(GridPiece p) {
-    	gridBoardCanvas.setMessage(null);
+        gridBoardCanvas.setMessage(null);
         gridBoardCanvas.addPiece(p);
     }
 
@@ -298,7 +299,7 @@ public class SimpleTutorialScreen extends Panel
      * @see org.pente.tutorial.TutorialScreen#popup(String)
      */
     public void popup(final String message) {
-        
+
 //        if (frame instanceof DummyFrame) {
 //            ((DummyFrame) frame).setDummyLocation();
 //        }
@@ -318,7 +319,7 @@ public class SimpleTutorialScreen extends Panel
 //        });
 //        dialog.setVisible(true);
 //        dialog.toFront();
-    	gridBoardCanvas.setMessage(message);
+        gridBoardCanvas.setMessage(message);
     }
 
     public void setStepLabel(String label) {
@@ -336,7 +337,7 @@ public class SimpleTutorialScreen extends Panel
     public void addHighlightMove(GridPiece piece) {
         gridBoard.setHighlightPiece(piece);
     }
-    
+
     /**
      * @see org.pente.tutorial.TutorialScreen#addTutorialActionListener(TutorialActionListener)
      */
@@ -346,17 +347,18 @@ public class SimpleTutorialScreen extends Panel
 
     public void switchSection(String name) {
         sectionChoice.select(name);
-    	gridBoardCanvas.setMessage(null);
+        gridBoardCanvas.setMessage(null);
     }
 
     public void gridMoved(int x, int y) {
-        
+
     }
+
     public void gridClicked(int x, int y, int button) {
-    	gridBoardCanvas.setMessage(null);
+        gridBoardCanvas.setMessage(null);
         tutorialActionListener.moveMade(x, y);
     }
-    
+
     public void switchGame(int newGame) {
         if (newGame != game) {
             game = newGame;

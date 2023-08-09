@@ -7,99 +7,108 @@
 <br>
 <br>
 <table border="0" cellspacing="0" cellpadding="0">
-  <tr>
-    <td valign="top">
-<b>Matches</b>
-<table width="400" border="0" cellspacing="0" cellpadding="0" bordercolor="black">
-  <tr bgcolor="<%= bgColor1 %>">
-    <th width="25%" align="left"><font color="white">Player 1</font></th>
-    <th width="25%" align="center"><font color="white">Result</font></th> 
-    <th width="25%" align="left"><font color="white">Player 2</font></th>
-    <th width="25%" align="center"><font color="white">Score</font></th>
-  </tr>
-<%
-SwissSection section = (SwissSection) round.getSection(1);
-List matches = section.getSwissMatches();
-for (Iterator it = matches.iterator(); it.hasNext();) {
-    SingleEliminationMatch m = (SingleEliminationMatch) it.next(); %>
-    
-    <tr>
-      <%-- p1 column --%>
-      <td>
-         <b><a href="../profile?viewName=<%= m.getPlayer1().getName() %>">
-           <%= m.getPlayer1().getName() %></a></b>
-      </td>
-      <%-- result column --%>
-      <td align="center">
-         <%= m.getResultStr() %>
-      </td>
-      <%-- p2 column --%>
-      <% if (m.isBye()) { %>
-      <td colspan="2">&nbsp;</td>
-      <% } else { %>
-      <td>
-         <b><a href="../profile?viewName=<%= m.getPlayer2().getName() %>">
-           <%= m.getPlayer2().getName() %></a></b>
-      </td>
-      <%-- wins column --%>
-      <td align="center">
-          <%= m.getPlayer1Wins() %> - <%= m.getPlayer2Wins() %>
-      </td>
-      <% } %>
-    </tr>
-<%
-}
-%>
- 
-</table>
-  </td>
-  <td valign="top" width="100%" align="center">
-<b>Current Standings</b>
-<table border="0" cellspacing="0" cellpadding="0" bordercolor="black">
-  <tr bgcolor="<%= bgColor1 %>">
-    <th align="left"><font color="white">Rank&nbsp;&nbsp;</font></th>
-    <th align="left"><font color="white">Name</font></th>
-    <th align="left"><font color="white">Score</font></th>
-  </tr>
-  
-<%  int rank = 0; 
-    int count = 0;
-    int prevWins = 1000;
-    boolean cutoff = false;
-    for (Iterator it = section.getPlayersRanked(tourney).iterator();
-         it.hasNext();) {
-        TourneyPlayerData p = (TourneyPlayerData) it.next(); 
-        count++;
-        if (p.getMatchWins() < prevWins) {
-            prevWins = p.getMatchWins();
-            rank = count;
-            if (!cutoff && count > 4) { 
-              cutoff = true; %>
-            <tr>
-              <td><hr></td>
-              <td>&nbsp;Playoff Cutoff&nbsp;</td>
-              <td><hr></td>
+   <tr>
+      <td valign="top">
+         <b>Matches</b>
+         <table width="400" border="0" cellspacing="0" cellpadding="0" bordercolor="black">
+            <tr bgcolor="<%= bgColor1 %>">
+               <th width="25%" align="left"><font color="white">Player 1</font></th>
+               <th width="25%" align="center"><font color="white">Result</font></th>
+               <th width="25%" align="left"><font color="white">Player 2</font></th>
+               <th width="25%" align="center"><font color="white">Score</font></th>
             </tr>
-<%          }
-        } %>
-        
-        <tr>
-          <td align="center"><%= rank %></td>
-          <td><b><a href="../profile?viewName=<%= p.getName() %>">
-              <%= p.getName() %></a></b></td>
-          <td><%= p.getMatchWins() %> - <%= p.getMatchLosses() %></td>
-        </tr>
-<%  } %>
-</table>
-</td>
-</tr>
-    <tr>
-        <td colspan="2">
-            <h2>games</h2>
-        </td>
-    </tr>
-    <tr>
-        <td colspan="2">
+            <%
+               SwissSection section = (SwissSection) round.getSection(1);
+               List matches = section.getSwissMatches();
+               for (Iterator it = matches.iterator(); it.hasNext(); ) {
+                  SingleEliminationMatch m = (SingleEliminationMatch) it.next(); %>
+
+            <tr>
+               <%-- p1 column --%>
+               <td>
+                  <b><a href="../profile?viewName=<%= m.getPlayer1().getName() %>">
+                     <%= m.getPlayer1().getName() %>
+                  </a></b>
+               </td>
+               <%-- result column --%>
+               <td align="center">
+                  <%= m.getResultStr() %>
+               </td>
+               <%-- p2 column --%>
+               <% if (m.isBye()) { %>
+               <td colspan="2">&nbsp;</td>
+               <% } else { %>
+               <td>
+                  <b><a href="../profile?viewName=<%= m.getPlayer2().getName() %>">
+                     <%= m.getPlayer2().getName() %>
+                  </a></b>
+               </td>
+               <%-- wins column --%>
+               <td align="center">
+                  <%= m.getPlayer1Wins() %> - <%= m.getPlayer2Wins() %>
+               </td>
+               <% } %>
+            </tr>
+            <%
+               }
+            %>
+
+         </table>
+      </td>
+      <td valign="top" width="100%" align="center">
+         <b>Current Standings</b>
+         <table border="0" cellspacing="0" cellpadding="0" bordercolor="black">
+            <tr bgcolor="<%= bgColor1 %>">
+               <th align="left"><font color="white">Rank&nbsp;&nbsp;</font></th>
+               <th align="left"><font color="white">Name</font></th>
+               <th align="left"><font color="white">Score</font></th>
+            </tr>
+
+            <% int rank = 0;
+               int count = 0;
+               int prevWins = 1000;
+               boolean cutoff = false;
+               for (Iterator it = section.getPlayersRanked(tourney).iterator();
+                    it.hasNext(); ) {
+                  TourneyPlayerData p = (TourneyPlayerData) it.next();
+                  count++;
+                  if (p.getMatchWins() < prevWins) {
+                     prevWins = p.getMatchWins();
+                     rank = count;
+                     if (!cutoff && count > 4) {
+                        cutoff = true; %>
+            <tr>
+               <td>
+                  <hr>
+               </td>
+               <td>&nbsp;Playoff Cutoff&nbsp;</td>
+               <td>
+                  <hr>
+               </td>
+            </tr>
+            <% }
+            } %>
+
+            <tr>
+               <td align="center"><%= rank %>
+               </td>
+               <td><b><a href="../profile?viewName=<%= p.getName() %>">
+                  <%= p.getName() %>
+               </a></b></td>
+               <td><%= p.getMatchWins() %> - <%= p.getMatchLosses() %>
+               </td>
+            </tr>
+            <% } %>
+         </table>
+      </td>
+   </tr>
+   <tr>
+      <td colspan="2">
+         <h2>games</h2>
+      </td>
+   </tr>
+   <tr>
+      <td colspan="2">
             <%
                 int t = 0;
                 for (Iterator it = matches.iterator(); it.hasNext();) {
@@ -115,51 +124,57 @@ for (Iterator it = matches.iterator(); it.hasNext();) {
                         if (game != null && game.getEventId() == eid && !game.isCompleted() && !game.isHidden()) {
                             if (t%2 == 0) {
                                 %>
-                                    <tr><td>
-                                <%
+   <tr>
+      <td>
+            <%
                             } else {
                                 %>
-                                    <td>
-                                <%
-                            }
-                            %><%@ include file="../tb/listedMobileGame.jsp" %><%
-                            if (t%2 == 0) {
-                                %>
-                                    </td>
-                                <%
+      <td>
+         <%
+            }
+         %>
+         <%@ include file="../tb/listedMobileGame.jsp" %>
+         <%
+            if (t % 2 == 0) {
+         %>
+      </td>
+      <%
+      } else {
+      %>
+      </td></tr>
+   <%
+         }
+         t++;
+      }
+      game = s.getGame2();
+      if (game != null && game.getEventId() == eid && !game.isCompleted() && !game.isHidden()) {
+         if (t % 2 == 0) {
+   %>
+   <tr>
+      <td>
+            <%
                             } else {
                                 %>
-                                    </td></tr>
-                                <%
-                            }
-                            t++;
-                        }
-                        game = s.getGame2();
-                        if (game != null && game.getEventId() == eid && !game.isCompleted() && !game.isHidden()) {
-                            if (t%2 == 0) {
-                                %>
-                                    <tr><td>
-                                <%
-                            } else {
-                                %>
-                                    <td>
-                                <%
-                            }
-                            %><%@ include file="../tb/listedMobileGame.jsp" %><%
-                            if (t%2 == 0) {
-                                %>
-                                    </td>
-                                <%
-                            } else {
-                                %>
-                                    </td></tr>
-                                <%
-                            }
-                            t++;
-                        }
-                    }
-                }
-            %>
-        </td>
-    </tr>
+      <td>
+         <%
+            }
+         %>
+         <%@ include file="../tb/listedMobileGame.jsp" %>
+         <%
+            if (t % 2 == 0) {
+         %>
+      </td>
+      <%
+      } else {
+      %>
+      </td></tr>
+   <%
+               }
+               t++;
+            }
+         }
+      }
+   %>
+   </td>
+   </tr>
 </table>

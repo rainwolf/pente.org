@@ -1,6 +1,7 @@
 package org.pente.jive;
 
 import com.jivesoftware.base.AuthToken;
+
 import java.io.Serializable;
 
 public final class DSGAuthToken implements AuthToken, Serializable {

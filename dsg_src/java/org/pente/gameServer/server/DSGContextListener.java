@@ -1,19 +1,20 @@
-/** DSGContextListener.java
- *  Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, you can find it online at
- *  http://www.gnu.org/copyleft/gpl.txt
+/**
+ * DSGContextListener.java
+ * Copyright (C) 2001 Dweebo's Stone Games (http://www.pente.org/)
+ * <p>
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, you can find it online at
+ * http://www.gnu.org/copyleft/gpl.txt
  */
 
 package org.pente.gameServer.server;
@@ -46,22 +47,22 @@ import org.pente.kingOfTheHill.*;
 
 
 public class DSGContextListener implements ServletContextListener {
-    
-    private static final Category log4j = 
-        Category.getInstance(DSGContextListener.class.getName());
+
+    private static final Category log4j =
+            Category.getInstance(DSGContextListener.class.getName());
 
     private DBHandler dbHandler;
     private GameVenueStorer gameVenueStorer;
     private CacheDSGPlayerStorer dsgPlayerStorer;
     private GameStats gameStats;
-    
+
     public void contextInitialized(ServletContextEvent servletContextEvent) {
         try {
 
             ServletContext ctx = servletContextEvent.getServletContext();
             ContextHolder.servletContext = ctx;
             Resources resources = new Resources();
-            
+
             String appletVersion = ctx.getInitParameter("appletVersion");
             resources.setAppletVersion(appletVersion);
             ctx.setAttribute("appletVersion", appletVersion);
@@ -71,7 +72,7 @@ public class DSGContextListener implements ServletContextListener {
             resources.setDbHandler(dbHandler);
             ctx.setAttribute(DBHandler.class.getName(), dbHandler);
             log4j.info("contextInitialized(), created DBHandler[dsg]");
-            
+
             DBHandler dbHandlerRo = new MySQLDBHandler(true, "dsg_ro");
             resources.setDbHandlerRo(dbHandlerRo);
             log4j.info("contextInitialized(), created DBHandler[dsg_ro]");
@@ -93,10 +94,10 @@ public class DSGContextListener implements ServletContextListener {
             resources.setDsgPlayerStorer(dsgPlayerStorer);
             ctx.setAttribute(DSGPlayerStorer.class.getName(), dsgPlayerStorer);
             log4j.info("contextInitialized(), created DSGPlayerStorer");
-            
+
             System.setProperty("mail.smtp.host", ctx.getInitParameter("mail.smtp.host"));
             System.setProperty("mail.smtp.user", ctx.getInitParameter("mail.smtp.user"));
-            System.setProperty("mail.smtp.password", ctx.getInitParameter("mail.smtp.password"));         
+            System.setProperty("mail.smtp.password", ctx.getInitParameter("mail.smtp.password"));
             System.setProperty("mail.imap.host", ctx.getInitParameter("mail.imap.host"));
             System.setProperty("mail.imap.user", ctx.getInitParameter("mail.imap.user"));
             System.setProperty("mail.imap.password", ctx.getInitParameter("mail.imap.password"));
@@ -108,13 +109,13 @@ public class DSGContextListener implements ServletContextListener {
 
 
             // setup storers
-            GameStorer gameStorer = new MySQLPenteGameStorer(dbHandler, 
-                gameVenueStorer);
+            GameStorer gameStorer = new MySQLPenteGameStorer(dbHandler,
+                    gameVenueStorer);
             PlayerStorer playerStorer = (PlayerStorer) gameStorer;
             GameStorer gameStorerRo = new MySQLPenteGameStorer(dbHandlerRo,
-                gameVenueStorer);
+                    gameVenueStorer);
             GameStorerSearcher gameStorerSearcher = new MySQLGameStorerSearcher(
-                dbHandlerRo, gameStorerRo, gameVenueStorer);
+                    dbHandlerRo, gameStorerRo, gameVenueStorer);
 
 
             resources.setGameStorer(gameStorer);
@@ -138,13 +139,13 @@ public class DSGContextListener implements ServletContextListener {
             ServerStatsHandler serverStatsHandler = new ServerStatsHandler();
             resources.setServerStatsHandler(serverStatsHandler);
             ctx.setAttribute(ServerStatsHandler.class.getName(),
-                serverStatsHandler);
+                    serverStatsHandler);
             gameStats = new SimpleMySQLGameStats(dbHandlerRo, 60 * 60 * 1000);
             // TODO add game stats to resources
             ctx.setAttribute(GameStats.class.getName(), gameStats);
-            
+
             SiteStatsData siteStatsData = new SiteStatsData(
-                serverStatsHandler, gameStats);
+                    serverStatsHandler, gameStats);
             resources.setSiteStatsData(siteStatsData);
             ctx.setAttribute(SiteStatsData.class.getName(), siteStatsData);
             log4j.info("contextInitialized(), created SiteStatsData");
@@ -152,7 +153,7 @@ public class DSGContextListener implements ServletContextListener {
             String cipherKey = ctx.getInitParameter("cipherKeyFile");
             File cipherKeyFile = new File(cipherKey);
             if (!cipherKeyFile.exists() || !cipherKeyFile.isFile() ||
-                !cipherKeyFile.canRead()) {
+                    !cipherKeyFile.canRead()) {
                 log4j.info("Cipher file invalid!");
             }
             PasswordHelper passwordHelper = new PasswordHelper(cipherKeyFile);
@@ -171,16 +172,16 @@ public class DSGContextListener implements ServletContextListener {
             GameStorer fileGameStorer = null;
             try {
                 fileGameStorer = new SimpleFileGameStorer(
-                    new PGNGameFormat(),
-                    new File(localGameDir),
-                    new File(localPlayerDir));
+                        new PGNGameFormat(),
+                        new File(localGameDir),
+                        new File(localPlayerDir));
             } catch (Throwable t) {
                 log4j.error("Problem creating file game storer", t);
                 return;
             }
             resources.setFileGameStorer(fileGameStorer);
             log4j.info("contextInitialized(), created FileGameStorer");
-            
+
             // setup this for XMLAIConfigurator
             String aiConfigFile = ctx.getInitParameter("aiConfigFile");
             if (aiConfigFile != null) {
@@ -188,36 +189,36 @@ public class DSGContextListener implements ServletContextListener {
                 log4j.info("contextInitialized(), aiConfigFile=" + aiConfigFile);
             }
             resources.setAiConfigFile(aiConfigFile);
-            
-            
+
+
             DSGMessageStorer dsgMessageStorer = new CacheMessageStorer(
-                new MySQLDSGMessageStorer(dbHandler),
-                emailEnabled.booleanValue(),
-                ctx.getInitParameter("mail.smtp.host"),
-                Integer.parseInt(ctx.getInitParameter("mail.smtp.port")),
-                ctx.getInitParameter("mail.smtp.user"),
-                ctx.getInitParameter("mail.smtp.password"),
-                dsgPlayerStorer);
+                    new MySQLDSGMessageStorer(dbHandler),
+                    emailEnabled.booleanValue(),
+                    ctx.getInitParameter("mail.smtp.host"),
+                    Integer.parseInt(ctx.getInitParameter("mail.smtp.port")),
+                    ctx.getInitParameter("mail.smtp.user"),
+                    ctx.getInitParameter("mail.smtp.password"),
+                    dsgPlayerStorer);
             resources.setDsgMessageStorer(dsgMessageStorer);
             log4j.info("contextInitialized(), created DSGMessageStorer");
-            
-            
+
+
             CacheKOTHStorer kothStorer = new CacheKOTHStorer(
-                new MySQLKOTHStorer(dbHandler), dsgPlayerStorer);
+                    new MySQLKOTHStorer(dbHandler), dsgPlayerStorer);
             log4j.info("contextInitialized(), created CacheKOTHStorer");
-            
+
             CacheTBStorer tbGameStorer = new CacheTBStorer(
-                new MySQLTBGameStorer(dbHandler), dsgPlayerStorer, gameStorer,
-                dsgMessageStorer, kothStorer);
+                    new MySQLTBGameStorer(dbHandler), dsgPlayerStorer, gameStorer,
+                    dsgMessageStorer, kothStorer);
             tbGameStorer.setNotificationServer(notificationServer);
             resources.setTbGameStorer(tbGameStorer);
             log4j.info("contextInitialized(), created TBGameStorer");
 
             kothStorer.setTbStorer(tbGameStorer);
             resources.setKOTHStorer(kothStorer);
-            
+
             TourneyStorer tourneyStorer = new CacheTourneyStorer(
-                new MySQLTourneyStorer(dbHandler, gameVenueStorer));
+                    new MySQLTourneyStorer(dbHandler, gameVenueStorer));
             resources.setTourneyStorer(tourneyStorer);
             tourneyStorer.addTourneyListener(tbGameStorer);
             ((CacheTourneyStorer) tourneyStorer).setTBStorer(tbGameStorer);
@@ -228,25 +229,25 @@ public class DSGContextListener implements ServletContextListener {
             log4j.info("contextInitialized(), created TourneyStorer");
 
             FastMySQLDSGGameLookup lookup = new FastMySQLDSGGameLookup(
-                dbHandlerRo, gameVenueStorer);
+                    dbHandlerRo, gameVenueStorer);
             resources.setDsgGameLookup(lookup);
-            
+
             DSGFollowerStorer followerStorer = new CacheDSGFollowerStorer(new MySQLDSGFollowerStorer(dbHandler), notificationServer, dsgPlayerStorer);
             resources.setFollowerStorer(followerStorer);
 
             ctx.setAttribute(Resources.class.getName(), resources);
-            
+
             LeaderBoard lb = new LeaderBoard(dbHandler, dsgPlayerStorer);
             ctx.setAttribute("leaderboard", lb);
-            
+
             // start game servers
             try {
                 List serverData = MySQLServerStorer.getActiveServers(
-                    resources.getDbHandler(), resources.getGameVenueStorer());
+                        resources.getDbHandler(), resources.getGameVenueStorer());
 
                 ServerContainer serverContainer = (ServerContainer) ctx.getAttribute("javax.websocket.server.ServerContainer");
 
-                for (Iterator it = serverData.iterator(); it.hasNext();) {
+                for (Iterator it = serverData.iterator(); it.hasNext(); ) {
                     ServerData data = (ServerData) it.next();
                     Server server;
                     if (data.isTournament()) {
@@ -257,18 +258,18 @@ public class DSGContextListener implements ServletContextListener {
                     log4j.info("Server " + data + " started.");
                     ServerEndpointConfig.Configurator configurator = new WebSocketConfigurator(server);
                     ServerEndpointConfig sec = ServerEndpointConfig.Builder.
-                            create(WebSocketEndpoint.class, "/websocketServer/"+data.getPort()).
+                            create(WebSocketEndpoint.class, "/websocketServer/" + data.getPort()).
                             configurator(configurator).build();
                     serverContainer.addEndpoint(sec);
                 }
-                
+
                 List<Tourney> tournaments = new ArrayList<>();
                 tournaments.addAll(tourneyStorer.getCurrentTournies());
                 tournaments.addAll(tourneyStorer.getUpcomingTournies());
                 Date oneHourAgo = new Date();
                 Date now = new Date();
-                oneHourAgo.setTime(oneHourAgo.getTime() - 3600L*1000);
-                for (Tourney t: tournaments) {
+                oneHourAgo.setTime(oneHourAgo.getTime() - 3600L * 1000);
+                for (Tourney t : tournaments) {
                     Tourney tourney = tourneyStorer.getTourneyDetails(t.getEventID());
                     if (tourney.isSpeed()) {
                         log4j.info("tournament " + tourney.getName());
@@ -276,7 +277,7 @@ public class DSGContextListener implements ServletContextListener {
                             resources.startNewServer(tourney.getEventID());
                             log4j.info("Server " + tourney.getName() + " started.");
                         } else {
-                            Date startDate = new Date(tourney.getStartDate().getTime() - 3600L*1000);
+                            Date startDate = new Date(tourney.getStartDate().getTime() - 3600L * 1000);
                             Timer timer = new Timer();
                             timer.schedule(new TimerTask() {
                                 @Override
@@ -301,13 +302,13 @@ public class DSGContextListener implements ServletContextListener {
                         }
                     }
                 }
-                
+
                 log4j.info("Servers ready.");
-                
+
             } catch (Throwable t) {
                 log4j.error("Problem creating servers.", t);
             }
-            
+
         } catch (Throwable t) {
             log4j.error("Problem in contextInitialized()", t);
         }
@@ -320,15 +321,15 @@ public class DSGContextListener implements ServletContextListener {
 
         // stop servers
         ServletContext ctx = servletContextEvent.getServletContext();
-        Resources resources = (Resources) 
-            ctx.getAttribute(Resources.class.getName());
-        
+        Resources resources = (Resources)
+                ctx.getAttribute(Resources.class.getName());
+
         resources.getTbGameStorer().destroy();
-        
-        for (Iterator it = resources.getServers().iterator(); it.hasNext();) {
+
+        for (Iterator it = resources.getServers().iterator(); it.hasNext(); ) {
             Server s = (Server) it.next();
             log4j.info("Destroying server " + s.getServerData() + ".");
-            s.destroy(); 
+            s.destroy();
         }
     }
 }

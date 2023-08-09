@@ -7,20 +7,20 @@ import org.pente.database.*;
 import org.pente.gameServer.server.*;
 
 public class EncryptDbPasswords {
-    
+
     public static void main(String[] args) throws Throwable {
 
         DBHandler dbHandler = new MySQLDBHandler("dsg_rw", "dsg_rw", "dsg");
         PasswordHelper passwordHelper = new PasswordHelper(new File(
-            "/dsg/dev/conf/cipher.key"));
-        
+                "/dsg/dev/conf/cipher.key"));
+
         Connection con = null;
         PreparedStatement stmt = null;
         PreparedStatement stmt2 = null;
         ResultSet result = null;
 
         int count = 0;
-        
+
         try {
             con = dbHandler.getConnection();
             stmt = con.prepareStatement("select pid, password from dsg_player");
@@ -36,7 +36,7 @@ public class EncryptDbPasswords {
                 stmt2.executeUpdate();
 
                 System.out.println(++count + " Encrypted password for: " + pid +
-                    ", " + newPassword);
+                        ", " + newPassword);
             }
         } finally {
             if (result != null) {
