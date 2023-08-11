@@ -504,6 +504,13 @@ public class ServerTable {
             }
 
 
+            if ((game == GridStateFactory.SWAP2PENTE_GAME || game == GridStateFactory.SPEED_SWAP2PENTE_GAME)
+                    && ((PenteState) gridState).didSwap2Pass() && !((PenteState) gridState).wasDPenteSwapDecisionMade()) {
+                dsgEventRouter.routeEvent(
+                        new DSGSwap2PassTableEvent(null, tableNum, true),
+                        player);
+            }
+
             // if playing d-pente at table, send swap decision 1st, before
             // any moves made (currently this is ok because it's a "silent" swap             
             if ((game == GridStateFactory.DPENTE_GAME || game == GridStateFactory.SPEED_DPENTE_GAME ||
@@ -514,12 +521,6 @@ public class ServerTable {
                 dsgEventRouter.routeEvent(
                         new DSGSwapSeatsTableEvent(null, tableNum,
                                 ((PenteState) gridState).didDPenteSwap(), true),
-                        player);
-            }
-            if ((game == GridStateFactory.SWAP2PENTE_GAME || game == GridStateFactory.SPEED_SWAP2PENTE_GAME)
-                    && ((PenteState) gridState).didSwap2Pass()) {
-                dsgEventRouter.routeEvent(
-                        new DSGSwap2PassTableEvent(null, tableNum, true),
                         player);
             }
 
