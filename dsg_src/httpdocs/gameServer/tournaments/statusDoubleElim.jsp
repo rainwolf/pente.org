@@ -64,7 +64,7 @@
    </tr>
 
    <tr>
-      <td colspan="<%=(isTBGo?"4":"2")%>" align="center">
+      <td colspan="<%=(isTBSingleGame?"4":"2")%>" align="center">
          <% if (true) {
             TBGame game = matchSet.getGame1();
             if (game != null && !game.isCompleted() && !game.isHidden()) {
@@ -72,7 +72,7 @@
          <%@ include file="../tb/listedMobileGame.jsp" %>
          <% }
          } %>
-         <% if (!isTBGo) { %>
+         <% if (!isTBSingleGame) { %>
       </td>
       <td colspan="2" align="center">
          <% } %>
