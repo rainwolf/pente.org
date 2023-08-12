@@ -13,9 +13,10 @@
    TourneyStorer tourneyStorer = resources.getTourneyStorer();
    TBGameStorer tbStorer = resources.getTbGameStorer();
    Tourney tourney = tourneyStorer.getTourney(eid);
-   boolean isTBGo = tourney.getGame() == GridStateFactory.TB_GO ||
+   boolean isTBSingleGame = tourney.getGame() == GridStateFactory.TB_GO ||
       tourney.getGame() == GridStateFactory.TB_GO9 ||
-      tourney.getGame() == GridStateFactory.TB_GO13;
+      tourney.getGame() == GridStateFactory.TB_GO13 ||
+      tourney.getGame() == GridStateFactory.TB_SWAP2PENTE;
 
    String roundStr = request.getParameter("round");
    int r = Integer.parseInt(roundStr);
