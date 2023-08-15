@@ -11,3 +11,6 @@ updateDevelopmentHTMLjs
 updateProduction
 updateProductiontHTMLjs
 letsencrypt/pente.org/
+testInitMariaDB
+testMariaDB
+
