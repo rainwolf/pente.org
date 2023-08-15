@@ -26,18 +26,20 @@
    Resources resources = (Resources) application.getAttribute(Resources.class.getName());
    TBGameStorer tbGameStorer = resources.getTbGameStorer();
    String gidString = (String) request.getParameter("gid");
-   TBGame tbGame = tbGameStorer.loadGame(Long.parseLong(gidString));
-   TBSet set = tbGame.getTbSet();
 
+   if (gidString == null || "".equals(gidString)) {
+      response.sendRedirect("../index.jsp");
+      return;
+   }
+   TBGame tbGame = tbGameStorer.loadGame(Long.parseLong(gidString));
+   if (tbGame == null) {
+      response.sendRedirect("../index.jsp");
+      return;
+   }
 %>gid=<%=gidString%>
 <%
 
    String moves = "";
-   String messages = "";
-   String moveNums = "";
-   String seqNums = "";
-   String dates = "";
-   String players = ""; //indicates which seat made message
    String tmpMsgs = "";
    for (int i = 0; i < tbGame.getNumMoves(); i++) {
       moves += tbGame.getMove(i) + ",";
