@@ -331,8 +331,7 @@ public class NewGameServlet extends HttpServlet {
 
                     if (game == GridStateFactory.TB_GO ||
                             game == GridStateFactory.TB_GO9 ||
-                            game == GridStateFactory.TB_GO13 ||
-                            game == GridStateFactory.TB_SWAP2PENTE) {
+                            game == GridStateFactory.TB_GO13) {
                         if (playAs == 2) {
                             tbg = tbg2;
                         }

@@ -114,10 +114,7 @@ public class SingleEliminationFormat extends AbstractTourneyFormat {
                     tourney.getGame() != GridStateFactory.SPEED_GO13 &&
                     tourney.getGame() != GridStateFactory.TB_GO &&
                     tourney.getGame() != GridStateFactory.TB_GO9 &&
-                    tourney.getGame() != GridStateFactory.TB_GO13 &&
-                    tourney.getGame() != GridStateFactory.SWAP2PENTE &&
-                    tourney.getGame() != GridStateFactory.SPEED_SWAP2PENTE &&
-                    tourney.getGame() != GridStateFactory.TB_SWAP2PENTE) {
+                    tourney.getGame() != GridStateFactory.TB_GO13) {
                 m = new TourneyMatch();
                 m.setEvent(tourney.getEventID());
                 m.setRound(rnd);

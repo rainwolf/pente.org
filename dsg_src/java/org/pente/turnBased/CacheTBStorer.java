@@ -931,6 +931,13 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                             game.getGame() == GridStateFactory.TB_GO13 ||
                             game.getGame() == GridStateFactory.TB_GO9 ||
                             game.getGame() == GridStateFactory.TB_SWAP2PENTE) ? 32 : 64;
+                    if (game.getGame() == GridStateFactory.TB_SWAP2PENTE) {
+                        if (set.getGame2() == null) {
+                            k = 32;
+                        } else {
+                            k = 64;
+                        }
+                    }
                     GameOverUtilities.updateGameData(dsgPlayerStorer, winnerData,
                             winnerData.getPlayerGameData(game.getGame(), false),
                             loserData,
@@ -1854,8 +1861,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
             TBGame tbg2 = null;
             if (game != GridStateFactory.TB_GO
                     && game != GridStateFactory.TB_GO9
-                    && game != GridStateFactory.TB_GO13
-                    && game != GridStateFactory.TB_SWAP2PENTE) {
+                    && game != GridStateFactory.TB_GO13) {
                 tbg2 = new TBGame();
                 tbg2.setGame(game);
                 tbg2.setDaysPerMove(daysPerMove);

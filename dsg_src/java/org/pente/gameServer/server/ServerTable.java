@@ -2156,8 +2156,7 @@ public class ServerTable {
 
         boolean single_game = (game.getId() == GridStateFactory.GO || game.getId() == GridStateFactory.SPEED_GO
                 || game.getId() == GridStateFactory.GO9 || game.getId() == GridStateFactory.SPEED_GO9
-                || game.getId() == GridStateFactory.GO13 || game.getId() == GridStateFactory.SPEED_GO13
-                || game.getId() == GridStateFactory.SWAP2PENTE || game.getId() == GridStateFactory.SPEED_SWAP2PENTE);
+                || game.getId() == GridStateFactory.GO13 || game.getId() == GridStateFactory.SPEED_GO13);
 
         if (rated && set != null) {
             if (set.getG1Gid() == 0 && !single_game) {
@@ -2792,7 +2791,8 @@ public class ServerTable {
         // (if forced resign, don't swap)
         // (if d-pente and already swapped, don't swap back)
         if (game == GridStateFactory.DPENTE_GAME || game == GridStateFactory.SPEED_DPENTE_GAME
-                || game == GridStateFactory.DKERYO_GAME || game == GridStateFactory.SPEED_DKERYO_GAME) {
+            || game == GridStateFactory.DKERYO_GAME || game == GridStateFactory.SPEED_DKERYO_GAME
+            || game == GridStateFactory.SWAP2PENTE_GAME || game == GridStateFactory.SPEED_SWAP2PENTE_GAME) {
             if (((PenteState) gridState).didDPenteSwap()) {
                 return; // already swapped seats
             }
@@ -3000,8 +3000,7 @@ public class ServerTable {
                 localSet.setG1(gameData);
                 if (game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO
                         || game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9
-                        || game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13
-                        || game == GridStateFactory.SWAP2PENTE || game == GridStateFactory.SPEED_SWAP2PENTE) {
+                        || game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13) {
                     updateRatings = true;
                 }
             } else {
@@ -3064,8 +3063,7 @@ public class ServerTable {
                 try {
                     double k = (game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO
                             || game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9
-                            || game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13
-                            || game == GridStateFactory.SWAP2PENTE || game == GridStateFactory.SPEED_SWAP2PENTE) ? 32 : 64;
+                            || game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13) ? 32 : 64;
                     GameOverUtilities.updateGameData(
                             dsgPlayerStorer,
                             winnerPlayerData, winnerPlayerGameData,
@@ -3087,8 +3085,7 @@ public class ServerTable {
                 try {
                     double k = (game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO
                             || game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9
-                            || game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13
-                            || game == GridStateFactory.SWAP2PENTE || game == GridStateFactory.SPEED_SWAP2PENTE) ? 32 : 64;
+                            || game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13) ? 32 : 64;
                     GameOverUtilities.updateGameData(
                             dsgPlayerStorer,
                             winnerPlayerData, winnerPlayerGameData,
@@ -3183,8 +3180,7 @@ public class ServerTable {
                 try {
                     double k = (game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO
                             || game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9
-                            || game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13
-                            || game == GridStateFactory.SWAP2PENTE || game == GridStateFactory.SPEED_SWAP2PENTE) ? 32 : 64;
+                            || game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13) ? 32 : 64;
                     GameOverUtilities.updateGameData(
                             dsgPlayerStorer,
                             winnerPlayerData, winnerPlayerGameData,
