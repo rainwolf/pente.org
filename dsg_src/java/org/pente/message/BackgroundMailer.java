@@ -78,11 +78,11 @@ public class BackgroundMailer extends BackgroundWorker {
                     message.addRecipient(Message.RecipientType.BCC,
                             new InternetAddress(fromData.getEmail(), fromData.getName()));
                 }
+            } else if (w.ccSender) {
+                message.addRecipient(Message.RecipientType.TO,
+                        new InternetAddress(fromData.getEmail(), fromData.getName()));
             } else {
-                if (w.ccSender) {
-                    message.addRecipient(Message.RecipientType.TO,
-                            new InternetAddress(fromData.getEmail(), fromData.getName()));
-                }
+                return;
             }
             //message.addRecipient(Message.RecipientType.BCC,
             //	new InternetAddress("dweebo@pente.org", "dweebo"));

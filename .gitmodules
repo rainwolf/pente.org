@@ -1,3 +1,6 @@
 [submodule "react-live-game-room"]
 	path = react-live-game-room
 	url = ../react-live-game-room/
+[submodule "react-mmai"]
+	path = react-mmai
+	url = ../react_mmai/
