@@ -49,7 +49,7 @@
          if (t.getGame() == GridStateFactory.TB_PENTE) {
             List<Restriction> restrictions = t.getRestrictions();
             for (Restriction restriction : restrictions) {
-               if (restriction.getType() == Restriction.RATING_RESTRICTION_BELOW && restriction.getValue() == 1800) {
+               if (restriction.getType() == Restriction.RATING_RESTRICTION_BELOW) {
                   return t;
                }
             }
@@ -63,7 +63,7 @@
          if (t.getGame() == GridStateFactory.TB_PENTE) {
             List<Restriction> restrictions = t.getRestrictions();
             for (Restriction restriction : restrictions) {
-               if (restriction.getType() == Restriction.RATING_RESTRICTION_ABOVE && restriction.getValue() == 1800) {
+               if (restriction.getType() == Restriction.RATING_RESTRICTION_ABOVE) {
                   return t;
                }
             }
