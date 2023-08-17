@@ -22,24 +22,31 @@ RUN nvim --headless +PlugInstall +qall
 
 RUN apt install -y ant
 RUN mkdir -p /usr/local/tomcat/webapps/ROOT
+# copy the pages
 COPY dsg_src/httpdocs/ /usr/local/tomcat/webapps/ROOT/
+# copy the libs
 COPY dsg_src/lib/* /usr/local/tomcat/webapps/ROOT/WEB-INF/lib/
 RUN mkdir -p /usr/local/tomcat/webapps/tmp_src
+# copy the code
 COPY dsg_src/java /usr/local/tomcat/webapps/tmp_src
 COPY build-docker.xml /usr/local/tomcat/webapps/
+# clean the code
 RUN rm -rf /usr/local/tomcat/webapps/tmp_src/org/pente/opengl/
 RUN rm -rf /usr/local/tomcat/webapps/tmp_src/org/pente/gameServer/tourney/test/
 RUN rm -rf /usr/local/tomcat/webapps/tmp_src/org/pente/message/test/
 RUN rm -rf /usr/local/tomcat/webapps/tmp_src/org/pente/turnBased/test/
+# compile the code
 RUN ant -f /usr/local/tomcat/webapps/build-docker.xml
+# cleanup
 RUN rm -rf /usr/local/tomcat/webapps/tmp_src
 
 RUN mkdir -p /var/lib/dsg/gameServer/game
 RUN mkdir -p /var/lib/dsg/gameServer/player
 
+# local context doesn't access remote instance
 ARG ENV=""
 RUN mv /usr/local/tomcat/webapps/ROOT/META-INF/${ENV}context.xml /usr/local/tomcat/webapps/ROOT/META-INF/context.xml
 
-# make sure they're built
+# copy the react components (make sure they're built)
 COPY ./react-live-game-room/build /usr/local/tomcat/webapps/ROOT/gameServer/live
 COPY ./react-mmai/build /usr/local/tomcat/webapps/ROOT/gameServer/mmai
