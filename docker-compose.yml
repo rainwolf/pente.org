@@ -1,0 +1,34 @@
+version: '3.8'
+services:
+  pente.org:
+    image: pente.org
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./testDocker/config:/etc/dsg
+      - ./config/etctomcat9:/usr/local/tomcat/conf
+      - /Volumes/keysCertificatesStuff/MyDSKeyStore.jks:/var/lib/tomcat9/webapps/MyDSKeyStore.jks
+      - ./testDocker/logs:/var/log
+      - ./testDocker/logs/tomcat:/usr/local/tomcat/logs
+    depends_on:
+      dsg_sql:
+        condition: service_healthy
+  dsg_sql:
+    image: mariadb:latest
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "healthcheck.sh --connect --innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 300
+    environment:  # values from .env file
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    ports:
+      - '3306:3306'
+    volumes:
+      - ./testMariaDB:/var/lib/mysql
+      - ./testInitMariaDB:/docker-entrypoint-initdb.d

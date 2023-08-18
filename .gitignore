@@ -14,4 +14,4 @@ letsencrypt/pente.org/
 testInitMariaDB
 testMariaDB
 testDocker
-
+.env
