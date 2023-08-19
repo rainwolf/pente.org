@@ -1,5 +1,5 @@
 var penteColor = "#FDDEA3";
-var keryPenteColor = "#BAFDA3";
+var keryoPenteColor = "#BAFDA3";
 var gomokuColor = "#A3FDEB";
 var dPenteColor = "#A3CDFD";
 var gPenteColor = "#AEA3FD";
@@ -10,6 +10,7 @@ var dkeryoPenteColor = "#FFA500";
 var goColor = "#FAC832";
 var oPenteColor = '#52BE80';
 var swap2PenteColor = "#E5AA70";
+var swap2KeryoColor = "#50C878";
 
 var abstractBoard = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],

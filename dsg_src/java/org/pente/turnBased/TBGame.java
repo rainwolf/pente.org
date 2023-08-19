@@ -293,7 +293,8 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
             } else {
                 cp = -1;
             }
-        } else if ((game == GridStateFactory.TB_SWAP2PENTE) && !(dPenteState == DPENTE_STATE_DECIDED)) {
+        } else if ((game == GridStateFactory.TB_SWAP2PENTE || game == GridStateFactory.TB_SWAP2KERYO)
+                && !(dPenteState == DPENTE_STATE_DECIDED)) {
             if (dPenteState == DPENTE_STATE_START) {
                 cp = 1;
             } else {
@@ -581,10 +582,11 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 
         if (getGame() == GridStateFactory.TB_DPENTE ||
                 getGame() == GridStateFactory.TB_DKERYO ||
-                getGame() == GridStateFactory.TB_SWAP2PENTE) {
+                getGame() == GridStateFactory.TB_SWAP2PENTE ||
+                getGame() == GridStateFactory.TB_SWAP2KERYO) {
             gameData.setSwapped(didDPenteSwap());
         }
-        if (getGame() == GridStateFactory.TB_SWAP2PENTE) {
+        if (getGame() == GridStateFactory.TB_SWAP2PENTE || getGame() == GridStateFactory.TB_SWAP2KERYO) {
             gameData.setSwap2Pass(swap2Pass);
         }
 
