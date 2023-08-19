@@ -489,7 +489,7 @@
                      DSGPlayerData d = p1;
                      DSGPlayerGameData dsgPlayerGameData = p1GameData;
                   %>
-                  <%@ include file="../playerLink.jspf" %></a>&nbsp;<% if (dsgPlayerGameData != null) { %>
+                  <%@ include file="../playerLink.jspf" %>&nbsp;<% if (dsgPlayerGameData != null) { %>
                   <%@ include file="../ratings.jspf" %>
                   <% } %>
                </td>
@@ -502,7 +502,7 @@
                      d = p2;
                      dsgPlayerGameData = p2GameData;
                   %>
-                  <%@ include file="../playerLink.jspf" %></a>&nbsp;<% if (dsgPlayerGameData != null) { %>
+                  <%@ include file="../playerLink.jspf" %>&nbsp;<% if (dsgPlayerGameData != null) { %>
                   <%@ include file="../ratings.jspf" %>
                   <% }
                   }%>
@@ -578,6 +578,7 @@
    var messageMoveNums = [<%=moveNums%>];
    var active = <%=!"false".equals(myTurn)%>;
    var game = <%= game.getGame() %>;
+   var isSwap2 = game === 77 || game === 79;
    var myName = "<%= me %>";
    var p1Name = "<%=p1.getName()%>";
    var p2Name = "<%=p2.getName()%>";
@@ -625,7 +626,7 @@
             boardColor = penteColor;
             break;
          case 53:
-            boardColor = keryPenteColor;
+            boardColor = keryoPenteColor;
             break;
          case 55:
             boardColor = gomokuColor;
@@ -658,6 +659,9 @@
             break;
          case 77:
             boardColor = swap2PenteColor;
+            break;
+         case 79:
+            boardColor = swap2KeryoColor;
             break;
          default:
             boardColor = penteColor;
@@ -698,11 +702,11 @@
                newMoves.push(c6Move1);
             }
          }
-         if ((game === 57 || game === 67 || game === 77) && moves.length === 0) {
+         if ((game === 57 || game === 67 || isSwap2) && moves.length === 0) {
             if (dPenteMove1 === -1) {
             } else if (dPenteMove2 === -1) {
                newMoves.push(dPenteMove1);
-            } else if (dPenteMove3 === -1 || game === 77) {
+            } else if (dPenteMove3 === -1 || isSwap2) {
                newMoves.push(dPenteMove1);
                newMoves.push(dPenteMove2);
             } else {
@@ -711,7 +715,7 @@
                newMoves.push(dPenteMove3);
             }
          }
-         if (game === 77 && moves.length === 3) {
+         if (isSwap2 && moves.length === 3) {
             if (dPenteMove1 === -1) {
             } else {
                newMoves.push(dPenteMove1);
@@ -829,14 +833,14 @@
                   c6Move1 = playedMove;
                }
             }
-            if ((game === 57 || game === 67 || game === 77) && moves.length === 0) {
+            if ((game === 57 || game === 67 || isSwap2) && moves.length === 0) {
                // alert("touch");
                if (dPenteMove1 === -1) {
                   dPenteMove1 = playedMove;
                } else if (dPenteMove2 === -1) {
                   newMoves.push(dPenteMove1);
                   dPenteMove2 = playedMove;
-               } else if (dPenteMove3 === -1 || game === 77) {
+               } else if (dPenteMove3 === -1 || isSwap2) {
                   newMoves.push(dPenteMove1);
                   newMoves.push(dPenteMove2);
                   dPenteMove3 = playedMove;
@@ -847,7 +851,7 @@
                   dPenteMove4 = playedMove;
                }
             }
-            if (game === 77 && moves.length === 3) {
+            if (isSwap2 && moves.length === 3) {
                if (dPenteMove1 === -1) {
                   dPenteMove1 = playedMove;
                } else {
@@ -956,14 +960,14 @@
                   c6Move1 = playedMove;
                }
             }
-            if ((game === 57 || game === 67 || game === 77) && moves.length === 0) {
+            if ((game === 57 || game === 67 || isSwap2) && moves.length === 0) {
                // alert("click");
                if (dPenteMove1 === -1) {
                   dPenteMove1 = playedMove;
                } else if (dPenteMove2 === -1) {
                   newMoves.push(dPenteMove1);
                   dPenteMove2 = playedMove;
-               } else if (dPenteMove3 === -1 || game === 77) {
+               } else if (dPenteMove3 === -1 || isSwap2) {
                   newMoves.push(dPenteMove1);
                   newMoves.push(dPenteMove2);
                   dPenteMove3 = playedMove;
@@ -974,7 +978,7 @@
                   dPenteMove4 = playedMove;
                }
             }
-            if (game === 77 && moves.length === 3) {
+            if (isSwap2 && moves.length === 3) {
                if (dPenteMove1 === -1) {
                   dPenteMove1 = playedMove;
                } else {
@@ -1108,6 +1112,9 @@
          case 77:
             replayPenteGame(abstractBoard, movesList, until);
             break;
+         case 79:
+            replayKeryoPenteGame(abstractBoard, movesList, until);
+            break;
       }
       // document.getElementById("messageBox").innerHTML = "message";
       if (until <= moves.length) {
@@ -1151,7 +1158,7 @@
             c6Move1 = -1;
             c6Move2 = -1;
          }
-         if ((game === 57 || game === 67 || game === 77) && moves.length === 0) {
+         if ((game === 57 || game === 67 || isSwap2) && moves.length === 0) {
             drawUntilMove = 2;
             dPenteMove4 = -1;
             dPenteMove3 = -1;
@@ -1223,7 +1230,7 @@
          } else {
             alert("Invalid D-Pente moves detected, please (reload and) try again");
          }
-      } else if (game === 77 && moves.length === 0) {
+      } else if (isSwap2 && moves.length === 0) {
          if ((dPenteMove1 !== dPenteMove2) && (dPenteMove2 !== dPenteMove3) && (dPenteMove3 !== dPenteMove1)) {
             window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+
             cycleStr + hideStr + "&moves=" + dPenteMove1 + "," + dPenteMove2 + "," + dPenteMove3 + "&message=" + encodeURIComponent(document.getElementById('message').value), "_self"

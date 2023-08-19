@@ -110,6 +110,9 @@ public class MoveServlet extends HttpServlet {
                 return;
             }
 
+            boolean isSwap2 = game.getGame() == GridStateFactory.TB_SWAP2PENTE ||
+                    game.getGame() == GridStateFactory.TB_SWAP2KERYO;
+
             request.setAttribute("game", game);
 
             try {
@@ -236,7 +239,7 @@ public class MoveServlet extends HttpServlet {
                         handleError(request, response,
                                 "Undo requests are not available for opening moves.");
                         return;
-                    } else if ((game.getGame() == GridStateFactory.TB_SWAP2PENTE) && game.getNumMoves() < 6) {
+                    } else if (isSwap2 && game.getNumMoves() < 6) {
                         log4j.error("MoveServlet, undo request for swap2 opening");
                         handleError(request, response,
                                 "Undo requests are not available for opening moves.");
@@ -466,8 +469,7 @@ public class MoveServlet extends HttpServlet {
                         }
 
                     }
-                } else if (game.getGame() == GridStateFactory.TB_SWAP2PENTE &&
-                        game.getDPenteState() != TBGame.DPENTE_STATE_DECIDED) {
+                } else if (isSwap2 && game.getDPenteState() != TBGame.DPENTE_STATE_DECIDED) {
 
                     log4j.debug("MoveServlet, handle swap2 move");
                     if (game.getDPenteState() == TBGame.DPENTE_STATE_START) {
