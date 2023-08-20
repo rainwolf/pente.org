@@ -11,7 +11,7 @@ updateDevelopmentHTMLjs
 updateProduction
 updateProductiontHTMLjs
 letsencrypt/pente.org/
-testInitMariaDB
 testMariaDB
 testDocker
 .env
+testMariaDBreplica
