@@ -110,6 +110,7 @@ public class GridStateFactory {
             DKERYO_GAME, SPEED_DKERYO_GAME, GO_GAME, SPEED_GO_GAME,
             GO9_GAME, SPEED_GO9_GAME, GO13_GAME, SPEED_GO13_GAME,
             OPENTE_GAME, SPEED_OPENTE_GAME, SWAP2PENTE_GAME, SPEED_SWAP2PENTE_GAME,
+            SWAP2KERYO_GAME, SPEED_SWAP2KERYO_GAME,
             TB_PENTE_GAME, TB_KERYO_GAME, TB_GOMOKU_GAME, TB_DPENTE_GAME,
             TB_GPENTE_GAME, TB_POOF_PENTE_GAME, TB_CONNECT6_GAME,
             TB_BOAT_PENTE_GAME, TB_DKERYO_GAME, TB_GO_GAME,
@@ -348,7 +349,7 @@ public class GridStateFactory {
     }
 
     public static boolean isValidGame(int game) {
-        if (game < PENTE || game > SPEED_DKERYO) return false;
+        if (game < PENTE || game > SPEED_SWAP2KERYO) return false;
         return true;
     }
 
@@ -375,7 +376,7 @@ public class GridStateFactory {
     }
 
     public static int getMaxGameId() {
-        return TB_SWAP2PENTE;
+        return TB_SWAP2KERYO;
     }
 
     public static Game[] getAllGames() {
