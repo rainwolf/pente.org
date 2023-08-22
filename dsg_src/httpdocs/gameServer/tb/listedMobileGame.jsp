@@ -220,6 +220,9 @@
                   case 77:
                      boardColor = swap2PenteColor;
                      break;
+                  case 79:
+                     boardColor = swap2KeryoColor;
+                     break;
                   default:
                      boardColor = penteColor;
                      break;
@@ -280,6 +283,9 @@
                      break;
                   case 77:
                      replayPenteGame(abstractBoard, movesList, until);
+                     break;
+                  case 79:
+                     replayKeryoPenteGame(abstractBoard, movesList, until);
                      break;
                }
             }

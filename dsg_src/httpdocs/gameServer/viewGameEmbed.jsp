@@ -323,6 +323,12 @@ for( int i = 0; i < gameMoves.size(); i++ ) {
          case 75:
             replayOPenteGame(abstractBoard, movesList, until);
             break;
+         case 77:
+            replayPenteGame(abstractBoard, movesList, until);
+            break;
+         case 79:
+            replayKeryoPenteGame(abstractBoard, movesList, until);
+            break;
       }
    }
 
@@ -419,6 +425,9 @@ for( int i = 0; i < gameMoves.size(); i++ ) {
             break;
          case 77:
             boardColor = swap2PenteColor;
+            break;
+         case 79:
+            boardColor = swap2KeryoColor;
             break;
          default:
             boardColor = penteColor;
