@@ -314,7 +314,7 @@
                      <% }
                      %>
                      <% if (game.getDPenteState() == 2 && !"false".equals(myTurn)) { %>
-                     <% if (game.getGame() == 77) { %>
+                     <% if (game.getGame() == 77 || game.getGame() == 79) { %>
                      <a class="boldbuttons" href="javascript:swap2PlayAsP1();"
                         style="margin-right:5px;"><span>Play as P1 (white)</span></a>
                      <a class="boldbuttons" href="javascript:swap2PlayAsP2();"
@@ -325,7 +325,7 @@
                      <a class="boldbuttons" href="javascript:dPentePlayAsP2();"
                         style="margin-right:5px;"><span>Play as P2 (black)</span></a>
                      <% } %>
-                     <% if (game.getGame() == 77 && game.getNumMoves() == 3) { %>
+                     <% if (game.getGame() == 77 || game.getGame() == 79 && game.getNumMoves() == 3) { %>
                      <a class="boldbuttons" href="javascript:swap2pass();"
                         style="margin-right:5px;"><span>Let P1 decide to swap</span></a>
                      <% } %>
