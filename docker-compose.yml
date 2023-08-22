@@ -11,6 +11,8 @@ services:
       - /Volumes/keysCertificatesStuff/MyDSKeyStore.jks:/var/lib/tomcat9/webapps/MyDSKeyStore.jks
       - ./testDocker/logs:/var/log
       - ./testDocker/logs/tomcat:/usr/local/tomcat/logs
+    networks:
+      - pente_org
     depends_on:
       dsg_sql:
         condition: service_healthy
@@ -23,12 +25,44 @@ services:
       timeout: 5s
       retries: 300
     environment:  # values from .env file
+      - MYSQL_INITDB_SKIP_TZINFO=Y
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     ports:
       - '3306:3306'
+    networks:
+      - pente_org
     volumes:
+      - ./testMariaDBconfig/primary:/etc/mysql/conf.d
       - ./testMariaDB:/var/lib/mysql
       - ./testInitMariaDB:/docker-entrypoint-initdb.d
+  dsg_replica:
+    image: mariadb:latest
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "healthcheck.sh --connect --innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 300
+    environment:  # values from .env file
+      - MYSQL_INITDB_SKIP_TZINFO=Y
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=${MYSQL_RO_USER}
+      - MYSQL_PASSWORD=${MYSQL_RO_PASSWORD}
+    ports:
+      - '3307:3306'
+    networks:
+      - pente_org
+    volumes:
+      - ./testMariaDBconfig/replica:/etc/mysql/conf.d
+      - ./testMariaDBreplica:/var/lib/mysql
+      - ./testInitMariaDBreplica:/docker-entrypoint-initdb.d
+    depends_on:
+      dsg_sql:
+        condition: service_healthy
+networks:
+  pente_org:
+    driver: bridge
+    name: pente_org
