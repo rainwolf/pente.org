@@ -137,7 +137,8 @@ player1=<%=player1.getName() + "," + ((int) p1Data.getRating()) %>
    if (!tbGame.isCompleted() &&
       (tbGame.getGame() == GridStateFactory.TB_DPENTE ||
          tbGame.getGame() == GridStateFactory.TB_DKERYO ||
-         tbGame.getGame() == GridStateFactory.TB_SWAP2PENTE)) {
+         tbGame.getGame() == GridStateFactory.TB_SWAP2PENTE ||
+         tbGame.getGame() == GridStateFactory.TB_SWAP2KERYO)) {
 %>dPenteState=<%=tbGame.getDPenteState()%>
 %>swap2pass=<%=tbGame.didSwap2Pass()%>
 <%

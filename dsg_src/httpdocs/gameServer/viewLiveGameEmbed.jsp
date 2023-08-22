@@ -513,7 +513,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
             boardColor = penteColor;
             break;
          case 53:
-            boardColor = keryPenteColor;
+            boardColor = keryoPenteColor;
             break;
          case 55:
             boardColor = gomokuColor;

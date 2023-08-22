@@ -1,0 +1,6 @@
+[mariadb]
+server_id=2                    # used to uniquely identify the server
+log-basename=pente_org         # used to be independent of hostname changes
+                               # (otherwise name is <datadir>/mysql-bin)
+replicate_do_db=dsg            # replicate only this DB
+#binlog-format=MIXED           #default
