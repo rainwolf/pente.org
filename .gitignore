@@ -15,3 +15,5 @@ testMariaDB
 testDocker
 .env
 testMariaDBreplica
+*.sql.gz
+settings.jar
