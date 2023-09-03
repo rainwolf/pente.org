@@ -1,21 +1,21 @@
 version: '3.8'
 services:
-#  pente.org:
-#    image: pente.org
-#    ports:
-#      - "80:80"
-#      - "443:443"
-#    volumes:
-#      - ./testDocker/config:/etc/dsg
-#      - ./config/etctomcat9:/usr/local/tomcat/conf
-#      - /Volumes/keysCertificatesStuff/MyDSKeyStore.jks:/var/lib/tomcat9/webapps/MyDSKeyStore.jks
-#      - ./testDocker/logs:/var/log
-#      - ./testDocker/logs/tomcat:/usr/local/tomcat/logs
-#    networks:
-#      - pente_org
-#    depends_on:
-#      dsg_sql:
-#        condition: service_healthy
+  pente.org:
+    image: pente.org
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./testDocker/config:/etc/dsg
+      - ./config/etctomcat9:/usr/local/tomcat/conf
+      - /Volumes/keysCertificatesStuff/MyDSKeyStore.jks:/var/lib/tomcat9/webapps/MyDSKeyStore.jks
+      - ./testDocker/logs:/var/log
+      - ./testDocker/logs/tomcat:/usr/local/tomcat/logs
+    networks:
+      - pente_org
+    depends_on:
+      dsg_replica:
+        condition: service_healthy
   dsg_auto_ssh:
     image: auto_ssh
     restart: always
@@ -70,13 +70,14 @@ services:
     image: mariadb:latest
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "healthcheck.sh --connect --innodb_initialized"]
+      test: ["CMD-SHELL", "test -f /var/lib/mysql/dsg/temp_tb.MYI"]
       interval: 10s
       timeout: 5s
       retries: 300
     environment:  # values from .env file
       - MYSQL_INITDB_SKIP_TZINFO=Y
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_RO_USER}
       - MYSQL_PASSWORD=${MYSQL_RO_PASSWORD}
     ports:

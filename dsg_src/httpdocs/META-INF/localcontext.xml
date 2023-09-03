@@ -22,7 +22,7 @@
               testWhileIdle="true" testOnBorrow="true"
               validationQueryTimeout="5" validationQuery="SELECT 1"
               removeAbandoned="true" removeAbandonedTimeout="30"
-              username="dsg_rw" password="***REMOVED***"
+              username="dsg_ro" password="***REMOVED***"
               driverClassName="com.mysql.jdbc.Driver"
-              url="jdbc:mysql://dsg_sql/dsg?useEncoding=true&amp;zeroDateTimeBehavior=convertToNull&amp;useServerPrepStmts=true"/>
+              url="jdbc:mysql://dsg_auto_ssh:3320/dsg?useEncoding=true&amp;zeroDateTimeBehavior=convertToNull&amp;useServerPrepStmts=true"/>
 </Context>
