@@ -1,21 +1,49 @@
 version: '3.8'
 services:
-  pente.org:
-    image: pente.org
+#  pente.org:
+#    image: pente.org
+#    ports:
+#      - "80:80"
+#      - "443:443"
+#    volumes:
+#      - ./testDocker/config:/etc/dsg
+#      - ./config/etctomcat9:/usr/local/tomcat/conf
+#      - /Volumes/keysCertificatesStuff/MyDSKeyStore.jks:/var/lib/tomcat9/webapps/MyDSKeyStore.jks
+#      - ./testDocker/logs:/var/log
+#      - ./testDocker/logs/tomcat:/usr/local/tomcat/logs
+#    networks:
+#      - pente_org
+#    depends_on:
+#      dsg_sql:
+#        condition: service_healthy
+  dsg_auto_ssh:
+    image: auto_ssh
+    restart: always
+    environment:
+      - LOCAL_PORT=${DSG_LOCAL_PORT}
+      - REMOTE_PORT=${DSG_REMOTE_PORT}
+      - USER_AT_HOST=${DSG_USER_AT_HOST}
+      - MONITORING_PORT=${DSG_MONITORING_PORT}
     ports:
-      - "80:80"
-      - "443:443"
+      - '127.0.0.1:${DSG_LOCAL_PORT}:${DSG_LOCAL_PORT}'
     volumes:
-      - ./testDocker/config:/etc/dsg
-      - ./config/etctomcat9:/usr/local/tomcat/conf
-      - /Volumes/keysCertificatesStuff/MyDSKeyStore.jks:/var/lib/tomcat9/webapps/MyDSKeyStore.jks
-      - ./testDocker/logs:/var/log
-      - ./testDocker/logs/tomcat:/usr/local/tomcat/logs
+      - ~/.ssh:/root/.ssh
     networks:
       - pente_org
-    depends_on:
-      dsg_sql:
-        condition: service_healthy
+  replica_auto_ssh:
+    image: auto_ssh
+    restart: always
+    environment:
+      - LOCAL_PORT=${REPLICA_LOCAL_PORT}
+      - REMOTE_PORT=${REPLICA_REMOTE_PORT}
+      - USER_AT_HOST=${REPLICA_USER_AT_HOST}
+      - MONITORING_PORT=${REPLICA_MONITORING_PORT}
+    ports:
+      - '127.0.0.1:${REPLICA_LOCAL_PORT}:${REPLICA_LOCAL_PORT}'
+    volumes:
+      - ~/.ssh:/root/.ssh
+    networks:
+      - pente_org
   dsg_sql:
     image: mariadb:latest
     restart: always
@@ -31,7 +59,7 @@ services:
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     ports:
-      - '3306:3306'
+      - '127.0.0.1:3306:3306'
     networks:
       - pente_org
     volumes:
@@ -52,7 +80,7 @@ services:
       - MYSQL_USER=${MYSQL_RO_USER}
       - MYSQL_PASSWORD=${MYSQL_RO_PASSWORD}
     ports:
-      - '3307:3306'
+      - '127.0.0.1:3307:3306'
     networks:
       - pente_org
     volumes:
