@@ -14,7 +14,7 @@ services:
     networks:
       - pente_org
     depends_on:
-      dsg_replica:
+      dsg_auto_ssh:
         condition: service_healthy
   dsg_auto_ssh:
     image: auto_ssh
@@ -28,6 +28,11 @@ services:
       - '127.0.0.1:${DSG_LOCAL_PORT}:${DSG_LOCAL_PORT}'
     volumes:
       - ~/.ssh:/root/.ssh
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb -u${MYSQL_RO_USER} -p${MYSQL_RO_PASSWORD} -h 127.0.0.1 -P ${DSG_LOCAL_PORT} ${MYSQL_DATABASE} -e \"select * from temp_tb limit 1\""]
+      interval: 10s
+      timeout: 5s
+      retries: 300
     networks:
       - pente_org
   replica_auto_ssh:
@@ -42,6 +47,11 @@ services:
       - '127.0.0.1:${REPLICA_LOCAL_PORT}:${REPLICA_LOCAL_PORT}'
     volumes:
       - ~/.ssh:/root/.ssh
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb -u${MYSQL_USER} -p${MYSQL_PASSWORD} -h 127.0.0.1 -P ${REPLICA_LOCAL_PORT} ${MYSQL_DATABASE} -e \"select * from dsg_donation limit 1\""]
+      interval: 10s
+      timeout: 5s
+      retries: 300
     networks:
       - pente_org
   dsg_sql:
@@ -89,7 +99,7 @@ services:
       - ./testMariaDBreplica:/var/lib/mysql
       - ./testInitMariaDBreplica:/docker-entrypoint-initdb.d
     depends_on:
-      dsg_sql:
+      replica_auto_ssh:
         condition: service_healthy
 networks:
   pente_org:
