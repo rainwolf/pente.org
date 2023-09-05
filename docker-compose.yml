@@ -51,11 +51,13 @@ services:
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - REPLICATION_USER=${REPLICATION_USER}
+      - REPLICATION_PASSWORD=${REPLICATION_PASSWORD}
     ports:
       - '127.0.0.1:3306:3306'
     networks:
       - pente_org
-    volumes:
+    volumes:  # make the sh files executable
       - ./testMariaDBconfig/primary:/etc/mysql/conf.d
       - ./testMariaDB:/var/lib/mysql
       - ./testInitMariaDB:/docker-entrypoint-initdb.d

@@ -33,11 +33,13 @@ services:
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_RO_USER}
       - MYSQL_PASSWORD=${MYSQL_RO_PASSWORD}
+      - REPLICATION_USER=${REPLICATION_USER}
+      - REPLICATION_PASSWORD=${REPLICATION_PASSWORD}
     ports:
       - '127.0.0.1:3307:3306'
     networks:
       - pente_org
-    volumes:
+    volumes:  # make the sh files executable
       - ./testMariaDBconfig/replica:/etc/mysql/conf.d
       - ./testMariaDBreplica:/var/lib/mysql
       - ./testInitMariaDBreplica:/docker-entrypoint-initdb.d
