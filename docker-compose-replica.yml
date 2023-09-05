@@ -16,7 +16,7 @@ services:
       test: ["CMD-SHELL", "mariadb -u${MYSQL_USER} -p${MYSQL_PASSWORD} -h 127.0.0.1 -P ${REPLICA_LOCAL_PORT} ${MYSQL_DATABASE} -e \"select * from dsg_donation limit 1\""]
       interval: 10s
       timeout: 5s
-      retries: 300
+      retries: 1000
     networks:
       - pente_org
   dsg_replica:
@@ -26,7 +26,7 @@ services:
       test: ["CMD-SHELL", "test -f /var/lib/mysql/dsg/temp_tb.MYI"]
       interval: 10s
       timeout: 5s
-      retries: 300
+      retries: 1000
     environment:  # values from .env file
       - MYSQL_INITDB_SKIP_TZINFO=Y
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}

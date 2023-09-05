@@ -34,7 +34,7 @@ services:
       test: ["CMD-SHELL", "mariadb -u${MYSQL_RO_USER} -p${MYSQL_RO_PASSWORD} -h 127.0.0.1 -P ${DSG_LOCAL_PORT} ${MYSQL_DATABASE} -e \"select * from temp_tb limit 1\""]
       interval: 10s
       timeout: 5s
-      retries: 300
+      retries: 1000
     networks:
       - pente_org
   dsg_sql:
@@ -44,7 +44,7 @@ services:
       test: ["CMD-SHELL", "healthcheck.sh --connect --innodb_initialized"]
       interval: 10s
       timeout: 5s
-      retries: 300
+      retries: 1000
     environment:  # values from .env file
       - MYSQL_INITDB_SKIP_TZINFO=Y
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
