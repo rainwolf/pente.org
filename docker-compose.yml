@@ -37,6 +37,9 @@ services:
       retries: 1000
     networks:
       - pente_org
+    depends_on:
+      dsg_sql:
+        condition: service_healthy
   dsg_sql:
     image: mariadb:latest
     restart: always
