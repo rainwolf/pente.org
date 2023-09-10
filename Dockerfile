@@ -39,6 +39,7 @@ RUN rm -rf /usr/local/tomcat/webapps/tmp_src/org/pente/turnBased/test/
 RUN ant -f /usr/local/tomcat/webapps/build-docker.xml
 # cleanup
 RUN rm -rf /usr/local/tomcat/webapps/tmp_src
+RUN rm /usr/local/tomcat/webapps/build-docker.xml
 
 RUN mkdir -p /var/lib/dsg/gameServer/game
 RUN mkdir -p /var/lib/dsg/gameServer/player

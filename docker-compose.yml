@@ -11,6 +11,8 @@ services:
       - /Volumes/keysCertificatesStuff/MyDSKeyStore.jks:/var/lib/tomcat9/webapps/MyDSKeyStore.jks
       - ./testDocker/logs:/var/log
       - ./testDocker/logs/tomcat:/usr/local/tomcat/logs
+      # for hot reloading
+#      - ./deployClasses/org:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/org
     environment:
       - JAVA_OPTS=-DMYSQL_USER=${MYSQL_USER} -DMYSQL_PASSWORD=${MYSQL_PASSWORD} -DMYSQL_RO_USER=${MYSQL_RO_USER} -DMYSQL_RO_PASSWORD=${MYSQL_RO_PASSWORD} -DMYSQL_DATABASE=${MYSQL_DATABASE}
     networks:

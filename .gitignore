@@ -17,3 +17,4 @@ testDocker
 testMariaDBreplica
 *.sql.gz
 settings.jar
+testMail
