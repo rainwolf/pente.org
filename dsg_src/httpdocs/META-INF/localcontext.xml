@@ -24,5 +24,5 @@
               removeAbandoned="true" removeAbandonedTimeout="30"
               username="${MYSQL_RO_USER}" password="${MYSQL_RO_PASSWORD}"
               driverClassName="com.mysql.jdbc.Driver"
-              url="jdbc:mysql://dsg_auto_ssh:3320/${MYSQL_DATABASE}?useEncoding=true&amp;zeroDateTimeBehavior=convertToNull&amp;useServerPrepStmts=true"/>
+              url="jdbc:mysql://dsg_auto_ssh:${DSG_LOCAL_PORT}/${MYSQL_DATABASE}?useEncoding=true&amp;zeroDateTimeBehavior=convertToNull&amp;useServerPrepStmts=true"/>
 </Context>
