@@ -1,6 +1,6 @@
 [mariadb]
 log-bin                           # enable binary logging
 server_id=1                       # used to uniquely identify the server
-log-basename=pente_or  g          # used to be independent of hostname changes
+log-basename=pente_org            # used to be independent of hostname changes
                                   # (otherwise name is <datadir>/mysql-bin)
 #binlog-format=MIXED              #default
