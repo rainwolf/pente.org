@@ -384,7 +384,6 @@
          %>
 
             <li>New turn-based <a href="/gameServer/tournaments">tournaments</a>!</li>
-            <li>New game: Swap2-Keryo (Turn-based and Live)!</li>
          <%--    <li>New live speed-pente <a href="/gameServer/tournaments">tournament</a>, this is a tournament to test the code, if the code fails, the tournament will be aborted. More info <a href="/gameServer/forums/thread.jspa?forumID=2&threadID=232320">here.</a>--%>
          <%--    <li>Live (Speed) Test Tournament: <a href="/gameServer/tournaments">Test Tournament</a>--%>
          <%--            <br>--%>
