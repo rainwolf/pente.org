@@ -1143,6 +1143,12 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
             }
             if (sids != null) {
                 log4j.debug("add to cache");
+                long sid = set.getSetId();
+                for(long s: sids) {
+                    if (s == sid) {
+                        return;
+                    }
+                }
                 sids.add(set.getSetId());
             }
         }
