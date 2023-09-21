@@ -77,7 +77,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
     /**
      * used to cache game gids by pid
      */
-    private Map<Long, Map<Long, TBSet>> setsByPid = new HashMap<Long, Map<Long, TBSet>>();
+    private Map<Long, List<Long>> setsByPid = new HashMap<Long, List<Long>>();
 
 
     private final Object cacheTbLock = new Object();
@@ -124,11 +124,20 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
     public List<TBSet> getSetsByPid(long pid) {
         synchronized (cacheTbLock) {
-            Map<Long, TBSet> sids = setsByPid.get(pid);
+            List<Long> sids = setsByPid.get(pid);
             if (sids == null) {
                 return new ArrayList<TBSet>();
             }
-            return new ArrayList<>(sids.values());
+            List<TBSet> sets = new ArrayList<TBSet>(sids.size());
+            for (Long l : sids) {
+                TBSet s = setsMap.get(l);
+                // since not synced since loaded sids, sets might have
+                // been flushed from cache
+                if (s != null) {
+                    sets.add(s);
+                }
+            }
+            return sets;
         }
     }
 
@@ -169,6 +178,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
      */
 
     public void uncacheGamesForPlayer(long pid) {
+
         synchronized (cacheTbLock) {
             setsByPid.remove(pid);
         }
@@ -1125,15 +1135,21 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
         if (pid == 0) return;
         synchronized (cacheTbLock) {
-            Map<Long, TBSet> sids = setsByPid.get(pid);
+            List<Long> sids = setsByPid.get(pid);
             if (sids == null && create) {
                 log4j.debug("new cache for player: " + pid + ", " + set.getSetId());
-                sids = new HashMap<Long, TBSet>();
+                sids = new ArrayList<Long>();
                 setsByPid.put(pid, sids);
             }
             if (sids != null) {
                 log4j.debug("add to cache");
-                sids.put(set.getSetId(), set);
+                long sid = set.getSetId();
+                for(long s: sids) {
+                    if (s == sid) {
+                        return;
+                    }
+                }
+                sids.add(set.getSetId());
             }
         }
     }
@@ -1142,7 +1158,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         log4j.debug("CacheTBGameStorer.uncacheSetForPlayer(" + set.getSetId() + ")");
 
         synchronized (cacheTbLock) {
-            Map<Long, TBSet> sids = setsByPid.get(set.getPlayer1Pid());
+            List<Long> sids = setsByPid.get(set.getPlayer1Pid());
             if (sids != null) {
                 sids.remove(set.getSetId());
             }
@@ -1404,20 +1420,21 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
     }
 
     public List<TBSet> loadSets(long pid) throws TBStoreException {
+
         log4j.debug("CacheTBGameStorer.loadSets(" + pid + ")");
         // maintain a separate cache for each pid
         // store all game data in gamesMap
         // store all set data in setMap
         // store list of setIds in setsByPid
 
-        Map<Long, TBSet> sids = null;
+        List<Long> sids = null;
         List<TBSet> sets = null;
 
         synchronized (cacheTbLock) {
             sids = setsByPid.get(pid);
             // copy sids since whole method is not synched
             if (sids != null) {
-                sids = new HashMap<Long, TBSet>(sids);
+                sids = new ArrayList<Long>(sids);
             }
         }
 
@@ -1432,7 +1449,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                 // even if player has no tb games, cache an empty list
                 // just so we don't hit db every page load
                 if (sets.isEmpty()) {
-                    setsByPid.put(pid, new HashMap<Long, TBSet>());
+                    setsByPid.put(pid, new ArrayList<Long>());
                 } else {
                     for (TBSet s : sets) {
                         cacheSet(s);
@@ -1447,7 +1464,16 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
             cacheStats.incrementSetLoads(sids.size());
             cacheStats.incrementSetLoadsCached(sids.size());
 
-            return new ArrayList<>(sids.values());
+            sets = new ArrayList<TBSet>(sids.size());
+            for (Long l : sids) {
+                TBSet s = setsMap.get(l);
+                // since not synced since loaded sids, sets might have
+                // been flushed from cache
+                if (s != null) {
+                    sets.add(s);
+                }
+            }
+            return sets;
         }
 
     }
@@ -1957,4 +1983,5 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
     public void setNotificationServer(NotificationServer notificationServer) {
         this.notificationServer = notificationServer;
     }
+
 }
