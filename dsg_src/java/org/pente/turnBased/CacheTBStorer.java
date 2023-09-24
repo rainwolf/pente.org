@@ -77,7 +77,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
     /**
      * used to cache game gids by pid
      */
-    private Map<Long, List<Long>> setsByPid = new HashMap<Long, List<Long>>();
+    private Map<Long, HashSet<Long>> setsByPid = new HashMap<Long, HashSet<Long>>();
 
 
     private final Object cacheTbLock = new Object();
@@ -124,7 +124,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
     public List<TBSet> getSetsByPid(long pid) {
         synchronized (cacheTbLock) {
-            List<Long> sids = setsByPid.get(pid);
+            HashSet<Long> sids = setsByPid.get(pid);
             if (sids == null) {
                 return new ArrayList<TBSet>();
             }
@@ -1135,20 +1135,14 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
         if (pid == 0) return;
         synchronized (cacheTbLock) {
-            List<Long> sids = setsByPid.get(pid);
+            HashSet<Long> sids = setsByPid.get(pid);
             if (sids == null && create) {
                 log4j.debug("new cache for player: " + pid + ", " + set.getSetId());
-                sids = new ArrayList<Long>();
+                sids = new HashSet<Long>();
                 setsByPid.put(pid, sids);
             }
             if (sids != null) {
                 log4j.debug("add to cache");
-                long sid = set.getSetId();
-                for(long s: sids) {
-                    if (s == sid) {
-                        return;
-                    }
-                }
                 sids.add(set.getSetId());
             }
         }
@@ -1158,7 +1152,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         log4j.debug("CacheTBGameStorer.uncacheSetForPlayer(" + set.getSetId() + ")");
 
         synchronized (cacheTbLock) {
-            List<Long> sids = setsByPid.get(set.getPlayer1Pid());
+            HashSet<Long> sids = setsByPid.get(set.getPlayer1Pid());
             if (sids != null) {
                 sids.remove(set.getSetId());
             }
@@ -1427,14 +1421,14 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         // store all set data in setMap
         // store list of setIds in setsByPid
 
-        List<Long> sids = null;
+        HashSet<Long> sids = null;
         List<TBSet> sets = null;
 
         synchronized (cacheTbLock) {
             sids = setsByPid.get(pid);
             // copy sids since whole method is not synched
             if (sids != null) {
-                sids = new ArrayList<Long>(sids);
+                sids = new HashSet<Long>(sids);
             }
         }
 
@@ -1449,7 +1443,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                 // even if player has no tb games, cache an empty list
                 // just so we don't hit db every page load
                 if (sets.isEmpty()) {
-                    setsByPid.put(pid, new ArrayList<Long>());
+                    setsByPid.put(pid, new HashSet<Long>());
                 } else {
                     for (TBSet s : sets) {
                         cacheSet(s);
