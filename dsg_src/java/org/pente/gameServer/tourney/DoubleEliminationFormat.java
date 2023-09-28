@@ -4,6 +4,8 @@ import java.util.*;
 
 import org.apache.log4j.*;
 import org.pente.game.GridStateFactory;
+import org.pente.gameServer.core.DSGPlayerData;
+import org.pente.gameServer.core.DSGPlayerStoreException;
 import org.pente.gameServer.core.DSGPlayerStorer;
 
 public class DoubleEliminationFormat extends SingleEliminationFormat {
@@ -212,6 +214,17 @@ public class DoubleEliminationFormat extends SingleEliminationFormat {
             TourneySection s = (TourneySection) it.next();
             for (Iterator it2 = s.getPlayers().iterator(); it2.hasNext(); ) {
                 TourneyPlayerData p = (TourneyPlayerData) it2.next();
+
+                // don't include players who deregistered
+                try {
+                    DSGPlayerData dsgPlayer = dsgPlayerStorer.loadPlayer(p.getPlayerID());
+                    if (!dsgPlayer.isActive()) {
+                        continue;
+                    }
+                } catch (DSGPlayerStoreException e) {
+                    log4j.error("createNextRound(), loadPlayer error", e);
+                    continue;
+                }
 
                 // don't include players who drop out
                 if (s.dropoutPlayers.contains(p.getPlayerID())) {
