@@ -110,116 +110,112 @@ public class Main {
             localGameSearcher.setDerby(true);
 
 
-            javax.swing.SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    try {
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                try {
 
-                        JFrame.setDefaultLookAndFeelDecorated(true);
+                    JFrame.setDefaultLookAndFeelDecorated(true);
 
-                        final JFrame frame = new JFrame("Pente db");
-                        frame.setIconImage(new ImageIcon(Main.class.getResource("images/logo.png")).getImage());
+                    final JFrame frame = new JFrame("Pente db");
+                    frame.setIconImage(new ImageIcon(Main.class.getResource("images/logo.png")).getImage());
 
-                        final Main main = new Main(db, localGameSearcher, gvs, plunkDbUtil,
-                                gameStorer, frame);
+                    final Main main = new Main(db, localGameSearcher, gvs, plunkDbUtil,
+                            gameStorer, frame);
 
-                        frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+                    frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
-                        // save bounds for next startup
-                        frame.addComponentListener(new ComponentAdapter() {
-                            @Override
-                            public void componentResized(ComponentEvent e) {
-                                if ((frame.getExtendedState() & JFrame.MAXIMIZED_BOTH) != JFrame.MAXIMIZED_BOTH) {
-                                    main.bounds = frame.getBounds();
-                                }
+                    // save bounds for next startup
+                    frame.addComponentListener(new ComponentAdapter() {
+                        @Override
+                        public void componentResized(ComponentEvent e) {
+                            if ((frame.getExtendedState() & JFrame.MAXIMIZED_BOTH) != JFrame.MAXIMIZED_BOTH) {
+                                main.bounds = frame.getBounds();
                             }
-
-                            @Override
-                            public void componentMoved(ComponentEvent e) {
-                                if ((frame.getExtendedState() & JFrame.MAXIMIZED_BOTH) != JFrame.MAXIMIZED_BOTH &&
-                                        frame.getLocation().x > 0 && frame.getLocation().y > 0) {
-                                    main.bounds = frame.getBounds();
-                                }
-                            }
-                        });
-
-                        frame.addWindowListener(new WindowAdapter() {
-
-                            @Override
-                            // store bounds/maximized for next startup
-                            public void windowClosing(WindowEvent e) {
-                                main.exit();
-                            }
-                        });
-
-                        Container content = frame.getContentPane();
-                        content.setLayout(new GridBagLayout());
-                        GridBagConstraints gbc = new GridBagConstraints();
-
-                        gbc.anchor = GridBagConstraints.NORTHWEST;
-
-                        gbc.gridx = 1;
-                        gbc.gridy = 1;
-                        gbc.gridheight = 1;
-                        gbc.weighty = 1;
-                        gbc.weightx = 1;
-                        gbc.fill = GridBagConstraints.HORIZONTAL;
-                        content.add(main.getJToolBar(), gbc);
-
-                        gbc.gridy++;
-                        gbc.weighty = 99;
-                        gbc.fill = GridBagConstraints.BOTH;
-                        content.add(main.getMainComponent(), gbc);
-
-                        //frame.getContentPane().add(main.getJToolBar(), BorderLayout.NORTH);
-                        //frame.getContentPane().add(main.getMainComponent(), BorderLayout.SOUTH);
-                        frame.setJMenuBar(main.getJMenuBar());
-
-                        frame.pack();
-
-                        // load bounds / maximized from last time
-                        try {
-                            PlunkProp bounds = plunkDbUtil.loadProp("bounds");
-                            if (bounds != null) {
-                                frame.setBounds((Rectangle) bounds.getValue());
-                            } else {
-                                frame.setSize(800, 600);
-                            }
-
-                            PlunkProp maxProp = plunkDbUtil.loadProp("maximized");
-                            if (maxProp != null && ((Boolean) maxProp.getValue()).booleanValue()) {
-                                frame.setExtendedState(frame.getExtendedState() | JFrame.MAXIMIZED_BOTH);
-                            }
-
-                            PlunkProp filterNumGamesProp = plunkDbUtil.loadProp("numgames");
-                            if (filterNumGamesProp != null) {
-                                main.filterNumGames = ((Integer) filterNumGamesProp.getValue());
-                            }
-
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-
                         }
 
-                        frame.setVisible(true);
-                        main.firstRun();
+                        @Override
+                        public void componentMoved(ComponentEvent e) {
+                            if ((frame.getExtendedState() & JFrame.MAXIMIZED_BOTH) != JFrame.MAXIMIZED_BOTH &&
+                                    frame.getLocation().x > 0 && frame.getLocation().y > 0) {
+                                main.bounds = frame.getBounds();
+                            }
+                        }
+                    });
 
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    frame.addWindowListener(new WindowAdapter() {
+
+                        @Override
+                        // store bounds/maximized for next startup
+                        public void windowClosing(WindowEvent e) {
+                            main.exit();
+                        }
+                    });
+
+                    Container content = frame.getContentPane();
+                    content.setLayout(new GridBagLayout());
+                    GridBagConstraints gbc = new GridBagConstraints();
+
+                    gbc.anchor = GridBagConstraints.NORTHWEST;
+
+                    gbc.gridx = 1;
+                    gbc.gridy = 1;
+                    gbc.gridheight = 1;
+                    gbc.weighty = 1;
+                    gbc.weightx = 1;
+                    gbc.fill = GridBagConstraints.HORIZONTAL;
+                    content.add(main.getJToolBar(), gbc);
+
+                    gbc.gridy++;
+                    gbc.weighty = 99;
+                    gbc.fill = GridBagConstraints.BOTH;
+                    content.add(main.getMainComponent(), gbc);
+
+                    //frame.getContentPane().add(main.getJToolBar(), BorderLayout.NORTH);
+                    //frame.getContentPane().add(main.getMainComponent(), BorderLayout.SOUTH);
+                    frame.setJMenuBar(main.getJMenuBar());
+
+                    frame.pack();
+
+                    // load bounds / maximized from last time
+                    try {
+                        PlunkProp bounds = plunkDbUtil.loadProp("bounds");
+                        if (bounds != null) {
+                            frame.setBounds((Rectangle) bounds.getValue());
+                        } else {
+                            frame.setSize(800, 600);
+                        }
+
+                        PlunkProp maxProp = plunkDbUtil.loadProp("maximized");
+                        if (maxProp != null && ((Boolean) maxProp.getValue()).booleanValue()) {
+                            frame.setExtendedState(frame.getExtendedState() | JFrame.MAXIMIZED_BOTH);
+                        }
+
+                        PlunkProp filterNumGamesProp = plunkDbUtil.loadProp("numgames");
+                        if (filterNumGamesProp != null) {
+                            main.filterNumGames = ((Integer) filterNumGamesProp.getValue());
+                        }
+
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+
                     }
+
+                    frame.setVisible(true);
+                    main.firstRun();
+
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             });
         } catch (Exception e) {
             System.out.println("1");
             e.printStackTrace();
             if (alreadyRunning(e)) {
-                javax.swing.SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        try {
-                            JOptionPane.showMessageDialog(null,
-                                    "Pente db is already running, you can only run one instance of the program at a time", "Pente db Error", JOptionPane.ERROR_MESSAGE);
-                            System.exit(-1);
-                        } catch (Exception e) {
-                        }
+                javax.swing.SwingUtilities.invokeLater(() -> {
+                    try {
+                        JOptionPane.showMessageDialog(null,
+                                "Pente db is already running, you can only run one instance of the program at a time", "Pente db Error", JOptionPane.ERROR_MESSAGE);
+                        System.exit(-1);
+                    } catch (Exception e1) {
                     }
                 });
             }
@@ -411,11 +407,7 @@ public class Main {
                         KeyEvent.SHIFT_MASK, false));
 
         JMenuItem exit = new JMenuItem("Exit");
-        exit.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                exit();
-            }
-        });
+        exit.addActionListener(e -> exit());
 
         JMenuItem importItem = new JMenuItem(importAction);
         importItem.setMnemonic(KeyEvent.VK_I);
@@ -511,16 +503,14 @@ public class Main {
         tabs = new JTabbedPane();
         tabs.addMouseListener(tabPopupListener);
 
-        tabs.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                if (tabs.getTabCount() == 0) return;
+        tabs.addChangeListener(e -> {
+            if (tabs.getTabCount() == 0) return;
 
-                TabComponent c = (TabComponent) tabs.getSelectedComponent();
-                if (c instanceof ViewGamePanel) {
-                    toolMenu.add(switchMenu);
-                } else {
-                    toolMenu.remove(switchMenu);
-                }
+            TabComponent c = (TabComponent) tabs.getSelectedComponent();
+            if (c instanceof ViewGamePanel) {
+                toolMenu.add(switchMenu);
+            } else {
+                toolMenu.remove(switchMenu);
             }
         });
         // maybe load in all last opened tabs here
@@ -737,11 +727,7 @@ public class Main {
         //make a new isTabOpen(String id) for that
         tabs.addTab(name, (JComponent) tabComponent);
         ButtonTabComponent close = new ButtonTabComponent(tabs, name);
-        close.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                removeTab(tabComponent);
-            }
-        });
+        close.addActionListener(e -> removeTab(tabComponent));
         tabComponent.addEditListener(close);
 
         tabs.setTabComponentAt(tabs.getTabCount() - 1, close);
@@ -1497,21 +1483,19 @@ public class Main {
         searchCache.updateGame(g, oldGame);
 
         //can be called by non-swing threads so be careful
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                notifyVenueListeners();
-                int i = Collections.binarySearch(playerNames,
-                        g.getPlayer1Data().getUserIDName(), ListAutoCompleter.noCaseComp);
-                if (i < 0) {
-                    i = (i + 1) * -1;
-                    playerNames.add(i, g.getPlayer1Data().getUserIDName());
-                }
-                i = Collections.binarySearch(playerNames,
-                        g.getPlayer2Data().getUserIDName(), ListAutoCompleter.noCaseComp);
-                if (i < 0) {
-                    i = (i + 1) * -1;
-                    playerNames.add(i, g.getPlayer2Data().getUserIDName());
-                }
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            notifyVenueListeners();
+            int i = Collections.binarySearch(playerNames,
+                    g.getPlayer1Data().getUserIDName(), ListAutoCompleter.noCaseComp);
+            if (i < 0) {
+                i = (i + 1) * -1;
+                playerNames.add(i, g.getPlayer1Data().getUserIDName());
+            }
+            i = Collections.binarySearch(playerNames,
+                    g.getPlayer2Data().getUserIDName(), ListAutoCompleter.noCaseComp);
+            if (i < 0) {
+                i = (i + 1) * -1;
+                playerNames.add(i, g.getPlayer2Data().getUserIDName());
             }
         });
     }

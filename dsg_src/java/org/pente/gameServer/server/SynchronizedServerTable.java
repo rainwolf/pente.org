@@ -82,13 +82,11 @@ public class SynchronizedServerTable implements DSGEventListener {
 
         synchronizedQueue = new SynchronizedQueue();
 
-        Runnable queueRunnable = new Runnable() {
-            public void run() {
-                while (running) {
-                    try {
-                        callServerTable((DSGEvent) synchronizedQueue.remove());
-                    } catch (InterruptedException e) {
-                    }
+        Runnable queueRunnable = () -> {
+            while (running) {
+                try {
+                    callServerTable((DSGEvent) synchronizedQueue.remove());
+                } catch (InterruptedException e) {
                 }
             }
         };

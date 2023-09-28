@@ -114,31 +114,29 @@ public class PlunkNode {
         Collections.shuffle(c2);//shuffle then sort to sort of randomize
         // sort very best at top, then best, then interesting, then none
         //then bad, then very bad
-        Collections.sort(c2, new Comparator<PlunkNode>() {
-            public int compare(PlunkNode o1, PlunkNode o2) {
-                if (o1.getType() == VERY_GOOD) return -1;
-                else if (o1.getType() == GOOD) {
-                    if (o2.getType() == VERY_GOOD) return 1;
-                    else if (o2.getTreeId() == GOOD) return 0;
-                    else return -1;
-                } else if (o1.getType() == INTERESTING) {
-                    if (o2.getType() == VERY_GOOD || o2.getType() == GOOD) return 1;
-                    else if (o2.getTreeId() == INTERESTING) return 0;
-                    else return -1;
-                } else if (o1.getType() == NO_TYPE) {
-                    if (o2.getType() == VERY_GOOD || o2.getType() == GOOD || o2.getType() == INTERESTING) return 1;
-                    else if (o2.getTreeId() == NO_TYPE) return 0;
-                    else return -1;
-                } else if (o1.getType() == BAD) {
-                    if (o2.getType() == VERY_BAD) return -1;
-                    else if (o2.getTreeId() == BAD) return 0;
-                    else return 1;
-                } else if (o1.getType() == VERY_BAD) {
-                    if (o2.getType() == VERY_BAD) return 0;
-                    else return 1;
-                }
-                return 0;
+        Collections.sort(c2, (o1, o2) -> {
+            if (o1.getType() == VERY_GOOD) return -1;
+            else if (o1.getType() == GOOD) {
+                if (o2.getType() == VERY_GOOD) return 1;
+                else if (o2.getTreeId() == GOOD) return 0;
+                else return -1;
+            } else if (o1.getType() == INTERESTING) {
+                if (o2.getType() == VERY_GOOD || o2.getType() == GOOD) return 1;
+                else if (o2.getTreeId() == INTERESTING) return 0;
+                else return -1;
+            } else if (o1.getType() == NO_TYPE) {
+                if (o2.getType() == VERY_GOOD || o2.getType() == GOOD || o2.getType() == INTERESTING) return 1;
+                else if (o2.getTreeId() == NO_TYPE) return 0;
+                else return -1;
+            } else if (o1.getType() == BAD) {
+                if (o2.getType() == VERY_BAD) return -1;
+                else if (o2.getTreeId() == BAD) return 0;
+                else return 1;
+            } else if (o1.getType() == VERY_BAD) {
+                if (o2.getType() == VERY_BAD) return 0;
+                else return 1;
             }
+            return 0;
         });
         return c2.get(0);
     }

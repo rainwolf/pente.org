@@ -27,23 +27,21 @@ public class PuzzleApplet extends Applet {
 
         Button startButton = gameStyles.createDSGButton(
                 "Load Watsu's Poof-Pente Puzzle");
-        startButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                frame = new Frame("Puzzle");
-                frame.add("Center", gameBoard);
+        startButton.addActionListener(e -> {
+            frame = new Frame("Puzzle");
+            frame.add("Center", gameBoard);
 
-                frame.setSize(600, 500);
-                frame.setVisible(true);
+            frame.setSize(600, 500);
+            frame.setVisible(true);
 
-                frame.addWindowListener(new WindowAdapter() {
-                    public void windowClosing(WindowEvent e) {
-                        frame.dispose();
-                        frame = null;
-                    }
-                });
+            frame.addWindowListener(new WindowAdapter() {
+                public void windowClosing(WindowEvent e) {
+                    frame.dispose();
+                    frame = null;
+                }
+            });
 
-                addMoves();
-            }
+            addMoves();
         });
 
         setLayout(new FlowLayout(FlowLayout.LEFT, 2, 2));
@@ -76,27 +74,25 @@ public class PuzzleApplet extends Applet {
 //			"C4", "R13", "A1", "S1", "A19", "T9", "A18", "T10"
 //		};
 
-        new Thread(new Runnable() {
-            public void run() {
+        new Thread(() -> {
 
-                gameBoard.setCursor(Cursor.WAIT_CURSOR);
-                gameBoard.setMessage("Loading puzzle...");
+            gameBoard.setCursor(Cursor.WAIT_CURSOR);
+            gameBoard.setMessage("Loading puzzle...");
 
-                gameBoard.getGridState().clear();
-                for (int i = 0; i < moves.length; i++) {
-                    Point move = coordinates.getPoint(moves[i]);
-                    int m = gameBoard.getGridState().convertMove(move.x, 18 - move.y);
-                    gameBoard.getGridState().addMove(m);
+            gameBoard.getGridState().clear();
+            for (int i = 0; i < moves.length; i++) {
+                Point move = coordinates.getPoint(moves[i]);
+                int m = gameBoard.getGridState().convertMove(move.x, 18 - move.y);
+                gameBoard.getGridState().addMove(m);
 
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException ex) {
-                    }
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
                 }
-
-                gameBoard.setCursor(Cursor.DEFAULT_CURSOR);
-                gameBoard.setMessage(null);
             }
+
+            gameBoard.setCursor(Cursor.DEFAULT_CURSOR);
+            gameBoard.setMessage(null);
         }).start();
     }
 

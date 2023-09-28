@@ -108,12 +108,10 @@ public class DoubleEliminationDriver {
             p.setTotalGames(21);
             players.add(p);
         }
-        Collections.sort(players, new Comparator() {
-            public int compare(Object o1, Object o2) {
-                TourneyPlayerData p1 = (TourneyPlayerData) o1;
-                TourneyPlayerData p2 = (TourneyPlayerData) o2;
-                return p2.getRating() - p1.getRating();
-            }
+        Collections.sort(players, (o1, o2) -> {
+            TourneyPlayerData p1 = (TourneyPlayerData) o1;
+            TourneyPlayerData p2 = (TourneyPlayerData) o2;
+            return p2.getRating() - p1.getRating();
         });
         for (int i = 0; i < numPlayers; i++) {
             TourneyPlayerData p = (TourneyPlayerData) players.get(i);

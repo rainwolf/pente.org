@@ -15,11 +15,7 @@
    for (Object d : completed) {
       completedDetails.add(tourneyStorer.getTourney(((Tourney) d).getEventID()));
    }
-   Collections.sort(completedDetails, new Comparator<Tourney>() {
-      public int compare(Tourney o1, Tourney o2) {
-         return o2.getStartDate().compareTo(o1.getStartDate());
-      }
-   });
+   Collections.sort(completedDetails, (o1, o2) -> o2.getStartDate().compareTo(o1.getStartDate()));
 
 %>
 <%!

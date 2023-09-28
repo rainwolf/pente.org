@@ -89,12 +89,10 @@ public class DoubleEliminationFormat extends SingleEliminationFormat {
 
         public TourneySection createRealSection(int eid, int round, int section, boolean set) {
             TourneySection s = new SingleEliminationSection(section);
-            Collections.sort(matches, new Comparator<PotentialMatch>() {
-                public int compare(PotentialMatch o1, PotentialMatch o2) {
-                    PotentialMatch m1 = (PotentialMatch) o1;
-                    PotentialMatch m2 = (PotentialMatch) o2;
-                    return m1.p1.getSeed() - m2.p1.getSeed();
-                }
+            Collections.sort(matches, (o1, o2) -> {
+                PotentialMatch m1 = (PotentialMatch) o1;
+                PotentialMatch m2 = (PotentialMatch) o2;
+                return m1.p1.getSeed() - m2.p1.getSeed();
             });
             for (Iterator it = matches.iterator(); it.hasNext(); ) {
                 PotentialMatch m = (PotentialMatch) it.next();
@@ -245,12 +243,10 @@ public class DoubleEliminationFormat extends SingleEliminationFormat {
             bracketPlayers1.clear();
         }
 
-        Comparator<TourneyPlayerData> seedComparator = new Comparator<TourneyPlayerData>() {
-            public int compare(TourneyPlayerData o1, TourneyPlayerData o2) {
-                TourneyPlayerData p1 = (TourneyPlayerData) o1;
-                TourneyPlayerData p2 = (TourneyPlayerData) o2;
-                return p1.getSeed() - p2.getSeed();
-            }
+        Comparator<TourneyPlayerData> seedComparator = (o1, o2) -> {
+            TourneyPlayerData p1 = (TourneyPlayerData) o1;
+            TourneyPlayerData p2 = (TourneyPlayerData) o2;
+            return p1.getSeed() - p2.getSeed();
         };
         boolean set = (tourney.getGame() != GridStateFactory.GO &&
                 tourney.getGame() != GridStateFactory.GO9 &&

@@ -33,11 +33,9 @@ public class InviteResponseFrameTest {
         f.setLocation(500, 500);
         final InviteResponseFrame d = new InviteResponseFrame(
                 gameStyle, inviteEvent, 1932, data);
-        d.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                System.out.println("action " + e.getActionCommand());
-                System.exit(1);
-            }
+        d.addActionListener(e -> {
+            System.out.println("action " + e.getActionCommand());
+            System.exit(1);
         });
         d.setVisible(true);
     }

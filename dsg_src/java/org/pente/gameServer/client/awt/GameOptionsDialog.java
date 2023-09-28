@@ -111,11 +111,7 @@ public class GameOptionsDialog extends Dialog {
 
         Button closeButton = gameStyle.createDSGButton(CLOSE);
         closeButton.addActionListener(updateGameOptions);
-        closeButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                dispose();
-            }
-        });
+        closeButton.addActionListener(e -> dispose());
 
         Button applyButton = gameStyle.createDSGButton(APPLY);
         applyButton.addActionListener(updateGameOptions);

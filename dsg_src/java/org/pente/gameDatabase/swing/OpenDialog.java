@@ -70,14 +70,12 @@ public class OpenDialog extends MyDialog {
         treeTableScroll.getViewport().setBackground(Color.white);
 
         JButton ok = new JButton("Ok");
-        ok.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                int i = treeTable.getSelectedRow();
-                if (i != -1) {
-                    selectedTree = plunkTreeTableModel.getTree(treeSorter.modelIndex(i));
-                    result = JOptionPane.OK_OPTION;
-                    setVisible(false);
-                }
+        ok.addActionListener(e -> {
+            int i = treeTable.getSelectedRow();
+            if (i != -1) {
+                selectedTree = plunkTreeTableModel.getTree(treeSorter.modelIndex(i));
+                result = JOptionPane.OK_OPTION;
+                setVisible(false);
             }
         });
 

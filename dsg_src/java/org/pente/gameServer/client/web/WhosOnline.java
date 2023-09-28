@@ -22,15 +22,13 @@ public class WhosOnline {
             ActivityData d[] = activityLogger.getPlayers();
 
             //sort into sections by room name, pname (serverid)
-            Arrays.sort(d, new Comparator<ActivityData>() {
-                public int compare(ActivityData o1, ActivityData o2) {
-                    ActivityData d1 = (ActivityData) o1;
-                    ActivityData d2 = (ActivityData) o2;
-                    if (d1.getServerId() != d2.getServerId()) {
-                        return (int) (d1.getServerId() - d2.getServerId());
-                    } else {
-                        return d1.getPlayerName().compareTo(d2.getPlayerName());
-                    }
+            Arrays.sort(d, (o1, o2) -> {
+                ActivityData d1 = (ActivityData) o1;
+                ActivityData d2 = (ActivityData) o2;
+                if (d1.getServerId() != d2.getServerId()) {
+                    return (int) (d1.getServerId() - d2.getServerId());
+                } else {
+                    return d1.getPlayerName().compareTo(d2.getPlayerName());
                 }
             });
             long currentServerId = -1;
@@ -108,15 +106,13 @@ public class WhosOnline {
             ActivityData d[] = activityLogger.getPlayers();
 
             //sort into sections by room name, pname (serverid)
-            Arrays.sort(d, new Comparator<ActivityData>() {
-                public int compare(ActivityData o1, ActivityData o2) {
-                    ActivityData d1 = (ActivityData) o1;
-                    ActivityData d2 = (ActivityData) o2;
-                    if (d1.getServerId() != d2.getServerId()) {
-                        return (int) (d1.getServerId() - d2.getServerId());
-                    } else {
-                        return d1.getPlayerName().compareTo(d2.getPlayerName());
-                    }
+            Arrays.sort(d, (o1, o2) -> {
+                ActivityData d1 = (ActivityData) o1;
+                ActivityData d2 = (ActivityData) o2;
+                if (d1.getServerId() != d2.getServerId()) {
+                    return (int) (d1.getServerId() - d2.getServerId());
+                } else {
+                    return d1.getPlayerName().compareTo(d2.getPlayerName());
                 }
             });
             long currentServerId = -1;

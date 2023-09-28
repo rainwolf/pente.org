@@ -10,19 +10,17 @@
    final Tourney tourney = resources.getTourneyStorer().getTourneyDetails(eid);
    List<Long> tournamentPlayers = resources.getTourneyStorer().getTourneyPlayerPids(eid);
 
-   Collections.sort(tournamentPlayers, new Comparator<Long>() {
-      public int compare(Long m1, Long m2) {
-         try {
-            DSGPlayerGameData m1Data = dsgPlayerStorer.loadPlayer(m1).getPlayerGameData(tourney.getGame()), m2Data = dsgPlayerStorer.loadPlayer(m2).getPlayerGameData(tourney.getGame());
-            // if (m1Data == null) {
-            //     return -1;
-            // } else if (m2Data == null) {
-            //   return 1;
-            // }
-            return (int) (m2Data.getRating() - m1Data.getRating());
-         } catch (DSGPlayerStoreException e) {
-            return 0;
-         }
+   Collections.sort(tournamentPlayers, (m1, m2) -> {
+      try {
+         DSGPlayerGameData m1Data = dsgPlayerStorer.loadPlayer(m1).getPlayerGameData(tourney.getGame()), m2Data = dsgPlayerStorer.loadPlayer(m2).getPlayerGameData(tourney.getGame());
+         // if (m1Data == null) {
+         //     return -1;
+         // } else if (m2Data == null) {
+         //   return 1;
+         // }
+         return (int) (m2Data.getRating() - m1Data.getRating());
+      } catch (DSGPlayerStoreException e) {
+         return 0;
       }
    });
 

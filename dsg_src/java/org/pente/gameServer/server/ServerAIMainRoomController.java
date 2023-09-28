@@ -151,17 +151,15 @@ public class ServerAIMainRoomController implements DSGEventListener {
                 // ai join main room event before ai join table # event
                 // this allows client to get DSGPlayerData before player
                 // joins a table causing a NullPointerException
-                new Thread(new Runnable() {
-                    public void run() {
-                        try {
-                            Thread.sleep(2000);
-                        } catch (InterruptedException e) {
-                        }
-                        for (Enumeration e = tables.elements(); e.hasMoreElements(); ) {
-                            ServerAITableController controller = (ServerAITableController)
-                                    e.nextElement();
-                            controller.eventOccurred(dsgEvent);
-                        }
+                new Thread(() -> {
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                    }
+                    for (Enumeration e = tables.elements(); e.hasMoreElements(); ) {
+                        ServerAITableController controller = (ServerAITableController)
+                                e.nextElement();
+                        controller.eventOccurred(dsgEvent);
                     }
                 }).start();
             }

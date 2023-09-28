@@ -29,12 +29,10 @@
    }
 
    Locale[] LOCALES = Locale.getAvailableLocales();
-   Arrays.sort(LOCALES, new Comparator() {
-      public int compare(Object o1, Object o2) {
-         Locale loc1 = (Locale) o1;
-         Locale loc2 = (Locale) o2;
-         return loc1.getDisplayName().compareTo(loc2.getDisplayName());
-      }
+   Arrays.sort(LOCALES, (o1, o2) -> {
+      Locale loc1 = (Locale) o1;
+      Locale loc2 = (Locale) o2;
+      return loc1.getDisplayName().compareTo(loc2.getDisplayName());
    });
 
    // get parameters

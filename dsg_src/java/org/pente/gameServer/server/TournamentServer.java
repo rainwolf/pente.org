@@ -147,61 +147,58 @@ public class TournamentServer extends Server {
     }
 
     private synchronized void attemptMatchStart(Long pid) {
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
+        Thread thread = new Thread(() -> {
+            try {
+                sleep(200);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            for (TourneyMatch match : matches) {
+                if (match.hasBeenPlayed()) {
+                    continue;
+                }
+                if (pid != null && match.getPlayer1().getPlayerID() != pid && match.getPlayer2().getPlayerID() != pid) {
+                    continue;
+                }
+                // make sure they're not playing
+                long pid1 = match.getPlayer1().getPlayerID();
+                if (pid2tables.get(pid1) != null) {
+                    continue;
+                }
+                long pid2 = match.getPlayer2().getPlayerID();
+                if (pid2tables.get(pid2) != null) {
+                    continue;
+                }
+                String player1 = match.getPlayer1().getName();
+                String player2 = match.getPlayer2().getName();
+                // make sure they're logged on
+                if (!mainRoom.isPlayerInMainRoom(player1) || !mainRoom.isPlayerInMainRoom(player2)) {
+                    continue;
+                }
                 try {
-                    sleep(200);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                for (TourneyMatch match : matches) {
-                    if (match.hasBeenPlayed()) {
-                        continue;
-                    }
-                    if (pid != null && match.getPlayer1().getPlayerID() != pid && match.getPlayer2().getPlayerID() != pid) {
-                        continue;
-                    }
-                    // make sure they're not playing
-                    long pid1 = match.getPlayer1().getPlayerID();
-                    if (pid2tables.get(pid1) != null) {
-                        continue;
-                    }
-                    long pid2 = match.getPlayer2().getPlayerID();
-                    if (pid2tables.get(pid2) != null) {
-                        continue;
-                    }
-                    String player1 = match.getPlayer1().getName();
-                    String player2 = match.getPlayer2().getName();
-                    // make sure they're logged on
-                    if (!mainRoom.isPlayerInMainRoom(player1) || !mainRoom.isPlayerInMainRoom(player2)) {
-                        continue;
-                    }
-                    try {
-                        stopWait();
-                        int tableNum = createNewTable(new DSGJoinTableEvent());
-                        // remove them if they're spectating
-                        removePlayerFromTables(player1);
-                        removePlayerFromTables(player2);
-                        SynchronizedServerTable syncedTable = (SynchronizedServerTable) tables.get(tableNum);
-                        ServerTable table = syncedTable.getServerTable();
-                        table.setTourneyMatch(match);
-                        // join only, table will sit them
-                        syncedTable.eventOccurred(new DSGJoinTableEvent(player1, tableNum));
-                        syncedTable.eventOccurred(new DSGJoinTableEvent(player2, tableNum));
-                        // housekeeping
-                        pid2tables.put(pid1, tableNum);
-                        pid2tables.put(pid2, tableNum);
-                        table2matches.put(tableNum, match);
-                    } catch (Throwable throwable) {
-                        throwable.printStackTrace();
-                    }
-                }
-                if (pid2tables.isEmpty()) {
-                    startWait();
-                } else {
                     stopWait();
+                    int tableNum = createNewTable(new DSGJoinTableEvent());
+                    // remove them if they're spectating
+                    removePlayerFromTables(player1);
+                    removePlayerFromTables(player2);
+                    SynchronizedServerTable syncedTable = (SynchronizedServerTable) tables.get(tableNum);
+                    ServerTable table = syncedTable.getServerTable();
+                    table.setTourneyMatch(match);
+                    // join only, table will sit them
+                    syncedTable.eventOccurred(new DSGJoinTableEvent(player1, tableNum));
+                    syncedTable.eventOccurred(new DSGJoinTableEvent(player2, tableNum));
+                    // housekeeping
+                    pid2tables.put(pid1, tableNum);
+                    pid2tables.put(pid2, tableNum);
+                    table2matches.put(tableNum, match);
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
                 }
+            }
+            if (pid2tables.isEmpty()) {
+                startWait();
+            } else {
+                stopWait();
             }
         });
         thread.start();

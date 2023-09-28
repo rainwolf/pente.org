@@ -99,99 +99,13 @@ public class CacheNotificationServer implements NotificationServer {
     }
 
     private void sendRegistrationConfirmation(long pid, String token, int device) {
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                if (device == iOS) {
-                    ApnsPayloadBuilder payloadBuilder = new SimpleApnsPayloadBuilder();
-                    payloadBuilder.setAlertBody("Your device has been registered for notifications");
+        Runnable runnable = () -> {
+            if (device == iOS) {
+                ApnsPayloadBuilder payloadBuilder = new SimpleApnsPayloadBuilder();
+                payloadBuilder.setAlertBody("Your device has been registered for notifications");
 
-                    final SimpleApnsPushNotification pushNotification;
-                    pushNotification = new SimpleApnsPushNotification(token, "be.submanifold.pentelive", payloadBuilder.build());
-                    final PushNotificationFuture<SimpleApnsPushNotification, PushNotificationResponse<SimpleApnsPushNotification>>
-                            sendNotificationFuture = client.sendNotification(pushNotification);
-                    try {
-                        final PushNotificationResponse<SimpleApnsPushNotification> pushNotificationResponse =
-                                sendNotificationFuture.get();
-
-                        if (pushNotificationResponse.isAccepted()) {
-                            System.out.println("Push notification accepted by APNs gateway.");
-                        } else {
-                            System.out.println("Notification rejected by the APNs gateway: " +
-                                    pushNotificationResponse.getRejectionReason());
-
-                            pushNotificationResponse.getTokenInvalidationTimestamp().ifPresent(timestamp -> {
-                                System.out.println("\t…and the token is invalid as of " + timestamp);
-                            });
-                        }
-                    } catch (final ExecutionException | InterruptedException e) {
-                        System.err.println("Failed to send push notification.");
-                        e.printStackTrace();
-                    }
-                } else if (device == ANDROID) {
-                    JSONObject jGcmData = new JSONObject();
-                    JSONObject jData = new JSONObject();
-                    String message = "Your device has been registered for push notifications";
-                    try {
-                        jData.put("message", message);
-                        jGcmData.put("to", token);
-                        jGcmData.put("data", jData);
-                        sendAndroidNotification(pid, token, jGcmData.toString());
-                    } catch (JSONException e) {
-                        log4j.error("sendRegistrationConfirmation android error.");
-                        e.printStackTrace();
-                    }
-                }
-            }
-        };
-        (new Thread(runnable)).start();
-    }
-
-    private void sendAndroidNotification(long pid, String token, String message) {
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    // Create connection to send GCM Message request.
-                    URL url = new URL("https://fcm.googleapis.com/fcm/send");
-                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                    conn.setRequestProperty("Authorization", "key=" + penteLiveGCMkey);
-                    conn.setRequestProperty("Content-Type", "application/json");
-                    conn.setRequestMethod("POST");
-                    conn.setDoOutput(true);
-
-                    // Send GCM message content.
-                    OutputStream outputStream = conn.getOutputStream();
-                    outputStream.write(message.getBytes("UTF-8"));
-
-                    // Read GCM response.
-                    InputStream inputStream = conn.getInputStream();
-                    String resp = IOUtils.toString(inputStream, "UTF-8");
-
-                    if (resp.contains("InvalidRegistration") || resp.contains("NotRegistered")) {
-                        removeInvalidToken(pid, token, ANDROID);
-                    }
-                    log4j.info("Android Push notification accepted.");
-                    log4j.info("==============" + resp);
-                } catch (IOException e) {
-                    log4j.error("Unable to send GCM message.");
-                    log4j.error("Problem sending android notification for " + pid + " with token " + token);
-                    e.printStackTrace();
-                } catch (NotificationServerException e) {
-                    log4j.error("Removing android token failed. " + token);
-                    e.printStackTrace();
-                }
-            }
-        };
-        (new Thread(runnable)).start();
-    }
-
-    private void sendiOSNotification(long pid, String token, String payload) {
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
                 final SimpleApnsPushNotification pushNotification;
-                pushNotification = new SimpleApnsPushNotification(token, "be.submanifold.pentelive", payload);
+                pushNotification = new SimpleApnsPushNotification(token, "be.submanifold.pentelive", payloadBuilder.build());
                 final PushNotificationFuture<SimpleApnsPushNotification, PushNotificationResponse<SimpleApnsPushNotification>>
                         sendNotificationFuture = client.sendNotification(pushNotification);
                 try {
@@ -199,19 +113,96 @@ public class CacheNotificationServer implements NotificationServer {
                             sendNotificationFuture.get();
 
                     if (pushNotificationResponse.isAccepted()) {
-                        log4j.info("iOS Push notification accepted by APNs gateway.");
+                        System.out.println("Push notification accepted by APNs gateway.");
                     } else {
-                        log4j.info("Notification rejected by the APNs gateway: " +
+                        System.out.println("Notification rejected by the APNs gateway: " +
                                 pushNotificationResponse.getRejectionReason());
 
                         pushNotificationResponse.getTokenInvalidationTimestamp().ifPresent(timestamp -> {
-                            log4j.info("\t…and the token is invalid as of " + timestamp);
+                            System.out.println("\t…and the token is invalid as of " + timestamp);
                         });
                     }
                 } catch (final ExecutionException | InterruptedException e) {
                     System.err.println("Failed to send push notification.");
                     e.printStackTrace();
                 }
+            } else if (device == ANDROID) {
+                JSONObject jGcmData = new JSONObject();
+                JSONObject jData = new JSONObject();
+                String message = "Your device has been registered for push notifications";
+                try {
+                    jData.put("message", message);
+                    jGcmData.put("to", token);
+                    jGcmData.put("data", jData);
+                    sendAndroidNotification(pid, token, jGcmData.toString());
+                } catch (JSONException e) {
+                    log4j.error("sendRegistrationConfirmation android error.");
+                    e.printStackTrace();
+                }
+            }
+        };
+        (new Thread(runnable)).start();
+    }
+
+    private void sendAndroidNotification(long pid, String token, String message) {
+        Runnable runnable = () -> {
+            try {
+                // Create connection to send GCM Message request.
+                URL url = new URL("https://fcm.googleapis.com/fcm/send");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestProperty("Authorization", "key=" + penteLiveGCMkey);
+                conn.setRequestProperty("Content-Type", "application/json");
+                conn.setRequestMethod("POST");
+                conn.setDoOutput(true);
+
+                // Send GCM message content.
+                OutputStream outputStream = conn.getOutputStream();
+                outputStream.write(message.getBytes("UTF-8"));
+
+                // Read GCM response.
+                InputStream inputStream = conn.getInputStream();
+                String resp = IOUtils.toString(inputStream, "UTF-8");
+
+                if (resp.contains("InvalidRegistration") || resp.contains("NotRegistered")) {
+                    removeInvalidToken(pid, token, ANDROID);
+                }
+                log4j.info("Android Push notification accepted.");
+                log4j.info("==============" + resp);
+            } catch (IOException e) {
+                log4j.error("Unable to send GCM message.");
+                log4j.error("Problem sending android notification for " + pid + " with token " + token);
+                e.printStackTrace();
+            } catch (NotificationServerException e) {
+                log4j.error("Removing android token failed. " + token);
+                e.printStackTrace();
+            }
+        };
+        (new Thread(runnable)).start();
+    }
+
+    private void sendiOSNotification(long pid, String token, String payload) {
+        Runnable runnable = () -> {
+            final SimpleApnsPushNotification pushNotification;
+            pushNotification = new SimpleApnsPushNotification(token, "be.submanifold.pentelive", payload);
+            final PushNotificationFuture<SimpleApnsPushNotification, PushNotificationResponse<SimpleApnsPushNotification>>
+                    sendNotificationFuture = client.sendNotification(pushNotification);
+            try {
+                final PushNotificationResponse<SimpleApnsPushNotification> pushNotificationResponse =
+                        sendNotificationFuture.get();
+
+                if (pushNotificationResponse.isAccepted()) {
+                    log4j.info("iOS Push notification accepted by APNs gateway.");
+                } else {
+                    log4j.info("Notification rejected by the APNs gateway: " +
+                            pushNotificationResponse.getRejectionReason());
+
+                    pushNotificationResponse.getTokenInvalidationTimestamp().ifPresent(timestamp -> {
+                        log4j.info("\t…and the token is invalid as of " + timestamp);
+                    });
+                }
+            } catch (final ExecutionException | InterruptedException e) {
+                System.err.println("Failed to send push notification.");
+                e.printStackTrace();
             }
         };
         (new Thread(runnable)).start();

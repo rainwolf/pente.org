@@ -493,18 +493,16 @@ public class MySQLTourneyStorer implements TourneyStorer {
                 players.add(t);
             }
 
-            Collections.sort(players, new Comparator<TourneyPlayerData>() {
-                public int compare(TourneyPlayerData obj1, TourneyPlayerData obj2) {
-                    TourneyPlayerData t1 = (TourneyPlayerData) obj1;
-                    TourneyPlayerData t2 = (TourneyPlayerData) obj2;
+            Collections.sort(players, (obj1, obj2) -> {
+                TourneyPlayerData t1 = (TourneyPlayerData) obj1;
+                TourneyPlayerData t2 = (TourneyPlayerData) obj2;
 
-                    if (t1.getTotalGames() > 19 && t2.getTotalGames() < 20) {
-                        return -1;
-                    } else if (t1.getTotalGames() < 20 && t2.getTotalGames() > 19) {
-                        return 1;
-                    } else {
-                        return (int) (t2.getRating() - t1.getRating());
-                    }
+                if (t1.getTotalGames() > 19 && t2.getTotalGames() < 20) {
+                    return -1;
+                } else if (t1.getTotalGames() < 20 && t2.getTotalGames() > 19) {
+                    return 1;
+                } else {
+                    return (int) (t2.getRating() - t1.getRating());
                 }
             });
 

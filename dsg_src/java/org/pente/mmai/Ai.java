@@ -95,20 +95,18 @@ public class Ai {
         startThinking();
         running = true;
         start(cPtr);
-        thread = new Thread(new Runnable() {
-            public void run() {
+        thread = new Thread(() -> {
 
-                int newMove = move(cPtr, moves, game, level, vct);
-                if (running) {
-                    for (AiListener aiListener : aiListeners) {
-                        aiListener.moveReady(moves, newMove);
-                    }
-                    notifyStopThinking();
+            int newMove = move(cPtr, moves, game, level, vct);
+            if (running) {
+                for (AiListener aiListener : aiListeners) {
+                    aiListener.moveReady(moves, newMove);
                 }
-                if (destroyed) {
-                    System.out.println("destroy from getMove() java");
-                    privateDestroy(cPtr);
-                }
+                notifyStopThinking();
+            }
+            if (destroyed) {
+                System.out.println("destroy from getMove() java");
+                privateDestroy(cPtr);
             }
         });
         thread.start();

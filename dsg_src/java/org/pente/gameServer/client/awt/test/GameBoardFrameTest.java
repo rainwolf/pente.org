@@ -31,12 +31,10 @@ public class GameBoardFrameTest {
 
     public GameBoardFrameTest() {
 
-        DSGEventListener listener = new DSGEventListener() {
-            public void eventOccurred(DSGEvent dsgEvent) {
-                System.out.println(dsgEvent);
-                if (dsgEvent instanceof DSGExitTableEvent) {
-                    frame.dispose();
-                }
+        DSGEventListener listener = dsgEvent -> {
+            System.out.println(dsgEvent);
+            if (dsgEvent instanceof DSGExitTableEvent) {
+                frame.dispose();
             }
         };
 
@@ -72,11 +70,7 @@ public class GameBoardFrameTest {
                     public void removeListener(DSGEventListener dsgEventListener) {
                     }
                 },
-                        new DSGEventListener() {
-                            public void eventOccurred(DSGEvent dsgEvent) {
-                            }
-
-                            ;
+                        dsgEvent -> {
                         }
                 ));
         frame.receiveSetOwner("dweebo");

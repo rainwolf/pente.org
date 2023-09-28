@@ -141,37 +141,35 @@ public class Server {
         initAiData(resources.getAiConfigFile());
 
 
-        gameThread = new Thread(new Runnable() {
-            public void run() {
-                while (running) {
-                    try {
-                        Socket socket = gameServerSocket.accept();
+        gameThread = new Thread(() -> {
+            while (running) {
+                try {
+                    Socket socket = gameServerSocket.accept();
 
-                        // don't wait for more messages to come in before sending
-                        // because server sends many short messages
-                        socket.setTcpNoDelay(true);
-                        // timeout after 30 seconds
-                        // this should be ok because we send pings every 15 seconds
-                        //socket.setSoTimeout(30 * 1000); 
+                    // don't wait for more messages to come in before sending
+                    // because server sends many short messages
+                    socket.setTcpNoDelay(true);
+                    // timeout after 30 seconds
+                    // this should be ok because we send pings every 15 seconds
+                    //socket.setSoTimeout(30 * 1000);
 
-                        addPlayerSocket(socket);
+                    addPlayerSocket(socket);
 
-                    } catch (Throwable t) {
-                        if (running) {
-                            log4j.error("Error accepting game socket " +
-                                    "connection [" + name + "].", t);
-                        }
+                } catch (Throwable t) {
+                    if (running) {
+                        log4j.error("Error accepting game socket " +
+                                "connection [" + name + "].", t);
                     }
                 }
+            }
 
-                // close socket
-                try {
-                    gameServerSocket.close();
-                    destroy();
-                    log4j.info("Game server socket [" + name + "] closed.");
-                } catch (Throwable t) {
-                    log4j.error("Error closing game server socket [" + name + "].", t);
-                }
+            // close socket
+            try {
+                gameServerSocket.close();
+                destroy();
+                log4j.info("Game server socket [" + name + "] closed.");
+            } catch (Throwable t) {
+                log4j.error("Error closing game server socket [" + name + "].", t);
             }
         }, "DSG Server [" + name + "]");
         gameThread.start();
@@ -263,18 +261,16 @@ public class Server {
         if (s != null) { //ai shoudln't happen
             // just in case client doesn't close the socket
             // do it here
-            new Thread(new Runnable() {
-                public void run() {
+            new Thread(() -> {
 
-                    // sleep for 3 seconds to give booted player a chance to
-                    // receive message that they were booted before closing socket
-                    try {
-                        Thread.sleep(3000);
-                    } catch (InterruptedException ie) {
-                    }
-
-                    s.destroy();
+                // sleep for 3 seconds to give booted player a chance to
+                // receive message that they were booted before closing socket
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException ie) {
                 }
+
+                s.destroy();
             }).run();
         }
     }

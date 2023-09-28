@@ -50,18 +50,8 @@
       for (long pid : following) {
          followingData.add(dsgPlayerStorer.loadPlayer(pid));
       }
-      Collections.sort(followersData, new Comparator<DSGPlayerData>() {
-         @Override
-         public int compare(DSGPlayerData o1, DSGPlayerData o2) {
-            return Double.compare(o2.getPlayerGameData(game).getRating(), o1.getPlayerGameData(game).getRating());
-         }
-      });
-      Collections.sort(followingData, new Comparator<DSGPlayerData>() {
-         @Override
-         public int compare(DSGPlayerData o1, DSGPlayerData o2) {
-            return Double.compare(o2.getPlayerGameData(game).getRating(), o1.getPlayerGameData(game).getRating());
-         }
-      });
+      Collections.sort(followersData, (o1, o2) -> Double.compare(o2.getPlayerGameData(game).getRating(), o1.getPlayerGameData(game).getRating()));
+      Collections.sort(followingData, (o1, o2) -> Double.compare(o2.getPlayerGameData(game).getRating(), o1.getPlayerGameData(game).getRating()));
 %>
 <br>
 

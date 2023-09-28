@@ -107,16 +107,14 @@ public class PlayerListPanel extends Panel
         scrollbar.setVisibleAmount(1);
 
         // add listener to update startRow when scrollbar is adjusted
-        scrollbar.addAdjustmentListener(new AdjustmentListener() {
-            public void adjustmentValueChanged(AdjustmentEvent e) {
-                // set start row to current value of scrollbar not events
-                // value in case another thread updated scrollbar's value
-                // between the time the user clicked and this event was
-                // received
-                startRow = scrollbar.getValue();
-                repaint();
-                requestFocus();
-            }
+        scrollbar.addAdjustmentListener(e -> {
+            // set start row to current value of scrollbar not events
+            // value in case another thread updated scrollbar's value
+            // between the time the user clicked and this event was
+            // received
+            startRow = scrollbar.getValue();
+            repaint();
+            requestFocus();
         });
 
         minSize = new Dimension(0, 0);

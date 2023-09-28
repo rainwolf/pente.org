@@ -52,24 +52,21 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
     /**
      * might be some duplication with games above, but thats probably ok
      */
-    private Set<TBSet> waitingSets = new TreeSet<TBSet>(new Comparator<TBSet>() {
+    private Set<TBSet> waitingSets = new TreeSet<TBSet>((s1, s2) -> {
+        TBGame g1 = s1.getGame1();
+        TBGame g2 = s2.getGame1();
+        if (g1.getGid() == g2.getGid()) return 0;
 
-        public int compare(TBSet s1, TBSet s2) {
-            TBGame g1 = s1.getGame1();
-            TBGame g2 = s2.getGame1();
-            if (g1.getGid() == g2.getGid()) return 0;
-
-            if (g1.getGame() != g2.getGame()) {
-                return g2.getGame() - g1.getGame();
-            }
-            // if 2 games have same creation date, don't say they are equal
-            // because then they won't be stored in set
-            int comp = g2.getCreationDate().compareTo(g1.getCreationDate());
-            if (comp == 0) {
-                return (int) (g1.getGid() - g2.getGid());
-            } else {
-                return comp;
-            }
+        if (g1.getGame() != g2.getGame()) {
+            return g2.getGame() - g1.getGame();
+        }
+        // if 2 games have same creation date, don't say they are equal
+        // because then they won't be stored in set
+        int comp = g2.getCreationDate().compareTo(g1.getCreationDate());
+        if (comp == 0) {
+            return (int) (g1.getGid() - g2.getGid());
+        } else {
+            return comp;
         }
     });
     private boolean waitingSetsLoaded = false;
@@ -487,11 +484,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
             // is inactive or has NOT timed out
             long now = System.currentTimeMillis();
 
-            Collections.sort(gs, new Comparator<TBGame>() {
-                public int compare(TBGame o1, TBGame o2) {
-                    return (int) (o1.getGid() - o2.getGid());
-                }
-            });
+            Collections.sort(gs, (o1, o2) -> (int) (o1.getGid() - o2.getGid()));
 
             for (TBGame t : gs) {
 
@@ -886,14 +879,11 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                     gameData.addMove(game.getMove(i));
                 }
 
-                (new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            gameStorer.storeGame(gameData);
-                        } catch (Exception e) {
-                            log4j.error("CacheTBStorer, problem storing in DB.", e);
-                        }
+                (new Thread(() -> {
+                    try {
+                        gameStorer.storeGame(gameData);
+                    } catch (Exception e) {
+                        log4j.error("CacheTBStorer, problem storing in DB.", e);
                     }
                 })).start();
 

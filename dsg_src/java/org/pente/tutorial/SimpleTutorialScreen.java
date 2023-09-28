@@ -182,25 +182,13 @@ public class SimpleTutorialScreen extends Panel
             String section = (String) sectionNames.nextElement();
             sectionChoice.add(section);
         }
-        sectionChoice.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                tutorialActionListener.switchSection(sectionChoice.getSelectedItem());
-            }
-        });
+        sectionChoice.addItemListener(e -> tutorialActionListener.switchSection(sectionChoice.getSelectedItem()));
 
         Panel navigatePanel = new Panel();
         Button prevButton = gameStyles.createDSGButton("<<");
-        prevButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                tutorialActionListener.prevStep();
-            }
-        });
+        prevButton.addActionListener(ae -> tutorialActionListener.prevStep());
         Button nextButton = gameStyles.createDSGButton(">>");
-        nextButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                tutorialActionListener.nextStep();
-            }
-        });
+        nextButton.addActionListener(ae -> tutorialActionListener.nextStep());
         stepLabel = new Label("", Label.CENTER);
         stepLabel.setForeground(Color.black);
         stepNumberLabel = new Label("1 of 1", Label.CENTER);

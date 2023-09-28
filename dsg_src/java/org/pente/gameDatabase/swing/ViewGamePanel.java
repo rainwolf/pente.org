@@ -129,37 +129,35 @@ public class ViewGamePanel extends JPanel implements TabComponent, VenueListener
             aiPanel = new AiVisualizationPanel(ai, GridStateFactory.getGameId(gameData.getGame()), go);
             aiSettings = new AiSettingsPanel(ai, trees, true, aiPanel,
                     "Start Game", "Stop AI");
-            aiSettings.addStartActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    if (e.getActionCommand().equals("Start Game")) {
-                        ai.setGame(GridStateFactory.getGameId(gameData.getGame()));
-                        ai.setActive(true);
-                        aiMove();
+            aiSettings.addStartActionListener(e -> {
+                if (e.getActionCommand().equals("Start Game")) {
+                    ai.setGame(GridStateFactory.getGameId(gameData.getGame()));
+                    ai.setActive(true);
+                    aiMove();
 
-                        updateMessage();
+                    updateMessage();
 
-                        //TODO move this somewhere else since user might not click start again
-                        if (!gridState.isGameOver()) {
-                            String me = "me";
-                            try {
-                                PlunkProp nameProp = plunkDbUtil.loadProp("name");
-                                if (nameProp != null) {
-                                    me = nameProp.getValue().toString();
-                                }
-                            } catch (Exception ex) {
+                    //TODO move this somewhere else since user might not click start again
+                    if (!gridState.isGameOver()) {
+                        String me = "me";
+                        try {
+                            PlunkProp nameProp = plunkDbUtil.loadProp("name");
+                            if (nameProp != null) {
+                                me = nameProp.getValue().toString();
                             }
-
-                            PlayerData p1Data = new DefaultPlayerData();
-                            p1Data.setUserIDName(ai.getSeat() == 1 ? "mmai" + ai.getLevel() : me);
-                            gameData.setPlayer1Data(p1Data);
-
-                            PlayerData p2Data = new DefaultPlayerData();
-                            p2Data.setUserIDName(ai.getSeat() == 2 ? "mmai" + ai.getLevel() : me);
-                            gameData.setPlayer2Data(p2Data);
-
-                            p1.setText(p1Data.getUserIDName());
-                            p2.setText(p2Data.getUserIDName());
+                        } catch (Exception ex) {
                         }
+
+                        PlayerData p1Data = new DefaultPlayerData();
+                        p1Data.setUserIDName(ai.getSeat() == 1 ? "mmai" + ai.getLevel() : me);
+                        gameData.setPlayer1Data(p1Data);
+
+                        PlayerData p2Data = new DefaultPlayerData();
+                        p2Data.setUserIDName(ai.getSeat() == 2 ? "mmai" + ai.getLevel() : me);
+                        gameData.setPlayer2Data(p2Data);
+
+                        p1.setText(p1Data.getUserIDName());
+                        p2.setText(p2Data.getUserIDName());
                     }
                 }
             });
@@ -170,16 +168,14 @@ public class ViewGamePanel extends JPanel implements TabComponent, VenueListener
             ai.addAiListener(aiSettings);
         }
 
-        gameBoard.addMouseWheelListener(new MouseWheelListener() {
-            public void mouseWheelMoved(MouseWheelEvent e) {
-                if (e.getWheelRotation() < 0) {
-                    for (int i = 0; i < -e.getWheelRotation(); i++) {
-                        currentTreeModel.prevMove();
-                    }
-                } else {
-                    for (int i = 0; i < e.getWheelRotation(); i++) {
-                        currentTreeModel.nextMove();
-                    }
+        gameBoard.addMouseWheelListener(e -> {
+            if (e.getWheelRotation() < 0) {
+                for (int i = 0; i < -e.getWheelRotation(); i++) {
+                    currentTreeModel.prevMove();
+                }
+            } else {
+                for (int i = 0; i < e.getWheelRotation(); i++) {
+                    currentTreeModel.nextMove();
                 }
             }
         });
@@ -261,33 +257,29 @@ public class ViewGamePanel extends JPanel implements TabComponent, VenueListener
 
         rename = new JMenuItem("Edit");
         rename.setIcon(new ImageIcon(ViewGamePanel.class.getResource("images/pencil.png")));
-        rename.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                TreePath p = currentTreeModel.getTempSelectedPath();
+        rename.addActionListener(e -> {
+            TreePath p = currentTreeModel.getTempSelectedPath();
 
-                // temp select again because startEditingAtPath
-                // selects the path to be edited 1st and we don't need to
-                // do that
-                currentTreeModel.tempSelectNode(p);
-                currentTreeModel.getJTree().startEditingAtPath(p);
-            }
+            // temp select again because startEditingAtPath
+            // selects the path to be edited 1st and we don't need to
+            // do that
+            currentTreeModel.tempSelectNode(p);
+            currentTreeModel.getJTree().startEditingAtPath(p);
         });
 
         if (gameData.isEditable()) {
             delete = new JMenuItem("Delete");
             delete.setIcon(new ImageIcon(ViewGamePanel.class.getResource("images/cross.png")));
-            delete.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    DefaultMutableTreeNode d = (DefaultMutableTreeNode) currentTreeModel.getTempSelectedPath().getLastPathComponent();
-                    currentTreeModel.deleteNode(d);
-                    if (ai != null && ai.isActive()) {
-                        ai.stopThinking();
-                    }
-                    if (ai != null && ai.isActive() && gridState.getCurrentPlayer() == ai.getSeat()) {
-                        aiMove();
-                    }
-                    //updateMessage();
+            delete.addActionListener(e -> {
+                DefaultMutableTreeNode d = (DefaultMutableTreeNode) currentTreeModel.getTempSelectedPath().getLastPathComponent();
+                currentTreeModel.deleteNode(d);
+                if (ai != null && ai.isActive()) {
+                    ai.stopThinking();
                 }
+                if (ai != null && ai.isActive() && gridState.getCurrentPlayer() == ai.getSeat()) {
+                    aiMove();
+                }
+                //updateMessage();
             });
         }
 
@@ -991,21 +983,13 @@ public class ViewGamePanel extends JPanel implements TabComponent, VenueListener
         return JOptionPane.NO_OPTION;
     }
 
-    ItemListener editItemWatcher = new ItemListener() {
-        public void itemStateChanged(ItemEvent e) {
-            notifyEditListeners();
-        }
-    };
+    ItemListener editItemWatcher = e -> notifyEditListeners();
     KeyAdapter editKeyWatcher = new KeyAdapter() {
         public void keyTyped(KeyEvent e) {
             notifyEditListeners();
         }
     };
-    ChangeListener editSpinnerWatcher = new ChangeListener() {
-        public void stateChanged(ChangeEvent e) {
-            notifyEditListeners();
-        }
-    };
+    ChangeListener editSpinnerWatcher = e -> notifyEditListeners();
 
     private JLabel label(String text) {
         JLabel l = new JLabel(text);
@@ -1309,14 +1293,12 @@ public class ViewGamePanel extends JPanel implements TabComponent, VenueListener
             timedChoice.addItem("Yes");
             timedChoice.addItem("No");
             timedChoice.setSelectedIndex(gameData.getTimed() ? 0 : 1);
-            timedChoice.addItemListener(new ItemListener() {
-                public void itemStateChanged(ItemEvent e) {
-                    if (e.getStateChange() == ItemEvent.DESELECTED) return;
-                    notifyEditListeners();
-                    boolean enable = ((String) timedChoice.getSelectedItem()).equals("Yes");
-                    initialTimeSpinner.setEnabled(enable);
-                    incrementalTimeSpinner.setEnabled(enable);
-                }
+            timedChoice.addItemListener(e -> {
+                if (e.getStateChange() == ItemEvent.DESELECTED) return;
+                notifyEditListeners();
+                boolean enable = ((String) timedChoice.getSelectedItem()).equals("Yes");
+                initialTimeSpinner.setEnabled(enable);
+                incrementalTimeSpinner.setEnabled(enable);
             });
             infoPanel.add(timedChoice, gbc3);
 
@@ -1455,11 +1437,9 @@ public class ViewGamePanel extends JPanel implements TabComponent, VenueListener
                     System.currentTimeMillis();
 
             datePicker = new JXDatePicker(time);
-            datePicker.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    if (datePicker.getDate().getTime() != time) {
-                        notifyEditListeners();
-                    }
+            datePicker.addActionListener(e -> {
+                if (datePicker.getDate().getTime() != time) {
+                    notifyEditListeners();
                 }
             });
             datePicker.getEditor().addKeyListener(editKeyWatcher);

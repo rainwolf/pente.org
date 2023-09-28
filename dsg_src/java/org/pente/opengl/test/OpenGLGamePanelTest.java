@@ -25,27 +25,23 @@ public class OpenGLGamePanelTest {
         JPanel c = new JPanel();
         JButton add = new JButton("Add Move");
         final JTextField move = new JTextField("180");
-        add.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                int m = Integer.parseInt(move.getText());
-                int x = m % 19;
-                int y = 18 - m / 19;
-                player = 3 - player;
-                GridPiece p = new SimpleGridPiece(x, y, player);
-                panel.addPiece(p);
-            }
+        add.addActionListener(e -> {
+            int m = Integer.parseInt(move.getText());
+            int x = m % 19;
+            int y = 18 - m / 19;
+            player = 3 - player;
+            GridPiece p = new SimpleGridPiece(x, y, player);
+            panel.addPiece(p);
         });
 
         JButton remove = new JButton("Remove Move");
         final JTextField move2 = new JTextField("180");
-        remove.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                int m = Integer.parseInt(move2.getText());
-                int x = m % 19;
-                int y = 18 - m / 19;
-                GridPiece p = new SimpleGridPiece(x, y, 1);
-                panel.removePiece(p);
-            }
+        remove.addActionListener(e -> {
+            int m = Integer.parseInt(move2.getText());
+            int x = m % 19;
+            int y = 18 - m / 19;
+            GridPiece p = new SimpleGridPiece(x, y, 1);
+            panel.removePiece(p);
         });
 
         c.setLayout(new FlowLayout());

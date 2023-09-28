@@ -59,14 +59,12 @@ public class SwissFormat implements TourneyFormat {
             if (rnd > 1) {
                 // sort players by byes ascending
                 // then wins ascending, player who gets the bye is 1st in list
-                Collections.sort(byePlayers, new Comparator() {
-                    public int compare(Object o1, Object o2) {
-                        TourneyPlayerData p1 = (TourneyPlayerData) o1;
-                        TourneyPlayerData p2 = (TourneyPlayerData) o2;
-                        if (p1.getNumByes() > p2.getNumByes()) return 1;
-                        else if (p1.getNumByes() < p2.getNumByes()) return -1;
-                        else return p1.getMatchWins() - p2.getMatchWins();
-                    }
+                Collections.sort(byePlayers, (o1, o2) -> {
+                    TourneyPlayerData p1 = (TourneyPlayerData) o1;
+                    TourneyPlayerData p2 = (TourneyPlayerData) o2;
+                    if (p1.getNumByes() > p2.getNumByes()) return 1;
+                    else if (p1.getNumByes() < p2.getNumByes()) return -1;
+                    else return p1.getMatchWins() - p2.getMatchWins();
                 });
             }
             byeMatch = new TourneyMatch();
@@ -178,12 +176,10 @@ public class SwissFormat implements TourneyFormat {
 
         public TourneySection createRealSection(int eid, int round, int section) {
             TourneySection s = new SwissSection(section);
-            Collections.sort(matches, new Comparator() {
-                public int compare(Object o1, Object o2) {
-                    PotentialMatch m1 = (PotentialMatch) o1;
-                    PotentialMatch m2 = (PotentialMatch) o2;
-                    return m1.p1.getSeed() - m2.p1.getSeed();
-                }
+            Collections.sort(matches, (o1, o2) -> {
+                PotentialMatch m1 = (PotentialMatch) o1;
+                PotentialMatch m2 = (PotentialMatch) o2;
+                return m1.p1.getSeed() - m2.p1.getSeed();
             });
             for (Iterator it = matches.iterator(); it.hasNext(); ) {
                 PotentialMatch m = (PotentialMatch) it.next();

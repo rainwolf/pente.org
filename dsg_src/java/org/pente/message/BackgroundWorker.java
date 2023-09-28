@@ -18,16 +18,14 @@ public abstract class BackgroundWorker {
 
         synchronizedQueue = new SynchronizedQueue();
 
-        Runnable queueRunnable = new Runnable() {
-            public void run() {
-                while (running) {
-                    try {
-                        internalDoWork(synchronizedQueue.remove());
-                    } catch (InterruptedException e) {
-                    } catch (Throwable t) {
-                        log4j.error("Uncaught error for BackgroundWorker-" +
-                                name, t);
-                    }
+        Runnable queueRunnable = () -> {
+            while (running) {
+                try {
+                    internalDoWork(synchronizedQueue.remove());
+                } catch (InterruptedException e) {
+                } catch (Throwable t) {
+                    log4j.error("Uncaught error for BackgroundWorker-" +
+                            name, t);
                 }
             }
         };

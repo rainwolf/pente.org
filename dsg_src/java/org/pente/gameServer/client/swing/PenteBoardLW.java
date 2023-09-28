@@ -252,16 +252,14 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
                         showNewMovesAvailableTimer = new SimpleGameTimer();
                         showNewMovesAvailableTimer.setStartMinutes(1000);
                         showNewMovesAvailableTimer.reset();
-                        showNewMovesAvailableTimer.addGameTimerListener(new GameTimerListener() {
-                            public void timeChanged(int newSeconds, int newMinutes) {
-                                synchronized (drawLock) {
-                                    if (newMovesAvailable) {
-                                        showNewMovesAvailable = !showNewMovesAvailable;
-                                        emptyBoardDirty = true;
-                                    }
+                        showNewMovesAvailableTimer.addGameTimerListener((newSeconds, newMinutes) -> {
+                            synchronized (drawLock) {
+                                if (newMovesAvailable) {
+                                    showNewMovesAvailable = !showNewMovesAvailable;
+                                    emptyBoardDirty = true;
                                 }
-                                repaint();
                             }
+                            repaint();
                         });
                     }
                     showNewMovesAvailableTimer.go();

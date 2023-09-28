@@ -36,20 +36,18 @@ public class ReturnEmailContextListener implements ServletContextListener {
             final ReturnEmailScanner scanner = new ReturnEmailScanner(
                     dbHandler, dsgPlayerStorer);
 
-            thread = new Thread(new Runnable() {
-                public void run() {
-                    while (running) {
+            thread = new Thread(() -> {
+                while (running) {
 
-                        try {
-                            scanner.scanEmails();
-                        } catch (Throwable t) {
-                            log4j.error("Problem scanning emails.", t);
-                        }
+                    try {
+                        scanner.scanEmails();
+                    } catch (Throwable t) {
+                        log4j.error("Problem scanning emails.", t);
+                    }
 
-                        try {
-                            Thread.sleep(SLEEP_TIME);
-                        } catch (InterruptedException ex) {
-                        }
+                    try {
+                        Thread.sleep(SLEEP_TIME);
+                    } catch (InterruptedException ex) {
                     }
                 }
             }, "ReturnEmailScanner");

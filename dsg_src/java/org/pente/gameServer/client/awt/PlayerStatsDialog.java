@@ -121,26 +121,24 @@ public class PlayerStatsDialog extends Dialog
 
         if (!me) {
             final DSGPlayerData d = playerDataCache.getPlayer(playerName);
-            ItemListener updateIgnores = new ItemListener() {
-                public void itemStateChanged(ItemEvent event) {
+            ItemListener updateIgnores = event -> {
 
-                    DSGIgnoreData i = playerDataCache.getIgnore(d.getPlayerID());
-                    if (i == null) {
-                        i = new DSGIgnoreData();
-                        i.setPid(0);
-                        i.setIgnorePid(d.getPlayerID());
-                        playerDataCache.addIgnore(i);
-                    }
-                    i.setIgnoreChat(ignoreChatCheck.getState());
-                    i.setIgnoreInvite(ignoreInviteCheck.getState());
-                    i.setGuest(d.isGuest());
+                DSGIgnoreData i = playerDataCache.getIgnore(d.getPlayerID());
+                if (i == null) {
+                    i = new DSGIgnoreData();
+                    i.setPid(0);
+                    i.setIgnorePid(d.getPlayerID());
+                    playerDataCache.addIgnore(i);
+                }
+                i.setIgnoreChat(ignoreChatCheck.getState());
+                i.setIgnoreInvite(ignoreInviteCheck.getState());
+                i.setGuest(d.isGuest());
 
-                    dsgEventListener.eventOccurred(
-                            new DSGIgnoreEvent(0, new DSGIgnoreData[]{i}));
+                dsgEventListener.eventOccurred(
+                        new DSGIgnoreEvent(0, new DSGIgnoreData[]{i}));
 
-                    if (!i.getIgnoreChat() && !i.getIgnoreInvite()) {
-                        playerDataCache.removeIgnore(d.getPlayerID());
-                    }
+                if (!i.getIgnoreChat() && !i.getIgnoreInvite()) {
+                    playerDataCache.removeIgnore(d.getPlayerID());
                 }
             };
 
@@ -256,11 +254,9 @@ public class PlayerStatsDialog extends Dialog
             }
         });
 
-        itemListener = new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                game = GridStateFactory.getGameId(gameChoice.getSelectedItem());
-                playerChanged(playerDataCache.getPlayer(playerName));
-            }
+        itemListener = e -> {
+            game = GridStateFactory.getGameId(gameChoice.getSelectedItem());
+            playerChanged(playerDataCache.getPlayer(playerName));
         };
 
         // populate

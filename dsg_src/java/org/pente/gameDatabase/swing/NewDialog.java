@@ -29,19 +29,11 @@ public class NewDialog extends MyDialog {
 
         treeButton = new JRadioButton("Game Analysis");
         treeButton.setToolTipText("Enter game positions and variations for analysis, search for matching games.");
-        treeButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                newType = TYPE_TREE;
-            }
-        });
+        treeButton.addActionListener(e -> newType = TYPE_TREE);
 
         gameButton = new JRadioButton("Game Entry");
         gameButton.setToolTipText("Enter a new game into the database");
-        gameButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                newType = TYPE_GAME;
-            }
-        });
+        gameButton.addActionListener(e -> newType = TYPE_GAME);
 
         if (initType == TYPE_GAME) {
             gameButton.setSelected(true);
@@ -68,12 +60,10 @@ public class NewDialog extends MyDialog {
             game = gm;
         }
 
-        gameChoice.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    NewDialog.this.game = GridStateFactory.getGameId((String)
-                            gameChoice.getSelectedItem());
-                }
+        gameChoice.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                NewDialog.this.game = GridStateFactory.getGameId((String)
+                        gameChoice.getSelectedItem());
             }
         });
 

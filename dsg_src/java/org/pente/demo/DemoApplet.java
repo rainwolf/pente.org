@@ -85,22 +85,20 @@ public class DemoApplet extends Applet implements GridBoardListener {
                 new SimpleGridPiece(3, 4, 1)
         };
 
-        thread = new Thread(new Runnable() {
-            public void run() {
-                while (running) {
-                    gridBoardCanvas.clearPieces();
+        thread = new Thread(() -> {
+            while (running) {
+                gridBoardCanvas.clearPieces();
 
-                    for (int i = 0; i < pieces.length; i++) {
-                        gridBoardCanvas.addPiece(pieces[i]);
-                        if (pieces[i] == captureMove1) {
-                            gridBoardCanvas.removePiece(removePiece1);
-                            gridBoardCanvas.removePiece(removePiece2);
-                        }
-                        if (!safeSleep(1500)) return;
+                for (int i = 0; i < pieces.length; i++) {
+                    gridBoardCanvas.addPiece(pieces[i]);
+                    if (pieces[i] == captureMove1) {
+                        gridBoardCanvas.removePiece(removePiece1);
+                        gridBoardCanvas.removePiece(removePiece2);
                     }
-
-                    if (!safeSleep(5000)) return;
+                    if (!safeSleep(1500)) return;
                 }
+
+                if (!safeSleep(5000)) return;
             }
         });
         thread.start();

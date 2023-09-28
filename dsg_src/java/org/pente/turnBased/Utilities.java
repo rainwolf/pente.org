@@ -36,17 +36,9 @@ public class Utilities {
     }
 
     public static final Comparator<TBSet> CREATION_DATE_COMP =
-            new Comparator<TBSet>() {
-                public int compare(TBSet s1, TBSet s2) {
-                    return s1.getCreationDate().compareTo(s2.getCreationDate());
-                }
-            };
+            (s1, s2) -> s1.getCreationDate().compareTo(s2.getCreationDate());
     public static final Comparator<TBGame> TIMEOUT_COMP =
-            new Comparator<TBGame>() {
-                public int compare(TBGame g1, TBGame g2) {
-                    return g1.getTimeoutDate().compareTo(g2.getTimeoutDate());
-                }
-            };
+            (g1, g2) -> g1.getTimeoutDate().compareTo(g2.getTimeoutDate());
 
     public static void organizeGames(long pid, List<TBSet> sets,
                                      List<TBSet> invitesTo, List<TBSet> invitesFrom,

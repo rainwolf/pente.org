@@ -60,13 +60,11 @@ public class SynchronizedServerMainRoom
 
         synchronizedQueue = new SynchronizedQueue();
 
-        Runnable queueRunnable = new Runnable() {
-            public void run() {
-                while (running) {
-                    try {
-                        callServerMainRoom((DSGEvent) synchronizedQueue.remove());
-                    } catch (InterruptedException e) {
-                    }
+        Runnable queueRunnable = () -> {
+            while (running) {
+                try {
+                    callServerMainRoom((DSGEvent) synchronizedQueue.remove());
+                } catch (InterruptedException e) {
                 }
             }
         };

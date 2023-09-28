@@ -96,11 +96,7 @@ DateFormat messageDateFormat = null;
 TimeZone tz = TimeZone.getTimeZone(dsgPlayerData.getTimezone());
 messageDateFormat = new SimpleDateFormat("MM/dd/yy");
 messageDateFormat.setTimeZone(tz);
-Collections.sort(messages, new Comparator<DSGMessage>() {
-    public int compare(DSGMessage m1, DSGMessage m2) {
-        return (m2.getMid() - m1.getMid());
-    }
-});
+Collections.sort(messages, (m1,m2)-> (m2.getMid() - m1.getMid()));
 
 int openTBgames = 0;
 //int concurrentPlayLimit = 2;
@@ -263,25 +259,22 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
     }
 }
 
-Collections.sort(waitingSets, new Comparator<TBSet>() {
-  @Override
-  public int compare(TBSet o1, TBSet o2) {
-      boolean o1KotH = (kothStorer.getEventId(o1.getGame1().getGame()) == o1.getGame1().getEventId());
-      boolean o2KotH = (kothStorer.getEventId(o2.getGame1().getGame()) == o2.getGame1().getEventId());
-      boolean beginner1 = o1.getInvitationRestriction() == TBSet.BEGINNER, beginner2 = o2.getInvitationRestriction() == TBSet.BEGINNER;
-      if (o1KotH && !o2KotH) {
-          return -1;
-      } else if (!o1KotH && o2KotH) {
+Collections.sort(waitingSets, (o1,o2)-> {
+    boolean o1KotH = (kothStorer.getEventId(o1.getGame1().getGame()) == o1.getGame1().getEventId());
+    boolean o2KotH = (kothStorer.getEventId(o2.getGame1().getGame()) == o2.getGame1().getEventId());
+    boolean beginner1 = o1.getInvitationRestriction() == TBSet.BEGINNER, beginner2 = o2.getInvitationRestriction() == TBSet.BEGINNER;
+    if (o1KotH && !o2KotH) {
+        return -1;
+    } else if (!o1KotH && o2KotH) {
+      return 1;
+    }
+    if (beginner1 && !beginner2) {
+        return -1;
+    } else if (!beginner1 && beginner2) {
         return 1;
-      }
-      if (beginner1 && !beginner2) {
-          return -1;
-      } else if (!beginner1 && beginner2) {
-          return 1;
-      }
+    }
 //      return o2.getCreationDate().compareTo(o1.getCreationDate());
-      return o1.getGame1().getGame() - o2.getGame1().getGame();
-  }
+    return o1.getGame1().getGame() - o2.getGame1().getGame();
 });
 
 

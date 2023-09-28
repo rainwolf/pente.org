@@ -37,33 +37,19 @@ public class CustomTablesPanelTest {
         final TextField pTable = new TextField();
         final TextField pSeat = new TextField();
         Button addP = new Button("Add Player");
-        addP.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                DSGPlayerData d = new SimpleDSGPlayerData();
-                d.setName(pName.getText());
-                d.setPlayerType(DSGPlayerData.HUMAN);
-                panel.addPlayer(Integer.parseInt(pTable.getText()), d);
-            }
+        addP.addActionListener(e -> {
+            DSGPlayerData d = new SimpleDSGPlayerData();
+            d.setName(pName.getText());
+            d.setPlayerType(DSGPlayerData.HUMAN);
+            panel.addPlayer(Integer.parseInt(pTable.getText()), d);
         });
         Button removeP = new Button("Remove Player");
-        removeP.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                panel.removePlayer(Integer.parseInt(pTable.getText()), pName.getText());
-            }
-        });
+        removeP.addActionListener(e -> panel.removePlayer(Integer.parseInt(pTable.getText()), pName.getText()));
         Button sitP = new Button("Sit Player");
-        sitP.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                panel.sitPlayer(Integer.parseInt(pTable.getText()), pName.getText(),
-                        Integer.parseInt(pSeat.getText()));
-            }
-        });
+        sitP.addActionListener(e -> panel.sitPlayer(Integer.parseInt(pTable.getText()), pName.getText(),
+                Integer.parseInt(pSeat.getText())));
         Button standP = new Button("Stand Player");
-        standP.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                panel.standPlayer(Integer.parseInt(pTable.getText()), pName.getText());
-            }
-        });
+        standP.addActionListener(e -> panel.standPlayer(Integer.parseInt(pTable.getText()), pName.getText()));
 
         Panel addPlayerPanel = new Panel();
         addPlayerPanel.add(new Label("Name"));
@@ -79,17 +65,9 @@ public class CustomTablesPanelTest {
 
 
         Button addT = new Button("Add Table");
-        addT.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                panel.addTable(Integer.parseInt(pTable.getText()));
-            }
-        });
+        addT.addActionListener(e -> panel.addTable(Integer.parseInt(pTable.getText())));
         Button removeT = new Button("Remove Table");
-        removeT.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                panel.removeTable(Integer.parseInt(pTable.getText()));
-            }
-        });
+        removeT.addActionListener(e -> panel.removeTable(Integer.parseInt(pTable.getText())));
         Panel tablePanel = new Panel();
         tablePanel.add(addT);
         tablePanel.add(removeT);
@@ -111,22 +89,20 @@ public class CustomTablesPanelTest {
             gameChoice.add(GridStateFactory.getGameName(i));
         }
         Button changeState = new Button("Change State");
-        changeState.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                DSGChangeStateTableEvent stateEvent = new DSGChangeStateTableEvent();
-                stateEvent.setGame(gameChoice.getSelectedIndex());
-                stateEvent.setIncrementalSeconds(Integer.parseInt(
-                        incrementalT.getText()));
-                stateEvent.setInitialMinutes(Integer.parseInt(
-                        initialT.getText()));
-                stateEvent.setRated(rated.getState());
-                stateEvent.setTimed(timed.getState());
-                stateEvent.setTableType(tableType.getState() ? DSGChangeStateTableEvent.TABLE_TYPE_PUBLIC :
-                        DSGChangeStateTableEvent.TABLE_TYPE_PRIVATE);
+        changeState.addActionListener(e -> {
+            DSGChangeStateTableEvent stateEvent = new DSGChangeStateTableEvent();
+            stateEvent.setGame(gameChoice.getSelectedIndex());
+            stateEvent.setIncrementalSeconds(Integer.parseInt(
+                    incrementalT.getText()));
+            stateEvent.setInitialMinutes(Integer.parseInt(
+                    initialT.getText()));
+            stateEvent.setRated(rated.getState());
+            stateEvent.setTimed(timed.getState());
+            stateEvent.setTableType(tableType.getState() ? DSGChangeStateTableEvent.TABLE_TYPE_PUBLIC :
+                    DSGChangeStateTableEvent.TABLE_TYPE_PRIVATE);
 
-                panel.changeTableState(Integer.parseInt(pTable.getText()),
-                        stateEvent);
-            }
+            panel.changeTableState(Integer.parseInt(pTable.getText()),
+                    stateEvent);
         });
 
         Panel statePanel = new Panel();
@@ -150,11 +126,7 @@ public class CustomTablesPanelTest {
         f.add(controls, "South");
 
 
-        panel.addTableJoinListener(new TableJoinListener() {
-            public void joinTable(int tableNum) {
-                System.out.println("join table " + tableNum);
-            }
-        });
+        panel.addTableJoinListener(tableNum -> System.out.println("join table " + tableNum));
 
         f.pack();
         f.setLocation(100, 100);

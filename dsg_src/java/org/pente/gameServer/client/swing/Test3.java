@@ -33,45 +33,39 @@ public class Test3 {
         } catch (Exception e) {
         }
 
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                JFrame.setDefaultLookAndFeelDecorated(true);
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            JFrame.setDefaultLookAndFeelDecorated(true);
 
-                final JFrame frame = new JFrame("Test colors");
-                frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            final JFrame frame = new JFrame("Test colors");
+            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-                final JTextField t = new JTextField("1.0");
-                frame.getContentPane().add(t, BorderLayout.CENTER);
+            final JTextField t = new JTextField("1.0");
+            frame.getContentPane().add(t, BorderLayout.CENTER);
 
-                final JButton b = new JButton("Test", getIcon(20, 20, 1));
-                b.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent arg0) {
-                        b.setIcon(getIcon(20, 20, Float.parseFloat(t.getText())));
-                    }
-                });
-                frame.getContentPane().add(b, BorderLayout.NORTH);
+            final JButton b = new JButton("Test", getIcon(20, 20, 1));
+            b.addActionListener(arg0 -> b.setIcon(getIcon(20, 20, Float.parseFloat(t.getText()))));
+            frame.getContentPane().add(b, BorderLayout.NORTH);
 
 
-                PenteBoardLW lw = new PenteBoardLW();
-                lw.gridCoordinatesChanged(new AlphaNumericGridCoordinates(19, 19));
-                final GameOptions gameOptions = new SimpleGameOptions(3);
-                gameOptions.setPlayerColor(GameOptions.WHITE, 1);
-                gameOptions.setPlayerColor(GameOptions.BLACK, 2);
-                gameOptions.setPlayerColor(GameOptions.GREEN, 3); // for search moves search moves
-                gameOptions.setDraw3DPieces(true);
-                gameOptions.setPlaySound(true);
-                gameOptions.setShowLastMove(true);
-                lw.gameOptionsChanged(gameOptions);
-                SimpleGridPiece p = new SimpleGridPiece(9, 9, 3);
-                p.setColor(getColor(1.0));
-                frame.getContentPane().add(lw, BorderLayout.SOUTH);
+            PenteBoardLW lw = new PenteBoardLW();
+            lw.gridCoordinatesChanged(new AlphaNumericGridCoordinates(19, 19));
+            final GameOptions gameOptions = new SimpleGameOptions(3);
+            gameOptions.setPlayerColor(GameOptions.WHITE, 1);
+            gameOptions.setPlayerColor(GameOptions.BLACK, 2);
+            gameOptions.setPlayerColor(GameOptions.GREEN, 3); // for search moves search moves
+            gameOptions.setDraw3DPieces(true);
+            gameOptions.setPlaySound(true);
+            gameOptions.setShowLastMove(true);
+            lw.gameOptionsChanged(gameOptions);
+            SimpleGridPiece p = new SimpleGridPiece(9, 9, 3);
+            p.setColor(getColor(1.0));
+            frame.getContentPane().add(lw, BorderLayout.SOUTH);
 
-                frame.pack();
-                frame.setSize(600, 600);
-                frame.setVisible(true);
+            frame.pack();
+            frame.setSize(600, 600);
+            frame.setVisible(true);
 
-                lw.addPiece(p);
-            }
+            lw.addPiece(p);
         });
     }
 //	First, let's define a function that will return us an Icon:

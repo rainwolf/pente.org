@@ -105,12 +105,10 @@
                   Group g = (Group) groups.next();
                   groupList.add(g);
                }
-               Collections.sort(groupList, new Comparator() {
-                  public int compare(Object o1, Object o2) {
-                     Group g1 = (Group) o1;
-                     Group g2 = (Group) o2;
-                     return g1.getName().toLowerCase().compareTo(g2.getName().toLowerCase());
-                  }
+               Collections.sort(groupList, (o1, o2) -> {
+                  Group g1 = (Group) o1;
+                  Group g2 = (Group) o2;
+                  return g1.getName().toLowerCase().compareTo(g2.getName().toLowerCase());
                });
                boolean hasGroups = groupList.size() > 0;
             %>

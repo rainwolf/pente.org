@@ -31,11 +31,7 @@ public class AddAIDialogTest {
         final Frame f = new Frame();
         f.setLocation(500, 500);
         final AddAIDialog d = new AddAIDialog(
-                f, gameStyle, new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                System.out.println("add AI " + e.getActionCommand());
-            }
-        }, 1, aiData);
+                f, gameStyle, e -> System.out.println("add AI " + e.getActionCommand()), 1, aiData);
     }
 
 }

@@ -1025,19 +1025,15 @@ public class MoveTreeModel extends DefaultTreeModel implements TreeSelectionList
         putAction(KeyStroke.getKeyStroke(KeyEvent.VK_END, 0), "lastMove", lastMoveAction);
 
         JButton rotClockButton = new FlatButton(new ImageIcon(MoveTreeModel.class.getResource("images/rotate_clockwise_big.gif")));
-        rotClockButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        rotClockButton.addActionListener(e -> {
 
-            }
         });
         rotClockButton.setToolTipText("Rotate clockwise (not coded yet)");
         rotClockButton.setEnabled(false);
 
         JButton rotCounterButton = new FlatButton(new ImageIcon(MoveTreeModel.class.getResource("images/rotate_counter_big.gif")));
-        rotCounterButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        rotCounterButton.addActionListener(e -> {
 
-            }
         });
         rotCounterButton.setToolTipText("Rotate counter-clockwise (not coded yet)");
         rotCounterButton.setEnabled(false);
@@ -1054,49 +1050,25 @@ public class MoveTreeModel extends DefaultTreeModel implements TreeSelectionList
 
         //TODO since these are used in 3 places, store names in one location
         FlatButton good = new FlatButton(new ImageIcon(MoveTreeModel.class.getResource("images/good2.png")));
-        good.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setNodeType(PlunkNode.GOOD);
-            }
-        });
+        good.addActionListener(e -> setNodeType(PlunkNode.GOOD));
         good.setToolTipText("Good move");
 
         FlatButton verygood = new FlatButton(new ImageIcon(MoveTreeModel.class.getResource("images/very_good.png")));
-        verygood.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setNodeType(PlunkNode.VERY_GOOD);
-            }
-        });
+        verygood.addActionListener(e -> setNodeType(PlunkNode.VERY_GOOD));
         verygood.setToolTipText("Very good move");
 
         FlatButton bad = new FlatButton(new ImageIcon(MoveTreeModel.class.getResource("images/bad2.png")));
-        bad.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setNodeType(PlunkNode.BAD);
-            }
-        });
+        bad.addActionListener(e -> setNodeType(PlunkNode.BAD));
         bad.setToolTipText("Bad move");
 
         FlatButton verybad = new FlatButton(new ImageIcon(MoveTreeModel.class.getResource("images/very_bad.png")));
-        verybad.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setNodeType(PlunkNode.VERY_BAD);
-            }
-        });
+        verybad.addActionListener(e -> setNodeType(PlunkNode.VERY_BAD));
         verybad.setToolTipText("Very bad move");
         FlatButton interesting = new FlatButton(new ImageIcon(MoveTreeModel.class.getResource("images/interesting.png")));
-        interesting.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setNodeType(PlunkNode.INTERESTING);
-            }
-        });
+        interesting.addActionListener(e -> setNodeType(PlunkNode.INTERESTING));
         interesting.setToolTipText("Interesting move");
         FlatButton noType = new FlatButton(new ImageIcon(MoveTreeModel.class.getResource("images/no_type.png")));
-        noType.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setNodeType(PlunkNode.NO_TYPE);
-            }
-        });
+        noType.addActionListener(e -> setNodeType(PlunkNode.NO_TYPE));
         noType.setToolTipText("Blank");
 
 

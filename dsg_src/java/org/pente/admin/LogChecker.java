@@ -25,11 +25,7 @@ public class LogChecker {
 
     private void scanDir() {
 
-        File files[] = logDir.listFiles(new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                return name.startsWith("activity.log");
-            }
-        });
+        File files[] = logDir.listFiles((dir, name) -> name.startsWith("activity.log"));
         for (int i = 0; i < files.length; i++) {
             try {
                 Date d = null;

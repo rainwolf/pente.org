@@ -371,15 +371,13 @@ public class PositionAnalysis {
 
         // now sort by offense and defense group to determine which ones
         // can be culled below
-        Collections.sort(m, new Comparator<Rank>() {
-            public int compare(Rank r1, Rank r2) {
-                if (r2.getGroup() < r1.getGroup()) {
-                    return 1;
-                } else if (r2.getGroup() > r1.getGroup()) {
-                    return -1;
-                } else {
-                    return r2.getRank() - r1.getRank();
-                }
+        Collections.sort(m, (r1, r2) -> {
+            if (r2.getGroup() < r1.getGroup()) {
+                return 1;
+            } else if (r2.getGroup() > r1.getGroup()) {
+                return -1;
+            } else {
+                return r2.getRank() - r1.getRank();
             }
         });
 

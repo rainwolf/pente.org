@@ -37,18 +37,16 @@ public class Doggy {
     }
 
     protected void start() {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                // Activate "Debug" Tool
-                ToolWindow debugTool = toolWindowManager.getToolWindow("Debug");
-                debugTool.setActive(true);
+        SwingUtilities.invokeLater(() -> {
+            // Activate "Debug" Tool
+            ToolWindow debugTool = toolWindowManager.getToolWindow("Debug");
+            debugTool.setActive(true);
 
-                // Aggregate "Run" tool    
-                ToolWindow runTool = toolWindowManager.getToolWindow("Run");
-                runTool.aggregate();
+            // Aggregate "Run" tool
+            ToolWindow runTool = toolWindowManager.getToolWindow("Run");
+            runTool.aggregate();
 
-                frame.setVisible(true);
-            }
+            frame.setVisible(true);
         });
     }
 
@@ -63,11 +61,9 @@ public class Doggy {
         JMenuBar menuBar = new JMenuBar();
         JMenu fileMenu = new JMenu("File");
         JMenuItem exitMenuItem = new JMenuItem("Exit");
-        exitMenuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                frame.setVisible(false);
-                frame.dispose();
-            }
+        exitMenuItem.addActionListener(e -> {
+            frame.setVisible(false);
+            frame.dispose();
         });
         fileMenu.add(exitMenuItem);
         menuBar.add(fileMenu);
@@ -122,11 +118,9 @@ public class Doggy {
                 JOptionPane.showMessageDialog(frame, "Hello World!!!");
             }
         });
-        dockedTypeDescriptor.setToolWindowActionHandler(new ToolWindowActionHandler() {
-            public void onHideButtonClick(ToolWindow toolWindow) {
-                JOptionPane.showMessageDialog(frame, "Hiding...");
-                toolWindow.setVisible(false);
-            }
+        dockedTypeDescriptor.setToolWindowActionHandler(toolWindow -> {
+            JOptionPane.showMessageDialog(frame, "Hiding...");
+            toolWindow.setVisible(false);
         });
         dockedTypeDescriptor.setAnimating(true);
         dockedTypeDescriptor.setPreviewEnabled(true);

@@ -311,19 +311,16 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
             boolean finalNewGidAssigned = newGidAssigned;
             boolean finalGameAlreadyStored = gameAlreadyStored;
             PreparedStatement finalStmt = stmt;
-            (new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        storeGameNewThread(con, data, finalNewGidAssigned, finalGameAlreadyStored);
-                    } catch (Exception e) {
-                        log4j.error("Error storeGameNewThread: ", e);
-                    } finally {
-                        if (finalStmt != null) {
-                            try {
-                                finalStmt.close();
-                            } catch (SQLException ex) {
-                            }
+            (new Thread(() -> {
+                try {
+                    storeGameNewThread(con, data, finalNewGidAssigned, finalGameAlreadyStored);
+                } catch (Exception e) {
+                    log4j.error("Error storeGameNewThread: ", e);
+                } finally {
+                    if (finalStmt != null) {
+                        try {
+                            finalStmt.close();
+                        } catch (SQLException ex) {
                         }
                     }
                 }

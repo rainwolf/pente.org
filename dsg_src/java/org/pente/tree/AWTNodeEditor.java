@@ -61,52 +61,38 @@ public class AWTNodeEditor extends Panel {
 
         if (!readOnly) {
             Button defaultButton = gs.createDSGButton("Default");
-            defaultButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    controller.toggleDefault();
-                }
-            });
+            defaultButton.addActionListener(e -> controller.toggleDefault());
 
             Button saveButton = gs.createDSGButton("Save");
-            saveButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    controller.store();
-                }
-            });
+            saveButton.addActionListener(e -> controller.store());
 
 
             final TextField maxDepth = new TextField("10");
             final TextField maxNodes = new TextField("2000");
             final Button scanButton = gs.createDSGButton("Scan");
-            scanButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    if (scanButton.getLabel().equals("Scan")) {
-                        String maxDStr = maxDepth.getText();
-                        String maxNStr = maxNodes.getText();
-                        int maxD = 10;
-                        int maxN = 200;
-                        if (maxDStr != null) {
-                            maxD = Integer.parseInt(maxDStr);
-                        }
-                        if (maxNStr != null) {
-                            maxN = Integer.parseInt(maxNStr);
-                        }
-                        scanButton.setLabel("Stop");
-                        controller.scan(maxD, maxN);
-                    } else {
-                        scanButton.setLabel("Scan");
-                        controller.stop();
+            scanButton.addActionListener(e -> {
+                if (scanButton.getLabel().equals("Scan")) {
+                    String maxDStr = maxDepth.getText();
+                    String maxNStr = maxNodes.getText();
+                    int maxD = 10;
+                    int maxN = 200;
+                    if (maxDStr != null) {
+                        maxD = Integer.parseInt(maxDStr);
                     }
+                    if (maxNStr != null) {
+                        maxN = Integer.parseInt(maxNStr);
+                    }
+                    scanButton.setLabel("Stop");
+                    controller.scan(maxD, maxN);
+                } else {
+                    scanButton.setLabel("Scan");
+                    controller.stop();
                 }
             });
 
 
             Button singleScanButton = gs.createDSGButton("Single Scan");
-            singleScanButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    controller.singleScan();
-                }
-            });
+            singleScanButton.addActionListener(e -> controller.singleScan());
 
 
             Panel buttonPanel = new Panel();
@@ -121,11 +107,7 @@ public class AWTNodeEditor extends Panel {
             buttonPanel.add(singleScanButton);
             if (controller instanceof AIBoardController) {
                 Button findPositionButton = gs.createDSGButton("RankTreePos");
-                findPositionButton.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        ((AIBoardController) controller).findPositionInRankTree();
-                    }
-                });
+                findPositionButton.addActionListener(e -> ((AIBoardController) controller).findPositionInRankTree());
                 buttonPanel.add(findPositionButton);
             }
             c.gridy = 3;
@@ -136,17 +118,9 @@ public class AWTNodeEditor extends Panel {
         Panel scannedPanel = new Panel();
         scannedPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
         Button nextButton = gs.createDSGButton("Next Scanned");
-        nextButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                controller.visitNextScanned();
-            }
-        });
+        nextButton.addActionListener(e -> controller.visitNextScanned());
         Button prevButton = gs.createDSGButton("Prev Scanned");
-        prevButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                controller.visitPrevScanned();
-            }
-        });
+        prevButton.addActionListener(e -> controller.visitPrevScanned());
         scannedPanel.add(nextButton);
         scannedPanel.add(prevButton);
 

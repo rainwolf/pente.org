@@ -32,11 +32,7 @@ public class AddAIDialog extends Dialog {
         nameLabel.setForeground(gameStyle.foreGround);
 
         aiChoice = new Choice();
-        aiChoice.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                updateLevels();
-            }
-        });
+        aiChoice.addItemListener(e -> updateLevels());
         updateNames();
 
         Label levelLabel = new Label("Level");
@@ -62,19 +58,13 @@ public class AddAIDialog extends Dialog {
         computerOptionsPanel.add(seatChoice);
 
         Button inviteButton = gameStyle.createDSGButton("Play");
-        inviteButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                addAIListener.actionPerformed(e);
-                dispose();
-            }
+        inviteButton.addActionListener(e -> {
+            addAIListener.actionPerformed(e);
+            dispose();
         });
 
         Button cancelButton = gameStyle.createDSGButton("Cancel");
-        ActionListener disposer = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                dispose();
-            }
-        };
+        ActionListener disposer = e -> dispose();
         cancelButton.addActionListener(disposer);
 
 

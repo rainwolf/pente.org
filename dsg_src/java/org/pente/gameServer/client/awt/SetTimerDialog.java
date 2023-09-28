@@ -33,11 +33,7 @@ public class SetTimerDialog extends Dialog {
         timerCheck.setBackground(gameStyle.boardBack);
         timerCheck.setForeground(gameStyle.foreGround);
         timerCheck.setState(timed);
-        timerCheck.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                enableTimeFields(timerCheck.getState());
-            }
-        });
+        timerCheck.addItemListener(e -> enableTimeFields(timerCheck.getState()));
 
         Label timerInitialLabel = new Label("Initial Time (min)");
         timerInitialLabel.setBackground(gameStyle.boardBack);
@@ -55,24 +51,18 @@ public class SetTimerDialog extends Dialog {
         enableTimeFields(timed);
 
         Button setTimeButton = gameStyle.createDSGButton(SET_TIMER);
-        setTimeButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (isValidTime(timerInitial.getText(), 1, 999) &&
-                        isValidTime(timerIncremental.getText(), 0, 59)) {
-                    setTimerListener.setTimer(timerCheck.getState(),
-                            Integer.parseInt(timerInitial.getText()),
-                            Integer.parseInt(timerIncremental.getText()));
-                    dispose();
-                }
+        setTimeButton.addActionListener(e -> {
+            if (isValidTime(timerInitial.getText(), 1, 999) &&
+                    isValidTime(timerIncremental.getText(), 0, 59)) {
+                setTimerListener.setTimer(timerCheck.getState(),
+                        Integer.parseInt(timerInitial.getText()),
+                        Integer.parseInt(timerIncremental.getText()));
+                dispose();
             }
         });
 
         Button cancelButton = gameStyle.createDSGButton(CANCEL);
-        cancelButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                dispose();
-            }
-        });
+        cancelButton.addActionListener(e -> dispose());
 
         GridBagLayout gridbag = new GridBagLayout();
         GridBagConstraints constraints = new GridBagConstraints();

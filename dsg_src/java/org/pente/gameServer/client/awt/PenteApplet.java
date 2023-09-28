@@ -121,20 +121,17 @@ public class PenteApplet extends Applet {
 
             activeServers = ActiveServerLoader.getActiveServers(host);
             loginPnl = new LoginPanel(activeServers, gameStyle);
-            loginPnl.addLoginListener(new LoginListener() {
+            loginPnl.addLoginListener((name, password, port) -> {
 
-                public void login(String name, String password, int port) {
-
-                    PenteApplet.this.playerName = name;
-                    PenteApplet.this.password = password;
-                    PenteApplet.this.port = port;
-                    try {
-                        connect();
-                    } catch (Throwable t) {
-                        System.out.println("unknown error on login");
-                        t.printStackTrace();
-                        cardLayout.show(PenteApplet.this, ERROR_PANEL);
-                    }
+                PenteApplet.this.playerName = name;
+                PenteApplet.this.password = password;
+                PenteApplet.this.port = port;
+                try {
+                    connect();
+                } catch (Throwable t) {
+                    System.out.println("unknown error on login");
+                    t.printStackTrace();
+                    cardLayout.show(PenteApplet.this, ERROR_PANEL);
                 }
             });
             add(LOGIN, (Component) loginPnl);
@@ -219,16 +216,14 @@ public class PenteApplet extends Applet {
             //socket.setSoTimeout(30 * 1000); 
 
             socketDSGEventHandler = new ClientSocketDSGEventHandler(socket);
-            socketDSGEventHandler.addListener(new DSGEventListener() {
-                public void eventOccurred(DSGEvent dsgEvent) {
-                    if (dsgEvent instanceof DSGPingEvent) {
-                        socketDSGEventHandler.eventOccurred(dsgEvent);
-                        //DSGPingEvent p = (DSGPingEvent) dsgEvent;
-                    }
-                    //else {//TEMP
-                    //    System.out.println("in " + playerName + ": " + dsgEvent);
-                    //}
+            socketDSGEventHandler.addListener(dsgEvent -> {
+                if (dsgEvent instanceof DSGPingEvent) {
+                    socketDSGEventHandler.eventOccurred(dsgEvent);
+                    //DSGPingEvent p = (DSGPingEvent) dsgEvent;
                 }
+                //else {//TEMP
+                //    System.out.println("in " + playerName + ": " + dsgEvent);
+                //}
             });
             //dsgEventLogger = new DSGEventLogger(socketDSGEventHandler);
             preferenceHandler = new PreferenceHandler(
@@ -237,109 +232,107 @@ public class PenteApplet extends Applet {
             final DummyFrame frame = new DummyFrame(this);
             frame.setSize(640, 440);
 
-            socketDSGEventHandler.addListener(new DSGEventListener() {
-                public void eventOccurred(DSGEvent dsgEvent) {
+            socketDSGEventHandler.addListener(dsgEvent -> {
 
-                    try {
+                try {
 
-                        if (dsgEvent instanceof DSGJoinMainRoomEvent) {
-                            DSGJoinMainRoomEvent mainRoomEvent = (DSGJoinMainRoomEvent) dsgEvent;
-                            if (mainRoomEvent.getPlayer().equals(playerName)) {
-                                booted = false;
-                                cardLayout.show(PenteApplet.this, MAINROOM);
-                            } else {
-                                playerDataCache.addPlayer(mainRoomEvent.getDSGPlayerData());
-                            }
-                        } else if (dsgEvent instanceof DSGJoinMainRoomErrorEvent) {
-                            DSGJoinMainRoomErrorEvent mainRoomError = (DSGJoinMainRoomErrorEvent) dsgEvent;
-                            if (mainRoomError.getError() == DSGMainRoomErrorEvent.ALREADY_IN_MAIN_ROOM) {
-                                cardLayout.show(PenteApplet.this, LOGIN);
-                                loginPnl.showAlreadyLoggedIn();
-                            }
-                        } else if (dsgEvent instanceof DSGExitMainRoomEvent) {
-                            DSGExitMainRoomEvent exitEvent = (DSGExitMainRoomEvent) dsgEvent;
-                            if (exitEvent.getPlayer() == null && !booted) {
-                                if (!changingRooms) {
-                                    errorPnl.setConnectionError();
-                                    cardLayout.show(PenteApplet.this, ERROR_PANEL);
-                                    logout();
-                                }
-                            } else if (exitEvent.getPlayer().equals(playerName) &&
-                                    exitEvent.wasBooted()) {
-                                errorPnl.setBooted();
-                                booted = true;
+                    if (dsgEvent instanceof DSGJoinMainRoomEvent) {
+                        DSGJoinMainRoomEvent mainRoomEvent = (DSGJoinMainRoomEvent) dsgEvent;
+                        if (mainRoomEvent.getPlayer().equals(playerName)) {
+                            booted = false;
+                            cardLayout.show(PenteApplet.this, MAINROOM);
+                        } else {
+                            playerDataCache.addPlayer(mainRoomEvent.getDSGPlayerData());
+                        }
+                    } else if (dsgEvent instanceof DSGJoinMainRoomErrorEvent) {
+                        DSGJoinMainRoomErrorEvent mainRoomError = (DSGJoinMainRoomErrorEvent) dsgEvent;
+                        if (mainRoomError.getError() == DSGMainRoomErrorEvent.ALREADY_IN_MAIN_ROOM) {
+                            cardLayout.show(PenteApplet.this, LOGIN);
+                            loginPnl.showAlreadyLoggedIn();
+                        }
+                    } else if (dsgEvent instanceof DSGExitMainRoomEvent) {
+                        DSGExitMainRoomEvent exitEvent = (DSGExitMainRoomEvent) dsgEvent;
+                        if (exitEvent.getPlayer() == null && !booted) {
+                            if (!changingRooms) {
+                                errorPnl.setConnectionError();
                                 cardLayout.show(PenteApplet.this, ERROR_PANEL);
                                 logout();
                             }
-                        } else if (dsgEvent instanceof DSGUpdatePlayerDataEvent) {
-                            DSGUpdatePlayerDataEvent updateEvent =
-                                    (DSGUpdatePlayerDataEvent) dsgEvent;
-                            playerDataCache.updatePlayer(updateEvent.getDSGPlayerData());
-                        } else if (dsgEvent instanceof DSGIgnoreEvent) {
-                            DSGIgnoreEvent ignoreEvent = (DSGIgnoreEvent) dsgEvent;
-                            playerDataCache.updateIgnore(ignoreEvent.getPlayers());
-                            //note any open dialogs won't be modified
-                        } else if (dsgEvent instanceof DSGServerStatsEvent) {
-                            DSGServerStatsEvent statsEvent = (DSGServerStatsEvent) dsgEvent;
-
-                            new ServerStatsDialog(
-                                    statsFrame,
-                                    gameStyle,
-                                    statsEvent,
-                                    safeGetLocationOnScreen());
-                        } else if (dsgEvent instanceof DSGAddAITableEvent) {
-                            aiDataVector.addElement(((DSGAddAITableEvent) dsgEvent).getAIData());
-                        } else if (dsgEvent instanceof DSGLoginErrorEvent) {
-                            DSGLoginErrorEvent loginErrorEvent = (DSGLoginErrorEvent) dsgEvent;
-                            if (loginErrorEvent.getError() == DSGLoginErrorEvent.INVALID_LOGIN) {
-                                cardLayout.show(PenteApplet.this, LOGIN);
-                                loginPnl.showInvalidLogin();
-                            } else if (loginErrorEvent.getError() == DSGLoginErrorEvent.PRIVATE_ROOM) {
-                                cardLayout.show(PenteApplet.this, LOGIN);
-                                loginPnl.showPrivateRoom();
-                            }
-                        } else if (dsgEvent instanceof DSGLoginEvent) {
-
-                            DSGLoginEvent l = (DSGLoginEvent) dsgEvent;
-                            if (l.isGuest()) {
-                                playerName = l.getPlayer();
-                            }
-                            playerDataCache.addPlayer(l.getMe());
-                            mainRoomPnl = new MainRoomPanel(
-                                    l.getTime(),
-                                    PenteApplet.this,
-                                    l.getMe(),
-                                    l.getServerData(),
-                                    activeServers,
-                                    socketDSGEventHandler,
-                                    socketDSGEventHandler,
-                                    gameStyle,
-                                    sounds,
-                                    frame,
-                                    playerDataCache,
-                                    preferenceHandler);
-                            add(MAINROOM, mainRoomPnl);
-
-                            tableController =
-                                    new TableController(
-                                            getHost(),
-                                            l.getMe(),
-                                            gameStyle,
-                                            socketDSGEventHandler,
-                                            socketDSGEventHandler,
-                                            sounds,
-                                            aiDataVector,
-                                            mainRoomPnl.getPlayerList(),
-                                            playerDataCache,
-                                            preferenceHandler);
-
-                            mainRoomPnl.setTableController(tableController);
+                        } else if (exitEvent.getPlayer().equals(playerName) &&
+                                exitEvent.wasBooted()) {
+                            errorPnl.setBooted();
+                            booted = true;
+                            cardLayout.show(PenteApplet.this, ERROR_PANEL);
+                            logout();
                         }
+                    } else if (dsgEvent instanceof DSGUpdatePlayerDataEvent) {
+                        DSGUpdatePlayerDataEvent updateEvent =
+                                (DSGUpdatePlayerDataEvent) dsgEvent;
+                        playerDataCache.updatePlayer(updateEvent.getDSGPlayerData());
+                    } else if (dsgEvent instanceof DSGIgnoreEvent) {
+                        DSGIgnoreEvent ignoreEvent = (DSGIgnoreEvent) dsgEvent;
+                        playerDataCache.updateIgnore(ignoreEvent.getPlayers());
+                        //note any open dialogs won't be modified
+                    } else if (dsgEvent instanceof DSGServerStatsEvent) {
+                        DSGServerStatsEvent statsEvent = (DSGServerStatsEvent) dsgEvent;
 
-                    } catch (Throwable t) {
-                        System.out.println("unknown socket event error");
-                        t.printStackTrace();
+                        new ServerStatsDialog(
+                                statsFrame,
+                                gameStyle,
+                                statsEvent,
+                                safeGetLocationOnScreen());
+                    } else if (dsgEvent instanceof DSGAddAITableEvent) {
+                        aiDataVector.addElement(((DSGAddAITableEvent) dsgEvent).getAIData());
+                    } else if (dsgEvent instanceof DSGLoginErrorEvent) {
+                        DSGLoginErrorEvent loginErrorEvent = (DSGLoginErrorEvent) dsgEvent;
+                        if (loginErrorEvent.getError() == DSGLoginErrorEvent.INVALID_LOGIN) {
+                            cardLayout.show(PenteApplet.this, LOGIN);
+                            loginPnl.showInvalidLogin();
+                        } else if (loginErrorEvent.getError() == DSGLoginErrorEvent.PRIVATE_ROOM) {
+                            cardLayout.show(PenteApplet.this, LOGIN);
+                            loginPnl.showPrivateRoom();
+                        }
+                    } else if (dsgEvent instanceof DSGLoginEvent) {
+
+                        DSGLoginEvent l = (DSGLoginEvent) dsgEvent;
+                        if (l.isGuest()) {
+                            playerName = l.getPlayer();
+                        }
+                        playerDataCache.addPlayer(l.getMe());
+                        mainRoomPnl = new MainRoomPanel(
+                                l.getTime(),
+                                PenteApplet.this,
+                                l.getMe(),
+                                l.getServerData(),
+                                activeServers,
+                                socketDSGEventHandler,
+                                socketDSGEventHandler,
+                                gameStyle,
+                                sounds,
+                                frame,
+                                playerDataCache,
+                                preferenceHandler);
+                        add(MAINROOM, mainRoomPnl);
+
+                        tableController =
+                                new TableController(
+                                        getHost(),
+                                        l.getMe(),
+                                        gameStyle,
+                                        socketDSGEventHandler,
+                                        socketDSGEventHandler,
+                                        sounds,
+                                        aiDataVector,
+                                        mainRoomPnl.getPlayerList(),
+                                        playerDataCache,
+                                        preferenceHandler);
+
+                        mainRoomPnl.setTableController(tableController);
                     }
+
+                } catch (Throwable t) {
+                    System.out.println("unknown socket event error");
+                    t.printStackTrace();
                 }
             });
 

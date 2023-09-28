@@ -95,25 +95,23 @@ public class PlayerListPanelTest {
     }
 
     private static void addThread(final PlayerListPanel p, final int threadNum, final int repitition, final int delay) {
-        new Thread(new Runnable() {
-            public void run() {
-                for (int i = 1; i < repitition; i++) {
-                    DSGPlayerData d = new SimpleDSGPlayerData();
-                    d.setName(threadNum + "-" + i);
-                    d.setPlayerType(DSGPlayerData.HUMAN);
+        new Thread(() -> {
+            for (int i = 1; i < repitition; i++) {
+                DSGPlayerData d = new SimpleDSGPlayerData();
+                d.setName(threadNum + "-" + i);
+                d.setPlayerType(DSGPlayerData.HUMAN);
 
-                    p.addPlayer(d);
-                    try {
-                        Thread.sleep(delay);
-                    } catch (InterruptedException e) {
-                    }
+                p.addPlayer(d);
+                try {
+                    Thread.sleep(delay);
+                } catch (InterruptedException e) {
                 }
-                for (int i = 1; i < repitition; i++) {
-                    p.removePlayer(threadNum + "-" + i);
-                    try {
-                        Thread.sleep(delay);
-                    } catch (InterruptedException e) {
-                    }
+            }
+            for (int i = 1; i < repitition; i++) {
+                p.removePlayer(threadNum + "-" + i);
+                try {
+                    Thread.sleep(delay);
+                } catch (InterruptedException e) {
                 }
             }
         }).start();

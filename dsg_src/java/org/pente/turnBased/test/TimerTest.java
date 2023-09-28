@@ -42,14 +42,11 @@ public class TimerTest {
         timer.setStartMinutes(20);
         //timer.setStartSeconds(0);
         //timer.reset();
-        timer.addGameTimerListener(new GameTimerListener() {
-
-            public void timeChanged(int newSeconds, int newMinutes) {
-                System.out.println("change " + timer.getState());
-                if (newSeconds <= 0 && newMinutes <= 0) {
-                    System.out.println("doh");
-                    System.exit(0);
-                }
+        timer.addGameTimerListener((newSeconds, newMinutes) -> {
+            System.out.println("change " + timer.getState());
+            if (newSeconds <= 0 && newMinutes <= 0) {
+                System.out.println("doh");
+                System.exit(0);
             }
         });
 

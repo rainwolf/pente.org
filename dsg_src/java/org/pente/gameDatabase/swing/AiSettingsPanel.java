@@ -49,18 +49,16 @@ public class AiSettingsPanel extends JPanel implements AiListener {
             }
         }
 
-        treeChoice.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    String treeName = (String) treeChoice.getSelectedItem();
-                    if (treeName.equals("No Opening Book")) {
-                        ai.setTreeId(-1);
-                    } else {
-                        for (PlunkTree t : trees) {
-                            if (t.getName().equals(treeName)) {
-                                ai.setTreeId(-1);
-                                break;
-                            }
+        treeChoice.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                String treeName = (String) treeChoice.getSelectedItem();
+                if (treeName.equals("No Opening Book")) {
+                    ai.setTreeId(-1);
+                } else {
+                    for (PlunkTree t : trees) {
+                        if (t.getName().equals(treeName)) {
+                            ai.setTreeId(-1);
+                            break;
                         }
                     }
                 }
@@ -73,11 +71,9 @@ public class AiSettingsPanel extends JPanel implements AiListener {
             levelChoice.addItem("Level " + Integer.toString(i));
         }
         levelChoice.setSelectedIndex(ai.getLevel() - 1);
-        levelChoice.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    ai.setLevel(levelChoice.getSelectedIndex() + 1);
-                }
+        levelChoice.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                ai.setLevel(levelChoice.getSelectedIndex() + 1);
             }
         });
 
@@ -85,11 +81,9 @@ public class AiSettingsPanel extends JPanel implements AiListener {
             seatChoice = new JComboBox();
             seatChoice.addItem("Player 1");
             seatChoice.addItem("Player 2");
-            seatChoice.addItemListener(new ItemListener() {
-                public void itemStateChanged(ItemEvent e) {
-                    if (e.getStateChange() == ItemEvent.SELECTED) {
-                        ai.setSeat(seatChoice.getSelectedIndex() + 1);
-                    }
+            seatChoice.addItemListener(e -> {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    ai.setSeat(seatChoice.getSelectedIndex() + 1);
                 }
             });
         }
@@ -97,11 +91,9 @@ public class AiSettingsPanel extends JPanel implements AiListener {
         vctChoice.addItem("VCT Off");
         vctChoice.addItem("VCT On");
         vctChoice.setSelectedIndex(ai.getVct());
-        vctChoice.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    ai.setVct(vctChoice.getSelectedIndex());
-                }
+        vctChoice.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                ai.setVct(vctChoice.getSelectedIndex());
             }
         });
 
@@ -183,12 +175,10 @@ public class AiSettingsPanel extends JPanel implements AiListener {
         gbc.anchor = GridBagConstraints.SOUTHWEST;
         add(startButton, gbc2);
 
-        startButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (e.getActionCommand().equals(stopText)) {
-                    if (ai.isActive()) {
-                        ai.stopThinking();
-                    }
+        startButton.addActionListener(e -> {
+            if (e.getActionCommand().equals(stopText)) {
+                if (ai.isActive()) {
+                    ai.stopThinking();
                 }
             }
         });

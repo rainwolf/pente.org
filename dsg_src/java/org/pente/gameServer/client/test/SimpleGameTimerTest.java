@@ -37,23 +37,21 @@ public class SimpleGameTimerTest {
         gameTimer.go();
 
 
-        gameTimer.addGameTimerListener(new GameTimerListener() {
-            public void timeChanged(int newMinutes, int newSeconds) {
+        gameTimer.addGameTimerListener((newMinutes, newSeconds) -> {
 
-                if (newMinutes == 0 && newSeconds == 0) {
-                    System.out.println("total time elapsed = " + (System.currentTimeMillis() - start));
-                    gameTimer.stop();
-                }
-
-                String newSecondsStr = newSeconds > 9 ? "" + newSeconds : "0" + newSeconds;
-                timerLabel.setText(newMinutes + ":" + newSecondsStr);
-
-                // dummy loop to slow down the timer
-                //for (int i = 0; i < 500; i++) {
-                //	System.out.print(i);
-                //}
-                //System.out.println();
+            if (newMinutes == 0 && newSeconds == 0) {
+                System.out.println("total time elapsed = " + (System.currentTimeMillis() - start));
+                gameTimer.stop();
             }
+
+            String newSecondsStr = newSeconds > 9 ? "" + newSeconds : "0" + newSeconds;
+            timerLabel.setText(newMinutes + ":" + newSecondsStr);
+
+            // dummy loop to slow down the timer
+            //for (int i = 0; i < 500; i++) {
+            //	System.out.print(i);
+            //}
+            //System.out.println();
         });
     }
 }

@@ -68,35 +68,29 @@ public class MainRoomOptionsDialog extends Dialog {
         showPlayerJoinExitCheck.setForeground(gameStyle.foreGround);
 
         Button okButton = gameStyle.createDSGButton("Ok");
-        okButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                // save state to server and close window
-                if (playJoinSoundCheck.getState() != playJoinSoundPref.booleanValue()) {
-                    preferenceHandler.storePref("playJoinSound",
-                            new Boolean(playJoinSoundCheck.getState()));
-                }
-                if (playInviteSoundCheck.getState() != playInviteSoundPref.booleanValue()) {
-                    preferenceHandler.storePref("playInviteSound",
-                            new Boolean(playInviteSoundCheck.getState()));
-                }
-                if (showTimestampsCheck.getState() != showTimestampsPref.booleanValue()) {
-                    preferenceHandler.storePref("chatTimestamp",
-                            new Boolean(showTimestampsCheck.getState()));
-                }
-                if (showPlayerJoinExitCheck.getState() != showPlayerJoinExitPref.booleanValue()) {
-                    preferenceHandler.storePref("showPlayerJoinExit",
-                            new Boolean(showPlayerJoinExitCheck.getState()));
-                }
-                dispose();
+        okButton.addActionListener(e -> {
+            // save state to server and close window
+            if (playJoinSoundCheck.getState() != playJoinSoundPref.booleanValue()) {
+                preferenceHandler.storePref("playJoinSound",
+                        new Boolean(playJoinSoundCheck.getState()));
             }
+            if (playInviteSoundCheck.getState() != playInviteSoundPref.booleanValue()) {
+                preferenceHandler.storePref("playInviteSound",
+                        new Boolean(playInviteSoundCheck.getState()));
+            }
+            if (showTimestampsCheck.getState() != showTimestampsPref.booleanValue()) {
+                preferenceHandler.storePref("chatTimestamp",
+                        new Boolean(showTimestampsCheck.getState()));
+            }
+            if (showPlayerJoinExitCheck.getState() != showPlayerJoinExitPref.booleanValue()) {
+                preferenceHandler.storePref("showPlayerJoinExit",
+                        new Boolean(showPlayerJoinExitCheck.getState()));
+            }
+            dispose();
         });
 
         Button cancelButton = gameStyle.createDSGButton("Cancel");
-        cancelButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                dispose();
-            }
-        });
+        cancelButton.addActionListener(e -> dispose());
 
 
         setLayout(new BorderLayout());

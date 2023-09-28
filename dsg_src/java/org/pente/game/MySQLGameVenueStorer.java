@@ -236,33 +236,31 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
 
             start = System.currentTimeMillis();
             // sort by game, site name, event name, round, section
-            Collections.sort(data, new Comparator<Data>() {
-                public int compare(Data d1, Data d2) {
-                    if (d1.game != d2.game) {
-                        return d1.game - d2.game;
+            Collections.sort(data, (d1, d2) -> {
+                if (d1.game != d2.game) {
+                    return d1.game - d2.game;
+                } else {
+                    if (d1.siteData != d2.siteData) {
+                        return d1.siteData.getName().compareTo(
+                                d2.siteData.getName());
                     } else {
-                        if (d1.siteData != d2.siteData) {
-                            return d1.siteData.getName().compareTo(
-                                    d2.siteData.getName());
+                        if (d1.eventData != d2.eventData) {
+                            return d1.eventData.getName().compareTo(
+                                    d2.eventData.getName());
                         } else {
-                            if (d1.eventData != d2.eventData) {
-                                return d1.eventData.getName().compareTo(
-                                        d2.eventData.getName());
+                            if (d1.round == null) {
+                                if (d2.round == null) return 1;
+                                else return 0;
+                            } else if (d2.round == null) {
+                                return 1;
+                            } else if (!d1.round.equals(d2.round)) {
+                                return d1.round.compareTo(d2.round);
                             } else {
-                                if (d1.round == null) {
-                                    if (d2.round == null) return 1;
+                                if (d1.section == null) {
+                                    if (d2.section == null) return 1;
                                     else return 0;
-                                } else if (d2.round == null) {
-                                    return 1;
-                                } else if (!d1.round.equals(d2.round)) {
-                                    return d1.round.compareTo(d2.round);
                                 } else {
-                                    if (d1.section == null) {
-                                        if (d2.section == null) return 1;
-                                        else return 0;
-                                    } else {
-                                        return d1.section.compareTo(d2.section);
-                                    }
+                                    return d1.section.compareTo(d2.section);
                                 }
                             }
                         }

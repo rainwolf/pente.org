@@ -317,12 +317,10 @@ public class ServerTable {
             timers[i] = new MilliSecondGameTimer("Table " + tableNum + " player " + i);
             timers[i].setStartMinutes(initialMinutes);
             final int tempPlayer = i;
-            timers[i].addGameTimerListener(new GameTimerListener() {
-                public void timeChanged(int minutes, int seconds) {
-                    if (minutes <= 0 && seconds <= 0) {
-                        synchronizedTableListener.eventOccurred(
-                                new DSGTimeUpTableEvent(playingPlayers[tempPlayer].getName(), tableNum));
-                    }
+            timers[i].addGameTimerListener((minutes, seconds) -> {
+                if (minutes <= 0 && seconds <= 0) {
+                    synchronizedTableListener.eventOccurred(
+                            new DSGTimeUpTableEvent(playingPlayers[tempPlayer].getName(), tableNum));
                 }
             });
         }
@@ -2603,66 +2601,64 @@ public class ServerTable {
                 // run the code that gets data out of the database
                 // and actually sends the email in a separate thread since
                 // it is pretty slow
-                new Thread(new Runnable() {
-                    public void run() {
-                        DSGPlayerData dsgPlayerData = null;
-                        String emailReply = null;
-                        boolean errorOccurred = false;
-                        try {
-                            dsgPlayerData = dsgPlayerStorer.loadPlayer(emailGameEvent.getPlayer());
-                        } catch (DSGPlayerStoreException d) {
-                            log4j.error("Error loading " + emailGameEvent.getPlayer() + "'s email for emailing game.");
-                            emailReply = "error loading email address from database";
-                            errorOccurred = true;
-                        }
-
-                        if (errorOccurred) {
-                        } else if (dsgPlayerData == null) {
-                            emailReply = "no email address found for " + emailGameEvent.getPlayer();
-                        } else if (!dsgPlayerData.getEmailValid()) {
-                            emailReply = "email address " + dsgPlayerData.getEmail() + " is invalid, please update it and try again";
-                        } else {
-
-                            StringBuffer gameBuffer = new StringBuffer();
-                            gameFormat.format(lastGame, gameBuffer);
-
-                            String attachmentTitle = lastGame.getPlayer1Data().getUserIDName() +
-                                    " vs. " +
-                                    lastGame.getPlayer2Data().getUserIDName() +
-                                    " " +
-                                    dateFormat.format(lastGame.getDate()) +
-                                    ".txt";
-
-                            String fromEmail = System.getProperty("mail.smtp.user");
-
-                            try {
-
-                                SendMail2.sendMailSaveInDb(
-                                        "Pente.org",
-                                        fromEmail,
-                                        dsgPlayerData.getPlayerID(),
-                                        dsgPlayerData.getName(),
-                                        dsgPlayerData.getEmail(),
-                                        "Pente.org Game",
-                                        gameBuffer.toString(),
-                                        true,
-                                        attachmentTitle,
-                                        returnEmailStorer);
-                                emailReply = "game successfully sent to " + dsgPlayerData.getEmail();
-
-                            } catch (Throwable t) {
-                                log4j.info("Problem emailing game for " + emailGameEvent.getPlayer(), t);
-                                emailReply = "error sending email to " + dsgPlayerData.getEmail() + ", please make sure your address is correct and try again";
-                            }
-                        }
-
-                        dsgEventRouter.routeEvent(
-                                new DSGEmailGameReplyTableEvent(
-                                        emailGameEvent.getPlayer(),
-                                        tableNum,
-                                        emailReply),
-                                emailGameEvent.getPlayer());
+                new Thread(() -> {
+                    DSGPlayerData dsgPlayerData = null;
+                    String emailReply = null;
+                    boolean errorOccurred = false;
+                    try {
+                        dsgPlayerData = dsgPlayerStorer.loadPlayer(emailGameEvent.getPlayer());
+                    } catch (DSGPlayerStoreException d) {
+                        log4j.error("Error loading " + emailGameEvent.getPlayer() + "'s email for emailing game.");
+                        emailReply = "error loading email address from database";
+                        errorOccurred = true;
                     }
+
+                    if (errorOccurred) {
+                    } else if (dsgPlayerData == null) {
+                        emailReply = "no email address found for " + emailGameEvent.getPlayer();
+                    } else if (!dsgPlayerData.getEmailValid()) {
+                        emailReply = "email address " + dsgPlayerData.getEmail() + " is invalid, please update it and try again";
+                    } else {
+
+                        StringBuffer gameBuffer = new StringBuffer();
+                        gameFormat.format(lastGame, gameBuffer);
+
+                        String attachmentTitle = lastGame.getPlayer1Data().getUserIDName() +
+                                " vs. " +
+                                lastGame.getPlayer2Data().getUserIDName() +
+                                " " +
+                                dateFormat.format(lastGame.getDate()) +
+                                ".txt";
+
+                        String fromEmail = System.getProperty("mail.smtp.user");
+
+                        try {
+
+                            SendMail2.sendMailSaveInDb(
+                                    "Pente.org",
+                                    fromEmail,
+                                    dsgPlayerData.getPlayerID(),
+                                    dsgPlayerData.getName(),
+                                    dsgPlayerData.getEmail(),
+                                    "Pente.org Game",
+                                    gameBuffer.toString(),
+                                    true,
+                                    attachmentTitle,
+                                    returnEmailStorer);
+                            emailReply = "game successfully sent to " + dsgPlayerData.getEmail();
+
+                        } catch (Throwable t) {
+                            log4j.info("Problem emailing game for " + emailGameEvent.getPlayer(), t);
+                            emailReply = "error sending email to " + dsgPlayerData.getEmail() + ", please make sure your address is correct and try again";
+                        }
+                    }
+
+                    dsgEventRouter.routeEvent(
+                            new DSGEmailGameReplyTableEvent(
+                                    emailGameEvent.getPlayer(),
+                                    tableNum,
+                                    emailReply),
+                            emailGameEvent.getPlayer());
                 }, "handleEmailGame").start();
             }
         }
@@ -2962,14 +2958,11 @@ public class ServerTable {
                 isAllHumanGame = !isComputerGame;
 
                 if (isAllHumanGame) {
-                    (new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                gameFileStorer.storeGame(fileGameData);
-                            } catch (Throwable t) {
-                                log4j.error(psid() + "Problem saving game in file", t);
-                            }
+                    (new Thread(() -> {
+                        try {
+                            gameFileStorer.storeGame(fileGameData);
+                        } catch (Throwable t) {
+                            log4j.error(psid() + "Problem saving game in file", t);
                         }
                     })).start();
                 }

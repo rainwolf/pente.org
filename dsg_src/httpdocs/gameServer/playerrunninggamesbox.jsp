@@ -23,12 +23,7 @@
       List<TBGame> gamesList = new ArrayList<TBGame>(myTurn);
       gamesList.addAll(oppTurn);
 
-      Collections.sort(gamesList, new Comparator<TBGame>() {
-         @Override
-         public int compare(TBGame o1, TBGame o2) {
-            return o1.getGame() - o2.getGame();
-         }
-      });
+      Collections.sort(gamesList, (o1, o2) -> o1.getGame() - o2.getGame());
 
 
 %>

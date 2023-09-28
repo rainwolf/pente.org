@@ -93,37 +93,35 @@ public class Scanner {
         this.maxDepth = maxDepth;
         this.maxNodes = maxNodes;
 
-        new Thread(new Runnable() {
-            public void run() {
+        new Thread(() -> {
 
-                Node oldCurrent = current;
-                //PenteState state = (PenteState) GridStateFactory.createGridState(
-                //    GridStateFactory.PENTE);
+            Node oldCurrent = current;
+            //PenteState state = (PenteState) GridStateFactory.createGridState(
+            //    GridStateFactory.PENTE);
 
-                PenteState state = new FastPenteStateZobrist();
-                for (int i = 0; i < gridState.getNumMoves() - 1; i++) {
-                    state.addMove(gridState.getMove(i));
-                }
-                int move = gridState.getMove(gridState.getNumMoves() - 1);
-
-                scanCount = 0;
-                scanHits = 0;
-                maxScanDepth = 0;
-                startTime = System.currentTimeMillis();
-                sTime2 = System.currentTimeMillis();
-                int result = scan(state, move, 1);
-
-                current = oldCurrent;
-                //board.drawPotentialMoves(current);
-
-                log4j.info("scanned " + scanCount + " nodes, maxDepth = " + maxScanDepth);
-                log4j.info("node searcher stats = " + nodeSearcher);
-                log4j.info("total time = " + (System.currentTimeMillis() - startTime) + " milliseconds.");
-                System.out.println("scanned " + scanCount + " nodes, maxDepth = " + maxScanDepth);
-                System.out.println("node searcher stats = " + nodeSearcher);
-                System.out.println("total time = " + (System.currentTimeMillis() - startTime) + " milliseconds.");
-
+            PenteState state = new FastPenteStateZobrist();
+            for (int i = 0; i < gridState.getNumMoves() - 1; i++) {
+                state.addMove(gridState.getMove(i));
             }
+            int move = gridState.getMove(gridState.getNumMoves() - 1);
+
+            scanCount = 0;
+            scanHits = 0;
+            maxScanDepth = 0;
+            startTime = System.currentTimeMillis();
+            sTime2 = System.currentTimeMillis();
+            int result = scan(state, move, 1);
+
+            current = oldCurrent;
+            //board.drawPotentialMoves(current);
+
+            log4j.info("scanned " + scanCount + " nodes, maxDepth = " + maxScanDepth);
+            log4j.info("node searcher stats = " + nodeSearcher);
+            log4j.info("total time = " + (System.currentTimeMillis() - startTime) + " milliseconds.");
+            System.out.println("scanned " + scanCount + " nodes, maxDepth = " + maxScanDepth);
+            System.out.println("node searcher stats = " + nodeSearcher);
+            System.out.println("total time = " + (System.currentTimeMillis() - startTime) + " milliseconds.");
+
         }).start();
     }
 
@@ -407,24 +405,22 @@ public class Scanner {
     // for now, just use a list and sort it each time, later will
     // implement a faster custom tree class
     List<Node> rankTree = new ArrayList<Node>();
-    Comparator<Node> c = new Comparator<Node>() {
-        public int compare(Node o1, Node o2) {
-            if (o1.getHash() == o2.getHash()) return 0;
+    Comparator<Node> c = (o1, o2) -> {
+        if (o1.getHash() == o2.getHash()) return 0;
 
-            Rank r1 = o1.getBestRank();
-            Rank r2 = o2.getBestRank();
+        Rank r1 = o1.getBestRank();
+        Rank r2 = o2.getBestRank();
 
-            if (r2 == null) {
-                return -1;
-            } else if (r1 == null) {
-                return 1;
-            } else if (r2.getOffenseGroup() < r1.getOffenseGroup()) {
-                return 1;
-            } else if (r2.getOffenseGroup() > r1.getOffenseGroup()) {
-                return -1;
-            } else {
-                return r2.getOffenseRank() - r1.getOffenseRank();
-            }
+        if (r2 == null) {
+            return -1;
+        } else if (r1 == null) {
+            return 1;
+        } else if (r2.getOffenseGroup() < r1.getOffenseGroup()) {
+            return 1;
+        } else if (r2.getOffenseGroup() > r1.getOffenseGroup()) {
+            return -1;
+        } else {
+            return r2.getOffenseRank() - r1.getOffenseRank();
         }
     };
 

@@ -44,21 +44,19 @@ public class ServerStatsDialogTest {
                         new Color(51, 102, 204)); //watcher
 
         Button statsButton = new Button("Get Stats");
-        statsButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        statsButton.addActionListener(e -> {
 
-                Calendar daysAgo = Calendar.getInstance();
-                daysAgo.add(Calendar.DATE, -2);
-                daysAgo.add(Calendar.HOUR_OF_DAY, -5);
+            Calendar daysAgo = Calendar.getInstance();
+            daysAgo.add(Calendar.DATE, -2);
+            daysAgo.add(Calendar.HOUR_OF_DAY, -5);
 
-                System.out.println(daysAgo.getTime());
+            System.out.println(daysAgo.getTime());
 
-                DSGServerStatsEvent statsEvent = new DSGServerStatsEvent(
-                        10, 12, 20, 200, daysAgo.getTime());
+            DSGServerStatsEvent statsEvent = new DSGServerStatsEvent(
+                    10, 12, 20, 200, daysAgo.getTime());
 
-                ServerStatsDialog statsDialog =
-                        new ServerStatsDialog(f, gameStyle, statsEvent, f.getLocation());
-            }
+            ServerStatsDialog statsDialog =
+                    new ServerStatsDialog(f, gameStyle, statsEvent, f.getLocation());
         });
 
         f.add(statsButton);

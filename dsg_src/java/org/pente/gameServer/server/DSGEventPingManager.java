@@ -43,30 +43,28 @@ public class DSGEventPingManager implements PingManager {
 
         players = Collections.synchronizedMap(new HashMap());
 
-        Runnable pingRunnable = new Runnable() {
-            public void run() {
+        Runnable pingRunnable = () -> {
 
-                DSGPingEvent pingEvent = null;
-                while (running) {
+            DSGPingEvent pingEvent = null;
+            while (running) {
 
-                    Map playersCopy = null;
-                    synchronized (players) {
-                        playersCopy = new HashMap(players);
-                    }
+                Map playersCopy = null;
+                synchronized (players) {
+                    playersCopy = new HashMap(players);
+                }
 
-                    Iterator names = playersCopy.keySet().iterator();
-                    while (names.hasNext()) {
-                        String name = (String) names.next();
-                        //log4j.info(name + ": " + players.get(name));
-                        pingEvent = new DSGPingEvent(name);
-                        dsgRouter.routeEvent(pingEvent, name);
-                        pingEvent = null;
-                    }
+                Iterator names = playersCopy.keySet().iterator();
+                while (names.hasNext()) {
+                    String name = (String) names.next();
+                    //log4j.info(name + ": " + players.get(name));
+                    pingEvent = new DSGPingEvent(name);
+                    dsgRouter.routeEvent(pingEvent, name);
+                    pingEvent = null;
+                }
 
-                    try {
-                        Thread.sleep(SLEEP_TIME);
-                    } catch (InterruptedException e) {
-                    }
+                try {
+                    Thread.sleep(SLEEP_TIME);
+                } catch (InterruptedException e) {
                 }
             }
         };

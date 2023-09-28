@@ -236,12 +236,10 @@
       // Sort the user moderators list
       java.util.List moderatorList = new ArrayList(moderators.values());
       Object[] moderatorArray = moderatorList.toArray();
-      Arrays.sort(moderatorArray, new Comparator() {
-         public int compare(Object o1, Object o2) {
-            Group g1 = (Group) o1;
-            Group g2 = (Group) o2;
-            return (g1.getName().compareTo(g2.getName()));
-         }
+      Arrays.sort(moderatorArray, (o1, o2) -> {
+         Group g1 = (Group) o1;
+         Group g2 = (Group) o2;
+         return (g1.getName().compareTo(g2.getName()));
       });
 
       return (Arrays.asList(moderatorArray)).iterator();

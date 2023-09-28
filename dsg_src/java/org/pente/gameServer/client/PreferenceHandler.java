@@ -19,12 +19,10 @@ public class PreferenceHandler {
         this.dsgEventSource = dsgEventSource;
         this.dsgEventListener = dsgEventListener;
 
-        dsgEventSource.addListener(new DSGEventListener() {
-            public void eventOccurred(DSGEvent dsgEvent) {
-                if (dsgEvent instanceof DSGPreferenceEvent) {
-                    DSGPlayerPreference p = ((DSGPreferenceEvent) dsgEvent).getPref();
-                    receivePref(p);
-                }
+        dsgEventSource.addListener(dsgEvent -> {
+            if (dsgEvent instanceof DSGPreferenceEvent) {
+                DSGPlayerPreference p = ((DSGPreferenceEvent) dsgEvent).getPref();
+                receivePref(p);
             }
         });
     }

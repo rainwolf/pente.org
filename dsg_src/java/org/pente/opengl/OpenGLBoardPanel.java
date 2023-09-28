@@ -116,40 +116,34 @@ public class OpenGLBoardPanel extends JPanel
                 p2_color_test);
 
         Button b = new Button("Update");
-        b.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                synchronized (lock) {
-                    OpenGLBoardPanel.this.p1_color_test = p1i.getColor();
-                    OpenGLBoardPanel.this.p2_color_test = p2i.getColor();
-                }
-                canvas.display();
+        b.addActionListener(e -> {
+            synchronized (lock) {
+                OpenGLBoardPanel.this.p1_color_test = p1i.getColor();
+                OpenGLBoardPanel.this.p2_color_test = p2i.getColor();
             }
+            canvas.display();
         });
 
 
         final JSlider tiltSlider = new JSlider(JSlider.HORIZONTAL,
                 -90, 0, (int) tiltTheta);
-        tiltSlider.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                synchronized (lock) {
-                    OpenGLBoardPanel.this.tiltTheta = (int) tiltSlider.getValue();
-                    state = STATE_DRAW;
-                }
-                System.out.println("theta=" + tiltSlider.getValue());
-                canvas.display();
+        tiltSlider.addChangeListener(e -> {
+            synchronized (lock) {
+                OpenGLBoardPanel.this.tiltTheta = (int) tiltSlider.getValue();
+                state = STATE_DRAW;
             }
+            System.out.println("theta=" + tiltSlider.getValue());
+            canvas.display();
         });
         final JSlider perspecSlider = new JSlider(JSlider.HORIZONTAL,
                 550, 1000, distance);
-        perspecSlider.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                synchronized (lock) {
-                    OpenGLBoardPanel.this.distance = (int) perspecSlider.getValue();
-                    state = STATE_DRAW;
-                }
-                System.out.println("distance=" + perspecSlider.getValue());
-                canvas.display();
+        perspecSlider.addChangeListener(e -> {
+            synchronized (lock) {
+                OpenGLBoardPanel.this.distance = (int) perspecSlider.getValue();
+                state = STATE_DRAW;
             }
+            System.out.println("distance=" + perspecSlider.getValue());
+            canvas.display();
         });
 
         Panel p = new Panel();

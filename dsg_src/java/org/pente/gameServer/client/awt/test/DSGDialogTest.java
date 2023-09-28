@@ -43,44 +43,26 @@ public class DSGDialogTest {
                         new Color(51, 102, 204)); //watcher
 
         Button undoButton = new Button("Undo");
-        undoButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        undoButton.addActionListener(e -> {
 
-                DSGDialog undo = DSGDialogFactory.createUndoDialog(f, gameStyle);
-                undo.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        System.out.println("undo action performed: " + e.getActionCommand());
-                    }
-                });
-                undo.setVisible(true);
-            }
+            DSGDialog undo = DSGDialogFactory.createUndoDialog(f, gameStyle);
+            undo.addActionListener(e13 -> System.out.println("undo action performed: " + e13.getActionCommand()));
+            undo.setVisible(true);
         });
 
         Button cancelButton = new Button("Cancel");
-        cancelButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        cancelButton.addActionListener(e -> {
 
-                DSGDialog cancel = DSGDialogFactory.createCancelDialog(f, gameStyle, "game");
-                cancel.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        System.out.println("cancel action performed: " + e.getActionCommand());
-                    }
-                });
-                cancel.setVisible(true);
-            }
+            DSGDialog cancel = DSGDialogFactory.createCancelDialog(f, gameStyle, "game");
+            cancel.addActionListener(e12 -> System.out.println("cancel action performed: " + e12.getActionCommand()));
+            cancel.setVisible(true);
         });
         Button resignButton = new Button("Resign");
-        resignButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        resignButton.addActionListener(e -> {
 
-                DSGDialog resign = DSGDialogFactory.createResignDialog(f, gameStyle);
-                resign.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        System.out.println("resign action performed: " + e.getActionCommand());
-                    }
-                });
-                resign.setVisible(true);
-            }
+            DSGDialog resign = DSGDialogFactory.createResignDialog(f, gameStyle);
+            resign.addActionListener(e1 -> System.out.println("resign action performed: " + e1.getActionCommand()));
+            resign.setVisible(true);
         });
 
         f.setLayout(new GridLayout(3, 1));

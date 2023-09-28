@@ -46,12 +46,10 @@ public class NewAiDialog extends MyDialog {
             game = gm;
         }
 
-        gameChoice.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    NewAiDialog.this.game = GridStateFactory.getGameId((String)
-                            gameChoice.getSelectedItem());
-                }
+        gameChoice.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                NewAiDialog.this.game = GridStateFactory.getGameId((String)
+                        gameChoice.getSelectedItem());
             }
         });
 
@@ -64,18 +62,16 @@ public class NewAiDialog extends MyDialog {
             }
         }
 
-        treeChoice.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    String treeName = (String) treeChoice.getSelectedItem();
-                    if (treeName.equals("No Opening Book")) {
-                        NewAiDialog.this.treeId = -1;
-                    } else {
-                        for (PlunkTree t : trees) {
-                            if (t.getName().equals(treeName)) {
-                                NewAiDialog.this.treeId = t.getTreeId();
-                                break;
-                            }
+        treeChoice.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                String treeName = (String) treeChoice.getSelectedItem();
+                if (treeName.equals("No Opening Book")) {
+                    NewAiDialog.this.treeId = -1;
+                } else {
+                    for (PlunkTree t : trees) {
+                        if (t.getName().equals(treeName)) {
+                            NewAiDialog.this.treeId = t.getTreeId();
+                            break;
                         }
                     }
                 }
@@ -88,32 +84,26 @@ public class NewAiDialog extends MyDialog {
             levelChoice.addItem("Level " + Integer.toString(i));
         }
         levelChoice.setSelectedIndex(level - 1);
-        levelChoice.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    NewAiDialog.this.level = levelChoice.getSelectedIndex() + 1;
-                }
+        levelChoice.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                NewAiDialog.this.level = levelChoice.getSelectedIndex() + 1;
             }
         });
         seatChoice = new JComboBox();
         seatChoice.addItem("Player 1");
         seatChoice.addItem("Player 2");
-        seatChoice.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    NewAiDialog.this.seat = seatChoice.getSelectedIndex() + 1;
-                }
+        seatChoice.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                NewAiDialog.this.seat = seatChoice.getSelectedIndex() + 1;
             }
         });
         vctChoice = new JComboBox();
         vctChoice.addItem("VCT Off");
         vctChoice.addItem("VCT On");
         vctChoice.setSelectedIndex(vct);
-        vctChoice.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    NewAiDialog.this.vct = vctChoice.getSelectedIndex();
-                }
+        vctChoice.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                NewAiDialog.this.vct = vctChoice.getSelectedIndex();
             }
         });
 

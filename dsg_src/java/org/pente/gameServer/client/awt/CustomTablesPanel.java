@@ -53,19 +53,17 @@ public class CustomTablesPanel extends Panel
         scrollbar.setVisibleAmount(1);
 
         // add listener to update startRow when scrollbar is adjusted
-        scrollbar.addAdjustmentListener(new AdjustmentListener() {
-            public void adjustmentValueChanged(AdjustmentEvent e) {
-                // set start table to current value of scrollbar not events
-                // value in case another thread updated scrollbar's value
-                // between the time the user clicked and this event was
-                // received
-                startTable = scrollbar.getValue();
-                if (startTable < 0) {
-                    startTable = 0;
-                }
-                repaint();
-                requestFocus();
+        scrollbar.addAdjustmentListener(e -> {
+            // set start table to current value of scrollbar not events
+            // value in case another thread updated scrollbar's value
+            // between the time the user clicked and this event was
+            // received
+            startTable = scrollbar.getValue();
+            if (startTable < 0) {
+                startTable = 0;
             }
+            repaint();
+            requestFocus();
         });
 
         tables = new Vector();

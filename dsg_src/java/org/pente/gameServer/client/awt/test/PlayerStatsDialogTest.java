@@ -47,66 +47,60 @@ public class PlayerStatsDialogTest {
                         new Color(51, 102, 204)); //watcher
 
         Button statsButton = new Button("Get Stats");
-        statsButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        statsButton.addActionListener(e -> {
 
-                DSGPlayerData dsgPlayerData = new SimpleDSGPlayerData();
-                dsgPlayerData.setName("dweebo");
-                dsgPlayerData.setAge(26);
-                dsgPlayerData.setEmail("dweebo@pente.org");
-                dsgPlayerData.setEmailVisible(true);
-                dsgPlayerData.setHomepage("http://www.google.com");
-                dsgPlayerData.setLastLoginDate(new java.util.Date());
-                dsgPlayerData.setLocation("Here");
-                dsgPlayerData.setLogins(2125);
-                dsgPlayerData.setNameColor(Color.red);
-                dsgPlayerData.setNote("Test note");
-                dsgPlayerData.setSex('M');
-                dsgPlayerData.setRegisterDate(new java.util.Date());
+            DSGPlayerData dsgPlayerData = new SimpleDSGPlayerData();
+            dsgPlayerData.setName("dweebo");
+            dsgPlayerData.setAge(26);
+            dsgPlayerData.setEmail("dweebo@pente.org");
+            dsgPlayerData.setEmailVisible(true);
+            dsgPlayerData.setHomepage("http://www.google.com");
+            dsgPlayerData.setLastLoginDate(new java.util.Date());
+            dsgPlayerData.setLocation("Here");
+            dsgPlayerData.setLogins(2125);
+            dsgPlayerData.setNameColor(Color.red);
+            dsgPlayerData.setNote("Test note");
+            dsgPlayerData.setSex('M');
+            dsgPlayerData.setRegisterDate(new java.util.Date());
 
-                int c = 0;
-                byte b[] = new byte[1024 * 100];
-                try {
-                    FileInputStream in = new FileInputStream(
-                            "/dsg_src/httpdocs/gameServer/images/dweebo.jpg");
-                    while (true) {
-                        int cnt = in.read(b, c, 1024);
-                        if (cnt == -1) break;
-                        c += cnt;
-                    }
-                    in.close();
-                } catch (Throwable t) {
-                    t.printStackTrace();
+            int c = 0;
+            byte b[] = new byte[1024 * 100];
+            try {
+                FileInputStream in = new FileInputStream(
+                        "/dsg_src/httpdocs/gameServer/images/dweebo.jpg");
+                while (true) {
+                    int cnt = in.read(b, c, 1024);
+                    if (cnt == -1) break;
+                    c += cnt;
                 }
-                byte a[] = new byte[c];
-                for (int i = 0; i < a.length; i++) a[i] = b[i];
-
-                dsgPlayerData.setAvatar(a);
-
-                DSGPlayerGameData penteGameData = new SimpleDSGPlayerGameData();
-                penteGameData.setGame(GridStateFactory.PENTE);
-                penteGameData.setLosses(10);
-                penteGameData.setWins(100);
-                penteGameData.setRating(1800.00d);
-                penteGameData.setStreak(7);
-                dsgPlayerData.addPlayerGameData(penteGameData);
-                DSGPlayerGameData keryoGameData = penteGameData.getCopy();
-                keryoGameData.setGame(GridStateFactory.KERYO);
-                keryoGameData.setLosses(12);
-                keryoGameData.setWins(120);
-                keryoGameData.setRating(1700.00d);
-                keryoGameData.setStreak(8);
-                dsgPlayerData.addPlayerGameData(keryoGameData);
-                PlayerDataCache cc = new PlayerDataCache();
-                cc.addPlayer(dsgPlayerData);
-
-                new PlayerStatsDialog(f, f.getLocation(), "dweebo", "localhost",
-                        gameStyle, cc, new DSGEventListener() {
-                    public void eventOccurred(DSGEvent dsgEvent) {
-                        System.out.println("event occurred = " + dsgEvent);
-                    }
-                }, false);
+                in.close();
+            } catch (Throwable t) {
+                t.printStackTrace();
             }
+            byte a[] = new byte[c];
+            for (int i = 0; i < a.length; i++) a[i] = b[i];
+
+            dsgPlayerData.setAvatar(a);
+
+            DSGPlayerGameData penteGameData = new SimpleDSGPlayerGameData();
+            penteGameData.setGame(GridStateFactory.PENTE);
+            penteGameData.setLosses(10);
+            penteGameData.setWins(100);
+            penteGameData.setRating(1800.00d);
+            penteGameData.setStreak(7);
+            dsgPlayerData.addPlayerGameData(penteGameData);
+            DSGPlayerGameData keryoGameData = penteGameData.getCopy();
+            keryoGameData.setGame(GridStateFactory.KERYO);
+            keryoGameData.setLosses(12);
+            keryoGameData.setWins(120);
+            keryoGameData.setRating(1700.00d);
+            keryoGameData.setStreak(8);
+            dsgPlayerData.addPlayerGameData(keryoGameData);
+            PlayerDataCache cc = new PlayerDataCache();
+            cc.addPlayer(dsgPlayerData);
+
+            new PlayerStatsDialog(f, f.getLocation(), "dweebo", "localhost",
+                    gameStyle, cc, dsgEvent -> System.out.println("event occurred = " + dsgEvent), false);
         });
 
         f.add(statsButton);

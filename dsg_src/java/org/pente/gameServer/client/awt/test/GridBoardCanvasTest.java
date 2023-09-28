@@ -112,48 +112,44 @@ public class GridBoardCanvasTest {
 
         // change thinking piece in a separate thread
         if (changeThinkingPiece) {
-            new Thread(new Runnable() {
-                public void run() {
-                    for (int i = 0; i < 600; i++) {
-                        synchronized (playerTypeLock) {
-                            playerType = (i % 2) + 1;
-                            penteAdapter.setThinkingPiecePlayer(playerType);
-                        }
-                        try {
-                            Thread.sleep(10);
-                        } catch (InterruptedException e) {
+            new Thread(() -> {
+                for (int i = 0; i < 600; i++) {
+                    synchronized (playerTypeLock) {
+                        playerType = (i % 2) + 1;
+                        penteAdapter.setThinkingPiecePlayer(playerType);
+                    }
+                    try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {
 
-                        }
                     }
                 }
             }).start();
         }
 
         if (moveMouse) {
-            new Thread(new Runnable() {
-                public void run() {
-                    for (int i = 0; i < 600; i++) {
+            new Thread(() -> {
+                for (int i = 0; i < 600; i++) {
 
-                        Dimension s = penteCanvas.getSize();
-                        int x = (int) (Math.random() * s.width);
-                        int y = (int) (Math.random() * s.height);
+                    Dimension s = penteCanvas.getSize();
+                    int x = (int) (Math.random() * s.width);
+                    int y = (int) (Math.random() * s.height);
 
-                        MouseEvent m = new MouseEvent(
-                                penteCanvas,
-                                MouseEvent.MOUSE_MOVED,
-                                System.currentTimeMillis(),
-                                0,
-                                x,
-                                y,
-                                1,
-                                false);
-                        penteCanvas.testMouseEvent(m);
+                    MouseEvent m = new MouseEvent(
+                            penteCanvas,
+                            MouseEvent.MOUSE_MOVED,
+                            System.currentTimeMillis(),
+                            0,
+                            x,
+                            y,
+                            1,
+                            false);
+                    penteCanvas.testMouseEvent(m);
 
-                        try {
-                            Thread.sleep(10);
-                        } catch (InterruptedException e) {
+                    try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {
 
-                        }
                     }
                 }
             }).start();
@@ -161,24 +157,22 @@ public class GridBoardCanvasTest {
 
         // resize the window in a thread
         if (resize) {
-            new Thread(new Runnable() {
-                public void run() {
-                    for (int i = 0; i < 600; i++) {
-                        Dimension s = f.getSize();
-                        int x = (int) (Math.random() * 50);
-                        int y = (int) (Math.random() * 50);
+            new Thread(() -> {
+                for (int i = 0; i < 600; i++) {
+                    Dimension s = f.getSize();
+                    int x = (int) (Math.random() * 50);
+                    int y = (int) (Math.random() * 50);
 
-                        int b = i % 2 == 0 ? -1 : 1;
-                        x = s.width + b * x;
-                        y = s.height + b * y;
+                    int b = i % 2 == 0 ? -1 : 1;
+                    x = s.width + b * x;
+                    y = s.height + b * y;
 
-                        f.setSize(x, y);
-                        penteCanvas.setSize(x, y);
+                    f.setSize(x, y);
+                    penteCanvas.setSize(x, y);
 
-                        try {
-                            Thread.sleep(100);
-                        } catch (InterruptedException e) {
-                        }
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
                     }
                 }
             }).start();
@@ -186,21 +180,19 @@ public class GridBoardCanvasTest {
 
         // change the colors of the pieces randomly
         if (changeColors) {
-            new Thread(new Runnable() {
-                public void run() {
-                    for (int i = 0; i < 600; i++) {
+            new Thread(() -> {
+                for (int i = 0; i < 600; i++) {
 
-                        int w = (int) (Math.random() * 8);
-                        int b = (int) (Math.random() * 8);
+                    int w = (int) (Math.random() * 8);
+                    int b = (int) (Math.random() * 8);
 
-                        gameOptions.setPlayerColor(w, 1);
-                        gameOptions.setPlayerColor(b, 2);
-                        penteCanvas.gameOptionsChanged(gameOptions);
+                    gameOptions.setPlayerColor(w, 1);
+                    gameOptions.setPlayerColor(b, 2);
+                    penteCanvas.gameOptionsChanged(gameOptions);
 
-                        try {
-                            Thread.sleep(10);
-                        } catch (InterruptedException e) {
-                        }
+                    try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {
                     }
                 }
             }).start();
@@ -222,24 +214,22 @@ public class GridBoardCanvasTest {
     }
 
     private static void addThread(final GridState gridState, final int y, final int delay) {
-        new Thread(new Runnable() {
-            public void run() {
-                for (int i = 0; i < 19; i++) {
+        new Thread(() -> {
+            for (int i = 0; i < 19; i++) {
 
-                    gridState.addMove(y * 19 + i);
-                    try {
-                        Thread.sleep(delay);
-                    } catch (InterruptedException e) {
-                    }
+                gridState.addMove(y * 19 + i);
+                try {
+                    Thread.sleep(delay);
+                } catch (InterruptedException e) {
                 }
-                for (int i = 0; i < 19; i++) {
+            }
+            for (int i = 0; i < 19; i++) {
 
-                    gridState.undoMove();
+                gridState.undoMove();
 
-                    try {
-                        Thread.sleep(delay);
-                    } catch (InterruptedException e) {
-                    }
+                try {
+                    Thread.sleep(delay);
+                } catch (InterruptedException e) {
                 }
             }
         }).start();

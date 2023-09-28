@@ -103,18 +103,16 @@ public class SwissSection extends TourneySection {
                 it.remove();
             }
         }
-        Collections.sort(ranked, new Comparator<TourneyPlayerData>() {
-            public int compare(TourneyPlayerData p1, TourneyPlayerData p2) {
-                int diffWins = p2.getMatchWins() - p1.getMatchWins();
-                int diffOppWins = p2.getOpponentWins() - p1.getOpponentWins();
-                if (diffWins != 0) {
-                    return diffWins;
-                } else if (diffOppWins != 0) {
-                    return diffOppWins;
-                } else {
-                    if (p2.getRandom() > p1.getRandom()) return 1;
-                    else return -1;
-                }
+        Collections.sort(ranked, (p1, p2) -> {
+            int diffWins = p2.getMatchWins() - p1.getMatchWins();
+            int diffOppWins = p2.getOpponentWins() - p1.getOpponentWins();
+            if (diffWins != 0) {
+                return diffWins;
+            } else if (diffOppWins != 0) {
+                return diffOppWins;
+            } else {
+                if (p2.getRandom() > p1.getRandom()) return 1;
+                else return -1;
             }
         });
 
@@ -146,31 +144,29 @@ public class SwissSection extends TourneySection {
     public void init() {
 
         // sort matches by player names using p1+p2 (to group games in a match together)
-        Collections.sort(matches, new Comparator() {
-            public int compare(Object o1, Object o2) {
-                TourneyMatch m1 = (TourneyMatch) o1;
-                TourneyMatch m2 = (TourneyMatch) o2;
-                if (m1.isBye()) return 1;
-                else if (m2.isBye()) return -1;
+        Collections.sort(matches, (o1, o2) -> {
+            TourneyMatch m1 = (TourneyMatch) o1;
+            TourneyMatch m2 = (TourneyMatch) o2;
+            if (m1.isBye()) return 1;
+            else if (m2.isBye()) return -1;
 
-                String m1Names = "";
-                String m2Names = "";
-                String m1p1 = m1.getPlayer1().getName();
-                String m1p2 = m1.getPlayer2().getName();
-                String m2p1 = m2.getPlayer1().getName();
-                String m2p2 = m2.getPlayer2().getName();
-                if (m1p1.compareTo(m1p2) < 0) {
-                    m1Names = m1p1 + m1p2;
-                } else {
-                    m1Names = m1p2 + m1p1;
-                }
-                if (m2p1.compareTo(m2p2) < 0) {
-                    m2Names = m2p1 + m2p2;
-                } else {
-                    m2Names = m2p2 + m2p1;
-                }
-                return m1Names.compareTo(m2Names);
+            String m1Names = "";
+            String m2Names = "";
+            String m1p1 = m1.getPlayer1().getName();
+            String m1p2 = m1.getPlayer2().getName();
+            String m2p1 = m2.getPlayer1().getName();
+            String m2p2 = m2.getPlayer2().getName();
+            if (m1p1.compareTo(m1p2) < 0) {
+                m1Names = m1p1 + m1p2;
+            } else {
+                m1Names = m1p2 + m1p1;
             }
+            if (m2p1.compareTo(m2p2) < 0) {
+                m2Names = m2p1 + m2p2;
+            } else {
+                m2Names = m2p2 + m2p1;
+            }
+            return m1Names.compareTo(m2Names);
         });
 
         // seems kind of wasteful to re-run all of this every time a game completes

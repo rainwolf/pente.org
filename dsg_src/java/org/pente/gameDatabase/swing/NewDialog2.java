@@ -39,12 +39,10 @@ public class NewDialog2 extends MyDialog {
             game = gm;
         }
 
-        gameChoice.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    NewDialog2.this.game = GridStateFactory.getGameId((String)
-                            gameChoice.getSelectedItem());
-                }
+        gameChoice.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                NewDialog2.this.game = GridStateFactory.getGameId((String)
+                        gameChoice.getSelectedItem());
             }
         });
 

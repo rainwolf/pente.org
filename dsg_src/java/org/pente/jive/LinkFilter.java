@@ -250,12 +250,10 @@ public class LinkFilter implements Filter {
     }
 
     private void sortBlocks(ArrayList blocks) {
-        Collections.sort(blocks, new Comparator() {
-            public int compare(Object object1, Object object2) {
-                URLBlock b1 = (URLBlock) object1;
-                URLBlock b2 = (URLBlock) object2;
-                return (b1.getStart() > b2.getStart()) ? 1 : -1;
-            }
+        Collections.sort(blocks, (object1, object2) -> {
+            URLBlock b1 = (URLBlock) object1;
+            URLBlock b2 = (URLBlock) object2;
+            return (b1.getStart() > b2.getStart()) ? 1 : -1;
         });
     }
 

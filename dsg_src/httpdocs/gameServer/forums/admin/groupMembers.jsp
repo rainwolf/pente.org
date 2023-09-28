@@ -206,12 +206,10 @@
                         User member = (User) members.next();
                         memberList.add(member);
                      }
-                     Collections.sort(memberList, new Comparator() {
-                        public int compare(Object o1, Object o2) {
-                           User u1 = (User) o1;
-                           User u2 = (User) o2;
-                           return u1.getUsername().toLowerCase().compareTo(u2.getUsername().toLowerCase());
-                        }
+                     Collections.sort(memberList, (o1, o2) -> {
+                        User u1 = (User) o1;
+                        User u2 = (User) o2;
+                        return u1.getUsername().toLowerCase().compareTo(u2.getUsername().toLowerCase());
                      });
                      for (int i = 0; i < memberList.size(); i++) {
                         count++;

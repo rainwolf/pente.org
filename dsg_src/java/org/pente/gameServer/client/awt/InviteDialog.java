@@ -41,11 +41,7 @@ public class InviteDialog extends Dialog {
 
         super(frame, "Invite Player", false);
 
-        ActionListener disposer = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                dispose();
-            }
-        };
+        ActionListener disposer = e -> dispose();
 
         Label gameLabel = new Label("Game: " + GridStateFactory.getGameName(
                 game));
@@ -67,14 +63,12 @@ public class InviteDialog extends Dialog {
         inviteText = new TextField(15);
 
         Button inviteButton = gameStyle.createDSGButton("Invite");
-        inviteButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (playerList.getSelectedPlayer() != null) {
-                    inviteActionListener.actionRequested(
-                            playerList.getSelectedPlayer());
-                }
-                dispose();
+        inviteButton.addActionListener(e -> {
+            if (playerList.getSelectedPlayer() != null) {
+                inviteActionListener.actionRequested(
+                        playerList.getSelectedPlayer());
             }
+            dispose();
         });
 
         Button cancelButton = gameStyle.createDSGButton("Cancel");

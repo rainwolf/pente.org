@@ -147,41 +147,39 @@ public class ExportDialog extends MyDialog implements ProgressListener {
         });
 
         browseButton = new JButton("Browse...");
-        browseButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JFileChooser chooser = new JFileChooser();
+        browseButton.addActionListener(e -> {
+            JFileChooser chooser = new JFileChooser();
 
-                String fn = fileNameField.getText();
-                if (fn != null && !fn.equals("")) {
-                    try {
-                        File f = new File(fn).getCanonicalFile();
-                        chooser.setSelectedFile(f);
-                    } catch (IOException ie) {
-                    }
+            String fn = fileNameField.getText();
+            if (fn != null && !fn.equals("")) {
+                try {
+                    File f = new File(fn).getCanonicalFile();
+                    chooser.setSelectedFile(f);
+                } catch (IOException ie) {
                 }
-                chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
-                    public boolean accept(File f) {
-                        return f.isDirectory() || f.getName().endsWith(".sgf");
-                    }
+            }
+            chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+                public boolean accept(File f) {
+                    return f.isDirectory() || f.getName().endsWith(".sgf");
+                }
 
-                    public String getDescription() {
-                        return "*.sgf (Smart Game Format)";
-                    }
-                });
-                chooser.setMultiSelectionEnabled(false);
-                chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                int r = chooser.showSaveDialog(ExportDialog.this);
-                if (r == JFileChooser.APPROVE_OPTION) {
-                    try {
-                        String fn2 = chooser.getSelectedFile().getCanonicalPath();
+                public String getDescription() {
+                    return "*.sgf (Smart Game Format)";
+                }
+            });
+            chooser.setMultiSelectionEnabled(false);
+            chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            int r = chooser.showSaveDialog(ExportDialog.this);
+            if (r == JFileChooser.APPROVE_OPTION) {
+                try {
+                    String fn2 = chooser.getSelectedFile().getCanonicalPath();
 
-                        if (!fn2.endsWith(".sgf") && !fn2.endsWith(".SGF")) {
-                            fn2 += ".sgf";
-                        }
-                        fileNameField.setText(fn2);
-                        updateOkButton();
-                    } catch (IOException ie) {
+                    if (!fn2.endsWith(".sgf") && !fn2.endsWith(".SGF")) {
+                        fn2 += ".sgf";
                     }
+                    fileNameField.setText(fn2);
+                    updateOkButton();
+                } catch (IOException ie) {
                 }
             }
         });
@@ -384,13 +382,7 @@ public class ExportDialog extends MyDialog implements ProgressListener {
         return exportType;
     }
 
-    TableModelListener tableListener = new TableModelListener() {
-        public void tableChanged(TableModelEvent e) {
-            updateOkButton();
-        }
-
-        ;
-    };
+    TableModelListener tableListener = e -> updateOkButton();
 
     private void updateOkButton() {
         if (!fileNameField.getText().trim().equals("") &&
@@ -468,58 +460,54 @@ public class ExportDialog extends MyDialog implements ProgressListener {
             return;
         }
 
-        exportThread = new Thread(new Runnable() {
-            public void run() {
+        exportThread = new Thread(() -> {
 
-                FileWriter out = null;
+            FileWriter out = null;
 
-                try {
-                    out = new FileWriter(outFile);
-                    for (PlunkTree t : trees) {
+            try {
+                out = new FileWriter(outFile);
+                for (PlunkTree t : trees) {
 
-                        if (t.getRoot() == null) { //if not loaded from db already
-                            t.setRoot(main.getPlunkDbUtil().loadPlunkTree(t.getTreeId(), ExportDialog.this));
-                        }
-                        gf.format(t.getRoot(), 1, //TODO add game to plunktree
-                                t, out);
-                        out.write("\n\n");
-
-                        updateProgress();
+                    if (t.getRoot() == null) { //if not loaded from db already
+                        t.setRoot(main.getPlunkDbUtil().loadPlunkTree(t.getTreeId(), ExportDialog.this));
                     }
+                    gf.format(t.getRoot(), 1, //TODO add game to plunktree
+                            t, out);
+                    out.write("\n\n");
 
-                    final Writer out2 = out;
-                    for (final GameDbData db : dbs) {
-                        main.getPlunkDbUtil().loadAllGames(
-                                main.getVenueStorer(), db.getID(),
-                                new LoadGameListener() {
-                                    public void gameLoaded(PlunkGameData g) {
-                                        updateProgress();
-                                        System.out.println("format gm " + g.getGameID());
-                                        try {
-                                            gf.format(g, db.getName(), out2);
-                                            out2.write("\n\n");
-                                            out2.flush();
-                                        } catch (Throwable t) {
-                                            System.err.println("Failed to export game " + g.getGameID());
-                                            t.printStackTrace();
-                                        }
-                                        updateProgress();
-                                    }
-                                }
-                        );
-                    }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                } finally {
-                    if (out != null) {
-                        try {
-                            out.close();
-                        } catch (IOException ie) {
-                        }
-                    }
-
-                    setVisible(false);
+                    updateProgress();
                 }
+
+                final Writer out2 = out;
+                for (final GameDbData db : dbs) {
+                    main.getPlunkDbUtil().loadAllGames(
+                            main.getVenueStorer(), db.getID(),
+                            g -> {
+                                updateProgress();
+                                System.out.println("format gm " + g.getGameID());
+                                try {
+                                    gf.format(g, db.getName(), out2);
+                                    out2.write("\n\n");
+                                    out2.flush();
+                                } catch (Throwable t) {
+                                    System.err.println("Failed to export game " + g.getGameID());
+                                    t.printStackTrace();
+                                }
+                                updateProgress();
+                            }
+                    );
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            } finally {
+                if (out != null) {
+                    try {
+                        out.close();
+                    } catch (IOException ie) {
+                    }
+                }
+
+                setVisible(false);
             }
         });
         exportThread.start();
@@ -527,10 +515,6 @@ public class ExportDialog extends MyDialog implements ProgressListener {
     }
 
     public void updateProgress() {
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                progressBar.setValue(progressBar.getValue() + 1);
-            }
-        });
+        javax.swing.SwingUtilities.invokeLater(() -> progressBar.setValue(progressBar.getValue() + 1));
     }
 }

@@ -93,14 +93,12 @@ public class PlayerLeftDialog extends DSGDialog {
         if (!middleOfSet) {
             timer = new SimpleGameTimer();
             timer.setStartMinutes(timeUpMinutes);
-            timer.addGameTimerListener(new GameTimerListener() {
-                public void timeChanged(int newMinutes, int newSeconds) {
-                    if (newMinutes == 0 && newSeconds == 0) {
-                        timer.stop();
-                    }
-                    String newSecondsStr = newSeconds > 9 ? "" + newSeconds : "0" + newSeconds;
-                    timerLabel.setText("Time left: " + newMinutes + ":" + newSecondsStr);
+            timer.addGameTimerListener((newMinutes, newSeconds) -> {
+                if (newMinutes == 0 && newSeconds == 0) {
+                    timer.stop();
                 }
+                String newSecondsStr = newSeconds > 9 ? "" + newSeconds : "0" + newSeconds;
+                timerLabel.setText("Time left: " + newMinutes + ":" + newSecondsStr);
             });
             timer.reset();
             timer.go();

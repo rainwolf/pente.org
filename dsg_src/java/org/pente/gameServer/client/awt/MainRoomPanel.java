@@ -153,171 +153,165 @@ public class MainRoomPanel extends Panel implements ActionListener,
         timeLabel.setBackground(gameStyle.boardBack);
         timer = new MilliSecondGameTimer("DSGTime");
         timer.setStartMinutes(604800);//one week
-        timer.addGameTimerListener(new GameTimerListener() {
-            public void timeChanged(int newSeconds, int newMinutes) {
-                long t = System.currentTimeMillis() - timeDiff;
-                String time = df.format(new Date(t));
-                timeLabel.setText("Time: " + time);
-            }
+        timer.addGameTimerListener((newSeconds, newMinutes) -> {
+            long t = System.currentTimeMillis() - timeDiff;
+            String time = df.format(new Date(t));
+            timeLabel.setText("Time: " + time);
         });
         timer.reset();
         timer.go();
 
-        dsgEventSource.addListener(new DSGEventListener() {
-            public void eventOccurred(DSGEvent dsgEvent) {
-                if (dsgEvent.getTime() != 0) {
-                    timeDiff = System.currentTimeMillis() - dsgEvent.getTime();
+        dsgEventSource.addListener(dsgEvent -> {
+            if (dsgEvent.getTime() != 0) {
+                timeDiff = System.currentTimeMillis() - dsgEvent.getTime();
+            }
+            if (dsgEvent instanceof DSGTextMainRoomEvent) {
+                DSGTextMainRoomEvent textEvent = (DSGTextMainRoomEvent) dsgEvent;
+                chatArea.newChatMessage(textEvent.getText(),
+                        textEvent.getPlayer());
+            } else if (dsgEvent instanceof DSGSystemMessageTableEvent) {
+                DSGSystemMessageTableEvent messageEvent = (DSGSystemMessageTableEvent) dsgEvent;
+                if (messageEvent.getTable() == 0) {
+                    chatArea.newSystemMessage(messageEvent.getMessage());
                 }
-                if (dsgEvent instanceof DSGTextMainRoomEvent) {
-                    DSGTextMainRoomEvent textEvent = (DSGTextMainRoomEvent) dsgEvent;
-                    chatArea.newChatMessage(textEvent.getText(),
-                            textEvent.getPlayer());
-                } else if (dsgEvent instanceof DSGSystemMessageTableEvent) {
-                    DSGSystemMessageTableEvent messageEvent = (DSGSystemMessageTableEvent) dsgEvent;
-                    if (messageEvent.getTable() == 0) {
-                        chatArea.newSystemMessage(messageEvent.getMessage());
+            } else if (dsgEvent instanceof DSGJoinMainRoomEvent) {
+                DSGJoinMainRoomEvent joinMainRoom = (DSGJoinMainRoomEvent) dsgEvent;
+
+                playerList.addPlayer(joinMainRoom.getDSGPlayerData());
+
+                AudioClip joinSound = sounds.getSound("join");
+                if (!joinMainRoom.getDSGPlayerData().isComputer() &&
+                        joinSound != null) {
+                    Boolean playJoinSoundPref = (Boolean)
+                            preferenceHandler.getPref("playJoinSound");
+                    if (playJoinSoundPref == null ||
+                            playJoinSoundPref.booleanValue()) {
+                        joinSound.play();
                     }
-                } else if (dsgEvent instanceof DSGJoinMainRoomEvent) {
-                    DSGJoinMainRoomEvent joinMainRoom = (DSGJoinMainRoomEvent) dsgEvent;
+                }
 
-                    playerList.addPlayer(joinMainRoom.getDSGPlayerData());
+                if (displayPlayerMessages) {
+                    Boolean showJoinExitMessagesPref = (Boolean)
+                            preferenceHandler.getPref("showPlayerJoinExit");
+                    if (showJoinExitMessagesPref == null ||
+                            showJoinExitMessagesPref.booleanValue()) {
+                        chatArea.newSystemMessage(
+                                joinMainRoom.getPlayer() +
+                                        " has joined the main room");
+                    }
+                }
 
-                    AudioClip joinSound = sounds.getSound("join");
-                    if (!joinMainRoom.getDSGPlayerData().isComputer() &&
-                            joinSound != null) {
-                        Boolean playJoinSoundPref = (Boolean)
-                                preferenceHandler.getPref("playJoinSound");
-                        if (playJoinSoundPref == null ||
-                                playJoinSoundPref.booleanValue()) {
-                            joinSound.play();
+                if (joinMainRoom.getPlayer().equals(me.getName())) {
+                    displayPlayerMessages = true;
+                }
+            } else if (dsgEvent instanceof DSGExitMainRoomEvent) {
+                DSGExitMainRoomEvent exitMainRoom = (DSGExitMainRoomEvent) dsgEvent;
+
+                // if I am exiting, then let PenteApplet handle it
+                if (exitMainRoom.getPlayer() == null) {
+                    return;
+                }
+
+                playerList.removePlayer(exitMainRoom.getPlayer());
+                if (displayPlayerMessages) {
+                    Boolean showJoinExitMessagesPref = (Boolean)
+                            preferenceHandler.getPref("showPlayerJoinExit");
+                    if (showJoinExitMessagesPref == null ||
+                            showJoinExitMessagesPref.booleanValue()) {
+
+                        String message = "has exited";
+                        if (exitMainRoom.wasBooted()) {
+                            message = "was booted from";
                         }
+                        chatArea.newSystemMessage(exitMainRoom.getPlayer() +
+                                " " + message + " the game room");
                     }
+                }
+            } else if (dsgEvent instanceof DSGJoinTableEvent) {
+                DSGJoinTableEvent joinEvent = (DSGJoinTableEvent) dsgEvent;
+                tablesPanel.addPlayer(joinEvent.getTable(),
+                        playerDataCache.getPlayer(joinEvent.getPlayer()));
+            } else if (dsgEvent instanceof DSGExitTableEvent) {
+                DSGExitTableEvent exitEvent = (DSGExitTableEvent) dsgEvent;
+                tablesPanel.removePlayer(exitEvent.getTable(), exitEvent.getPlayer());
+            } else if (dsgEvent instanceof DSGSitTableEvent) {
+                DSGSitTableEvent sitEvent = (DSGSitTableEvent) dsgEvent;
+                tablesPanel.sitPlayer(sitEvent.getTable(), sitEvent.getPlayer(),
+                        sitEvent.getSeat());
+            } else if (dsgEvent instanceof DSGStandTableEvent) {
+                DSGStandTableEvent standEvent = (DSGStandTableEvent) dsgEvent;
+                tablesPanel.standPlayer(standEvent.getTable(),
+                        standEvent.getPlayer());
+            } else if (dsgEvent instanceof DSGSwapSeatsTableEvent) {
+                DSGSwapSeatsTableEvent swapEvent = (DSGSwapSeatsTableEvent) dsgEvent;
+                if (swapEvent.wantsToSwap()) {
+                    tablesPanel.swapPlayers(swapEvent.getTable());
+                }
+            } else if (dsgEvent instanceof DSGChangeStateTableEvent) {
+                DSGChangeStateTableEvent changeEvent = (DSGChangeStateTableEvent) dsgEvent;
+                tablesPanel.changeTableState(changeEvent.getTable(),
+                        changeEvent);
+            } else if (dsgEvent instanceof DSGBootTableEvent) {
+                DSGBootTableEvent bootEvent = (DSGBootTableEvent) dsgEvent;
+                chatArea.newSystemMessage("you were booted from table " +
+                        bootEvent.getTable());
+            } else if (dsgEvent instanceof DSGInviteTableEvent) {
+                final DSGInviteTableEvent inviteEvent = (DSGInviteTableEvent) dsgEvent;
 
-                    if (displayPlayerMessages) {
-                        Boolean showJoinExitMessagesPref = (Boolean)
-                                preferenceHandler.getPref("showPlayerJoinExit");
-                        if (showJoinExitMessagesPref == null ||
-                                showJoinExitMessagesPref.booleanValue()) {
-                            chatArea.newSystemMessage(
-                                    joinMainRoom.getPlayer() +
-                                            " has joined the main room");
+                CustomTableData data = tablesPanel.getTable(inviteEvent.getTable());
+                DSGPlayerData playerData = playerDataCache.getPlayer(
+                        inviteEvent.getPlayer());
+
+                if (data != null && playerData != null) {
+                    DSGPlayerGameData gameData = playerData.getPlayerGameData(data.getGame());
+                    int rating = gameData == null ? 1600 : (int) Math.round(
+                            gameData.getRating());
+                    final InviteResponseFrame invite = new InviteResponseFrame(
+                            gameStyle, inviteEvent, rating,
+                            data);
+
+                    invite.addActionListener(e -> {
+                        boolean accept = e.getActionCommand().equals("Accept");
+                        dsgEventListener.eventOccurred(
+                                new DSGInviteResponseTableEvent(
+                                        null, inviteEvent.getTable(),
+                                        inviteEvent.getPlayer(),
+                                        invite.getResponseText(),
+                                        accept,
+                                        invite.getIgnore()));
+
+                        if (accept) {
+                            dsgEventListener.eventOccurred(
+                                    new DSGJoinTableEvent(null,
+                                            inviteEvent.getTable()));
                         }
-                    }
 
-                    if (joinMainRoom.getPlayer().equals(me.getName())) {
-                        displayPlayerMessages = true;
-                    }
-                } else if (dsgEvent instanceof DSGExitMainRoomEvent) {
-                    DSGExitMainRoomEvent exitMainRoom = (DSGExitMainRoomEvent) dsgEvent;
-
-                    // if I am exiting, then let PenteApplet handle it
-                    if (exitMainRoom.getPlayer() == null) {
-                        return;
-                    }
-
-                    playerList.removePlayer(exitMainRoom.getPlayer());
-                    if (displayPlayerMessages) {
-                        Boolean showJoinExitMessagesPref = (Boolean)
-                                preferenceHandler.getPref("showPlayerJoinExit");
-                        if (showJoinExitMessagesPref == null ||
-                                showJoinExitMessagesPref.booleanValue()) {
-
-                            String message = "has exited";
-                            if (exitMainRoom.wasBooted()) {
-                                message = "was booted from";
+                        if (invite.getIgnore()) {
+                            final DSGPlayerData d = playerDataCache.getPlayer(inviteEvent.getPlayer());
+                            DSGIgnoreData i = playerDataCache.getIgnore(d.getPlayerID());
+                            if (i == null) {
+                                i = new DSGIgnoreData();
+                                i.setPid(0);
+                                i.setIgnorePid(d.getPlayerID());
+                                playerDataCache.addIgnore(i);
                             }
-                            chatArea.newSystemMessage(exitMainRoom.getPlayer() +
-                                    " " + message + " the game room");
+                            i.setIgnoreInvite(true);
                         }
-                    }
-                } else if (dsgEvent instanceof DSGJoinTableEvent) {
-                    DSGJoinTableEvent joinEvent = (DSGJoinTableEvent) dsgEvent;
-                    tablesPanel.addPlayer(joinEvent.getTable(),
-                            playerDataCache.getPlayer(joinEvent.getPlayer()));
-                } else if (dsgEvent instanceof DSGExitTableEvent) {
-                    DSGExitTableEvent exitEvent = (DSGExitTableEvent) dsgEvent;
-                    tablesPanel.removePlayer(exitEvent.getTable(), exitEvent.getPlayer());
-                } else if (dsgEvent instanceof DSGSitTableEvent) {
-                    DSGSitTableEvent sitEvent = (DSGSitTableEvent) dsgEvent;
-                    tablesPanel.sitPlayer(sitEvent.getTable(), sitEvent.getPlayer(),
-                            sitEvent.getSeat());
-                } else if (dsgEvent instanceof DSGStandTableEvent) {
-                    DSGStandTableEvent standEvent = (DSGStandTableEvent) dsgEvent;
-                    tablesPanel.standPlayer(standEvent.getTable(),
-                            standEvent.getPlayer());
-                } else if (dsgEvent instanceof DSGSwapSeatsTableEvent) {
-                    DSGSwapSeatsTableEvent swapEvent = (DSGSwapSeatsTableEvent) dsgEvent;
-                    if (swapEvent.wantsToSwap()) {
-                        tablesPanel.swapPlayers(swapEvent.getTable());
-                    }
-                } else if (dsgEvent instanceof DSGChangeStateTableEvent) {
-                    DSGChangeStateTableEvent changeEvent = (DSGChangeStateTableEvent) dsgEvent;
-                    tablesPanel.changeTableState(changeEvent.getTable(),
-                            changeEvent);
-                } else if (dsgEvent instanceof DSGBootTableEvent) {
-                    DSGBootTableEvent bootEvent = (DSGBootTableEvent) dsgEvent;
-                    chatArea.newSystemMessage("you were booted from table " +
-                            bootEvent.getTable());
-                } else if (dsgEvent instanceof DSGInviteTableEvent) {
-                    final DSGInviteTableEvent inviteEvent = (DSGInviteTableEvent) dsgEvent;
+                    });
 
-                    CustomTableData data = tablesPanel.getTable(inviteEvent.getTable());
-                    DSGPlayerData playerData = playerDataCache.getPlayer(
-                            inviteEvent.getPlayer());
-
-                    if (data != null && playerData != null) {
-                        DSGPlayerGameData gameData = playerData.getPlayerGameData(data.getGame());
-                        int rating = gameData == null ? 1600 : (int) Math.round(
-                                gameData.getRating());
-                        final InviteResponseFrame invite = new InviteResponseFrame(
-                                gameStyle, inviteEvent, rating,
-                                data);
-
-                        invite.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                boolean accept = e.getActionCommand().equals("Accept");
-                                dsgEventListener.eventOccurred(
-                                        new DSGInviteResponseTableEvent(
-                                                null, inviteEvent.getTable(),
-                                                inviteEvent.getPlayer(),
-                                                invite.getResponseText(),
-                                                accept,
-                                                invite.getIgnore()));
-
-                                if (accept) {
-                                    dsgEventListener.eventOccurred(
-                                            new DSGJoinTableEvent(null,
-                                                    inviteEvent.getTable()));
-                                }
-
-                                if (invite.getIgnore()) {
-                                    final DSGPlayerData d = playerDataCache.getPlayer(inviteEvent.getPlayer());
-                                    DSGIgnoreData i = playerDataCache.getIgnore(d.getPlayerID());
-                                    if (i == null) {
-                                        i = new DSGIgnoreData();
-                                        i.setPid(0);
-                                        i.setIgnorePid(d.getPlayerID());
-                                        playerDataCache.addIgnore(i);
-                                    }
-                                    i.setIgnoreInvite(true);
-                                }
-                            }
-                        });
-
-                        invitations.addElement(invite);
-                        invite.setLocation(MainRoomPanel.this.applet.safeGetLocationOnScreen());
-                        invite.setVisible(true);
-                        invite.toFront();
+                    invitations.addElement(invite);
+                    invite.setLocation(MainRoomPanel.this.applet.safeGetLocationOnScreen());
+                    invite.setVisible(true);
+                    invite.toFront();
 
 
-                        AudioClip inviteSound = sounds.getSound("invite");
-                        if (inviteSound != null) {
-                            Boolean playInviteSoundPref = (Boolean)
-                                    preferenceHandler.getPref("playInviteSound");
-                            if (playInviteSoundPref == null ||
-                                    playInviteSoundPref.booleanValue()) {
-                                inviteSound.play();
-                            }
+                    AudioClip inviteSound = sounds.getSound("invite");
+                    if (inviteSound != null) {
+                        Boolean playInviteSoundPref = (Boolean)
+                                preferenceHandler.getPref("playInviteSound");
+                        if (playInviteSoundPref == null ||
+                                playInviteSoundPref.booleanValue()) {
+                            inviteSound.play();
                         }
                     }
                 }

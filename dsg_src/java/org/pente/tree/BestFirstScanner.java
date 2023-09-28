@@ -204,11 +204,7 @@ public class BestFirstScanner {
             scanMyTurn(state, node);
         }
         running = true;
-        thread = new Thread(new Runnable() {
-            public void run() {
-                scan(maxNodes, node);
-            }
-        });
+        thread = new Thread(() -> scan(maxNodes, node));
         thread.start();
     }
 
@@ -313,15 +309,13 @@ public class BestFirstScanner {
         }
     }
 
-    private Comparator<Rank> offenseRankComp = new Comparator<Rank>() {
-        public int compare(Rank r1, Rank r2) {
-            if (r2.getOffenseGroup() < r1.getOffenseGroup()) {
-                return 1;
-            } else if (r2.getOffenseGroup() > r1.getOffenseGroup()) {
-                return -1;
-            } else {
-                return r2.getOffenseRank() - r1.getOffenseRank();
-            }
+    private Comparator<Rank> offenseRankComp = (r1, r2) -> {
+        if (r2.getOffenseGroup() < r1.getOffenseGroup()) {
+            return 1;
+        } else if (r2.getOffenseGroup() > r1.getOffenseGroup()) {
+            return -1;
+        } else {
+            return r2.getOffenseRank() - r1.getOffenseRank();
         }
     };
 

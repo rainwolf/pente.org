@@ -17,11 +17,7 @@ public class ExportTreeTableModel extends AbstractTableModel {
 
     public synchronized void setData(List<PlunkTree> trees) {
         this.trees = trees;
-        Collections.sort(trees, new Comparator<PlunkTree>() {
-            public int compare(PlunkTree t1, PlunkTree t2) {
-                return t1.getName().toLowerCase().compareTo(t2.getName().toLowerCase());
-            }
-        });
+        Collections.sort(trees, (t1, t2) -> t1.getName().toLowerCase().compareTo(t2.getName().toLowerCase()));
 
         data = new Object[trees.size()][columnNames.length];
         for (int i = 0; i < trees.size(); i++) {

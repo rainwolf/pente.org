@@ -25,12 +25,10 @@ public class MiddleSetDialogTester {
         f.setLocation(100, 100);
         final MiddleSetDialog d = new MiddleSetDialog(f, gameStyle);
         d.setLocation(100, 100);
-        d.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                System.out.println("actionPerformed - " + e.getActionCommand());
-                d.dispose();
-                f.dispose();
-            }
+        d.addActionListener(e -> {
+            System.out.println("actionPerformed - " + e.getActionCommand());
+            d.dispose();
+            f.dispose();
         });
 
         d.setVisible(true);

@@ -368,12 +368,10 @@
                             Forum f = (Forum)forums.next();
                             forumList.add(f);
                         }
-                        Collections.sort(forumList, new Comparator() {
-                            public int compare(Object obj1, Object obj2) {
-                                String f1Name = ((Forum)obj1).getName().toLowerCase();
-                                String f2Name = ((Forum)obj2).getName().toLowerCase();
-                                return f1Name.compareTo(f2Name);
-                            }
+                        Collections.sort(forumList,(obj1,obj2)-> {
+                            String f1Name = ((Forum)obj1).getName().toLowerCase();
+                            String f2Name = ((Forum)obj2).getName().toLowerCase();
+                            return f1Name.compareTo(f2Name);
                         });
                         for (int i=0; i<forumList.size(); i++) {
                             Forum f = (Forum)forumList.get(i);

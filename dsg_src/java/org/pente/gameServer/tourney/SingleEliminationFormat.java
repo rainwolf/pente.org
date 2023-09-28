@@ -47,14 +47,12 @@ public class SingleEliminationFormat extends AbstractTourneyFormat {
         }
     }
 
-    Comparator<TourneyPlayerData> byeComparator = new Comparator<TourneyPlayerData>() {
-        public int compare(TourneyPlayerData o1, TourneyPlayerData o2) {
-            TourneyPlayerData p1 = (TourneyPlayerData) o1;
-            TourneyPlayerData p2 = (TourneyPlayerData) o2;
-            if (p1.getNumByes() > p2.getNumByes()) return 1;
-            else if (p1.getNumByes() < p2.getNumByes()) return -1;
-            else return p1.getSeed() - p2.getSeed();
-        }
+    Comparator<TourneyPlayerData> byeComparator = (o1, o2) -> {
+        TourneyPlayerData p1 = (TourneyPlayerData) o1;
+        TourneyPlayerData p2 = (TourneyPlayerData) o2;
+        if (p1.getNumByes() > p2.getNumByes()) return 1;
+        else if (p1.getNumByes() < p2.getNumByes()) return -1;
+        else return p1.getSeed() - p2.getSeed();
     };
 
     TourneyRound createRound(List<TourneyPlayerData> players, Tourney tourney, int rnd) {

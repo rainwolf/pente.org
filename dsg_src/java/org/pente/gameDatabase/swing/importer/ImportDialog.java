@@ -195,158 +195,156 @@ public class ImportDialog extends MyDialog {
 
     private void startImport(final ArrayList<File> files, final List<GameImporter> importers) {
 
-        importThread = new Thread(new Runnable() {
-            public void run() {
-                MyProgressInputStream in = null;
-                try {
-                    for (int i = 0; i < files.size(); i++) {
-                        final File f = files.get(i);
-                        boolean ok = false;
+        importThread = new Thread(() -> {
+            MyProgressInputStream in = null;
+            try {
+                for (int i = 0; i < files.size(); i++) {
+                    final File f = files.get(i);
+                    boolean ok = false;
 
-                        if (!f.canRead()) {
-                            ImportData id = new ImportData();
-                            id.setName("");
-                            id.setFileName(f.getName());
-                            id.setType("");
-                            id.setStatus("Failed: Can't read file");
-                            addImportData(id);
-                            failedFiles++;
-                            updateFilesStatus();
-                            continue;
-                        }
+                    if (!f.canRead()) {
+                        ImportData id = new ImportData();
+                        id.setName("");
+                        id.setFileName(f.getName());
+                        id.setType("");
+                        id.setStatus("Failed: Can't read file");
+                        addImportData(id);
+                        failedFiles++;
+                        updateFilesStatus();
+                        continue;
+                    }
 
-                        for (GameImporter gi : importers) {
-                            if (!importing) return;
-                            resetProgress(f);
-                            in = new MyProgressInputStream(progressBar, new FileInputStream(f));
-                            if (gi.attemptImport(in, new GameImporterListener() {
-                                public void analysisRead(PlunkTree t, String importerName) {
+                    for (GameImporter gi : importers) {
+                        if (!importing) return;
+                        resetProgress(f);
+                        in = new MyProgressInputStream(progressBar, new FileInputStream(f));
+                        if (gi.attemptImport(in, new GameImporterListener() {
+                            public void analysisRead(PlunkTree t, String importerName) {
 
-                                    if (!importing) return;
-                                    ImportData id = new ImportData();
-                                    id.setName(t.getName());
-                                    id.setFileName(f.getName());
-                                    id.setType("Analysis/" + importerName);
+                                if (!importing) return;
+                                ImportData id = new ImportData();
+                                id.setName(t.getName());
+                                id.setFileName(f.getName());
+                                id.setType("Analysis/" + importerName);
+                                try {
+                                    main.getPlunkDbUtil().storePlunkTree(t);
+                                    main.getPlunkDbUtil().insertPlunkNodes(t.getRoot(), t.getTreeId());
+                                    main.addPlunkTree(t);
+
+                                    id.setStatus("Saved");
+                                    loadedObjects++;
+
+                                } catch (SQLException s) {
+                                    id.setStatus("Failed: Db error");
+                                    s.printStackTrace();
+                                }
+                                addImportData(id);
+                            }
+
+                            public void gameRead(PlunkGameData g, String importerName) {
+                                if (!importing) return;
+                                ImportData id = new ImportData();
+                                id.setName(Utilities.getGameName(g));
+                                id.setDb(g.getDbName());
+                                id.setFileName(f.getName());
+                                id.setType("Game/" + importerName);
+                                System.out.println("game read " + id.getName());
+                                if (g.getNumMoves() == 0) {
+                                    id.setStatus("Failed: No moves");
+                                } else if (g.getMove(0) != 180) {
+                                    id.setStatus("Failed: Bad 1st Move " + coordinates.getCoordinate(g.getMove(0)));
+                                } else {
+
+                                    if (g.getSite() == null || g.getSite().equals("")) {
+                                        g.setSite("Unknown");
+                                    }
+
+                                    //helps identify the game
+                                    if (importerName.equals("VBarykin") && g.getEvent() == null) {
+                                        g.setEvent(f.getName());
+                                    } else if (g.getEvent() == null || g.getEvent().equals("")) {
+                                        g.setEvent("Unknown");
+                                    }
+
                                     try {
-                                        main.getPlunkDbUtil().storePlunkTree(t);
-                                        main.getPlunkDbUtil().insertPlunkNodes(t.getRoot(), t.getTreeId());
-                                        main.addPlunkTree(t);
+                                        if (g.getDbName() == null || g.getDbName().equals("")) {
+                                            g.setDbName("My " + g.getGame() + " Games");
+                                            id.setDb(g.getDbName());
+                                        }
+                                        if (g.getPlayer1Data() == null || g.getPlayer1Data().getUserIDName() == null) {
+                                            PlayerData p1 = new DefaultPlayerData();
+                                            p1.setUserIDName("Unknown");
+                                            g.setPlayer1Data(p1);
+                                        }
+                                        if (g.getPlayer2Data() == null || g.getPlayer2Data().getUserIDName() == null) {
+                                            PlayerData p2 = new DefaultPlayerData();
+                                            p2.setUserIDName("Unknown");
+                                            g.setPlayer2Data(p2);
+                                        }
 
-                                        id.setStatus("Saved");
+                                        // find db or create a new one
+                                        List<GameDbData> dbs = main.getVenueStorer().getDbTree();
+                                        GameDbData db = null;
+                                        for (GameDbData db2 : dbs) {
+                                            if (db2.getName().equals(g.getDbName())) {
+                                                db = db2;
+                                                break;
+                                            }
+                                        }
+                                        if (db == null) {
+                                            db = new SimpleGameDbData();
+                                            db.setName(g.getDbName());
+                                            main.getVenueStorer().addGameDbData(db,
+                                                    GridStateFactory.getGameId(g.getGame()));
+                                        }
+
+                                        if (g.getRoot() == null) {
+                                            g.setRoot(Utilities.convertGame(g));
+                                        }
+
+                                        if (main.getGameStorer().gameAlreadyStored(g, db.getID())) {
+                                            id.setStatus("Skipped: already stored");
+                                        } else {
+                                            main.saveGame(g, db, null);
+                                            id.setStatus("Saved");
+                                        }
                                         loadedObjects++;
 
-                                    } catch (SQLException s) {
+                                    } catch (Exception e) {
                                         id.setStatus("Failed: Db error");
-                                        s.printStackTrace();
+                                        e.printStackTrace();
                                     }
-                                    addImportData(id);
                                 }
 
-                                public void gameRead(PlunkGameData g, String importerName) {
-                                    if (!importing) return;
-                                    ImportData id = new ImportData();
-                                    id.setName(Utilities.getGameName(g));
-                                    id.setDb(g.getDbName());
-                                    id.setFileName(f.getName());
-                                    id.setType("Game/" + importerName);
-                                    System.out.println("game read " + id.getName());
-                                    if (g.getNumMoves() == 0) {
-                                        id.setStatus("Failed: No moves");
-                                    } else if (g.getMove(0) != 180) {
-                                        id.setStatus("Failed: Bad 1st Move " + coordinates.getCoordinate(g.getMove(0)));
-                                    } else {
-
-                                        if (g.getSite() == null || g.getSite().equals("")) {
-                                            g.setSite("Unknown");
-                                        }
-
-                                        //helps identify the game
-                                        if (importerName.equals("VBarykin") && g.getEvent() == null) {
-                                            g.setEvent(f.getName());
-                                        } else if (g.getEvent() == null || g.getEvent().equals("")) {
-                                            g.setEvent("Unknown");
-                                        }
-
-                                        try {
-                                            if (g.getDbName() == null || g.getDbName().equals("")) {
-                                                g.setDbName("My " + g.getGame() + " Games");
-                                                id.setDb(g.getDbName());
-                                            }
-                                            if (g.getPlayer1Data() == null || g.getPlayer1Data().getUserIDName() == null) {
-                                                PlayerData p1 = new DefaultPlayerData();
-                                                p1.setUserIDName("Unknown");
-                                                g.setPlayer1Data(p1);
-                                            }
-                                            if (g.getPlayer2Data() == null || g.getPlayer2Data().getUserIDName() == null) {
-                                                PlayerData p2 = new DefaultPlayerData();
-                                                p2.setUserIDName("Unknown");
-                                                g.setPlayer2Data(p2);
-                                            }
-
-                                            // find db or create a new one
-                                            List<GameDbData> dbs = main.getVenueStorer().getDbTree();
-                                            GameDbData db = null;
-                                            for (GameDbData db2 : dbs) {
-                                                if (db2.getName().equals(g.getDbName())) {
-                                                    db = db2;
-                                                    break;
-                                                }
-                                            }
-                                            if (db == null) {
-                                                db = new SimpleGameDbData();
-                                                db.setName(g.getDbName());
-                                                main.getVenueStorer().addGameDbData(db,
-                                                        GridStateFactory.getGameId(g.getGame()));
-                                            }
-
-                                            if (g.getRoot() == null) {
-                                                g.setRoot(Utilities.convertGame(g));
-                                            }
-
-                                            if (main.getGameStorer().gameAlreadyStored(g, db.getID())) {
-                                                id.setStatus("Skipped: already stored");
-                                            } else {
-                                                main.saveGame(g, db, null);
-                                                id.setStatus("Saved");
-                                            }
-                                            loadedObjects++;
-
-                                        } catch (Exception e) {
-                                            id.setStatus("Failed: Db error");
-                                            e.printStackTrace();
-                                        }
-                                    }
-
-                                    addImportData(id);
-                                }
-                            })) {
-                                ok = true;
-                                loadedFiles++;
-                                updateFilesStatus();
-                                updateStatus();
-                                break;
+                                addImportData(id);
                             }
-                        }
-                        if (!ok) {
-                            failedFiles++;
-                            ImportData id = new ImportData();
-                            id.setFileName(f.getName());
-                            id.setStatus("Failed: Unknown import format");
-                            id.setType("");
-                            addImportData(id);
+                        })) {
+                            ok = true;
+                            loadedFiles++;
                             updateFilesStatus();
                             updateStatus();
+                            break;
                         }
-                        in.close();
                     }
-                } catch (Throwable t) {
-                    t.printStackTrace();
-                } finally {
-                    if (in != null) {
-                        try {
-                            in.close();
-                        } catch (IOException i) {
-                        }
+                    if (!ok) {
+                        failedFiles++;
+                        ImportData id = new ImportData();
+                        id.setFileName(f.getName());
+                        id.setStatus("Failed: Unknown import format");
+                        id.setType("");
+                        addImportData(id);
+                        updateFilesStatus();
+                        updateStatus();
+                    }
+                    in.close();
+                }
+            } catch (Throwable t) {
+                t.printStackTrace();
+            } finally {
+                if (in != null) {
+                    try {
+                        in.close();
+                    } catch (IOException i) {
                     }
                 }
             }
@@ -357,37 +355,33 @@ public class ImportDialog extends MyDialog {
 
     private void updateFilesStatus() {
         if (filesToLoad < 2) return;
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                int total = failedFiles + loadedFiles;
-                if (total < filesProgressBar.getMaximum()) {
-                    filesProgressBar.setValue(total);
-                    filesStatusLabel.setText("Loading File: " + total + " of " + filesToLoad);
-                } else {
-                    filesProgressBar.setVisible(false);
-                    String text = "Loaded: " + loadedObjects + " objects in " +
-                            filesToLoad + " files.";
-                    if (failedFiles != 0) {
-                        text += " Failed files: " + failedFiles;
-                    }
-                    filesStatusLabel.setText(text);
-                    ok.setEnabled(true);
-                    progressBar.setVisible(false);
-                    statusLabel.setVisible(false);
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            int total = failedFiles + loadedFiles;
+            if (total < filesProgressBar.getMaximum()) {
+                filesProgressBar.setValue(total);
+                filesStatusLabel.setText("Loading File: " + total + " of " + filesToLoad);
+            } else {
+                filesProgressBar.setVisible(false);
+                String text = "Loaded: " + loadedObjects + " objects in " +
+                        filesToLoad + " files.";
+                if (failedFiles != 0) {
+                    text += " Failed files: " + failedFiles;
                 }
+                filesStatusLabel.setText(text);
+                ok.setEnabled(true);
+                progressBar.setVisible(false);
+                statusLabel.setVisible(false);
             }
         });
     }
 
     private void resetProgress(final File f) {
         //System.out.println("resetprogress");
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                System.out.println("resetprogress 2");
-                progressBar.setMaximum((int) f.length());//TODO f.length is long
-                progressBar.setValue(0);
-                statusLabel.setText("Loading " + f.getName());
-            }
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            System.out.println("resetprogress 2");
+            progressBar.setMaximum((int) f.length());//TODO f.length is long
+            progressBar.setValue(0);
+            statusLabel.setText("Loading " + f.getName());
         });
     }
 
@@ -395,42 +389,38 @@ public class ImportDialog extends MyDialog {
         if (filesToLoad != 1) return;
         //System.out.println("update status " + progressBar.getValue() + progressBar.getMaximum());
         if (filesToLoad == 1 && progressBar.getValue() == progressBar.getMaximum()) {
-            javax.swing.SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    //System.out.println("update status 2");
-                    //	System.out.println("update status 3");
-                    progressBar.setVisible(false);
-                    String text = "Loaded: " + loadedObjects + " objects.";
-                    statusLabel.setText(text);
-                    ok.setEnabled(true);
-                }
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                //System.out.println("update status 2");
+                //	System.out.println("update status 3");
+                progressBar.setVisible(false);
+                String text = "Loaded: " + loadedObjects + " objects.";
+                statusLabel.setText(text);
+                ok.setEnabled(true);
             });
         }
     }
 
     private void addImportData(final ImportData id) {
         //System.out.println("add import data");
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                System.out.println("add import data 2");
-                importModel.addData(id);
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            System.out.println("add import data 2");
+            importModel.addData(id);
 
-				/*
-				if (progress < progressBar.getMaximum()) {
-					progressBar.setValue(progress);
-					statusLabel.setText("Loading: " + progress + " of " + progressBar.getMaximum());
-				}
-				else {
-					progressBar.setVisible(false);
-					String text = "Loaded: " + loadedObjects + " objects in " + 
-						progressBar.getMaximum() + " file" + (progressBar.getMaximum() > 1 ? "s" : "") + ".";
-					if (failedFiles != 0) {
-						text += " Failed files: " + failedFiles;
-					}
-					statusLabel.setText(text);
-					ok.setEnabled(true);
-				}*/
+            /*
+            if (progress < progressBar.getMaximum()) {
+                progressBar.setValue(progress);
+                statusLabel.setText("Loading: " + progress + " of " + progressBar.getMaximum());
             }
+            else {
+                progressBar.setVisible(false);
+                String text = "Loaded: " + loadedObjects + " objects in " +
+                    progressBar.getMaximum() + " file" + (progressBar.getMaximum() > 1 ? "s" : "") + ".";
+                if (failedFiles != 0) {
+                    text += " Failed files: " + failedFiles;
+                }
+                statusLabel.setText(text);
+                ok.setEnabled(true);
+            }*/
         });
     }
 /*

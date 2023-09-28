@@ -96,26 +96,16 @@ public class GameBoardTestPanel extends Panel {
 
 // temp
         Button addPlayerButton = gameStyle.createDSGButton("Add Player");
-        addPlayerButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                DSGPlayerData d = new SimpleDSGPlayerData();
-                d.setName("player" + ++players);
-                d.setPlayerType(DSGPlayerData.HUMAN);
-                playerListComponent.addPlayer(d);
-            }
+        addPlayerButton.addActionListener(e -> {
+            DSGPlayerData d = new SimpleDSGPlayerData();
+            d.setName("player" + ++players);
+            d.setPlayerType(DSGPlayerData.HUMAN);
+            playerListComponent.addPlayer(d);
         });
         Button removePlayerButton = gameStyle.createDSGButton("Remove Player");
-        removePlayerButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                playerListComponent.removePlayer("player" + players--);
-            }
-        });
+        removePlayerButton.addActionListener(e -> playerListComponent.removePlayer("player" + players--));
         Button clearPlayerButton = gameStyle.createDSGButton("Clear Player");
-        clearPlayerButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                playerListComponent.clearPlayers();
-            }
-        });
+        clearPlayerButton.addActionListener(e -> playerListComponent.clearPlayers());
 // end temp
 
         // end setup canvas
@@ -221,23 +211,11 @@ public class GameBoardTestPanel extends Panel {
         final MoveMaker moveMaker = new MoveMaker();
 
         panel.canvas.addGridBoardListener(moveMaker);
-        panel.clearButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                panel.gridState.clear();
-            }
-        });
-        panel.undoButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                panel.gridState.undoMove();
-            }
-        });
+        panel.clearButton.addActionListener(e -> panel.gridState.clear());
+        panel.undoButton.addActionListener(e -> panel.gridState.undoMove());
 
         // echo chat back to screen
-        panel.chatComponent.addChatListener(new ChatListener() {
-            public void chatEntered(String message) {
-                panel.chatComponent.newChatMessage("dweebo: " + message);
-            }
-        });
+        panel.chatComponent.addChatListener(message -> panel.chatComponent.newChatMessage("dweebo: " + message));
         panel.playerListComponent.setTableName("Test table");
         DSGPlayerData d = new SimpleDSGPlayerData();
         d.setName("dweebo");

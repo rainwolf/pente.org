@@ -260,12 +260,7 @@
                      List<Step> steps = hill.getSteps();
                      for (int i = steps.size() - 1; i >= 0; i--) {
 //			steps.get(i).getPlayers().sort((o1, o2) -> o1.getLastGame().compareTo(o2.getLastGame()));
-                        Collections.sort(steps.get(i).getPlayers(), new Comparator<Player>() {
-                           @Override
-                           public int compare(Player o1, Player o2) {
-                              return o2.getLastGame().compareTo(o1.getLastGame());
-                           }
-                        });
+                        Collections.sort(steps.get(i).getPlayers(), (o1, o2) -> o2.getLastGame().compareTo(o1.getLastGame()));
                %>
                <tr>
                   <td bgcolor="<%=steps.get(i).hasPlayer(myPid)?"#ff8105":"#2C862F"%>"

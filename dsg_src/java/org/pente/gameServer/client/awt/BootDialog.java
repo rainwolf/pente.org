@@ -46,26 +46,20 @@ public class BootDialog extends Dialog {
         minutesText.setBackground(Color.white);
 
         Button bootButton = gameStyle.createDSGButton("Boot");
-        bootButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (playerList.getSelectedPlayer() != null) {
-                    if (showMinutes) {
-                        bootListener.actionRequested(
-                                playerList.getSelectedPlayer(),
-                                new Integer(minutesText.getText()));
-                    } else {
-                        bootListener.actionRequested(playerList.getSelectedPlayer());
-                    }
+        bootButton.addActionListener(e -> {
+            if (playerList.getSelectedPlayer() != null) {
+                if (showMinutes) {
+                    bootListener.actionRequested(
+                            playerList.getSelectedPlayer(),
+                            new Integer(minutesText.getText()));
+                } else {
+                    bootListener.actionRequested(playerList.getSelectedPlayer());
                 }
-                dispose();
             }
+            dispose();
         });
         Button cancelButton = gameStyle.createDSGButton("Cancel");
-        cancelButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                dispose();
-            }
-        });
+        cancelButton.addActionListener(e -> dispose());
 
         int y = 1;
         InsetPanel panel = new InsetPanel(3, 3, 3, 3);

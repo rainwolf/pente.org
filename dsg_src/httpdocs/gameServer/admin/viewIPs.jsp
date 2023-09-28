@@ -86,11 +86,7 @@
       }
 
       uniqDataSorted = new ArrayList<Data>(uniqData);
-      Collections.sort(uniqDataSorted, new Comparator() {
-         public int compare(Object o1, Object o2) {
-            return -((Data) o1).access.compareTo(((Data) o2).access);
-         }
-      });
+      Collections.sort(uniqDataSorted, (o1, o2) -> -((Data) o1).access.compareTo(((Data) o2).access));
 
 
    } catch (Throwable t) {

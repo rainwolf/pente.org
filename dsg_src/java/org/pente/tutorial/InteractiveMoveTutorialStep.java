@@ -44,11 +44,7 @@ public class InteractiveMoveTutorialStep
     }
 
     public InteractiveMoveTutorialStep(final String move) {
-        logic = new InteractiveMoveLogic() {
-            public boolean isMoveValid(int x, int y) {
-                return coordinates.getCoordinate(x, 18 - y).equals(move);
-            }
-        };
+        logic = (x, y) -> coordinates.getCoordinate(x, 18 - y).equals(move);
     }
 
 

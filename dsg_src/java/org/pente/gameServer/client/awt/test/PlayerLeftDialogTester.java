@@ -26,12 +26,10 @@ public class PlayerLeftDialogTester {
         final PlayerLeftDialog d = new PlayerLeftDialog(
                 f, gameStyle, 1, true, false);
         d.setLocation(100, 100);
-        d.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                System.out.println("actionPerformed - " + e.getActionCommand());
-                d.dispose();
-                f.dispose();
-            }
+        d.addActionListener(e -> {
+            System.out.println("actionPerformed - " + e.getActionCommand());
+            d.dispose();
+            f.dispose();
         });
 
         d.setVisible(true);

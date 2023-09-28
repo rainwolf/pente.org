@@ -36,24 +36,22 @@ public class CustomTablesPanelThreadTest {
         f.setVisible(true);
 
 
-        new Thread(new Runnable() {
-            public void run() {
-                for (int i = 0; i < 600; i++) {
-                    Dimension s = f.getSize();
-                    int x = (int) (Math.random() * 50);
-                    int y = (int) (Math.random() * 50);
+        new Thread(() -> {
+            for (int i = 0; i < 600; i++) {
+                Dimension s = f.getSize();
+                int x = (int) (Math.random() * 50);
+                int y = (int) (Math.random() * 50);
 
-                    int b = i % 2 == 0 ? -1 : 1;
-                    x = s.width + b * x;
-                    y = s.height + b * y;
+                int b = i % 2 == 0 ? -1 : 1;
+                x = s.width + b * x;
+                y = s.height + b * y;
 
-                    f.setSize(x, y);
-                    panel.setSize(x, y);
+                f.setSize(x, y);
+                panel.setSize(x, y);
 
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                    }
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
                 }
             }
         }).start();
@@ -66,44 +64,42 @@ public class CustomTablesPanelThreadTest {
         event.setTableType(DSGChangeStateTableEvent.TABLE_TYPE_PUBLIC);
         event.setTimed(true);
 
-        new Thread(new Runnable() {
-            public void run() {
-                for (int i = 0; i < 600; i++) {
-                    for (int j = 0; j < 20; j++) {
-                        panel.addTable(j + 1);
+        new Thread(() -> {
+            for (int i = 0; i < 600; i++) {
+                for (int j = 0; j < 20; j++) {
+                    panel.addTable(j + 1);
 
-                        DSGPlayerData d = new SimpleDSGPlayerData();
-                        d.setName("testplayer");
-                        d.setPlayerType(DSGPlayerData.HUMAN);
-                        panel.addPlayer(j + 1, d);
-
-
-                        d = new SimpleDSGPlayerData();
-                        d.setName("testplayer2");
-                        d.setPlayerType(DSGPlayerData.HUMAN);
-                        panel.addPlayer(j + 1, d);
+                    DSGPlayerData d = new SimpleDSGPlayerData();
+                    d.setName("testplayer");
+                    d.setPlayerType(DSGPlayerData.HUMAN);
+                    panel.addPlayer(j + 1, d);
 
 
-                        d = new SimpleDSGPlayerData();
-                        d.setName("testplayer3");
-                        d.setPlayerType(DSGPlayerData.HUMAN);
-                        panel.addPlayer(j + 1, d);
+                    d = new SimpleDSGPlayerData();
+                    d.setName("testplayer2");
+                    d.setPlayerType(DSGPlayerData.HUMAN);
+                    panel.addPlayer(j + 1, d);
 
-                        panel.sitPlayer(j + 1, "testplayer", 1);
-                        panel.sitPlayer(j + 1, "testplayer2", 2);
-                        panel.standPlayer(j + 1, "testplayer");
-                        panel.standPlayer(j + 1, "testplayer2");
-                        panel.changeTableState(j + 1, event);
-                    }
 
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                    }
+                    d = new SimpleDSGPlayerData();
+                    d.setName("testplayer3");
+                    d.setPlayerType(DSGPlayerData.HUMAN);
+                    panel.addPlayer(j + 1, d);
 
-                    for (int j = 0; j < 20; j++) {
-                        panel.removeTable(j + 1);
-                    }
+                    panel.sitPlayer(j + 1, "testplayer", 1);
+                    panel.sitPlayer(j + 1, "testplayer2", 2);
+                    panel.standPlayer(j + 1, "testplayer");
+                    panel.standPlayer(j + 1, "testplayer2");
+                    panel.changeTableState(j + 1, event);
+                }
+
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                }
+
+                for (int j = 0; j < 20; j++) {
+                    panel.removeTable(j + 1);
                 }
             }
         }).start();

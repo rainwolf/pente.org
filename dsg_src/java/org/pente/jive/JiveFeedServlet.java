@@ -99,11 +99,7 @@ public class JiveFeedServlet extends HttpServlet {
                     m.add(m2);
                 }
             }
-            Collections.sort(m, new Comparator<ForumMessage>() {
-                public int compare(ForumMessage f1, ForumMessage f2) {
-                    return f2.getCreationDate().compareTo(f1.getCreationDate());
-                }
-            });
+            Collections.sort(m, (f1, f2) -> f2.getCreationDate().compareTo(f1.getCreationDate()));
             while (m.size() > 25) {
                 m.remove(25);
             }

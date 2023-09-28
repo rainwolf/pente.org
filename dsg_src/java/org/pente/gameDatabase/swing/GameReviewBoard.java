@@ -187,16 +187,14 @@ public class GameReviewBoard extends JPanel implements TabComponent, VenueListen
 
         gameBoard = new GameBoard(lw, gameOptions, true);
 
-        gameBoard.addMouseWheelListener(new MouseWheelListener() {
-            public void mouseWheelMoved(MouseWheelEvent e) {
-                if (e.getWheelRotation() < 0) {
-                    for (int i = 0; i < -e.getWheelRotation(); i++) {
-                        currentTreeModel.prevMove();
-                    }
-                } else {
-                    for (int i = 0; i < e.getWheelRotation(); i++) {
-                        currentTreeModel.nextMove();
-                    }
+        gameBoard.addMouseWheelListener(e -> {
+            if (e.getWheelRotation() < 0) {
+                for (int i = 0; i < -e.getWheelRotation(); i++) {
+                    currentTreeModel.prevMove();
+                }
+            } else {
+                for (int i = 0; i < e.getWheelRotation(); i++) {
+                    currentTreeModel.nextMove();
                 }
             }
         });
@@ -291,15 +289,13 @@ public class GameReviewBoard extends JPanel implements TabComponent, VenueListen
         deleteGame = new JMenuItem(deleteGameAction);
 
         viewGame = new JMenuItem("Open");
-        viewGame.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        viewGame.addActionListener(e -> {
 
-                int rows[] = gameTable.getSelectedRows();
-                for (int row : rows) {
-                    if (row != -1) {
-                        PlunkGameData d = gameTableModel.getGame(gameTableSorter.modelIndex(row));
-                        openGame(d);
-                    }
+            int rows[] = gameTable.getSelectedRows();
+            for (int row : rows) {
+                if (row != -1) {
+                    PlunkGameData d = gameTableModel.getGame(gameTableSorter.modelIndex(row));
+                    openGame(d);
                 }
             }
         });
@@ -398,19 +394,13 @@ public class GameReviewBoard extends JPanel implements TabComponent, VenueListen
 
         moreGamesButton = new FlatButton(new ImageIcon(GameReviewBoard.class.getResource("images/down.png")));
         moreGamesButton.setToolTipText("Show more games");
-        moreGamesButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                loadGames(gameTableModel.getRowCount());
-            }
-        });
+        moreGamesButton.addActionListener(e -> loadGames(gameTableModel.getRowCount()));
         allGamesButton = new FlatButton(new ImageIcon(GameReviewBoard.class.getResource("images/down2.png")));
         allGamesButton.setToolTipText("Show all games");
-        allGamesButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (currentResponse != null) {
-                    int total = currentResponse.getGameStorerSearchRequestData().getGameStorerSearchRequestFilterData().getTotalGameNum();
-                    loadGames(gameTableModel.getRowCount(), total);
-                }
+        allGamesButton.addActionListener(e -> {
+            if (currentResponse != null) {
+                int total = currentResponse.getGameStorerSearchRequestData().getGameStorerSearchRequestFilterData().getTotalGameNum();
+                loadGames(gameTableModel.getRowCount(), total);
             }
         });
 
@@ -433,11 +423,9 @@ public class GameReviewBoard extends JPanel implements TabComponent, VenueListen
 
         gamesOptionsButton = new FlatButton(new ImageIcon(GameReviewBoard.class.getResource("images/options.png")));
         gamesOptionsButton.setToolTipText("Options");
-        gamesOptionsButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Point p = gamesOptionsButton.getLocation();
-                gameOptionsPop.show(gamesOptionsButton, gamesOptionsButton.getWidth(), (int) p.getY());
-            }
+        gamesOptionsButton.addActionListener(e -> {
+            Point p = gamesOptionsButton.getLocation();
+            gameOptionsPop.show(gamesOptionsButton, gamesOptionsButton.getWidth(), (int) p.getY());
         });
 
         gameScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
@@ -499,19 +487,17 @@ public class GameReviewBoard extends JPanel implements TabComponent, VenueListen
         });
 
         ListSelectionModel resultsLSM = resultsTable.getSelectionModel();
-        resultsLSM.addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                //Ignore extra messages.
-                if (e.getValueIsAdjusting()) return;
+        resultsLSM.addListSelectionListener(e -> {
+            //Ignore extra messages.
+            if (e.getValueIsAdjusting()) return;
 
-                ListSelectionModel lsm =
-                        (ListSelectionModel) e.getSource();
-                if (lsm.isSelectionEmpty()) {
-                    //no rows are selected
-                } else {
-                    int row = lsm.getMinSelectionIndex();
-                    loadMoveByRow(row);
-                }
+            ListSelectionModel lsm =
+                    (ListSelectionModel) e.getSource();
+            if (lsm.isSelectionEmpty()) {
+                //no rows are selected
+            } else {
+                int row = lsm.getMinSelectionIndex();
+                loadMoveByRow(row);
             }
         });
 
@@ -519,37 +505,31 @@ public class GameReviewBoard extends JPanel implements TabComponent, VenueListen
 
         rename = new JMenuItem("Edit");
         rename.setIcon(new ImageIcon(GameReviewBoard.class.getResource("images/pencil.png")));
-        rename.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                TreePath p = currentTreeModel.getTempSelectedPath();
+        rename.addActionListener(e -> {
+            TreePath p = currentTreeModel.getTempSelectedPath();
 
-                // temp select again because startEditingAtPath
-                // selects the path to be edited 1st and we don't need to
-                // do that
-                currentTreeModel.tempSelectNode(p);
-                currentTreeModel.getJTree().startEditingAtPath(p);
-            }
+            // temp select again because startEditingAtPath
+            // selects the path to be edited 1st and we don't need to
+            // do that
+            currentTreeModel.tempSelectNode(p);
+            currentTreeModel.getJTree().startEditingAtPath(p);
         });
         treePop.add(rename);
 
 
         delete = new JMenuItem("Delete");
         delete.setIcon(new ImageIcon(GameReviewBoard.class.getResource("images/cross.png")));
-        delete.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                DefaultMutableTreeNode d = (DefaultMutableTreeNode) currentTreeModel.getTempSelectedPath().getLastPathComponent();
-                currentTreeModel.deleteNode(d);
-            }
+        delete.addActionListener(e -> {
+            DefaultMutableTreeNode d = (DefaultMutableTreeNode) currentTreeModel.getTempSelectedPath().getLastPathComponent();
+            currentTreeModel.deleteNode(d);
         });
 
         treeProperties = new JMenuItem("Edit");
         treeProperties.setIcon(new ImageIcon(GameReviewBoard.class.getResource("images/pencil.png")));
-        treeProperties.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                int r = showTreeProperties("Game Analysis Properties", currentTreeModel.getPlunkTree());
-                if (r == JOptionPane.OK_OPTION && currentTreeModel.getPlunkTree().canEditProps()) {
-                    main.renameTab(GameReviewBoard.this, currentTreeModel.getPlunkTree().getName());
-                }
+        treeProperties.addActionListener(e -> {
+            int r = showTreeProperties("Game Analysis Properties", currentTreeModel.getPlunkTree());
+            if (r == JOptionPane.OK_OPTION && currentTreeModel.getPlunkTree().canEditProps()) {
+                main.renameTab(GameReviewBoard.this, currentTreeModel.getPlunkTree().getName());
             }
         });
 
@@ -616,13 +596,11 @@ public class GameReviewBoard extends JPanel implements TabComponent, VenueListen
                 }
             });
 
-            aiSettings.addStartActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    if (e.getActionCommand().equals("Run AI")) {
-                        ai.setSeat(GameReviewBoard.this.localGridState.getCurrentPlayer());
-                        ai.setActive(true);
-                        aiMove();
-                    }
+            aiSettings.addStartActionListener(e -> {
+                if (e.getActionCommand().equals("Run AI")) {
+                    ai.setSeat(GameReviewBoard.this.localGridState.getCurrentPlayer());
+                    ai.setActive(true);
+                    aiMove();
                 }
             });
         }
@@ -887,43 +865,37 @@ public class GameReviewBoard extends JPanel implements TabComponent, VenueListen
             final ProgressMonitor pm = new ProgressMonitor(null, "Deleting Games",
                     "Initializing...", 0, games.size());
 
-            Thread t = new Thread(new Runnable() {
-                public void run() {
-                    for (int i = 0; i < games.size(); i++) {
+            Thread t = new Thread(() -> {
+                for (int i = 0; i < games.size(); i++) {
 
-                        if (pm.isCanceled()) {
-                            pm.close();
-                            return;
-                        }
-
-                        final GameData d = games.get(i);
-                        pm.setNote(Utilities.getGameName(d));
-
-                        long gid = d.getGameID();
-                        int dbid = filterData.getDb();
-                        try {
-                            plunkDbUtil.deleteGame(gid, dbid);
-                            //TODO what if game is open in tab?
-
-                            pm.setProgress(i + 1);
-
-                            javax.swing.SwingUtilities.invokeLater(new Runnable() {
-                                public void run() {
-                                    gameTableModel.deleteGame(d);
-                                    main.getSearchCache().deleteGame(d);
-                                    updateGameControls(currentResponse);
-                                }
-                            });
-
-                        } catch (SQLException s) {
-                            System.err.println("problem deleting game " + gid + ":" + dbid);
-                            s.printStackTrace();
-                        }
+                    if (pm.isCanceled()) {
+                        pm.close();
+                        return;
                     }
-                    pm.close();
-                }
 
-                ;
+                    final GameData d = games.get(i);
+                    pm.setNote(Utilities.getGameName(d));
+
+                    long gid = d.getGameID();
+                    int dbid = filterData.getDb();
+                    try {
+                        plunkDbUtil.deleteGame(gid, dbid);
+                        //TODO what if game is open in tab?
+
+                        pm.setProgress(i + 1);
+
+                        SwingUtilities.invokeLater(() -> {
+                            gameTableModel.deleteGame(d);
+                            main.getSearchCache().deleteGame(d);
+                            updateGameControls(currentResponse);
+                        });
+
+                    } catch (SQLException s) {
+                        System.err.println("problem deleting game " + gid + ":" + dbid);
+                        s.printStackTrace();
+                    }
+                }
+                pm.close();
             });
             t.start();
         }
@@ -949,46 +921,42 @@ public class GameReviewBoard extends JPanel implements TabComponent, VenueListen
                     games.add(gameTableModel.getGame(gameRow));
                 }
                 final GameDbData dbData = data;
-                Thread t = new Thread(new Runnable() {
-                    public void run() {
-                        for (int i = 0; i < games.size(); i++) {
+                Thread t = new Thread(() -> {
+                    for (int i = 0; i < games.size(); i++) {
 
-                            if (pm.isCanceled()) {
-                                pm.close();
-                                return;
-                            }
-
-                            PlunkGameData orig = games.get(i);
-                            pm.setNote(Utilities.getGameName(orig));
-
-                            try {
-                                if (orig.getNumMoves() == 0) { // not loaded
-                                    PlunkNode movesRoot = plunkDbUtil.loadMoves(orig.getGameID());
-                                    orig.setRoot(movesRoot);
-                                } else if (orig.getRoot() == null) {
-                                    orig.setRoot(Utilities.convertGame(orig));
-                                }
-
-                                PlunkGameData d = new PlunkGameData(orig);
-                                //d.setRoot(Utilities.convertGame(d));
-                                d.setGameID(0);
-                                d.setEditable(true);
-
-                                if (!main.getGameStorer().gameAlreadyStored(d, dbData.getID())) {
-                                    main.saveGame(d, dbData, null);
-                                }
-
-                                pm.setProgress(i + 1);
-
-                            } catch (Exception ex) {
-                                System.err.println("Error copying " + orig.getGameID());
-                                ex.printStackTrace();
-                            }
+                        if (pm.isCanceled()) {
+                            pm.close();
+                            return;
                         }
-                        pm.close();
-                    }
 
-                    ;
+                        PlunkGameData orig = games.get(i);
+                        pm.setNote(Utilities.getGameName(orig));
+
+                        try {
+                            if (orig.getNumMoves() == 0) { // not loaded
+                                PlunkNode movesRoot = plunkDbUtil.loadMoves(orig.getGameID());
+                                orig.setRoot(movesRoot);
+                            } else if (orig.getRoot() == null) {
+                                orig.setRoot(Utilities.convertGame(orig));
+                            }
+
+                            PlunkGameData d = new PlunkGameData(orig);
+                            //d.setRoot(Utilities.convertGame(d));
+                            d.setGameID(0);
+                            d.setEditable(true);
+
+                            if (!main.getGameStorer().gameAlreadyStored(d, dbData.getID())) {
+                                main.saveGame(d, dbData, null);
+                            }
+
+                            pm.setProgress(i + 1);
+
+                        } catch (Exception ex) {
+                            System.err.println("Error copying " + orig.getGameID());
+                            ex.printStackTrace();
+                        }
+                    }
+                    pm.close();
                 });
                 t.start();
             }
@@ -1334,15 +1302,13 @@ public class GameReviewBoard extends JPanel implements TabComponent, VenueListen
         p1Seat.addItem("All");
         p1Seat.addItem("P1");
         p1Seat.addItem("P2");
-        p1Seat.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.DESELECTED) {
-                    return;
-                }
-                filterData.setPlayer1Seat(p1Seat.getSelectedIndex());
-                if (currentTreeModel != null) {
-                    currentTreeModel.refreshBoard();
-                }
+        p1Seat.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.DESELECTED) {
+                return;
+            }
+            filterData.setPlayer1Seat(p1Seat.getSelectedIndex());
+            if (currentTreeModel != null) {
+                currentTreeModel.refreshBoard();
             }
         });
         filterData.setPlayer1Seat(p1Seat.getSelectedIndex());
@@ -1372,15 +1338,13 @@ public class GameReviewBoard extends JPanel implements TabComponent, VenueListen
         p2Seat.addItem("All");
         p2Seat.addItem("P1");
         p2Seat.addItem("P2");
-        p2Seat.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.DESELECTED) {
-                    return;
-                }
-                filterData.setPlayer2Seat(p2Seat.getSelectedIndex());
-                if (currentTreeModel != null) {
-                    currentTreeModel.refreshBoard();
-                }
+        p2Seat.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.DESELECTED) {
+                return;
+            }
+            filterData.setPlayer2Seat(p2Seat.getSelectedIndex());
+            if (currentTreeModel != null) {
+                currentTreeModel.refreshBoard();
             }
         });
         filterData.setPlayer2Seat(p2Seat.getSelectedIndex());
@@ -1389,15 +1353,13 @@ public class GameReviewBoard extends JPanel implements TabComponent, VenueListen
         winnerChoice.addItem("");
         winnerChoice.addItem("Player 1");
         winnerChoice.addItem("Player 2");
-        winnerChoice.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.DESELECTED) {
-                    return;
-                }
-                filterData.setWinner(winnerChoice.getSelectedIndex());
-                if (currentTreeModel != null) {
-                    currentTreeModel.refreshBoard();
-                }
+        winnerChoice.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.DESELECTED) {
+                return;
+            }
+            filterData.setWinner(winnerChoice.getSelectedIndex());
+            if (currentTreeModel != null) {
+                currentTreeModel.refreshBoard();
             }
         });
 
@@ -1538,34 +1500,26 @@ public class GameReviewBoard extends JPanel implements TabComponent, VenueListen
             populateGameCombo();
         }
     };
-    ItemListener gameListener = new ItemListener() {
-        public void itemStateChanged(ItemEvent e) {
-            if (e.getStateChange() == ItemEvent.DESELECTED) return;
-            updateGame();
-            populateSiteCombo();
-        }
+    ItemListener gameListener = e -> {
+        if (e.getStateChange() == ItemEvent.DESELECTED) return;
+        updateGame();
+        populateSiteCombo();
     };
-    ItemListener siteListener = new ItemListener() {
-        public void itemStateChanged(ItemEvent e) {
-            if (e.getStateChange() == ItemEvent.DESELECTED) return;
-            updateSite();
-            populateEventCombo();
-        }
+    ItemListener siteListener = e -> {
+        if (e.getStateChange() == ItemEvent.DESELECTED) return;
+        updateSite();
+        populateEventCombo();
     };
-    ItemListener eventListener = new ItemListener() {
-        public void itemStateChanged(ItemEvent e) {
-            if (e.getStateChange() == ItemEvent.DESELECTED) return;
+    ItemListener eventListener = e -> {
+        if (e.getStateChange() == ItemEvent.DESELECTED) return;
 
-            updateEvent();
-            populateRoundCombo();
-        }
+        updateEvent();
+        populateRoundCombo();
     };
-    ItemListener roundListener = new ItemListener() {
-        public void itemStateChanged(ItemEvent e) {
-            if (e.getStateChange() == ItemEvent.DESELECTED) return;
+    ItemListener roundListener = e -> {
+        if (e.getStateChange() == ItemEvent.DESELECTED) return;
 
-            updateRound();
-        }
+        updateRound();
     };
 
     private void populateGameCombo() {
@@ -2072,19 +2026,17 @@ public class GameReviewBoard extends JPanel implements TabComponent, VenueListen
                     }
 
                     final long resultsHash = hash;
-                    javax.swing.SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            updateMessage();
-                            gameBoard.setCursor(Cursor.HAND_CURSOR);
+                    javax.swing.SwingUtilities.invokeLater(() -> {
+                        updateMessage();
+                        gameBoard.setCursor(Cursor.HAND_CURSOR);
 
-                            // make sure again that loading results for
-                            // same position as local board
-                            if (resultsHash == localGridState.getHash()) {
-                                if (existingResponse != null) {
-                                    loadResults(existingResponse);
-                                } else {
-                                    loadResults(response);
-                                }
+                        // make sure again that loading results for
+                        // same position as local board
+                        if (resultsHash == localGridState.getHash()) {
+                            if (existingResponse != null) {
+                                loadResults(existingResponse);
+                            } else {
+                                loadResults(response);
                             }
                         }
                     });
@@ -2112,14 +2064,12 @@ public class GameReviewBoard extends JPanel implements TabComponent, VenueListen
     private void loadPenteOrgVenue(final Component c) {
 
         if (!main.login(true)) {
-            javax.swing.SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    dbChoice.setEnabled(true);
-                    gameChoice.setEnabled(true);
-                    siteChoice.setEnabled(true);
-                    eventChoice.setEnabled(true);
-                    roundChoice.setEnabled(true);
-                }
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                dbChoice.setEnabled(true);
+                gameChoice.setEnabled(true);
+                siteChoice.setEnabled(true);
+                eventChoice.setEnabled(true);
+                roundChoice.setEnabled(true);
             });
             return;
         }
@@ -2140,15 +2090,13 @@ public class GameReviewBoard extends JPanel implements TabComponent, VenueListen
 
                     penteOrgVenuesLoaded = true;
 
-                    javax.swing.SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            dbChoice.setEnabled(true);
-                            gameChoice.setEnabled(true);
-                            siteChoice.setEnabled(true);
-                            eventChoice.setEnabled(true);
-                            roundChoice.setEnabled(true);
-                            populateGameCombo();
-                        }
+                    javax.swing.SwingUtilities.invokeLater(() -> {
+                        dbChoice.setEnabled(true);
+                        gameChoice.setEnabled(true);
+                        siteChoice.setEnabled(true);
+                        eventChoice.setEnabled(true);
+                        roundChoice.setEnabled(true);
+                        populateGameCombo();
                     });
 
                     //System.out.println("finished in " + (System.currentTimeMillis() - startTime));
@@ -2157,18 +2105,16 @@ public class GameReviewBoard extends JPanel implements TabComponent, VenueListen
                     JOptionPane.showMessageDialog(c, "Error loading Pente.org venue", "Error", JOptionPane.ERROR_MESSAGE);
                     e.printStackTrace();
 
-                    javax.swing.SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            dbChoice.setEnabled(true);
-                            gameChoice.setEnabled(true);
-                            siteChoice.setEnabled(true);
-                            eventChoice.setEnabled(true);
-                            roundChoice.setEnabled(true);
-                            if (deSelected != null) {
-                                filterData.setDb(deSelected.getID());
-                                dbChoice.setSelectedItem(deSelected);
-                                populateGameCombo();
-                            }
+                    javax.swing.SwingUtilities.invokeLater(() -> {
+                        dbChoice.setEnabled(true);
+                        gameChoice.setEnabled(true);
+                        siteChoice.setEnabled(true);
+                        eventChoice.setEnabled(true);
+                        roundChoice.setEnabled(true);
+                        if (deSelected != null) {
+                            filterData.setDb(deSelected.getID());
+                            dbChoice.setSelectedItem(deSelected);
+                            populateGameCombo();
                         }
                     });
 

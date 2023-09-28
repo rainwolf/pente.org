@@ -222,11 +222,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
         gameOptionsButton.addActionListener(this);
 
 
-        ItemListener changeStateListener = new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                sendChangeTableState();
-            }
-        };
+        ItemListener changeStateListener = e -> sendChangeTableState();
 
 
         ratedCheck = new Checkbox(RATED);
@@ -241,13 +237,11 @@ public class GameBoardFrame extends Frame implements TableComponent,
         timedLabel.setBackground(gameStyle.boardBack);
         timedLabel.setForeground(gameStyle.foreGround);
 
-        setTimerListener = new SetTimerListener() {
-            public void setTimer(boolean t, int m, int s) {
-                timed = t;
-                timerMinutes = m;
-                timerIncremental = s;
-                sendChangeTableState();
-            }
+        setTimerListener = (t, m, s) -> {
+            timed = t;
+            timerMinutes = m;
+            timerIncremental = s;
+            sendChangeTableState();
         };
 
         setTimeButton = gameStyle.createDSGButton(SET_TIME);
@@ -262,22 +256,18 @@ public class GameBoardFrame extends Frame implements TableComponent,
         playerGameTimers[1].setStartMinutes(15);
         playerTimerLabels[1] = new Label("20:00", Label.CENTER);
         playerTimerLabels[1].setForeground(gameStyle.foreGround);
-        playerGameTimers[1].addGameTimerListener(new GameTimerListener() {
-            public void timeChanged(int newMinutes, int newSeconds) {
-                String newSecondsStr = newSeconds > 9 ? "" + newSeconds : "0" + newSeconds;
-                playerTimerLabels[1].setText(newMinutes + ":" + newSecondsStr);
-            }
+        playerGameTimers[1].addGameTimerListener((newMinutes, newSeconds) -> {
+            String newSecondsStr = newSeconds > 9 ? "" + newSeconds : "0" + newSeconds;
+            playerTimerLabels[1].setText(newMinutes + ":" + newSecondsStr);
         });
 
         playerGameTimers[2] = new SimpleGameTimer();
         playerGameTimers[2].setStartMinutes(15);
         playerTimerLabels[2] = new Label("20:00", Label.CENTER);
         playerTimerLabels[2].setForeground(gameStyle.foreGround);
-        playerGameTimers[2].addGameTimerListener(new GameTimerListener() {
-            public void timeChanged(int newMinutes, int newSeconds) {
-                String newSecondsStr = newSeconds > 9 ? "" + newSeconds : "0" + newSeconds;
-                playerTimerLabels[2].setText(newMinutes + ":" + newSecondsStr);
-            }
+        playerGameTimers[2].addGameTimerListener((newMinutes, newSeconds) -> {
+            String newSecondsStr = newSeconds > 9 ? "" + newSeconds : "0" + newSeconds;
+            playerTimerLabels[2].setText(newMinutes + ":" + newSecondsStr);
         });
 
 
@@ -366,13 +356,9 @@ public class GameBoardFrame extends Frame implements TableComponent,
         bootButton.addActionListener(this);
 
 
-        addAIListener = new ActionListener() {
-            public void actionPerformed(ActionEvent e2) {
-                dsgEventListener.eventOccurred(
-                        new DSGAddAITableEvent(
-                                playerName, tableNum, addAIDialog.getData()));
-            }
-        };
+        addAIListener = e2 -> dsgEventListener.eventOccurred(
+                new DSGAddAITableEvent(
+                        playerName, tableNum, addAIDialog.getData()));
 
         inviteButton = gameStyle.createDSGButton("Invite Player");
         inviteButton.setEnabled(false);
@@ -448,11 +434,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
 
 
         chatArea = new ChatPanel(5, 5, 3, preferenceHandler/*, me.isGuest()*/);
-        chatArea.addChatListener(new ChatListener() {
-            public void chatEntered(final String message) {
-                dsgEventListener.eventOccurred(new DSGTextTableEvent(null, tableNum, message));
-            }
-        });
+        chatArea.addChatListener(message -> dsgEventListener.eventOccurred(new DSGTextTableEvent(null, tableNum, message)));
 
 
         Panel chatPanel = new Panel();
@@ -516,12 +498,10 @@ public class GameBoardFrame extends Frame implements TableComponent,
         coordsChoice.add("Traditional");
         coordsChoice.setBackground(Color.white);
         coordsChoice.setForeground(Color.black);
-        coordsChoice.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                int coordsIndex = coordsChoice.getSelectedIndex();
-                gameBoard.gridCoordinatesChanged(coordinates[coordsIndex]);
-                coordinatesList.gridCoordinatesChanged(coordinates[coordsIndex]);
-            }
+        coordsChoice.addItemListener(e -> {
+            int coordsIndex = coordsChoice.getSelectedIndex();
+            gameBoard.gridCoordinatesChanged(coordinates[coordsIndex]);
+            coordinatesList.gridCoordinatesChanged(coordinates[coordsIndex]);
         });
 
         gameInSetLabel = new Label("");
@@ -706,12 +686,10 @@ public class GameBoardFrame extends Frame implements TableComponent,
                     resignDialog.dispose();
                 }
                 resignDialog = DSGDialogFactory.createResignDialog(GameBoardFrame.this, gameStyle);
-                resignDialog.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent ee) {
-                        if (ee.getActionCommand().equals("Yes")) {
-                            dsgEventListener.eventOccurred(
-                                    new DSGResignTableEvent(playerName, tableNum));
-                        }
+                resignDialog.addActionListener(ee -> {
+                    if (ee.getActionCommand().equals("Yes")) {
+                        dsgEventListener.eventOccurred(
+                                new DSGResignTableEvent(playerName, tableNum));
                     }
                 });
                 resignDialog.setVisible(true);
@@ -724,12 +702,10 @@ public class GameBoardFrame extends Frame implements TableComponent,
                     2);
             options.addGameOptionsChangeListener(gameBoard);
             options.addGameOptionsChangeListener(coordinatesList);
-            options.addGameOptionsChangeListener(new GameOptionsChangeListener() {
-                public void gameOptionsChanged(GameOptions newOptions) {
-                    if (!gameOptions.equals(newOptions)) {
-                        gameOptions = newOptions;
-                        preferenceHandler.storePref("gameOptions", gameOptions);
-                    }
+            options.addGameOptionsChangeListener(newOptions -> {
+                if (!gameOptions.equals(newOptions)) {
+                    gameOptions = newOptions;
+                    preferenceHandler.storePref("gameOptions", gameOptions);
                 }
             });
         } else if (event.getActionCommand().equals("Boot Player")) {
@@ -767,13 +743,9 @@ public class GameBoardFrame extends Frame implements TableComponent,
                 addAIDialog.dispose();
             }
             addAIDialog = new AddAIDialog(GameBoardFrame.this, gameStyle,
-                    new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            dsgEventListener.eventOccurred(new
-                                    DSGAddAITableEvent(null, tableNum,
-                                    addAIDialog.getData()));
-                        }
-                    },
+                    e -> dsgEventListener.eventOccurred(new
+                            DSGAddAITableEvent(null, tableNum,
+                            addAIDialog.getData())),
                     game, aiData);
         }
     }
@@ -1192,13 +1164,11 @@ public class GameBoardFrame extends Frame implements TableComponent,
                         preferenceHandler.getPref("ims");
                 if (ignoreMiddleSet == null || !ignoreMiddleSet.booleanValue()) {
                     middleSetDialog = new MiddleSetDialog(this, gameStyle);
-                    middleSetDialog.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            if (e.getActionCommand().equals("Play")) {
-                                GameBoardFrame.this.actionPerformed(e);
-                                if (middleSetDialog.getIgnore()) {
-                                    preferenceHandler.storePref("ims", new Boolean(true));
-                                }
+                    middleSetDialog.addActionListener(e -> {
+                        if (e.getActionCommand().equals("Play")) {
+                            GameBoardFrame.this.actionPerformed(e);
+                            if (middleSetDialog.getIgnore()) {
+                                preferenceHandler.storePref("ims", new Boolean(true));
                             }
                         }
                     });
@@ -1295,19 +1265,17 @@ public class GameBoardFrame extends Frame implements TableComponent,
         playerReturnTimeUpDialog = new PlayerLeftDialog(
                 this, gameStyle, minutes, middleOfSet,
                 ratedCheck.getState() && gameNumInSet == 1);
-        playerReturnTimeUpDialog.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (e.getActionCommand().equals("Resign")) {
-                    dsgEventListener.eventOccurred(
-                            new DSGResignTableEvent(playerName, tableNum));
-                } else {
-                    int action = e.getActionCommand().startsWith("Cancel") ?
-                            DSGForceCancelResignTableEvent.CANCEL :
-                            DSGForceCancelResignTableEvent.RESIGN;
+        playerReturnTimeUpDialog.addActionListener(e -> {
+            if (e.getActionCommand().equals("Resign")) {
+                dsgEventListener.eventOccurred(
+                        new DSGResignTableEvent(playerName, tableNum));
+            } else {
+                int action = e.getActionCommand().startsWith("Cancel") ?
+                        DSGForceCancelResignTableEvent.CANCEL :
+                        DSGForceCancelResignTableEvent.RESIGN;
 
-                    dsgEventListener.eventOccurred(
-                            new DSGForceCancelResignTableEvent(playerName, tableNum, action));
-                }
+                dsgEventListener.eventOccurred(
+                        new DSGForceCancelResignTableEvent(playerName, tableNum, action));
             }
         });
         playerReturnTimeUpDialog.setVisible(true);
@@ -1426,24 +1394,22 @@ public class GameBoardFrame extends Frame implements TableComponent,
                     swapDialog.dispose();
                 }
                 swapDialog = DSGDialogFactory.createSwapDialog(this, gameStyle);
-                swapDialog.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        boolean swap = false;
-                        if (e.getActionCommand().equals("Player 1") && playerType == 2) {
-                            swap = true;
-                        } else if (e.getActionCommand().equals("Player 2") && playerType == 1) {
-                            swap = true;
-                        }
-
-                        // if undo requested at same time and p2 answers swap
-                        // then close undo
-                        if (undoDialog != null) {
-                            undoDialog.dispose();
-                        }
-
-                        dsgEventListener.eventOccurred(
-                                new DSGSwapSeatsTableEvent(playerName, tableNum, swap, false));
+                swapDialog.addActionListener(e -> {
+                    boolean swap = false;
+                    if (e.getActionCommand().equals("Player 1") && playerType == 2) {
+                        swap = true;
+                    } else if (e.getActionCommand().equals("Player 2") && playerType == 1) {
+                        swap = true;
                     }
+
+                    // if undo requested at same time and p2 answers swap
+                    // then close undo
+                    if (undoDialog != null) {
+                        undoDialog.dispose();
+                    }
+
+                    dsgEventListener.eventOccurred(
+                            new DSGSwapSeatsTableEvent(playerName, tableNum, swap, false));
                 });
                 swapDialog.setVisible(true);
             } else {
@@ -1466,17 +1432,14 @@ public class GameBoardFrame extends Frame implements TableComponent,
             }
             String txt = ((GoState) gameBoard.getGridState()).getScoreMessage();
             acceptGoStateDialog = DSGDialogFactory.createGoStateDialog(this, gameStyle, txt);
-            acceptGoStateDialog.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
+            acceptGoStateDialog.addActionListener(e -> {
 //                    System.out.println("showGoStateDialog action "+e.getActionCommand());
-                    if (e.getActionCommand().equals("Accept")) {
-                        int passMove = gameBoard.getGridState().getGridSizeX() * gameBoard.getGridState().getGridSizeX();
-                        dsgEventListener.eventOccurred(new DSGMoveTableEvent(playerName, tableNum, passMove));
-                    } else if (e.getActionCommand().equals("Reject")) {
+                if (e.getActionCommand().equals("Accept")) {
+                    int passMove = gameBoard.getGridState().getGridSizeX() * gameBoard.getGridState().getGridSizeX();
+                    dsgEventListener.eventOccurred(new DSGMoveTableEvent(playerName, tableNum, passMove));
+                } else if (e.getActionCommand().equals("Reject")) {
 //                        System.out.println("showGoStateDialog action reject ");
-                        dsgEventListener.eventOccurred(new DSGRejectGoStateEvent(playerName, tableNum));
-                    }
+                    dsgEventListener.eventOccurred(new DSGRejectGoStateEvent(playerName, tableNum));
                 }
             });
 //            System.out.println("showGoStateDialog show");
@@ -1812,19 +1775,17 @@ public class GameBoardFrame extends Frame implements TableComponent,
                 !playerName.equals(undoRequestEvent.getPlayer())) {
 
             undoDialog = DSGDialogFactory.createUndoDialog(this, gameStyle);
-            undoDialog.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    boolean reply = e.getActionCommand().equals("Yes") ? true : false;
+            undoDialog.addActionListener(e -> {
+                boolean reply = e.getActionCommand().equals("Yes") ? true : false;
 
-                    // if undo requested at same time as swap and p2 answers
-                    // undo, then close swap
-                    if (reply && swapDialog != null) {
-                        swapDialog.dispose();
-                    }
-
-                    dsgEventListener.eventOccurred(
-                            new DSGUndoReplyTableEvent(playerName, tableNum, reply));
+                // if undo requested at same time as swap and p2 answers
+                // undo, then close swap
+                if (reply && swapDialog != null) {
+                    swapDialog.dispose();
                 }
+
+                dsgEventListener.eventOccurred(
+                        new DSGUndoReplyTableEvent(playerName, tableNum, reply));
             });
             undoDialog.setVisible(true);
         }
@@ -1853,13 +1814,11 @@ public class GameBoardFrame extends Frame implements TableComponent,
                 !playerName.equals(cancelRequestEvent.getPlayer())) {
 
             cancelDialog = DSGDialogFactory.createCancelDialog(this, gameStyle, txt);
-            cancelDialog.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    boolean reply = e.getActionCommand().equals("Yes") ? true : false;
+            cancelDialog.addActionListener(e -> {
+                boolean reply = e.getActionCommand().equals("Yes") ? true : false;
 
-                    dsgEventListener.eventOccurred(
-                            new DSGCancelReplyTableEvent(playerName, tableNum, reply));
-                }
+                dsgEventListener.eventOccurred(
+                        new DSGCancelReplyTableEvent(playerName, tableNum, reply));
             });
             cancelDialog.setVisible(true);
         }
@@ -1914,16 +1873,14 @@ public class GameBoardFrame extends Frame implements TableComponent,
         setTimer.setStartMinutes(minutes);
         setTimer.setStartSeconds(seconds);
 
-        setTimer.addGameTimerListener(new GameTimerListener() {
-            public void timeChanged(int newMinutes, int newSeconds) {
-                if (newMinutes == 0 && newSeconds == 0) {
-                    setTimer.stop();
-                    //and open dialog
-                }
-                if (!setTimer.isRunning()) return;//don't update if stopped
-                String newSecondsStr = newSeconds > 9 ? "" + newSeconds : "0" + newSeconds;
-                gameInSetLabel.setText("Set Timeout in: " + newMinutes + ":" + newSecondsStr);
+        setTimer.addGameTimerListener((newMinutes, newSeconds) -> {
+            if (newMinutes == 0 && newSeconds == 0) {
+                setTimer.stop();
+                //and open dialog
             }
+            if (!setTimer.isRunning()) return;//don't update if stopped
+            String newSecondsStr = newSeconds > 9 ? "" + newSeconds : "0" + newSeconds;
+            gameInSetLabel.setText("Set Timeout in: " + newMinutes + ":" + newSecondsStr);
         });
         setTimer.reset();
         setTimer.go();

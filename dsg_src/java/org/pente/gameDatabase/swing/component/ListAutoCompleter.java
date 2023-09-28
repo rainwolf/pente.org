@@ -5,11 +5,7 @@ import javax.swing.text.JTextComponent;
 
 public class ListAutoCompleter extends AutoCompleter {
 
-    public static Comparator<String> noCaseComp = new Comparator<String>() {
-        public int compare(String s1, String s2) {
-            return s1.toLowerCase().compareTo(s2.toLowerCase());
-        }
-    };
+    public static Comparator<String> noCaseComp = (s1, s2) -> s1.toLowerCase().compareTo(s2.toLowerCase());
 
     private List<String> all;
 

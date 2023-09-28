@@ -104,63 +104,53 @@ public class CoordinatesListPanel extends Panel
         scrollbar.setVisibleAmount(1);
 
         // add listener to update startRow when scrollbar is adjusted
-        scrollbar.addAdjustmentListener(new AdjustmentListener() {
-            public void adjustmentValueChanged(AdjustmentEvent e) {
-                synchronized (drawLock) {
-                    // set start row to current value of scrollbar not events
-                    // value in case another thread updated scrollbar's value
-                    // between the time the user clicked and this event was
-                    // received
-                    startRow = scrollbar.getValue();
-                    if (startRow < 0) startRow = 0;
-                    imageDirty = true;
-                }
-                requestFocus();
-                repaint();
+        scrollbar.addAdjustmentListener(e -> {
+            synchronized (drawLock) {
+                // set start row to current value of scrollbar not events
+                // value in case another thread updated scrollbar's value
+                // between the time the user clicked and this event was
+                // received
+                startRow = scrollbar.getValue();
+                if (startRow < 0) startRow = 0;
+                imageDirty = true;
             }
+            requestFocus();
+            repaint();
         });
 
         // add navigation buttons
         DSGButton firstButton = buttonMaker.createButton("<<", gameStyle);
-        firstButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                for (int i = 0; i < listeners.size(); i++) {
-                    OrderedPieceCollection c = (OrderedPieceCollection) listeners.elementAt(i);
-                    c.visitFirstTurn();
-                }
-                // visit first turn goes back before K10, so
-                // visit next turn to get to K10
-                //for (int i = 0; i < listeners.size(); i++) {
-                //    OrderedPieceCollection c = (OrderedPieceCollection) listeners.elementAt(i);
-                //    c.visitNextTurn();
-                //}
+        firstButton.addActionListener(e -> {
+            for (int i = 0; i < listeners.size(); i++) {
+                OrderedPieceCollection c = (OrderedPieceCollection) listeners.elementAt(i);
+                c.visitFirstTurn();
             }
+            // visit first turn goes back before K10, so
+            // visit next turn to get to K10
+            //for (int i = 0; i < listeners.size(); i++) {
+            //    OrderedPieceCollection c = (OrderedPieceCollection) listeners.elementAt(i);
+            //    c.visitNextTurn();
+            //}
         });
         DSGButton backButton = buttonMaker.createButton("<", gameStyle);
-        backButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                for (int i = 0; i < listeners.size(); i++) {
-                    OrderedPieceCollection c = (OrderedPieceCollection) listeners.elementAt(i);
-                    c.visitPreviousTurn();
-                }
+        backButton.addActionListener(e -> {
+            for (int i = 0; i < listeners.size(); i++) {
+                OrderedPieceCollection c = (OrderedPieceCollection) listeners.elementAt(i);
+                c.visitPreviousTurn();
             }
         });
         DSGButton nextButton = buttonMaker.createButton(">", gameStyle);
-        nextButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                for (int i = 0; i < listeners.size(); i++) {
-                    OrderedPieceCollection c = (OrderedPieceCollection) listeners.elementAt(i);
-                    c.visitNextTurn();
-                }
+        nextButton.addActionListener(e -> {
+            for (int i = 0; i < listeners.size(); i++) {
+                OrderedPieceCollection c = (OrderedPieceCollection) listeners.elementAt(i);
+                c.visitNextTurn();
             }
         });
         DSGButton lastButton = buttonMaker.createButton(">>", gameStyle);
-        lastButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                for (int i = 0; i < listeners.size(); i++) {
-                    OrderedPieceCollection c = (OrderedPieceCollection) listeners.elementAt(i);
-                    c.visitLastTurn();
-                }
+        lastButton.addActionListener(e -> {
+            for (int i = 0; i < listeners.size(); i++) {
+                OrderedPieceCollection c = (OrderedPieceCollection) listeners.elementAt(i);
+                c.visitLastTurn();
             }
         });
 

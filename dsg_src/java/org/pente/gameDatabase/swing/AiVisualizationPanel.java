@@ -55,27 +55,23 @@ public class AiVisualizationPanel extends JPanel implements AiListener {
         aiBoard.getGridBoard().setDrawInnerCircles(false);
 
         aiStatus = new JLabel("Status:");
-        aiTimer = new Timer(1000, new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                aiSeconds++;
+        aiTimer = new Timer(1000, arg0 -> {
+            aiSeconds++;
 
-                int minutes = aiSeconds / 60;
-                int seconds = aiSeconds % 60;
-                String text = minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
-                aiStatusTime.setText(text);
-            }
+            int minutes = aiSeconds / 60;
+            int seconds = aiSeconds % 60;
+            String text = minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+            aiStatusTime.setText(text);
         });
 
         aiStatusTime = new JLabel("0:00");
         aiVisualization = new JCheckBox("Show visualization", true);
-        aiVisualization.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                ai.setVisualization(aiVisualization.isSelected());
-                if (aiTimer.isRunning() && !aiVisualization.isSelected()) {
-                    stopThinkingAiBoard();
-                } else if (aiTimer.isRunning() && aiVisualization.isSelected()) {
-                    startThinkingAiBoard();
-                }
+        aiVisualization.addActionListener(arg0 -> {
+            ai.setVisualization(aiVisualization.isSelected());
+            if (aiTimer.isRunning() && !aiVisualization.isSelected()) {
+                stopThinkingAiBoard();
+            } else if (aiTimer.isRunning() && aiVisualization.isSelected()) {
+                startThinkingAiBoard();
             }
         });
         ai.setVisualization(true);

@@ -51,17 +51,15 @@ public class MilliSecondGameTimerTest extends TestCase {
 
         gameTimer.setStartSeconds(60);
         gameTimer.reset();
-        gameTimer.addGameTimerListener(new GameTimerListener() {
-            public void timeChanged(int m, int s) {
-                long t = System.currentTimeMillis();
-                long tt = t - startTime;
-                long expected = (60 - s) * 1000;
-                long diff = tt - expected;
-                System.out.println("m=" + m + ",s=" + s + ",tt=" + tt + ",diff=" + diff);
-                if (m == 0 && s == 0) {
-                    synchronized (lock) {
-                        lock.notify();
-                    }
+        gameTimer.addGameTimerListener((m, s) -> {
+            long t = System.currentTimeMillis();
+            long tt = t - startTime;
+            long expected = (60 - s) * 1000;
+            long diff = tt - expected;
+            System.out.println("m=" + m + ",s=" + s + ",tt=" + tt + ",diff=" + diff);
+            if (m == 0 && s == 0) {
+                synchronized (lock) {
+                    lock.notify();
                 }
             }
         });
@@ -234,15 +232,13 @@ public class MilliSecondGameTimerTest extends TestCase {
 
         gameTimer.setStartSeconds(60);
         gameTimer.reset();
-        gameTimer.addGameTimerListener(new GameTimerListener() {
-            public void timeChanged(int m, int s) {
-                long t = System.currentTimeMillis();
-                long tt = t - startTime;
-                long expected = (60 - s) * 1000;
-                long diff = tt - expected;
-                System.out.println("m=" + m + ",s=" + s + ",tt=" + tt + ",diff=" + diff);
-                sleep(100);
-            }
+        gameTimer.addGameTimerListener((m, s) -> {
+            long t = System.currentTimeMillis();
+            long tt = t - startTime;
+            long expected = (60 - s) * 1000;
+            long diff = tt - expected;
+            System.out.println("m=" + m + ",s=" + s + ",tt=" + tt + ",diff=" + diff);
+            sleep(100);
         });
 
         gameTimer.go();

@@ -149,23 +149,19 @@ public class TBGamePanel extends JPanel implements OrderedPieceCollection {
                 dPenteState == DPENTE_DECIDE) {
             gameBoard.setMessage("D-Pente: You must now choose to play as player 1 or 2");
             p1Button.setEnabled(true);
-            p1Button.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    swap();
-                    p1Button.setEnabled(false);
-                    p2Button.setEnabled(false);
-                    gameBoard.setMessage("Swapped, now make your move");
-                }
+            p1Button.addActionListener(e -> {
+                swap();
+                p1Button.setEnabled(false);
+                p2Button.setEnabled(false);
+                gameBoard.setMessage("Swapped, now make your move");
             });
             p2Button.setEnabled(true);
-            p2Button.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    p2Button.setEnabled(false);
-                    p1Button.setEnabled(false);
-                    resignButton.setEnabled(false);
-                    cancelButton.setEnabled(false);
-                    actionHandler.makeMoves("0", chatEnter.getText());
-                }
+            p2Button.addActionListener(e -> {
+                p2Button.setEnabled(false);
+                p1Button.setEnabled(false);
+                resignButton.setEnabled(false);
+                cancelButton.setEnabled(false);
+                actionHandler.makeMoves("0", chatEnter.getText());
             });
         } else if (game == GridStateFactory.TB_DPENTE &&
                 dPenteState == DPENTE_DECIDED) {
@@ -173,77 +169,69 @@ public class TBGamePanel extends JPanel implements OrderedPieceCollection {
                     dPenteSwap);
         }
 
-        moveButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (!myTurn) return;
-                undoButton.setEnabled(false);
-                moveButton.setEnabled(false);
-                gameBoard.setMessage(null);
+        moveButton.addActionListener(e -> {
+            if (!myTurn) return;
+            undoButton.setEnabled(false);
+            moveButton.setEnabled(false);
+            gameBoard.setMessage(null);
 
-                String moves = "";
-                if (game == GridStateFactory.TB_DPENTE &&
-                        dPenteState != DPENTE_DECIDED) {
-                    if (dPenteState == DPENTE_START) {
-                        // K10 already done, just send moves 2,3,4
-                        for (int i = 1; i < 4; i++)
-                            moves += gameBoard.getGridState().getMove(i) + ",";
-                    }
-                    // if we get here it means p2 swapped to become p1
-                    // and then made a move
-                    else if (dPenteState == DPENTE_DECIDE) {
-                        moves = "1," + gameBoard.getGridState().getMove(
+            String moves1 = "";
+            if (game == GridStateFactory.TB_DPENTE &&
+                    dPenteState != DPENTE_DECIDED) {
+                if (dPenteState == DPENTE_START) {
+                    // K10 already done, just send moves 2,3,4
+                    for (int i = 1; i < 4; i++)
+                        moves1 += gameBoard.getGridState().getMove(i) + ",";
+                }
+                // if we get here it means p2 swapped to become p1
+                // and then made a move
+                else if (dPenteState == DPENTE_DECIDE) {
+                    moves1 = "1," + gameBoard.getGridState().getMove(
+                            gameBoard.getGridState().getNumMoves() - 1);
+                }
+            }
+            // send 2 moves
+            else if (game == GridStateFactory.TB_CONNECT6) {
+                moves1 = gameBoard.getGridState().getMove(
+                        gameBoard.getGridState().getNumMoves() - 2) + "," +
+                        gameBoard.getGridState().getMove(
                                 gameBoard.getGridState().getNumMoves() - 1);
-                    }
-                }
-                // send 2 moves
-                else if (game == GridStateFactory.TB_CONNECT6) {
-                    moves = gameBoard.getGridState().getMove(
-                            gameBoard.getGridState().getNumMoves() - 2) + "," +
-                            gameBoard.getGridState().getMove(
-                                    gameBoard.getGridState().getNumMoves() - 1);
-                } else {
-                    moves = gameBoard.getGridState().getMove(
-                            gameBoard.getGridState().getNumMoves() - 1) + "";
-                }
+            } else {
+                moves1 = gameBoard.getGridState().getMove(
+                        gameBoard.getGridState().getNumMoves() - 1) + "";
+            }
 
-                resignButton.setEnabled(false);
-                cancelButton.setEnabled(false);
-                actionHandler.makeMoves(moves, chatEnter.getText());
-            }
+            resignButton.setEnabled(false);
+            cancelButton.setEnabled(false);
+            actionHandler.makeMoves(moves1, chatEnter.getText());
         });
-        undoButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                gameBoard.getGridState().undoMove();
-                movesMade--;
+        undoButton.addActionListener(e -> {
+            gameBoard.getGridState().undoMove();
+            movesMade--;
 
-                // allow d-pente games
-                if (game == GridStateFactory.TB_DPENTE &&
-                        gameBoard.getGridState().getNumMoves() > 1 &&
-                        dPenteState == DPENTE_START) {
-                    //do nothing
-                } else if (game == GridStateFactory.TB_CONNECT6 &&
-                        movesMade > 0) {
-                    // do nothing
-                } else {
-                    undoButton.setEnabled(false);
-                    gameBoard.setMessage(null);
-                }
-                moveButton.setEnabled(false);
+            // allow d-pente games
+            if (game == GridStateFactory.TB_DPENTE &&
+                    gameBoard.getGridState().getNumMoves() > 1 &&
+                    dPenteState == DPENTE_START) {
+                //do nothing
+            } else if (game == GridStateFactory.TB_CONNECT6 &&
+                    movesMade > 0) {
+                // do nothing
+            } else {
+                undoButton.setEnabled(false);
+                gameBoard.setMessage(null);
             }
+            moveButton.setEnabled(false);
         });
-        resignButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                resignButton.setEnabled(false);
-                actionHandler.resignGame(chatEnter.getText());
-            }
+        resignButton.addActionListener(e -> {
+            resignButton.setEnabled(false);
+            actionHandler.resignGame(chatEnter.getText());
         });
 
 
-        cancelButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                resignButton.setEnabled(false);
-                actionHandler.requestCancel(chatEnter.getText());
-            }
+        cancelButton.addActionListener(e -> {
+            resignButton.setEnabled(false);
+            actionHandler.requestCancel(chatEnter.getText());
         });
 
         gameBoard.addGridBoardListener(new GridBoardListener() {

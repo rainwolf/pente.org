@@ -187,11 +187,7 @@ public class CacheTourneyStorer implements TourneyStorer {
         for (Tourney d : getCompletedTournies()) {
             completedDetails.add(getTourney(d.getEventID()));
         }
-        Collections.sort(completedDetails, new Comparator<Tourney>() {
-            public int compare(Tourney o1, Tourney o2) {
-                return o2.getStartDate().compareTo(o1.getStartDate());
-            }
-        });
+        Collections.sort(completedDetails, (o1, o2) -> o2.getStartDate().compareTo(o1.getStartDate()));
         Tourney lastTourney = null;
         int currentCrownInt = getCrownInt(tourney.getPrize());
         for (Tourney t : completedDetails) {

@@ -105,11 +105,7 @@ public class DSGMessageServlet extends HttpServlet {
                     messages = dsgMessageStorer.getNextMessages(
                             playerData.getPlayerID(), next_int);
                 }
-                Collections.sort(messages, new Comparator<DSGMessage>() {
-                    public int compare(DSGMessage m1, DSGMessage m2) {
-                        return m2.getCreationDate().compareTo(m1.getCreationDate());
-                    }
-                });
+                Collections.sort(messages, (m1, m2) -> m2.getCreationDate().compareTo(m1.getCreationDate()));
                 request.setAttribute("messages", messages);
                 if (next_int > 0) {
                     request.setAttribute("next", next);

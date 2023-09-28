@@ -23,19 +23,17 @@ public class Test1 {
         } catch (Exception e) {
         }
 
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                JFrame.setDefaultLookAndFeelDecorated(true);
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            JFrame.setDefaultLookAndFeelDecorated(true);
 
-                final JFrame frame = new JFrame("Plunk");
+            final JFrame frame = new JFrame("Plunk");
 
-                JButton b = new JButton("Test", getSuccessMarkerIcon(150));
-                frame.getContentPane().add(b);
+            JButton b = new JButton("Test", getSuccessMarkerIcon(150));
+            frame.getContentPane().add(b);
 
-                frame.pack();
-                frame.setSize(800, 800);
-                frame.setVisible(true);
-            }
+            frame.pack();
+            frame.setSize(800, 800);
+            frame.setVisible(true);
         });
     }
 //	First, let's define a function that will return us an Icon:

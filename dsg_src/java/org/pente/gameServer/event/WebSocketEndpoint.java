@@ -15,12 +15,7 @@ public class WebSocketEndpoint extends Endpoint {
         wcfg = (WebSocketConfigurator) scfg.getConfigurator();
         wcfg.addSession(session);
 
-        session.addMessageHandler(new MessageHandler.Whole<String>() {
-            @Override
-            public void onMessage(String msg) {
-                wcfg.receiveMessage(session, msg);
-            }
-        });
+        session.addMessageHandler((MessageHandler.Whole<String>) msg -> wcfg.receiveMessage(session, msg));
     }
 
     @Override

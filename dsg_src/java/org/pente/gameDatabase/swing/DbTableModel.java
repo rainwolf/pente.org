@@ -28,11 +28,7 @@ public class DbTableModel extends AbstractTableModel {
                 break;
             }
         }
-        Collections.sort(dbData, new Comparator<GameDbData>() {
-            public int compare(GameDbData d1, GameDbData d2) {
-                return d1.getName().toLowerCase().compareTo(d2.getName().toLowerCase());
-            }
-        });
+        Collections.sort(dbData, (d1, d2) -> d1.getName().toLowerCase().compareTo(d2.getName().toLowerCase()));
 
         data = new Object[dbData.size()][columnNames.length];
         for (int i = 0; i < dbData.size(); i++) {
