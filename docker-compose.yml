@@ -1,6 +1,10 @@
 version: '3.8'
 services:
   pente.org:
+    build:
+      context: .
+      args:
+        - ENV=local
     image: pente.org
     ports:
       - "80:80"
@@ -11,6 +15,10 @@ services:
       - /Volumes/keysCertificatesStuff/MyDSKeyStore.jks:/var/lib/tomcat9/webapps/MyDSKeyStore.jks
       - ./testDocker/logs:/var/log
       - ./testDocker/logs/tomcat:/usr/local/tomcat/logs
+      - ./well-known:/usr/local/tomcat/webapps/ROOT/.well-known
+      - ./well-known:/usr/local/tomcat/submanifold/ROOT/.well-known
+      - ./well-known:/usr/local/tomcat/othmanwsubmanifold/ROOT/.well-known
+      - ./well-known:/usr/local/tomcat/pentelivesubmanifold/ROOT/.well-known
       # for hot reloading
 #      - ./deployClasses/org:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/org
     environment:
@@ -21,6 +29,8 @@ services:
       dsg_auto_ssh:
         condition: service_healthy
   dsg_auto_ssh:
+    build:
+      dockerfile: AutoSSH.Dockerfile
     image: auto_ssh
     restart: always
     environment:
@@ -66,6 +76,15 @@ services:
       - ./testMariaDBconfig/primary:/etc/mysql/conf.d
       - ./testMariaDB:/var/lib/mysql
       - ./testInitMariaDB:/docker-entrypoint-initdb.d
+  dsg_mail:
+    build:
+      dockerfile: mail.Dockerfile
+    image: dsg_mail
+    restart: always
+    ports:
+      - '127.0.0.1:2525:25'  # change this to 25 when deploying, this is to prevent sending mail on local
+    networks:
+      - pente_org
 networks:
   pente_org:
     driver: bridge

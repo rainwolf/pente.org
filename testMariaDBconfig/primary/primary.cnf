@@ -4,3 +4,5 @@ server_id=1                       # used to uniquely identify the server
 log-basename=pente_org            # used to be independent of hostname changes
                                   # (otherwise name is <datadir>/mysql-bin)
 #binlog-format=MIXED              #default
+max_binlog_size=1G                # default
+expire_logs_days=21                # default

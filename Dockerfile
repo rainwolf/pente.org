@@ -44,6 +44,10 @@ RUN rm /usr/local/tomcat/webapps/build-docker.xml
 RUN mkdir -p /var/lib/dsg/gameServer/game
 RUN mkdir -p /var/lib/dsg/gameServer/player
 
+# copy the other domains
+COPY submanifolddomains/ /usr/local/tomcat/
+COPY config/etctomcat9/server.xml /usr/local/tomcat/conf/server.xml
+
 # local context doesn't access remote instance
 ARG ENV=""
 RUN mv /usr/local/tomcat/webapps/ROOT/META-INF/${ENV}context.xml /usr/local/tomcat/webapps/ROOT/META-INF/context.xml
