@@ -5,6 +5,7 @@ services:
       context: .
       args:
         - ENV=local
+        - DOCKER_DEFAULT_PLATFORM=$DOCKER_DEFAULT_PLATFORM
     image: pente.org
     ports:
       - "80:80"
@@ -81,6 +82,11 @@ services:
       dockerfile: mail.Dockerfile
     image: dsg_mail
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "sudo service postfix status"]
+      interval: 10s
+      timeout: 5s
+      retries: 1000
     ports:
       - '127.0.0.1:2525:25'  # change this to 25 when deploying, this is to prevent sending mail on local
     networks:
