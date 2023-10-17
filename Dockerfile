@@ -14,15 +14,15 @@ RUN rm install
 
 # AstroNvim
 ARG DOCKER_DEFAULT_PLATFORM
-RUN if [ "$DOCKER_DEFAULT_PLATFORM" == "linux/amd64" ]; then curl -LO https://github.com/neovim/neovim/releases/download/v0.9.0/nvim-linux64.tar.gz; fi
-RUN if [ "$DOCKER_DEFAULT_PLATFORM" == "linux/amd64" ]; then tar xzf nvim-linux64.tar.gz; fi
-RUN if [ "$DOCKER_DEFAULT_PLATFORM" == "linux/amd64" ]; then cp -r nvim-linux64/* /usr; fi
-RUN if [ "$DOCKER_DEFAULT_PLATFORM" == "linux/amd64" ]; then rm -rf nvim-linux64 nvim-linux64.tar.gz; fi
-RUN if [ -z "$DOCKER_DEFAULT_PLATFORM" ]; then curl -LO https://github.com/matsuu/neovim-aarch64-appimage/releases/download/v0.9.0/nvim-v0.9.0.appimage; fi
-RUN if [ -z "$DOCKER_DEFAULT_PLATFORM" ]; then chmod u+x nvim-v0.9.0.appimage; fi
-RUN if [ -z "$DOCKER_DEFAULT_PLATFORM" ]; then ./nvim-v0.9.0.appimage --appimage-extract; fi
-RUN if [ -z "$DOCKER_DEFAULT_PLATFORM" ]; then cp -r squashfs-root/* /; fi
-RUN if [ -z "$DOCKER_DEFAULT_PLATFORM" ]; then rm -rf squashfs-root nvim-v0.9.0.appimage; fi
+RUN if [ "$DOCKER_DEFAULT_PLATFORM" = "linux/amd64" ]; then curl -LO https://github.com/neovim/neovim/releases/download/v0.9.0/nvim-linux64.tar.gz; fi
+RUN if [ "$DOCKER_DEFAULT_PLATFORM" = "linux/amd64" ]; then tar xzf nvim-linux64.tar.gz; fi
+RUN if [ "$DOCKER_DEFAULT_PLATFORM" = "linux/amd64" ]; then cp -r nvim-linux64/* /usr; fi
+RUN if [ "$DOCKER_DEFAULT_PLATFORM" = "linux/amd64" ]; then rm -rf nvim-linux64 nvim-linux64.tar.gz; fi
+RUN if [ "$DOCKER_DEFAULT_PLATFORM" = "" ]; then curl -LO https://github.com/matsuu/neovim-aarch64-appimage/releases/download/v0.9.0/nvim-v0.9.0.appimage; fi
+RUN if [ "$DOCKER_DEFAULT_PLATFORM" = "" ]; then chmod u+x nvim-v0.9.0.appimage; fi
+RUN if [ "$DOCKER_DEFAULT_PLATFORM" = "" ]; then ./nvim-v0.9.0.appimage --appimage-extract; fi
+RUN if [ "$DOCKER_DEFAULT_PLATFORM" = "" ]; then cp -r squashfs-root/* /; fi
+RUN if [ "$DOCKER_DEFAULT_PLATFORM" = "" ]; then rm -rf squashfs-root nvim-v0.9.0.appimage; fi
 RUN git clone --depth 1 https://github.com/AstroNvim/AstroNvim ~/.config/nvim
 RUN nvim --headless +PlugInstall +qall
 
