@@ -59,7 +59,7 @@
 <!--
 <%=((String) request.getAttribute("name"))%>
 <%="moves="%><%
-   if (searchResultsVector.size() > 0) {
+   if (!searchResultsVector.isEmpty()) {
       GameStorerSearchResponseMoveData moveData = (GameStorerSearchResponseMoveData) searchResultsVector.elementAt(0);
 %><%="" + moveData.getMove()%><%
    }
@@ -112,7 +112,7 @@
       total = 100;
    }
 %><%="occurrence="%><%
-   if (searchResults.size() > 0) {
+   if (!searchResults.isEmpty()) {
       GameStorerSearchResponseMoveData moveData = null;
 
       moveData = (GameStorerSearchResponseMoveData) searchResults.elementAt(0);

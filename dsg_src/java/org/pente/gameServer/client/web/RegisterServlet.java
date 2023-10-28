@@ -111,7 +111,7 @@ public class RegisterServlet extends HttpServlet {
         }
         String sexStr = request.getParameter("registerSex");
         char sex = DSGPlayerData.UNKNOWN;
-        if (sexStr != null && sexStr.length() > 0) {
+        if (sexStr != null && !sexStr.isEmpty()) {
             sex = sexStr.trim().charAt(0);
             if (sex != DSGPlayerData.MALE &&
                     sex != DSGPlayerData.FEMALE) {
@@ -120,7 +120,7 @@ public class RegisterServlet extends HttpServlet {
         }
         String ageStr = request.getParameter("registerAge");
         int age = 0;
-        if (ageStr != null && ageStr.length() > 0) {
+        if (ageStr != null && !ageStr.isEmpty()) {
             try {
                 age = Integer.parseInt(ageStr);
             } catch (NumberFormatException ex) {

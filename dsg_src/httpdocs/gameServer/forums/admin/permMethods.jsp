@@ -71,7 +71,7 @@
       ForumCategory rootCategory = forumFactory.getRootForumCategory();
       java.util.List catsWithPerm = new java.util.LinkedList();
       getCatsWithPerm(type, rootCategory, catsWithPerm, true);
-      return catsWithPerm.size() > 0;
+      return !catsWithPerm.isEmpty();
    }
 
    /**
@@ -162,7 +162,7 @@
     * list of size zero is returned.
     */
    private boolean hasGroupWithPermission(ForumFactory forumFactory, long type) {
-      return groupsWithPermission(forumFactory, type, true).size() > 0;
+      return !groupsWithPermission(forumFactory, type, true).isEmpty();
    }
 
    /**

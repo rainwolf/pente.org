@@ -72,10 +72,10 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
 
         boolean union = false;
         if ((filterData.getPlayer1Name() != null &&
-                filterData.getPlayer1Name().trim().length() > 0 &&
+                !filterData.getPlayer1Name().trim().isEmpty() &&
                 filterData.getPlayer1Seat() == filterData.SEAT_ALL) ||
                 (filterData.getPlayer2Name() != null &&
-                        filterData.getPlayer2Name().trim().length() > 0 &&
+                        !filterData.getPlayer2Name().trim().isEmpty() &&
                         filterData.getPlayer2Seat() == filterData.SEAT_ALL)) {
             union = true;
             includeGameTable = true;
@@ -164,7 +164,7 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
         boolean includeGameTable = false;
 
         GameSiteData siteData = null;
-        if (filterData.getSite() != null && filterData.getSite().trim().length() > 0) {
+        if (filterData.getSite() != null && !filterData.getSite().trim().isEmpty()) {
 
             siteData = gameVenueStorer.getGameSiteData(
                     filterData.getGame(), filterData.getSite());
@@ -175,7 +175,7 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
                 filterOptionsParams.addElement(new Integer(siteData.getSiteID()));
             }
         }
-        if (filterData.getEvent() != null && filterData.getEvent().trim().length() > 0 &&
+        if (filterData.getEvent() != null && !filterData.getEvent().trim().isEmpty() &&
                 !filterData.getEvent().equals(GameEventData.ALL_EVENTS) && !filterData.getEvent().equals("-")) {
 
             if (!includeGameTable) {
@@ -188,7 +188,7 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
                     filterData.getEvent(), filterData.getSite());
             filterOptionsParams.addElement(e.getEventID());
         }
-        if (filterData.getRound() != null && filterData.getRound().trim().length() > 0 &&
+        if (filterData.getRound() != null && !filterData.getRound().trim().isEmpty() &&
                 !filterData.getRound().equals(GameRoundData.ALL_ROUNDS) && !filterData.getRound().equals("-")) {
 
             if (!includeGameTable) {
@@ -198,7 +198,7 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
             filterOptionsWhere.append("and g.round = ? ");
             filterOptionsParams.addElement(filterData.getRound());
         }
-        if (filterData.getSection() != null && filterData.getSection().trim().length() > 0 &&
+        if (filterData.getSection() != null && !filterData.getSection().trim().isEmpty() &&
                 !filterData.getSection().equals(GameSectionData.ALL_SECTIONS) && !filterData.getSection().equals("-")) {
 
             if (!includeGameTable) {
@@ -210,10 +210,10 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
         }
 
         boolean createOrPlayers = filterData.isP1OrP2() &&
-                (filterData.getPlayer1Name() != null && filterData.getPlayer1Name().trim().length() > 0) &&
-                (filterData.getPlayer2Name() != null && filterData.getPlayer2Name().trim().length() > 0);
+                (filterData.getPlayer1Name() != null && !filterData.getPlayer1Name().trim().isEmpty()) &&
+                (filterData.getPlayer2Name() != null && !filterData.getPlayer2Name().trim().isEmpty());
 
-        if (filterData.getPlayer1Name() != null && filterData.getPlayer1Name().trim().length() > 0) {
+        if (filterData.getPlayer1Name() != null && !filterData.getPlayer1Name().trim().isEmpty()) {
             filterOptionsFrom.append(", player p1 ");
 
             String pStr = filterData.getPlayer1Name().toLowerCase();
@@ -257,7 +257,7 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
                 filterOptionsWhere.append(") ");
             }
         }
-        if (filterData.getPlayer2Name() != null && filterData.getPlayer2Name().trim().length() > 0) {
+        if (filterData.getPlayer2Name() != null && !filterData.getPlayer2Name().trim().isEmpty()) {
             filterOptionsFrom.append(", player p2 ");
 
             String pStr = filterData.getPlayer2Name().toLowerCase();

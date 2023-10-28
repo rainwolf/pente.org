@@ -41,7 +41,7 @@
       } catch (Exception ignored) {
       }
    }
-   errors = threads.size() == 0;
+   errors = threads.isEmpty();
 
    // Cancel back to the forumContent_thread.jsp page
    if (cancel) {

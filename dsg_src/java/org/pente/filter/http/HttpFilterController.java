@@ -153,7 +153,7 @@ public class HttpFilterController extends AbstractFilterController {
 //System.out.println("cookieString="+cookieString);
         // if the get method, send parameters in QUERY_STRING
         if (method.equals("GET")) {
-            if (!request.endsWith("?") && params.size() > 0) {
+            if (!request.endsWith("?") && !params.isEmpty()) {
                 request += "?";
             }
             request += paramString;
@@ -162,14 +162,14 @@ public class HttpFilterController extends AbstractFilterController {
         requestString = method + " " + request + " HTTP/1.0";
 
         // send cookies as a header
-        if (cookies.size() > 0) {
+        if (!cookies.isEmpty()) {
             requestString += HttpConstants.END_LINE +
                     cookieString;
         }
 
         // if the post method, send parameters after other http headers
         // and set the content length as a header
-        if (method.equals("POST") && params.size() > 0) {
+        if (method.equals("POST") && !params.isEmpty()) {
             requestString += HttpConstants.END_LINE +
                     HttpConstants.CONTENT_LENGTH + ": " + paramString.length() + HttpConstants.END_LINE +
                     HttpConstants.END_LINE +

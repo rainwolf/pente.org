@@ -468,7 +468,7 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
                     stmt.setInt(7, data.getWinner());
                     stmt.setTimestamp(8, new Timestamp(data.getDate().getTime()));
 
-                    if (data.getTimed() && data.getMoveTimes() != null && 0 < data.getMoveTimes().size()) {
+                    if (data.getTimed() && data.getMoveTimes() != null && !data.getMoveTimes().isEmpty()) {
                         stmt.setInt(9, data.getMoveTimes().get(0).getTotalSeconds());
                     } else {
                         stmt.setInt(9, 0);
@@ -853,7 +853,7 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
 
         Connection con2 = null;
 
-        if (gameIDs.size() == 0) {
+        if (gameIDs.isEmpty()) {
             return results;
         }
 

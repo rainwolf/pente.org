@@ -596,7 +596,7 @@ public class ServerTable {
 //            return;
 //        }
 
-        if (playersInTable != null && playersInTable.size() == 0) {
+        if (playersInTable != null && playersInTable.isEmpty()) {
             server.removeTable(tableNum);
             return;
         }

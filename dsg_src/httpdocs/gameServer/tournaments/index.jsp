@@ -32,7 +32,7 @@
       for (Tourney t : completedTournaments) {
          if (t.getGame() == GridStateFactory.TB_PENTE) {
             List<Restriction> restrictions = t.getRestrictions();
-            if (restrictions == null || restrictions.size() == 0) {
+            if (restrictions == null || restrictions.isEmpty()) {
                return t;
             }
          }

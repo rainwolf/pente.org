@@ -107,7 +107,7 @@ public class DoubleEliminationFormat extends SingleEliminationFormat {
 
     private PotentialSection getSection(List<TourneyPlayerData> players, int alreadyPlayed[][]) {
         getSectionCount++;
-        if (players.size() == 0) { // can occur after dropping players from bracket 2
+        if (players.isEmpty()) { // can occur after dropping players from bracket 2
             return new PotentialSection();
         }
         if (players.size() == 2) {

@@ -152,7 +152,7 @@ public class SetTimerDialog extends Dialog {
 
 
     public boolean isValidTime(String timeStr, int min, int max) {
-        if (timeStr == null || timeStr.length() == 0) {
+        if (timeStr == null || timeStr.isEmpty()) {
             return false;
         }
 

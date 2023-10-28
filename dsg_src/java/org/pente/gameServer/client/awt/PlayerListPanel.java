@@ -441,7 +441,7 @@ public class PlayerListPanel extends Panel
                 if (existingPlayer.equals(playerLowerCase)) {
                     players.removeElementAt(i);
                     if (existingPlayer.equals(selectedPlayer)) {
-                        if (players.size() == 0) {
+                        if (players.isEmpty()) {
                             selectedPlayer = null;
                         } else if (i == players.size()) {
                             selectedPlayer = ((DSGPlayerData) players.elementAt(i - 1)).getName();

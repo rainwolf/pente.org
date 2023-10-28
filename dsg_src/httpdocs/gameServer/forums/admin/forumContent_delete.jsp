@@ -52,7 +52,7 @@
       } catch (Exception ignored) {
       }
    }
-   errors = threads.size() == 0;
+   errors = threads.isEmpty();
 
    // Optionally load the message we're working with
    ForumMessage message = null;

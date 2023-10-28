@@ -387,7 +387,7 @@ below and do not specify a player to invite.<br>
                <% } %>
             </tr>
             <% } %>
-            <% if (kothList.size() > 0) { %>
+            <% if (!kothList.isEmpty()) { %>
             <tr>
                <td colspan="5"> &nbsp</td>
             </tr>
@@ -469,7 +469,7 @@ below and do not specify a player to invite.<br>
             </tr>
             <% } %>
 
-            <% if (restList.size() > 0) { %>
+            <% if (!restList.isEmpty()) { %>
             <tr>
                <td colspan="5"> &nbsp</td>
             </tr>

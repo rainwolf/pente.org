@@ -32,7 +32,7 @@ public class OpenDialog extends MyDialog {
         treeTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         treeTable.setShowGrid(false);
         treeTable.setIntercellSpacing(new Dimension(0, 0));
-        if (trees.size() > 0) {
+        if (!trees.isEmpty()) {
             treeTable.getSelectionModel().setSelectionInterval(0, 0);
         }
         treeTable.addMouseListener(new MouseAdapter() {

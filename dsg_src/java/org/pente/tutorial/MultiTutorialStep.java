@@ -56,7 +56,7 @@ public class MultiTutorialStep extends AbstractTutorialStep {
      */
     public String getName() {
 
-        if (steps.size() == 0) {
+        if (steps.isEmpty()) {
             return null;
         }
 
@@ -68,7 +68,7 @@ public class MultiTutorialStep extends AbstractTutorialStep {
      * @see org.pente.tutorial.TutorialActionListener#moveMade(int, int)
      */
     public void moveMade(int x, int y) {
-        if (steps.size() == 0) {
+        if (steps.isEmpty()) {
             return;
         }
 
@@ -82,7 +82,7 @@ public class MultiTutorialStep extends AbstractTutorialStep {
      * @see org.pente.tutorial.TutorialActionListener#popupClosed(java.lang.String)
      */
     public void popupClosed(String message) {
-        if (steps.size() == 0) {
+        if (steps.isEmpty()) {
             return;
         }
 

@@ -28,7 +28,7 @@ public class LinkFilter implements Filter {
     }
 
     public String applyFilter(String string, int currentIndex, FilterChain chain) {
-        if (string == null || string.length() == 0) {
+        if (string == null || string.isEmpty()) {
             return string;
         }
 
@@ -179,7 +179,7 @@ public class LinkFilter implements Filter {
                 filtered.append(" target=\"_blank\"");
             }
             filtered.append('>');
-            if (block.getDescription().length() > 0) {
+            if (!block.getDescription().isEmpty()) {
                 filtered.append(chain.applyFilters(currentIndex, block.getDescription()));
             } else {
                 filtered.append(block.getUrl());

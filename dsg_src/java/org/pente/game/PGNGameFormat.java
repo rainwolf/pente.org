@@ -858,7 +858,7 @@ public class PGNGameFormat implements GameFormat {
      */
     protected void parseHeader(String header, Hashtable<String, String> headers) throws ParseException {
 
-        if (header == null || header.length() == 0) {
+        if (header == null || header.isEmpty()) {
             throw new ParseException("Invalid header, empty", 0);
         } else if (header.charAt(0) != '[') {
             throw new ParseException("Invalid header, missing [", 0);

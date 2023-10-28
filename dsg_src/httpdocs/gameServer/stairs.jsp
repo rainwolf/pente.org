@@ -245,7 +245,7 @@
                </tr>
 
                <%
-                  if (hill != null && hill.getSteps().size() > 0) {
+                  if (hill != null && !hill.getSteps().isEmpty()) {
                      boolean canIchallenge = true;
                      if (game > 50) {
                         canIchallenge = iAmMember;
@@ -424,7 +424,7 @@
                   continue;
                }
                hill = kothStorer.getHill(gameInt);
-               if (hill != null && hill.getMembers().size() > 0) {
+               if (hill != null && !hill.getMembers().isEmpty()) {
                   color += 1;
             %>
             <tr <%=(color % 2 == 0) ? "bgcolor=\"#deecde\"" : ""%>>
@@ -452,7 +452,7 @@
                   continue;
                }
                hill = kothStorer.getHill(gameInt);
-               if (hill != null && hill.getMembers().size() > 0) {
+               if (hill != null && !hill.getMembers().isEmpty()) {
                   color += 1;
             %>
             <tr <%=(color % 2 == 0) ? "bgcolor=\"#deecde\"" : ""%>>

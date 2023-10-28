@@ -231,7 +231,7 @@ public class TournamentServer extends Server {
                 if (waitAnnouncementTimers == null) {
                     waitAnnouncementTimers = new ArrayList<>();
                 }
-                if (waitAnnouncementTimers.size() > 0) {
+                if (!waitAnnouncementTimers.isEmpty()) {
                     for (Iterator<Timer> iterator = waitAnnouncementTimers.iterator(); iterator.hasNext(); ) {
                         Timer t = iterator.next();
                         t.cancel();
@@ -267,7 +267,7 @@ public class TournamentServer extends Server {
             timeoutBeforeNextRoundTimer = null;
         }
         if (waitAnnouncementTimers != null) {
-            if (waitAnnouncementTimers.size() > 0) {
+            if (!waitAnnouncementTimers.isEmpty()) {
                 for (Iterator<Timer> iterator = waitAnnouncementTimers.iterator(); iterator.hasNext(); ) {
                     Timer t = iterator.next();
                     t.cancel();

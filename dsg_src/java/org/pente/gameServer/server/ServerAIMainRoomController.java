@@ -123,7 +123,7 @@ public class ServerAIMainRoomController implements DSGEventListener {
     }
 
     public boolean isInAnyTables() {
-        return tables.size() > 0;
+        return !tables.isEmpty();
     }
 
     public boolean isInTable(int tableNum) {

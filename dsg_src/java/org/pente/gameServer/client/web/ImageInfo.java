@@ -593,7 +593,7 @@ public class ImageInfo {
             if (s != null) {
                 s = s.trim();
             }
-            if (s == null || s.length() < 1) {
+            if (s == null || s.isEmpty()) {
                 continue;
             }
             if (s.charAt(0) == '#') { // comment
@@ -1008,13 +1008,13 @@ public class ImageInfo {
     }
 
     private static void printLine(int indentLevels, String text, String value) {
-        if (value == null || value.length() == 0) {
+        if (value == null || value.isEmpty()) {
             return;
         }
         while (indentLevels-- > 0) {
             System.out.print("\t");
         }
-        if (text != null && text.length() > 0) {
+        if (text != null && !text.isEmpty()) {
             System.out.print(text);
             System.out.print(" ");
         }

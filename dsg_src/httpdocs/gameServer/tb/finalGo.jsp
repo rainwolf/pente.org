@@ -56,7 +56,7 @@
    for (int i = 0; i < game.getNumMoves(); i++) {
       moves += game.getMove(i) + ",";
    }
-   if (moves.length() == 0) {
+   if (moves.isEmpty()) {
       moves = ",";
    }
 // if (loggedInStr.equals("rainwolf") || loggedInStr.equals(p1.getName()) || loggedInStr.equals(p2.getName())) {

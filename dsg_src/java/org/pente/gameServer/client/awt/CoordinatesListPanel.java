@@ -294,7 +294,7 @@ public class CoordinatesListPanel extends Panel
     public void undoLastTurn() {
 
         synchronized (drawLock) {
-            if (gridPieces.size() > 0) {
+            if (!gridPieces.isEmpty()) {
                 gridPieces.removeElementAt(gridPieces.size() - 1);
 
                 updateScrollbarMaximum();
@@ -324,7 +324,7 @@ public class CoordinatesListPanel extends Panel
     public void clearPieces() {
 
         synchronized (drawLock) {
-            if (gridPieces.size() > 0) {
+            if (!gridPieces.isEmpty()) {
                 gridPieces.removeAllElements();
                 currentTurn = 0;
                 startRow = 0;
@@ -765,13 +765,13 @@ public class CoordinatesListPanel extends Panel
     }
 
     private int getNumRows() {
-        if (gridPieces.size() == 0) {
+        if (gridPieces.isEmpty()) {
             return 0;
         } else {
             if (game == GridStateFactory.CONNECT6 ||
                     game == GridStateFactory.SPEED_CONNECT6 ||
                     game == GridStateFactory.TB_CONNECT6) {
-                if (gridPieces.size() == 0) return 0;
+                if (gridPieces.isEmpty()) return 0;
                 else return gridPieces.size() / 4 + 1;
             } else {
                 return gridPieces.size() / 2 + gridPieces.size() % 2;
@@ -786,7 +786,7 @@ public class CoordinatesListPanel extends Panel
         if (game == GridStateFactory.CONNECT6 ||
                 game == GridStateFactory.SPEED_CONNECT6 ||
                 game == GridStateFactory.TB_CONNECT6) {
-            if (gridPieces.size() == 0) actualEndRow = 0;
+            if (gridPieces.isEmpty()) actualEndRow = 0;
             else actualEndRow = gridPieces.size() / 4 + 1;
         } else {
             actualEndRow = gridPieces.size() / 2 + gridPieces.size() % 2;

@@ -95,7 +95,7 @@
       }
 
       // Add a global error
-      if (errors.size() > 0) {
+      if (!errors.isEmpty()) {
          errorMessages.put("message", "Please correct the errors listed below");
       }
    }
@@ -144,7 +144,7 @@
    <input type="hidden" name="doMerge" value="true">
    <input type="hidden" name="forum" value="<%= forumID %>">
 
-   <% if (errorMessages != null && errorMessages.size() > 0) { %>
+   <% if (errorMessages != null && !errorMessages.isEmpty()) { %>
 
    <p class="error">
          <%  if (errorMessages.size() == 1) { %>

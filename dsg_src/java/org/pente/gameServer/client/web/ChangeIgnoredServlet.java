@@ -170,7 +170,7 @@ public class ChangeIgnoredServlet extends HttpServlet {
 
                     String sexStr = (String) params.get("changeSex");
                     char sex = DSGPlayerData.UNKNOWN;
-                    if (sexStr != null && sexStr.length() > 0) {
+                    if (sexStr != null && !sexStr.isEmpty()) {
                         sex = sexStr.trim().charAt(0);
                         if (sex != DSGPlayerData.MALE &&
                                 sex != DSGPlayerData.FEMALE) {
@@ -179,7 +179,7 @@ public class ChangeIgnoredServlet extends HttpServlet {
                     }
                     String ageStr = (String) params.get("changeAge");
                     int age = 0;
-                    if (ageStr != null && ageStr.length() > 0) {
+                    if (ageStr != null && !ageStr.isEmpty()) {
                         try {
                             age = Integer.parseInt(ageStr);
                         } catch (NumberFormatException ex) {

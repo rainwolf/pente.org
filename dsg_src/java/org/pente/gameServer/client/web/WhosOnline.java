@@ -50,7 +50,7 @@ public class WhosOnline {
                 } else {
                     dsgPlayerData = dsgPlayerStorer.loadPlayer(d[i].getPlayerName());
                 }
-                if (seen.size() > 0 && seen.contains(d[i].getPlayerName())) {
+                if (!seen.isEmpty() && seen.contains(d[i].getPlayerName())) {
                     continue;
                 }
                 room.getPlayers().add(dsgPlayerData);
@@ -172,13 +172,13 @@ public class WhosOnline {
                 }
             }
 
-            if (followingRoom.getPlayers().size() > 0) {
+            if (!followingRoom.getPlayers().isEmpty()) {
                 rooms.add(followingRoom);
             }
-            if (webRoom.getPlayers().size() > 0) {
+            if (!webRoom.getPlayers().isEmpty()) {
                 rooms.add(webRoom);
             }
-            if (mobileRoom.getPlayers().size() > 0) {
+            if (!mobileRoom.getPlayers().isEmpty()) {
                 rooms.add(mobileRoom);
             }
 

@@ -96,7 +96,7 @@ public class TBEmoticon implements Filter {
     }
 
     public String applyFilter(String string, int currentIndex, FilterChain chain) {
-        if (string == null || string.length() < 1) {
+        if (string == null || string.isEmpty()) {
             return string;
         }
 
@@ -260,7 +260,7 @@ public class TBEmoticon implements Filter {
      * @param imageURL the base URL for emoticon images.
      */
     public void setImageURL(String imageURL) {
-        if (imageURL != null && imageURL.length() > 0) {
+        if (imageURL != null && !imageURL.isEmpty()) {
             if (imageURL.charAt(imageURL.length() - 1) == '/') {
                 imageURL = imageURL.substring(0, imageURL.length() - 1);
             }

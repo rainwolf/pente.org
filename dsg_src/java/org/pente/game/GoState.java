@@ -273,7 +273,7 @@ public class GoState extends GridStateDecorator
     private synchronized void captureGroup(int groupID, Map<Integer, List<Integer>> groupsByID, Map<Integer, Integer> stoneGroupIDs) {
         List<Integer> group = groupsByID.get(groupID);
         int capturer = 0;
-        if (group.size() > 0) {
+        if (!group.isEmpty()) {
             capturer = 3 - getPosition(group.get(0));
         }
         for (int stone : group) {

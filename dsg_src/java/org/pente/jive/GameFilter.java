@@ -11,7 +11,7 @@ public class GameFilter implements Filter {
 
     // format is [game]gid[/game]
     public String applyFilter(String string, int currentIndex, FilterChain chain) {
-        if (string == null || string.length() == 0) {
+        if (string == null || string.isEmpty()) {
             return string;
         }
 

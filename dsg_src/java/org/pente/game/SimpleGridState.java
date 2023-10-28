@@ -142,7 +142,7 @@ public class SimpleGridState implements GridState {
     /** Undo the last move */
     public void undoMove() {
 
-        if (moves.size() > 0) {
+        if (!moves.isEmpty()) {
             int move = (Integer) moves.elementAt(moves.size() - 1);
             moves.removeElementAt(moves.size() - 1);
             if (!outOfBounds(move)) {

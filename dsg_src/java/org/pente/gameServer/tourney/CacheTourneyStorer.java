@@ -333,7 +333,7 @@ public class CacheTourneyStorer implements TourneyStorer {
         // not necessary to cache yet
         Tourney tourney = getTourneyDetails(eid);
         List<Long> playersToRemove = new ArrayList<>();
-        if (tourney.getRestrictions().size() > 0) {
+        if (!tourney.getRestrictions().isEmpty()) {
             for (Restriction restriction : tourney.getRestrictions()) {
                 if (restriction.getType() == Restriction.RATING_RESTRICTION_ABOVE ||
                         restriction.getType() == Restriction.RATING_RESTRICTION_BELOW) {

@@ -12,7 +12,7 @@ public class BoardFilter implements Filter {
 
     // format is [board]g=Pente m=K10,L11[/board]
     public String applyFilter(String string, int currentIndex, FilterChain chain) {
-        if (string == null || string.length() == 0) {
+        if (string == null || string.isEmpty()) {
             return string;
         }
         String origString = string;

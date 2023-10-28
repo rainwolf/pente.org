@@ -63,7 +63,7 @@
       } catch (Exception ignored) {
       }
    }
-   errors = threads.size() == 0;
+   errors = threads.isEmpty();
    noDest = (destForum == null) && move;
    errors = errors || noDest;
 

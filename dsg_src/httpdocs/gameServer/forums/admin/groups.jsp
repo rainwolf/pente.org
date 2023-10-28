@@ -110,7 +110,7 @@
                   Group g2 = (Group) o2;
                   return g1.getName().toLowerCase().compareTo(g2.getName().toLowerCase());
                });
-               boolean hasGroups = groupList.size() > 0;
+               boolean hasGroups = !groupList.isEmpty();
             %>
             <% if (!hasGroups) { %>
             <tr bgcolor="#ffffff">

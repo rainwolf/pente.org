@@ -85,7 +85,7 @@ public class GameVenueJSFormat {
                 GameSiteData site = sites.get(j);
 
                 List<GameEventData> events = site.getGameEventData();
-                if (events.size() == 0) {
+                if (events.isEmpty()) {
                     events.add(0, (GameEventData) EMPTY_EVENT_DATA.clone());
                 } else {
                     events.add(0, (GameEventData) ALL_EVENT_DATA.clone());
@@ -95,7 +95,7 @@ public class GameVenueJSFormat {
                     GameEventData e = events.get(k);
                     Vector rounds = e.getGameRoundData();
 
-                    if (rounds.size() == 0) {
+                    if (rounds.isEmpty()) {
                         rounds.add(0, (GameRoundData) EMPTY_ROUND_DATA.clone());
                     } else {
                         rounds.add(0, (GameRoundData) ALL_ROUND_DATA.clone());
@@ -105,7 +105,7 @@ public class GameVenueJSFormat {
                         GameRoundData r = (GameRoundData) rounds.get(l);
                         Vector sections = r.getGameSectionData();
 
-                        if (sections.size() == 0) {
+                        if (sections.isEmpty()) {
                             sections.insertElementAt(EMPTY_SECTION_DATA.clone(), 0);
                         } else {
                             sections.insertElementAt(ALL_SECTION_DATA.clone(), 0);

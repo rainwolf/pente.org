@@ -40,7 +40,7 @@ public class Hill {
             Step step = new Step();
             step.addPlayer(playerID);
             steps.add(step);
-        } else if (steps.size() == 0) {
+        } else if (steps.isEmpty()) {
             Step step = new Step();
             step.addPlayer(playerID);
             steps.add(step);
@@ -69,7 +69,7 @@ public class Hill {
             for (Iterator<Step> iterator = steps.iterator(); iterator.hasNext(); ) {
                 Step step = iterator.next();
                 if (step.removePlayer(playerID)) {
-                    if (step.getPlayers().size() == 0) {
+                    if (step.getPlayers().isEmpty()) {
                         iterator.remove();
                     }
                     return true;
@@ -117,7 +117,7 @@ public class Hill {
             }
             for (Iterator<Step> iterator = steps.iterator(); iterator.hasNext(); ) {
                 Step step = iterator.next();
-                if (step != null && step.getPlayers().size() == 0) {
+                if (step != null && step.getPlayers().isEmpty()) {
                     iterator.remove();
                 }
             }
@@ -178,14 +178,14 @@ public class Hill {
 
     public long getKing() {
         long king = 0;
-        if (getSteps().size() > 0 && getSteps().get(getSteps().size() - 1).getPlayers().size() == 1) {
+        if (!getSteps().isEmpty() && getSteps().get(getSteps().size() - 1).getPlayers().size() == 1) {
             king = getSteps().get(getSteps().size() - 1).getPlayers().get(0).getPid();
         }
         return king;
     }
 
     public Player getKingPlayer() {
-        if (getSteps() != null && getSteps().size() > 0 && getSteps().get(getSteps().size() - 1).getPlayers().size() == 1) {
+        if (getSteps() != null && !getSteps().isEmpty() && getSteps().get(getSteps().size() - 1).getPlayers().size() == 1) {
             return getSteps().get(getSteps().size() - 1).getPlayers().get(0);
         }
         return null;

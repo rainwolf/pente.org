@@ -257,7 +257,7 @@ public class SimpleGameStorerSearchResponseFormat implements GameStorerSearchRes
         } catch (Exception ex) {
             throw new ParseException("ParseException using URLDecoder on moveResults", 0);
         }
-        if (moveResults.length() > 0) {
+        if (!moveResults.isEmpty()) {
             StringTokenizer moveTokenizer = new StringTokenizer(moveResults, moveDelimiter);
             while (moveTokenizer.hasMoreTokens()) {
                 // this will fail if number of delimiters % 3 != 0

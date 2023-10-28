@@ -52,7 +52,7 @@
    <tr>
       <td valign="top">Restrictions:</td>
       <td>
-         <% if (tourney.getRestrictions().size() == 0) { %>
+         <% if (tourney.getRestrictions().isEmpty()) { %>
          None
          <% } else {
             for (Iterator it = tourney.getRestrictions().iterator(); it.hasNext(); ) {

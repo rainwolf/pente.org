@@ -72,7 +72,7 @@ public class TournamentServerMainRoom extends ServerMainRoom {
         }
 
         if (server.getTourney().isComplete()) {
-            if (playersInMainRoom.size() == 0) {
+            if (playersInMainRoom.isEmpty()) {
                 resources.removeServer(server.getServerData().getServerId());
             }
         }

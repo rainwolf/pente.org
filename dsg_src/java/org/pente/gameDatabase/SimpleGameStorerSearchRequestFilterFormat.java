@@ -292,21 +292,21 @@ public class SimpleGameStorerSearchRequestFilterFormat implements ObjectFormat {
             String player1Name = (String) params.get(PLAYER_1_NAME_PARAM);
             String player2Name = (String) params.get(PLAYER_2_NAME_PARAM);
 
-            if (player1Name != null && player1Name.trim().length() > 0) {
+            if (player1Name != null && !player1Name.trim().isEmpty()) {
                 filterData.setPlayer1Name(URLDecoder.decode(
                         player1Name, "UTF-8"));
             }
-            if (player2Name != null && player2Name.trim().length() > 0) {
+            if (player2Name != null && !player2Name.trim().isEmpty()) {
                 filterData.setPlayer2Name(URLDecoder.decode(
                         player2Name, "UTF-8"));
             }
             String p1SeatStr = (String) params.get(PLAYER_1_SEAT_PARAM);
             String p2SeatStr = (String) params.get(PLAYER_2_SEAT_PARAM);
-            if (p1SeatStr != null && p1SeatStr.trim().length() > 0) {
+            if (p1SeatStr != null && !p1SeatStr.trim().isEmpty()) {
                 int player1Seat = Integer.parseInt(p1SeatStr);
                 filterData.setPlayer1Seat(player1Seat);
             }
-            if (p2SeatStr != null && p2SeatStr.trim().length() > 0) {
+            if (p2SeatStr != null && !p2SeatStr.trim().isEmpty()) {
                 int player2Seat = Integer.parseInt(p2SeatStr);
                 filterData.setPlayer2Seat(player2Seat);
             }
