@@ -11,8 +11,11 @@ updateDevelopmentHTMLjs
 updateProduction
 updateProductiontHTMLjs
 letsencrypt/pente.org/
-testMariaDB
-testDocker
+docker*/db/
+dockerMain/config/
+dockerMain/logs/
+dockerMain/etctomcat9/
+dockerMail/
 .env
 testMariaDBreplica
 *.sql.gz

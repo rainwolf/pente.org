@@ -11,15 +11,15 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./testDocker/config:/etc/dsg
-      - ./config/etctomcat9:/usr/local/tomcat/conf
+      - ./dockerMain/config:/etc/dsg
+      - ./dockerMain/etctomcat9:/usr/local/tomcat/conf
       - /Volumes/keysCertificatesStuff/MyDSKeyStore.jks:/var/lib/tomcat9/webapps/MyDSKeyStore.jks
-      - ./testDocker/logs:/var/log
-      - ./testDocker/logs/tomcat:/usr/local/tomcat/logs
-      - ./well-known:/usr/local/tomcat/webapps/ROOT/.well-known
-      - ./well-known:/usr/local/tomcat/submanifold/ROOT/.well-known
-      - ./well-known:/usr/local/tomcat/othmanwsubmanifold/ROOT/.well-known
-      - ./well-known:/usr/local/tomcat/pentelivesubmanifold/ROOT/.well-known
+      - ./dockerMain/logs:/var/log
+      - ./dockerMain/logs/tomcat:/usr/local/tomcat/logs
+      - ./dockerMain/well-known:/usr/local/tomcat/webapps/ROOT/.well-known
+      - ./dockerMain/well-known:/usr/local/tomcat/submanifold/ROOT/.well-known
+      - ./dockerMain/well-known:/usr/local/tomcat/othmanwsubmanifold/ROOT/.well-known
+      - ./dockerMain/well-known:/usr/local/tomcat/pentelivesubmanifold/ROOT/.well-known
       # for hot reloading
 #      - ./deployClasses/org:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/org
     environment:
@@ -74,9 +74,9 @@ services:
     networks:
       - pente_org
     volumes:  # make the sh files executable
-      - ./testMariaDBconfig/primary:/etc/mysql/conf.d
-      - ./testMariaDB:/var/lib/mysql
-      - ./testInitMariaDB:/docker-entrypoint-initdb.d
+      - ./dockerMain/dbConfig:/etc/mysql/conf.d
+      - ./dockerMain/db:/var/lib/mysql
+      - ./dockerMain/dbInit:/docker-entrypoint-initdb.d
   dsg_mail:
     build:
       dockerfile: mail.Dockerfile

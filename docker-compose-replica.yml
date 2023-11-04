@@ -42,9 +42,9 @@ services:
     networks:
       - pente_org
     volumes:  # make the sh files executable
-      - ./testMariaDBconfig/replica:/etc/mysql/conf.d
-      - ./testMariaDBreplica:/var/lib/mysql
-      - ./testInitMariaDBreplica:/docker-entrypoint-initdb.d
+      - ./dockerReplica/dbConfig:/etc/mysql/conf.d
+      - ./dockerReplica/db:/var/lib/mysql
+      - ./dockerReplica/dbInit:/docker-entrypoint-initdb.d
     depends_on:
       replica_auto_ssh:
         condition: service_healthy
