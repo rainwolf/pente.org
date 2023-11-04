@@ -37,8 +37,9 @@ services:
       - MYSQL_PASSWORD=${MYSQL_RO_PASSWORD}
       - REPLICATION_USER=${REPLICATION_USER}
       - REPLICATION_PASSWORD=${REPLICATION_PASSWORD}
+      - REPLICA_LOCAL_PORT=${REPLICA_LOCAL_PORT}
     ports:
-      - '127.0.0.1:3307:3306'
+      - '127.0.0.1:${DSG_REMOTE_PORT}:3306'
     networks:
       - pente_org
     volumes:  # make the sh files executable

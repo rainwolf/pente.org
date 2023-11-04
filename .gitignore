@@ -17,7 +17,6 @@ dockerMain/logs/
 dockerMain/etctomcat9/
 dockerMail/
 .env
-testMariaDBreplica
 *.sql.gz
 settings.jar
 testMail
