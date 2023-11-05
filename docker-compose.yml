@@ -54,7 +54,9 @@ services:
       dsg_sql:
         condition: service_healthy
   dsg_sql:
-    image: mariadb:latest
+    build:
+      dockerfile: mariadb.Dockerfile
+    image: dsg_sql
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "healthcheck.sh --connect --innodb_initialized"]
@@ -77,6 +79,7 @@ services:
       - ./dockerMain/dbConfig:/etc/mysql/conf.d
       - ./dockerMain/db:/var/lib/mysql
       - ./dockerMain/dbInit:/docker-entrypoint-initdb.d
+      - ./dockerMain/dbAlwaysInit:/always-initdb.d
   dsg_mail:
     build:
       dockerfile: mail.Dockerfile

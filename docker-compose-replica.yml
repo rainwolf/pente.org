@@ -22,7 +22,9 @@ services:
     networks:
       - pente_org
   dsg_replica:
-    image: mariadb:latest
+    build:
+      dockerfile: mariadb.Dockerfile
+    image: dsg_sql
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "test -f /var/lib/mysql/dsg/temp_tb.MYI"]
@@ -46,6 +48,7 @@ services:
       - ./dockerReplica/dbConfig:/etc/mysql/conf.d
       - ./dockerReplica/db:/var/lib/mysql
       - ./dockerReplica/dbInit:/docker-entrypoint-initdb.d
+      - ./dockerReplica/dbAlwaysInit:/always-initdb.d
     depends_on:
       replica_auto_ssh:
         condition: service_healthy
