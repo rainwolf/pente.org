@@ -14,7 +14,7 @@
               removeAbandoned="true" removeAbandonedTimeout="30"
               username="${MYSQL_USER}" password="${MYSQL_PASSWORD}"
               driverClassName="com.mysql.jdbc.Driver"
-              url="jdbc:mysql://dsg_sql/${MYSQL_DATABASE}?useEncoding=true&amp;zeroDateTimeBehavior=convertToNull&amp;useServerPrepStmts=true"/>
+              url="jdbc:mysql://main_db/${MYSQL_DATABASE}?useEncoding=true&amp;zeroDateTimeBehavior=convertToNull&amp;useServerPrepStmts=true"/>
     <Resource name="jdbc/dsg_ro"
               auth="Container"
               type="javax.sql.DataSource"
@@ -24,5 +24,5 @@
               removeAbandoned="true" removeAbandonedTimeout="30"
               username="${MYSQL_RO_USER}" password="${MYSQL_RO_PASSWORD}"
               driverClassName="com.mysql.jdbc.Driver"
-              url="jdbc:mysql://dsg_auto_ssh:${DSG_LOCAL_PORT}/${MYSQL_DATABASE}?useEncoding=true&amp;zeroDateTimeBehavior=convertToNull&amp;useServerPrepStmts=true"/>
+              url="jdbc:mysql://main_auto_ssh:${DSG_LOCAL_PORT}/${MYSQL_DATABASE}?useEncoding=true&amp;zeroDateTimeBehavior=convertToNull&amp;useServerPrepStmts=true"/>
 </Context>

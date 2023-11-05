@@ -21,7 +21,7 @@ services:
       retries: 1000
     networks:
       - pente_org
-  dsg_replica:
+  replica_db:
     build:
       dockerfile: mariadb.Dockerfile
     image: dsg_sql

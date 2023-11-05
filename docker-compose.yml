@@ -27,9 +27,9 @@ services:
     networks:
       - pente_org
     depends_on:
-      dsg_auto_ssh:
+      main_auto_ssh:
         condition: service_healthy
-  dsg_auto_ssh:
+  main_auto_ssh:
     build:
       dockerfile: AutoSSH.Dockerfile
     image: auto_ssh
@@ -51,9 +51,9 @@ services:
     networks:
       - pente_org
     depends_on:
-      dsg_sql:
+      main_db:
         condition: service_healthy
-  dsg_sql:
+  main_db:
     build:
       dockerfile: mariadb.Dockerfile
     image: dsg_sql
@@ -80,13 +80,13 @@ services:
       - ./dockerMain/db:/var/lib/mysql
       - ./dockerMain/dbInit:/docker-entrypoint-initdb.d
       - ./dockerMain/dbAlwaysInit:/always-initdb.d
-  dsg_mail:
+  pente_mail:
     build:
       dockerfile: mail.Dockerfile
     image: dsg_mail
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "sudo service postfix status"]
+      test: ["CMD-SHELL", "service postfix status"]
       interval: 10s
       timeout: 5s
       retries: 1000
