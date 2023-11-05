@@ -8,15 +8,18 @@ cd pente.org
 openssl pkcs12 -export -in fullchain.crt -inkey pente.org.key -out fullchain_and_key.p12 -password pass:***REMOVED*** -name tomcat
 keytool -importkeystore -deststorepass ***REMOVED*** -destkeypass ***REMOVED*** -destkeystore MyDSKeyStore.jks -srckeystore fullchain_and_key.p12 -srcstoretype PKCS12 -srcstorepass ***REMOVED*** -alias tomcat -deststoretype pkcs12
 scp MyDSKeyStore.jks rainwolf@development.pente.org:/var/lib/tomcat9/webapps/
+scp MyDSKeyStore.jks rainwolf@development.pente.org:~/dockerMain/
 ssh rainwolf@development.pente.org sudo chown rainwolf:tomcat /var/lib/tomcat9/webapps/MyDSKeyStore.jks
 ssh -t rainwolf@development.pente.org sudo /home/rainwolf/restartTomcat.sh
 
 # ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no rainwolf@development.pente.org chown rainwolf:tomcat8 MyDSKeyStore.jks
 # ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -t rainwolf@development.pente.org sudo ./restartTomcat.sh
 scp MyDSKeyStore.jks rainwolf@pente.org:/var/lib/tomcat9/webapps/
+scp MyDSKeyStore.jks rainwolf@pente.org:~/dockerMain/
 ssh rainwolf@pente.org sudo chown rainwolf:tomcat /var/lib/tomcat9/webapps/MyDSKeyStore.jks
 #ssh -t rainwolf@pente.org sudo /home/rainwolf/restartTomcat.sh
 # ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no rainwolf@pente.org chown rainwolf:tomcat8 MyDSKeyStore.jks
 # ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -t rainwolf@pente.org sudo ./restartTomcat.sh
 
+cp MyDSKeyStore.jks dockerMain/
 mv MyDSKeyStore.jks /Volumes/keysCertificatesStuff/

@@ -4,7 +4,7 @@ services:
     build:
       context: .
       args:
-        - ENV=local
+        - ENV=docker
         - DOCKER_DEFAULT_PLATFORM=$DOCKER_DEFAULT_PLATFORM
     image: pente.org
     ports:
@@ -13,7 +13,7 @@ services:
     volumes:
       - ./dockerMain/config:/etc/dsg
       - ./dockerMain/etctomcat9:/usr/local/tomcat/conf
-      - /Volumes/keysCertificatesStuff/MyDSKeyStore.jks:/var/lib/tomcat9/webapps/MyDSKeyStore.jks
+      - ./dockerMain/MyDSKeyStore.jks:/var/lib/tomcat9/webapps/MyDSKeyStore.jks
       - ./dockerMain/logs:/var/log
       - ./dockerMain/logs/tomcat:/usr/local/tomcat/logs
       - ./dockerMain/well-known:/usr/local/tomcat/webapps/ROOT/.well-known
