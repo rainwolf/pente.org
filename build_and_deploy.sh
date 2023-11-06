@@ -22,3 +22,5 @@ ssh rainwolf@development.pente.org docker image prune -f
 
 docker system prune -af
 docker compose build
+
+docker builder prune -af
