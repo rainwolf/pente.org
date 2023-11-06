@@ -80,6 +80,7 @@ services:
       - ./dockerMain/db:/var/lib/mysql
       - ./dockerMain/dbInit:/docker-entrypoint-initdb.d
       - ./dockerMain/dbAlwaysInit:/always-initdb.d
+      - ./dockerMain/dbUpdateRoot:/update-root-initdb.d
   pente_mail:
     build:
       dockerfile: mail.Dockerfile

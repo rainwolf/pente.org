@@ -49,6 +49,7 @@ services:
       - ./dockerReplica/db:/var/lib/mysql
       - ./dockerReplica/dbInit:/docker-entrypoint-initdb.d
       - ./dockerReplica/dbAlwaysInit:/always-initdb.d
+      - ./dockerMain/dbUpdateRoot:/update-root-initdb.d
     depends_on:
       replica_auto_ssh:
         condition: service_healthy
