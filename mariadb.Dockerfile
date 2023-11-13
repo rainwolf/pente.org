@@ -7,8 +7,14 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 RUN ln -s /usr/local/bin/docker-entrypoint.sh / # backwards compat
 
+# in case we need mysqlhotcopy in the future
+#RUN apt update
+#RUN apt install build-essential libdbd-mysql-perl libmysqlclient-dev -y
+#RUN cpan App::cpanminus
+#RUN cpanm DBD::MariaDB
+
 # because debian uid is 1000 and mysql is 999
-USER root
+#USER root
 RUN usermod -u 1000 mysql
 RUN groupmod -g 1000 mysql
 RUN sudo find / -group 999 -readable -depth -exec chgrp -h mysql {} +; 2>/dev/null

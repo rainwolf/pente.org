@@ -1,0 +1,19 @@
+#!/bin/bash
+pass=$(cat ~/.env | grep MYSQL_ROOT_PASSWORD | sed "s/MYSQL_ROOT_PASSWORD=//g")
+port=$(cat ~/.env | grep DSG_REMOTE_PORT | sed "s/DSG_REMOTE_PORT=//g")
+mysqlhotcopy -u root -p $pass -P $port -h 127.0.0.1 dsg
+mv /var/lib/mysql/dsg_copy ~/dockerReplica/db/
+docker compose -f docker-compose-replica.yml restart replica_db
+sleep 5
+nice -n 19 mysqldump -u root -p$pass -P $port dsg_copy > ~/penteDBdocker-$(date +%Y%m%d).sql
+nice -n 19 gzip ~/penteDBdocker-$(date +%Y%m%d).sql
+rm -rf ~/dockerReplica/db/dsg_copy/
+mv ~/penteDBdocker-$(date +%Y%m%d).sql.gz ~/Dropbox/penteBackup/docker/
+~/dropbox.py stop
+rm -rf ~/Dropbox/.dropbox.cache
+~/dropbox.py start
+~/dropbox.py throttle unlimited 10000
+count=$(ls -1q ~/Dropbox/penteBackup/docker/*.gz | wc -l)
+if [ ${count} -gt 2 ]; then
+	find ~/Dropbox/penteBackup/docker/ -mmin +1440 -type f -delete
+fi
