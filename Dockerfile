@@ -64,5 +64,5 @@ ARG ENV=""
 RUN mv /usr/local/tomcat/webapps/ROOT/META-INF/${ENV}context.xml /usr/local/tomcat/webapps/ROOT/META-INF/context.xml
 
 # copy the react components (make sure they're built)
-COPY ./react-live-game-room/build /usr/local/tomcat/webapps/ROOT/gameServer/live
-COPY ./react-mmai/build /usr/local/tomcat/webapps/ROOT/gameServer/mmai
+COPY ../react-live-game-room/build /usr/local/tomcat/webapps/ROOT/gameServer/live
+COPY ../react-mmai/build /usr/local/tomcat/webapps/ROOT/gameServer/mmai

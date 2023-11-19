@@ -11,6 +11,19 @@ then
 else
   for target in "${array[@]}"
   do
+    if [[ ${target} == "pente.org" ]]
+    then
+      cd ../react-live-game-room
+      npm run build || exit 1
+      cd ../react_mmai/MMAIWASM
+      sh compile.sh || exit 1
+      cd ../
+      cp MMAIWASM/ai.* public/
+      npm run build || exit 1
+      cd ../pente.org
+      echo "Building ${target} for linux/amd64"
+      DOCKER_DEFAULT_PLATFORM=linux/amd64 docker compose build "${target}"
+    fi
     echo "Building ${target} for linux/amd64"
     DOCKER_DEFAULT_PLATFORM=linux/amd64 docker compose build "${array[index]}"
   done
@@ -22,7 +35,7 @@ then
   for target in "debian@51.79.69.199" "debian@51.79.159.111" "rainwolf@development.pente.org"
   do
     echo "Pushing auto_ssh to ${target}"
-    docker save auto_ssh | bzip2 | pv | "${target}" docker load
+    docker save auto_ssh | bzip2 | pv | ssh "${target}" docker load
   done
 fi
 
@@ -31,7 +44,7 @@ then
   for target in "debian@51.79.69.199" "debian@51.79.159.111" "rainwolf@development.pente.org"
   do
     echo "Pushing dsg_sql to ${target}"
-    docker save dsg_sql | bzip2 | pv | "${target}" docker load
+    docker save dsg_sql | bzip2 | pv | ssh "${target}" docker load
   done
 fi
 
@@ -40,7 +53,7 @@ then
   for target in "debian@51.79.69.199" "rainwolf@development.pente.org"
   do
     echo "Pushing dsg_mail to ${target}"
-    docker save dsg_mail | bzip2 | pv | "${target}" docker load
+    docker save dsg_mail | bzip2 | pv | ssh "${target}" docker load
   done
 fi
 
@@ -49,7 +62,7 @@ then
   for target in "debian@51.79.69.199" "rainwolf@development.pente.org"
   do
     echo "Pushing pente.org to ${target}"
-    docker save pente.org | bzip2 | pv | "${target}" docker load
+    docker save pente.org | bzip2 | pv | ssh "${target}" docker load
   done
 fi
 
@@ -63,3 +76,5 @@ docker system prune -af
 docker compose build
 
 docker builder prune -af
+
+docker image ls
