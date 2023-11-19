@@ -10,6 +10,18 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      # ports for the live game room, ToDo: websocket only
+      - "16000:16000"
+      - "16001:16001"
+      - "16002:16002"
+      - "16003:16003"
+      - "16004:16004"
+      - "16005:16005"
+      - "16006:16006"
+      - "16007:16007"
+      - "16008:16008"
+      - "16009:16009"
+      - "16010:16010"
     volumes:
       - ./dockerMain/config:/etc/dsg
       - ./dockerMain/etctomcat9:/usr/local/tomcat/conf
