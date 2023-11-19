@@ -13,22 +13,22 @@ else
   do
     if [[ ${target} == "pente.org" ]]
     then
+      echo "Building the live game room"
       cd ../react-live-game-room
       npm run build || exit 1
+      echo "Building the webassembly AI"
       cd ../react_mmai/MMAIWASM
       sh compile.sh || exit 1
       cd ../
       cp MMAIWASM/ai.* public/
+      echo "Building the AI frontend"
       npm run build || exit 1
       cd ../pente.org
-      echo "Building ${target} for linux/amd64"
-      DOCKER_DEFAULT_PLATFORM=linux/amd64 docker compose build "${target}"
     fi
     echo "Building ${target} for linux/amd64"
-    DOCKER_DEFAULT_PLATFORM=linux/amd64 docker compose build "${array[index]}"
+    DOCKER_DEFAULT_PLATFORM=linux/amd64 docker compose build "${target}"
   done
 fi
-
 
 if [[ ${#array[@]} -eq 0 || ${array[@]} =~ "main_auto_ssh" ]]
 then
