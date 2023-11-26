@@ -32,7 +32,7 @@ fi
 
 if [[ ${#array[@]} -eq 0 || ${array[@]} =~ "main_auto_ssh" ]]
 then
-  for target in "debian@51.79.69.199" "debian@51.79.159.111" "rainwolf@development.pente.org"
+  for target in "debian@pente.org" "debian@51.79.159.111" "rainwolf@development.pente.org"
   do
     echo "Pushing auto_ssh to ${target}"
     docker save auto_ssh | bzip2 | pv | ssh "${target}" docker load
@@ -41,7 +41,7 @@ fi
 
 if [[ ${#array[@]} -eq 0 || ${array[@]} =~ "main_db" ]]
 then
-  for target in "debian@51.79.69.199" "debian@51.79.159.111" "rainwolf@development.pente.org"
+  for target in "debian@pente.org" "debian@51.79.159.111" "rainwolf@development.pente.org"
   do
     echo "Pushing dsg_sql to ${target}"
     docker save dsg_sql | bzip2 | pv | ssh "${target}" docker load
@@ -50,7 +50,7 @@ fi
 
 if [[ ${#array[@]} -eq 0 || ${array[@]} =~ "pente_mail" ]]
 then
-  for target in "debian@51.79.69.199" "rainwolf@development.pente.org"
+  for target in "debian@pente.org" "rainwolf@development.pente.org"
   do
     echo "Pushing dsg_mail to ${target}"
     docker save dsg_mail | bzip2 | pv | ssh "${target}" docker load
@@ -59,14 +59,14 @@ fi
 
 if [[ ${#array[@]} -eq 0 || ${array[@]} =~ "pente.org" ]]
 then
-  for target in "debian@51.79.69.199" "rainwolf@development.pente.org"
+  for target in "debian@pente.org" "rainwolf@development.pente.org"
   do
     echo "Pushing pente.org to ${target}"
     docker save pente.org | bzip2 | pv | ssh "${target}" docker load
   done
 fi
 
-for target in "debian@51.79.69.199" "debian@51.79.159.111" "rainwolf@development.pente.org" "rainwolf@pente.org"
+for target in "debian@pente.org" "debian@51.79.159.111" "rainwolf@development.pente.org"
 do
   echo "Cleaning up ${target}"
   ssh "${target}" docker image prune -f
