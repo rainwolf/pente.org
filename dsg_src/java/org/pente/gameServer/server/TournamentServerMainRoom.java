@@ -19,15 +19,41 @@
 
 package org.pente.gameServer.server;
 
-import java.util.*;
-
-import org.apache.log4j.*;
-
-import org.pente.gameServer.core.*;
 import org.pente.gameServer.event.*;
 import org.pente.gameServer.tourney.*;
 
 public class TournamentServerMainRoom extends ServerMainRoom {
+
+    public void handleText(String player, String text) {
+        if (!isPlayerInMainRoom(player)) {
+            dsgEventRouter.routeEvent(
+                    new DSGTextMainRoomErrorEvent(player, text, DSGMainRoomErrorEvent.NOT_IN_MAIN_ROOM),
+                    player);
+        } else {
+            Tourney tourney = server.getTourney();
+            if (tourney != null && tourney.getDirectors().contains(player)) {
+                if (text.startsWith("/")) {
+                    String command = text.substring(1);
+                    if (command.equals("pause")) {
+                        ((TournamentServer) server).startNewTimers = false;
+                        ((TournamentServer) server).stopWait();
+                        server.mainRoom.eventOccurred(new DSGSystemMessageTableEvent(0, player + " paused the tournament, waiting for "+String.join(", ", tourney.getDirectors())+" to restart."));
+                    } else if (command.equals("start")) {
+                        if (!tourney.isComplete()) {
+                            if (tourney.getLastRound().isComplete()) {
+                                ((TournamentServer) server).startNewTimers = true;
+                                ((TournamentServer) server).stopWait();
+                                ((TournamentServer) server).startNewRoundNow();
+                                server.mainRoom.eventOccurred(new DSGSystemMessageTableEvent(0, "Tournament restarted by " + player));
+                            }
+                        }
+                    }
+                }
+                return;
+            }
+            super.handleText(player, text);
+        }
+    }
 
     public TournamentServerMainRoom(
             Server server,
@@ -57,7 +83,6 @@ public class TournamentServerMainRoom extends ServerMainRoom {
             ((TournamentServer) server).matchOnJoin(joinEvent.getDSGPlayerData());
 
         }
-
     }
 
     public void handleExit(DSGExitMainRoomEvent exitEvent) {

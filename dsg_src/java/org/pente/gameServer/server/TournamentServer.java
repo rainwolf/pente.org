@@ -53,6 +53,8 @@ public class TournamentServer extends Server {
     protected Timer timeoutBeforeNextRoundTimer;
     protected List<Timer> waitAnnouncementTimers;
     protected boolean noNeedForBreak = false;
+    protected boolean startNewTimers = true;
+
 
     public TournamentServer(Resources resources,
                             ServerData serverData) throws Throwable {
@@ -195,7 +197,7 @@ public class TournamentServer extends Server {
                     throwable.printStackTrace();
                 }
             }
-            if (pid2tables.isEmpty()) {
+            if (pid2tables.isEmpty() && startNewTimers) {
                 startWait();
             } else {
                 stopWait();
@@ -304,7 +306,6 @@ public class TournamentServer extends Server {
             }
         }
     }
-
 
     public void destroy() {
         stopWait();
