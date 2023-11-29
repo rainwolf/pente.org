@@ -37,7 +37,7 @@
 
     <context-param>
         <param-name>mail.smtp.host</param-name>
-        <param-value>localhost</param-value>
+        <param-value>pente_mail</param-value>
     </context-param>
 
     <context-param>
