@@ -17,15 +17,9 @@ ARG ENV=""
 ARG DOCKER_DEFAULT_PLATFORM
 RUN mkdir -p /var/lib/dsg/gameServer/game && \
   mkdir -p /var/lib/dsg/gameServer/player && \
-  apt update && apt install nala -y && \
+  apt update && \
   # fish and bob
-  nala install -y curl fish git && \
-  curl -L https://get.oh-my.fish > install && \
-  fish install --noninteractive && \
-  fish -c "omf install bobthefish" && \
-  mkdir -p ~/.config/fish/functions && \
-  echo "function l\n  ls -Alh \$argv\nend" > ~/.config/fish/functions/l.fish && \
-  rm install && \
+  apt install -y curl fish git gcc && \
   # AstroNvim for Apple Silicon
   if [ "$DOCKER_DEFAULT_PLATFORM" = "" ]; then \
       curl -LO https://github.com/matsuu/neovim-aarch64-appimage/releases/download/v0.9.0/nvim-v0.9.0-aarch64.appimage; \
@@ -35,14 +29,21 @@ RUN mkdir -p /var/lib/dsg/gameServer/game && \
       rm -rf squashfs-root nvim-v0.9.0-aarch64.appimage; \
   fi && \
   # AstroNvim for linux/amd64
-  if [ "$DOCKER_DEFAULT_PLATFORM" = "linux/amd64" ]; then  \
+  if [ "$DOCKER_DEFAULT_PLATFORM" = "linux/amd64" ]; then \
     curl -LO https://github.com/neovim/neovim/releases/download/v0.9.0/nvim-linux64.tar.gz; \
     tar xzf nvim-linux64.tar.gz; \
     cp -r nvim-linux64/* /usr; \
     rm -rf nvim-linux64 nvim-linux64.tar.gz; \
   fi && \
+  apt install nala -y && \
   git clone --depth 1 https://github.com/AstroNvim/AstroNvim ~/.config/nvim && \
   nvim --headless +PlugInstall +qall && \
+  curl -L https://get.oh-my.fish > install && \
+  fish install --noninteractive && \
+  fish -c "omf install bobthefish" && \
+  mkdir -p ~/.config/fish/functions && \
+  echo "function l\n  ls -Alh \$argv\nend" > ~/.config/fish/functions/l.fish && \
+  rm install && \
   nala install ant -y && \
   rm -rf /usr/local/tomcat/webapps/tmp_src/org/pente/opengl/ && \
   rm -rf /usr/local/tomcat/webapps/tmp_src/org/pente/gameServer/tourney/test/ && \
@@ -53,7 +54,7 @@ RUN mkdir -p /var/lib/dsg/gameServer/game && \
 # cleanup
   rm -rf /usr/local/tomcat/webapps/tmp_src && \
   rm /usr/local/tomcat/webapps/build-docker.xml && \
-  nala remove -y ant && nala autoremove -y && nala autopurge -y && apt remove nala -y && apt autoremove -y && apt autopurge -y && \
+  nala remove -y ant git gcc && nala autoremove -y && nala autopurge -y && apt remove nala -y && apt autoremove -y && apt autopurge -y && \
 # local context doesn't access remote instance
   mv /usr/local/tomcat/webapps/ROOT/META-INF/${ENV}context.xml /usr/local/tomcat/webapps/ROOT/META-INF/context.xml
 
