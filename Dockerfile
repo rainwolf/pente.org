@@ -11,15 +11,14 @@ RUN mkdir -p /usr/local/tomcat/webapps/tmp_src
 # copy the code
 COPY dsg_src/java /usr/local/tomcat/webapps/tmp_src
 COPY build-docker.xml /usr/local/tomcat/webapps/
-# clean the code
 ARG ENV=""
 # set to linux/amd64 for deployment
 ARG DOCKER_DEFAULT_PLATFORM
 RUN mkdir -p /var/lib/dsg/gameServer/game && \
   mkdir -p /var/lib/dsg/gameServer/player && \
   apt update && \
-  # fish and bob
-  apt install -y curl fish git gcc && \
+  apt install nala -y && \
+  nala install -y curl fish git && \
   # AstroNvim for Apple Silicon
   if [ "$DOCKER_DEFAULT_PLATFORM" = "" ]; then \
       curl -LO https://github.com/matsuu/neovim-aarch64-appimage/releases/download/v0.9.0/nvim-v0.9.0-aarch64.appimage; \
@@ -35,9 +34,9 @@ RUN mkdir -p /var/lib/dsg/gameServer/game && \
     cp -r nvim-linux64/* /usr; \
     rm -rf nvim-linux64 nvim-linux64.tar.gz; \
   fi && \
-  apt install nala -y && \
   git clone --depth 1 https://github.com/AstroNvim/AstroNvim ~/.config/nvim && \
   nvim --headless +PlugInstall +qall && \
+  # fish and bob
   curl -L https://get.oh-my.fish > install && \
   fish install --noninteractive && \
   fish -c "omf install bobthefish" && \
@@ -45,17 +44,18 @@ RUN mkdir -p /var/lib/dsg/gameServer/game && \
   echo "function l\n  ls -Alh \$argv\nend" > ~/.config/fish/functions/l.fish && \
   rm install && \
   nala install ant -y && \
+  # clean the code
   rm -rf /usr/local/tomcat/webapps/tmp_src/org/pente/opengl/ && \
   rm -rf /usr/local/tomcat/webapps/tmp_src/org/pente/gameServer/tourney/test/ && \
   rm -rf /usr/local/tomcat/webapps/tmp_src/org/pente/message/test/ && \
   rm -rf /usr/local/tomcat/webapps/tmp_src/org/pente/turnBased/test/ && \
-# compile the code
+  # compile the code
   ant -f /usr/local/tomcat/webapps/build-docker.xml && \
-# cleanup
+  # cleanup
   rm -rf /usr/local/tomcat/webapps/tmp_src && \
   rm /usr/local/tomcat/webapps/build-docker.xml && \
-  nala remove -y ant git gcc && nala autoremove -y && nala autopurge -y && apt remove nala -y && apt autoremove -y && apt autopurge -y && \
-# local context doesn't access remote instance
+  nala remove -y ant && nala autoremove -y && nala autopurge -y && apt remove nala -y && apt autoremove -y && apt autopurge -y && \
+  # local context doesn't access remote instance
   mv /usr/local/tomcat/webapps/ROOT/META-INF/${ENV}context.xml /usr/local/tomcat/webapps/ROOT/META-INF/context.xml
 
 # copy the other domains

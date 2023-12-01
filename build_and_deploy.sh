@@ -4,10 +4,12 @@ read -a array <<< "$@"
 
 docker system prune -af
 
+export DOCKER_DEFAULT_PLATFORM=linux/amd64
+
 if [[ ${#array[@]} -eq 0 ]]
 then
   echo "Building everything for linux/amd64"
-  DOCKER_DEFAULT_PLATFORM=linux/amd64 docker compose build
+  docker compose build
 else
   for target in "${array[@]}"
   do
@@ -26,7 +28,7 @@ else
       cd ../pente.org
     fi
     echo "Building ${target} for linux/amd64"
-    DOCKER_DEFAULT_PLATFORM=linux/amd64 docker compose build "${target}"
+    docker compose build "${target}"
   done
 fi
 
@@ -71,6 +73,8 @@ do
   echo "Cleaning up ${target}"
   ssh "${target}" docker image prune -f
 done
+
+unset DOCKER_DEFAULT_PLATFORM
 
 docker system prune -af
 docker compose build
