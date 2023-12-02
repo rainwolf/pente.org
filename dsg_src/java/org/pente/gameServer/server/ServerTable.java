@@ -328,6 +328,10 @@ public class ServerTable {
         }
 
         broadcastMainRoom(getTableState());
+        // send the current owner to the joining player
+        dsgEventRouter.routeEvent(
+                new DSGOwnerTableEvent(getOwner(), tableNum),
+                joinEvent.getPlayer());
     }
 
     protected void broadcastTable(DSGEvent dsgEvent) {
@@ -505,8 +509,9 @@ public class ServerTable {
 
 
             if ((game == GridStateFactory.SWAP2PENTE_GAME || game == GridStateFactory.SPEED_SWAP2PENTE_GAME ||
-                game == GridStateFactory.SWAP2KERYO_GAME || game == GridStateFactory.SPEED_SWAP2KERYO_GAME)
-                    && ((PenteState) gridState).didSwap2Pass() && !((PenteState) gridState).wasDPenteSwapDecisionMade()) {
+                game == GridStateFactory.SWAP2KERYO_GAME || game == GridStateFactory.SPEED_SWAP2KERYO_GAME) &&
+                    gridState != null &&
+                    ((PenteState) gridState).didSwap2Pass() && !((PenteState) gridState).wasDPenteSwapDecisionMade()) {
                 dsgEventRouter.routeEvent(
                         new DSGSwap2PassTableEvent(null, tableNum, true),
                         player);
@@ -1508,7 +1513,7 @@ public class ServerTable {
 //            }
 //            return null;
             for (int i = 0; i < playersInTable.size(); i++) {
-                DSGPlayerData d = (DSGPlayerData) playersInTable.elementAt(i);
+                DSGPlayerData d = playersInTable.elementAt(i);
                 if (d != null && d.isHuman()) {
                     return d.getName();
                 }
