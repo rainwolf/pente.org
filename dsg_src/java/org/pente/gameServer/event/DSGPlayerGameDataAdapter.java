@@ -17,18 +17,19 @@ public class DSGPlayerGameDataAdapter implements JsonDeserializer<DSGPlayerGameD
 
     @Override
     public JsonElement serialize(DSGPlayerGameData dsgPlayerGameData, Type type, JsonSerializationContext jsonSerializationContext) {
-        JsonObject dsgPlayerGameDataObject = new JsonObject();
-
-        dsgPlayerGameDataObject.add("playerID", new JsonPrimitive(dsgPlayerGameData.getPlayerID()));
-        dsgPlayerGameDataObject.add("game", new JsonPrimitive(dsgPlayerGameData.getGame()));
-        dsgPlayerGameDataObject.add("wins", new JsonPrimitive(dsgPlayerGameData.getWins()));
-        dsgPlayerGameDataObject.add("losses", new JsonPrimitive(dsgPlayerGameData.getLosses()));
-        dsgPlayerGameDataObject.add("draws", new JsonPrimitive(dsgPlayerGameData.getDraws()));
-        dsgPlayerGameDataObject.add("rating", new JsonPrimitive(dsgPlayerGameData.getRating()));
-        dsgPlayerGameDataObject.add("streak", new JsonPrimitive(dsgPlayerGameData.getStreak()));
-        dsgPlayerGameDataObject.add("lastGameDate", new JsonPrimitive(dsgPlayerGameData.getLastGameDate().toString()));
-        dsgPlayerGameDataObject.add("tourneyWinner", new JsonPrimitive(dsgPlayerGameData.getTourneyWinner()));
-        dsgPlayerGameDataObject.add("computer", new JsonPrimitive(dsgPlayerGameData.getComputer()));
-        return dsgPlayerGameDataObject;
+//        JsonObject dsgPlayerGameDataObject = new JsonObject();
+//
+//        dsgPlayerGameDataObject.add("playerID", new JsonPrimitive(dsgPlayerGameData.getPlayerID()));
+//        dsgPlayerGameDataObject.add("game", new JsonPrimitive(dsgPlayerGameData.getGame()));
+//        dsgPlayerGameDataObject.add("wins", new JsonPrimitive(dsgPlayerGameData.getWins()));
+//        dsgPlayerGameDataObject.add("losses", new JsonPrimitive(dsgPlayerGameData.getLosses()));
+//        dsgPlayerGameDataObject.add("draws", new JsonPrimitive(dsgPlayerGameData.getDraws()));
+//        dsgPlayerGameDataObject.add("rating", new JsonPrimitive(dsgPlayerGameData.getRating()));
+//        dsgPlayerGameDataObject.add("streak", new JsonPrimitive(dsgPlayerGameData.getStreak()));
+//        dsgPlayerGameDataObject.add("lastGameDate", new JsonPrimitive(dsgPlayerGameData.getLastGameDate().toString()));
+//        dsgPlayerGameDataObject.add("tourneyWinner", new JsonPrimitive(dsgPlayerGameData.getTourneyWinner()));
+//        dsgPlayerGameDataObject.add("computer", new JsonPrimitive(dsgPlayerGameData.getComputer()));
+//        return dsgPlayerGameDataObject;
+        return jsonSerializationContext.serialize(dsgPlayerGameData);
     }
 }
