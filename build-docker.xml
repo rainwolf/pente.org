@@ -8,7 +8,7 @@
         <mkdir dir="/usr/local/tomcat/webapps/ROOT/WEB-INF/classes"/>
         <javac srcdir="/usr/local/tomcat/webapps/tmp_src"
                destdir="/usr/local/tomcat/webapps/ROOT/WEB-INF/classes"
-               debug="true" debuglevel="lines,vars,source">
+               debug="true" debuglevel="lines,vars,source" nowarn="on">
         	<classpath refid="3rd-party-classpath" />
         </javac>
     </target>

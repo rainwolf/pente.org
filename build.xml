@@ -7,7 +7,7 @@
     <target name="compile">
         <mkdir dir="deployClasses"/>
         <javac srcdir="deploy" destdir="deployClasses" debug="true" debuglevel="lines,vars,source"
-            executable="/usr/local/opt/openjdk@11/bin/javac">
+            executable="/usr/local/opt/openjdk@16/bin/javac">
         	<classpath refid="3rd-party-classpath" />
         </javac>
 <!-- 	    <classpath>
