@@ -49,8 +49,8 @@ public class ServerTable {
     protected DSGPlayerData playingPlayers[] = new DSGPlayerData[MAX_PLAYERS + 1];
     protected boolean playerClickedPlay[] = new boolean[MAX_PLAYERS + 1];
 
-    protected Vector<DSGPlayerData> playersInTable = new Vector();
-    protected Vector playersInMainRoom;
+    protected Vector<DSGPlayerData> playersInTable = new Vector<DSGPlayerData>();
+    protected Vector<DSGPlayerData> playersInMainRoom;
     protected List<String> playersInvited = new ArrayList<String>();
 
     protected Map<String, Long> bootTimes = new HashMap<String, Long>();
@@ -193,9 +193,9 @@ public class ServerTable {
 
         this.kothStorer = kothStorer;
 
-        this.playersInMainRoom = new Vector();
-        for (Iterator it = namesInMainRoom.iterator(); it.hasNext(); ) {
-            DSGPlayerData d = (DSGPlayerData) it.next();
+        this.playersInMainRoom = new Vector<DSGPlayerData>();
+        for (Object o : namesInMainRoom) {
+            DSGPlayerData d = (DSGPlayerData) o;
             playersInMainRoom.add(d);
         }
         startGameOverThread();
@@ -219,9 +219,9 @@ public class ServerTable {
 
         // destroy old timers
         if (timers != null) {
-            for (int i = 0; i < timers.length; i++) {
-                if (timers[i] != null) {
-                    timers[i].destroy();
+            for (GameTimer timer : timers) {
+                if (timer != null) {
+                    timer.destroy();
                 }
             }
         }
@@ -265,11 +265,10 @@ public class ServerTable {
             DSGPlayerData creator = getPlayerInMainRoom(joinEvent.getPlayer());
             if (creator != null) {
                 try {
-                    List prefs = dsgPlayerStorer.loadPlayerPreferences(
+                    List<DSGPlayerPreference> prefs = dsgPlayerStorer.loadPlayerPreferences(
                             creator.getPlayerID());
                     if (prefs != null) {
-                        for (int i = 0; i < prefs.size(); i++) {
-                            DSGPlayerPreference pref = (DSGPlayerPreference) prefs.get(i);
+                        for (DSGPlayerPreference pref : prefs) {
                             if (pref.getName().equals("gameState")) {
                                 DSGChangeStateTableEvent e = (DSGChangeStateTableEvent) pref.getValue();
                                 initialMinutes = e.getInitialMinutes();
@@ -299,9 +298,9 @@ public class ServerTable {
 
         // destroy old timers
         if (timers != null) {
-            for (int i = 0; i < timers.length; i++) {
-                if (timers[i] != null) {
-                    timers[i].destroy();
+            for (GameTimer timer : timers) {
+                if (timer != null) {
+                    timer.destroy();
                 }
             }
         }
@@ -610,8 +609,8 @@ public class ServerTable {
     }
 
     public void handleMainRoomExit(String player) {
-        for (Iterator it = playersInMainRoom.iterator(); it.hasNext(); ) {
-            DSGPlayerData data = (DSGPlayerData) it.next();
+        for (Iterator<DSGPlayerData> it = playersInMainRoom.iterator(); it.hasNext(); ) {
+            DSGPlayerData data = it.next();
             if (data.getName().equals(player)) {
                 it.remove();
                 break;
@@ -938,8 +937,8 @@ public class ServerTable {
 
     protected boolean anyComputersSitting() {
 
-        for (int i = 0; i < sittingPlayers.length; i++) {
-            if (sittingPlayers[i] != null && sittingPlayers[i].isComputer()) {
+        for (DSGPlayerData sittingPlayer : sittingPlayers) {
+            if (sittingPlayer != null && sittingPlayer.isComputer()) {
                 return true;
             }
         }
@@ -959,8 +958,7 @@ public class ServerTable {
     }
 
     protected void removeAllComputers() {
-        for (Iterator it = playersInTable.iterator(); it.hasNext(); ) {
-            DSGPlayerData data = (DSGPlayerData) it.next();
+        for (DSGPlayerData data : playersInTable) {
             if (data != null && data.isComputer()) {
                 aiController.removeAIPlayer(data.getName(), tableNum);
             }
@@ -2068,7 +2066,7 @@ public class ServerTable {
 
     protected DSGPlayerData getPlayerInTable(String name) {
         for (int i = playersInTable.size() - 1; i > -1; i--) {
-            DSGPlayerData data = (DSGPlayerData) playersInTable.elementAt(i);
+            DSGPlayerData data = playersInTable.elementAt(i);
             if (data == null) {
                 playersInTable.remove(i);
             } else if (name.equals(data.getName())) {
@@ -2081,7 +2079,7 @@ public class ServerTable {
 
     protected DSGPlayerData getPlayerInMainRoom(String name) {
         for (int i = 0; i < playersInMainRoom.size(); i++) {
-            DSGPlayerData data = (DSGPlayerData) playersInMainRoom.elementAt(i);
+            DSGPlayerData data = playersInMainRoom.elementAt(i);
             if (data.getName().equals(name)) {
                 return data;
             }
@@ -2666,8 +2664,7 @@ public class ServerTable {
 
     protected GameEventData getGameEvent(int game) {
         // set the event based on passed in game events and game played
-        for (Iterator it = serverData.getGameEvents().iterator(); it.hasNext(); ) {
-            GameEventData d = (GameEventData) it.next();
+        for (GameEventData d : serverData.getGameEvents()) {
             if (d.getGame() == game) {
                 return d;
             }
@@ -2997,12 +2994,13 @@ public class ServerTable {
         }
 
         boolean updateRatings = isComputerGame;
+        boolean isGo = game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO
+                || game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9
+                || game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13;
         if (gameData.getRated() && localSet != null) {
             if (localSet.getG1Gid() == 0) {
                 localSet.setG1(gameData);
-                if (game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO
-                        || game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9
-                        || game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13) {
+                if (isGo) {
                     updateRatings = true;
                 }
             } else {
@@ -3010,6 +3008,7 @@ public class ServerTable {
                 updateRatings = true;
             }
             try {
+
                 dsgPlayerStorer.updateLiveSet(localSet);
             } catch (DSGPlayerStoreException dpse) {
                 log4j.error(psid() + "Error updating set " + localSet.getSid(), dpse);
@@ -3063,9 +3062,7 @@ public class ServerTable {
                         loserPlayerData.getPlayerGameData(game, true);
 
                 try {
-                    double k = (game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO
-                            || game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9
-                            || game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13) ? 32 : 64;
+                    double k = isGo ? 32 : 64;
                     GameOverUtilities.updateGameData(
                             dsgPlayerStorer,
                             winnerPlayerData, winnerPlayerGameData,
@@ -3085,9 +3082,7 @@ public class ServerTable {
                 double loserRatingBefore = loserPlayerGameData.getRating();
 
                 try {
-                    double k = (game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO
-                            || game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9
-                            || game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13) ? 32 : 64;
+                    double k = isGo ? 32 : 64;
                     GameOverUtilities.updateGameData(
                             dsgPlayerStorer,
                             winnerPlayerData, winnerPlayerGameData,
@@ -3180,9 +3175,7 @@ public class ServerTable {
                         loserPlayerData.getPlayerGameData(game, true);
 
                 try {
-                    double k = (game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO
-                            || game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9
-                            || game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13) ? 32 : 64;
+                    double k = isGo ? 32 : 64;
                     GameOverUtilities.updateGameData(
                             dsgPlayerStorer,
                             winnerPlayerData, winnerPlayerGameData,
