@@ -315,6 +315,9 @@ public class ServerTable {
         for (int i = 1; i < timers.length; i++) {
             timers[i] = new MilliSecondGameTimer("Table " + tableNum + " player " + i);
             timers[i].setStartMinutes(initialMinutes);
+            if (initialMinutes == 0) {
+                timers[i].adjust(0, incrementalSeconds);
+            }
             final int tempPlayer = i;
             timers[i].addGameTimerListener((minutes, seconds) -> {
                 if (minutes <= 0 && seconds <= 0) {
@@ -787,6 +790,9 @@ public class ServerTable {
                 rated = changeStateEvent.getRated();
                 for (int i = 1; i < timers.length; i++) {
                     timers[i].setStartMinutes(initialMinutes);
+                    if (initialMinutes == 0) {
+                        timers[i].adjust(0, incrementalSeconds);
+                    }
                 }
                 // get game for changeStateEvent.getGame()
                 // check if speed game, take into account timed!='N'
@@ -888,6 +894,9 @@ public class ServerTable {
 
         for (int i = 1; i < timers.length; i++) {
             timers[i].setStartMinutes(initialMinutes);
+            if (initialMinutes == 0) {
+                timers[i].adjust(0, incrementalSeconds);
+            }
         }
 
         broadcastMainRoom(changeStateEvent);
@@ -1056,6 +1065,9 @@ public class ServerTable {
 
                     if (timed) {
                         timers[gridState.getCurrentPlayer()].stop();
+                        if (initialMinutes == 0) {
+                            timers[gridState.getCurrentPlayer()].adjust(0, incrementalSeconds);
+                        }
                         timers[gridState.getCurrentPlayer()].incrementMillis(
                                 (int) pingManager.getPingTime(dsgEvent.getPlayer()));
                     }
@@ -1063,6 +1075,9 @@ public class ServerTable {
                     ((GoState) gridState).rejectAndContinue();
 
                     if (timed) {
+                        if (initialMinutes == 0) {
+                            timers[gridState.getCurrentPlayer()].adjust(0, incrementalSeconds);
+                        }
                         timers[gridState.getCurrentPlayer()].go();
                     }
                     broadcastTable(dsgEvent);
@@ -1120,6 +1135,9 @@ public class ServerTable {
                 // update timers after swap decision
                 if (timed) {
                     timers[gridState.getCurrentPlayer()].stop();
+                    if (initialMinutes == 0) {
+                        timers[gridState.getCurrentPlayer()].adjust(0, incrementalSeconds);
+                    }
                     timers[gridState.getCurrentPlayer()].incrementMillis(
                             (int) pingManager.getPingTime(swapEvent.getPlayer()));
 
@@ -1138,6 +1156,9 @@ public class ServerTable {
                         swapEvent.wantsToSwap());
 
                 if (timed) {
+                    if (initialMinutes == 0) {
+                        timers[gridState.getCurrentPlayer()].adjust(0, incrementalSeconds);
+                    }
                     timers[gridState.getCurrentPlayer()].go();
                 }
 
@@ -1172,6 +1193,9 @@ public class ServerTable {
                 // update timers after swap decision
                 if (timed) {
                     timers[gridState.getCurrentPlayer()].stop();
+                    if (initialMinutes == 0) {
+                        timers[gridState.getCurrentPlayer()].adjust(0, incrementalSeconds);
+                    }
                     timers[gridState.getCurrentPlayer()].incrementMillis(
                             (int) pingManager.getPingTime(swap2PassEvent.getPlayer()));
                 }
@@ -1179,6 +1203,9 @@ public class ServerTable {
                 ((PenteState) gridState).setSwap2Pass(true);
 
                 if (timed) {
+                    if (initialMinutes == 0) {
+                        timers[gridState.getCurrentPlayer()].adjust(0, incrementalSeconds);
+                    }
                     timers[gridState.getCurrentPlayer()].go();
                 }
 
@@ -1421,6 +1448,9 @@ public class ServerTable {
 
         for (int i = 1; i < timers.length; i++) {
             timers[i].reset();
+            if (initialMinutes == 0) {
+                timers[i].adjust(0, incrementalSeconds);
+            }
         }
 
         changeGameState(DSGGameStateTableEvent.GAME_IN_PROGRESS, startTxt, gameInSet);
@@ -1551,8 +1581,12 @@ public class ServerTable {
 //                            }
 
                             if (gridState.getNumMoves() != 1) {
-                                timers[oldCurrentPlayer].increment(
-                                        incrementalSeconds);
+                                if (initialMinutes == 0) {
+                                    timers[oldCurrentPlayer].adjust(0, incrementalSeconds);
+                                } else {
+                                    timers[oldCurrentPlayer].increment(
+                                            incrementalSeconds);
+                                }
                                 // should also increment millis for d-pente but ignore
                                 // since timers aren't stopped
                                 timers[oldCurrentPlayer].incrementMillis(
@@ -1563,10 +1597,14 @@ public class ServerTable {
                                             timers[oldCurrentPlayer].getSeconds());
 
                             moveTimes.add(newTime);
-                        } else {
+                        } else {  // same player
                             if (gridState.getNumMoves() != 1) {
-                                timers[oldCurrentPlayer].increment(
-                                        incrementalSeconds);
+                                if (initialMinutes == 0) {
+                                    timers[oldCurrentPlayer].adjust(0, incrementalSeconds);
+                                } else {
+                                    timers[oldCurrentPlayer].increment(
+                                            incrementalSeconds);
+                                }
                                 // should also increment millis for d-pente but ignore
                                 // since timers aren't stopped
                                 timers[oldCurrentPlayer].incrementMillis(
@@ -1617,6 +1655,9 @@ public class ServerTable {
                         gameOver(gridState.getWinner() == 0, winner, loser, false, false, false);
                     } else if (timed) {
 //                        if (oldCurrentPlayer != newCurrentPlayer || go) {
+                        if (initialMinutes == 0) {
+                            timers[newCurrentPlayer].adjust(0, incrementalSeconds);
+                        }
                         if (oldCurrentPlayer != newCurrentPlayer) {
                             timers[newCurrentPlayer].go();
                         }
@@ -1629,10 +1670,7 @@ public class ServerTable {
 //						timers[newCurrentPlayer].go();
 //					}
                     }
-
-
                 }
-
             }
         }
 
@@ -1717,30 +1755,46 @@ public class ServerTable {
 
 
                         timers[oldCurrentPlayer].stop();
+                        if (initialMinutes == 0) {
+                            timers[oldCurrentPlayer].adjust(0, incrementalSeconds);
+                            timers[newCurrentPlayer].adjust(0, incrementalSeconds);
+                            broadcastTable(
+                                    new DSGTimerChangeTableEvent(
+                                            playingPlayers[oldCurrentPlayer].getName(),
+                                            tableNum,
+                                            0,
+                                            incrementalSeconds));
+                            broadcastTable(
+                                    new DSGTimerChangeTableEvent(
+                                            playingPlayers[newCurrentPlayer].getName(),
+                                            tableNum,
+                                            0,
+                                            incrementalSeconds));
+                        } else {
+                            // reset the current players clock to what it was when the turn started
+                            // so that the player accepting the undo is not penalized
+                            Time undoTime = moveTimes.get(moveTimes.size() - 1);
+                            timers[oldCurrentPlayer].adjust(undoTime.getMinutes(), undoTime.getSeconds());
+                            broadcastTable(
+                                    new DSGTimerChangeTableEvent(
+                                            playingPlayers[oldCurrentPlayer].getName(),
+                                            tableNum,
+                                            undoTime.getMinutes(),
+                                            undoTime.getSeconds()));
 
-                        // reset the current players clock to what it was when the turn started
-                        // so that the player accepting the undo is not penalized
-                        Time undoTime = (Time) moveTimes.get(moveTimes.size() - 1);
-                        timers[oldCurrentPlayer].adjust(undoTime.getMinutes(), undoTime.getSeconds());
-                        broadcastTable(
-                                new DSGTimerChangeTableEvent(
-                                        playingPlayers[oldCurrentPlayer].getName(),
-                                        tableNum,
-                                        undoTime.getMinutes(),
-                                        undoTime.getSeconds()));
-
-                        // reset the players turn who just had the undo to take away any incremental
-                        // time they gained in the last turn
-                        // this doesn't subtract the increase they received from their ping time
-                        // i could create another list of ping times at each move but that seems
-                        // like overkill at the moment
-                        timers[newCurrentPlayer].increment(-incrementalSeconds);
-                        broadcastTable(
-                                new DSGTimerChangeTableEvent(
-                                        playingPlayers[newCurrentPlayer].getName(),
-                                        tableNum,
-                                        timers[newCurrentPlayer].getMinutes(),
-                                        timers[newCurrentPlayer].getSeconds()));
+                            // reset the players turn who just had the undo to take away any incremental
+                            // time they gained in the last turn
+                            // this doesn't subtract the increase they received from their ping time
+                            // i could create another list of ping times at each move but that seems
+                            // like overkill at the moment
+                            timers[newCurrentPlayer].increment(-incrementalSeconds);
+                            broadcastTable(
+                                    new DSGTimerChangeTableEvent(
+                                            playingPlayers[newCurrentPlayer].getName(),
+                                            tableNum,
+                                            timers[newCurrentPlayer].getMinutes(),
+                                            timers[newCurrentPlayer].getSeconds()));
+                        }
 
 
                         timers[newCurrentPlayer].go();

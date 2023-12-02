@@ -35,11 +35,11 @@ public class SimpleGameTimer implements GameTimer, Runnable {
 
     private boolean alive;
 
-    private Vector listeners;
+    private Vector<GameTimerListener> listeners;
 
     public SimpleGameTimer() {
         alive = true;
-        listeners = new Vector();
+        listeners = new Vector<>();
         timeLock = new Object();
     }
 
@@ -54,7 +54,7 @@ public class SimpleGameTimer implements GameTimer, Runnable {
     private void timeChanged(int newMinutes, int newSeconds) {
 
         for (int i = 0; i < listeners.size(); i++) {
-            GameTimerListener listener = (GameTimerListener) listeners.elementAt(i);
+            GameTimerListener listener = listeners.elementAt(i);
             listener.timeChanged(newMinutes, newSeconds);
         }
     }
