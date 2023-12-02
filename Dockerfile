@@ -62,5 +62,5 @@ RUN mkdir -p /var/lib/dsg/gameServer/game && \
 COPY submanifolddomains/ /usr/local/tomcat/
 
 # copy the react components (make sure they're built)
-COPY ../react-live-game-room/build /usr/local/tomcat/webapps/ROOT/gameServer/live
-COPY ../react-mmai/build /usr/local/tomcat/webapps/ROOT/gameServer/mmai
+COPY ./react-live-game-room/build /usr/local/tomcat/webapps/ROOT/gameServer/live
+COPY ./react-mmai/build /usr/local/tomcat/webapps/ROOT/gameServer/mmai

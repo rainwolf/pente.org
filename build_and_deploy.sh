@@ -18,6 +18,8 @@ else
       echo "Building the live game room"
       cd ../react-live-game-room
       npm run build || exit 1
+      rm -rf ../pente.org/react-live-game-room/build/*
+      cp -r build/* ../pente.org/react-live-game-room/build/
       echo "Building the webassembly AI"
       cd ../react_mmai/MMAIWASM
       sh compile.sh || exit 1
@@ -25,6 +27,8 @@ else
       cp MMAIWASM/ai.* public/
       echo "Building the AI frontend"
       npm run build || exit 1
+      rm -rf ../pente.org/react-mmai/build/*
+      cp -r build/* ../pente.org/react-mmai/build/
       cd ../pente.org
     fi
     echo "Building ${target} for linux/amd64"
@@ -61,7 +65,7 @@ fi
 
 if [[ ${#array[@]} -eq 0 || ${array[@]} =~ "pente.org" ]]
 then
-  for target in "debian@pente.org" "rainwolf@development.pente.org"
+  for target in "debian@pente.org" # "rainwolf@development.pente.org"
   do
     echo "Pushing pente.org to ${target}"
     docker save pente.org | bzip2 | pv | ssh "${target}" docker load
