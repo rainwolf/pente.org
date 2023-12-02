@@ -68,6 +68,10 @@ then
   done
 fi
 
+# restart the containers with new images
+ssh debian@pente.org docker compose -f docker-compose.yml up -d
+ssh debian@51.79.159.111 docker compose -f docker-compose-replica.yml up -d
+# clean up dangling images
 for target in "debian@pente.org" "debian@51.79.159.111" "rainwolf@development.pente.org"
 do
   echo "Cleaning up ${target}"
