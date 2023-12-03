@@ -128,8 +128,8 @@ public class TournamentServerTable extends ServerTable {
 
     @Override
     public void handleMainRoomExit(String player) {
-        for (Iterator it = playersInMainRoom.iterator(); it.hasNext(); ) {
-            DSGPlayerData data = (DSGPlayerData) it.next();
+        for (Iterator<DSGPlayerData> it = playersInMainRoom.iterator(); it.hasNext(); ) {
+            DSGPlayerData data = it.next();
             if (data.getName().equals(player)) {
                 it.remove();
                 break;

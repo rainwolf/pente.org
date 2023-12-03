@@ -50,7 +50,7 @@ public class ServerTable {
     protected boolean playerClickedPlay[] = new boolean[MAX_PLAYERS + 1];
 
     protected Vector<DSGPlayerData> playersInTable = new Vector();
-    protected Vector playersInMainRoom;
+    protected Vector<DSGPlayerData> playersInMainRoom;
     protected List<String> playersInvited = new ArrayList<String>();
 
     protected Map<String, Long> bootTimes = new HashMap<String, Long>();
@@ -265,11 +265,10 @@ public class ServerTable {
             DSGPlayerData creator = getPlayerInMainRoom(joinEvent.getPlayer());
             if (creator != null) {
                 try {
-                    List prefs = dsgPlayerStorer.loadPlayerPreferences(
+                    List<DSGPlayerPreference> prefs = dsgPlayerStorer.loadPlayerPreferences(
                             creator.getPlayerID());
                     if (prefs != null) {
-                        for (int i = 0; i < prefs.size(); i++) {
-                            DSGPlayerPreference pref = (DSGPlayerPreference) prefs.get(i);
+                        for (DSGPlayerPreference pref : prefs) {
                             if (pref.getName().equals("gameState")) {
                                 DSGChangeStateTableEvent e = (DSGChangeStateTableEvent) pref.getValue();
                                 initialMinutes = e.getInitialMinutes();
@@ -299,9 +298,9 @@ public class ServerTable {
 
         // destroy old timers
         if (timers != null) {
-            for (int i = 0; i < timers.length; i++) {
-                if (timers[i] != null) {
-                    timers[i].destroy();
+            for (GameTimer timer : timers) {
+                if (timer != null) {
+                    timer.destroy();
                 }
             }
         }
@@ -952,8 +951,8 @@ public class ServerTable {
 
     protected boolean anyComputersSitting() {
 
-        for (int i = 0; i < sittingPlayers.length; i++) {
-            if (sittingPlayers[i] != null && sittingPlayers[i].isComputer()) {
+        for (DSGPlayerData sittingPlayer : sittingPlayers) {
+            if (sittingPlayer != null && sittingPlayer.isComputer()) {
                 return true;
             }
         }
@@ -973,8 +972,7 @@ public class ServerTable {
     }
 
     protected void removeAllComputers() {
-        for (Iterator it = playersInTable.iterator(); it.hasNext(); ) {
-            DSGPlayerData data = (DSGPlayerData) it.next();
+        for (DSGPlayerData data : playersInTable) {
             if (data != null && data.isComputer()) {
                 aiController.removeAIPlayer(data.getName(), tableNum);
             }
@@ -983,7 +981,7 @@ public class ServerTable {
 
     protected boolean noHumanPlayersInTable() {
         for (int i = playersInTable.size() - 1; i > -1; i--) {
-            DSGPlayerData data = (DSGPlayerData) playersInTable.elementAt(i);
+            DSGPlayerData data = playersInTable.elementAt(i);
             if (data == null) {
                 playersInTable.remove(i);
             } else if (data.isHuman()) {
