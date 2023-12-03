@@ -633,6 +633,8 @@ public class MoveServlet extends HttpServlet {
 
                 game.setUndoRequested(false);
 
+                notificationServer.sendSilentNotification(game.getOpponent(game.getCurrentPlayer()));
+
                 //redirect to somewhere
                 String isMobile = (String) request.getParameter("mobile");
                 if (isMobile == null) {
@@ -658,7 +660,6 @@ public class MoveServlet extends HttpServlet {
                             }
                         }
                     }
-                    notificationServer.sendSilentNotification(game.getOpponent(game.getCurrentPlayer()));
 
                     if (gameId != 0) {
                         String redirectPage = "/gameServer/tb/game?gid=" + gameId + "&command=load&mobile&cycle";

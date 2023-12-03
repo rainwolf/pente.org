@@ -393,9 +393,9 @@ public class CacheNotificationServer implements NotificationServer {
 
     @Override
     public void sendSilentNotification(long pid) {
-        if (pid != 23000000016237L) {
-            return;
-        }
+//        if (pid != 23000000016237L) {
+//            return;
+//        }
         Map<String, Date> tokenMap = null;
 
         try {
