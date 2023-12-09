@@ -26,6 +26,9 @@ public class Game {
 
     //  < 5 1/2 minutes with/without incremental time
     public static boolean isSpeedGame(int initial, int incremental) {
+        if (initial == 0) {
+            return incremental < 24;
+        }
         return (initial * 60 + incremental * 15) < 331;
     }
 

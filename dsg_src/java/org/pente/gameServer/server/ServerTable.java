@@ -645,7 +645,7 @@ public class ServerTable {
 
     protected DSGChangeStateTableEvent getTableState() {
 
-        DSGChangeStateTableEvent changeStateEvent = new DSGChangeStateTableEvent("system", tableNum);
+        DSGChangeStateTableEvent changeStateEvent = new DSGChangeStateTableEvent(SYSTEM, tableNum);
 //        if ("Go".equals(server.getServerData().getName())) {
 //            if (!(game.getId() == GridStateFactory.GO || game.getId() == GridStateFactory.SPEED_GO
 //                    || game.getId() == GridStateFactory.GO9 || game.getId() == GridStateFactory.SPEED_GO9
@@ -785,6 +785,8 @@ public class ServerTable {
                 status = DSGTableErrorEvent.UNKNOWN;
             } else if (seconds < 0 || seconds > 59) {
                 status = DSGTableErrorEvent.UNKNOWN;
+            } else if (seconds == 0 && minutes == 0) {
+                status = DSGTableErrorEvent.UNKNOWN;
             } else {
 
                 resetClickedPlays();
@@ -799,6 +801,14 @@ public class ServerTable {
                         timers[i].adjust(0, incrementalSeconds);
                     }
                 }
+                
+                // temporarily make 0 minutes unrated
+                if (initialMinutes == 0) {
+                    rated = false;
+                    broadcastTable( new DSGTextTableEvent(SYSTEM, tableNum, 
+                                    "0 minute games are unrated for now."));
+                }
+                
                 // get game for changeStateEvent.getGame()
                 // check if speed game, take into account timed!='N'
                 // convert game for changeStateEvent possibly
@@ -820,30 +830,6 @@ public class ServerTable {
                     log4j.debug(psid() + "gameChanged");
 
                     game = newGame;
-//                    if ("Go".equals(server.getServerData().getName())) {
-//                        if (newGame.getId() == GridStateFactory.GO || newGame.getId() == GridStateFactory.SPEED_GO
-//                                || newGame.getId() == GridStateFactory.GO9 || newGame.getId() == GridStateFactory.SPEED_GO9
-//                                || newGame.getId() == GridStateFactory.GO13 || newGame.getId() == GridStateFactory.SPEED_GO13
-//                                ) {
-//                            game = newGame;
-//                        } else {
-//                            game = GridStateFactory.getGame(GridStateFactory.GO);
-//                            changeStateEvent.setGame(GridStateFactory.GO);
-//                        }
-//                    } else {
-//                        if (newGame.getId() == GridStateFactory.GO ||
-//                                newGame.getId() == GridStateFactory.SPEED_GO ||
-//                                newGame.getId() == GridStateFactory.GO9 ||
-//                                newGame.getId() == GridStateFactory.SPEED_GO9 ||
-//                                newGame.getId() == GridStateFactory.GO13 ||
-//                                newGame.getId() == GridStateFactory.SPEED_GO13) {
-//                            game = GridStateFactory.getGame(GridStateFactory.PENTE);
-//                            changeStateEvent.setGame(GridStateFactory.PENTE);
-//                        } else {
-//                            game = newGame;
-//                        }
-//                    }
-
                     // if the game is changed, remove all computer players since
                     // they might not know how to play the different game
                     removeAllComputers();
