@@ -375,7 +375,7 @@ public class DefaultGameData implements GameData {
      *  @param move An integer representation of a move
      */
     public void addMove(int move) {
-        gameMoves.addElement(new Integer(move));
+        gameMoves.addElement(Integer.valueOf(move));
     }
 
     /** Undo the last move */

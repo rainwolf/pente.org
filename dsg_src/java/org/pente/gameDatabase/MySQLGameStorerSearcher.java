@@ -172,7 +172,7 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
                 addGameTable(filterOptionsFrom, filterOptionsWhere);
                 includeGameTable = true;
                 filterOptionsWhere.append("and g.site_id = ? ");
-                filterOptionsParams.addElement(new Integer(siteData.getSiteID()));
+                filterOptionsParams.addElement(Integer.valueOf(siteData.getSiteID()));
             }
         }
         if (filterData.getEvent() != null && !filterData.getEvent().trim().isEmpty() &&
@@ -545,7 +545,7 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
                 if (winner != GameData.UNKNOWN) {
 
                     boolean alreadyStored = true;
-                    GameStorerSearchResponseMoveData moveData = (GameStorerSearchResponseMoveData) moveResponses.get(new Integer(move));
+                    GameStorerSearchResponseMoveData moveData = (GameStorerSearchResponseMoveData) moveResponses.get(Integer.valueOf(move));
                     if (moveData == null) {
                         alreadyStored = false;
                         moveData = new SimpleGameStorerSearchResponseMoveData();
@@ -558,7 +558,7 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
                     }
 
                     if (!alreadyStored) {
-                        moveResponses.put(new Integer(move), moveData);
+                        moveResponses.put(Integer.valueOf(move), moveData);
                     }
                 }
             }
@@ -686,7 +686,7 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
 
             int cnt = 0;
             while (results.next()) {
-                gids.add(new Long(results.getLong(1)));
+                gids.add(Long.valueOf(results.getLong(1)));
                 log4j.debug(results.getLong(1));
             }
 

@@ -86,7 +86,7 @@
                     if (d[i].getServerId() != currentServerId) {
                         currentServerId = d[i].getServerId();
                         if (currentCount > 0) {
-                            counts.add(new Integer(currentCount));
+                            counts.add(Integer.valueOf(currentCount));
                         }
                         currentCount = 1;
                     }
@@ -95,7 +95,7 @@
                     }
                 }
                 // last room count
-                counts.add(new Integer(currentCount));
+                counts.add(Integer.valueOf(currentCount));
                 %>
 
 

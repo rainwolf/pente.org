@@ -164,7 +164,7 @@ public class Tourney {
     }
 
     public void addDirector(long pid) {
-        directors.add(new Long(pid));
+        directors.add(Long.valueOf(pid));
     }
 
     public List getDirectors() {

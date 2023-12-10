@@ -51,7 +51,7 @@ public class BootDialog extends Dialog {
                 if (showMinutes) {
                     bootListener.actionRequested(
                             playerList.getSelectedPlayer(),
-                            new Integer(minutesText.getText()));
+                            Integer.valueOf(minutesText.getText()));
                 } else {
                     bootListener.actionRequested(playerList.getSelectedPlayer());
                 }

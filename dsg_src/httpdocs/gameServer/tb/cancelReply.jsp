@@ -101,7 +101,7 @@
             String seqNums = "";
             String dates = "";
             String players = ""; //indicates which seat made message
-            Boolean showMessages = new Boolean(false);
+            Boolean showMessages = Boolean.valueOf(false);
             String attach = "true";
             int height = 400;
             int width = 400;

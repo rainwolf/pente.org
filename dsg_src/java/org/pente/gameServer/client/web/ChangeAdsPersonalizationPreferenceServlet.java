@@ -71,7 +71,7 @@ public class ChangeAdsPersonalizationPreferenceServlet extends HttpServlet {
             String email = (String) request.getParameter("personalizeAds");
             boolean emailDsgMessages = email != null && email.equals("Y");
             DSGPlayerPreference p = new DSGPlayerPreference(
-                    "personalizeAds", new Boolean(emailDsgMessages));
+                    "personalizeAds", Boolean.valueOf(emailDsgMessages));
             dsgPlayerStorer.storePlayerPreference(
                     dsgPlayerData.getPlayerID(), p);
 

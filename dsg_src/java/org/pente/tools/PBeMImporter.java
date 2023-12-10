@@ -108,7 +108,7 @@ public class PBeMImporter {
 
                 gameData.setSite("Richard's PBeM Server");
 
-                long gid = new Long(file.substring(5, file.length() - 4)).longValue();
+                long gid = Long.valueOf(file.substring(5, file.length() - 4));
                 gameData.setGameID(BASE_GID + gid);
                 System.out.println("gid " + gid);
 

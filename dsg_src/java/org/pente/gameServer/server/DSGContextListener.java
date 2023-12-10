@@ -101,7 +101,7 @@ public class DSGContextListener implements ServletContextListener {
             System.setProperty("mail.imap.host", ctx.getInitParameter("mail.imap.host"));
             System.setProperty("mail.imap.user", ctx.getInitParameter("mail.imap.user"));
             System.setProperty("mail.imap.password", ctx.getInitParameter("mail.imap.password"));
-            Boolean emailEnabled = new Boolean(ctx.getInitParameter("emailEnabled"));
+            Boolean emailEnabled = Boolean.valueOf(ctx.getInitParameter("emailEnabled"));
 
             ctx.setAttribute("emailEnabled", emailEnabled);
             resources.setEmailEnabled(emailEnabled.booleanValue());

@@ -67,7 +67,7 @@
 
    Boolean showMessages = (Boolean) request.getAttribute("showMessages");
    if (showMessages == null) {
-      showMessages = new Boolean(true);
+      showMessages = Boolean.valueOf(true);
    }
 
    String attach = (String) request.getAttribute("attach");

@@ -253,7 +253,7 @@
                         <td width="98%">
                             <a href="<%= request.getContextPath() %>/servlet/JiveServlet/download/<%= forum.getID() %>-<%= thread.getID() %>-<%= message.getID() %>-<%= attachment.getID() %>/<%= attachment.getName() %>"
                             ><%= attachment.getName() %></a>
-                             (<%= byteFormat.format(new Long(attachment.getSize())) %>)
+                             (<%= byteFormat.format(Long.valueOf(attachment.getSize())) %>)
                         </td>
                         <% if (first && action.getCanEditAttach(message)) {
                            first = false;

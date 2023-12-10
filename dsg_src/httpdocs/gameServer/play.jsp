@@ -10,7 +10,7 @@
 
 <% 
    pageContext.setAttribute("title", "Play"); 
-   pageContext.setAttribute("googleSide", new Boolean(false));
+   pageContext.setAttribute("googleSide", Boolean.valueOf(false));
    Resources resources = (Resources) application.getAttribute(
        Resources.class.getName());   
 %>

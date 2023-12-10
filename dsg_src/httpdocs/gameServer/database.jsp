@@ -110,7 +110,7 @@
 
 <% String searchURL = request.getContextPath() + "/gameServer/controller/search?quick_start=1";
    pageContext.setAttribute("title", "Games History");
-   pageContext.setAttribute("googleSide", new Boolean(false));
+   pageContext.setAttribute("googleSide", Boolean.valueOf(false));
    pageContext.setAttribute("onLoad", formatBodyOnLoad(data)); %>
 
 <%@ include file="begin.jsp" %>

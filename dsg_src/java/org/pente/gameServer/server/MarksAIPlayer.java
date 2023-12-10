@@ -160,7 +160,7 @@ public class MarksAIPlayer extends AbstractAIPlayer {
 
     public void addMove(int move) {
 
-        moves.add(new Integer(move));
+        moves.add(Integer.valueOf(move));
 
         sx[moveNum + 1] = move % size;
         sy[moveNum + 1] = move / size;

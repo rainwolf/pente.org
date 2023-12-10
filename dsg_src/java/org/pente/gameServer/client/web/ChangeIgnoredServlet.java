@@ -124,7 +124,7 @@ public class ChangeIgnoredServlet extends HttpServlet {
 
                     if (item.isFormField()) {
                         if (item.getFieldName().equals("vacationDay")) {
-                            newVacationDays.add(new Integer(item.getString()));
+                            newVacationDays.add(Integer.valueOf(item.getString()));
                         } else {
                             params.put(item.getFieldName(), item.getString());
                         }
@@ -361,14 +361,14 @@ public class ChangeIgnoredServlet extends HttpServlet {
 
                         boolean emailDsgMessages = email != null && email.equals("Y");
                         p = new DSGPlayerPreference(
-                                "emailDsgMessages", new Boolean(emailDsgMessages));
+                                "emailDsgMessages", Boolean.valueOf(emailDsgMessages));
                         dsgPlayerStorer.storePlayerPreference(
                                 dsgPlayerData.getPlayerID(), p);
 
                         boolean emailSentDsgMessages = emailSent != null &&
                                 emailSent.equals("Y");
                         p = new DSGPlayerPreference(
-                                "emailSentDsgMessages", new Boolean(emailSentDsgMessages));
+                                "emailSentDsgMessages", Boolean.valueOf(emailSentDsgMessages));
                         dsgPlayerStorer.storePlayerPreference(
                                 dsgPlayerData.getPlayerID(), p);
 

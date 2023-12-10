@@ -70,21 +70,21 @@ public class Threat {
 
     public void addResp(int move) {
         // make sure no duplicates
-        if (!resps.contains(new Integer(move))) {
-            resps.add(new Integer(move));
+        if (!resps.contains(Integer.valueOf(move))) {
+            resps.add(Integer.valueOf(move));
         }
     }
 
     public void insertNext(int move, int index) {
-        if (!next.contains(new Integer(move))) {
-            next.add(index, new Integer(move));
+        if (!next.contains(Integer.valueOf(move))) {
+            next.add(index, Integer.valueOf(move));
         }
     }
 
     public void addNext(int move) {
         // make sure no duplicates
-        if (!next.contains(new Integer(move))) {
-            next.add(new Integer(move));
+        if (!next.contains(Integer.valueOf(move))) {
+            next.add(Integer.valueOf(move));
         }
     }
 

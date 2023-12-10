@@ -51,7 +51,7 @@ public class DSGUserManager implements UserManager {
     public User getUser(long userId) throws UserNotFoundException {
 
         log4j.debug("getUser " + userId);
-        User user = (User) UserManagerFactory.userCache.get(new Long(userId));
+        User user = (User) UserManagerFactory.userCache.get(Long.valueOf(userId));
         if (user == null) {
             log4j.debug("not cached");
             try {
@@ -65,7 +65,7 @@ public class DSGUserManager implements UserManager {
                 throw new UserNotFoundException("DSGPlayerStoreException", e);
             }
 
-            UserManagerFactory.userCache.put(new Long(userId), user);
+            UserManagerFactory.userCache.put(Long.valueOf(userId), user);
         }
 
         return user;
@@ -94,7 +94,7 @@ public class DSGUserManager implements UserManager {
                     throw new UserNotFoundException("User not found");
                 }
                 User user = new DSGUser(dsgPlayerData);
-                userIDLong = new Long(user.getID());
+                userIDLong = Long.valueOf(user.getID());
                 UserManagerFactory.userCache.put(userIDLong, user);
                 UserManagerFactory.userIDCache.put(username, userIDLong);
                 log4j.info(user.getName() + ":" + user.getID());

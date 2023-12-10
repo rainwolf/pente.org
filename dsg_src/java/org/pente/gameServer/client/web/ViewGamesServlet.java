@@ -98,7 +98,7 @@ public class ViewGamesServlet extends HttpServlet {
                         "Invalid game " + gameStr);
                 return;
             }
-            request.setAttribute("game", new Integer(game));
+            request.setAttribute("game", Integer.valueOf(game));
 
             String startSeqStr = request.getParameter("s");
             int startSeq = 0;
@@ -108,7 +108,7 @@ public class ViewGamesServlet extends HttpServlet {
                 } catch (NumberFormatException nfe) {
                 }
             }
-            request.setAttribute("start", new Integer(startSeq));
+            request.setAttribute("start", Integer.valueOf(startSeq));
 
             log4j.info("view player games for " + name + ", " + game + "," + startSeq);
 
@@ -147,9 +147,9 @@ public class ViewGamesServlet extends HttpServlet {
 
             request.setAttribute("wins", wins);
             request.setAttribute("losses", losses);
-            request.setAttribute("count", new Integer(count));
-            request.setAttribute("w", new Integer(myWins));
-            request.setAttribute("t", new Integer(myTotal));
+            request.setAttribute("count", Integer.valueOf(count));
+            request.setAttribute("w", Integer.valueOf(myWins));
+            request.setAttribute("t", Integer.valueOf(myTotal));
             getServletContext().getRequestDispatcher(redirectPage).forward(
                     request, response);
 

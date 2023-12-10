@@ -75,7 +75,7 @@ public class ForgotPasswordServlet extends HttpServlet {
             redirectPage = "/gameServer/forgotpassword.jsp";
         } else if (!emailEnabled) {
             log4j.info("Email not enabled, no password sent.");
-            request.setAttribute("emailValid", new Boolean(dsgPlayerData.getEmailValid()));
+            request.setAttribute("emailValid", Boolean.valueOf(dsgPlayerData.getEmailValid()));
         } else {
 
             String message = dsgPlayerData.getName() + "," + lineSeparator + lineSeparator;

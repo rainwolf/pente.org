@@ -22,7 +22,7 @@ public class AllowTbAccess {
         DSGPlayerStorer dsgPlayerStorer = new MySQLDSGPlayerStorer(dbHandler,
                 gameVenueStorer);
 
-        DSGPlayerPreference pref = new DSGPlayerPreference("pentedb", new Boolean(true));
+        DSGPlayerPreference pref = new DSGPlayerPreference("pentedb", Boolean.valueOf(true));
         dsgPlayerStorer.storePlayerPreference(22000000000815L, pref);
 
     }

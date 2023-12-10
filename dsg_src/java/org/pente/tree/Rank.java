@@ -58,7 +58,7 @@ class Rank {
     }
 
     public int hashCode() {
-        return new Integer(move).hashCode();
+        return Integer.valueOf(move).hashCode();
     }
 
 //    public String toString() {

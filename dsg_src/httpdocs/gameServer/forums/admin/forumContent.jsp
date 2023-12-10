@@ -72,7 +72,7 @@
          }
       } else {
          // Put the start value in the session
-         session.setAttribute("admin.forumContent." + forumID + ".start", new Integer(start));
+         session.setAttribute("admin.forumContent." + forumID + ".start", Integer.valueOf(start));
       }
    }
 

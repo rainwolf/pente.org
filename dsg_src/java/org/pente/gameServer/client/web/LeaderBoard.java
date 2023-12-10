@@ -27,7 +27,7 @@ public class LeaderBoard {
     }
 
     public List<DSGPlayerData> getLeaders(String name, int game) throws DSGPlayerStoreException {
-        DSGPlayerPreference pref = new DSGPlayerPreference("leaderboardGame", new Integer(game));
+        DSGPlayerPreference pref = new DSGPlayerPreference("leaderboardGame", Integer.valueOf(game));
         long pid = dsgPlayerStorer.loadPlayer(name).getPlayerID();
         dsgPlayerStorer.storePlayerPreference(pid, pref);
         return getLeaders(game);

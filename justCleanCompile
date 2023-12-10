@@ -1,9 +1,7 @@
 #!/bin/bash
 
-set -gx JAVA_HOME /usr/local/opt/openjdk@11/
-
 rm -r deploy/*
 rm -r deployClasses/*
-rsync -v -u -r -t --exclude test --exclude opengl --exclude demo --stats --progress dsg_src/java/ deploy/
+rsync -vurtd --exclude-from exclude_compile.txt --stats --progress dsg_src/java/ deploy/
+clear; printf '\e[3J';
 ant
-

@@ -153,7 +153,7 @@ public class MoveServlet extends HttpServlet {
 //					}
 
                     // else if complete, show game but restrict messages
-                    request.setAttribute("showMessages", new Boolean(playerData.isAdmin()));
+                    request.setAttribute("showMessages", Boolean.valueOf(playerData.isAdmin()));
                 }
 
                 // if someone requested a cancel for the set

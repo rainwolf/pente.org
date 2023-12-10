@@ -86,17 +86,17 @@ public class GameStorerSearchResponseMoveDataComparator implements Comparator {
         int numeric2 = Integer.parseInt(move2.substring(1));
 
         if (alpha1.equals(alpha2)) {
-            return new Integer(numeric1).compareTo(new Integer(numeric2));
+            return Integer.valueOf(numeric1).compareTo(Integer.valueOf(numeric2));
         } else {
             return move1.compareTo(move2);
         }
     }
 
     public int compareGames(GameStorerSearchResponseMoveData moveData1, GameStorerSearchResponseMoveData moveData2) {
-        return new Integer(moveData1.getGames()).compareTo(new Integer(moveData2.getGames()));
+        return Integer.valueOf(moveData1.getGames()).compareTo(Integer.valueOf(moveData2.getGames()));
     }
 
     public int comparePercentages(GameStorerSearchResponseMoveData moveData1, GameStorerSearchResponseMoveData moveData2) {
-        return new Double(moveData1.getPercentage()).compareTo(new Double(moveData2.getPercentage()));
+        return Double.valueOf(moveData1.getPercentage()).compareTo(Double.valueOf(moveData2.getPercentage()));
     }
 }

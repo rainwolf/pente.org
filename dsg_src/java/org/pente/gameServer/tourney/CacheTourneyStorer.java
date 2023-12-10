@@ -235,13 +235,13 @@ public class CacheTourneyStorer implements TourneyStorer {
         // cache tourney data, including round/section/match data
 
         log4j.debug("getTourney(" + eid + ")");
-        Tourney t = (Tourney) tournies.get(new Integer(eid));
+        Tourney t = (Tourney) tournies.get(Integer.valueOf(eid));
 
         if (t != null) {
             log4j.debug("return cached copy");
         } else {
             t = backingStorer.getTourney(eid);
-            tournies.put(new Integer(eid), t);
+            tournies.put(Integer.valueOf(eid), t);
         }
 
         return t;
@@ -263,7 +263,7 @@ public class CacheTourneyStorer implements TourneyStorer {
         }
 
         notifyListeners(new TourneyEvent(eid, TourneyEvent.PLAYER_REGISTER,
-                new Long(pid)));
+                Long.valueOf(pid)));
     }
 
     public synchronized void removePlayerFromTourney(long pid, int eid) throws Throwable {
@@ -278,7 +278,7 @@ public class CacheTourneyStorer implements TourneyStorer {
         }
 
         notifyListeners(new TourneyEvent(eid, TourneyEvent.PLAYER_DROP,
-                new Long(pid)));
+                Long.valueOf(pid)));
     }
 
 

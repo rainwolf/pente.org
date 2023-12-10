@@ -143,10 +143,10 @@ public class GameTableModel extends AbstractTableModel {
 
         objs.add(new PlayerData(
                 game.getPlayer1Data().getUserIDName(), game.getWinner() == 1));
-        objs.add(new Integer(game.getPlayer1Data().getRating()));
+        objs.add(Integer.valueOf(game.getPlayer1Data().getRating()));
         objs.add(new PlayerData(
                 game.getPlayer2Data().getUserIDName(), game.getWinner() == 2));
-        objs.add(new Integer(game.getPlayer2Data().getRating()));
+        objs.add(Integer.valueOf(game.getPlayer2Data().getRating()));
         objs.add(getShortSite(game.getSite()));
         objs.add(game.getEvent());
         objs.add(new DateData(game.getDate()));

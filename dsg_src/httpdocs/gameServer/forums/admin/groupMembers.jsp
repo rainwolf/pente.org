@@ -18,7 +18,7 @@
       long id = -1L;
       try {
          id = Long.parseLong(request.getParameter(type + i));
-         memberIDList.add(new Long(id));
+         memberIDList.add(Long.valueOf(id));
       } catch (Exception ignored) {
       }
    }

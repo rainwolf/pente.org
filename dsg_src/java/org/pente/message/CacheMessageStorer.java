@@ -63,7 +63,7 @@ public class CacheMessageStorer implements DSGMessageStorer {
             if (m != null) {
                 List<Integer> mids = playerMids.get(m.getToPid());
                 if (mids != null) {
-                    mids.remove(new Integer(mid));
+                    mids.remove(Integer.valueOf(mid));
                 }
             }
         }

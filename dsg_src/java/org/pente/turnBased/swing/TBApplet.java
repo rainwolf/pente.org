@@ -69,7 +69,7 @@ public class TBApplet extends JApplet implements TBActionHandler {
         if (movesStr != null) {
             StringTokenizer st = new StringTokenizer(movesStr, ",");
             while (st.hasMoreTokens()) {
-                movesList.add(new Integer(st.nextToken()));
+                movesList.add(Integer.valueOf(st.nextToken()));
             }
         }
         String myTurnStr = getParameter("myTurn");

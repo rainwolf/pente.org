@@ -45,8 +45,8 @@ public class ThreatTest extends TestCase {
             Threat t = new Threat();
             for (int i = 0; i < 10; i++) {
                 int m = (int) (Math.random() * 361);
-                if (!l.contains(new Integer(m)))
-                    l.add(new Integer(m));
+                if (!l.contains(Integer.valueOf(m)))
+                    l.add(Integer.valueOf(m));
                 t.addMove(m);
             }
             Collections.sort(l);

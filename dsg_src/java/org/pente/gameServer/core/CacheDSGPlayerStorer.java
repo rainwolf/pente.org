@@ -122,7 +122,7 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
     public synchronized void refreshPlayer(String name) throws DSGPlayerStoreException {
         log4j.debug("flushPlayer(" + name + ")");
         DSGPlayerData newData = basePlayerStorer.loadPlayer(name);
-        cacheByID.put(new Long(newData.getPlayerID()), newData);
+        cacheByID.put(Long.valueOf(newData.getPlayerID()), newData);
         cacheByName.put(newData.getName(), newData);
         cachedPrefs.remove(newData.getPlayerID());
 
@@ -137,7 +137,7 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
 
         // reload from db since can't be certain nothing was added in sql and not in data class
         DSGPlayerData newData = basePlayerStorer.loadPlayer(dsgPlayerData.getPlayerID());
-        cacheByID.put(new Long(dsgPlayerData.getPlayerID()), newData);
+        cacheByID.put(Long.valueOf(dsgPlayerData.getPlayerID()), newData);
         cacheByName.put(dsgPlayerData.getName(), newData);
     }
 
@@ -167,7 +167,7 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
             log4j.debug("player active, update cache from db");
             // reload from db since can't be certain nothing was added in sql and not in data class
             newData = basePlayerStorer.loadPlayer(dsgPlayerData.getPlayerID());
-            cacheByID.put(new Long(dsgPlayerData.getPlayerID()), newData);
+            cacheByID.put(Long.valueOf(dsgPlayerData.getPlayerID()), newData);
             cacheByName.put(dsgPlayerData.getName(), newData);
 
             if (newData.hasPlayerDonated()) {
@@ -181,13 +181,13 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
 
         log4j.debug("loadPlayer(" + playerID + ")");
         DSGPlayerData dsgPlayerData = null;
-        dsgPlayerData = (DSGPlayerData) cacheByID.get(new Long(playerID));
+        dsgPlayerData = (DSGPlayerData) cacheByID.get(Long.valueOf(playerID));
         if (dsgPlayerData == null) {
             log4j.debug("not cached");
             dsgPlayerData = basePlayerStorer.loadPlayer(playerID);
             if (dsgPlayerData != null) {
                 log4j.debug("caching");
-                cacheByID.put(new Long(dsgPlayerData.getPlayerID()), dsgPlayerData);
+                cacheByID.put(Long.valueOf(dsgPlayerData.getPlayerID()), dsgPlayerData);
                 cacheByName.put(dsgPlayerData.getName(), dsgPlayerData);
             }
         }
@@ -209,7 +209,7 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
             dsgPlayerData = basePlayerStorer.loadPlayer(nameLower);
             if (dsgPlayerData != null) {
                 log4j.debug("caching");
-                cacheByID.put(new Long(dsgPlayerData.getPlayerID()), dsgPlayerData);
+                cacheByID.put(Long.valueOf(dsgPlayerData.getPlayerID()), dsgPlayerData);
                 cacheByName.put(dsgPlayerData.getName(), dsgPlayerData);
             }
         }
@@ -224,14 +224,14 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
     public void insertDonation(DSGDonationData dsgDonationData, long playerID) throws DSGPlayerStoreException {
         basePlayerStorer.insertDonation(dsgDonationData, playerID);
 
-        DSGPlayerData dsgPlayerData = (DSGPlayerData) cacheByID.get(new Long(
+        DSGPlayerData dsgPlayerData = (DSGPlayerData) cacheByID.get(Long.valueOf(
                 playerID));
         if (dsgPlayerData == null) {
             log4j.debug("not cached");
             dsgPlayerData = basePlayerStorer.loadPlayer(playerID);
             if (dsgPlayerData != null) {
                 log4j.debug("caching");
-                cacheByID.put(new Long(dsgPlayerData.getPlayerID()), dsgPlayerData);
+                cacheByID.put(Long.valueOf(dsgPlayerData.getPlayerID()), dsgPlayerData);
                 cacheByName.put(dsgPlayerData.getName(), dsgPlayerData);
             }
         }
@@ -260,13 +260,13 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
     public synchronized void insertGame(DSGPlayerGameData dsgPlayerGameData) throws DSGPlayerStoreException {
         log4j.debug("insertGame(" + dsgPlayerGameData.getPlayerID() + ", " + dsgPlayerGameData.getGame() + ", " + dsgPlayerGameData.isHumanScore() + ")");
         basePlayerStorer.insertGame(dsgPlayerGameData);
-        DSGPlayerData dsgPlayerData = (DSGPlayerData) cacheByID.get(new Long(dsgPlayerGameData.getPlayerID()));
+        DSGPlayerData dsgPlayerData = (DSGPlayerData) cacheByID.get(Long.valueOf(dsgPlayerGameData.getPlayerID()));
         if (dsgPlayerData == null) {
             log4j.debug("not cached");
             dsgPlayerData = basePlayerStorer.loadPlayer(dsgPlayerGameData.getPlayerID());
             if (dsgPlayerData != null) {
                 log4j.debug("caching");
-                cacheByID.put(new Long(dsgPlayerData.getPlayerID()), dsgPlayerData);
+                cacheByID.put(Long.valueOf(dsgPlayerData.getPlayerID()), dsgPlayerData);
                 cacheByName.put(dsgPlayerData.getName(), dsgPlayerData);
             }
         } else {
@@ -278,13 +278,13 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
     public synchronized void updateGame(DSGPlayerGameData dsgPlayerGameData) throws DSGPlayerStoreException {
         log4j.debug("updateGame(" + dsgPlayerGameData.getPlayerID() + ", " + dsgPlayerGameData.getGame() + ", " + dsgPlayerGameData.isHumanScore() + ")");
         basePlayerStorer.updateGame(dsgPlayerGameData);
-        DSGPlayerData dsgPlayerData = (DSGPlayerData) cacheByID.get(new Long(dsgPlayerGameData.getPlayerID()));
+        DSGPlayerData dsgPlayerData = (DSGPlayerData) cacheByID.get(Long.valueOf(dsgPlayerGameData.getPlayerID()));
         if (dsgPlayerData == null) {
             log4j.debug("not cached");
             dsgPlayerData = basePlayerStorer.loadPlayer(dsgPlayerGameData.getPlayerID());
             if (dsgPlayerData != null) {
                 log4j.debug("caching");
-                cacheByID.put(new Long(dsgPlayerData.getPlayerID()), dsgPlayerData);
+                cacheByID.put(Long.valueOf(dsgPlayerData.getPlayerID()), dsgPlayerData);
                 cacheByName.put(dsgPlayerData.getName(), dsgPlayerData);
             }
         } else {
@@ -297,13 +297,13 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
             throws DSGPlayerStoreException {
 
         log4j.debug("loadGame(" + playerID + ", " + game + ", " + !computer + ")");
-        DSGPlayerData dsgPlayerData = (DSGPlayerData) cacheByID.get(new Long(playerID));
+        DSGPlayerData dsgPlayerData = (DSGPlayerData) cacheByID.get(Long.valueOf(playerID));
         if (dsgPlayerData == null) {
             log4j.debug("not cached");
             dsgPlayerData = basePlayerStorer.loadPlayer(playerID);
             if (dsgPlayerData != null) {
                 log4j.debug("caching");
-                cacheByID.put(new Long(dsgPlayerData.getPlayerID()), dsgPlayerData);
+                cacheByID.put(Long.valueOf(dsgPlayerData.getPlayerID()), dsgPlayerData);
                 cacheByName.put(dsgPlayerData.getName(), dsgPlayerData);
             }
         }
@@ -318,13 +318,13 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
     public synchronized Vector loadAllGames(long playerID) throws DSGPlayerStoreException {
 
         log4j.debug("loadAllGames(" + playerID + ")");
-        DSGPlayerData dsgPlayerData = (DSGPlayerData) cacheByID.get(new Long(playerID));
+        DSGPlayerData dsgPlayerData = (DSGPlayerData) cacheByID.get(Long.valueOf(playerID));
         if (dsgPlayerData == null) {
             log4j.debug("not cached");
             dsgPlayerData = basePlayerStorer.loadPlayer(playerID);
             if (dsgPlayerData != null) {
                 log4j.debug("caching");
-                cacheByID.put(new Long(dsgPlayerData.getPlayerID()), dsgPlayerData);
+                cacheByID.put(Long.valueOf(dsgPlayerData.getPlayerID()), dsgPlayerData);
                 cacheByName.put(dsgPlayerData.getName(), dsgPlayerData);
             }
         }

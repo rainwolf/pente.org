@@ -329,7 +329,7 @@ public class Scanner {
 //                ArrayList m = new ArrayList();
 //                Node w = node;
 //                while (w.getParent() != null) {
-//                    m.add(new Integer(w.getPosition()));
+//                    m.add(Integer.valueOf(w.getPosition()));
 //                    w = w.getParent();
 //                }
 //                // create a pente state out of those nodes

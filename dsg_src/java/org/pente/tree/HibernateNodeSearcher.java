@@ -94,7 +94,7 @@ public class HibernateNodeSearcher implements NodeSearcher {
     public Node loadAll() throws NodeSearchException {
 
         try {
-            root = (SimpleNode) session.get(SimpleNode.class, new Long(1));
+            root = (SimpleNode) session.get(SimpleNode.class, Long.valueOf(1));
             if (!lazy) {
                 // visit all nodes to load them from hibernate
                 List toVisit = new ArrayList(100);

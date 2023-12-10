@@ -72,7 +72,7 @@ public class SearchResultsTableModel extends AbstractTableModel {
         }
 
         public int compareTo(PercentData d) {
-            return new Double(d.data).compareTo(new Double(data));
+            return Double.valueOf(d.data).compareTo(Double.valueOf(data));
         }
 
         public String toString() {

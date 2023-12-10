@@ -25,7 +25,7 @@ public class AllowTbAccessAllDonors {
                 gameVenueStorer);
 
         DSGPlayerPreference pref =
-                new DSGPlayerPreference("tb", new Boolean(true));
+                new DSGPlayerPreference("tb", Boolean.valueOf(true));
         for (Iterator d = dsgPlayerStorer.getAllPlayersWhoDonated().iterator();
              d.hasNext(); ) {
             SimpleDSGDonationData s = (SimpleDSGDonationData) d.next();

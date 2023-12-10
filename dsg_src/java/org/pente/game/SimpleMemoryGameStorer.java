@@ -50,7 +50,7 @@ public class SimpleMemoryGameStorer implements GameStorer, PlayerStorer {
      *  @return boolean Flag if game has been stored
      */
     public synchronized boolean gameAlreadyStored(long gameID) {
-        return games.containsKey(new Long(gameID));
+        return games.containsKey(Long.valueOf(gameID));
     }
 
     /** Checks to see if the game has already been stored
@@ -68,7 +68,7 @@ public class SimpleMemoryGameStorer implements GameStorer, PlayerStorer {
      *  @param data The game data
      */
     public synchronized void storeGame(GameData data) {
-        games.put(new Long(data.getGameID()), data);
+        games.put(Long.valueOf(data.getGameID()), data);
         storePlayer(data.getPlayer1Data(), data.getSite());
         storePlayer(data.getPlayer2Data(), data.getSite());
     }
@@ -79,7 +79,7 @@ public class SimpleMemoryGameStorer implements GameStorer, PlayerStorer {
      *  @return GameData The game data
      */
     public synchronized GameData loadGame(long gameID, GameData data) {
-        return (GameData) games.get(new Long(gameID));
+        return (GameData) games.get(Long.valueOf(gameID));
     }
 
     /** Checks to see if the player has already been stored
@@ -93,7 +93,7 @@ public class SimpleMemoryGameStorer implements GameStorer, PlayerStorer {
         if (players == null) {
             return false;
         } else {
-            return players.containsKey(new Long(playerID));
+            return players.containsKey(Long.valueOf(playerID));
         }
     }
 
@@ -124,7 +124,7 @@ public class SimpleMemoryGameStorer implements GameStorer, PlayerStorer {
             sitePlayerIDs.put(site, players);
         }
 
-        players.put(new Long(data.getUserID()), data);
+        players.put(Long.valueOf(data.getUserID()), data);
 
         players = (Hashtable) siteNames.get(site);
         if (players == null) {
@@ -146,7 +146,7 @@ public class SimpleMemoryGameStorer implements GameStorer, PlayerStorer {
         if (players == null) {
             return null;
         } else {
-            return (PlayerData) players.get(new Long(playerID));
+            return (PlayerData) players.get(Long.valueOf(playerID));
         }
     }
 

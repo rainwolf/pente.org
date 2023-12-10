@@ -81,7 +81,7 @@ public class MySQLDSGReturnEmailStorer {
             result = stmt.executeQuery();
             if (result.next()) {
                 returnEmailData = new DSGReturnEmailData();
-                returnEmailData.setPid(new Long(result.getString(1)).longValue());
+                returnEmailData.setPid(Long.valueOf(result.getString(1)).longValue());
                 returnEmailData.setEmail(result.getString(2));
                 returnEmailData.setMessageId(messageId);
                 Timestamp sendDate = result.getTimestamp(3);

@@ -113,10 +113,10 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                 stmt.setString(3, dsgPlayerData.getEmail());
                 stmt.setString(4, dsgPlayerData.getEmailVisible() ? "Y" : "N");
                 stmt.setString(5, dsgPlayerData.getLocation());
-                stmt.setString(6, new Character(dsgPlayerData.getSex()).toString());
+                stmt.setString(6, Character.valueOf(dsgPlayerData.getSex()).toString());
                 stmt.setInt(7, dsgPlayerData.getAge());
                 stmt.setString(8, dsgPlayerData.getHomepage());
-                stmt.setString(9, new Character(dsgPlayerData.getPlayerType()).toString());
+                stmt.setString(9, Character.valueOf(dsgPlayerData.getPlayerType()).toString());
                 stmt.setString(10, dsgPlayerData.getTimezone());
                 stmt.executeUpdate();
 
@@ -175,7 +175,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                 stmt.setString(paramNum++, dsgPlayerData.getEmailValid() ? "Y" : "N");
                 stmt.setString(paramNum++, dsgPlayerData.getEmailVisible() ? "Y" : "N");
                 stmt.setString(paramNum++, dsgPlayerData.getLocation());
-                stmt.setString(paramNum++, new Character(dsgPlayerData.getSex()).toString());
+                stmt.setString(paramNum++, Character.valueOf(dsgPlayerData.getSex()).toString());
                 stmt.setInt(paramNum++, dsgPlayerData.getAge());
                 stmt.setString(paramNum++, dsgPlayerData.getHomepage());
                 stmt.setInt(paramNum++, dsgPlayerData.getLogins());
@@ -185,9 +185,9 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                 } else {
                     stmt.setTimestamp(paramNum++, null);
                 }
-                stmt.setString(paramNum++, new Character(dsgPlayerData.getStatus()).toString());
+                stmt.setString(paramNum++, Character.valueOf(dsgPlayerData.getStatus()).toString());
                 stmt.setTimestamp(paramNum++, new Timestamp(dsgPlayerData.getLastUpdateDate().getTime()));
-                stmt.setString(paramNum++, new Character(dsgPlayerData.getPlayerType()).toString());
+                stmt.setString(paramNum++, Character.valueOf(dsgPlayerData.getPlayerType()).toString());
                 stmt.setString(paramNum++, dsgPlayerData.getNote());
                 stmt.setString(paramNum++, dsgPlayerData.getTimezone());
                 stmt.setLong(paramNum++, dsgPlayerData.getPlayerID());
@@ -758,7 +758,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                 stmt.setDouble(6, dsgPlayerGameData.getRating());
                 stmt.setInt(7, dsgPlayerGameData.getStreak());
                 stmt.setTimestamp(8, new Timestamp(dsgPlayerGameData.getLastGameDate().getTime()));
-                stmt.setString(9, new Character(dsgPlayerGameData.getComputer()).toString());
+                stmt.setString(9, Character.valueOf(dsgPlayerGameData.getComputer()).toString());
                 stmt.executeUpdate();
 
             } finally {
@@ -805,7 +805,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
 //                stmt.setInt(7, dsgPlayerGameData.getRatingFloor());
                 stmt.setLong(7, dsgPlayerGameData.getPlayerID());
                 stmt.setInt(8, dsgPlayerGameData.getGame());
-                stmt.setString(9, new Character(dsgPlayerGameData.getComputer()).toString());
+                stmt.setString(9, Character.valueOf(dsgPlayerGameData.getComputer()).toString());
                 stmt.executeUpdate();
 
             } finally {
@@ -1944,7 +1944,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                 result = stmt.executeQuery();
 
                 while (result.next()) {
-                    resultMap.put(new Long(result.getLong(1)), result.getString(2));
+                    resultMap.put(Long.valueOf(result.getLong(1)), result.getString(2));
                 }
             } finally {
                 if (result != null) {

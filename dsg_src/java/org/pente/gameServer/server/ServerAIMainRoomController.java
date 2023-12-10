@@ -51,17 +51,17 @@ public class ServerAIMainRoomController implements DSGEventListener {
     private ServerAITableController getTable(int tableNum) {
 
         ServerAITableController controller =
-                (ServerAITableController) tables.get(new Integer(tableNum));
+                (ServerAITableController) tables.get(Integer.valueOf(tableNum));
         if (controller == null) {
             controller = new ServerAITableController(server);
-            tables.put(new Integer(tableNum), controller);
+            tables.put(Integer.valueOf(tableNum), controller);
         }
 
         return controller;
     }
 
     public void removeTable(int tableNum) {
-        tables.remove(new Integer(tableNum));
+        tables.remove(Integer.valueOf(tableNum));
     }
 
     public int addAIPlayer(DSGAddAITableEvent addEvent) {
@@ -71,7 +71,7 @@ public class ServerAIMainRoomController implements DSGEventListener {
         int error = ServerTable.NO_ERROR;
 
         try {
-            if (tables.get(new Integer(addEvent.getTable())) != null) {
+            if (tables.get(Integer.valueOf(addEvent.getTable())) != null) {
                 return DSGTableErrorEvent.ALREADY_IN_TABLE;
             } else {
 
@@ -127,7 +127,7 @@ public class ServerAIMainRoomController implements DSGEventListener {
     }
 
     public boolean isInTable(int tableNum) {
-        return tables.containsKey(new Integer(tableNum));
+        return tables.containsKey(Integer.valueOf(tableNum));
     }
 
     public void eventOccurred(final DSGEvent dsgEvent) {

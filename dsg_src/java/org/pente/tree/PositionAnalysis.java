@@ -68,10 +68,10 @@ public class PositionAnalysis {
 //                Threat t = (Threat) it.next();
 //                Integer i = (Integer) m.get(t.getMove());
 //                if (i == null) {
-//                    m.put(t.getMove(), new Integer(1));
+//                    m.put(t.getMove(), Integer.valueOf(1));
 //                }
 //                else {
-//                    m.put(t.getMove(), new Integer(i.intValue() + 1));
+//                    m.put(t.getMove(), Integer.valueOf(i.intValue() + 1));
 //                }
 //            }
 //            for (Iterator it = m.keySet().iterator(); it.hasNext();) {

@@ -103,7 +103,7 @@ public class BrainkingImporter {
 
                 gameData.setSite("BrainKing");
 
-                long gid = new Long(file.substring(0, file.length() - 4)).longValue();
+                long gid = Long.valueOf(file.substring(0, file.length() - 4));
                 gameData.setGameID(BASE_GID + gid);
                 System.out.println("gid " + gid);
 

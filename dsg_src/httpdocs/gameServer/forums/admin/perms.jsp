@@ -24,16 +24,16 @@
    static final Map permNames = new HashMap();
 
    static {
-      permNames.put(new Long(READ_FORUM), "Read Forum");
-      permNames.put(new Long(CREATE_THREAD), "Create Thread");
-      permNames.put(new Long(CREATE_MESSAGE), "Create Message");
-      permNames.put(new Long(MODERATOR), "Moderator");
-      permNames.put(new Long(CREATE_MESSAGE_ATTACHMENT), "Create Attachment");
-      permNames.put(new Long(SYSTEM_ADMIN), "System Admin");
-      permNames.put(new Long(CAT_ADMIN), "Category Admin");
-      permNames.put(new Long(FORUM_ADMIN), "Forum Admin");
-      permNames.put(new Long(GROUP_ADMIN), "Group Admin");
-      permNames.put(new Long(USER_ADMIN), "User Admin");
+      permNames.put(Long.valueOf(READ_FORUM), "Read Forum");
+      permNames.put(Long.valueOf(CREATE_THREAD), "Create Thread");
+      permNames.put(Long.valueOf(CREATE_MESSAGE), "Create Message");
+      permNames.put(Long.valueOf(MODERATOR), "Moderator");
+      permNames.put(Long.valueOf(CREATE_MESSAGE_ATTACHMENT), "Create Attachment");
+      permNames.put(Long.valueOf(SYSTEM_ADMIN), "System Admin");
+      permNames.put(Long.valueOf(CAT_ADMIN), "Category Admin");
+      permNames.put(Long.valueOf(FORUM_ADMIN), "Forum Admin");
+      permNames.put(Long.valueOf(GROUP_ADMIN), "Group Admin");
+      permNames.put(Long.valueOf(USER_ADMIN), "User Admin");
    }
 
    // types of users/groups to give permissions to
@@ -472,7 +472,7 @@
                <tr bgcolor="#eeeeee">
                   <% // Loop through the perm group, display the table headers:
                      for (int i = 0; i < permGroupDef.length; i++) {
-                        String header = ((String) permNames.get(new Long(permGroupDef[i]))).toUpperCase();
+                        String header = ((String) permNames.get(Long.valueOf(permGroupDef[i]))).toUpperCase();
                   %>
                   <td align="center">
                      <table cellpadding="3" cellspacing="0" border="0">
@@ -633,7 +633,7 @@
             <% // Loop through the perm group array, print out the perms we can set
                for (int i = 0; i < permGroupDef.length; i++) {
                   long perm = permGroupDef[i];
-                  String permName = (String) permNames.get(new Long(perm));
+                  String permName = (String) permNames.get(Long.valueOf(perm));
             %>
             <tr>
                <td><input type="checkbox" name="permission" value="<%= perm %>" id="<%= (i+1) %>"></td>

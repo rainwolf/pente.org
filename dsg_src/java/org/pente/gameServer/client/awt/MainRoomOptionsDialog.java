@@ -31,19 +31,19 @@ public class MainRoomOptionsDialog extends Dialog {
         // get state from stored preference if available
         playJoinSoundPref = (Boolean) preferenceHandler.getPref("playJoinSound");
         if (playJoinSoundPref == null) {
-            playJoinSoundPref = new Boolean(true);
+            playJoinSoundPref = Boolean.valueOf(true);
         }
         playInviteSoundPref = (Boolean) preferenceHandler.getPref("playInviteSound");
         if (playInviteSoundPref == null) {
-            playInviteSoundPref = new Boolean(true);
+            playInviteSoundPref = Boolean.valueOf(true);
         }
         showTimestampsPref = (Boolean) preferenceHandler.getPref("chatTimestamp");
         if (showTimestampsPref == null) {
-            showTimestampsPref = new Boolean(false);
+            showTimestampsPref = Boolean.valueOf(false);
         }
         showPlayerJoinExitPref = (Boolean) preferenceHandler.getPref("showPlayerJoinExit");
         if (showPlayerJoinExitPref == null) {
-            showPlayerJoinExitPref = new Boolean(true);
+            showPlayerJoinExitPref = Boolean.valueOf(true);
         }
 
         // create components
@@ -72,19 +72,19 @@ public class MainRoomOptionsDialog extends Dialog {
             // save state to server and close window
             if (playJoinSoundCheck.getState() != playJoinSoundPref.booleanValue()) {
                 preferenceHandler.storePref("playJoinSound",
-                        new Boolean(playJoinSoundCheck.getState()));
+                        Boolean.valueOf(playJoinSoundCheck.getState()));
             }
             if (playInviteSoundCheck.getState() != playInviteSoundPref.booleanValue()) {
                 preferenceHandler.storePref("playInviteSound",
-                        new Boolean(playInviteSoundCheck.getState()));
+                        Boolean.valueOf(playInviteSoundCheck.getState()));
             }
             if (showTimestampsCheck.getState() != showTimestampsPref.booleanValue()) {
                 preferenceHandler.storePref("chatTimestamp",
-                        new Boolean(showTimestampsCheck.getState()));
+                        Boolean.valueOf(showTimestampsCheck.getState()));
             }
             if (showPlayerJoinExitCheck.getState() != showPlayerJoinExitPref.booleanValue()) {
                 preferenceHandler.storePref("showPlayerJoinExit",
-                        new Boolean(showPlayerJoinExitCheck.getState()));
+                        Boolean.valueOf(showPlayerJoinExitCheck.getState()));
             }
             dispose();
         });

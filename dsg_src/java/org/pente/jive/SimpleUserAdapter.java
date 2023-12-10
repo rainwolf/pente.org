@@ -173,7 +173,7 @@ public abstract class SimpleUserAdapter implements User, Cacheable {
                 updatePropertyInDb(name, value);
 
                 // Re-add user to cache.
-                UserManagerFactory.userCache.put(new Long(ID), this);
+                UserManagerFactory.userCache.put(Long.valueOf(ID), this);
 
                 // fire off an event
                 Map params = new HashMap();
@@ -188,7 +188,7 @@ public abstract class SimpleUserAdapter implements User, Cacheable {
             insertPropertyIntoDb(name, value);
 
             // Re-add user to cache.
-            UserManagerFactory.userCache.put(new Long(ID), this);
+            UserManagerFactory.userCache.put(Long.valueOf(ID), this);
 
             // fire off an event
             Map params = new HashMap();
@@ -218,7 +218,7 @@ public abstract class SimpleUserAdapter implements User, Cacheable {
             deletePropertyFromDb(name);
 
             // Re-add user to cache.
-            UserManagerFactory.userCache.put(new Long(ID), this);
+            UserManagerFactory.userCache.put(Long.valueOf(ID), this);
         }
     }
 

@@ -146,9 +146,9 @@ public class FollowerServlet extends HttpServlet {
                         DSGPlayerPreference pref = new DSGPlayerPreference("socialGame", Integer.parseInt(game));
                         dsgPlayerStorer.storePlayerPreference(playerData.getPlayerID(), pref);
                     }
-                    DSGPlayerPreference pref = new DSGPlayerPreference("allow_followers_be_notified", new Boolean(Boolean.parseBoolean(allow_followers_be_notified)));
+                    DSGPlayerPreference pref = new DSGPlayerPreference("allow_followers_be_notified", Boolean.valueOf(Boolean.parseBoolean(allow_followers_be_notified)));
                     dsgPlayerStorer.storePlayerPreference(playerData.getPlayerID(), pref);
-                    pref = new DSGPlayerPreference("allow_notification_online_from_following", new Boolean(Boolean.parseBoolean(allow_notification_online_from_following)));
+                    pref = new DSGPlayerPreference("allow_notification_online_from_following", Boolean.valueOf(Boolean.parseBoolean(allow_notification_online_from_following)));
                     dsgPlayerStorer.storePlayerPreference(playerData.getPlayerID(), pref);
                     request.setAttribute("following", followerStorer.getFollowing(playerData.getPlayerID()));
                     request.setAttribute("followers", followerStorer.getFollowers(playerData.getPlayerID()));

@@ -172,7 +172,7 @@ public class FasterGameStorerSearcher implements GameStorerSearcher {
 
                 //TESTING REPLACING PARAMS WITH HARD-CODED
                 //filterOptionsWhere.append("and g.site_id = ? ");
-                //filterOptionsParams.addElement(new Integer(siteData.getSiteID()));
+                //filterOptionsParams.addElement(Integer.valueOf(siteData.getSiteID()));
 
                 filterOptionsWhere.append("and g.site_id = " + siteData.getSiteID() + " ");
             }
@@ -292,8 +292,8 @@ public class FasterGameStorerSearcher implements GameStorerSearcher {
         }
 
         if (filterData.getWinner() != GameData.UNKNOWN) {
-            filterOptionsWhere.append("and m.winner = " + new Integer(filterData.getWinner()) + " ");
-            //filterOptionsParams.addElement(new Integer(filterData.getWinner()));
+            filterOptionsWhere.append("and m.winner = " + Integer.valueOf(filterData.getWinner()) + " ");
+            //filterOptionsParams.addElement(Integer.valueOf(filterData.getWinner()));
         }
         return includeGameTable;
     }
@@ -434,7 +434,7 @@ public class FasterGameStorerSearcher implements GameStorerSearcher {
                 if (winner != GameData.UNKNOWN) {
 
                     boolean alreadyStored = true;
-                    GameStorerSearchResponseMoveData moveData = (GameStorerSearchResponseMoveData) moveResponses.get(new Integer(move));
+                    GameStorerSearchResponseMoveData moveData = (GameStorerSearchResponseMoveData) moveResponses.get(Integer.valueOf(move));
                     if (moveData == null) {
                         alreadyStored = false;
                         moveData = new SimpleGameStorerSearchResponseMoveData();
@@ -447,7 +447,7 @@ public class FasterGameStorerSearcher implements GameStorerSearcher {
                     }
 
                     if (!alreadyStored) {
-                        moveResponses.put(new Integer(move), moveData);
+                        moveResponses.put(Integer.valueOf(move), moveData);
                     }
                 }
             }

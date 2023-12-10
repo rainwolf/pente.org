@@ -59,6 +59,6 @@ public class RandUtil {
 //        // but if there are, they can be safely ignored.
 //    }
 //
-//    Long l = new Long(hashval);
+//    Long l = Long.valueOf(hashval);
 //
 //    return l;

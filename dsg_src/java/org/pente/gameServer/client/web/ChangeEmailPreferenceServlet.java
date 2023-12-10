@@ -77,7 +77,7 @@ public class ChangeEmailPreferenceServlet extends HttpServlet {
             String email = (String) request.getParameter("emailMe");
             boolean emailDsgMessages = email != null && email.equals("Y");
             DSGPlayerPreference p = new DSGPlayerPreference(
-                    "emailDsgMessages", new Boolean(emailDsgMessages));
+                    "emailDsgMessages", Boolean.valueOf(emailDsgMessages));
             dsgPlayerStorer.storePlayerPreference(
                     dsgPlayerData.getPlayerID(), p);
 

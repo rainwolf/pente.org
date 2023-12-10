@@ -68,7 +68,7 @@ public abstract class LocalNodeSearcher implements NodeSearcher {
     }
 
     public Node loadPosition(long hash) {
-        //return (Node) map.get(new Integer(hash));
+        //return (Node) map.get(Integer.valueOf(hash));
         throw new UnsupportedOperationException("not supported, bad");
     }
 

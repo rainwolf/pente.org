@@ -68,10 +68,10 @@ public class TableController implements DSGEventListener {
     }
 
     private TableData getTableData(int tableNum) {
-        TableData data = (TableData) tables.get(new Integer(tableNum));
+        TableData data = (TableData) tables.get(Integer.valueOf(tableNum));
         if (data == null) {
             data = new TableData();
-            tables.put(new Integer(tableNum), data);
+            tables.put(Integer.valueOf(tableNum), data);
         }
         return data;
     }

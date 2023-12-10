@@ -162,7 +162,7 @@ public class ForumsReturnEmailScanner {
                 boolean empty = true;
                 while (result.next()) {
                     empty = false;
-                    Long pid = new Long(result.getLong(1));
+                    Long pid = Long.valueOf(result.getLong(1));
                     pids.add(pid);
                 }
                 // don't remove this message from inbox if email not found

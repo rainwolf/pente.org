@@ -41,7 +41,7 @@ public class ZipFileGameStorerSearchResponseStream {
 
             PlayerData player1Data = gameData.getPlayer1Data();
             // write player 1 file
-            if (players.get(new Long(player1Data.getUserID())) == null) {
+            if (players.get(Long.valueOf(player1Data.getUserID())) == null) {
                 ZipEntry player1Entry = new ZipEntry("player/" + player1Data.getUserID());
                 zipOutputStream.putNextEntry(player1Entry);
                 objectOutputStream.writeObject(player1Data);
@@ -51,10 +51,10 @@ public class ZipFileGameStorerSearchResponseStream {
                 byteArrayOutputStream.reset();
                 zipOutputStream.closeEntry();
 
-                players.put(new Long(player1Data.getUserID()), "");
+                players.put(Long.valueOf(player1Data.getUserID()), "");
             }
             PlayerData player2Data = gameData.getPlayer2Data();
-            if (players.get(new Long(player2Data.getUserID())) == null) {
+            if (players.get(Long.valueOf(player2Data.getUserID())) == null) {
                 // write player 2 file
                 ZipEntry player2Entry = new ZipEntry("player/" + player2Data.getUserID());
                 zipOutputStream.putNextEntry(player2Entry);
@@ -65,7 +65,7 @@ public class ZipFileGameStorerSearchResponseStream {
                 byteArrayOutputStream.reset();
                 zipOutputStream.closeEntry();
 
-                players.put(new Long(player2Data.getUserID()), "");
+                players.put(Long.valueOf(player2Data.getUserID()), "");
             }
         }
 

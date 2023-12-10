@@ -1168,7 +1168,7 @@ public class GameBoardFrame extends Frame implements TableComponent,
                         if (e.getActionCommand().equals("Play")) {
                             GameBoardFrame.this.actionPerformed(e);
                             if (middleSetDialog.getIgnore()) {
-                                preferenceHandler.storePref("ims", new Boolean(true));
+                                preferenceHandler.storePref("ims", Boolean.valueOf(true));
                             }
                         }
                     });

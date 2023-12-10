@@ -314,7 +314,7 @@
                      <select size="5" name="forum" multiple>
                         <% for (Iterator i = forumFactory.getRootForumCategory().getRecursiveForums(); i.hasNext(); ) {
                            Forum forum = (Forum) i.next();
-                           if (!excludedForums.contains(new Long(forum.getID()))) {
+                           if (!excludedForums.contains(Long.valueOf(forum.getID()))) {
                         %>
                         <option value="<%= forum.getID() %>"><%= forum.getName() %>
                               <%      }

@@ -408,7 +408,7 @@ public class HttpGameServerThread implements Runnable {
                 out.write(new String("Content-Encoding: gzip" + HttpConstants.END_LINE).getBytes());
             } else {
                 out.write(new String("Content-Length: ").getBytes());
-                out.write(new Long(file.length()).toString().getBytes());
+                out.write(Long.valueOf(file.length()).toString().getBytes());
                 out.write(HttpConstants.END_LINE.getBytes());
             }
 

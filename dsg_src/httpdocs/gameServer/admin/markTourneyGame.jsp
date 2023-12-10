@@ -36,7 +36,7 @@
                stmt.setString(1, event);
                stmt.setString(2, round);
                stmt.setString(3, section);
-               stmt.setLong(4, new Long(gids[i]).longValue());
+               stmt.setLong(4, Long.valueOf(gids[i]).longValue());
                stmt.executeUpdate();
             }
          } finally {

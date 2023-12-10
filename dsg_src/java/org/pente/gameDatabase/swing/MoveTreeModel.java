@@ -7,11 +7,9 @@ import java.util.List;
 
 import javax.swing.*;
 import javax.swing.event.*;
-import javax.swing.text.*;
 import javax.swing.tree.*;
 
 import org.pente.game.*;
-import org.pente.gameServer.core.*;
 import org.pente.puzzle.*;
 
 public class MoveTreeModel extends DefaultTreeModel implements TreeSelectionListener {
