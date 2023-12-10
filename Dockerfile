@@ -9,7 +9,7 @@ COPY dsg_src/httpdocs/ /usr/local/tomcat/webapps/ROOT/
 COPY dsg_src/lib/* /usr/local/tomcat/webapps/ROOT/WEB-INF/lib/
 RUN mkdir -p /usr/local/tomcat/webapps/tmp_src
 # copy the code
-COPY dsg_src/java /usr/local/tomcat/webapps/tmp_src
+COPY deploy /usr/local/tomcat/webapps/tmp_src
 COPY build-docker.xml /usr/local/tomcat/webapps/
 ARG ENV=""
 # set to linux/amd64 for deployment

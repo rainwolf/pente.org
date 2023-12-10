@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+clear; printf '\e[3J';
+rsync -vurtd --exclude-from exclude_compile.txt --stats --progress dsg_src/java/ deploy/
+
 read -a array <<< "$@"
 
 docker system prune -af
@@ -32,7 +35,7 @@ else
       cd ../pente.org
     fi
     echo "Building ${target} for linux/amd64"
-    docker compose build "${target}"
+    docker compose build "${target}" || exit 1
   done
 fi
 
