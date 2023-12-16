@@ -53,6 +53,16 @@ services:
     depends_on:
       replica_auto_ssh:
         condition: service_healthy
+  pentai:
+    build:
+      dockerfile: pentai.Dockerfile
+    image: dsg_pentai
+    restart: always
+    environment:
+      - PENTAIPASSWORD=${PENTAIPASSWORD}
+    depends_on:
+      replica_auto_ssh:
+        condition: service_healthy
 networks:
   pente_org:
     driver: bridge
