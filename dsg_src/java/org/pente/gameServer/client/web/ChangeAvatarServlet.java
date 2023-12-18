@@ -91,7 +91,7 @@ public class ChangeAvatarServlet extends HttpServlet {
 
             // if request is multipart then we are saving, otherwise we are
             // viewing our profile
-            if (FileUploadBase.isMultipartContent(request)) {
+            if (ServletFileUpload.isMultipartContent(request)) {
 
                 // store request parameters in hash map for easy access
                 Map<String, String> params = new HashMap<String, String>();

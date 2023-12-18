@@ -1071,7 +1071,7 @@ public class GridBoardCanvas extends Canvas
                     GridBoardListener l = (GridBoardListener) listeners.elementAt(i);
 
                     // which button pressed changed in 1.4
-                    l.gridClicked(gridMove.x, gridMove.y, e.getModifiers());
+                    l.gridClicked(gridMove.x, gridMove.y, e.getModifiersEx());
                 }
             }
         }
