@@ -60,6 +60,11 @@ services:
     restart: always
     environment:
       - PENTAIPASSWORD=${PENTAIPASSWORD}
+    healthcheck:
+      test: ps ax | grep [p]ython || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 1000
     depends_on:
       replica_auto_ssh:
         condition: service_healthy
