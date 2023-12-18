@@ -19,6 +19,7 @@
 
 package org.pente.gameServer.server;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 import org.apache.log4j.*;
@@ -36,7 +37,7 @@ public class AIPlayerFactory {
 
         try {
             Class c = Class.forName(aiData.getClassName());
-            aiPlayer = (AIPlayer) c.newInstance();
+            aiPlayer = (AIPlayer) c.getDeclaredConstructor().newInstance();
 
             initAIPlayer(aiPlayer, aiData);
 
@@ -48,6 +49,10 @@ public class AIPlayerFactory {
             log4j.error("Problem getting AI player.", ie);
         } catch (ClassCastException cce) {
             log4j.error("Problem getting AI player.", cce);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
         }
 
         return aiPlayer;

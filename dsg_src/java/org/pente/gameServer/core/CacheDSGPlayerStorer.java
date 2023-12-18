@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 import java.util.List;
@@ -518,7 +520,7 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
                 obj.put("receipt-data", receiptDataStr);
                 obj.put("password", sharedSecret);
 
-                final URL url = new URL(production ? PRODUCTION_URL : SANDBOX_URL);
+                final URL url = new URI(production ? PRODUCTION_URL : SANDBOX_URL).toURL();
                 final HttpURLConnection conn = (HttpsURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setDoOutput(true);
@@ -584,6 +586,8 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
             } catch (JSONException e) {
                 e.printStackTrace();
                 return false;
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
             }
         }
 

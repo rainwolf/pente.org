@@ -15,6 +15,8 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -148,7 +150,7 @@ public class CacheNotificationServer implements NotificationServer {
         Runnable runnable = () -> {
             try {
                 // Create connection to send GCM Message request.
-                URL url = new URL("https://fcm.googleapis.com/fcm/send");
+                URL url = new URI("https://fcm.googleapis.com/fcm/send").toURL();
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestProperty("Authorization", "key=" + penteLiveGCMkey);
                 conn.setRequestProperty("Content-Type", "application/json");
@@ -175,6 +177,8 @@ public class CacheNotificationServer implements NotificationServer {
             } catch (NotificationServerException e) {
                 log4j.error("Removing android token failed. " + token);
                 e.printStackTrace();
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
             }
         };
         (new Thread(runnable)).start();

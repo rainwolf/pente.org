@@ -954,7 +954,7 @@ public class ImageInfo {
                     String name = args[index++];
                     System.out.print(name + ";");
                     if (name.startsWith("http://")) {
-                        in = new URL(name).openConnection().getInputStream();
+                        in = new URI(name).toURL().openConnection().getInputStream();
                     } else {
                         in = new FileInputStream(name);
                     }
