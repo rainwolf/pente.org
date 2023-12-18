@@ -22,9 +22,6 @@ package org.pente.gameServer.client.awt;
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.applet.AudioClip;
-
-import javax.swing.JPanel;
 
 import org.pente.gameServer.core.*;
 import org.pente.gameServer.client.*;
@@ -1118,17 +1115,11 @@ public class GameBoardFrame extends Frame implements TableComponent,
                     if (stateEvent.getWinner() != null && gameOptions.getPlaySound()) {
                         // if this player won
                         if (stateEvent.getWinner().equals(playerName)) {
-                            AudioClip sound = sounds.getSound("win");
-                            if (sound != null) {
-                                sound.play();
-                            }
+                            sounds.playSound("win");
                         }
                         // this player lost
                         else {
-                            AudioClip sound = sounds.getSound("lose");
-                            if (sound != null) {
-                                sound.play();
-                            }
+                            sounds.playSound("lose");
                         }
                     }
                 } else if (stateEvent.getState() == DSGGameStateTableEvent.NO_GAME_IN_PROGRESS) {
@@ -1352,11 +1343,8 @@ public class GameBoardFrame extends Frame implements TableComponent,
         gameBoard.getGridBoard().setThinkingPieceVisible(false);
         gameBoard.getGridBoard().setThinkingPiecePlayer(gameBoard.getGridState().getCurrentColor());
 
-        AudioClip moveSound = sounds.getSound("move");
-        if (playerType != 3 - gameBoard.getGridState().getCurrentPlayer() && // this player didn't make the move
-                gameOptions.getPlaySound() &&
-                moveSound != null) {
-            moveSound.play();
+        if (playerType != 3 - gameBoard.getGridState().getCurrentPlayer()) {
+            sounds.playSound("move");
         }
 
         if (state == DSGGameStateTableEvent.GAME_IN_PROGRESS) {
@@ -1622,12 +1610,9 @@ public class GameBoardFrame extends Frame implements TableComponent,
 
         ((PenteState) gameBoard.getGridState()).dPenteSwapDecisionMade(swapEvent.wantsToSwap());
 
-        AudioClip moveSound = sounds.getSound("move");
         // alert current player that it's their turn to move
-        if (playerType != 3 - gameBoard.getGridState().getCurrentPlayer() && // this player didn't make the move
-                gameOptions.getPlaySound() &&
-                moveSound != null) {
-            moveSound.play();
+        if (playerType != 3 - gameBoard.getGridState().getCurrentPlayer()) {
+            sounds.playSound("move");
         }
 
         // startup timers again        

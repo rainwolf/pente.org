@@ -14,4 +14,11 @@ public class Sounds {
     public AudioClip getSound(String name) {
         return (AudioClip) sounds.get(name);
     }
+
+    public void playSound(String name) {
+        AudioClip sound = getSound(name);
+        if (sound != null) {
+            sound.play();
+        }
+    }
 }

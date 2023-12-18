@@ -179,14 +179,12 @@ public class MainRoomPanel extends Panel implements ActionListener,
 
                 playerList.addPlayer(joinMainRoom.getDSGPlayerData());
 
-                AudioClip joinSound = sounds.getSound("join");
-                if (!joinMainRoom.getDSGPlayerData().isComputer() &&
-                        joinSound != null) {
+                if (!joinMainRoom.getDSGPlayerData().isComputer()) {
                     Boolean playJoinSoundPref = (Boolean)
                             preferenceHandler.getPref("playJoinSound");
                     if (playJoinSoundPref == null ||
                             playJoinSoundPref.booleanValue()) {
-                        joinSound.play();
+                        sounds.playSound("join");
                     }
                 }
 
@@ -305,14 +303,11 @@ public class MainRoomPanel extends Panel implements ActionListener,
                     invite.toFront();
 
 
-                    AudioClip inviteSound = sounds.getSound("invite");
-                    if (inviteSound != null) {
-                        Boolean playInviteSoundPref = (Boolean)
-                                preferenceHandler.getPref("playInviteSound");
-                        if (playInviteSoundPref == null ||
-                                playInviteSoundPref.booleanValue()) {
-                            inviteSound.play();
-                        }
+                    Boolean playInviteSoundPref = (Boolean)
+                            preferenceHandler.getPref("playInviteSound");
+                    if (playInviteSoundPref == null ||
+                            playInviteSoundPref.booleanValue()) {
+                        sounds.playSound("invite");
                     }
                 }
             }
