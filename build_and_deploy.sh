@@ -63,8 +63,16 @@ done
 
 
 # restart the containers with new images
-ssh debian@pente.org docker compose -f docker-compose.yml up -d
-ssh debian@wire.submanifold.be docker compose -f docker-compose-replica.yml up -d
+if [[ ${#images_main_push[@]} -ne 0 ]]
+then
+  echo "Restarting pente.org"
+  ssh debian@pente.org docker compose -f docker-compose.yml up -d
+fi
+if [[ ${#images_replica_push[@]} -ne 0 ]]
+then
+  echo "Restarting replica"
+  ssh debian@wire.submanifold.be docker compose -f docker-compose-replica.yml up -d
+fi
 # clean up dangling images
 for target in "debian@pente.org" "debian@wire.submanifold.be"
 do
