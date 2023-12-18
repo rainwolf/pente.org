@@ -23,7 +23,7 @@ import java.io.*;
 import java.util.*;
 import java.text.*;
 
-import org.pente.gameDatabase.swing.*;
+import org.pente.game.PlunkGameData;
 
 /** A game formatter that formats/parses games in a PNG like format.  PNG stands
  *  for Portable Game Notation and is used mostly for online chess games.  I have
@@ -235,6 +235,24 @@ public class PGNGameFormat implements GameFormat {
         return parse(new FileInputStream(f));
     }
 
+    public static byte[] readStream(InputStream i) throws IOException {
+
+        ByteArrayOutputStream o = new ByteArrayOutputStream();
+
+        while (true) {
+
+            byte bytes[] = new byte[1024];
+            int l = i.read(bytes);
+            if (l == -1) {
+                break;
+            } else {
+                o.write(bytes, 0, l);
+            }
+        }
+
+        return o.toByteArray();
+    }
+
     public PlunkGameData parse(InputStream in) throws IOException, ParseException {
 
         PlunkGameData gameData = null;
@@ -242,7 +260,7 @@ public class PGNGameFormat implements GameFormat {
         try {
             // read game into a StringBuffer
             StringBuffer buffer = new StringBuffer(new String(
-                    org.pente.gameDatabase.swing.Utilities.readStream(in)));
+                    this.readStream(in)));
 
             // parse the game data
             gameData = new PlunkGameData();

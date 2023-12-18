@@ -13,9 +13,6 @@ import org.apache.log4j.*;
 
 import org.pente.game.*;
 import org.pente.gameServer.core.*;
-import org.pente.gameServer.client.PenteBoardComponent;
-import org.pente.gameServer.client.awt.*;
-import org.pente.gameServer.client.swing.PenteBoardLW;
 
 public class BoardImageServlet extends HttpServlet {
 

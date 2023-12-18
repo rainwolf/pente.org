@@ -4,3 +4,9 @@ demo
 turnBased/swing
 puzzle/swing
 tutorial
+gameServer/client/awt
+gameServer/client/swing
+gameDatabase/swing
+pente/tree
+client/puzzle
+tools/SGFExporter.java
