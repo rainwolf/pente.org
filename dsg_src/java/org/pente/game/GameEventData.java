@@ -69,7 +69,7 @@ public interface GameEventData {
     /** Get the list of rounds for this event
      *  @param Vector The list of rounds
      */
-    public Vector getGameRoundData();
+    public Vector<GameRoundData> getGameRoundData();
 
     public void clearGameRoundData();
 

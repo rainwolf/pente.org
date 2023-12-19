@@ -204,7 +204,7 @@ public class SimpleGameStorerSearchRequestFormat implements ObjectFormat {
 
         GameStorerSearchRequestData requestData = convertObject(data);
 
-        Hashtable params = new Hashtable();
+        Hashtable<String, Object> params = new Hashtable<>();
 
         try {
             HttpUtilities.parseParams(buffer.toString(), params);

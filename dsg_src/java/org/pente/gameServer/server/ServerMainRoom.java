@@ -37,7 +37,7 @@ public class ServerMainRoom {
     protected DSGEventToPlayerRouter dsgEventRouter;
     protected CacheDSGPlayerStorer dsgPlayerStorer;
 
-    protected Map<String, DSGPlayerData> playersInMainRoom = new HashMap<String, DSGPlayerData>(30);
+    protected Map<String, DSGPlayerData> playersInMainRoom = new HashMap<>(30);
 
     // keeps track of which ignores the person sending chat has been told about
     // so we only tell them once per table that their chat is being ignored
@@ -54,7 +54,7 @@ public class ServerMainRoom {
         this.dsgPlayerStorer = (CacheDSGPlayerStorer) resources.getDsgPlayerStorer();
     }
 
-    public Collection getPlayersInMainRoom() {
+    public Collection<DSGPlayerData> getPlayersInMainRoom() {
         return playersInMainRoom.values();
     }
 

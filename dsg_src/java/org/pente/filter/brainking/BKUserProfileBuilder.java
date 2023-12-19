@@ -10,8 +10,8 @@ public class BKUserProfileBuilder implements FilterListener, Runnable {
 
     private BKUserProfileFilter bkUserProfileFilter;
 
-    private Hashtable cookies;
-    private Hashtable params;
+    private Hashtable<String, String> cookies;
+    private Hashtable<String, String> params;
 
     private PlayerData playerData;
 
@@ -54,7 +54,7 @@ public class BKUserProfileBuilder implements FilterListener, Runnable {
         playerData = new DefaultPlayerData();
         playerData.setUserID(Long.parseLong(playerID));
 
-        params = new Hashtable();
+        params = new Hashtable<>();
         params.put(BKConstants.USER_PROFILE_PARAM, playerID);
 
         bkUserProfileFilter = new BKUserProfileFilter(playerData);

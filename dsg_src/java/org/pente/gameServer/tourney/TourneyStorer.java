@@ -33,11 +33,11 @@ public interface TourneyStorer {
 
     public void removePlayerFromTourney(long pid, int eid) throws Throwable;
 
-    public List getTourneyPlayers(int eid) throws Throwable;
+    public List<TourneyPlayerData> getTourneyPlayers(int eid) throws Throwable;
 
     public List<Long> getTourneyPlayerPids(int eid) throws Throwable;
 
-    public List setInitialSeeds(int eid) throws Throwable;
+    public List<TourneyPlayerData> setInitialSeeds(int eid) throws Throwable;
 
     public void addTourneyListener(TourneyListener listener);
 

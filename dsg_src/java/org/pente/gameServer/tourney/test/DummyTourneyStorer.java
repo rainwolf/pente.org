@@ -3,12 +3,7 @@ package org.pente.gameServer.tourney.test;
 import java.util.List;
 
 import org.apache.log4j.Category;
-import org.pente.gameServer.tourney.DoubleEliminationFormat;
-import org.pente.gameServer.tourney.Tourney;
-import org.pente.gameServer.tourney.TourneyListener;
-import org.pente.gameServer.tourney.TourneyMatch;
-import org.pente.gameServer.tourney.TourneyRound;
-import org.pente.gameServer.tourney.TourneyStorer;
+import org.pente.gameServer.tourney.*;
 
 public class DummyTourneyStorer implements TourneyStorer {
 
@@ -77,11 +72,11 @@ public class DummyTourneyStorer implements TourneyStorer {
 
     }
 
-    public List getTourneyPlayers(int eid) throws Throwable {
+    public List<TourneyPlayerData> getTourneyPlayers(int eid) throws Throwable {
         return null;
     }
 
-    public List setInitialSeeds(int eid) throws Throwable {
+    public List<TourneyPlayerData> setInitialSeeds(int eid) throws Throwable {
         return null;
     }
 

@@ -24,11 +24,11 @@ import org.pente.gameServer.core.*;
 
 public class PlayerDataCache {
 
-    private Vector players = new Vector();
-    private Vector changeListeners = new Vector();
+    private Vector<DSGPlayerData> players = new Vector<>();
+    private Vector<PlayerDataChangeListener> changeListeners = new Vector<>();
 
     //for now not going to receive updates/deletes made from web server
-    private Vector ignored = new Vector();
+    private Vector<DSGIgnoreData> ignored = new Vector<>();
 
     public synchronized void addPlayer(DSGPlayerData data) {
         if (!players.contains(data)) {
@@ -42,7 +42,7 @@ public class PlayerDataCache {
 
     public synchronized void removePlayer(String name) {
         for (int i = 0; i < players.size(); i++) {
-            DSGPlayerData d = (DSGPlayerData) players.elementAt(i);
+            DSGPlayerData d = players.elementAt(i);
             if (d.getName().equals(name)) {
                 players.removeElementAt(i);
                 return;
@@ -52,7 +52,7 @@ public class PlayerDataCache {
 
     public synchronized DSGPlayerData getPlayer(String name) {
         for (int i = 0; i < players.size(); i++) {
-            DSGPlayerData d = (DSGPlayerData) players.elementAt(i);
+            DSGPlayerData d = players.elementAt(i);
             if (d.getName().equals(name)) {
                 return d;
             }
@@ -60,13 +60,13 @@ public class PlayerDataCache {
         return null;
     }
 
-    public synchronized Enumeration getAllPlayers() {
+    public synchronized Enumeration<DSGPlayerData> getAllPlayers() {
         return players.elements();
     }
 
     public synchronized void updatePlayer(DSGPlayerData updateData) {
         for (int i = 0; i < players.size(); i++) {
-            DSGPlayerData d = (DSGPlayerData) players.elementAt(i);
+            DSGPlayerData d = players.elementAt(i);
             if (d.getName().equals(updateData.getName())) {
                 players.removeElementAt(i);
                 break;
@@ -113,7 +113,7 @@ public class PlayerDataCache {
     public synchronized DSGIgnoreData getIgnore(long ignorePid) {
 
         for (int i = 0; i < ignored.size(); i++) {
-            DSGIgnoreData d2 = (DSGIgnoreData) ignored.elementAt(i);
+            DSGIgnoreData d2 = ignored.elementAt(i);
             if (d2.getIgnorePid() == ignorePid) {
                 return d2;
             }
@@ -131,7 +131,7 @@ public class PlayerDataCache {
     public synchronized void removeIgnore(long ignoredPid) {
 
         for (int i = 0; i < ignored.size(); i++) {
-            DSGIgnoreData d = (DSGIgnoreData) ignored.elementAt(i);
+            DSGIgnoreData d = ignored.elementAt(i);
             if (d.getIgnorePid() == ignoredPid) {
                 ignored.remove(i);
                 break;
@@ -142,7 +142,7 @@ public class PlayerDataCache {
 
     public synchronized boolean isChatIgnored(long ignoredPid) {
         for (int i = 0; i < ignored.size(); i++) {
-            DSGIgnoreData d = (DSGIgnoreData) ignored.elementAt(i);
+            DSGIgnoreData d = ignored.elementAt(i);
             if (d.getIgnorePid() == ignoredPid) {
                 return d.getIgnoreChat();
             }
@@ -152,7 +152,7 @@ public class PlayerDataCache {
 
     public synchronized boolean isInviteIgnored(long ignoredPid) {
         for (int i = 0; i < ignored.size(); i++) {
-            DSGIgnoreData d = (DSGIgnoreData) ignored.elementAt(i);
+            DSGIgnoreData d = ignored.elementAt(i);
             if (d.getIgnorePid() == ignoredPid) {
                 return d.getIgnoreInvite();
             }

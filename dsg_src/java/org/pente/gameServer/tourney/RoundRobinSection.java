@@ -5,7 +5,7 @@ import java.util.*;
 public class RoundRobinSection extends TourneySection {
 
     private int numPlayers = -1;
-    private List players = new ArrayList();
+    private List<TourneyPlayerData> players = new ArrayList<>();
     private boolean winners[];
     private long results[][];
 
@@ -26,7 +26,7 @@ public class RoundRobinSection extends TourneySection {
         matches.add(match);
     }
 
-    public List getMatches() {
+    public List<TourneyMatch> getMatches() {
         return matches;
     }
 
@@ -49,7 +49,7 @@ public class RoundRobinSection extends TourneySection {
         }
     }
 
-    public List getPlayers() {
+    public List<TourneyPlayerData> getPlayers() {
         return players;
     }
 
@@ -227,8 +227,8 @@ public class RoundRobinSection extends TourneySection {
 //        }
     }
 
-    public List getWinners() {
-        ArrayList l = new ArrayList();
+    public List<TourneyPlayerData> getWinners() {
+        ArrayList<TourneyPlayerData> l = new ArrayList<>();
         for (int i = 0; i < getNumPlayers(); i++) {
             if (winners[i]) l.add(players.get(i));
         }
@@ -240,10 +240,10 @@ public class RoundRobinSection extends TourneySection {
     }
 
     public void updateAlreadyPlayed(int alreadyPlayed[][]) {
-        for (Iterator it = players.iterator(); it.hasNext(); ) {
-            TourneyPlayerData p1 = (TourneyPlayerData) it.next();
-            for (Iterator it2 = players.iterator(); it2.hasNext(); ) {
-                TourneyPlayerData p2 = (TourneyPlayerData) it2.next();
+        for (Iterator<TourneyPlayerData> it = players.iterator(); it.hasNext(); ) {
+            TourneyPlayerData p1 = it.next();
+            for (Iterator<TourneyPlayerData> it2 = players.iterator(); it2.hasNext(); ) {
+                TourneyPlayerData p2 = it2.next();
                 if (p1.getSeed() != p2.getSeed()) {
                     alreadyPlayed[p1.getSeed()][p2.getSeed()]++;
                 }

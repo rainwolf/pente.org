@@ -35,14 +35,14 @@ public class ServerAIController {
     private Category log4j = Category.getInstance(
             ServerAIController.class.getName());
 
-    private Map aiPlayers;
+    private Map<String, ServerAIMainRoomController> aiPlayers;
     private Server server;
     private PasswordHelper passwordHelper;
 
     public ServerAIController(Server server, PasswordHelper passwordHelper) {
         this.server = server;
         this.passwordHelper = passwordHelper;
-        aiPlayers = new HashMap();
+        aiPlayers = new HashMap<>();
     }
 
     public synchronized int addAIPlayer(DSGAddAITableEvent addEvent) {

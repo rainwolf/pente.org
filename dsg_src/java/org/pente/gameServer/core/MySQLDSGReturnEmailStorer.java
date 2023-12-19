@@ -11,7 +11,7 @@ public class MySQLDSGReturnEmailStorer {
     private static final String DSG_PLAYER_TABLE = "dsg_player";
     private static final String DSG_RETURN_EMAIL_TABLE = "dsg_return_email";
 
-    private static final Vector ALL_TABLES = new Vector();
+    private static final Vector<String> ALL_TABLES = new Vector<>();
 
     static {
         ALL_TABLES.addElement(PLAYER_TABLE);

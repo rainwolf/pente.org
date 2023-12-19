@@ -7,7 +7,7 @@ import org.pente.gameServer.core.*;
 
 public class PreferenceHandler {
 
-    private Vector prefs = new Vector();
+    private Vector<DSGPlayerPreference> prefs = new Vector<>();
 
     private DSGEventSource dsgEventSource;
     private DSGEventListener dsgEventListener;
@@ -35,7 +35,7 @@ public class PreferenceHandler {
         synchronized (this) {
             boolean found = false;
             for (int i = 0; i < prefs.size(); i++) {
-                DSGPlayerPreference p = (DSGPlayerPreference) prefs.elementAt(i);
+                DSGPlayerPreference p = prefs.elementAt(i);
                 if (p.getName().equals(prefName)) {
                     found = true;
                     p.setValue(prefValue);
@@ -53,7 +53,7 @@ public class PreferenceHandler {
 
     public synchronized Object getPref(String prefName) {
         for (int i = 0; i < prefs.size(); i++) {
-            DSGPlayerPreference p = (DSGPlayerPreference) prefs.elementAt(i);
+            DSGPlayerPreference p = prefs.elementAt(i);
             if (p.getName().equals(prefName)) {
                 return p.getValue();
             }

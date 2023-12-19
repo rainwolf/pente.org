@@ -29,6 +29,8 @@ import org.apache.log4j.*;
  *
  * @author Jive Software, 2003
  */
+
+@SuppressWarnings("unchecked")
 public abstract class SimpleUserAdapter implements User, Cacheable {
 
     private static final Category log4j =
@@ -59,7 +61,7 @@ public abstract class SimpleUserAdapter implements User, Cacheable {
     protected boolean emailVisible = false;
     protected Date creationDate, modificationDate = new java.util.Date();
 
-    protected Map properties = null;
+    protected Map<String, String> properties = null;
     private Object propertiesLock = new Object();
 
     // User Interface -- note, Javadoc descriptions are left off so that
@@ -176,7 +178,7 @@ public abstract class SimpleUserAdapter implements User, Cacheable {
                 UserManagerFactory.userCache.put(Long.valueOf(ID), this);
 
                 // fire off an event
-                Map params = new HashMap();
+                Map<String, String> params = new HashMap<>();
                 params.put("Type", "propertyModify");
                 params.put("PropertyKey", name);
                 params.put("originalValue", original);
@@ -191,7 +193,7 @@ public abstract class SimpleUserAdapter implements User, Cacheable {
             UserManagerFactory.userCache.put(Long.valueOf(ID), this);
 
             // fire off an event
-            Map params = new HashMap();
+            Map<String, String> params = new HashMap<>();
             params.put("Type", "propertyAdd");
             params.put("PropertyKey", name);
             UserEvent event = new UserEvent(UserEvent.USER_MODIFIED, this, params);
@@ -208,7 +210,7 @@ public abstract class SimpleUserAdapter implements User, Cacheable {
         }
         if (properties.containsKey(name)) {
             // fire off an event
-            Map params = new HashMap();
+            Map<String, String> params = new HashMap<>();
             params.put("Type", "propertyDelete");
             params.put("PropertyKey", name);
             UserEvent event = new UserEvent(UserEvent.USER_MODIFIED, this, params);
@@ -222,7 +224,7 @@ public abstract class SimpleUserAdapter implements User, Cacheable {
         }
     }
 
-    public Iterator getPropertyNames() {
+    public Iterator<String> getPropertyNames() {
         // Lazy-load properties.
         synchronized (propertiesLock) {
             if (properties == null) {
@@ -297,7 +299,7 @@ public abstract class SimpleUserAdapter implements User, Cacheable {
      * Loads properties from the database.
      */
     private void loadPropertiesFromDb() {
-        this.properties = new Hashtable();
+        this.properties = new Hashtable<>();
         Connection con = null;
         PreparedStatement pstmt = null;
 

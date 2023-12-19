@@ -13,10 +13,10 @@ public class ServerData implements Serializable {
     private boolean tournament;
     private boolean privateServer;
 
-    private Vector gameEvents = new Vector();
-    private Vector loginMessages = new Vector();
+    private Vector<GameEventData> gameEvents = new Vector<>();
+    private Vector<String> loginMessages = new Vector<>();
 
-    private transient Vector players = new Vector();
+    private transient Vector<String> players = new Vector<>();
 
     public boolean isPrivateServer() {
         return privateServer;
@@ -62,11 +62,11 @@ public class ServerData implements Serializable {
         gameEvents.addElement(gameEvent);
     }
 
-    public Vector getGameEvents() {
+    public Vector<GameEventData> getGameEvents() {
         return gameEvents;
     }
 
-    public Vector getLoginMessages() {
+    public Vector<String> getLoginMessages() {
         return loginMessages;
     }
 
@@ -74,11 +74,11 @@ public class ServerData implements Serializable {
         loginMessages.addElement(message);
     }
 
-    public void setLoginMessages(Vector loginMessages) {
+    public void setLoginMessages(Vector<String> loginMessages) {
         this.loginMessages = loginMessages;
     }
 
-    public Vector getPlayers() {
+    public Vector<String> getPlayers() {
         return players;
     }
 

@@ -23,7 +23,7 @@ import java.util.Comparator;
 
 import org.pente.game.*;
 
-public class GameStorerSearchResponseMoveDataComparator implements Comparator {
+public class GameStorerSearchResponseMoveDataComparator implements Comparator<Object> {
 
     public static final int SORT_POSITION = 0;
     public static final int SORT_GAMES = 1;
@@ -37,14 +37,12 @@ public class GameStorerSearchResponseMoveDataComparator implements Comparator {
 
     public int compare(Object obj1, Object obj2) {
 
-        if (!(obj1 instanceof GameStorerSearchResponseMoveData) ||
-                !(obj2 instanceof GameStorerSearchResponseMoveData)) {
+        if (!(obj1 instanceof GameStorerSearchResponseMoveData moveData1) ||
+                !(obj2 instanceof GameStorerSearchResponseMoveData moveData2)) {
             throw new IllegalArgumentException("Invalid objects");
         }
 
         int compareResult = 0;
-        GameStorerSearchResponseMoveData moveData1 = (GameStorerSearchResponseMoveData) obj1;
-        GameStorerSearchResponseMoveData moveData2 = (GameStorerSearchResponseMoveData) obj2;
 
         switch (sortField) {
 
@@ -86,17 +84,17 @@ public class GameStorerSearchResponseMoveDataComparator implements Comparator {
         int numeric2 = Integer.parseInt(move2.substring(1));
 
         if (alpha1.equals(alpha2)) {
-            return Integer.valueOf(numeric1).compareTo(Integer.valueOf(numeric2));
+            return Integer.compare(numeric1, numeric2);
         } else {
             return move1.compareTo(move2);
         }
     }
 
     public int compareGames(GameStorerSearchResponseMoveData moveData1, GameStorerSearchResponseMoveData moveData2) {
-        return Integer.valueOf(moveData1.getGames()).compareTo(Integer.valueOf(moveData2.getGames()));
+        return Integer.compare(moveData1.getGames(), moveData2.getGames());
     }
 
     public int comparePercentages(GameStorerSearchResponseMoveData moveData1, GameStorerSearchResponseMoveData moveData2) {
-        return Double.valueOf(moveData1.getPercentage()).compareTo(Double.valueOf(moveData2.getPercentage()));
+        return Double.compare(moveData1.getPercentage(), moveData2.getPercentage());
     }
 }

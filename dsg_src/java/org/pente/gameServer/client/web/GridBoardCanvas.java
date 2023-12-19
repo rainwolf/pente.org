@@ -69,7 +69,7 @@ public class GridBoardCanvas extends Canvas
     private Map<Integer, List<Integer>> goTerritory;
 
     private String gameName;
-    private Vector gridPieces;
+    private Vector<GridPiece> gridPieces;
     private GridPiece highlightPiece;
     private GridPiece thinkingPiece;
     private GridPiece oldThinkingPiece;
@@ -104,15 +104,15 @@ public class GridBoardCanvas extends Canvas
     private Color transparentShadowColor;
 
     // move listeners
-    private Vector listeners;
+    private Vector<GridBoardListener> listeners;
 
     private static final Font MESSAGE_FONT = new Font("Arial", Font.PLAIN, 12);
     private String message;
     private boolean hideMessage = false;
 
     public GridBoardCanvas() {
-        listeners = new Vector();
-        gridPieces = new Vector();
+        listeners = new Vector<>();
+        gridPieces = new Vector<>();
         gridPieceSize = -1;
 
         addMouseListener(new MoveEventGenerator());
@@ -179,8 +179,8 @@ public class GridBoardCanvas extends Canvas
         this.piecesOnGrid = onGrid;
     }
 
-    public Vector getGridPieces() {
-        return (Vector) gridPieces.clone();
+    public Vector<GridPiece> getGridPieces() {
+        return new Vector<GridPiece>(gridPieces);
     }
 
     public void setBackgroundColor(int color) {
@@ -1127,7 +1127,7 @@ public class GridBoardCanvas extends Canvas
             // moved out of synchronized block due to deadlock
             if (gridMoved) {
                 for (int i = 0; i < listeners.size(); i++) {
-                    GridBoardListener l = (GridBoardListener) listeners.elementAt(i);
+                    GridBoardListener l = listeners.elementAt(i);
                     l.gridMoved(gridMove.x, gridMove.y);
                 }
             }

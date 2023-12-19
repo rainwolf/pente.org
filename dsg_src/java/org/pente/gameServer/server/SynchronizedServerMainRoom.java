@@ -101,7 +101,7 @@ public class SynchronizedServerMainRoom
     }
 
     /** synchronized to control access to players in main room */
-    public synchronized Collection getPlayersInMainRoom() {
+    public synchronized Collection<DSGPlayerData> getPlayersInMainRoom() {
         return serverMainRoom.getPlayersInMainRoom();
     }
 

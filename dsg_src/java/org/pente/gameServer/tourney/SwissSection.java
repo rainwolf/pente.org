@@ -9,9 +9,9 @@ public class SwissSection extends TourneySection {
     private static final Category log4j = Category.getInstance(
             SwissSection.class.getName());
 
-    List players = new ArrayList();
-    List matches = new ArrayList();
-    List swissMatches = new ArrayList();
+    List<TourneyPlayerData> players = new ArrayList<>();
+    List<TourneyMatch> matches = new ArrayList<>();
+    List<SingleEliminationMatch> swissMatches = new ArrayList<>();
 
 
     public SwissSection(int section) {
@@ -21,18 +21,18 @@ public class SwissSection extends TourneySection {
     // custom swiss methods
     void updatePlayerData(Tourney tourney) {
         // reset player data
-        for (Iterator it = tourney.getRound(1).getPlayers().iterator(); it.hasNext(); ) {
-            TourneyPlayerData p = (TourneyPlayerData) it.next();
+        for (Iterator<TourneyPlayerData> it = tourney.getRound(1).getPlayers().iterator(); it.hasNext(); ) {
+            TourneyPlayerData p = it.next();
             p.reset();
             p.setRandom();
         }
 
         // update match wins for all players
-        for (Iterator it = tourney.getRounds().iterator(); it.hasNext(); ) {
-            TourneyRound r = (TourneyRound) it.next();
+        for (Iterator<TourneyRound> it = tourney.getRounds().iterator(); it.hasNext(); ) {
+            TourneyRound r = it.next();
             SwissSection s = (SwissSection) r.getSection(1);
-            for (Iterator it2 = s.getSwissMatches().iterator(); it2.hasNext(); ) {
-                SingleEliminationMatch m = (SingleEliminationMatch) it2.next();
+            for (Iterator<SingleEliminationMatch> it2 = s.getSwissMatches().iterator(); it2.hasNext(); ) {
+                SingleEliminationMatch m = it2.next();
                 m.getPlayer1().incrementMatchWins(m.getPlayer1Wins());
                 m.getPlayer1().incrementMatchLosses(m.getPlayer2Wins());
                 if (!m.isBye()) {
@@ -54,11 +54,11 @@ public class SwissSection extends TourneySection {
         }
 
         // update opponent wins for all players
-        for (Iterator it = tourney.getRounds().iterator(); it.hasNext(); ) {
-            TourneyRound r = (TourneyRound) it.next();
+        for (Iterator<TourneyRound> it = tourney.getRounds().iterator(); it.hasNext(); ) {
+            TourneyRound r = it.next();
             SwissSection s = (SwissSection) r.getSection(1);
-            for (Iterator it2 = s.getSwissMatches().iterator(); it2.hasNext(); ) {
-                SingleEliminationMatch m = (SingleEliminationMatch) it2.next();
+            for (Iterator<SingleEliminationMatch> it2 = s.getSwissMatches().iterator(); it2.hasNext(); ) {
+                SingleEliminationMatch m = it2.next();
                 // byes increment 2*round num per win
                 if (m.isBye()) {
                     m.getPlayer1().incrementByes();
@@ -85,7 +85,7 @@ public class SwissSection extends TourneySection {
      * 2. opponent wins
      * 3. random number
      */
-    public List getPlayersRanked(Tourney tourney) {
+    public List<TourneyPlayerData> getPlayersRanked(Tourney tourney) {
 
         updatePlayerData(tourney);
 
@@ -119,7 +119,7 @@ public class SwissSection extends TourneySection {
         return ranked;
     }
 
-    public List getPlayers() {
+    public List<TourneyPlayerData> getPlayers() {
         return players;
     }
 
@@ -132,11 +132,11 @@ public class SwissSection extends TourneySection {
         matches.add(match);
     }
 
-    public List getMatches() {
+    public List<TourneyMatch> getMatches() {
         return matches;
     }
 
-    public List getSwissMatches() {
+    public List<SingleEliminationMatch> getSwissMatches() {
         return swissMatches;
     }
 
@@ -170,7 +170,7 @@ public class SwissSection extends TourneySection {
         });
 
         // seems kind of wasteful to re-run all of this every time a game completes
-        swissMatches = new ArrayList();
+        swissMatches = new ArrayList<>();
 
         //look through matches, determine winners, counts if match complete
         SingleEliminationMatch currentMatch = null;
@@ -248,7 +248,7 @@ public class SwissSection extends TourneySection {
         }
 
         players.clear();
-        for (Iterator it = swissMatches.iterator(); it.hasNext(); ) {
+        for (Iterator<SingleEliminationMatch> it = swissMatches.iterator(); it.hasNext(); ) {
             SingleEliminationMatch m = (SingleEliminationMatch) it.next();
             players.add(m.getPlayer1());
             if (!m.isBye()) players.add(m.getPlayer2());
@@ -256,7 +256,7 @@ public class SwissSection extends TourneySection {
     }
 
 
-    public List getWinners() {
+    public List<TourneyPlayerData> getWinners() {
         // all players play all rounds
         // round will have to determine if highest player is actual winner
         return getPlayersRanked(this.round.getTourney());

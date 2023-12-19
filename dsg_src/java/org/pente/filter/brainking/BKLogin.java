@@ -8,13 +8,13 @@ import org.pente.filter.http.*;
 public class BKLogin implements LineFilter {
 
     private String uid;
-    private Hashtable cookies;
+    private Hashtable<String, String> cookies;
 
     public BKLogin(String uid) {
         this.uid = uid;
     }
 
-    public Hashtable getCookies() {
+    public Hashtable<String, String> getCookies() {
 
         cookies = BKConstants.getCookies(uid);
 

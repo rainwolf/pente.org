@@ -34,7 +34,7 @@ public class GridBoardOrderedPieceCollectionAdapter extends OrderedPieceCollecti
 
     private GridBoardComponent gridBoardComponent;
 
-    private Vector listeners;
+    private Vector<GridBoardListener> listeners;
 
     // this is what the client has set the thinking piece to
     // be.  However sometimes this component must set the actual
@@ -55,7 +55,7 @@ public class GridBoardOrderedPieceCollectionAdapter extends OrderedPieceCollecti
         this.allowMovesWhileViewingHistory = allowMovesWhileViewingHistory;
         clientThinkingPieceVisible = true;
 
-        listeners = new Vector();
+        listeners = new Vector<>();
         basePieceCollection.addGridBoardListener(this);
     }
 
@@ -195,7 +195,7 @@ public class GridBoardOrderedPieceCollectionAdapter extends OrderedPieceCollecti
         }
 
         for (int i = 0; i < listeners.size(); i++) {
-            GridBoardListener l = (GridBoardListener) listeners.elementAt(i);
+            GridBoardListener l = listeners.elementAt(i);
             l.gridMoved(x, y);
         }
     }
@@ -279,7 +279,7 @@ public class GridBoardOrderedPieceCollectionAdapter extends OrderedPieceCollecti
     private GridPiece getHighlightPiece(int turn) {
 
         for (int i = pieceActions.size() - 1; i >= 0; i--) {
-            GridPieceAction action = (GridPieceAction) pieceActions.elementAt(i);
+            GridPieceAction action = pieceActions.elementAt(i);
             if (action.getTurn() == turn) {
                 //if (action.getAction() == GridPieceAction.REMOVE) {
                 //    return null;

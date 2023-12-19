@@ -25,21 +25,21 @@ import org.pente.game.*;
 
 public class GridStatePieceCollectionAdapter extends GridStateDecorator {
 
-    protected Vector listeners;
-    protected Vector gridPieces;
+    protected Vector<OrderedPieceCollection> listeners;
+    protected Vector<GridPieceAction> gridPieces;
 
     public GridStatePieceCollectionAdapter(GridState gridState) {
         super(gridState);
 
-        listeners = new Vector();
-        gridPieces = new Vector();
+        listeners = new Vector<>();
+        gridPieces = new Vector<>();
     }
 
     public GridStatePieceCollectionAdapter(int boardSizeX, int boardSizeY) {
         super(boardSizeX, boardSizeY);
 
-        listeners = new Vector();
-        gridPieces = new Vector();
+        listeners = new Vector<>();
+        gridPieces = new Vector<>();
     }
 
     public void addOrderedPieceCollectionListener(OrderedPieceCollection pieceCollection) {

@@ -4,7 +4,7 @@ import java.util.*;
 
 public class SingleEliminationSection extends TourneySection {
 
-    List players = new ArrayList();
+    List<TourneyPlayerData> players = new ArrayList<>();
     List<TourneyMatch> matches = new ArrayList<TourneyMatch>();
 
     /**
@@ -12,13 +12,13 @@ public class SingleEliminationSection extends TourneySection {
      * and provide an overall summary of the match, matches above should
      * really be called games.
      */
-    private List singleEliminationMatches = null;
+    private List<SingleEliminationMatch> singleEliminationMatches = null;
 
     public SingleEliminationSection(int section) {
         super(section);
     }
 
-    public List getPlayers() {
+    public List<TourneyPlayerData> getPlayers() {
         return players;
     }
 
@@ -64,15 +64,15 @@ public class SingleEliminationSection extends TourneySection {
     }
 
 
-    public List getSingleEliminationMatches() {
+    public List<SingleEliminationMatch> getSingleEliminationMatches() {
         return singleEliminationMatches;
     }
 
     public SingleEliminationMatch getSingleEliminationMatch(
             TourneyMatch lastMatchPlayed) {
 
-        for (Iterator it = singleEliminationMatches.iterator(); it.hasNext(); ) {
-            SingleEliminationMatch m = (SingleEliminationMatch) it.next();
+        for (Iterator<SingleEliminationMatch> it = singleEliminationMatches.iterator(); it.hasNext(); ) {
+            SingleEliminationMatch m = it.next();
             if (m.samePlayers(lastMatchPlayed)) {
                 return m;
             }
@@ -83,13 +83,13 @@ public class SingleEliminationSection extends TourneySection {
 
     public void init() {
         // seems kind of wasteful to re-run all of this every time a game completes
-        singleEliminationMatches = new ArrayList();
+        singleEliminationMatches = new ArrayList<>();
         players.clear();
 
         //look through matches, determine winners, counts if match complete
         SingleEliminationMatch currentMatch = null;
         for (int i = 0; i < matches.size(); i++) {
-            TourneyMatch m = (TourneyMatch) matches.get(i);
+            TourneyMatch m = matches.get(i);
 
             // setup player list
             if (!players.contains(m.getPlayer1())) {
@@ -168,10 +168,10 @@ public class SingleEliminationSection extends TourneySection {
     }
 
     // depends on init having been run
-    public List getWinners() {
-        List winners = new ArrayList();
-        for (Iterator it = singleEliminationMatches.iterator(); it.hasNext(); ) {
-            SingleEliminationMatch m = (SingleEliminationMatch) it.next();
+    public List<TourneyPlayerData> getWinners() {
+        List<TourneyPlayerData> winners = new ArrayList<>();
+        for (Iterator<SingleEliminationMatch> it = singleEliminationMatches.iterator(); it.hasNext(); ) {
+            SingleEliminationMatch m = it.next();
             if ((m.isBye() && !m.isForfeit()) || m.getResult() == 1) {
                 winners.add(m.getPlayer1());
             } else if (m.getResult() == 2) {
@@ -186,8 +186,8 @@ public class SingleEliminationSection extends TourneySection {
     }
 
     public void updateAlreadyPlayed(int alreadyPlayed[][]) {
-        for (Iterator it = singleEliminationMatches.iterator(); it.hasNext(); ) {
-            SingleEliminationMatch m = (SingleEliminationMatch) it.next();
+        for (Iterator<SingleEliminationMatch> it = singleEliminationMatches.iterator(); it.hasNext(); ) {
+            SingleEliminationMatch m = it.next();
             if (m.isBye()) continue;
             alreadyPlayed[m.getPlayer1().getSeed()][m.getPlayer2().getSeed()]++;
             alreadyPlayed[m.getPlayer2().getSeed()][m.getPlayer1().getSeed()]++;

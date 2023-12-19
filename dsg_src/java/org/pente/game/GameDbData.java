@@ -14,7 +14,7 @@ public interface GameDbData {
 
     public void addGameTreeData(GameTreeData gameTreeData);
 
-    public void addGameTreeData(Vector gameTreeData);
+    public void addGameTreeData(Vector<GameTreeData> gameTreeData);
 
     public List<GameTreeData> getGameTreeData();
 

@@ -30,7 +30,7 @@ public class DSGEventPingManager implements PingManager {
     private static Category log4j =
             Category.getInstance(DSGEventPingManager.class.getName());
 
-    private Map players;
+    private Map<String, PingTimeData> players;
     private DSGEventToPlayerRouter dsgRouter;
 
     private volatile boolean running;
@@ -41,19 +41,19 @@ public class DSGEventPingManager implements PingManager {
     public DSGEventPingManager(final DSGEventToPlayerRouter dsgRouter) {
         this.dsgRouter = dsgRouter;
 
-        players = Collections.synchronizedMap(new HashMap());
+        players = Collections.synchronizedMap(new HashMap<>());
 
         Runnable pingRunnable = () -> {
 
             DSGPingEvent pingEvent = null;
             while (running) {
 
-                Map playersCopy = null;
+                Map<String, PingTimeData> playersCopy = null;
                 synchronized (players) {
-                    playersCopy = new HashMap(players);
+                    playersCopy = new HashMap<>(players);
                 }
 
-                Iterator names = playersCopy.keySet().iterator();
+                Iterator<String> names = playersCopy.keySet().iterator();
                 while (names.hasNext()) {
                     String name = (String) names.next();
                     //log4j.info(name + ": " + players.get(name));

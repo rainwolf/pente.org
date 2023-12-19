@@ -35,10 +35,10 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
     public static final String GAME_EVENT_TABLE = "game_event";
 
     private DBHandler dbHandler;
-    private Vector tree;
+    private Vector<GameTreeData> tree;
 
     /** The names of all tables, used to lock them at one time */
-    protected static final Vector<String> ALL_TABLES = new Vector<String>();
+    protected static final Vector<String> ALL_TABLES = new Vector<>();
 
     static {
         ALL_TABLES.addElement(MySQLPenteGameStorer.GAME_TABLE);
@@ -69,7 +69,7 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
 
         this.dbHandler = dbHandler;
 
-        tree = new Vector();
+        tree = new Vector<>();
 
         // update the tree initially so calls to getSiteData, getEventData
         // dont' fail.  don't need site tree until getSiteTree() is called.
@@ -81,7 +81,7 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
     }
 
     /** Calling this can take awhile since the tree is completely regenerated */
-    public Vector getGameTree() {
+    public Vector<GameTreeData> getGameTree() {
 
         try {
             updateGameTree(dbHandler);
@@ -110,7 +110,7 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
         PreparedStatement stmt = null;
         ResultSet result = null;
 
-        Vector<GameTreeData> newTree = new Vector<GameTreeData>();
+        Vector<GameTreeData> newTree = new Vector<>();
 
         try {
             con = dbHandler.getConnection();
@@ -415,8 +415,8 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
             if (gameTreeData == null) {
                 return null;
             }
-            for (Iterator sites = gameTreeData.getGameSiteData().iterator(); sites.hasNext(); ) {
-                GameSiteData gameSiteData = (GameSiteData) sites.next();
+            for (Iterator<GameSiteData> sites = gameTreeData.getGameSiteData().iterator(); sites.hasNext(); ) {
+                GameSiteData gameSiteData = sites.next();
                 if (gameSiteData.getName().equals(name)) {
                     return gameSiteData;
                 }

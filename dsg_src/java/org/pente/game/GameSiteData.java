@@ -87,11 +87,13 @@ public interface GameSiteData {
     /** Get the list of events for this event
      *  @param Vector The list of events
      */
-    public List getGameEventData();
+    public List<GameEventData> getGameEventData();
 
 
-    /** Create a copy of the data in this object in a new object
-     *  @return Object A copy of this object.
+    /**
+     * Create a copy of the data in this object in a new object
+     *
+     * @return Object A copy of this object.
      */
-    public Object clone();
+    public GameSiteData clone();
 }

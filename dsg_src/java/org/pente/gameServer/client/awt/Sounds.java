@@ -5,7 +5,7 @@ import java.util.Hashtable;
 
 public class Sounds {
 
-    private Hashtable sounds = new Hashtable();
+    private Hashtable<String, AudioClip> sounds = new Hashtable();
 
     public void addSound(AudioClip sound, String name) {
         sounds.put(name, sound);

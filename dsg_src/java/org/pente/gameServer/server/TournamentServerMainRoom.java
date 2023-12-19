@@ -19,8 +19,12 @@
 
 package org.pente.gameServer.server;
 
+import org.pente.gameServer.core.DSGPlayerStoreException;
 import org.pente.gameServer.event.*;
 import org.pente.gameServer.tourney.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class TournamentServerMainRoom extends ServerMainRoom {
 
@@ -37,7 +41,15 @@ public class TournamentServerMainRoom extends ServerMainRoom {
                     if (command.equals("pause")) {
                         ((TournamentServer) server).startNewTimers = false;
                         ((TournamentServer) server).stopWait();
-                        server.mainRoom.eventOccurred(new DSGSystemMessageTableEvent(0, player + " paused the tournament, waiting for "+String.join(", ", tourney.getDirectors())+" to restart."));
+                        List<String> directors = new ArrayList<>();
+                        for(Long pid : tourney.getDirectors()) {
+                            try {
+                                directors.add(dsgPlayerStorer.loadPlayer(pid).getName());
+                            } catch (DSGPlayerStoreException e) {
+//                                throw new RuntimeException(e);
+                            }
+                        }
+                        server.mainRoom.eventOccurred(new DSGSystemMessageTableEvent(0, player + " paused the tournament, waiting for "+String.join(", ", directors)+" to restart."));
                     } else if (command.equals("start")) {
                         if (!tourney.isComplete()) {
                             if (tourney.getLastRound().isComplete()) {

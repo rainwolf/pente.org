@@ -10,7 +10,7 @@ public class RoundRobinFormat extends AbstractTourneyFormat {
         return "Round-Robin";
     }
 
-    public TourneyRound createFirstRound(List players, Tourney tourney) {
+    public TourneyRound createFirstRound(List<TourneyPlayerData> players, Tourney tourney) {
         return createRound(players, tourney, 1);
     }
     // createNextRound implements in AbstractTourneyFormat
@@ -38,12 +38,13 @@ public class RoundRobinFormat extends AbstractTourneyFormat {
         }
 
         // initially place player data in appropriate section
-        List<TourneyPlayerData> sections[] = new List[numSections];
+        @SuppressWarnings("unchecked")
+        List<TourneyPlayerData>[] sections = new List[numSections];
 
         // create new sections for round
         for (int i = 0; i < numSections; i++) {
             round.addSection(new RoundRobinSection(i + 1));
-            sections[i] = new ArrayList();
+            sections[i] = new ArrayList<>();
         }
 
 //        // place players into sections according to seeding and down/back alg.
@@ -85,10 +86,10 @@ public class RoundRobinFormat extends AbstractTourneyFormat {
         // now for each section, create matches
         for (int i = 0; i < numSections; i++) {
             for (int j = 0; j < sections[i].size(); j++) {
-                TourneyPlayerData p1 = (TourneyPlayerData) sections[i].get(j);
+                TourneyPlayerData p1 = sections[i].get(j);
                 for (int k = 0; k < sections[i].size(); k++) {
                     if (j == k) continue;
-                    TourneyPlayerData p2 = (TourneyPlayerData) sections[i].get(k);
+                    TourneyPlayerData p2 = sections[i].get(k);
                     TourneyMatch m = new TourneyMatch();
                     m.setPlayer1(p1);
                     m.setPlayer2(p2);

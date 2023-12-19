@@ -229,7 +229,7 @@ public class ImageInfo {
     private InputStream in;
     private DataInput din;
     private boolean collectComments = true;
-    private Vector comments;
+    private Vector<String> comments;
     private boolean determineNumberOfImages;
     private int numberOfImages;
     private int physicalHeightDpi;
@@ -239,7 +239,7 @@ public class ImageInfo {
 
     private void addComment(String s) {
         if (comments == null) {
-            comments = new Vector();
+            comments = new Vector<>();
         }
         comments.addElement(s);
     }

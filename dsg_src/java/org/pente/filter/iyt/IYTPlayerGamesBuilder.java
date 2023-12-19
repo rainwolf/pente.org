@@ -12,10 +12,10 @@ import org.pente.filter.http.*;
 
 public class IYTPlayerGamesBuilder implements Runnable {
 
-    private Vector games;
+    private Vector<String> games;
 
     private String playerID;
-    private Hashtable cookies;
+    private Hashtable<String, String> cookies;
 
     /**
      * @param args <player id> <iyt cookie> <db user> <db pass>
@@ -27,7 +27,7 @@ public class IYTPlayerGamesBuilder implements Runnable {
         BasicConfigurator.configure();
 
         String playerID = args[0];
-        Hashtable cookies = new Hashtable();
+        Hashtable<String, String> cookies = new Hashtable<>();
         cookies.put(IYTConstants.USERID_COOKIE, args[1]);
 
         GameStorer gameStorer = null;
@@ -46,10 +46,10 @@ public class IYTPlayerGamesBuilder implements Runnable {
         IYTPlayerGamesBuilder builder = new IYTPlayerGamesBuilder(playerID,
                 cookies);
         builder.run();
-        Vector games = builder.getGames();
+        Vector<String> games = builder.getGames();
 
-        for (Iterator it = builder.getGames().iterator(); it.hasNext(); ) {
-            String game = (String) it.next();
+        for (Iterator<String> it = builder.getGames().iterator(); it.hasNext(); ) {
+            String game = it.next();
             System.out.println("Game: " + game);
         }
 
@@ -102,11 +102,11 @@ public class IYTPlayerGamesBuilder implements Runnable {
         }
     }
 
-    public IYTPlayerGamesBuilder(String playerID, Hashtable cookies) {
+    public IYTPlayerGamesBuilder(String playerID, Hashtable<String, String> cookies) {
         this.playerID = playerID;
         this.cookies = cookies;
 
-        games = new Vector();
+        games = new Vector<>();
     }
 
     /**
@@ -114,7 +114,7 @@ public class IYTPlayerGamesBuilder implements Runnable {
      *
      * @return Vector The game ids
      */
-    public Vector getGames() {
+    public Vector<String> getGames() {
         return games;
     }
 
@@ -124,7 +124,7 @@ public class IYTPlayerGamesBuilder implements Runnable {
      */
     public void run() {
 //http://www.itsyourturn.com/iyt.dll?completedgame?userid=15200000098568&gametype=42&tn=0
-        Hashtable params = new Hashtable();
+        Hashtable<String, String> params = new Hashtable<>();
         params.put("gametype", "42");
         params.put("tn", "0");
         params.put(IYTConstants.USERID_PARAMETER, playerID);

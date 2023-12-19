@@ -29,15 +29,16 @@ public class SortedGameStorerSearchResponseData extends SimpleGameStorerSearchRe
     private int maxMoves;
     private int maxGames;
 
-    private SortedMap moveData;
+    private SortedMap<GameStorerSearchResponseMoveData, GameStorerSearchResponseMoveData> moveData;
     private List<GameData> games;
 
     public SortedGameStorerSearchResponseData(int moveSortField) {
         this.moveSortField = moveSortField;
-        GameStorerSearchResponseMoveDataComparator moveComparator = new GameStorerSearchResponseMoveDataComparator(moveSortField);
-        this.moveData = new TreeMap(moveComparator);
+        GameStorerSearchResponseMoveDataComparator moveComparator =
+                new GameStorerSearchResponseMoveDataComparator(moveSortField);
+        this.moveData = new TreeMap<GameStorerSearchResponseMoveData, GameStorerSearchResponseMoveData>(moveComparator);
 
-        this.games = new ArrayList<GameData>();
+        this.games = new ArrayList<>();
     }
 
     public SortedGameStorerSearchResponseData(int moveSortField, int maxMoves, int maxGames) {
@@ -46,12 +47,13 @@ public class SortedGameStorerSearchResponseData extends SimpleGameStorerSearchRe
         this.maxGames = maxGames;
     }
 
-    public SortedGameStorerSearchResponseData(int moveSortField, int maxMoves, int maxGames, Hashtable data) {
+    public SortedGameStorerSearchResponseData(int moveSortField, int maxMoves, int maxGames,
+                                              Hashtable<?, GameStorerSearchResponseMoveData> data) {
         this(moveSortField, maxMoves, maxGames);
 
-        Enumeration e = data.elements();
+        Enumeration<GameStorerSearchResponseMoveData> e = data.elements();
         while (e.hasMoreElements()) {
-            Object obj = e.nextElement();
+            GameStorerSearchResponseMoveData obj = e.nextElement();
             moveData.put(obj, obj);
         }
     }
@@ -81,8 +83,8 @@ public class SortedGameStorerSearchResponseData extends SimpleGameStorerSearchRe
         return null;
     }
 
-    public Vector searchResponseMoveData() {
-        return new Vector(moveData.values());
+    public Vector<GameStorerSearchResponseMoveData> searchResponseMoveData() {
+        return new Vector<>(moveData.values());
     }
 
     public int getNumSearchResponseMoves() {
@@ -93,7 +95,7 @@ public class SortedGameStorerSearchResponseData extends SimpleGameStorerSearchRe
         games.add(data);
     }
 
-    public Vector getGames() {
-        return new Vector(games);
+    public Vector<GameData> getGames() {
+        return new Vector<>(games);
     }
 }

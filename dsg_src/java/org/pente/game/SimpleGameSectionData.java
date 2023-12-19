@@ -49,10 +49,12 @@ public class SimpleGameSectionData implements GameSectionData, java.io.Serializa
         return name;
     }
 
-    /** Create a copy of the data in this object in a new object
-     *  @return Object A copy of this object.
+    /**
+     * Create a copy of the data in this object in a new object
+     *
+     * @return Object A copy of this object.
      */
-    public Object clone() {
+    public GameSectionData clone() {
         return new SimpleGameSectionData(getName());
     }
 }

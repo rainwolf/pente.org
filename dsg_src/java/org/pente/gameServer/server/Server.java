@@ -63,7 +63,7 @@ public class Server {
 
     protected MySQLDSGReturnEmailStorer returnEmailStorer;
 
-    protected List tables;
+    protected List<SynchronizedServerTable> tables;
 
     protected SynchronizedServerMainRoom mainRoom;
 
@@ -71,7 +71,7 @@ public class Server {
     protected ServerStatsHandler serverStatsHandler;
 
     protected ServerAIController aiController;
-    protected Collection aiDataCollection;
+    protected Collection<AIData> aiDataCollection;
 
     protected PasswordHelper passwordHelper;
     protected ActivityLogger activityLogger;
@@ -129,8 +129,8 @@ public class Server {
         pingManager = new DSGEventPingManager(dsgEventToPlayerRouter); // don't log ping events
 
 
-        tables = new ArrayList(5);
-        tables.add(new Object());//dummy 1st table
+        tables = new ArrayList<>(5);
+        tables.add(new SynchronizedServerTable());//dummy 1st table
 
         mainRoom = new SynchronizedServerMainRoom(
                 this, resources, dsgEventToPlayerRouter);
@@ -185,14 +185,14 @@ public class Server {
 
         /** tournament tables don't allow ai games */
         if (serverData.isTournament()) {
-            aiDataCollection = new ArrayList();
+            aiDataCollection = new ArrayList<>();
         } else {
             AIConfigurator configurator = new XMLAIConfigurator();
             try {
                 aiDataCollection = configurator.getAIData(aiConfigFile);
             } catch (Throwable t) {
                 log4j.error("Problem initializing ai data, starting with no AI players.", t);
-                aiDataCollection = new ArrayList();
+                aiDataCollection = new ArrayList<>();
             }
         }
     }
@@ -329,7 +329,7 @@ public class Server {
     public int createNewTable(DSGJoinTableEvent joinEvent) throws Throwable {
 
         int newTableNum = -1;
-        Collection mainRoomPlayers = mainRoom.getPlayersInMainRoom();
+        Collection<DSGPlayerData> mainRoomPlayers = mainRoom.getPlayersInMainRoom();
         synchronized (tables) {
 
             for (int i = 1; i < tables.size(); i++) {

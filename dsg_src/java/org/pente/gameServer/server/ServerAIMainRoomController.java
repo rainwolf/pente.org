@@ -38,20 +38,19 @@ public class ServerAIMainRoomController implements DSGEventListener {
 
     private AIData aiData;
     //private ServerAITableController tables[];
-    private Hashtable tables;
+    private Hashtable<Integer, ServerAITableController> tables;
     private Server server;
 
     public ServerAIMainRoomController(Server server) {
         this.server = server;
 
         // = new ServerAITableController[PenteServerContextListener.MAX_TABLES + 1];
-        tables = new Hashtable();
+        tables = new Hashtable<>();
     }
 
     private ServerAITableController getTable(int tableNum) {
 
-        ServerAITableController controller =
-                (ServerAITableController) tables.get(Integer.valueOf(tableNum));
+        ServerAITableController controller = tables.get(Integer.valueOf(tableNum));
         if (controller == null) {
             controller = new ServerAITableController(server);
             tables.put(Integer.valueOf(tableNum), controller);
@@ -156,9 +155,8 @@ public class ServerAIMainRoomController implements DSGEventListener {
                         Thread.sleep(2000);
                     } catch (InterruptedException e) {
                     }
-                    for (Enumeration e = tables.elements(); e.hasMoreElements(); ) {
-                        ServerAITableController controller = (ServerAITableController)
-                                e.nextElement();
+                    for (Enumeration<ServerAITableController> e = tables.elements(); e.hasMoreElements(); ) {
+                        ServerAITableController controller = e.nextElement();
                         controller.eventOccurred(dsgEvent);
                     }
                 }).start();

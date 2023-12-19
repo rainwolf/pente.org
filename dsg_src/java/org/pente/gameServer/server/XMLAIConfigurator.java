@@ -48,7 +48,7 @@ public class XMLAIConfigurator
 
     private AIData aiData;
     private String optionName;
-    private Collection aiDataCollection;
+    private Collection<AIData> aiDataCollection;
     private String elementName;
     private StringBuffer textBuffer;
 
@@ -59,7 +59,7 @@ public class XMLAIConfigurator
         new XMLAIConfigurator().getAIData(args[0]);
     }
 
-    public Collection getAIData(String configFileStr) throws Throwable {
+    public Collection<AIData> getAIData(String configFileStr) throws Throwable {
 
         if (aiDataCollection != null) {
             return aiDataCollection;
@@ -71,7 +71,7 @@ public class XMLAIConfigurator
                             "(make sure its configured in web.xml).");
         }
 
-        aiDataCollection = new ArrayList();
+        aiDataCollection = new ArrayList<>();
 
         // Use the validating parser
         SAXParserFactory factory = SAXParserFactory.newInstance();

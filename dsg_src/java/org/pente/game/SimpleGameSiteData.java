@@ -44,7 +44,7 @@ public class SimpleGameSiteData implements GameSiteData, java.io.Serializable {
 
     /** Create a new empty site */
     public SimpleGameSiteData() {
-        this.events = new Vector();
+        this.events = new Vector<>();
     }
 
 
@@ -122,15 +122,17 @@ public class SimpleGameSiteData implements GameSiteData, java.io.Serializable {
     /** Get the list of events for this event
      *  @param Vector The list of events
      */
-    public List getGameEventData() {
+    public List<GameEventData> getGameEventData() {
         return events;
     }
 
 
-    /** Create a copy of the data in this object in a new object
-     *  @return Object A copy of this object.
+    /**
+     * Create a copy of the data in this object in a new object
+     *
+     * @return Object A copy of this object.
      */
-    public Object clone() {
+    public GameSiteData clone() {
 
         SimpleGameSiteData cloned = new SimpleGameSiteData();
 
@@ -140,7 +142,7 @@ public class SimpleGameSiteData implements GameSiteData, java.io.Serializable {
         cloned.setURL(getURL());
 
         for (int i = 0; i < events.size(); i++) {
-            GameEventData e = (GameEventData) events.get(i);
+            GameEventData e = events.get(i);
             cloned.addGameEventData((GameEventData) e.clone());
         }
 

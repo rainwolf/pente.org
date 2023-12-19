@@ -35,7 +35,7 @@ import org.pente.filter.http.*;
 public class IYTTournamentGamesBuilder implements Runnable {
 
     /** The Vector to store game ids in */
-    private Vector games;
+    private Vector<String> games;
 
     /** The tournament id to get games from */
     private int tournamentID;
@@ -50,7 +50,7 @@ public class IYTTournamentGamesBuilder implements Runnable {
     private String playerID;
 
     /** Cookies used to connect to iyt */
-    private Hashtable cookies;
+    private Hashtable<String, String> cookies;
 
     /** Creates an IYTTournamentGamesBuilder with a new vector of game ids
      *  @param tournamentID The tournament id
@@ -59,8 +59,8 @@ public class IYTTournamentGamesBuilder implements Runnable {
      *  @param playerID The players id
      *  @param cookies The cookies to connect to iyt
      */
-    public IYTTournamentGamesBuilder(int tournamentID, int gameTypeID, int round, String playerID, Hashtable cookies) {
-        this(tournamentID, gameTypeID, round, playerID, cookies, new Vector());
+    public IYTTournamentGamesBuilder(int tournamentID, int gameTypeID, int round, String playerID, Hashtable<String, String> cookies) {
+        this(tournamentID, gameTypeID, round, playerID, cookies, new Vector<>());
     }
 
     /** Creates an IYTTournamentGamesBuilder with an existing vector of game ids
@@ -71,7 +71,8 @@ public class IYTTournamentGamesBuilder implements Runnable {
      *  @param cookies The cookies to connect to iyt
      *  @param games The vector to put game ids in
      */
-    public IYTTournamentGamesBuilder(int tournamentID, int gameTypeID, int round, String playerID, Hashtable cookies, Vector games) {
+    public IYTTournamentGamesBuilder(int tournamentID, int gameTypeID, int round, String playerID,
+                                     Hashtable<String, String> cookies, Vector<String> games) {
         this.tournamentID = tournamentID;
         this.gameTypeID = gameTypeID;
         this.round = round;
@@ -83,7 +84,7 @@ public class IYTTournamentGamesBuilder implements Runnable {
     /** Gets the game ids filtered
      *  @return Vector The game ids
      */
-    public Vector getGames() {
+    public Vector<String> getGames() {
         return games;
     }
 
@@ -92,7 +93,7 @@ public class IYTTournamentGamesBuilder implements Runnable {
      */
     public void run() {
 
-        Hashtable params = new Hashtable();
+        Hashtable<String, String> params = new Hashtable<>();
         params.put("id", Integer.toString(tournamentID));
         params.put("gmtypeid", Integer.toString(gameTypeID));
         params.put("r", Integer.toString(round));

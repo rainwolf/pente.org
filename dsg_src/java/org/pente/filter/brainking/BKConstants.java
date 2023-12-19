@@ -12,8 +12,8 @@ public class BKConstants {
     static final String USER_PROFILE_REQUEST = "/game/Profile";
     static final String USER_PROFILE_PARAM = "u";
 
-    public static final Hashtable getCookies(String uid) {
-        Hashtable defaults = new Hashtable();
+    public static final Hashtable<String, String> getCookies(String uid) {
+        Hashtable<String, String> defaults = new Hashtable<>();
         defaults.put("lang", "en");
         defaults.put("uid", uid);
 

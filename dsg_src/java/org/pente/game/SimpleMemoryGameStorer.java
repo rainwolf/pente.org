@@ -30,19 +30,19 @@ import java.util.*;
 public class SimpleMemoryGameStorer implements GameStorer, PlayerStorer {
 
     /** stores hashtables of players indexed by names */
-    private Hashtable siteNames;
+    private Hashtable<String, Hashtable<String, PlayerData>> siteNames;
 
     /** stores hashtables of players indexed by player id */
-    private Hashtable sitePlayerIDs;
+    private Hashtable<String, Hashtable<Long, PlayerData>> sitePlayerIDs;
 
     /** stores game data */
-    private Hashtable games;
+    private Hashtable<Long, GameData> games;
 
     /** Initialize the Hashtables */
     public SimpleMemoryGameStorer() {
-        siteNames = new Hashtable();
-        sitePlayerIDs = new Hashtable();
-        games = new Hashtable();
+        siteNames = new Hashtable<>();
+        sitePlayerIDs = new Hashtable<>();
+        games = new Hashtable<>();
     }
 
     /** Checks to see if the game has already been stored
@@ -89,7 +89,7 @@ public class SimpleMemoryGameStorer implements GameStorer, PlayerStorer {
      */
     public synchronized boolean playerAlreadyStored(long playerID, String site) {
 
-        Hashtable players = (Hashtable) sitePlayerIDs.get(site);
+        Hashtable<Long, PlayerData> players = sitePlayerIDs.get(site);
         if (players == null) {
             return false;
         } else {
@@ -104,7 +104,7 @@ public class SimpleMemoryGameStorer implements GameStorer, PlayerStorer {
      */
     public synchronized boolean playerAlreadyStored(String name, String site) {
 
-        Hashtable players = (Hashtable) siteNames.get(site);
+        Hashtable<String, PlayerData> players = siteNames.get(site);
         if (players == null) {
             return false;
         } else {
@@ -118,21 +118,21 @@ public class SimpleMemoryGameStorer implements GameStorer, PlayerStorer {
      */
     public synchronized void storePlayer(PlayerData data, String site) {
 
-        Hashtable players = (Hashtable) sitePlayerIDs.get(site);
+        Hashtable<Long, PlayerData> players = sitePlayerIDs.get(site);
         if (players == null) {
-            players = new Hashtable();
+            players = new Hashtable<>();
             sitePlayerIDs.put(site, players);
         }
 
         players.put(Long.valueOf(data.getUserID()), data);
 
-        players = (Hashtable) siteNames.get(site);
-        if (players == null) {
-            players = new Hashtable();
-            siteNames.put(site, players);
+        Hashtable <String, PlayerData> players_n = siteNames.get(site);
+        if (players_n == null) {
+            players_n = new Hashtable<>();
+            siteNames.put(site, players_n);
         }
 
-        players.put(data.getUserIDName(), data);
+        players_n.put(data.getUserIDName(), data);
     }
 
     /** Loads the player information
@@ -142,7 +142,7 @@ public class SimpleMemoryGameStorer implements GameStorer, PlayerStorer {
      */
     public synchronized PlayerData loadPlayer(long playerID, String site) {
 
-        Hashtable players = (Hashtable) sitePlayerIDs.get(site);
+        Hashtable<Long, PlayerData> players = sitePlayerIDs.get(site);
         if (players == null) {
             return null;
         } else {
@@ -157,7 +157,7 @@ public class SimpleMemoryGameStorer implements GameStorer, PlayerStorer {
      */
     public synchronized PlayerData loadPlayer(String name, String site) {
 
-        Hashtable players = (Hashtable) siteNames.get(site);
+        Hashtable<String, PlayerData> players = siteNames.get(site);
         if (players == null) {
             return null;
         } else {

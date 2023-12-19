@@ -26,13 +26,13 @@ import org.pente.game.*;
 public class SimpleGameStorerSearchResponseData implements GameStorerSearchResponseData {
 
     protected GameStorerSearchRequestData requestData;
-    protected Vector searchResultMoves;
-    protected Vector matchedGames;
+    protected Vector<GameStorerSearchResponseMoveData> searchResultMoves;
+    protected Vector<GameData> matchedGames;
     protected int rotation;
 
     public SimpleGameStorerSearchResponseData() {
-        searchResultMoves = new Vector();
-        matchedGames = new Vector();
+        searchResultMoves = new Vector<>();
+        matchedGames = new Vector<>();
     }
 
     public void setRotation(int rotation) {
@@ -60,7 +60,7 @@ public class SimpleGameStorerSearchResponseData implements GameStorerSearchRespo
     public GameStorerSearchResponseMoveData getSearchResponseMoveData(int move) {
 
         for (int i = 0; i < searchResultMoves.size(); i++) {
-            GameStorerSearchResponseMoveData moveData = (GameStorerSearchResponseMoveData) searchResultMoves.elementAt(i);
+            GameStorerSearchResponseMoveData moveData = searchResultMoves.elementAt(i);
             if (moveData.getMove() == move) {
                 return moveData;
             }
@@ -69,7 +69,7 @@ public class SimpleGameStorerSearchResponseData implements GameStorerSearchRespo
         return null;
     }
 
-    public Vector searchResponseMoveData() {
+    public Vector<GameStorerSearchResponseMoveData> searchResponseMoveData() {
         return searchResultMoves;
     }
 
@@ -81,13 +81,13 @@ public class SimpleGameStorerSearchResponseData implements GameStorerSearchRespo
         matchedGames.addElement(data);
     }
 
-    public Vector getGames() {
+    public Vector<GameData> getGames() {
         return matchedGames;
     }
 
     public boolean containsGame(GameData d) {
         for (int i = 0; i < matchedGames.size(); i++) {
-            GameData dd = (GameData) matchedGames.elementAt(i);
+            GameData dd = matchedGames.elementAt(i);
             if (dd.getGameID() == d.getGameID()) return true;
         }
         return false;

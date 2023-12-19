@@ -101,7 +101,7 @@ public class MySQLServerStorer {
         }
     }
 
-    public static List getActiveServers(DBHandler dbHandler,
+    public static List<ServerData> getActiveServers(DBHandler dbHandler,
                                         GameVenueStorer gameVenueStorer) throws Throwable {
 
         Connection con = null;
@@ -113,7 +113,7 @@ public class MySQLServerStorer {
         ResultSet result2 = null;
         ResultSet result3 = null;
         ResultSet result4 = null;
-        List servers = new ArrayList();
+        List<ServerData> servers = new ArrayList<>();
         try {
             con = dbHandler.getConnection();
             stmt = con.prepareStatement(

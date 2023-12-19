@@ -33,7 +33,7 @@ public interface GameStorerSearchResponseData {
 
     public GameStorerSearchResponseMoveData getSearchResponseMoveData(int move);
 
-    public Vector searchResponseMoveData();
+    public Vector<GameStorerSearchResponseMoveData> searchResponseMoveData();
 
     public int getNumSearchResponseMoves();
 
@@ -43,7 +43,7 @@ public interface GameStorerSearchResponseData {
 
     public void addGame(GameData data);
 
-    public Vector getGames();
+    public Vector<GameData> getGames();
 
     public boolean containsGame(GameData d);
 }

@@ -33,12 +33,12 @@ import org.pente.filter.*;
 public class IYTTournamentPlayersFilter implements LineFilter {
 
     /** The Vector to store player ids in */
-    private Vector players;
+    private Vector<String> players;
 
     /** Create an IYTTournamentPlayersFilter with the players vector
      *  @param players The Vector to store player ids in
      */
-    public IYTTournamentPlayersFilter(Vector players) {
+    public IYTTournamentPlayersFilter(Vector<String> players) {
         this.players = players;
     }
 

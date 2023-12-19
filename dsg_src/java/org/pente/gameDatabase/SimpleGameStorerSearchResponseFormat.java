@@ -156,7 +156,7 @@ public class SimpleGameStorerSearchResponseFormat implements GameStorerSearchRes
         }
 
         StringBuffer resultsBuf = new StringBuffer();
-        Vector searchResultsVector = data.searchResponseMoveData();
+        Vector<GameStorerSearchResponseMoveData> searchResultsVector = data.searchResponseMoveData();
         Enumeration searchResults = searchResultsVector.elements();
         while (searchResults.hasMoreElements()) {
             GameStorerSearchResponseMoveData moveData = (GameStorerSearchResponseMoveData) searchResults.nextElement();
@@ -220,7 +220,7 @@ public class SimpleGameStorerSearchResponseFormat implements GameStorerSearchRes
             responseData = new SimpleGameStorerSearchResponseData();
         }
 
-        Hashtable params = new Hashtable();
+        Hashtable<String, Object> params = new Hashtable<>();
 
         try {
             HttpUtilities.parseParams(buffer.toString(), params);

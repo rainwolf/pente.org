@@ -100,10 +100,10 @@ public abstract class TourneySection {
     /**
      * return list of affected matches
      */
-    public List forfeitPlayers(long pids[], boolean dropout[]) {
-        List<TourneyMatch> updateMatches = new ArrayList<TourneyMatch>();
-        for (Iterator it = getMatches().iterator(); it.hasNext(); ) {
-            TourneyMatch m = (TourneyMatch) it.next();
+    public List<TourneyMatch> forfeitPlayers(long pids[], boolean dropout[]) {
+        List<TourneyMatch> updateMatches = new ArrayList<>();
+        for (Iterator<TourneyMatch> it = getMatches().iterator(); it.hasNext(); ) {
+            TourneyMatch m = it.next();
             // don't update already completed matches
             if (m.getResult() != TourneyMatch.RESULT_UNFINISHED) continue;
 

@@ -38,10 +38,10 @@ public class IYTGameBuilder implements FilterListener, Runnable {
     private String request;
 
     /** The parameters to send with the request */
-    private Hashtable params;
+    private Hashtable<String, String> params;
 
     /** The cookies needed to send the request to iyt */
-    private Hashtable cookies;
+    private Hashtable<String, String> cookies;
 
     /** The game id used by iyt to specify a game */
     private String gameID;
@@ -81,7 +81,7 @@ public class IYTGameBuilder implements FilterListener, Runnable {
             PlayerData sessionPlayerData = new DefaultPlayerData();
 
             // create cookie hashtable
-            Hashtable cookies = new Hashtable();
+            Hashtable<String, String> cookies = new Hashtable<>();
             cookies.put(IYTConstants.USERID_COOKIE, cookie);
 
             // create the game builder and run it
@@ -107,14 +107,14 @@ public class IYTGameBuilder implements FilterListener, Runnable {
                           GameStorer gameStorer,
                           PlayerStorer playerStorer,
                           PlayerData sessionPlayerData,
-                          Hashtable cookies,
+                          Hashtable<String, String> cookies,
                           String redirectedHost) {
 
         this.gameID = gameID;
         this.request = request;
         this.cookies = cookies;
 
-        params = new Hashtable();
+        params = new Hashtable<>();
         params.put(IYTConstants.GAME_PARAMETER, gameID);
         params.put(IYTConstants.OLD_GAME_PARAMETER, gameID);
         params.put("stage", "7");   //old way

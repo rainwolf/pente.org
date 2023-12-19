@@ -31,7 +31,7 @@ public class HttpUtilities {
      *  @param params The hashtable to store the parameters in
      *  @exception Exception If the parameters cannot be loaded
      */
-    public static void parseParams(String paramString, Hashtable params) throws Exception {
+    public static void parseParams(String paramString, Hashtable<String, Object> params) throws Exception {
 
         StringTokenizer paramTokenizer = new StringTokenizer(paramString, "&");
         while (paramTokenizer.hasMoreElements()) {
@@ -49,10 +49,11 @@ public class HttpUtilities {
             Object exists = params.get(name);
             if (exists != null) {
                 if (exists instanceof Vector) {
-                    Vector vec = (Vector) exists;
+                    @SuppressWarnings("unchecked")
+                    Vector<Object> vec = (Vector<Object>) exists;
                     vec.addElement(value);
                 } else {
-                    Vector vec = new Vector();
+                    Vector<Object> vec = new Vector<>();
                     vec.addElement(exists);
                     vec.addElement(value);
                     params.put(name, vec);

@@ -37,7 +37,7 @@ public abstract class MySQLGameStorer implements PlayerStorer, GameStorer {
     /** The name of the table with the player information */
     protected static final String PLAYER_TABLE = "player";
 
-    protected static final Vector PLAYER_TABLES = new Vector();
+    protected static final Vector<String> PLAYER_TABLES = new Vector<>();
 
     static {
         PLAYER_TABLES.addElement(PLAYER_TABLE);

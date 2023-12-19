@@ -4,7 +4,7 @@ import java.util.*;
 
 public class SynchronizedQueue {
 
-    private Vector queue = new Vector();
+    private Vector<Object> queue = new Vector<>();
 
     public synchronized void add(Object obj) {
 

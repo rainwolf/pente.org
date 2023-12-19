@@ -14,7 +14,7 @@ import com.jivesoftware.util.StringUtils;
 public class LinkFilter implements Filter {
 
     private boolean newWindowEnabled = false;
-    private ArrayList<String> schemes = new ArrayList<String>();
+    private ArrayList<String> schemes = new ArrayList<>();
 
     // define a preset default set of schemes
     public LinkFilter() {
@@ -34,7 +34,7 @@ public class LinkFilter implements Filter {
 
         int length = string.length();
         StringBuffer filtered = new StringBuffer((int) (length * 1.5));
-        ArrayList urlBlocks = new ArrayList(5);
+        ArrayList<URLBlock> urlBlocks = new ArrayList<>(5);
 
         // search for url's such as [url=..]text[/url] or [url ..]text[/url]
         int start = string.indexOf("[url");
@@ -63,7 +63,7 @@ public class LinkFilter implements Filter {
                 // Check the user entered URL for a "javascript:" or "file:" link. Only
                 // append the user entered link if it doesn't contain 'javascript:' and 'file:'
                 String lcURL = url.toLowerCase();
-                if (lcURL.indexOf("javascript:") == -1 && lcURL.indexOf("file:") == -1) {
+                if (!lcURL.contains("javascript:") && !lcURL.contains("file:")) {
                     URLBlock block = new URLBlock(start, end + 5, url, description);
                     urlBlocks.add(block);
                 }
@@ -72,7 +72,7 @@ public class LinkFilter implements Filter {
                 // Check the user entered URL for a "javascript:" or "file:" link. Only
                 // append the user entered link if it doesn't contain 'javascript:' and 'file:'
                 String lcURL = url.toLowerCase();
-                if (lcURL.indexOf("javascript:") == -1 && lcURL.indexOf("file:") == -1) {
+                if (!lcURL.contains("javascript:") && !lcURL.contains("file:")) {
                     URLBlock block = new URLBlock(start, end + 5, url);
                     urlBlocks.add(block);
                 }
@@ -82,10 +82,10 @@ public class LinkFilter implements Filter {
         }
 
         // now handle all the other urls
-        Iterator iter = schemes.iterator();
+        Iterator<String> iter = schemes.iterator();
 
         while (iter.hasNext()) {
-            String scheme = (String) iter.next();
+            String scheme = iter.next();
             start = string.indexOf(scheme, 0);
 
             while (start != -1) {
@@ -161,11 +161,11 @@ public class LinkFilter implements Filter {
         sortBlocks(urlBlocks);
 
         // now, markup the urls and pass along the filter chain the rest
-        Iterator blocks = urlBlocks.iterator();
+        Iterator<URLBlock> blocks = urlBlocks.iterator();
         int last = 0;
 
         while (blocks.hasNext()) {
-            URLBlock block = (URLBlock) blocks.next();
+            URLBlock block = blocks.next();
 
             if (block.getStart() > 0) {
                 filtered.append(chain.applyFilters(currentIndex,
@@ -249,10 +249,10 @@ public class LinkFilter implements Filter {
         }
     }
 
-    private void sortBlocks(ArrayList blocks) {
+    private void sortBlocks(ArrayList<URLBlock> blocks) {
         Collections.sort(blocks, (object1, object2) -> {
-            URLBlock b1 = (URLBlock) object1;
-            URLBlock b2 = (URLBlock) object2;
+            URLBlock b1 = object1;
+            URLBlock b2 = object2;
             return (b1.getStart() > b2.getStart()) ? 1 : -1;
         });
     }

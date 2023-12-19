@@ -14,7 +14,7 @@ import java.util.Vector;
 public class WebSocketDSGEventHandler extends ServerSocketDSGEventHandler {
 
     Session session;
-    Vector listeners = new Vector();
+    Vector<DSGEventListener> listeners = new Vector<>();
     SynchronizedQueue outputQueue = new SynchronizedQueue();
 
 

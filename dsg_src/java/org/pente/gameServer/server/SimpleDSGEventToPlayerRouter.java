@@ -26,10 +26,10 @@ import org.pente.gameServer.event.*;
 
 public class SimpleDSGEventToPlayerRouter implements DSGEventToPlayerRouter {
 
-    private Hashtable players;
+    private Hashtable<String, DSGEventListener> players;
 
     public SimpleDSGEventToPlayerRouter() {
-        players = new Hashtable();
+        players = new Hashtable<>();
     }
 
     public synchronized void addRoute(DSGEventListener dsgEventListener, String name) {
@@ -37,19 +37,18 @@ public class SimpleDSGEventToPlayerRouter implements DSGEventToPlayerRouter {
     }
 
     public DSGEventListener removeRoute(String name) {
-        return (DSGEventListener) players.remove(name);
+        return players.remove(name);
     }
 
     public synchronized DSGEventListener getRoute(String name) {
-        return (DSGEventListener) players.get(name);
+        return players.get(name);
     }
 
     public void routeEvent(DSGEvent dsgEvent, String name) {
 
         DSGEventListener dsgEventListener = null;
         synchronized (this) {
-            dsgEventListener = (DSGEventListener)
-                    players.get(name);
+            dsgEventListener = players.get(name);
         }
 
         if (dsgEventListener != null) {

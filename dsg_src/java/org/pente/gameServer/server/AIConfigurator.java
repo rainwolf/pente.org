@@ -19,9 +19,11 @@
 
 package org.pente.gameServer.server;
 
+import org.pente.gameServer.core.AIData;
+
 import java.util.*;
 
 public interface AIConfigurator {
 
-    public Collection getAIData(String aiConfigFile) throws Throwable;
+    public Collection<AIData> getAIData(String aiConfigFile) throws Throwable;
 }

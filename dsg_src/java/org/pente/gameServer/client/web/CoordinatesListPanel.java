@@ -41,7 +41,7 @@ public class CoordinatesListPanel extends Panel
 
     private int game;
 
-    private Vector gridPieces;
+    private Vector<GridPiece> gridPieces;
     private Object drawLock;
 
     private int currentTurn;
@@ -75,14 +75,14 @@ public class CoordinatesListPanel extends Panel
     private GameOptions gameOptions;
     private GridCoordinates coordinates;
 
-    private Vector listeners;
+    private Vector<OrderedPieceCollection> listeners;
 
     public CoordinatesListPanel(GameStyles gameStyle, int maxPlayers,
                                 DSGButton buttonMaker) {
 
 
         players = new String[maxPlayers + 1];
-        gridPieces = new Vector();
+        gridPieces = new Vector<>();
         drawLock = new Object();
 
         currentTurn = 0;
@@ -95,7 +95,7 @@ public class CoordinatesListPanel extends Panel
         imageDirty = true;
         highlightColor = Color.blue;
 
-        listeners = new Vector();
+        listeners = new Vector<>();
         addOrderedPieceCollectionVisitListener(this);
 
         // create scrollbar, add it when necessary later

@@ -24,7 +24,7 @@ public class MarksAIPlayer extends AbstractAIPlayer {
     private int level;
     private int seat;
     private int moveNum;
-    private List moves;
+    private List<Integer> moves;
     private int size = 19;
 
     private final int bsize = 912;
@@ -70,7 +70,7 @@ public class MarksAIPlayer extends AbstractAIPlayer {
     public MarksAIPlayer() {
         obfl = 1;
 
-        moves = new ArrayList();
+        moves = new ArrayList<>();
     }
 
     public void setSize(int size) {
@@ -175,12 +175,12 @@ public class MarksAIPlayer extends AbstractAIPlayer {
      */
     public void undoMove() {
 
-        moves.remove(moves.size() - 1);
-        List oldMoves = new ArrayList(moves);
+        moves.removeLast();
+        List<Integer> oldMoves = new ArrayList<>(moves);
 
         clear();
 
-        for (Iterator it = oldMoves.iterator(); it.hasNext(); ) {
+        for (Iterator<Integer> it = oldMoves.iterator(); it.hasNext(); ) {
             addMove(((Integer) it.next()).intValue());
         }
     }

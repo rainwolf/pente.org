@@ -14,7 +14,7 @@ public class SwissFormat implements TourneyFormat {
         if (tourney.getEndDate() != null) return true;
 
         if (tourney.getNumRounds() == 0) return false;
-        for (Iterator rounds = tourney.getRounds().iterator(); rounds.hasNext(); ) {
+        for (Iterator<TourneyRound> rounds = tourney.getRounds().iterator(); rounds.hasNext(); ) {
             TourneyRound r = (TourneyRound) rounds.next();
             if (!r.isComplete()) return false;
         }
@@ -33,7 +33,7 @@ public class SwissFormat implements TourneyFormat {
         return numberOfRounds > 6;
     }
 
-    public TourneyRound createFirstRound(List players, Tourney tourney) {
+    public TourneyRound createFirstRound(List<TourneyPlayerData> players, Tourney tourney) {
         Collections.shuffle(players);
 
         return createRound(players, tourney, 1);
@@ -41,11 +41,11 @@ public class SwissFormat implements TourneyFormat {
 
     public TourneyRound createNextRound(Tourney tourney, DSGPlayerStorer dsgPlayerStorer) {
         SwissSection s = (SwissSection) tourney.getLastRound().getSection(1);
-        List players = s.getPlayersRanked(tourney);
+        List<TourneyPlayerData> players = s.getPlayersRanked(tourney);
         return createRound(players, tourney, tourney.getNumRounds() + 1);
     }
 
-    private TourneyRound createRound(List players, Tourney tourney, int rnd) {
+    private TourneyRound createRound(List<TourneyPlayerData> players, Tourney tourney, int rnd) {
 
         TourneyRound round = new TourneyRound(rnd);
 
@@ -55,7 +55,7 @@ public class SwissFormat implements TourneyFormat {
 
         TourneyMatch byeMatch = null;
         if (players.size() % 2 == 1) {
-            List byePlayers = new ArrayList(players);
+            List<TourneyPlayerData> byePlayers = new ArrayList<>(players);
             if (rnd > 1) {
                 // sort players by byes ascending
                 // then wins ascending, player who gets the bye is 1st in list
@@ -71,8 +71,8 @@ public class SwissFormat implements TourneyFormat {
             byeMatch.setEvent(tourney.getEventID());
             byeMatch.setRound(rnd);
             byeMatch.setSection(1);
-            byeMatch.setPlayer1((TourneyPlayerData) byePlayers.get(0));
-            players.remove(byePlayers.get(0));
+            byeMatch.setPlayer1((TourneyPlayerData) byePlayers.getFirst());
+            players.remove(byePlayers.getFirst());
         }
 
         PotentialSection ps = getSection(players, alreadyPlayed);
@@ -146,7 +146,7 @@ public class SwissFormat implements TourneyFormat {
     }
 
     private class PotentialSection {
-        public List matches = new ArrayList(10);
+        public List<PotentialMatch> matches = new ArrayList<>(10);
         public int numRepeats;
         public int distFromOpt;
 
@@ -181,7 +181,7 @@ public class SwissFormat implements TourneyFormat {
                 PotentialMatch m2 = (PotentialMatch) o2;
                 return m1.p1.getSeed() - m2.p1.getSeed();
             });
-            for (Iterator it = matches.iterator(); it.hasNext(); ) {
+            for (Iterator<PotentialMatch> it = matches.iterator(); it.hasNext(); ) {
                 PotentialMatch m = (PotentialMatch) it.next();
                 m.createRealMatch(eid, round, s);
             }
@@ -192,7 +192,7 @@ public class SwissFormat implements TourneyFormat {
 
     public int getSectionCount;
 
-    private PotentialSection getSection(List players, int alreadyPlayed[][]) {
+    private PotentialSection getSection(List<TourneyPlayerData> players, int alreadyPlayed[][]) {
         getSectionCount++;
         if (players.size() == 2) {
             TourneyPlayerData p1 = (TourneyPlayerData) players.get(0);
@@ -210,7 +210,7 @@ public class SwissFormat implements TourneyFormat {
             int repeat = alreadyPlayed[p1.getSeed()][p2.getSeed()];
             //log4j.debug("getSection(), size=" + players.size() + ", " + p1.getName() + "-" +
             //p2.getName() + " r=" + repeat);
-            List copy = new ArrayList(players);
+            List<TourneyPlayerData> copy = new ArrayList<>(players);
             copy.remove(p1);
             copy.remove(p2);
             PotentialSection sub = getSection(copy, alreadyPlayed);

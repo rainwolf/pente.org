@@ -110,7 +110,7 @@ public class Resources {
         try {
             // create first round
             Tourney tournament = this.getTourneyStorer().getTourney(tourneyID);
-            List players = this.getTourneyStorer().setInitialSeeds(tourneyID);
+            List<TourneyPlayerData> players = this.getTourneyStorer().setInitialSeeds(tourneyID);
             TourneyRound newRound = tournament.createFirstRound(players);
             this.getTourneyStorer().insertRound(newRound);
         } catch (Throwable t) {

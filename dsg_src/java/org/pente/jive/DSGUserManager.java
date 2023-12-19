@@ -14,6 +14,7 @@ import org.pente.database.*;
 import org.pente.gameServer.core.*;
 import org.pente.game.*;
 
+@SuppressWarnings("unchecked")
 public class DSGUserManager implements UserManager {
 
     private static final Category log4j =

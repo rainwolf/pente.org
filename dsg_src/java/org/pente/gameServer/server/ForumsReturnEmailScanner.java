@@ -31,7 +31,7 @@ public class ForumsReturnEmailScanner {
     private DBHandler dbHandler;
     private DSGPlayerStorer dsgPlayerStorer;
 
-    private ArrayList scannedMessages = new ArrayList();
+    private ArrayList<Message> scannedMessages = new ArrayList<>();
 
     private class Data {
         public Data(Message message, String email) {
@@ -71,7 +71,7 @@ public class ForumsReturnEmailScanner {
         Folder inbox = store.getFolder("INBOX");
         inbox.open(Folder.READ_WRITE);
 
-        ArrayList data = new ArrayList();
+        ArrayList<Data> data = new ArrayList<>();
         Message message[] = inbox.getMessages();
         for (int i = 0, n = message.length; i < n; i++) {
 
@@ -106,9 +106,9 @@ public class ForumsReturnEmailScanner {
         store.close();
     }
 
-    private void addAddresses(Message message, ArrayList data) throws Throwable {
+    private void addAddresses(Message message, ArrayList<Data> data) throws Throwable {
 
-        ArrayList emails = new ArrayList(5);
+        ArrayList<String> emails = new ArrayList<>(5);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         message.writeTo(out);
 
@@ -140,9 +140,9 @@ public class ForumsReturnEmailScanner {
     }
 
 
-    private void updateDatabase(List data) throws Throwable {
+    private void updateDatabase(List<Data> data) throws Throwable {
 
-        Set pids = new TreeSet();
+        Set<Long> pids = new TreeSet<>();
         Connection con = null;
         PreparedStatement stmt = null;
         ResultSet result = null;
@@ -155,8 +155,8 @@ public class ForumsReturnEmailScanner {
                             "from dsg_player " +
                             "where email = ?");
 
-            for (Iterator it = data.iterator(); it.hasNext(); ) {
-                Data d = (Data) it.next();
+            for (Iterator<Data> it = data.iterator(); it.hasNext(); ) {
+                Data d = it.next();
                 stmt.setString(1, d.email);
                 result = stmt.executeQuery();
                 boolean empty = true;
@@ -183,8 +183,8 @@ public class ForumsReturnEmailScanner {
 
         // then look up all player data and mark emails invalid and
         // remove from forums
-        for (Iterator it = pids.iterator(); it.hasNext(); ) {
-            Long pid = (Long) it.next();
+        for (Iterator<Long> it = pids.iterator(); it.hasNext(); ) {
+            Long pid = it.next();
 
             try {
                 DSGPlayerData dsgPlayerData =

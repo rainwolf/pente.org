@@ -25,7 +25,7 @@ public class OrderedPieceCollectionAdapter implements OrderedPieceCollection {
 
     private PieceCollection basePieceCollection;
 
-    protected Vector pieceActions;
+    protected Vector<GridPieceAction> pieceActions;
     protected int currentTurn;
     protected int maxTurn;
     protected boolean viewingCurrent;
@@ -33,7 +33,7 @@ public class OrderedPieceCollectionAdapter implements OrderedPieceCollection {
     public OrderedPieceCollectionAdapter(PieceCollection basePieceCollection) {
         this.basePieceCollection = basePieceCollection;
 
-        pieceActions = new Vector();
+        pieceActions = new Vector<>();
         currentTurn = 0;
         maxTurn = currentTurn;
         viewingCurrent = true;
@@ -115,7 +115,7 @@ public class OrderedPieceCollectionAdapter implements OrderedPieceCollection {
             currentTurn++;
 
             for (int i = 0; i < pieceActions.size(); i++) {
-                GridPieceAction action = (GridPieceAction) pieceActions.elementAt(i);
+                GridPieceAction action = pieceActions.elementAt(i);
                 if (action.getTurn() == currentTurn) {
                     if (action.getAction() == GridPieceAction.ADD) {
                         basePieceCollection.addPiece(action.getGridPiece());
@@ -137,7 +137,7 @@ public class OrderedPieceCollectionAdapter implements OrderedPieceCollection {
             // loop in reverse order to account for poofs (added first then removed)
             // in reverse they will be 
             for (int i = pieceActions.size(); i > 0; i--) {
-                GridPieceAction action = (GridPieceAction) pieceActions.elementAt(i - 1);
+                GridPieceAction action = pieceActions.elementAt(i - 1);
                 if (action.getTurn() == currentTurn) {
                     if (action.getAction() == GridPieceAction.REMOVE) {
                         basePieceCollection.addPiece(action.getGridPiece());
@@ -169,7 +169,7 @@ public class OrderedPieceCollectionAdapter implements OrderedPieceCollection {
         if (currentTurn < maxTurn) {
 
             for (int i = 0; i < pieceActions.size(); i++) {
-                GridPieceAction action = (GridPieceAction) pieceActions.elementAt(i);
+                GridPieceAction action = pieceActions.elementAt(i);
 
                 if (action.getTurn() > currentTurn) {
                     // what if order in vector is remove, then add?

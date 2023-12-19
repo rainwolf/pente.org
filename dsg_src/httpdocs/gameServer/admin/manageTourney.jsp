@@ -16,7 +16,7 @@
 
       String eidStr = request.getParameter("eid");
       int eid = Integer.parseInt(eidStr);
-      List players = null;
+      List<TourneyPlayerData> players = null;
       Tourney tourney = resources.getTourneyStorer().getTourney(eid);
       boolean notComplete = false;
 

@@ -126,7 +126,7 @@ public class HttpObjectFormat implements ObjectFormat {
      */
     public Object parse(Object data, StringBuffer buffer) throws ParseException {
 
-        Hashtable params = new Hashtable();
+        Hashtable<String, Object> params = new Hashtable<>();
 
         // parse the http params
         try {

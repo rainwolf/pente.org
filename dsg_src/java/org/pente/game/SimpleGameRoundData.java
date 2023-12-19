@@ -31,7 +31,7 @@ public class SimpleGameRoundData implements GameRoundData, java.io.Serializable 
     private String name;
 
     /** The list of sections in this round */
-    private Vector sections;
+    private Vector<GameSectionData> sections;
 
 
     /** Create new round with specified name and create empty list of sections
@@ -39,7 +39,7 @@ public class SimpleGameRoundData implements GameRoundData, java.io.Serializable 
      */
     public SimpleGameRoundData(String name) {
         setName(name);
-        this.sections = new Vector();
+        this.sections = new Vector<>();
     }
 
     /** Set the name of the round
@@ -71,7 +71,7 @@ public class SimpleGameRoundData implements GameRoundData, java.io.Serializable 
     /** Get the list of sections for this round
      *  @param Vector The list of sections
      */
-    public Vector getGameSectionData() {
+    public Vector<GameSectionData> getGameSectionData() {
         return sections;
     }
 
@@ -84,8 +84,8 @@ public class SimpleGameRoundData implements GameRoundData, java.io.Serializable 
         SimpleGameRoundData cloned = new SimpleGameRoundData(getName());
 
         for (int i = 0; i < sections.size(); i++) {
-            GameSectionData s = (GameSectionData) sections.elementAt(i);
-            cloned.addGameSectionData((GameSectionData) s.clone());
+            GameSectionData s = sections.elementAt(i);
+            cloned.addGameSectionData(s.clone());
         }
 
         return cloned;

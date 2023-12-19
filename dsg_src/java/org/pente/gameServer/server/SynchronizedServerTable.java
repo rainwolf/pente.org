@@ -47,6 +47,9 @@ public class SynchronizedServerTable implements DSGEventListener {
     private Thread queueThread;
     private volatile boolean running;
 
+    public SynchronizedServerTable() {
+    }
+
     public SynchronizedServerTable(
             Server server,
             Resources resources,
@@ -60,7 +63,7 @@ public class SynchronizedServerTable implements DSGEventListener {
             PlayerStorer playerDbStorer,
             ServerStatsHandler serverStatsHandler,
             MySQLDSGReturnEmailStorer returnEmailStorer,
-            Collection playersInMainRoom,
+            Collection<DSGPlayerData> playersInMainRoom,
             ActivityLogger activityLogger,
             DSGJoinTableEvent joinEvent,
             final CacheKOTHStorer kothStorer) throws Throwable {

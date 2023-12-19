@@ -6,7 +6,7 @@ public class SimpleGameTreeData implements GameTreeData, Cloneable, java.io.Seri
 
     private int id;
     private String name;
-    private List sites = new ArrayList(3);
+    private List<GameSiteData> sites = new ArrayList<>(3);
 
     public void setID(int id) {
         this.id = id;
@@ -31,7 +31,7 @@ public class SimpleGameTreeData implements GameTreeData, Cloneable, java.io.Seri
     }
 
 
-    public List getGameSiteData() {
+    public List<GameSiteData> getGameSiteData() {
         return sites;
     }
 
@@ -43,7 +43,7 @@ public class SimpleGameTreeData implements GameTreeData, Cloneable, java.io.Seri
         cloned.setName(getName());
 
         for (int i = 0; i < sites.size(); i++) {
-            GameSiteData s = (GameSiteData) sites.get(i);
+            GameSiteData s = sites.get(i);
             cloned.addGameSiteData((GameSiteData) s.clone());
         }
 

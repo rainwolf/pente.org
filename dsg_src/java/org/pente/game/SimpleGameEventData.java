@@ -40,7 +40,7 @@ public class SimpleGameEventData implements GameEventData, Serializable {
     private int game;
 
     /** The list of rounds in this event */
-    private Vector rounds;
+    private Vector<GameRoundData> rounds;
 
     private GameSiteData siteData;
 
@@ -56,7 +56,7 @@ public class SimpleGameEventData implements GameEventData, Serializable {
 
     /** Create the empty list of rounds */
     public SimpleGameEventData() {
-        rounds = new Vector();
+        rounds = new Vector<>();
     }
 
 
@@ -106,7 +106,7 @@ public class SimpleGameEventData implements GameEventData, Serializable {
     /** Get the list of rounds for this event
      *  @param Vector The list of rounds
      */
-    public Vector getGameRoundData() {
+    public Vector<GameRoundData> getGameRoundData() {
         return rounds;
     }
 

@@ -28,7 +28,7 @@ public class ReturnEmailScanner {
     private MySQLDSGReturnEmailStorer returnEmailStorer;
     private DSGPlayerStorer dsgPlayerStorer;
 
-    private Hashtable scannedMessageIds = new Hashtable();
+    private Hashtable<String, String> scannedMessageIds = new Hashtable<>();
 
     public ReturnEmailScanner(
             DBHandler dbHandler,
@@ -57,12 +57,12 @@ public class ReturnEmailScanner {
 
 
         Message message[] = inbox.getMessages();
-        ArrayList moveMessages = new ArrayList();
+        ArrayList<Message> moveMessages = new ArrayList<>();
         for (int i = 0, n = message.length; i < n; i++) {
-            Vector messageIds = getMessageIds(message[i]);
+            Vector<String> messageIds = getMessageIds(message[i]);
 
             if (messageIds != null) {
-                for (Iterator it = messageIds.iterator(); it.hasNext(); ) {
+                for (Iterator<String> it = messageIds.iterator(); it.hasNext(); ) {
                     String m = (String) it.next();
 
                     // only scan messages once
@@ -109,9 +109,9 @@ public class ReturnEmailScanner {
 
     private static final byte[] messageIdBytes = "message-id:".getBytes();
 
-    private Vector getMessageIds(Message message) throws Throwable {
+    private Vector<String> getMessageIds(Message message) throws Throwable {
 
-        Vector messageIds = new Vector();
+        Vector<String> messageIds = new Vector<>();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         message.writeTo(out);
 

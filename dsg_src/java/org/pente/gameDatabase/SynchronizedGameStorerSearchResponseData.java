@@ -56,7 +56,7 @@ public class SynchronizedGameStorerSearchResponseData implements GameStorerSearc
         return responseData.getSearchResponseMoveData(move);
     }
 
-    public synchronized Vector searchResponseMoveData() {
+    public synchronized Vector<GameStorerSearchResponseMoveData> searchResponseMoveData() {
         return responseData.searchResponseMoveData();
     }
 
@@ -68,7 +68,7 @@ public class SynchronizedGameStorerSearchResponseData implements GameStorerSearc
         responseData.addGame(data);
     }
 
-    public synchronized Vector getGames() {
+    public synchronized Vector<GameData> getGames() {
         return responseData.getGames();
     }
 

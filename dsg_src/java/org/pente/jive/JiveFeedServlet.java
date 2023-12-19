@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Collections;
 import java.util.Comparator;
+import javax.mail.Message;
 import javax.servlet.http.HttpServlet;
 
 import com.sun.syndication.io.FeedException;
@@ -19,6 +20,7 @@ import java.io.IOException;
 import com.jivesoftware.forum.*;
 import com.jivesoftware.base.*;
 
+@SuppressWarnings("unchecked")
 public class JiveFeedServlet extends HttpServlet {
 
     private static final String DEFAULT_FEED_TYPE = "default.feed.type";
@@ -107,9 +109,9 @@ public class JiveFeedServlet extends HttpServlet {
         }
 
 
-        List<SyndEntry> entries = new ArrayList();
-        for (Iterator iter = messages; iter.hasNext(); ) {
-            ForumMessage fm = (ForumMessage) iter.next();
+        List<SyndEntry> entries = new ArrayList<>();
+        for (Iterator<ForumMessage> iter = messages; iter.hasNext(); ) {
+            ForumMessage fm = iter.next();
 
             SyndEntry entry = new SyndEntryImpl();
             entry.setTitle(fm.getSubject());

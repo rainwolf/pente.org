@@ -59,17 +59,17 @@ public class GameVenueJSFormat {
     /** This is implemented in a pretty dumb way but it works...
      *  Recursion would probably work with less code.
      */
-    public StringBuffer format(Vector treeData) {
+    public StringBuffer format(Vector<GameTreeData> treeData) {
 
         // clone data since we plan on adding new data to tree
-        Vector newTreeData = new Vector();
+        Vector<GameTreeData> newTreeData = new Vector<>();
         for (int i = 0; i < treeData.size(); i++) {
             GameTreeData t = (GameTreeData) treeData.get(i);
 //            if (t.getID() == GridStateFactory.CONNECT6 ||
 //                t.getID() == GridStateFactory.SPEED_CONNECT6 ||
 //                t.getID() == GridStateFactory.TB_CONNECT6) continue;
 
-            newTreeData.addElement(t.clone());
+            newTreeData.addElement((GameTreeData) t.clone());
         }
         treeData = newTreeData;
 
@@ -79,7 +79,7 @@ public class GameVenueJSFormat {
 
             List<GameSiteData> sites = game.getGameSiteData();
             // game must have at least 1 site, no need for EMPTY_SITE
-            sites.add(0, (GameSiteData) ALL_SITE_DATA.clone());
+            sites.add(0, ALL_SITE_DATA.clone());
 
             for (int j = 0; j < sites.size(); j++) {
                 GameSiteData site = sites.get(j);
@@ -93,7 +93,7 @@ public class GameVenueJSFormat {
 
                 for (int k = 0; k < events.size(); k++) {
                     GameEventData e = events.get(k);
-                    Vector rounds = e.getGameRoundData();
+                    Vector<GameRoundData> rounds = e.getGameRoundData();
 
                     if (rounds.isEmpty()) {
                         rounds.add(0, (GameRoundData) EMPTY_ROUND_DATA.clone());
@@ -103,7 +103,7 @@ public class GameVenueJSFormat {
 
                     for (int l = 0; l < rounds.size(); l++) {
                         GameRoundData r = (GameRoundData) rounds.get(l);
-                        Vector sections = r.getGameSectionData();
+                        Vector<GameSectionData> sections = r.getGameSectionData();
 
                         if (sections.isEmpty()) {
                             sections.insertElementAt(EMPTY_SECTION_DATA.clone(), 0);
@@ -132,7 +132,7 @@ public class GameVenueJSFormat {
             }
             gamesBuf.append("\"" + gameTreeData.getName() + "\"");
 
-            List siteData = gameTreeData.getGameSiteData();
+            List<GameSiteData> siteData = gameTreeData.getGameSiteData();
             sitesBuf.append("new Array(");
             eventsBuf.append("new Array(");
             roundsBuf.append("new Array(");
@@ -140,7 +140,7 @@ public class GameVenueJSFormat {
 
             for (int j = 0; j < siteData.size(); j++) {
 
-                GameSiteData gameSiteData = (GameSiteData) siteData.get(j);
+                GameSiteData gameSiteData = siteData.get(j);
 
                 if (j != 0) {
                     sitesBuf.append(", ");
@@ -171,11 +171,11 @@ public class GameVenueJSFormat {
 
                     roundsBuf.append("new Array(");
                     sectionsBuf.append("new Array(");
-                    Vector roundData = gameEventData.getGameRoundData();
+                    Vector<GameRoundData> roundData = gameEventData.getGameRoundData();
 
                     for (int l = 0; l < roundData.size(); l++) {
 
-                        GameRoundData gameRoundData = (GameRoundData) roundData.get(l);
+                        GameRoundData gameRoundData = roundData.get(l);
 
                         if (l != 0) {
                             roundsBuf.append(", ");
@@ -183,12 +183,12 @@ public class GameVenueJSFormat {
                         }
                         roundsBuf.append("\"" + gameRoundData.getName() + "\"");
 
-                        Vector sectionData = gameRoundData.getGameSectionData();
+                        Vector<GameSectionData> sectionData = gameRoundData.getGameSectionData();
                         sectionsBuf.append("new Array(");
 
                         for (int m = 0; m < sectionData.size(); m++) {
 
-                            GameSectionData gameSectionData = (GameSectionData) sectionData.elementAt(m);
+                            GameSectionData gameSectionData = sectionData.elementAt(m);
                             if (m != 0) {
                                 sectionsBuf.append(", ");
                             }

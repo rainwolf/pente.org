@@ -395,10 +395,10 @@ playerData.setUserID(10000000000000L + playerData.getUserID());
 
             responseBuffer = getHttpResponse(responseBuffer);
 
-            Hashtable<String, String> params = new Hashtable<String, String>();
+            Hashtable<String, Object> params = new Hashtable<>();
             HttpUtilities.parseParams(responseBuffer.toString(), params);
-            playerData.setUserIDName(params.get(HttpGameServer.PLAYER_NAME));
-            String userID = params.get(HttpGameServer.PLAYER_ID);
+            playerData.setUserIDName((String) params.get(HttpGameServer.PLAYER_NAME));
+            String userID = (String) params.get(HttpGameServer.PLAYER_ID);
             if (userID != null) {
                 playerData.setUserID(Long.parseLong(userID));
             }
@@ -431,10 +431,10 @@ playerData.setUserID(10000000000000L + playerData.getUserID());
 
             responseBuffer = getHttpResponse(responseBuffer);
 
-            Hashtable<String, String> params = new Hashtable<String, String>();
+            Hashtable<String, Object> params = new Hashtable<>();
             HttpUtilities.parseParams(responseBuffer.toString(), params);
-            playerData.setUserIDName(params.get(HttpGameServer.PLAYER_NAME));
-            String userID = params.get(HttpGameServer.PLAYER_ID);
+            playerData.setUserIDName((String) params.get(HttpGameServer.PLAYER_NAME));
+            String userID = (String) params.get(HttpGameServer.PLAYER_ID);
             if (userID != null) {
                 playerData.setUserID(Long.parseLong(userID));
             }

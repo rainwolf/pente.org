@@ -55,7 +55,7 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
 
 
     private String gameName;
-    protected Vector gridPieces;
+    protected Vector<GridPiece> gridPieces;
     protected GridPiece highlightPiece;
     protected GridPiece thinkingPiece;
     private GridPiece oldThinkingPiece;
@@ -87,7 +87,7 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
     protected Color shadowColor;
 
     // move listeners
-    private Vector listeners;
+    private Vector<GridBoardListener> listeners;
 
     private static final Font MESSAGE_FONT = new Font("Arial", Font.PLAIN, 12);
     private String message;
@@ -100,8 +100,8 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
 
     public PenteBoardLW() {
 
-        listeners = new Vector();
-        gridPieces = new Vector();
+        listeners = new Vector<>();
+        gridPieces = new Vector<>();
         gridPieceSize = -1;
 
         addMouseListener(new MoveEventGenerator());

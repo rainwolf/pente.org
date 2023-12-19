@@ -282,7 +282,7 @@ public class CacheTourneyStorer implements TourneyStorer {
     }
 
 
-    public List getTourneyPlayers(int eid) throws Throwable {
+    public List<TourneyPlayerData> getTourneyPlayers(int eid) throws Throwable {
         // don't cache since pull current ratings with each query
         // could make cached by caching pid's only, then pulling
         // ratings from cacheplayerstorer
@@ -329,7 +329,7 @@ public class CacheTourneyStorer implements TourneyStorer {
         return null;
     }
 
-    public List setInitialSeeds(int eid) throws Throwable {
+    public List<TourneyPlayerData> setInitialSeeds(int eid) throws Throwable {
         // not necessary to cache yet
         Tourney tourney = getTourneyDetails(eid);
         List<Long> playersToRemove = new ArrayList<>();

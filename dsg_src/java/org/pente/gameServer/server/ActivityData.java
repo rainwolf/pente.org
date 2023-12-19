@@ -14,7 +14,7 @@ public class ActivityData {
     private long serverId = -1; // if activity is on a server
     private byte[] address; // stored in network byte order
 
-    private List activeGames = new ArrayList();
+    private List<ActivityTableData> activeGames = new ArrayList<>();
 
     public ActivityData(String playerName, InetAddress address) {
         setPlayerName(playerName);
@@ -105,8 +105,8 @@ public class ActivityData {
 
     public boolean playingRatedGame() {
         log4j.debug("playingRatedGame(), player=" + playerName);
-        for (Iterator it = activeGames.iterator(); it.hasNext(); ) {
-            ActivityTableData d = (ActivityTableData) it.next();
+        for (Iterator<ActivityTableData> it = activeGames.iterator(); it.hasNext(); ) {
+            ActivityTableData d = it.next();
             log4j.debug("checking " + d);
             if (d.isRated()) return true;
         }

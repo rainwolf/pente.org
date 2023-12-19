@@ -41,8 +41,10 @@ public interface GameSectionData {
      */
     public String getName();
 
-    /** Create a copy of the data in this object in a new object
-     *  @return Object A copy of this object.
+    /**
+     * Create a copy of the data in this object in a new object
+     *
+     * @return Object A copy of this object.
      */
-    public Object clone();
+    public GameSectionData clone();
 }

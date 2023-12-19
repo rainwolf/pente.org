@@ -5,7 +5,7 @@ import java.util.*;
 public class TourneyRound {
 
     private int round;
-    private List<TourneySection> sections = new ArrayList<TourneySection>();
+    private List<TourneySection> sections = new ArrayList<>();
     private Tourney tourney;
 
     public TourneyRound(int round) {
@@ -34,16 +34,16 @@ public class TourneyRound {
 
     public boolean isComplete() {
         if (isEmpty()) return false;
-        for (Iterator sections = getSections().iterator(); sections.hasNext(); ) {
-            TourneySection s = (TourneySection) sections.next();
+        for (Iterator<TourneySection> sections = getSections().iterator(); sections.hasNext(); ) {
+            TourneySection s = sections.next();
             if (!s.isComplete()) return false;
         }
         return true;
     }
 
     public void init() {
-        for (Iterator sections = getSections().iterator(); sections.hasNext(); ) {
-            TourneySection s = (TourneySection) sections.next();
+        for (Iterator<TourneySection> sections = getSections().iterator(); sections.hasNext(); ) {
+            TourneySection s = sections.next();
             s.init();
         }
     }
@@ -54,7 +54,7 @@ public class TourneyRound {
     }
 
     public TourneySection getSection(int i) {
-        return (TourneySection) sections.get(i - 1);
+        return sections.get(i - 1);
     }
 
     public List<TourneySection> getSections() {
@@ -67,8 +67,8 @@ public class TourneyRound {
 
     public List<TourneyPlayerData> getPlayers() {
         List<TourneyPlayerData> players = new ArrayList<>();
-        for (Iterator sections = getSections().iterator(); sections.hasNext(); ) {
-            TourneySection s = (TourneySection) sections.next();
+        for (Iterator<TourneySection> sections = getSections().iterator(); sections.hasNext(); ) {
+            TourneySection s = sections.next();
             players.addAll(s.getPlayers());
         }
         return players;
@@ -76,8 +76,8 @@ public class TourneyRound {
 
     public int getNumPlayers() {
         int sz = 0;
-        for (Iterator sections = getSections().iterator(); sections.hasNext(); ) {
-            TourneySection s = (TourneySection) sections.next();
+        for (Iterator<TourneySection> sections = getSections().iterator(); sections.hasNext(); ) {
+            TourneySection s = sections.next();
             sz += s.getNumPlayers();
         }
         return sz;
@@ -85,8 +85,8 @@ public class TourneyRound {
 
     public int getNumTotalMatches() {
         int sz = 0;
-        for (Iterator sections = getSections().iterator(); sections.hasNext(); ) {
-            TourneySection s = (TourneySection) sections.next();
+        for (Iterator<TourneySection> sections = getSections().iterator(); sections.hasNext(); ) {
+            TourneySection s = sections.next();
             sz += s.getNumTotalMatches();
         }
         return sz;
@@ -94,8 +94,8 @@ public class TourneyRound {
 
     public int getNumCompleteMatches() {
         int sz = 0;
-        for (Iterator sections = getSections().iterator(); sections.hasNext(); ) {
-            TourneySection s = (TourneySection) sections.next();
+        for (Iterator<TourneySection> sections = getSections().iterator(); sections.hasNext(); ) {
+            TourneySection s = sections.next();
             sz += s.getNumCompleteMatches();
         }
         return sz;
@@ -111,32 +111,32 @@ public class TourneyRound {
         if (tourney.getFormat() instanceof DoubleEliminationFormat) {
             strings.add("Bracket 1");
             SingleEliminationSection s = (SingleEliminationSection) sections.get(0);
-            for (Iterator it = s.getSingleEliminationMatches().iterator(); it.hasNext(); ) {
-                SingleEliminationMatch m = (SingleEliminationMatch) it.next();
+            for (Iterator<SingleEliminationMatch> it = s.getSingleEliminationMatches().iterator(); it.hasNext(); ) {
+                SingleEliminationMatch m = it.next();
                 strings.add(m.getMatchStr());
             }
             if (sections.size() > 1) {
                 strings.add("Bracket 2");
                 s = (SingleEliminationSection) sections.get(1);
-                for (Iterator it = s.getSingleEliminationMatches().iterator(); it.hasNext(); ) {
-                    SingleEliminationMatch m = (SingleEliminationMatch) it.next();
+                for (Iterator<SingleEliminationMatch> it = s.getSingleEliminationMatches().iterator(); it.hasNext(); ) {
+                    SingleEliminationMatch m = it.next();
                     strings.add(m.getMatchStr());
                 }
             }
         } else if (tourney.getFormat() instanceof SingleEliminationFormat) {
             SingleEliminationSection s = (SingleEliminationSection) sections.get(0);
-            for (Iterator it = s.getSingleEliminationMatches().iterator(); it.hasNext(); ) {
-                SingleEliminationMatch m = (SingleEliminationMatch) it.next();
+            for (Iterator<SingleEliminationMatch> it = s.getSingleEliminationMatches().iterator(); it.hasNext(); ) {
+                SingleEliminationMatch m = it.next();
                 strings.add(m.getMatchStr());
             }
         } else if (tourney.getFormat() instanceof SwissFormat) {
             SwissSection s = (SwissSection) sections.get(0);
-            for (Iterator it = s.getSwissMatches().iterator(); it.hasNext(); ) {
-                SingleEliminationMatch m = (SingleEliminationMatch) it.next();
+            for (Iterator<SingleEliminationMatch> it = s.getSwissMatches().iterator(); it.hasNext(); ) {
+                SingleEliminationMatch m = it.next();
                 strings.add(m.getMatchStr());
             }
-            for (Iterator it = s.getPlayersRanked(tourney).iterator(); it.hasNext(); ) {
-                TourneyPlayerData p = (TourneyPlayerData) it.next();
+            for (Iterator<TourneyPlayerData> it = s.getPlayersRanked(tourney).iterator(); it.hasNext(); ) {
+                TourneyPlayerData p = it.next();
                 strings.add(p.getName() + " " + p.getMatchWins() + "-" +
                         p.getOpponentWins());
             }
@@ -160,26 +160,26 @@ public class TourneyRound {
     /**
      * return list of affected matches
      */
-    public List forfeitPlayers(long pids[], boolean dropout[]) {
-        List updateMatches = new ArrayList();
-        for (Iterator sections = getSections().iterator(); sections.hasNext(); ) {
-            TourneySection s = (TourneySection) sections.next();
+    public List<TourneyMatch> forfeitPlayers(long pids[], boolean dropout[]) {
+        List<TourneyMatch> updateMatches = new ArrayList<>();
+        for (Iterator<TourneySection> sections = getSections().iterator(); sections.hasNext(); ) {
+            TourneySection s = sections.next();
             updateMatches.addAll(s.forfeitPlayers(pids, dropout));
         }
         return updateMatches;
     }
 
     public void updateAlreadyPlayed(int alreadyPlayed[][]) {
-        for (Iterator sections = getSections().iterator(); sections.hasNext(); ) {
-            TourneySection s = (TourneySection) sections.next();
+        for (Iterator<TourneySection> sections = getSections().iterator(); sections.hasNext(); ) {
+            TourneySection s = sections.next();
             s.updateAlreadyPlayed(alreadyPlayed);
         }
     }
 
-    public List getWinners() {
-        List winners = new ArrayList(5);
-        for (Iterator sections = getSections().iterator(); sections.hasNext(); ) {
-            TourneySection s = (TourneySection) sections.next();
+    public List<TourneyPlayerData> getWinners() {
+        List<TourneyPlayerData> winners = new ArrayList<>(5);
+        for (Iterator<TourneySection> sections = getSections().iterator(); sections.hasNext(); ) {
+            TourneySection s = sections.next();
             winners.addAll(s.getWinners());
         }
         return winners;

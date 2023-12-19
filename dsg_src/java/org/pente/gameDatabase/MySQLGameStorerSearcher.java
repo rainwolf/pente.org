@@ -60,10 +60,10 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
         // setup filter sql lines
         StringBuffer filterOptionsFrom = new StringBuffer();
         StringBuffer filterOptionsWhere = new StringBuffer();
-        Vector filterOptionsParams = new Vector();
+        Vector<Object> filterOptionsParams = new Vector<>();
         StringBuffer filterOptionsFrom2 = new StringBuffer();
         StringBuffer filterOptionsWhere2 = new StringBuffer();
-        Vector filterOptionsParams2 = new Vector();
+        Vector<Object> filterOptionsParams2 = new Vector<>();
 
         GameStorerSearchRequestFilterData filterData = requestData.getGameStorerSearchRequestFilterData();
 
@@ -123,7 +123,7 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
                     .map(CompletableFuture::supplyAsync)
                     .map(CompletableFuture::join).collect(Collectors.toList());
 
-            totalGameCount = lists.get(0);
+            totalGameCount = lists.getFirst();
 
             requestData.getGameStorerSearchRequestFilterData().setTotalGameNum(
                     totalGameCount);
@@ -159,7 +159,7 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
                                         int unionIndex,
                                         StringBuffer filterOptionsFrom,
                                         StringBuffer filterOptionsWhere,
-                                        Vector filterOptionsParams) throws Exception {
+                                        Vector<Object> filterOptionsParams) throws Exception {
 
         boolean includeGameTable = false;
 
@@ -434,7 +434,7 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
 
         PreparedStatement stmt = null;
         ResultSet result = null;
-        Hashtable moveResponses = new Hashtable();
+        Hashtable<Integer, GameStorerSearchResponseMoveData> moveResponses = new Hashtable<>();
         int totalGameCount = 0;
         int game = requestData.getGameStorerSearchRequestFilterData().getGame();
         GridState state = GridStateFactory.createGridState(

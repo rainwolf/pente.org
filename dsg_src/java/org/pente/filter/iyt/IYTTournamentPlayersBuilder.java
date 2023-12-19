@@ -35,7 +35,7 @@ import org.pente.filter.http.*;
 public class IYTTournamentPlayersBuilder implements Runnable {
 
     /** The Vector to store player ids in */
-    private Vector players;
+    private Vector<String> players;
 
     /** The tournament id to get players from */
     private int tournamentID;
@@ -47,7 +47,7 @@ public class IYTTournamentPlayersBuilder implements Runnable {
     private int round;
 
     /** Cookies used to connect to iyt */
-    private Hashtable cookies;
+    private Hashtable<String, String> cookies;
 
     /** Creates an IYTTournamentGamesBuilder with a new vector of player ids
      *  @param tournamentID The tournament id
@@ -56,20 +56,20 @@ public class IYTTournamentPlayersBuilder implements Runnable {
      *  @param playerID The players id
      *  @param cookies The cookies to connect to iyt
      */
-    public IYTTournamentPlayersBuilder(int tournamentID, int gameTypeID, int round, Hashtable cookies) {
+    public IYTTournamentPlayersBuilder(int tournamentID, int gameTypeID, int round, Hashtable<String, String> cookies) {
 
         this.tournamentID = tournamentID;
         this.gameTypeID = gameTypeID;
         this.round = round;
         this.cookies = cookies;
 
-        players = new Vector();
+        players = new Vector<>();
     }
 
     /** Gets the player ids
      *  @return Vector The player ids
      */
-    public Vector getPlayers() {
+    public Vector<String> getPlayers() {
         return players;
     }
 
@@ -80,7 +80,7 @@ public class IYTTournamentPlayersBuilder implements Runnable {
 
         IYTTournamentPlayersFilter filter = new IYTTournamentPlayersFilter(players);
 
-        Hashtable params = new Hashtable();
+        Hashtable<String, String> params = new Hashtable<>();
         params.put("id", Integer.toString(tournamentID));
         params.put("gmtypeid", Integer.toString(gameTypeID));
         params.put("type", "1");

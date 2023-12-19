@@ -43,7 +43,7 @@ class ThreadedAIPlayer implements AIPlayer, Runnable {
 
     private AIPlayer aiPlayer;
     private ThreadedAIPlayerCallback callback;
-    private List events;
+    private List<DSGEvent> events;
 
     private Thread thread;
     private boolean alive;
@@ -60,7 +60,7 @@ class ThreadedAIPlayer implements AIPlayer, Runnable {
         this.aiPlayer = aiPlayer;
         this.callback = callback;
 
-        events = new ArrayList();
+        events = new ArrayList<>();
 
         alive = true;
         thread = new Thread(this, "AIPlayerThread");

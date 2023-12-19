@@ -13,8 +13,8 @@ import java.util.Vector;
 
 public class GoStatePieceCollectionAdapter extends GoState {
 
-    protected Vector listeners;
-    protected Vector gridPieces;
+    protected Vector<OrderedPieceCollection> listeners;
+    protected Vector<GridPieceAction> gridPieces;
 
     private GoState shadowState;
 
@@ -30,8 +30,8 @@ public class GoStatePieceCollectionAdapter extends GoState {
     public GoStatePieceCollectionAdapter(GridState gridState) {
         super(gridState);
 
-        listeners = new Vector();
-        gridPieces = new Vector();
+        listeners = new Vector<>();
+        gridPieces = new Vector<>();
     }
 
     /**
@@ -44,8 +44,8 @@ public class GoStatePieceCollectionAdapter extends GoState {
 
         shadowState = new GoState(boardSizeX, boardSizeY);
 
-        listeners = new Vector();
-        gridPieces = new Vector();
+        listeners = new Vector<>();
+        gridPieces = new Vector<>();
     }
 
 

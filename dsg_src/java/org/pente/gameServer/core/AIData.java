@@ -27,7 +27,7 @@ public class AIData implements java.io.Serializable, Cloneable {
     private String className;
     private int numLevels;
     private int[] validGames;
-    private Hashtable options;
+    private Hashtable<String, String> options;
 
     private int level;
     private int seat;
@@ -39,7 +39,7 @@ public class AIData implements java.io.Serializable, Cloneable {
             validGames[i] = -1;
         }
 
-        options = new Hashtable();
+        options = new Hashtable<>();
     }
 
     public AIData(String name, int level, int seat, int game) {
@@ -99,7 +99,7 @@ public class AIData implements java.io.Serializable, Cloneable {
     }
 
     public String getOption(String name) {
-        return (String) options.get(name);
+        return options.get(name);
     }
 
     public Enumeration getOptionNames() {

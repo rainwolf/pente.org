@@ -60,7 +60,7 @@ public class TournamentServerTable extends ServerTable {
                                  final PlayerStorer playerDbStorer,
                                  final ServerStatsHandler serverStatsHandler,
                                  final MySQLDSGReturnEmailStorer returnEmailStorer,
-                                 final Collection namesInMainRoom,
+                                 final Collection<DSGPlayerData> namesInMainRoom,
                                  final ActivityLogger activityLogger,
                                  DSGJoinTableEvent joinEvent,
                                  final CacheKOTHStorer kothStorer) throws Throwable {

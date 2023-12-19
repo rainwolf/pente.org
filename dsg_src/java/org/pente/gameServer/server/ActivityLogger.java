@@ -16,8 +16,8 @@ public class ActivityLogger {
     private DSGPlayerStorer dsgPlayerStorer;
     private Resources resources;
 
-    private Collection players = new ArrayList();
-    private Collection tables = new ArrayList();
+    private Collection<ActivityData> players = new ArrayList<>();
+    private Collection<ActivityTableData> tables = new ArrayList<>();
 
     public ActivityLogger(Resources resources) {
         this.dbHandler = resources.getDbHandler();
@@ -130,8 +130,8 @@ public class ActivityLogger {
         tables.add(data);
 
         // find p1,p2 activity data
-        for (Iterator it = players.iterator(); it.hasNext(); ) {
-            ActivityData d = (ActivityData) it.next();
+        for (Iterator<ActivityData> it = players.iterator(); it.hasNext(); ) {
+            ActivityData d = it.next();
             if (d.getPlayerName().equals(p1)) {
                 d.addActiveGame(data);
             } else if (d.getPlayerName().equals(p2)) {
@@ -147,8 +147,8 @@ public class ActivityLogger {
         boolean found = false;
         ActivityTableData match = null;
         synchronized (tables) {
-            for (Iterator it = tables.iterator(); it.hasNext(); ) {
-                update = (ActivityTableData) it.next();
+            for (Iterator<ActivityTableData> it = tables.iterator(); it.hasNext(); ) {
+                update = it.next();
                 if (update.getTableNum() == table) {
                     update.setHashCode(hashCode);
                     update.setMoves(moves);
@@ -174,13 +174,13 @@ public class ActivityLogger {
 
         log4j.info("game [" + serverId + ":" + table + " over " + p1 + ", " + p2 + "]");
         synchronized (tables) {
-            for (Iterator it = tables.iterator(); it.hasNext(); ) {
-                ActivityTableData d = (ActivityTableData) it.next();
+            for (Iterator<ActivityTableData> it = tables.iterator(); it.hasNext(); ) {
+                ActivityTableData d = it.next();
                 if (d.getTableNum() == table && d.getServerId() == serverId) {
                     it.remove();
 
-                    for (Iterator it2 = players.iterator(); it2.hasNext(); ) {
-                        ActivityData d2 = (ActivityData) it2.next();
+                    for (Iterator<ActivityData> it2 = players.iterator(); it2.hasNext(); ) {
+                        ActivityData d2 = it2.next();
                         log4j.debug("checking against " + d2);
                         if (d2.getPlayerName().equals(p1)) {
                             d2.removeActiveGame(d);
@@ -195,8 +195,8 @@ public class ActivityLogger {
     }
 
     private ActivityTableData findGameMatch(ActivityTableData activity) {
-        for (Iterator it = tables.iterator(); it.hasNext(); ) {
-            ActivityTableData d = (ActivityTableData) it.next();
+        for (Iterator<ActivityTableData> it = tables.iterator(); it.hasNext(); ) {
+            ActivityTableData d = it.next();
             if (d.getHashCode() == activity.getHashCode() &&
                     d.getTableNum() != activity.getTableNum() &&
                     d.getNumMoves() > 2 && activity.getNumMoves() == d.getNumMoves()) {
@@ -208,8 +208,8 @@ public class ActivityLogger {
 
     private ActivityData findMatch(ActivityData activity) {
         outer:
-        for (Iterator it = players.iterator(); it.hasNext(); ) {
-            ActivityData d = (ActivityData) it.next();
+        for (Iterator<ActivityData> it = players.iterator(); it.hasNext(); ) {
+            ActivityData d = it.next();
             if (d.matches(activity)) {
                 return d;
             }

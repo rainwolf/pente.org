@@ -17,7 +17,7 @@ public class Tourney {
     private int incrementalTime;
     private int roundLengthDays;
     private boolean speed;
-    private List<Restriction> restrictions = new ArrayList<Restriction>();
+    private List<Restriction> restrictions = new ArrayList<>();
     private String prize;
 
     private Date signupEndDate;
@@ -167,7 +167,7 @@ public class Tourney {
         directors.add(Long.valueOf(pid));
     }
 
-    public List getDirectors() {
+    public List<Long> getDirectors() {
         return directors;
     }
 
@@ -215,16 +215,16 @@ public class Tourney {
         round.setTourney(this);
     }
 
-    public List getRounds() {
+    public List<TourneyRound> getRounds() {
         return rounds;
     }
 
     public TourneyRound getRound(int round) {
-        return (TourneyRound) rounds.get(round - 1);
+        return rounds.get(round - 1);
     }
 
     public TourneyRound getLastRound() {
-        return (TourneyRound) rounds.get(rounds.size() - 1);
+        return rounds.get(rounds.size() - 1);
     }
 
     public int getNumRounds() {

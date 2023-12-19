@@ -269,7 +269,7 @@ public class SimpleGameStorerSearchRequestFilterFormat implements ObjectFormat {
     public Object parse(Object obj, StringBuffer buffer) throws ParseException {
 
         GameStorerSearchRequestFilterData filterData = convertObject(obj);
-        Hashtable params = new Hashtable();
+        Hashtable<String, Object> params = new Hashtable<>();
 
         try {
             HttpUtilities.parseParams(buffer.toString(), params);

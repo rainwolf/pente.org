@@ -78,7 +78,7 @@ public class SimpleGridState implements GridState {
         this.boardSizeY = boardSizeY;
 
         board = new int[boardSizeX][boardSizeY];
-        moves = new Vector();
+        moves = new Vector<>();
     }
 
     /** Create a new grid state with a specified size and add the moves

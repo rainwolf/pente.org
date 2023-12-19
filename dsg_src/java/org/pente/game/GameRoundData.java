@@ -56,7 +56,7 @@ public interface GameRoundData {
     /** Get the list of sections for this round
      *  @param Vector The list of sections
      */
-    public Vector getGameSectionData();
+    public Vector<GameSectionData> getGameSectionData();
 
 
     /** Create a copy of the data in this object in a new object

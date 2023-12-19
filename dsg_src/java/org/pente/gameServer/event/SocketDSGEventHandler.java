@@ -43,7 +43,7 @@ public class SocketDSGEventHandler implements DSGEventListener, DSGEventSource {
     Thread writeObjectThread;
     volatile boolean running;
 
-    Vector listeners = new Vector();
+    Vector<DSGEventListener> listeners = new Vector<>();
     SynchronizedQueue outputQueue = new SynchronizedQueue();
 
     class ObjectReader implements Runnable {

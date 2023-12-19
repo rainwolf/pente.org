@@ -32,11 +32,11 @@ import java.util.*;
 public abstract class AbstractFilterController implements FilterController, FilterListener {
 
     /** A vector of FilterListener classes interested in filtered lines */
-    private Vector listeners;
+    private Vector<FilterListener> listeners;
 
     /** Create the listeners vector */
     public AbstractFilterController() {
-        listeners = new Vector();
+        listeners = new Vector<>();
     }
 
     /** Add a FilterListener to receive filtered lines

@@ -51,7 +51,7 @@ public class SimpleObjectFormatFactory implements ObjectFormatFactory {
     /** Each factory creates its own hashtable of formats since some formats may
      *  vary between instances, although many will be the same.
      */
-    private Hashtable formats;
+    private Hashtable<String, ObjectFormat> formats;
 
     /** Create with default values for simple html response format */
     public SimpleObjectFormatFactory() {
@@ -86,7 +86,7 @@ public class SimpleObjectFormatFactory implements ObjectFormatFactory {
     /** Add all formats to a vector for later searching */
     protected void initFormats() {
 
-        formats = new Hashtable();
+        formats = new Hashtable<>();
 
         formats.put(simpleRequestFormat.getClass().getName(), simpleRequestFormat);
         formats.put(simpleRequestFilterFormat.getClass().getName(), simpleRequestFilterFormat);

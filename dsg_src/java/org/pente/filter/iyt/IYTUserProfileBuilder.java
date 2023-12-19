@@ -37,9 +37,9 @@ public class IYTUserProfileBuilder implements FilterListener, Runnable {
     private IYTUserProfileFilter iytUserProfileFilter;
 
     /** Cookies used to send requests to iyt */
-    private Hashtable cookies;
+    private Hashtable<String, String> cookies;
     /** Parameters used to send requests to iyt */
-    private Hashtable params;
+    private Hashtable<String, String> params;
 
     /** The player data found */
     private PlayerData playerData;
@@ -67,7 +67,7 @@ public class IYTUserProfileBuilder implements FilterListener, Runnable {
      *  @param cookie The cookie string used for iyt
      */
     public IYTUserProfileBuilder(String cookie) {
-        Hashtable cookies = new Hashtable();
+        Hashtable<String, String> cookies = new Hashtable<>();
         cookies.put(IYTConstants.USERID_COOKIE, cookie);
 
         String userID = cookie.substring(0, 14);
@@ -80,19 +80,19 @@ public class IYTUserProfileBuilder implements FilterListener, Runnable {
      *  @param userID The user id of the other player
      *  @param cookies The cookies to log into iyt.
      */
-    public IYTUserProfileBuilder(String userID, Hashtable cookies) {
+    public IYTUserProfileBuilder(String userID, Hashtable<String, String> cookies) {
         init(userID, cookies);
     }
 
     /** Use this constructor if you just need some additional info
      *  @param playerData The player data you have so far
      */
-    public IYTUserProfileBuilder(PlayerData playerData, Hashtable cookies) {
+    public IYTUserProfileBuilder(PlayerData playerData, Hashtable<String, String> cookies) {
 
         this.playerData = playerData;
         this.cookies = cookies;
 
-        params = new Hashtable();
+        params = new Hashtable<>();
         params.put(IYTConstants.USERID_PARAMETER, Long.toString(playerData.getUserID()));
 
         iytUserProfileFilter = new IYTUserProfileFilter(playerData);
@@ -102,11 +102,11 @@ public class IYTUserProfileBuilder implements FilterListener, Runnable {
      *  @param userID The user id of the other player
      *  @param cookies The cookies to log into iyt.
      */
-    private void init(String userID, Hashtable cookies) {
+    private void init(String userID, Hashtable<String, String> cookies) {
 
         this.cookies = cookies;
 
-        params = new Hashtable();
+        params = new Hashtable<>();
         params.put(IYTConstants.USERID_PARAMETER, userID);
 
         playerData = new DefaultPlayerData();

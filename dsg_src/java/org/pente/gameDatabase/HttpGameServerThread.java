@@ -67,7 +67,7 @@ public class HttpGameServerThread implements Runnable {
         //BufferedWriter  out = null;
         //BufferedWriter  zipOut = null;
         OutputStream out = null;
-        Hashtable params = null;
+        Hashtable<String, Object> params = null;
         String paramStr = null;
 
         boolean gzipOutput = false;
@@ -80,7 +80,7 @@ public class HttpGameServerThread implements Runnable {
             //out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             //zipOut = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(socket.getOutputStream())));
 
-            params = new Hashtable();
+            params = new Hashtable<>();
 
             // the parsing of the http request is pretty much copied from iyt_server_thread,
             // maybe i should put this in another class?  is it worth it?

@@ -36,7 +36,7 @@ public class AIPlayerFactory {
         AIPlayer aiPlayer = null;
 
         try {
-            Class c = Class.forName(aiData.getClassName());
+            Class<?> c = Class.forName(aiData.getClassName());
             aiPlayer = (AIPlayer) c.getDeclaredConstructor().newInstance();
 
             initAIPlayer(aiPlayer, aiData);

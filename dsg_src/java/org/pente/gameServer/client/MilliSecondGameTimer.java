@@ -11,7 +11,7 @@ public class MilliSecondGameTimer implements GameTimer {
     private long startTime;
     private long tempTimeElapsed;
 
-    private Vector listeners;
+    private Vector<GameTimerListener> listeners;
 
     private Object timeLock;
     private Thread thread;
@@ -22,7 +22,7 @@ public class MilliSecondGameTimer implements GameTimer {
 
     public MilliSecondGameTimer(String threadName) {
         alive = true;
-        listeners = new Vector();
+        listeners = new Vector<>();
         timeLock = new Object();
 
         thread = new Thread(new LocalRunnable(), "MilliSecondGameTimer " + threadName);

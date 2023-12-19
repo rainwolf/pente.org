@@ -28,7 +28,7 @@ public class SimpleHtmlGameStorerSearchRequestData extends SimpleGameStorerSearc
 
     public void setGameStorerSearchResponseParams(String paramString) {
 
-        Hashtable params = new Hashtable();
+        Hashtable<String, Object> params = new Hashtable<>();
 
         try {
             HttpUtilities.parseParams(paramString, params);

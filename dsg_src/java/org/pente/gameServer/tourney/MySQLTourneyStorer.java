@@ -462,7 +462,7 @@ public class MySQLTourneyStorer implements TourneyStorer {
     /**
      * get List of TourneyPlayerData for all players in a tourney
      */
-    public List getTourneyPlayers(int eid)
+    public List<TourneyPlayerData> getTourneyPlayers(int eid)
             throws Throwable {
 
         List<TourneyPlayerData> players = new ArrayList<>();
@@ -700,12 +700,12 @@ public class MySQLTourneyStorer implements TourneyStorer {
     /**
      * based on sorted list of players, update seeds in db
      */
-    public List setInitialSeeds(int eid)
+    public List<TourneyPlayerData> setInitialSeeds(int eid)
             throws Throwable {
 
         Connection con = null;
         PreparedStatement stmt = null;
-        List players = getTourneyPlayers(eid);
+        List<TourneyPlayerData> players = getTourneyPlayers(eid);
         try {
             con = dbHandler.getConnection();
             stmt = con.prepareStatement(

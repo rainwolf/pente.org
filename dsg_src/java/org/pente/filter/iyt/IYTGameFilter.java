@@ -118,14 +118,14 @@ public class IYTGameFilter implements LineFilter {
     private PlayerStorer playerStorer;
 
     /** The parameters to connect to iyt */
-    private Hashtable params;
+    private Hashtable<String, String> params;
     /** The cookies to connect to iyt */
-    private Hashtable cookies;
+    private Hashtable<String, String> cookies;
     /** Flag to indicate if the game was found or not */
     private boolean gameFound = false;
 
     /** A temporary vector of coordinate lines */
-    private Vector coordinateLines;
+    private Vector<String> coordinateLines;
     /** The number of moves in the game */
     private int moves;
     /** Flag if all moves were found */
@@ -136,7 +136,7 @@ public class IYTGameFilter implements LineFilter {
     private String redirectedHost;
 
     /** A list of supported games to show coordinates for */
-    private static Vector supportedGames = new Vector();
+    private static Vector<String> supportedGames = new Vector<>();
 
     static {
         supportedGames.addElement("Pro Pente");
@@ -153,8 +153,8 @@ public class IYTGameFilter implements LineFilter {
     public IYTGameFilter(GameStorer gameStorer,
                          PlayerStorer playerStorer,
                          PlayerData sessionPlayerData,
-                         Hashtable params,
-                         Hashtable cookies,
+                         Hashtable<String, String> params,
+                         Hashtable<String, String> cookies,
                          String redirectedHost) {
 
         this(null, gameStorer, playerStorer, sessionPlayerData, params, cookies, redirectedHost);
@@ -172,8 +172,8 @@ public class IYTGameFilter implements LineFilter {
                          GameStorer gameStorer,
                          PlayerStorer playerStorer,
                          PlayerData sessionPlayerData,
-                         Hashtable params,
-                         Hashtable cookies,
+                         Hashtable<String, String> params,
+                         Hashtable<String, String> cookies,
                          String redirectedHost) {
 
         this.prevFilter = prevFilter;
@@ -184,7 +184,7 @@ public class IYTGameFilter implements LineFilter {
         this.cookies = cookies;
         this.redirectedHost = redirectedHost;
 
-        coordinateLines = new Vector();
+        coordinateLines = new Vector<>();
 
         boardSize = new Dimension(19, 19);
         gameData = new IYTGameData();
@@ -229,7 +229,7 @@ public class IYTGameFilter implements LineFilter {
 
             case PROCESSING_BOARD:
 
-                if (line.indexOf(GAME_NAME_FIELD) == -1) break;
+                if (!line.contains(GAME_NAME_FIELD)) break;
 ///iyt.dll?a&g=15300015520869&u=15200000710511&t=1&gn=42
 ///iyt.dll?a?game=15300015520869&stage=7&
                 // get the game name
@@ -255,10 +255,10 @@ public class IYTGameFilter implements LineFilter {
                     if (event != null) {
                         gameData.setEvent(event);
 
-                        if (event.indexOf("Main") != -1) {
+                        if (event.contains("Main")) {
                             gameData.setInitialTime(48);
                             gameData.setIncrementalTime(48);
-                        } else if (event.indexOf("Fast") != -1) {
+                        } else if (event.contains("Fast")) {
                             gameData.setInitialTime(28);
                             gameData.setIncrementalTime(28);
                         }

@@ -46,7 +46,7 @@ public class IYTSpider {
             System.exit(-1);
         }
 
-        Hashtable cookies = new Hashtable();
+        Hashtable<String, String> cookies = new Hashtable<>();
         cookies.put(IYTConstants.USERID_COOKIE, args[1]);
 
         int id = Integer.parseInt(args[0]);
@@ -68,7 +68,7 @@ public class IYTSpider {
         // loop incrementing tournamentID
         for (int tournamentID = id; tournamentID < 409; tournamentID++) {
 
-            Vector games = new Vector();
+            Vector<String> games = new Vector<>();
 
             File dir = new File("/dsg_dev/data/tournament");
             File file2 = new File(dir, Integer.toString(tournamentID) + ".txt");
@@ -98,7 +98,7 @@ public class IYTSpider {
 
                     // for each player in the round, get the games the player played in
                     // into the games vector
-                    Vector players = playersBuilder.getPlayers();
+                    Vector<String> players = playersBuilder.getPlayers();
                     for (int j = 0; j < players.size(); j++) {
                         String playerID = (String) players.elementAt(j);
                         IYTTournamentGamesBuilder gamesBuilder = new IYTTournamentGamesBuilder(tournamentID, gameTypeID, i, playerID, cookies, games);
@@ -108,7 +108,7 @@ public class IYTSpider {
 
                 FileOutputStream fileStream = new FileOutputStream(file2);
                 for (int i = 0; i < games.size(); i++) {
-                    String gameIDStr = (String) games.elementAt(i);
+                    String gameIDStr = games.elementAt(i);
                     fileStream.write(gameIDStr.getBytes());
                     fileStream.write('\r');
                     fileStream.write('\n');
@@ -125,7 +125,7 @@ public class IYTSpider {
 
                     try {
 
-                        String gameIDStr = (String) games.elementAt(i);
+                        String gameIDStr = games.elementAt(i);
                         long gameID = Long.parseLong(gameIDStr);
 
                         boolean buildGame = false;

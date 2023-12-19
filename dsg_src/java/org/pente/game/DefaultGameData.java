@@ -77,7 +77,7 @@ public class DefaultGameData implements GameData {
     protected int winner;
 
     /** Moves of the game */
-    protected Vector gameMoves;
+    protected Vector<Integer> gameMoves;
 
     /** Did players swap */
     protected boolean swapped;
@@ -96,7 +96,7 @@ public class DefaultGameData implements GameData {
 
     /** Initialize moves vector, set winner to unkown */
     public DefaultGameData() {
-        gameMoves = new Vector();
+        gameMoves = new Vector<>();
 
         player1Data = new DefaultPlayerData();
         player2Data = new DefaultPlayerData();

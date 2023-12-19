@@ -41,7 +41,7 @@ public interface GameVenueStorer {
      *  loaded with the appropriate site data, and so on down to the section data.
      *  @return Vector The list of GameTreeData objects.
      */
-    public Vector getGameTree();
+    public Vector<GameTreeData> getGameTree();
 
     //public String getGameSiteData(int sid) throws Exception;
     public int getSiteID(String name) throws Exception;

@@ -62,10 +62,10 @@ public class IYTSimpleMovesBuilder implements IYTMovesBuilder, FilterListener {
     private Exception ex;
 
     /** The http parameters to use for iyt */
-    private Hashtable params;
+    private Hashtable<String, String> params;
 
     /** The cookies to use to connect to iyt */
-    private Hashtable cookies;
+    private Hashtable<String, String> cookies;
 
 
     /** Creates a new IYTSimpleMovesBuilder
@@ -74,7 +74,7 @@ public class IYTSimpleMovesBuilder implements IYTMovesBuilder, FilterListener {
      *  @param gameData The game data to store moves in
      *  @param numMoves The number of moves in the game
      */
-    public IYTSimpleMovesBuilder(Hashtable params, Hashtable cookies, GameData gameData, int numMoves) {
+    public IYTSimpleMovesBuilder(Hashtable<String, String> params, Hashtable<String, String> cookies, GameData gameData, int numMoves) {
         this.params = params;
         this.cookies = cookies;
         this.gameData = gameData;
