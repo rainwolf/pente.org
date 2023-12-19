@@ -9,6 +9,7 @@
         <javac srcdir="deploy" destdir="deployClasses" debug="true" debuglevel="lines,vars,source"
             executable="/usr/local/opt/openjdk/bin/javac">
         	<classpath refid="3rd-party-classpath" />
+            <compilerarg value="-Xlint:deprecation,unchecked" />
         </javac>
 <!-- 	    <classpath>
 	      <pathelement path="./dsg_src/lib/"/>
