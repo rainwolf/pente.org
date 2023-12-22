@@ -49,15 +49,15 @@ public class ServerTable {
     protected DSGPlayerData playingPlayers[] = new DSGPlayerData[MAX_PLAYERS + 1];
     protected boolean playerClickedPlay[] = new boolean[MAX_PLAYERS + 1];
 
-    protected Vector<DSGPlayerData> playersInTable = new Vector();
+    protected Vector<DSGPlayerData> playersInTable = new Vector<>();
     protected Vector<DSGPlayerData> playersInMainRoom;
-    protected List<String> playersInvited = new ArrayList<String>();
+    protected List<String> playersInvited = new ArrayList<>();
 
-    protected Map<String, Long> bootTimes = new HashMap<String, Long>();
+    protected Map<String, Long> bootTimes = new HashMap<>();
 
     // keeps track of which ignores the person sending chat has been told about
     // so we only tell them once per table that their chat is being ignored
-    protected Map<Long, Long> chatIgnoredMsg = new HashMap<Long, Long>();
+    protected Map<Long, Long> chatIgnoredMsg = new HashMap<>();
 
     protected int state;
     protected int prevState;
@@ -155,6 +155,9 @@ public class ServerTable {
 
     protected CacheKOTHStorer kothStorer;
 
+    public ServerTable() {
+    }
+
     public ServerTable(final Server server,
                        final Resources resources,
                        final ServerAIController aiController,
@@ -168,7 +171,7 @@ public class ServerTable {
                        final PlayerStorer playerDbStorer,
                        final ServerStatsHandler serverStatsHandler,
                        final MySQLDSGReturnEmailStorer returnEmailStorer,
-                       final Collection namesInMainRoom,
+                       final Collection<DSGPlayerData> namesInMainRoom,
                        final ActivityLogger activityLogger,
                        DSGJoinTableEvent joinEvent,
                        final CacheKOTHStorer kothStorer) throws Throwable {
@@ -193,9 +196,9 @@ public class ServerTable {
 
         this.kothStorer = kothStorer;
 
-        this.playersInMainRoom = new Vector();
-        for (Iterator it = namesInMainRoom.iterator(); it.hasNext(); ) {
-            DSGPlayerData d = (DSGPlayerData) it.next();
+        this.playersInMainRoom = new Vector<>();
+        for (Iterator<DSGPlayerData> it = namesInMainRoom.iterator(); it.hasNext(); ) {
+            DSGPlayerData d = it.next();
             playersInMainRoom.add(d);
         }
         startGameOverThread();
@@ -879,8 +882,7 @@ public class ServerTable {
         initialMinutes = changeStateEvent.getInitialMinutes();
         incrementalSeconds = changeStateEvent.getIncrementalSeconds();
         timed = changeStateEvent.getTimed();
-        Game newGame = GridStateFactory.getGame(changeStateEvent.getGame());
-        game = newGame;
+        game = GridStateFactory.getGame(changeStateEvent.getGame());
         rated = changeStateEvent.getRated();
 
         for (int i = 1; i < timers.length; i++) {
