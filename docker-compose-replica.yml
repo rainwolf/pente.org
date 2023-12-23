@@ -21,6 +21,10 @@ services:
       retries: 1000
     networks:
       - pente_org
+    deploy:
+      resources:
+        limits:
+          memory: 32M
   replica_db:
     build:
       dockerfile: mariadb.Dockerfile

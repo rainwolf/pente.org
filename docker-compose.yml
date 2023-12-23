@@ -61,6 +61,10 @@ services:
       - '127.0.0.1:${DSG_LOCAL_PORT}:${DSG_LOCAL_PORT}'
     volumes:
       - ~/.ssh:/root/.ssh
+    deploy:
+        resources:
+            limits:
+              memory: 32M
     healthcheck:
       test: ["CMD-SHELL", "mariadb -u${MYSQL_RO_USER} -p${MYSQL_RO_PASSWORD} -h 127.0.0.1 -P ${DSG_LOCAL_PORT} ${MYSQL_DATABASE} -e \"select * from temp_tb limit 1\""]
       interval: 10s
@@ -111,6 +115,10 @@ services:
       retries: 1000
     ports:
       - '127.0.0.1:2525:25'  # change this to 25 when deploying, this is to prevent sending mail on local
+    deploy:
+      resources:
+        limits:
+          memory: 48M
     networks:
       - pente_org
 networks:
