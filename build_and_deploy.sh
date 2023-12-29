@@ -6,7 +6,7 @@ export DOCKER_DEFAULT_PLATFORM=linux/amd64
 
 rsync -vurtd --exclude-from exclude_compile.txt --stats --progress dsg_src/java/ deploy/
 
-read -a array <<< "$@"
+read -ar array <<< "$@"
 
 docker system prune -af
 
@@ -20,12 +20,12 @@ else
     if [[ ${target} == "pente.org" ]]
     then
       echo "Building the live game room"
-      cd ../react-live-game-room
+      cd ../react-live-game-room || exit
       npm run build || exit 1
       rm -rf ../pente.org/react-live-game-room/build/*
       cp -r build/* ../pente.org/react-live-game-room/build/
       echo "Building the webassembly AI"
-      cd ../react_mmai/MMAIWASM
+      cd ../react_mmai/MMAIWASM || exit
       sh compile.sh || exit 1
       cd ../
       cp MMAIWASM/ai.* public/
@@ -33,29 +33,29 @@ else
       npm run build || exit 1
       rm -rf ../pente.org/react-mmai/build/*
       cp -r build/* ../pente.org/react-mmai/build/
-      cd ../pente.org
+      cd ../pente.org || exit
     fi
     echo "Building ${target} for linux/amd64"
     docker compose -f docker-compose.yml -f docker-compose-replica.yml build "${target}" || exit 1
   done
 fi
 
-read -a images_main <<< $(docker compose -f docker-compose.yml config --images | sort)
-read -a images_replica <<< $(docker compose -f docker-compose-replica.yml config --images | sort)
-read -a built_images <<< $(docker images --format json | jq .Repository | sed 's/\"//g' | sort)
+read -ar images_main <<< "$(docker compose -f docker-compose.yml config --images | sort)"
+read -ar images_replica <<< "$(docker compose -f docker-compose-replica.yml config --images | sort)"
+read -ar built_images <<< "$(docker images --format json | jq .Repository | sed 's/\"//g' | sort)"
 images_main_combined=( "${images_main[@]} ${built_images[@]}" )
 images_main_push=$(echo "${images_main_combined[@]}" | xargs -n1 | sort | uniq -d | xargs)
 images_replica_combined=( "${images_replica[@]} ${built_images[@]}" )
 images_replica_push=$(echo "${images_replica_combined[@]}" | xargs -n1 | sort | uniq -d | xargs)
 
 target="debian@pente.org"
-for image in ${images_main_push[@]}
+for image in "${images_main_push[@]}"
 do
   echo "Pushing ${image} to ${target}"
   docker save "${image}" | bzip2 | pv | ssh "${target}" docker load
 done
 target="debian@wire.submanifold.be"
-for image in ${images_replica_push[@]}
+for image in "${images_replica_push[@]}"
 do
   echo "Pushing ${image} to ${target}"
   docker save "${image}" | bzip2 | pv | ssh "${target}" docker load
