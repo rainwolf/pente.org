@@ -197,10 +197,7 @@ public class ServerTable {
         this.kothStorer = kothStorer;
 
         this.playersInMainRoom = new Vector<>();
-        for (Iterator<DSGPlayerData> it = namesInMainRoom.iterator(); it.hasNext(); ) {
-            DSGPlayerData d = it.next();
-            playersInMainRoom.add(d);
-        }
+        playersInMainRoom.addAll(namesInMainRoom);
         startGameOverThread();
         resetTable(joinEvent);
     }
@@ -222,9 +219,9 @@ public class ServerTable {
 
         // destroy old timers
         if (timers != null) {
-            for (int i = 0; i < timers.length; i++) {
-                if (timers[i] != null) {
-                    timers[i].destroy();
+            for (GameTimer timer : timers) {
+                if (timer != null) {
+                    timer.destroy();
                 }
             }
         }
@@ -373,7 +370,7 @@ public class ServerTable {
             DSGEvent event = new DSGTextTableEvent(player, tableNum, text);
             DSGPlayerData actor = getPlayerInMainRoom(player);
             for (int i = 0; i < playersInTable.size(); i++) {
-                DSGPlayerData d = ((DSGPlayerData) playersInTable.elementAt(i));
+                DSGPlayerData d = playersInTable.elementAt(i);
                 DSGIgnoreData ig = null;
                 if (d == null || actor == null) {
                     continue;
@@ -620,8 +617,8 @@ public class ServerTable {
     }
 
     public void handleMainRoomExit(String player) {
-        for (Iterator it = playersInMainRoom.iterator(); it.hasNext(); ) {
-            DSGPlayerData data = (DSGPlayerData) it.next();
+        for (Iterator<DSGPlayerData> it = playersInMainRoom.iterator(); it.hasNext(); ) {
+            DSGPlayerData data = it.next();
             if (data.getName().equals(player)) {
                 it.remove();
                 break;
@@ -635,7 +632,7 @@ public class ServerTable {
 
     protected void sendPlayerList(String toPlayer) {
         for (int i = playersInTable.size() - 1; i > -1; i--) {
-            DSGPlayerData data = (DSGPlayerData) playersInTable.elementAt(i);
+            DSGPlayerData data = playersInTable.elementAt(i);
             if (data != null) {
                 dsgEventRouter.routeEvent(
                         new DSGJoinTableEvent(data.getName(), tableNum),
@@ -1744,7 +1741,7 @@ public class ServerTable {
                     // or connect6
                     if (timed && oldCurrentPlayer != newCurrentPlayer) {
                         // remove the last move time
-                        moveTimes.remove(moveTimes.size() - 1);
+                        moveTimes.removeLast();
 
 
                         timers[oldCurrentPlayer].stop();
@@ -1766,7 +1763,7 @@ public class ServerTable {
                         } else {
                             // reset the current players clock to what it was when the turn started
                             // so that the player accepting the undo is not penalized
-                            Time undoTime = moveTimes.get(moveTimes.size() - 1);
+                            Time undoTime = moveTimes.getLast();
                             timers[oldCurrentPlayer].adjust(undoTime.getMinutes(), undoTime.getSeconds());
                             broadcastTable(
                                     new DSGTimerChangeTableEvent(
@@ -2102,7 +2099,7 @@ public class ServerTable {
 
     protected void removePlayer(String name) {
         for (int i = playersInTable.size() - 1; i > -1; i--) {
-            DSGPlayerData data = (DSGPlayerData) playersInTable.elementAt(i);
+            DSGPlayerData data = playersInTable.elementAt(i);
             if (data == null) {
                 playersInTable.remove(i);
             } else if (data.getName().equals(name)) {
@@ -2113,7 +2110,7 @@ public class ServerTable {
 
     protected DSGPlayerData getPlayerInTable(String name) {
         for (int i = playersInTable.size() - 1; i > -1; i--) {
-            DSGPlayerData data = (DSGPlayerData) playersInTable.elementAt(i);
+            DSGPlayerData data = playersInTable.elementAt(i);
             if (data == null) {
                 playersInTable.remove(i);
             } else if (name.equals(data.getName())) {
@@ -2126,7 +2123,7 @@ public class ServerTable {
 
     protected DSGPlayerData getPlayerInMainRoom(String name) {
         for (int i = 0; i < playersInMainRoom.size(); i++) {
-            DSGPlayerData data = (DSGPlayerData) playersInMainRoom.elementAt(i);
+            DSGPlayerData data = playersInMainRoom.elementAt(i);
             if (data.getName().equals(name)) {
                 return data;
             }
@@ -2711,8 +2708,8 @@ public class ServerTable {
 
     protected GameEventData getGameEvent(int game) {
         // set the event based on passed in game events and game played
-        for (Iterator it = serverData.getGameEvents().iterator(); it.hasNext(); ) {
-            GameEventData d = (GameEventData) it.next();
+        for (Iterator<GameEventData> it = serverData.getGameEvents().iterator(); it.hasNext(); ) {
+            GameEventData d = it.next();
             if (d.getGame() == game) {
                 return d;
             }
@@ -3042,12 +3039,13 @@ public class ServerTable {
         }
 
         boolean updateRatings = isComputerGame;
+        boolean isGo = game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO
+                || game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9
+                || game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13;
         if (gameData.getRated() && localSet != null) {
             if (localSet.getG1Gid() == 0) {
                 localSet.setG1(gameData);
-                if (game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO
-                        || game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9
-                        || game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13) {
+                if (isGo) {
                     updateRatings = true;
                 }
             } else {
@@ -3108,9 +3106,7 @@ public class ServerTable {
                         loserPlayerData.getPlayerGameData(game, true);
 
                 try {
-                    double k = (game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO
-                            || game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9
-                            || game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13) ? 32 : 64;
+                    double k = isGo ? 32 : 64;
                     GameOverUtilities.updateGameData(
                             dsgPlayerStorer,
                             winnerPlayerData, winnerPlayerGameData,
@@ -3130,9 +3126,7 @@ public class ServerTable {
                 double loserRatingBefore = loserPlayerGameData.getRating();
 
                 try {
-                    double k = (game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO
-                            || game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9
-                            || game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13) ? 32 : 64;
+                    double k = isGo ? 32 : 64;
                     GameOverUtilities.updateGameData(
                             dsgPlayerStorer,
                             winnerPlayerData, winnerPlayerGameData,
@@ -3225,9 +3219,7 @@ public class ServerTable {
                         loserPlayerData.getPlayerGameData(game, true);
 
                 try {
-                    double k = (game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO
-                            || game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9
-                            || game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13) ? 32 : 64;
+                    double k = isGo ? 32 : 64;
                     GameOverUtilities.updateGameData(
                             dsgPlayerStorer,
                             winnerPlayerData, winnerPlayerGameData,
@@ -3298,8 +3290,7 @@ public class ServerTable {
                 if (tourney.isSpeed()) {
                     TourneySection s = tourney.getRound(tourneyMatch.getRound()).getSection(
                             tourneyMatch.getSection());
-                    if (s instanceof SingleEliminationSection) {
-                        SingleEliminationSection ses = (SingleEliminationSection) s;
+                    if (s instanceof SingleEliminationSection ses) {
                         SingleEliminationMatch m = ses.getSingleEliminationMatch(tourneyMatch);
                         broadcastTable(new DSGSystemMessageTableEvent(
                                 tableNum,

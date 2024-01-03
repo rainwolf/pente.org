@@ -258,7 +258,7 @@ public class Server {
         final SocketDSGEventHandler s = removePlayerListener(name, true);
         loginHandler.bootPlayer(name, minutes);
 
-        if (s != null) { //ai shoudln't happen
+        if (s != null) { //ai shouldn't happen
             // just in case client doesn't close the socket
             // do it here
             new Thread(() -> {
