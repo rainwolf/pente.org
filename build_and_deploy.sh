@@ -6,7 +6,7 @@ export DOCKER_DEFAULT_PLATFORM=linux/amd64
 
 rsync -vurtd --exclude-from exclude_compile.txt --stats --progress dsg_src/java/ deploy/
 
-read -ar array <<< "$@"
+read -a array <<< "$@"
 
 docker system prune -af
 
@@ -40,9 +40,9 @@ else
   done
 fi
 
-read -ar images_main <<< "$(docker compose -f docker-compose.yml config --images | sort)"
-read -ar images_replica <<< "$(docker compose -f docker-compose-replica.yml config --images | sort)"
-read -ar built_images <<< "$(docker images --format json | jq .Repository | sed 's/\"//g' | sort)"
+read -a images_main <<< "$(docker compose -f docker-compose.yml config --images | sort)"
+read -a images_replica <<< "$(docker compose -f docker-compose-replica.yml config --images | sort)"
+read -a built_images <<< "$(docker images --format json | jq .Repository | sed 's/\"//g' | sort)"
 images_main_combined=( "${images_main[@]} ${built_images[@]}" )
 images_main_push=$(echo "${images_main_combined[@]}" | xargs -n1 | sort | uniq -d | xargs)
 images_replica_combined=( "${images_replica[@]} ${built_images[@]}" )
