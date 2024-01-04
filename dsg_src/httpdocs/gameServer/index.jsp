@@ -284,15 +284,15 @@
 <%--</script>--%>
 
 
-<% if (dsgPlayerData.showAds()) { %>
-<script>(adsbygoogle = window.adsbygoogle || []).requestNonPersonalizedAds =<%=(personalizeAds != null && personalizeAds?"0":"1")%>;</script>
-<div id="senseReplace" style="width:728px;height:90px;" top="50%"></div>
-<%@ include file="728x90ad.jsp" %>
-<br style="clear:both">
-<script type="text/javascript">
-   addLoadEvent(sensePage);
-</script>
-<% } %>
+<%--<% if (dsgPlayerData.showAds()) { %>--%>
+<%--<script>(adsbygoogle = window.adsbygoogle || []).requestNonPersonalizedAds =<%=(personalizeAds != null && personalizeAds?"0":"1")%>;</script>--%>
+<%--<div id="senseReplace" style="width:728px;height:90px;" top="50%"></div>--%>
+<%--<%@ include file="728x90ad.jsp" %>--%>
+<%--<br style="clear:both">--%>
+<%--<script type="text/javascript">--%>
+<%--   addLoadEvent(sensePage);--%>
+<%--</script>--%>
+<%--<% } %>--%>
 <%--
 --%>
 
@@ -539,11 +539,11 @@
                style="margin-right:5px;"><span>Live Game Room</span></a>
          </div>
          (best with Firefox or Chrome)
-         <div style="margin-top:5px;">
-            or <a
-            href="/gameServer/pente.jnlp?name=<%=name%>&password=<%=dsgPlayerData.getPassword()%>"><span>install</span></a>
-            the (deprecated, unmaintained, old Java) game room on your desktop.
-         </div>
+<%--         <div style="margin-top:5px;">--%>
+<%--            or <a--%>
+<%--            href="/gameServer/pente.jnlp?name=<%=name%>&password=<%=dsgPlayerData.getPassword()%>"><span>install</span></a>--%>
+<%--            the (deprecated, unmaintained, old Java) game room on your desktop.--%>
+<%--         </div>--%>
       </td>
       <%
          }
@@ -615,7 +615,7 @@
 --%>
 
 
-<div style="width:100%;height:175px;margin-top:10px;">
+<div style="width:100%;height:135px;margin-top:10px;">
    <div style="width:43%;float:left;border:1px solid black;height:100%;overflow:auto;">
       <h2 style="background: #e5e5e5"><span style="padding-left:5px;">In the <a
          href="/gameServer/forums"><span>Forums</span></a></span></h2>
@@ -656,19 +656,19 @@
                <font color="red"><b>(new)</b></font> Challenge the computer opponent with 12 levels
             </td>
          </tr>
-         <tr>
-            <td>
-               <div class="buttonwrapper" style="margin-top:5px;">
-                  <a class="boldbuttons" href="/gameServer/strategy.jsp"
-                     style="margin-right:5px;"><span>Tutorials</span></a>
-                  <a class="boldbuttons" href="/gameServer/puzzle.jsp"
-                     style="margin-right:5px;"><span>Puzzles</span></a>
-               </div>
-            </td>
-            <td style="vertical-align:middle">
-               Learn the basics with the tutorials and challenge yourself with some fun puzzles
-            </td>
-         </tr>
+<%--         <tr>--%>
+<%--            <td>--%>
+<%--               <div class="buttonwrapper" style="margin-top:5px;">--%>
+<%--                  <a class="boldbuttons" href="/gameServer/strategy.jsp"--%>
+<%--                     style="margin-right:5px;"><span>Tutorials</span></a>--%>
+<%--                  <a class="boldbuttons" href="/gameServer/puzzle.jsp"--%>
+<%--                     style="margin-right:5px;"><span>Puzzles</span></a>--%>
+<%--               </div>--%>
+<%--            </td>--%>
+<%--            <td style="vertical-align:middle">--%>
+<%--               Learn the basics with the tutorials and challenge yourself with some fun puzzles--%>
+<%--            </td>--%>
+<%--         </tr>--%>
       </table>
    </div>
    <div style="clear:both"></div>
@@ -1074,13 +1074,11 @@ You haven't completed any rated games yet.<br>
    <%@ include file="leaderboard.jsp" %>
    <%@ include file="kothBox.jsp" %>
 
-      <% if (dsgPlayerData.showAds()) { %>
-   <div class="box" style="background-color:white; border: 1px solid white;">
-      <%@ include file="dash200ad.jsp" %>
-   </div>
-      <% } %>
-   <%--
-   --%>
+<%--      <% if (dsgPlayerData.showAds()) { %>--%>
+<%--   <div class="box" style="background-color:white; border: 1px solid white;">--%>
+<%--      <%@ include file="dash200ad.jsp" %>--%>
+<%--   </div>--%>
+<%--      <% } %>--%>
 
    <%@ include file="whobox.jsp" %>
    <%@ include file="mobile.jsp" %>

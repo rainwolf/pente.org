@@ -56,7 +56,7 @@
    for (int i = 0; i < game.getNumMoves(); i++) {
       moves += game.getMove(i) + ",";
    }
-   if (moves.length() == 0) {
+   if (moves.isEmpty()) {
       moves = ",";
    }
 // if (loggedInStr.equals("rainwolf") || loggedInStr.equals(p1.getName()) || loggedInStr.equals(p2.getName())) {
@@ -93,7 +93,7 @@
 
    Boolean showMessages = (Boolean) request.getAttribute("showMessages");
    if (showMessages == null) {
-      showMessages = new Boolean(true);
+      showMessages = Boolean.valueOf(true);
    }
 
    String attach = (String) request.getAttribute("attach");
@@ -132,29 +132,29 @@
 <%
    String version = globalResources.getAppletVersion();
    DSGPlayerData meData = dsgPlayerStorer.loadPlayer(me);
-   List prefs = dsgPlayerStorer.loadPlayerPreferences(meData.getPlayerID());
-   boolean personalizeAds = false;
-   for (Iterator it = prefs.iterator(); it.hasNext(); ) {
-      DSGPlayerPreference p = (DSGPlayerPreference) it.next();
-      if (p.getName().equals("personalizeAds")) {
-         personalizeAds = ((Boolean) p.getValue()).booleanValue();
-      }
-   }
+//   List prefs = dsgPlayerStorer.loadPlayerPreferences(meData.getPlayerID());
+//   boolean personalizeAds = false;
+//   for (Iterator it = prefs.iterator(); it.hasNext(); ) {
+//      DSGPlayerPreference p = (DSGPlayerPreference) it.next();
+//      if (p.getName().equals("personalizeAds")) {
+//         personalizeAds = ((Boolean) p.getValue()).booleanValue();
+//      }
+//   }
 
    String cancelRequested = "false";
 %>
-<% if (meData.showAds()) { %>
-<center>
-   <script>(adsbygoogle = window.adsbygoogle || []).requestNonPersonalizedAds =
-   <%=(personalizeAds ? "0" : "1")%>
-   </script>
-   <div id="senseReplace" style="width:728px;height:90px;" top="50%"></div>
-   <%@include file="728x90ad.jsp" %>
-   <script type="text/javascript">
-      addLoadEvent(sensePage);
-   </script>
-</center>
-<% } %>
+<%--<% if (meData.showAds()) { %>--%>
+<%--<center>--%>
+<%--   <script>(adsbygoogle = window.adsbygoogle || []).requestNonPersonalizedAds =--%>
+<%--   <%=(personalizeAds ? "0" : "1")%>--%>
+<%--   </script>--%>
+<%--   <div id="senseReplace" style="width:728px;height:90px;" top="50%"></div>--%>
+<%--   <%@include file="728x90ad.jsp" %>--%>
+<%--   <script type="text/javascript">--%>
+<%--      addLoadEvent(sensePage);--%>
+<%--   </script>--%>
+<%--</center>--%>
+<%--<% } %>--%>
 
 
 <table border="0" colspacing="1" colpadding="1">

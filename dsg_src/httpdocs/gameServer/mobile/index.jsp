@@ -352,8 +352,10 @@ for (DSGPlayerPreference pref : prefs) {
 boolean subscriber = dsgPlayerData.hasPlayerDonated(); 
 boolean dbAccess = subscriber || dsgPlayerData.getRegisterDate().getTime() > System.currentTimeMillis() - 1000L*3600*24*30;
 // dbAccess = true;
+boolean showAds = dsgPlayerData.showAds();
+showAds = false;
 %>
-<%=dsgPlayerData.getName().toLowerCase() + ";" + (subscriber?dsgPlayerData.getNameColorRGB():0) + ";" + (dsgPlayerData.showAds()?"ShowAds":"NoAds") + ";" + (subscriber?"subscriber":"freeloader") + ";" + livePlayers + ";" + (dbAccess?"dbAccessGranted":"dbAccessDenied") + ";" + (emailMe?"emailMe":"noEmail")+";"+onlineFollowing+";"+(personalizeAds?"personalizeAds":"anonymizeAds")%>
+<%=dsgPlayerData.getName().toLowerCase() + ";" + (subscriber?dsgPlayerData.getNameColorRGB():0) + ";" + (showAds?"ShowAds":"NoAds") + ";" + (subscriber?"subscriber":"freeloader") + ";" + livePlayers + ";" + (dbAccess?"dbAccessGranted":"dbAccessDenied") + ";" + (emailMe?"emailMe":"noEmail")+";"+onlineFollowing+";"+(personalizeAds?"personalizeAds":"anonymizeAds")%>
 
 King of the Hill<%
 Hill hill;
@@ -374,7 +376,7 @@ amImember = hill.hasPlayer(myPID); %>
 for (int gameInt: CacheKOTHStorer.liveGames) {
 if (gameInt%2 == 0) { continue; }
 hill = kothStorer.getHill(gameInt);
-if (hill == null || hill.getMembers().size() == 0) {
+if (hill == null || hill.getMembers().isEmpty()) {
     continue;
 }
 kingPid = hill.getKing();
@@ -385,7 +387,7 @@ amImember = hill.hasPlayer(myPID); %>
 for (int gameInt: CacheKOTHStorer.liveGames) {
 if (gameInt%2 == 1) { continue; }
 hill = kothStorer.getHill(gameInt);
-if (hill == null || hill.getMembers().size() == 0) {
+if (hill == null || hill.getMembers().isEmpty()) {
     continue;
 }
 kingPid = hill.getKing();
