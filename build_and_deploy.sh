@@ -40,13 +40,13 @@ else
   done
 fi
 
-read -a images_main <<< "$(docker compose -f docker-compose.yml config --images | sort)"
-read -a images_replica <<< "$(docker compose -f docker-compose-replica.yml config --images | sort)"
-read -a built_images <<< "$(docker images --format json | jq .Repository | sed 's/\"//g' | sort)"
-images_main_combined=( "${images_main[@]} ${built_images[@]}" )
-images_main_push=$(echo "${images_main_combined[@]}" | xargs -n1 | sort | uniq -d | xargs)
-images_replica_combined=( "${images_replica[@]} ${built_images[@]}" )
-images_replica_push=$(echo "${images_replica_combined[@]}" | xargs -n1 | sort | uniq -d | xargs)
+read -a images_main <<< $(docker compose -f docker-compose.yml config --images | sort)
+read -a images_replica <<< $(docker compose -f docker-compose-replica.yml config --images | sort)
+read -a built_images <<< $(docker images --format json | jq .Repository | sed 's/\"//g' | sort)
+images_main_combined=( "${images_main[@]}" "${built_images[@]}" )
+read -a images_main_push <<< "$(echo "${images_main_combined[@]}" | xargs -n1 | sort | uniq -d | xargs)"
+images_replica_combined=( "${images_replica[@]}" "${built_images[@]}" )
+read -a images_replica_push <<< "$(echo "${images_replica_combined[@]}" | xargs -n1 | sort | uniq -d | xargs)"
 
 target="debian@pente.org"
 for image in "${images_main_push[@]}"
@@ -60,7 +60,6 @@ do
   echo "Pushing ${image} to ${target}"
   docker save "${image}" | bzip2 | pv | ssh "${target}" docker load
 done
-
 
 # restart the containers with new images
 if [[ ${#images_main_push[@]} -ne 0 ]]
