@@ -155,18 +155,18 @@
    }
 %>
 
-<% if (meData.showAds()) { %>
-<center>
-   <script>(adsbygoogle = window.adsbygoogle || []).requestNonPersonalizedAds =
-   <%=(personalizeAds ? "0" : "1")%>
-   </script>
-   <div id="senseReplace" style="width:728px;height:90px;" top="50%"></div>
-   <%@include file="728x90ad.jsp" %>
-   <script type="text/javascript">
-      addLoadEvent(sensePage);
-   </script>
-</center>
-<% } %>
+<%--<% if (meData.showAds()) { %>--%>
+<%--<center>--%>
+<%--   <script>(adsbygoogle = window.adsbygoogle || []).requestNonPersonalizedAds =--%>
+<%--   <%=(personalizeAds ? "0" : "1")%>--%>
+<%--   </script>--%>
+<%--   <div id="senseReplace" style="width:728px;height:90px;" top="50%"></div>--%>
+<%--   <%@include file="728x90ad.jsp" %>--%>
+<%--   <script type="text/javascript">--%>
+<%--      addLoadEvent(sensePage);--%>
+<%--   </script>--%>
+<%--</center>--%>
+<%--<% } %>--%>
 
 
 <table align="left" width="100%" border="0" colspacing="1" colpadding="1">

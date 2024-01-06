@@ -159,30 +159,26 @@
 
       </td>
 
-      <%
-         //    String nm = (String) request.getAttribute("name");
-//    DSGPlayerData pdata = null;
-         if (nm != null) {
-            pdata = dsgPlayerStorer.loadPlayer(nm);
-         }
-         if (pdata == null || pdata.showAds()) { %>
-      <td valign="top" align="center" rowspan="3" width="300">
-         <div style="width:160px;height:600px;margin-top:50px">
-            <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-            <!-- penteORGDB -->
-            <ins class="adsbygoogle"
-                 style="display:inline-block;width:160px;height:600px"
-                 data-ad-client="ca-pub-3326997956703582"
-                 data-ad-slot="7539819041"></ins>
-            <script>
-               (adsbygoogle = window.adsbygoogle || []).requestNonPersonalizedAds =<%=(personalizeAds != null && personalizeAds?"0":"1")%>;
-               (adsbygoogle = window.adsbygoogle || []).push({});
-            </script>
-         </div>
-      </td>
-      <% } %>
-      <%--
-      --%>
+<%--      <%--%>
+<%--         if (nm != null) {--%>
+<%--            pdata = dsgPlayerStorer.loadPlayer(nm);--%>
+<%--         }--%>
+<%--         if (pdata == null || pdata.showAds()) { %>--%>
+<%--      <td valign="top" align="center" rowspan="3" width="300">--%>
+<%--         <div style="width:160px;height:600px;margin-top:50px">--%>
+<%--            <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>--%>
+<%--            <!-- penteORGDB -->--%>
+<%--            <ins class="adsbygoogle"--%>
+<%--                 style="display:inline-block;width:160px;height:600px"--%>
+<%--                 data-ad-client="ca-pub-3326997956703582"--%>
+<%--                 data-ad-slot="7539819041"></ins>--%>
+<%--            <script>--%>
+<%--               (adsbygoogle = window.adsbygoogle || []).requestNonPersonalizedAds =<%=(personalizeAds != null && personalizeAds?"0":"1")%>;--%>
+<%--               (adsbygoogle = window.adsbygoogle || []).push({});--%>
+<%--            </script>--%>
+<%--         </div>--%>
+<%--      </td>--%>
+<%--      <% } %>--%>
 
    </tr>
    <tr>
