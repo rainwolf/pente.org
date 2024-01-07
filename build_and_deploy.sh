@@ -85,5 +85,6 @@ docker system prune -af
 docker compose -f docker-compose.yml -f docker-compose-replica.yml build
 
 docker builder prune -af
+docker system prune -f
 
 docker image ls
