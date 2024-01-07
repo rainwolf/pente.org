@@ -36,7 +36,7 @@ services:
       - ./dsg_src/httpdocs/gameServer:/usr/local/tomcat/webapps/ROOT/gameServer
       - ./deployClasses/org:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/org
     environment:
-      - JAVA_OPTS=-DMYSQL_USER=${MYSQL_USER} -DMYSQL_PASSWORD=${MYSQL_PASSWORD} -DMYSQL_RO_USER=${MYSQL_RO_USER} -DMYSQL_RO_PASSWORD=${MYSQL_RO_PASSWORD} -DMYSQL_DATABASE=${MYSQL_DATABASE} -DDSG_LOCAL_PORT=${DSG_LOCAL_PORT}
+      - JAVA_OPTS=-DMYSQL_USER=${MYSQL_USER} -DMYSQL_PASSWORD=${MYSQL_PASSWORD} -DMYSQL_RO_USER=${MYSQL_RO_USER} -DMYSQL_RO_PASSWORD=${MYSQL_RO_PASSWORD} -DMYSQL_DATABASE=${MYSQL_DATABASE} -DDSG_LOCAL_PORT=${DSG_LOCAL_PORT} -DSSL_PWD=${SSL_PWD}
     healthcheck:
       test: curl https://pente.org && curl https://www.pente.org
       interval: 42s
