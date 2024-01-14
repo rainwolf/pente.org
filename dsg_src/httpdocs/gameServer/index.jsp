@@ -399,15 +399,15 @@
       </ul>
    </div>
    <% } %>
-   <% if (dsgPlayerData.showAds() && personalizeAds == null) { %>
-   <div align="left"
-        style="position:relative;padding:4px;font-weight:bold;border:2px <%= textColor2 %> solid; background:#ffd0a7">
-      Pente.org now offers a choice between personalized or non-personalized ads. Ads are non-personalized by default,
-      but this warning appears because you
-      have not yet registered a preference in your <a href="/gameServer/myprofile/prefs">settings</a>. Doing so will
-      make this warning disappear.
-   </div>
-   <% } %>
+<%--   <% if (dsgPlayerData.showAds() && personalizeAds == null) { %>--%>
+<%--   <div align="left"--%>
+<%--        style="position:relative;padding:4px;font-weight:bold;border:2px <%= textColor2 %> solid; background:#ffd0a7">--%>
+<%--      Pente.org now offers a choice between personalized or non-personalized ads. Ads are non-personalized by default,--%>
+<%--      but this warning appears because you--%>
+<%--      have not yet registered a preference in your <a href="/gameServer/myprofile/prefs">settings</a>. Doing so will--%>
+<%--      make this warning disappear.--%>
+<%--   </div>--%>
+<%--   <% } %>--%>
 </div>
 <%-- todo find actual width of avatar in case less than 80 --%>
 <div style="margin-left:10px;float:left;width:25%;">

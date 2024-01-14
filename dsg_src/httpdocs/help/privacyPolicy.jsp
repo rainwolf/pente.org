@@ -43,12 +43,12 @@
    <font color="red">You must be at least 16 years old to be able to consent to this, otherwise consent
       from a parent or guardian is required.</font>
    <br>
-   <br>
-   In addition, pente.org serves advertisements to non-subscribers via the Google Adsense network,
-   and those users are additionally subject to <a href="https://www.google.com/intl/en/policies/privacy/">Google's
-   privacy rules</a>. Non-subscribers
-   get the option to choose between personalized or non-personalized ads, and can change this setting at any time.
-   <br>
+<%--   <br>--%>
+<%--   In addition, pente.org serves advertisements to non-subscribers via the Google Adsense network,--%>
+<%--   and those users are additionally subject to <a href="https://www.google.com/intl/en/policies/privacy/">Google's--%>
+<%--   privacy rules</a>. Non-subscribers--%>
+<%--   get the option to choose between personalized or non-personalized ads, and can change this setting at any time.--%>
+<%--   <br>--%>
    <br>
    Currently, you can purchase pente.org subscription from our iOS app, Pente Live. Payment will be charged to your
    iTunes account, and your account will be charged for renewal within 24-hours prior to the end of the current period

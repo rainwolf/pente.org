@@ -35,8 +35,8 @@ hosting, maintain security certificates, and to build a better and even more fun
    - Request undo in turn-based games!<br>
    - Remove limits on followers!<br>
    - Broadcast alers to followers or friends!<br>
-   And optionally, <br>
-   - No more ads!<br>
+<%--   And optionally, <br>--%>
+<%--   - No more ads!<br>--%>
 </b></font>
 <br>
 <br>

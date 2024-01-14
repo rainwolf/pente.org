@@ -90,9 +90,7 @@
                - Request undo in turn-based games!<br>
                - Remove limits on followers!<br>
                - Broadcast alers to followers or friends!<br>
-               - Get acccess to the database, and/or, <br>
-               and optionally, <br>
-               - Not see any ads<br>
+               - Get acccess to the database.
                <br>
                <b><a href="/gameServer/subscriptions">
                   Subscribe now to Pente.org!</a></b>
