@@ -41,7 +41,7 @@ public class ServerTable {
 
     protected static final int MAX_PLAYERS = 2;
     public static final int NO_ERROR = -1;
-    protected static final String SYSTEM = "system_player";
+    protected static final String SYSTEM = "game server";
 
     protected DSGPlayerData sittingPlayers[] = new DSGPlayerData[MAX_PLAYERS + 1];
     // playing players is set just for the game in case players
