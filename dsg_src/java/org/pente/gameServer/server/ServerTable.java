@@ -578,7 +578,8 @@ public class ServerTable {
                     new DSGTimerChangeTableEvent(
                             playingPlayers[i].getName(), tableNum,
                             timers[i].getMinutes(),
-                            timers[i].getSeconds()),
+                            timers[i].getSeconds(),
+                            timers[i].getMillis()),
                     toPlayer);
         }
     }
@@ -798,6 +799,7 @@ public class ServerTable {
                 for (int i = 1; i < timers.length; i++) {
                     timers[i].setStartMinutes(initialMinutes);
                     if (initialMinutes == 0) {
+                        timers[i].reset();
                         timers[i].adjust(0, incrementalSeconds);
                     }
                 }
@@ -885,6 +887,7 @@ public class ServerTable {
         for (int i = 1; i < timers.length; i++) {
             timers[i].setStartMinutes(initialMinutes);
             if (initialMinutes == 0) {
+                timers[i].reset();
                 timers[i].adjust(0, incrementalSeconds);
             }
         }
@@ -1056,6 +1059,7 @@ public class ServerTable {
                     if (timed) {
                         timers[gridState.getCurrentPlayer()].stop();
                         if (initialMinutes == 0) {
+                            timers[gridState.getCurrentPlayer()].reset();
                             timers[gridState.getCurrentPlayer()].adjust(0, incrementalSeconds);
                         }
                         timers[gridState.getCurrentPlayer()].incrementMillis(
@@ -1066,6 +1070,7 @@ public class ServerTable {
 
                     if (timed) {
                         if (initialMinutes == 0) {
+                            timers[gridState.getCurrentPlayer()].reset();
                             timers[gridState.getCurrentPlayer()].adjust(0, incrementalSeconds);
                         }
                         timers[gridState.getCurrentPlayer()].go();
@@ -1126,6 +1131,7 @@ public class ServerTable {
                 if (timed) {
                     timers[gridState.getCurrentPlayer()].stop();
                     if (initialMinutes == 0) {
+                        timers[gridState.getCurrentPlayer()].reset();
                         timers[gridState.getCurrentPlayer()].adjust(0, incrementalSeconds);
                     }
                     timers[gridState.getCurrentPlayer()].incrementMillis(
@@ -1147,6 +1153,7 @@ public class ServerTable {
 
                 if (timed) {
                     if (initialMinutes == 0) {
+                        timers[gridState.getCurrentPlayer()].reset();
                         timers[gridState.getCurrentPlayer()].adjust(0, incrementalSeconds);
                     }
                     timers[gridState.getCurrentPlayer()].go();
@@ -1184,6 +1191,7 @@ public class ServerTable {
                 if (timed) {
                     timers[gridState.getCurrentPlayer()].stop();
                     if (initialMinutes == 0) {
+                        timers[gridState.getCurrentPlayer()].reset();
                         timers[gridState.getCurrentPlayer()].adjust(0, incrementalSeconds);
                     }
                     timers[gridState.getCurrentPlayer()].incrementMillis(
@@ -1194,6 +1202,7 @@ public class ServerTable {
 
                 if (timed) {
                     if (initialMinutes == 0) {
+                        timers[gridState.getCurrentPlayer()].reset();
                         timers[gridState.getCurrentPlayer()].adjust(0, incrementalSeconds);
                     }
                     timers[gridState.getCurrentPlayer()].go();
@@ -1439,6 +1448,7 @@ public class ServerTable {
         for (int i = 1; i < timers.length; i++) {
             timers[i].reset();
             if (initialMinutes == 0) {
+                timers[i].reset();
                 timers[i].adjust(0, incrementalSeconds);
             }
         }
@@ -1572,6 +1582,7 @@ public class ServerTable {
 
                             if (gridState.getNumMoves() != 1) {
                                 if (initialMinutes == 0) {
+                                    timers[oldCurrentPlayer].reset();
                                     timers[oldCurrentPlayer].adjust(0, incrementalSeconds);
                                 } else {
                                     timers[oldCurrentPlayer].increment(
@@ -1590,6 +1601,7 @@ public class ServerTable {
                         } else {  // same player
                             if (gridState.getNumMoves() != 1) {
                                 if (initialMinutes == 0) {
+                                    timers[oldCurrentPlayer].reset();
                                     timers[oldCurrentPlayer].adjust(0, incrementalSeconds);
                                 } else {
                                     timers[oldCurrentPlayer].increment(
@@ -1626,7 +1638,8 @@ public class ServerTable {
                                 new DSGTimerChangeTableEvent(
                                         player, tableNum,
                                         timers[oldCurrentPlayer].getMinutes(),
-                                        timers[oldCurrentPlayer].getSeconds()));
+                                        timers[oldCurrentPlayer].getSeconds(),
+                                        timers[oldCurrentPlayer].getMillis()));
                     }
 
                     activityLogger.updateGameState(sid, tableNum, gridState.getHash(),
@@ -1646,6 +1659,7 @@ public class ServerTable {
                     } else if (timed) {
 //                        if (oldCurrentPlayer != newCurrentPlayer || go) {
                         if (initialMinutes == 0) {
+                            timers[newCurrentPlayer].reset();
                             timers[newCurrentPlayer].adjust(0, incrementalSeconds);
                         }
                         if (oldCurrentPlayer != newCurrentPlayer) {
@@ -1746,6 +1760,8 @@ public class ServerTable {
 
                         timers[oldCurrentPlayer].stop();
                         if (initialMinutes == 0) {
+                            timers[oldCurrentPlayer].reset();
+                            timers[newCurrentPlayer].reset();
                             timers[oldCurrentPlayer].adjust(0, incrementalSeconds);
                             timers[newCurrentPlayer].adjust(0, incrementalSeconds);
                             broadcastTable(

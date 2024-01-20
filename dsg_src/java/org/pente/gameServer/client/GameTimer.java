@@ -45,6 +45,8 @@ public interface GameTimer {
 
     public int getSeconds();
 
+    public long getMillis();
+
     public void reset();
 
     public void go();

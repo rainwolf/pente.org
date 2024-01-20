@@ -93,6 +93,10 @@ public class SimpleGameTimer implements GameTimer, Runnable {
         }
     }
 
+    public long getMillis() {
+        return (minutes * 60 + seconds) * 1000;
+    }
+
     public void incrementMillis(int incrementMillis) {
         increment(incrementMillis / 1000);
     }

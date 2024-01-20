@@ -83,6 +83,12 @@ public class MilliSecondGameTimer implements GameTimer {
         }
     }
 
+    public long getMillis() {
+        synchronized (timeLock) {
+            return timeLeft;
+        }
+    }
+
     private static int convertMillisToMinutes(long millis) {
         int seconds = (int) Math.ceil((double) millis / 1000);
         return seconds / 60;
@@ -213,7 +219,7 @@ public class MilliSecondGameTimer implements GameTimer {
     private class LocalRunnable implements Runnable {
         public void run() {
 
-            long normalSleepTime = 1000;
+            long normalSleepTime = 10;
             long nextSleepTime = normalSleepTime;
 
             while (true) {
