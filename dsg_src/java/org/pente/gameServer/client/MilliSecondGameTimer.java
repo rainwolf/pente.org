@@ -8,7 +8,7 @@ public class MilliSecondGameTimer implements GameTimer {
     private int startSeconds;
 
     private long timeLeft;
-    private long startTime;
+    private long startTime;  // system time when the timer starts
     private long tempTimeElapsed;
 
     private Vector<GameTimerListener> listeners;
@@ -44,7 +44,7 @@ public class MilliSecondGameTimer implements GameTimer {
     private void timeChanged(long localTimeLeft) {
 
         for (int i = 0; i < listeners.size(); i++) {
-            GameTimerListener listener = (GameTimerListener) listeners.elementAt(i);
+            GameTimerListener listener = listeners.elementAt(i);
             listener.timeChanged(convertMillisToMinutes(localTimeLeft),
                     convertMillisToSeconds(localTimeLeft));
         }

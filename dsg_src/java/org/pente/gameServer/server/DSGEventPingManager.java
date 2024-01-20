@@ -57,7 +57,7 @@ public class DSGEventPingManager implements PingManager {
                 while (names.hasNext()) {
                     String name = (String) names.next();
                     //log4j.info(name + ": " + players.get(name));
-                    pingEvent = new DSGPingEvent(name);
+                    pingEvent = new DSGPingEvent(name, players.get(name).getAveragePingTime(), players.get(name).getLatestPingTime());
                     dsgRouter.routeEvent(pingEvent, name);
                     pingEvent = null;
                 }
@@ -129,7 +129,7 @@ public class DSGEventPingManager implements PingManager {
 
         public void updatePingTime(int newPingTime) {
             pingTimes[pingIndex] = newPingTime;
-            pingIndex = ((pingIndex + 1) % (PINGS_USED_IN_AVG - 1));
+            pingIndex = (pingIndex + 1) % PINGS_USED_IN_AVG;
 
             int newAverage = 0;
             for (int i = 0; i < PINGS_USED_IN_AVG; i++) {
@@ -141,6 +141,11 @@ public class DSGEventPingManager implements PingManager {
 
         public long getAveragePingTime() {
             return averagePingTime;
+        }
+
+        public long getLatestPingTime() {
+            int index = (pingIndex - 1 + PINGS_USED_IN_AVG) % PINGS_USED_IN_AVG;
+            return pingTimes[index];
         }
 
         public String toString() {
