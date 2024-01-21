@@ -10,6 +10,12 @@ read -a array <<< "$@"
 
 docker system prune -af
 
+#if [[ $(docker ps -aq) != "" ]]
+#then
+#  echo "- Containers are running, this is not a good time to build"
+#  exit 1
+#fi
+
 if [[ ${#array[@]} -eq 0 ]]
 then
   echo "Building everything for linux/amd64"
@@ -42,7 +48,14 @@ fi
 
 read -a images_main <<< $(docker compose -f docker-compose.yml config --images | sort)
 read -a images_replica <<< $(docker compose -f docker-compose-replica.yml config --images | sort)
-read -a built_images <<< $(docker images --format json | jq .Repository | sed 's/\"//g' | sort)
+if [[ ${#array[@]} -eq 0 ]]
+then
+  tmp_images=( "${images_main[@]}" "${images_replica[@]}" )
+  read -a built_images <<< "$(echo "${tmp_images[@]}" | xargs -n1 | sort | uniq | xargs)"
+else
+  built_images=( "${array[@]}")
+fi
+# read -a built_images <<< $(docker images --format json | jq .Repository | sed 's/\"//g' | sort)
 images_main_combined=( "${images_main[@]}" "${built_images[@]}" )
 read -a images_main_push <<< "$(echo "${images_main_combined[@]}" | xargs -n1 | sort | uniq -d | xargs)"
 images_replica_combined=( "${images_replica[@]}" "${built_images[@]}" )
