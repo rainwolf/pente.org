@@ -248,7 +248,9 @@ public class MilliSecondGameTimer implements GameTimer {
                         long actualTimeElapsed = System.currentTimeMillis() - startTime + tempTimeElapsed;
                         long timeElapsed = getStartMillis() - timeLeft;
                         long diff = actualTimeElapsed - timeElapsed;
-                        if (normalSleepTime > Math.abs(diff)) {
+                        if (diff > 2*normalSleepTime) {
+                            nextSleepTime = 0;
+                        } else if (normalSleepTime > Math.abs(diff)) {
                             nextSleepTime = normalSleepTime - diff;
                         } else {
                             nextSleepTime = diff - normalSleepTime;
