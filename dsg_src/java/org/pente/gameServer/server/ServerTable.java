@@ -316,7 +316,7 @@ public class ServerTable {
             timers[i] = new MilliSecondGameTimer("Table " + tableNum + " player " + i);
             timers[i].setStartMinutes(initialMinutes);
             if (initialMinutes == 0) {
-                timers[i].adjust(0, incrementalSeconds);
+                timers[i].setStartSeconds(incrementalSeconds);
             }
             final int tempPlayer = i;
             timers[i].addGameTimerListener((minutes, seconds) -> {
@@ -799,8 +799,9 @@ public class ServerTable {
                 for (int i = 1; i < timers.length; i++) {
                     timers[i].setStartMinutes(initialMinutes);
                     if (initialMinutes == 0) {
-                        timers[i].adjust(0, incrementalSeconds);
+                        timers[i].setStartSeconds(incrementalSeconds);
                     }
+                    timers[i].reset();
                 }
                 
                 // temporarily make 0 minutes unrated
@@ -886,7 +887,7 @@ public class ServerTable {
         for (int i = 1; i < timers.length; i++) {
             timers[i].setStartMinutes(initialMinutes);
             if (initialMinutes == 0) {
-                timers[i].adjust(0, incrementalSeconds);
+                timers[i].reset();
             }
         }
 
@@ -1057,7 +1058,7 @@ public class ServerTable {
                     if (timed) {
                         timers[gridState.getCurrentPlayer()].stop();
                         if (initialMinutes == 0) {
-                            timers[gridState.getCurrentPlayer()].adjust(0, incrementalSeconds);
+                            timers[gridState.getCurrentPlayer()].reset();
                         }
                         timers[gridState.getCurrentPlayer()].incrementMillis(
                                 (int) pingManager.getPingTime(dsgEvent.getPlayer()));
@@ -1067,7 +1068,7 @@ public class ServerTable {
 
                     if (timed) {
                         if (initialMinutes == 0) {
-                            timers[gridState.getCurrentPlayer()].adjust(0, incrementalSeconds);
+                            timers[gridState.getCurrentPlayer()].reset();
                         }
                         timers[gridState.getCurrentPlayer()].go();
                     }
@@ -1127,7 +1128,7 @@ public class ServerTable {
                 if (timed) {
                     timers[gridState.getCurrentPlayer()].stop();
                     if (initialMinutes == 0) {
-                        timers[gridState.getCurrentPlayer()].adjust(0, incrementalSeconds);
+                        timers[gridState.getCurrentPlayer()].reset();
                     }
                     timers[gridState.getCurrentPlayer()].incrementMillis(
                             (int) pingManager.getPingTime(swapEvent.getPlayer()));
@@ -1148,7 +1149,7 @@ public class ServerTable {
 
                 if (timed) {
                     if (initialMinutes == 0) {
-                        timers[gridState.getCurrentPlayer()].adjust(0, incrementalSeconds);
+                        timers[gridState.getCurrentPlayer()].reset();
                     }
                     timers[gridState.getCurrentPlayer()].go();
                 }
@@ -1185,7 +1186,7 @@ public class ServerTable {
                 if (timed) {
                     timers[gridState.getCurrentPlayer()].stop();
                     if (initialMinutes == 0) {
-                        timers[gridState.getCurrentPlayer()].adjust(0, incrementalSeconds);
+                        timers[gridState.getCurrentPlayer()].reset();
                     }
                     timers[gridState.getCurrentPlayer()].incrementMillis(
                             (int) pingManager.getPingTime(swap2PassEvent.getPlayer()));
@@ -1195,7 +1196,7 @@ public class ServerTable {
 
                 if (timed) {
                     if (initialMinutes == 0) {
-                        timers[gridState.getCurrentPlayer()].adjust(0, incrementalSeconds);
+                        timers[gridState.getCurrentPlayer()].reset();
                     }
                     timers[gridState.getCurrentPlayer()].go();
                 }
@@ -1439,9 +1440,6 @@ public class ServerTable {
 
         for (int i = 1; i < timers.length; i++) {
             timers[i].reset();
-            if (initialMinutes == 0) {
-                timers[i].adjust(0, incrementalSeconds);
-            }
         }
 
         changeGameState(DSGGameStateTableEvent.GAME_IN_PROGRESS, startTxt, gameInSet);
@@ -1479,6 +1477,16 @@ public class ServerTable {
 
         }
         return gameInSet;
+    }
+
+    protected boolean shouldTimerRun() {
+        return gridState.getNumMoves() > 1 || game == GridStateFactory.DPENTE_GAME || game == GridStateFactory.SPEED_DPENTE_GAME ||
+                game == GridStateFactory.DKERYO_GAME || game == GridStateFactory.SPEED_DKERYO_GAME ||
+                game == GridStateFactory.GO_GAME || game == GridStateFactory.SPEED_GO_GAME ||
+                game == GridStateFactory.GO9_GAME || game == GridStateFactory.SPEED_GO9_GAME ||
+                game == GridStateFactory.GO13_GAME || game == GridStateFactory.SPEED_GO13_GAME ||
+                game == GridStateFactory.SWAP2PENTE_GAME || game == GridStateFactory.SPEED_SWAP2PENTE_GAME ||
+                game == GridStateFactory.SWAP2KERYO_GAME || game == GridStateFactory.SPEED_SWAP2KERYO_GAME;
     }
 
     protected boolean isPlayerOwner(String player) {
@@ -1571,18 +1579,17 @@ public class ServerTable {
 //                                moveTimes.add(newTime2);
 //                            }
 
-                            if (gridState.getNumMoves() != 1) {
+                            if (shouldTimerRun()) {
                                 if (initialMinutes == 0) {
                                     timers[oldCurrentPlayer].reset();
-                                    timers[oldCurrentPlayer].adjust(0, incrementalSeconds);
                                 } else {
                                     timers[oldCurrentPlayer].increment(
                                             incrementalSeconds);
+                                    // should also increment millis for d-pente but ignore
+                                    // since timers aren't stopped
+                                    timers[oldCurrentPlayer].incrementMillis(
+                                            (int) pingManager.getPingTime(player));
                                 }
-                                // should also increment millis for d-pente but ignore
-                                // since timers aren't stopped
-                                timers[oldCurrentPlayer].incrementMillis(
-                                        (int) pingManager.getPingTime(player));
                             }
                             Time newTime =
                                     new Time(timers[oldCurrentPlayer].getMinutes(),
@@ -1590,18 +1597,18 @@ public class ServerTable {
 
                             moveTimes.add(newTime);
                         } else {  // same player
-                            if (gridState.getNumMoves() != 1) {
+                            if (shouldTimerRun()) {
                                 if (initialMinutes == 0) {
+                                    timers[oldCurrentPlayer].stop();
                                     timers[oldCurrentPlayer].reset();
-                                    timers[oldCurrentPlayer].adjust(0, incrementalSeconds);
                                 } else {
                                     timers[oldCurrentPlayer].increment(
                                             incrementalSeconds);
+                                    // should also increment millis for d-pente but ignore
+                                    // since timers aren't stopped
+                                    timers[oldCurrentPlayer].incrementMillis(
+                                            (int) pingManager.getPingTime(player));
                                 }
-                                // should also increment millis for d-pente but ignore
-                                // since timers aren't stopped
-                                timers[oldCurrentPlayer].incrementMillis(
-                                        (int) pingManager.getPingTime(player));
                             }
                             Time newTime =
                                     new Time(timers[oldCurrentPlayer].getMinutes(),
@@ -1623,7 +1630,7 @@ public class ServerTable {
 
                     broadcastTable(new DSGMoveTableEvent(player, tableNum, move));
 
-                    if (gridState.getNumMoves() != 1 && timed // && (oldCurrentPlayer != newCurrentPlayer)
+                    if (shouldTimerRun() && timed // && (oldCurrentPlayer != newCurrentPlayer)
                     ) {
                         broadcastTable(
                                 new DSGTimerChangeTableEvent(
@@ -1649,10 +1656,10 @@ public class ServerTable {
                         gameOver(gridState.getWinner() == 0, winner, loser, false, false, false);
                     } else if (timed) {
 //                        if (oldCurrentPlayer != newCurrentPlayer || go) {
-                        if (initialMinutes == 0) {
-                            timers[newCurrentPlayer].adjust(0, incrementalSeconds);
-                        }
-                        if (oldCurrentPlayer != newCurrentPlayer) {
+//                        if (initialMinutes == 0) {
+//                            timers[newCurrentPlayer].adjust(0, incrementalSeconds);
+//                        }
+                        if (oldCurrentPlayer != newCurrentPlayer || initialMinutes == 0) {
                             timers[newCurrentPlayer].go();
                         }
                         // if playing d-pente, start timer for p1 after 1st move
@@ -1750,8 +1757,8 @@ public class ServerTable {
 
                         timers[oldCurrentPlayer].stop();
                         if (initialMinutes == 0) {
-                            timers[oldCurrentPlayer].adjust(0, incrementalSeconds);
-                            timers[newCurrentPlayer].adjust(0, incrementalSeconds);
+                            timers[oldCurrentPlayer].reset();
+                            timers[newCurrentPlayer].reset();
                             broadcastTable(
                                     new DSGTimerChangeTableEvent(
                                             playingPlayers[oldCurrentPlayer].getName(),

@@ -189,14 +189,13 @@ public class MilliSecondGameTimer implements GameTimer {
 
         synchronized (timeLock) {
             if (running) {
-
-                tempTimeElapsed += System.currentTimeMillis() - startTime;
-                timeLeft = getStartMillis() - tempTimeElapsed;
-
                 running = false;
                 if (thread != null) {
                     thread.interrupt();
                 }
+
+                tempTimeElapsed += System.currentTimeMillis() - startTime;
+                timeLeft = getStartMillis() - tempTimeElapsed;
             }
         }
     }
