@@ -50,6 +50,28 @@ public class MilliSecondGameTimer implements GameTimer {
         }
     }
 
+    private boolean threadIsWaiting() {
+        return thread.getState() == Thread.State.WAITING;
+    }
+
+    private void waitForThreadStop() {
+        int i = 10;
+        while (!threadIsWaiting()) {
+            if (i-- < 0) {
+                System.out.println("waitForThreadStop: failed");
+                return;
+            } else {
+                System.out.println("waitForThreadStop: sleeping 20ms");
+            }
+            try {
+                Thread.sleep(20);
+            } catch (InterruptedException ex) {
+                System.out.println("waitForThreadStop: interrupted");
+            }
+        }
+        System.out.println("waitForThreadStop: thread stopped");
+    }
+
     public void setStartMinutes(int minutes) {
         this.startMinutes = minutes;
     }
@@ -110,6 +132,8 @@ public class MilliSecondGameTimer implements GameTimer {
      * Only call this method when the timer is stopped
      */
     public void incrementMillis(int incrementMillis) {
+        // System.out.println("incrementMillis");
+        waitForThreadStop();
         long localTimeLeft;
         synchronized (timeLock) {
 
@@ -119,6 +143,7 @@ public class MilliSecondGameTimer implements GameTimer {
 
             localTimeLeft = timeLeft;
         }
+        // System.out.println("incrementMillis "+timeLeft);
         timeChanged(localTimeLeft);
     }
 
@@ -140,6 +165,8 @@ public class MilliSecondGameTimer implements GameTimer {
      * Only call this method when the timer is stopped
      */
     public void adjust(int newMinutes, int newSeconds, int newMillis) {
+        // System.out.println("adjust");
+        waitForThreadStop();
         long localTimeLeft;
         synchronized (timeLock) {
             long newTime = convertMinutesToMillis(newMinutes) +
@@ -159,6 +186,8 @@ public class MilliSecondGameTimer implements GameTimer {
      * Only call this method when the timer is stopped
      */
     public void reset() {
+        // System.out.println("reset");
+        waitForThreadStop();
         long localTimeLeft;
         synchronized (timeLock) {
             tempTimeElapsed = 0;
@@ -166,11 +195,11 @@ public class MilliSecondGameTimer implements GameTimer {
                     convertSecondsToMillis(startSeconds);
             localTimeLeft = timeLeft;
         }
+        // System.out.println("reset "+timeLeft);
         timeChanged(localTimeLeft);
     }
 
     public void go() {
-
         synchronized (timeLock) {
 
             startTime = System.currentTimeMillis();
@@ -179,6 +208,7 @@ public class MilliSecondGameTimer implements GameTimer {
                 thread = new Thread(new LocalRunnable(), "MilliSecondGameTimer");
                 thread.start();
             }
+            // System.out.println("go "+timeLeft);
 
             running = true;
             timeLock.notify();
@@ -186,19 +216,11 @@ public class MilliSecondGameTimer implements GameTimer {
     }
 
     public void stop() {
-
         synchronized (timeLock) {
             if (running) {
                 running = false;
                 if (thread != null) {
                     thread.interrupt();
-                }
-                // it takes a while for the thread to stop, seems like timout would occur if the thread is not stopped
-                // 50ms is a guess to ensure the thread is stopped.
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
                 }
 
                 tempTimeElapsed += System.currentTimeMillis() - startTime;
@@ -208,7 +230,6 @@ public class MilliSecondGameTimer implements GameTimer {
     }
 
     public void destroy() {
-
         synchronized (timeLock) {
             alive = false;
 
