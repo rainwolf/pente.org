@@ -317,6 +317,8 @@ public class ServerTable {
             timers[i].setStartMinutes(initialMinutes);
             if (initialMinutes == 0) {
                 timers[i].setStartSeconds(incrementalSeconds);
+            } else {
+                timers[i].setStartSeconds(0);
             }
             final int tempPlayer = i;
             timers[i].addGameTimerListener((minutes, seconds) -> {
@@ -584,6 +586,15 @@ public class ServerTable {
         }
     }
 
+    protected void broadCastPlayerTimer(int player) {
+        broadcastTable(
+                new DSGTimerChangeTableEvent(
+                        playingPlayers[player].getName(), tableNum,
+                        timers[player].getMinutes(),
+                        timers[player].getSeconds(),
+                        timers[player].getMillis()));
+    }
+
     protected void stopTimers() {
         for (int i = 1; i < timers.length; i++) {
             timers[i].stop();
@@ -800,6 +811,8 @@ public class ServerTable {
                     timers[i].setStartMinutes(initialMinutes);
                     if (initialMinutes == 0) {
                         timers[i].setStartSeconds(incrementalSeconds);
+                    } else {
+                        timers[i].setStartSeconds(0);
                     }
                     timers[i].reset();
                 }
@@ -887,8 +900,11 @@ public class ServerTable {
         for (int i = 1; i < timers.length; i++) {
             timers[i].setStartMinutes(initialMinutes);
             if (initialMinutes == 0) {
-                timers[i].reset();
+                timers[i].setStartSeconds(incrementalSeconds);
+            } else {
+                timers[i].setStartSeconds(0);
             }
+            timers[i].reset();
         }
 
         broadcastMainRoom(changeStateEvent);
@@ -1151,6 +1167,10 @@ public class ServerTable {
                     if (initialMinutes == 0) {
                         timers[gridState.getCurrentPlayer()].reset();
                     }
+                    if (swapEvent.wantsToSwap()) {
+                        broadCastPlayerTimer(1);
+                        broadCastPlayerTimer(2);
+                    }
                     timers[gridState.getCurrentPlayer()].go();
                 }
 
@@ -1201,6 +1221,7 @@ public class ServerTable {
                     timers[gridState.getCurrentPlayer()].go();
                 }
 
+                broadCastPlayerTimer(gridState.getCurrentPlayer());
                 broadcastMainRoom(swap2PassEvent);
             }
         }
@@ -1440,6 +1461,7 @@ public class ServerTable {
 
         for (int i = 1; i < timers.length; i++) {
             timers[i].reset();
+            broadCastPlayerTimer(i);
         }
 
         changeGameState(DSGGameStateTableEvent.GAME_IN_PROGRESS, startTxt, gameInSet);
@@ -1632,12 +1654,7 @@ public class ServerTable {
 
                     if (shouldTimerRun() && timed // && (oldCurrentPlayer != newCurrentPlayer)
                     ) {
-                        broadcastTable(
-                                new DSGTimerChangeTableEvent(
-                                        player, tableNum,
-                                        timers[oldCurrentPlayer].getMinutes(),
-                                        timers[oldCurrentPlayer].getSeconds(),
-                                        timers[oldCurrentPlayer].getMillis()));
+                        broadCastPlayerTimer(oldCurrentPlayer);
                     }
 
                     activityLogger.updateGameState(sid, tableNum, gridState.getHash(),
