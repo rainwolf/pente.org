@@ -193,6 +193,13 @@ public class MilliSecondGameTimer implements GameTimer {
                 if (thread != null) {
                     thread.interrupt();
                 }
+                // it takes a while for the thread to stop, seems like timout would occur if the thread is not stopped
+                // 50ms is a guess to ensure the thread is stopped.
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
 
                 tempTimeElapsed += System.currentTimeMillis() - startTime;
                 timeLeft = getStartMillis() - tempTimeElapsed;
