@@ -107,7 +107,7 @@ public class Server {
         this.followerStorer = resources.getFollowerStorer();
 
         System.setProperty("javax.net.ssl.keyStore", "/var/lib/tomcat9/webapps/MyDSKeyStore.jks");
-        System.setProperty("javax.net.ssl.keyStorePassword", "***REMOVED***");
+        System.setProperty("javax.net.ssl.keyStorePassword", System.getenv("SSL_PWD"));
         try {
             ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
             gameServerSocket = ssf.createServerSocket(port);

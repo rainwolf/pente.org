@@ -382,6 +382,7 @@
                            }
                         }
                      }
+                     String pwds = System.getenv("SSL_PWD");
                   %>
                   <!-- weekend: <%=""+weekend[0]%> <%=""+weekend[1]%> -->
                   <input type="button" value="Refresh Player Cache"
@@ -389,7 +390,7 @@
                   <input type="button" value="View TB Cache"
                          onclick="javascript:window.location='/gameServer/admin/tb/player.jsp?pid=<%= dsgPlayerData.getPlayerID() %>';">
                   <input type="button" value="View Dash"
-                         onclick="javascript:window.location.href='https://www.pente.org/gameServer/mobile/index.jsp?name=rainwolf&password=***REMOVED***&checkname=<%= dsgPlayerData.getName() %>';">
+                         onclick="javascript:window.location.href='https://www.pente.org/gameServer/mobile/index.jsp?name=rainwolf&password=<%= pwds %>&checkname=<%= dsgPlayerData.getName() %>';">
                   <%}%>
                </td>
             </tr>

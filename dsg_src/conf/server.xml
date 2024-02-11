@@ -94,8 +94,8 @@
     <Connector port="443" protocol="org.apache.coyote.http11.Http11NioProtocol" SSLEnabled="true"
                maxThreads="150" scheme="https" secure="true"
                clientAuth="false" sslProtocol="TLS"
-	      keystoreFile="/var/lib/tomcat8/webapps/MyDSKeyStore.jks" keystorePass="***REMOVED***"
-	      keyAlias="tomcat" keyPass="***REMOVED***" URIEncoding="UTF-8"
+	      keystoreFile="/var/lib/tomcat8/webapps/MyDSKeyStore.jks" keystorePass="${SSL_PWD}"
+	      keyAlias="tomcat" keyPass="${SSL_PWD}" URIEncoding="UTF-8"
 	      sslEnabledProtocols="TLSv1,TLSv1.1,TLSv1.2" 
 ciphers="TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,
 TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,

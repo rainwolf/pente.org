@@ -116,7 +116,7 @@
 
     <context-param>
         <param-name>penteLiveAPNSpassword</param-name>
-        <param-value>***REMOVED***</param-value>
+        <param-value>${SSL_PWD}</param-value>
     </context-param>
 
     <context-param>
