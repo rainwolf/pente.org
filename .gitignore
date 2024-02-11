@@ -2,7 +2,7 @@
 .DS_Store
 deploy
 deployClasses
-letsencrypt
+letsencrypt/pente.org/
 tmpTools
 liveGameRoom
 renewSSL
@@ -21,3 +21,7 @@ dockerMail/
 settings.jar
 testMail
 MyDSKeyStore.jks
+letsencrypt/pente.org/chain.crt
+letsencrypt/pente.org/fullchain.crt
+letsencrypt/pente.org/fullchain_and_key.p12
+letsencrypt/pente.org/pente.org.crt
