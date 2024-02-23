@@ -42,7 +42,7 @@ RUN mkdir -p /var/lib/dsg/gameServer/game && \
   mkdir -p ~/.config/fish/functions && \
   echo "function l\n  ls -Alh \$argv\nend" > ~/.config/fish/functions/l.fish && \
   rm install && \
-  nala install ant -y && \
+  nala install ant fontconfig -y && \
   # compile the code
   ant -f /usr/local/tomcat/webapps/build-docker.xml && \
   # cleanup
