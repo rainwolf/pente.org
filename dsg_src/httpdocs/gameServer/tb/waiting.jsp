@@ -94,7 +94,8 @@
             }
          }
       }
-      if (iAmIgnored && !alreadyPlaying) {
+//      if (iAmIgnored && !alreadyPlaying) {
+      if (iAmIgnored) {
          openTBgames--;
          iterator.remove();
          continue;

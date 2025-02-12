@@ -1,5 +1,7 @@
 package org.pente.notifications;
 
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.auth.oauth2.AccessToken;
 import com.eatthepath.pushy.apns.ApnsClient;
 import com.eatthepath.pushy.apns.ApnsClientBuilder;
 import com.eatthepath.pushy.apns.PushNotificationResponse;
@@ -35,7 +37,7 @@ public class CacheNotificationServer implements NotificationServer {
     private Map<Long, Date> broadcasts = new HashMap<>();
 
     private String penteLiveAPNSkey;
-    private String penteLiveGCMkey;
+    private GoogleCredentials googleCredentials;
     private String penteLiveAPNSpwd;
     private boolean productionFlag;
 
@@ -43,10 +45,10 @@ public class CacheNotificationServer implements NotificationServer {
 
     private ApnsClient client;
 
-    public CacheNotificationServer(MySQLNotificationServer baseStorer, String penteLiveAPNSkey, String penteLiveGCMkey, String penteLiveAPNSpwd, boolean productionFlag) {
+    public CacheNotificationServer(MySQLNotificationServer baseStorer, String penteLiveAPNSkey, GoogleCredentials googleCredentials, String penteLiveAPNSpwd, boolean productionFlag) {
         this.baseStorer = baseStorer;
         this.penteLiveAPNSkey = penteLiveAPNSkey;
-        this.penteLiveGCMkey = penteLiveGCMkey;
+        this.googleCredentials = googleCredentials;
         this.penteLiveAPNSpwd = penteLiveAPNSpwd;
         this.productionFlag = productionFlag;
 
@@ -149,10 +151,13 @@ public class CacheNotificationServer implements NotificationServer {
     private void sendAndroidNotification(long pid, String token, String message) {
         Runnable runnable = () -> {
             try {
+                this.googleCredentials.refreshIfExpired();
+                AccessToken accessToken = this.googleCredentials.getAccessToken();
+
                 // Create connection to send GCM Message request.
-                URL url = new URI("https://fcm.googleapis.com/fcm/send").toURL();
+                URL url = new URI("https://fcm.googleapis.com/v1/projects/pente-live/messages:send").toURL();
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestProperty("Authorization", "key=" + penteLiveGCMkey);
+                conn.setRequestProperty("Authorization", "Bearer " + accessToken.getTokenValue());
                 conn.setRequestProperty("Content-Type", "application/json");
                 conn.setRequestMethod("POST");
                 conn.setDoOutput(true);
@@ -340,13 +345,12 @@ public class CacheNotificationServer implements NotificationServer {
             if (oneWeekAgo.before(tokenEntry.getValue())) {
 
                 JSONObject jGcmData = new JSONObject();
-                JSONObject jData = new JSONObject();
+                JSONObject jMessage = new JSONObject();
                 String message = "" + fromName + " sent you a new message! \n\"" + subject + "\"";
                 try {
-                    jData.put("msgID", "" + messageId);
-                    jData.put("message", message);
-                    jGcmData.put("to", tokenEntry.getKey());
-                    jGcmData.put("data", jData);
+                    jMessage.put("token", tokenEntry.getKey());
+                    jMessage.put("data", new JSONObject().put("msgID", "" + messageId).put("message", message));
+                    jGcmData.put("message", jMessage);
 
                     sendAndroidNotification(pid, tokenEntry.getKey(), jGcmData.toString());
                 } catch (JSONException e) {

@@ -15,3 +15,4 @@ keytool -importkeystore -deststorepass "$SSL_PWD" -destkeypass "$SSL_PWD" -destk
 mv MyDSKeyStore.jks ./dockerMain/MyDSKeyStore.jks
 rm localhost.crt
 rm localhost.key
+rm fullchain_and_key.p12

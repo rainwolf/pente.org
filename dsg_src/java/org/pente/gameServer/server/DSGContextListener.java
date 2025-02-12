@@ -26,6 +26,7 @@ import javax.servlet.*;
 import javax.websocket.server.ServerContainer;
 import javax.websocket.server.ServerEndpointConfig;
 
+import com.google.auth.oauth2.GoogleCredentials;
 import org.apache.log4j.*;
 
 import org.apache.log4j.lf5.util.Resource;
@@ -77,11 +78,15 @@ public class DSGContextListener implements ServletContextListener {
             resources.setDbHandlerRo(dbHandlerRo);
             log4j.info("contextInitialized(), created DBHandler[dsg_ro]");
 
-            String penteLiveGCMkey = ctx.getInitParameter("penteLiveGCMkey");
+            String penteLiveGCMkey = System.getenv("GOOGLE_APPLICATION_CREDENTIALS");
+            // Get OAuth 2.0 token
+            GoogleCredentials googleCredentials = GoogleCredentials.fromStream(new FileInputStream(penteLiveGCMkey))
+                    .createScoped(Collections.singletonList("https://www.googleapis.com/auth/cloud-platform"));
+
             String penteLiveAPNSkey = ctx.getInitParameter("penteLiveAPNSkey");
             String penteLiveAPNSpwd = ctx.getInitParameter("penteLiveAPNSpassword");
             boolean productionFlag = ctx.getInitParameter("penteLiveAPNSproductionFlag").equals("true");
-            NotificationServer notificationServer = new CacheNotificationServer(new MySQLNotificationServer(dbHandler), penteLiveAPNSkey, penteLiveGCMkey, penteLiveAPNSpwd, productionFlag);
+            NotificationServer notificationServer = new CacheNotificationServer(new MySQLNotificationServer(dbHandler), penteLiveAPNSkey, googleCredentials, penteLiveAPNSpwd, productionFlag);
             resources.setNotificationServer(notificationServer);
 
             gameVenueStorer = new MySQLGameVenueStorer(dbHandler);

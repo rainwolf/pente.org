@@ -28,10 +28,10 @@ RUN mkdir -p /var/lib/dsg/gameServer/game && \
   fi && \
   # AstroNvim for linux/amd64
   if [ "$DOCKER_DEFAULT_PLATFORM" = "linux/amd64" ]; then \
-    curl -LO https://github.com/neovim/neovim/releases/download/stable/nvim-linux64.tar.gz; \
-    tar xzf nvim-linux64.tar.gz; \
-    cp -r nvim-linux64/* /usr; \
-    rm -rf nvim-linux64 nvim-linux64.tar.gz; \
+    curl -LO https://github.com/neovim/neovim-releases/releases/download/v0.10.4/nvim-linux-x86_64.tar.gz; \
+    tar xzf nvim-linux-x86_64.tar.gz; \
+    cp -r nvim-linux-x86_64/* /usr; \
+    rm -rf nvim-linux-x86_64 nvim-linux-x86_64.tar.gz; \
   fi && \
   git clone https://github.com/nvim-lua/kickstart.nvim.git "${XDG_CONFIG_HOME:-$HOME/.config}"/nvim && \
   nvim --headless "+Lazy! sync" +qa && \

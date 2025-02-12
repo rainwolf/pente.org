@@ -159,7 +159,8 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
             }   
         }   
     }
-    if (iAmIgnored && !alreadyPlaying) {
+//    if (iAmIgnored && !alreadyPlaying) {
+    if (iAmIgnored) {
         openTBgames--;
         iterator.remove();
         continue;

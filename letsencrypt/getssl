@@ -289,6 +289,7 @@
 # 2022-11-01 Add FTP_PORT
 # 2023-02-04 Create newline to ensure [SAN] section can be parsed (#792)(MRigal)
 # 2023-02-22 Remove cronie from deb package dependencies (2.48)
+# 2024-03-18 Refresh the TXT record if a CNAME is found (JoergBruce #828) (2.49)
 # ----------------------------------------------------------------------------------------
 
 case :$SHELLOPTS: in
@@ -297,7 +298,7 @@ esac
 
 PROGNAME=${0##*/}
 PROGDIR="$(cd "$(dirname "$0")" || exit; pwd -P;)"
-VERSION="2.48"
+VERSION="2.49"
 
 # defaults
 ACCOUNT_KEY_LENGTH=4096
@@ -598,6 +599,8 @@ check_challenge_completion_dns() { # perform validation via DNS challenge
           rr_cname=$(grep -i "^${rr}"<<<"${check_output}"|grep 'IN\WCNAME'|awk '{ print $5}')
           debug "cname check=\"$rr_cname\""
           if [[ -n "$rr_cname" ]]; then
+            # shellcheck disable=SC2086
+            check_output=$($DNS_CHECK_FUNC $DNS_CHECK_OPTIONS TXT "${rr_cname}" "@${ns}")
             check_result=$(grep -i "^${rr_cname}"<<<"${check_output}"|grep 'IN\WTXT'|awk -F'"' '{ print $2}' | uniq)
           fi
         fi
@@ -1216,7 +1219,7 @@ create_order() {
     dn=0
     for d in "${alldomains[@]}"; do
       # get authorizations link
-      AuthLink[$dn]=$(json_get "$response" "identifiers" "value" "${d##\*.}" "authorizations" "x")
+      AuthLink[dn]=$(json_get "$response" "identifiers" "value" "${d##\*.}" "authorizations" "x")
       debug "authorizations link for $d - ${AuthLink[$dn]}"
       ((dn++))
     done
@@ -1240,8 +1243,8 @@ create_order() {
         if [[ ( "$lower_d" == "$authdomain" && -z "$wildcard" ) || ( "$lower_d" == "*.${authdomain}" && -n "$wildcard" ) ]]; then
           debug "Saving authorization response for $authdomain for domain alldomains[$dn]"
           debug "Response = ${response//[$'\t\r\n']}"
-          AuthLinkResponse[$dn]=$response
-          AuthLinkResponseHeader[$dn]=$responseHeaders
+          AuthLinkResponse[dn]=$response
+          AuthLinkResponseHeader[dn]=$responseHeaders
         fi
         ((dn++))
       done
@@ -2438,6 +2441,9 @@ set_server_type() { # uses SERVER_TYPE to set REMOTE_PORT and REMOTE_EXTRA
     REMOTE_PORT=5269
   elif [[ ${SERVER_TYPE} == "ldaps" ]]; then
     REMOTE_PORT=636
+  elif [[ ${SERVER_TYPE} == "postgres" ]]; then
+    REMOTE_PORT=5432
+    REMOTE_EXTRA="-starttls postgres"
   elif [[ ${SERVER_TYPE} =~ ^[0-9]+$ ]]; then
     REMOTE_PORT=${SERVER_TYPE}
   else
