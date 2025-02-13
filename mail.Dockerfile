@@ -1,6 +1,6 @@
 FROM debian:bookworm-slim
 
-RUN apt update && apt install nala -y && nala install postfix opendkim procps inetutils-telnet inetutils-syslogd -y && apt remove nala -y && apt autoremove -y && apt autopurge -y
+RUN apt update && apt install postfix opendkim procps inetutils-telnet inetutils-syslogd -y && apt autoremove -y && apt autopurge -y
 
 COPY dockerMail/ /etc
 
