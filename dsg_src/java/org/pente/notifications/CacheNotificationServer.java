@@ -132,12 +132,13 @@ public class CacheNotificationServer implements NotificationServer {
                 }
             } else if (device == ANDROID) {
                 JSONObject jGcmData = new JSONObject();
-                JSONObject jData = new JSONObject();
+                JSONObject jMessage = new JSONObject();
                 String message = "Your device has been registered for push notifications";
                 try {
-                    jData.put("message", message);
-                    jGcmData.put("to", token);
-                    jGcmData.put("data", jData);
+                    jMessage.put("token", token);
+                    jMessage.put("data", new JSONObject().put("message", message));
+                    jGcmData.put("message", jMessage);
+
                     sendAndroidNotification(pid, token, jGcmData.toString());
                 } catch (JSONException e) {
                     log4j.error("sendRegistrationConfirmation android error.");
@@ -150,6 +151,7 @@ public class CacheNotificationServer implements NotificationServer {
 
     private void sendAndroidNotification(long pid, String token, String message) {
         Runnable runnable = () -> {
+            String resp = "";
             try {
                 this.googleCredentials.refreshIfExpired();
                 AccessToken accessToken = this.googleCredentials.getAccessToken();
@@ -168,7 +170,7 @@ public class CacheNotificationServer implements NotificationServer {
 
                 // Read GCM response.
                 InputStream inputStream = conn.getInputStream();
-                String resp = IOUtils.toString(inputStream, "UTF-8");
+                resp = IOUtils.toString(inputStream, "UTF-8");
 
                 if (resp.contains("InvalidRegistration") || resp.contains("NotRegistered")) {
                     removeInvalidToken(pid, token, ANDROID);
@@ -178,6 +180,7 @@ public class CacheNotificationServer implements NotificationServer {
             } catch (IOException e) {
                 log4j.error("Unable to send GCM message.");
                 log4j.error("Problem sending android notification for " + pid + " with token " + token);
+                log4j.error("Response: " + resp);
                 e.printStackTrace();
             } catch (NotificationServerException e) {
                 log4j.error("Removing android token failed. " + token);
@@ -249,13 +252,12 @@ public class CacheNotificationServer implements NotificationServer {
             if (oneWeekAgo.before(tokenEntry.getValue())) {
 
                 JSONObject jGcmData = new JSONObject();
-                JSONObject jData = new JSONObject();
+                JSONObject jMessage = new JSONObject();
                 String message = "It's your move in a game of " + gameName + " against " + fromName;
                 try {
-                    jData.put("gameID", "" + gameId);
-                    jData.put("message", message);
-                    jGcmData.put("to", tokenEntry.getKey());
-                    jGcmData.put("data", jData);
+                    jMessage.put("token", tokenEntry.getKey());
+                    jMessage.put("data", new JSONObject().put("gameID", "" + gameId).put("message", message));
+                    jGcmData.put("message", jMessage);
 
                     sendAndroidNotification(pid, tokenEntry.getKey(), jGcmData.toString());
                 } catch (JSONException e) {
@@ -297,13 +299,12 @@ public class CacheNotificationServer implements NotificationServer {
             if (oneWeekAgo.before(tokenEntry.getValue())) {
 
                 JSONObject jGcmData = new JSONObject();
-                JSONObject jData = new JSONObject();
+                JSONObject jMessage = new JSONObject();
                 String message = "" + fromName + " has invited you to a game of " + gameName;
                 try {
-                    jData.put("setID", "" + setId);
-                    jData.put("message", message);
-                    jGcmData.put("to", tokenEntry.getKey());
-                    jGcmData.put("data", jData);
+                    jMessage.put("token", tokenEntry.getKey());
+                    jMessage.put("data", new JSONObject().put("setID", "" + setId).put("message", message));
+                    jGcmData.put("message", jMessage);
 
                     sendAndroidNotification(pid, tokenEntry.getKey(), jGcmData.toString());
                 } catch (JSONException e) {
@@ -386,11 +387,11 @@ public class CacheNotificationServer implements NotificationServer {
         }
         for (Map.Entry<String, Date> tokenEntry : tokenMap.entrySet()) {
             JSONObject jGcmData = new JSONObject();
-            JSONObject jData = new JSONObject();
+            JSONObject jMessage = new JSONObject();
             try {
-                jData.put("message", message);
-                jGcmData.put("to", tokenEntry.getKey());
-                jGcmData.put("data", jData);
+                jMessage.put("token", tokenEntry.getKey());
+                jMessage.put("data", new JSONObject().put("message", message));
+                jGcmData.put("message", jMessage);
 
                 sendAndroidNotification(pid, tokenEntry.getKey(), jGcmData.toString());
             } catch (JSONException e) {
@@ -431,11 +432,11 @@ public class CacheNotificationServer implements NotificationServer {
         }
         for (Map.Entry<String, Date> tokenEntry : tokenMap.entrySet()) {
             JSONObject jGcmData = new JSONObject();
-            JSONObject jData = new JSONObject();
+            JSONObject jMessage = new JSONObject();
             try {
-                jData.put("message", "silentNotification");
-                jGcmData.put("to", tokenEntry.getKey());
-                jGcmData.put("data", jData);
+                jMessage.put("token", tokenEntry.getKey());
+                jMessage.put("data", new JSONObject().put("message", "silentNotification"));
+                jGcmData.put("message", jMessage);
 
                 sendAndroidNotification(pid, tokenEntry.getKey(), jGcmData.toString());
             } catch (JSONException e) {
@@ -478,13 +479,15 @@ public class CacheNotificationServer implements NotificationServer {
             if (oneWeekAgo.before(tokenEntry.getValue())) {
 
                 JSONObject jGcmData = new JSONObject();
-                JSONObject jData = new JSONObject();
+                JSONObject jMessage = new JSONObject();
                 try {
+                    jMessage.put("token", tokenEntry.getKey());
+                    JSONObject jData = new JSONObject();
                     jData.put("liveBroadCastPlayer", player);
                     jData.put("liveBroadCastGame", game);
                     jData.put("message", "Live Game Alert\n" + player + " wants to play live " + game);
-                    jGcmData.put("to", tokenEntry.getKey());
-                    jGcmData.put("data", jData);
+                    jMessage.put("data", jData);
+                    jGcmData.put("message", jMessage);
 
                     sendAndroidNotification(pid, tokenEntry.getKey(), jGcmData.toString());
                 } catch (JSONException e) {
