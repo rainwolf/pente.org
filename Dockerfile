@@ -2,6 +2,10 @@ FROM tomcat:9-jdk21-openjdk-slim
 
 # - mount /etc/dsg/, /var/log/tomcat, /var/log/dsg outside of container, maybe /var/lib/dsg
 
+# new cert for Apple Push Notifications
+COPY dockerMain/SHA-2RootUSERTrustRSACertificationAuthority.crt /etc/ssl/certs/SHA-2RootUSERTrustRSACertificationAuthority.crt
+RUN update-ca-certificates
+
 RUN mkdir -p /usr/local/tomcat/webapps/ROOT && mkdir -p /usr/local/tomcat/webapps/tmp_src
 # copy the pages
 COPY dsg_src/httpdocs/ /usr/local/tomcat/webapps/ROOT/
