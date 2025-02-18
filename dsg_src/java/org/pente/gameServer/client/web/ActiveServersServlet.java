@@ -28,6 +28,9 @@ public class ActiveServersServlet extends HttpServlet {
 
         PrintWriter out = new PrintWriter(response.getOutputStream());
         response.setContentType("text/plain");
+        if ("dev".equals(System.getenv("ENV"))) {
+            response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+        }
 
         log4j.info("sending active servers");
 
