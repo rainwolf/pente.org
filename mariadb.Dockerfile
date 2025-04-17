@@ -14,11 +14,14 @@ RUN ln -s /usr/local/bin/docker-entrypoint.sh / # backwards compat
 #RUN cpanm DBD::MariaDB
 
 # because debian uid is 1000 and mysql is 999
-#USER root
+USER root
 RUN usermod -u 1000 mysql
 RUN groupmod -g 1000 mysql
-RUN sudo find / -group 999 -readable -depth -exec chgrp -h mysql {} +; 2>/dev/null
-RUN sudo find / -user 999 -readable -depth -exec chown -h mysql {} +; 2>/dev/null
+RUN find / -group 999 -readable -depth -exec chgrp -h mysql {} +; 2>/dev/null
+RUN find / -user 999 -readable -depth -exec chown -h mysql {} +; 2>/dev/null
+RUN chown -R 1000:1000 /var/lib/mysql
+#RUN chmod -R 755 /var/lib/mysql
+#RUN sudo chown -R mysql:mysql /var/log/mysql
 
 USER mysql
 

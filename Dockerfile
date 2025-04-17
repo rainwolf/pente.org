@@ -6,6 +6,11 @@ FROM tomcat:9-jdk21-openjdk-slim
 COPY dockerMain/SHA-2RootUSERTrustRSACertificationAuthority.crt /etc/ssl/certs/SHA-2RootUSERTrustRSACertificationAuthority.crt
 RUN update-ca-certificates
 
+COPY dockerMain/SHA-2RootUSERTrustRSACertificationAuthority.crt /usr/local/openjdk-21/lib/security/SHA-2RootUSERTrustRSACertificationAuthority.crt
+RUN keytool -import -alias apnstrust -file /usr/local/openjdk-21/lib/security/SHA-2RootUSERTrustRSACertificationAuthority.crt -keystore /usr/local/openjdk-21/lib/security/cacerts -storepass changeit
+RUN keytool -import -alias apnstrust -file /usr/local/openjdk-21/lib/security/SHA-2RootUSERTrustRSACertificationAuthority.crt -keystore /etc/ssl/certs/java/cacerts -storepass changeit
+RUN rm /usr/local/openjdk-21/lib/security/SHA-2RootUSERTrustRSACertificationAuthority.crt
+
 RUN mkdir -p /usr/local/tomcat/webapps/ROOT && mkdir -p /usr/local/tomcat/webapps/tmp_src
 # copy the pages
 COPY dsg_src/httpdocs/ /usr/local/tomcat/webapps/ROOT/
@@ -40,7 +45,7 @@ RUN mkdir -p /var/lib/dsg/gameServer/game && \
   git clone https://github.com/nvim-lua/kickstart.nvim.git "${XDG_CONFIG_HOME:-$HOME/.config}"/nvim && \
   nvim --headless "+Lazy! sync" +qa && \
   # fish and bob
-  curl -L https://get.oh-my.fish > install && \
+  curl https://raw.githubusercontent.com/oh-my-fish/oh-my-fish/master/bin/install > install && \
   fish install --noninteractive && \
   fish -c "omf install bobthefish" && \
   mkdir -p ~/.config/fish/functions && \

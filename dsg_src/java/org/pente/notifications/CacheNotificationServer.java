@@ -8,7 +8,6 @@ import com.eatthepath.pushy.apns.PushNotificationResponse;
 import com.eatthepath.pushy.apns.util.ApnsPayloadBuilder;
 import com.eatthepath.pushy.apns.util.SimpleApnsPayloadBuilder;
 import com.eatthepath.pushy.apns.util.SimpleApnsPushNotification;
-import com.eatthepath.pushy.apns.util.TokenUtil;
 import com.eatthepath.pushy.apns.util.concurrent.PushNotificationFuture;
 import org.apache.log4j.Category;
 import org.json.JSONException;
