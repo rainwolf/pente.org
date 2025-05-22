@@ -34,8 +34,8 @@ public class ActiveServersServlet extends HttpServlet {
 
         log4j.info("sending active servers");
 
-        for (Iterator it = resources.getServerData().iterator(); it.hasNext(); ) {
-            ServerData data = (ServerData) it.next();
+        for (Object o : resources.getServerData()) {
+            ServerData data = (ServerData) o;
             String serverName = data.getName();
             log4j.info(data.getPort() + " " + serverName);
             boolean empty = true;

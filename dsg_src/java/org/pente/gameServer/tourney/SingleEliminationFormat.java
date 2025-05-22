@@ -28,17 +28,14 @@ public class SingleEliminationFormat extends AbstractTourneyFormat {
      * updates number of byes in whole tourney
      */
     void updatePlayerData(Tourney tourney) {
-        for (Iterator it = tourney.getRound(1).getPlayers().iterator(); it.hasNext(); ) {
-            TourneyPlayerData p = (TourneyPlayerData) it.next();
+        for (TourneyPlayerData p : tourney.getRound(1).getPlayers()) {
             p.reset();
         }
 
-        for (Iterator it = tourney.getRounds().iterator(); it.hasNext(); ) {
-            TourneyRound r = (TourneyRound) it.next();
-            for (Iterator it2 = r.getSections().iterator(); it2.hasNext(); ) {
-                SingleEliminationSection s = (SingleEliminationSection) it2.next();
-                for (Iterator it3 = s.getSingleEliminationMatches().iterator(); it3.hasNext(); ) {
-                    SingleEliminationMatch m = (SingleEliminationMatch) it3.next();
+        for (TourneyRound r : tourney.getRounds()) {
+            for (TourneySection tourneySection : r.getSections()) {
+                SingleEliminationSection s = (SingleEliminationSection) tourneySection;
+                for (SingleEliminationMatch m : s.getSingleEliminationMatches()) {
                     if (m.isBye()) {
                         m.getPlayer1().incrementByes();
                     }

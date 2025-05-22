@@ -24,8 +24,7 @@
    if (pidHash.equals(checkHash)) {
       Resources resources = (Resources) application.getAttribute(Resources.class.getName());
       List<Server> serverList = resources.getServers();
-      for (Iterator it = serverList.iterator(); it.hasNext(); ) {
-         Server s = (Server) it.next();
+      for (Server s : serverList) {
          s.bootPlayer(name, 0);
       }
       response.sendRedirect("/gameServer/index.jsp");

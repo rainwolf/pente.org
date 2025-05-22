@@ -27,8 +27,7 @@ public abstract class AbstractTourneyFormat implements TourneyFormat {
         List<TourneyPlayerData> players = new ArrayList<TourneyPlayerData>();
 
         // add all winners to next round
-        for (Iterator it = lastRound.getSections().iterator(); it.hasNext(); ) {
-            TourneySection s = (TourneySection) it.next();
+        for (TourneySection s : lastRound.getSections()) {
             players.addAll(s.getWinners());
         }
 
@@ -72,8 +71,7 @@ public abstract class AbstractTourneyFormat implements TourneyFormat {
         if (tourney.getEndDate() != null) return true;
 
         if (tourney.getNumRounds() == 0) return false;
-        for (Iterator rounds = tourney.getRounds().iterator(); rounds.hasNext(); ) {
-            TourneyRound r = (TourneyRound) rounds.next();
+        for (TourneyRound r : tourney.getRounds()) {
             if (!r.isComplete()) return false;
         }
 

@@ -105,8 +105,7 @@ public class ActivityData {
 
     public boolean playingRatedGame() {
         log4j.debug("playingRatedGame(), player=" + playerName);
-        for (Iterator<ActivityTableData> it = activeGames.iterator(); it.hasNext(); ) {
-            ActivityTableData d = it.next();
+        for (ActivityTableData d : activeGames) {
             log4j.debug("checking " + d);
             if (d.isRated()) return true;
         }
