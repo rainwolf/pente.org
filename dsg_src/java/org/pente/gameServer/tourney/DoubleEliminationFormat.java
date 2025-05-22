@@ -146,13 +146,18 @@ public class DoubleEliminationFormat extends SingleEliminationFormat {
      */
     public boolean isTourneyComplete(Tourney tourney) {
         if (tourney.getNumRounds() == 0) return false;
+        if (tourney.getLastRound().getSections().size() != 1) {
+            return false;
+        }
+        if (!tourney.getLastRound().isComplete()) {
+            return false;
+        }
         updatePlayerData(tourney);
 
         int livePlayers = 0;
-        for (Iterator it = tourney.getLastRound().getSections().iterator(); it.hasNext(); ) {
-            TourneySection s = (TourneySection) it.next();
-            for (Iterator it2 = s.getPlayers().iterator(); it2.hasNext(); ) {
-                TourneyPlayerData p = (TourneyPlayerData) it2.next();
+        for (TourneySection s : tourney.getLastRound().getSections()) {
+            for (TourneyPlayerData p : s.getPlayers()) {
+                System.out.println("DoubleEliminationFormat, round: " + tourney.getNumRounds() + " sections: " + tourney.getLastRound().getSections().size() + " player=" + p.getName() + " match losses=" + p.getMatchLosses());
                 if (p.getMatchLosses() < 2) {
                     livePlayers++;
                 }

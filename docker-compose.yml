@@ -108,7 +108,7 @@ services:
   pente_mail:
     build:
       dockerfile: mail.Dockerfile
-    image: dsg_mail
+    image: pente_mail
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "service postfix status"]
