@@ -33,11 +33,12 @@ services:
       - ./dockerMain/well-known:/usr/local/tomcat/pentelivesubmanifold/ROOT/.well-known
       # for hot reloading
 #      - ./dsg_src/httpdocs/gameServer:/usr/local/tomcat/webapps/ROOT/gameServer
-#      - ./deployClasses/org:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/org
+      - ./deployClasses/org:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/org
     environment:
       - JAVA_OPTS=-DMYSQL_USER=${MYSQL_USER} -DMYSQL_PASSWORD=${MYSQL_PASSWORD} -DMYSQL_RO_USER=${MYSQL_RO_USER} -DMYSQL_RO_PASSWORD=${MYSQL_RO_PASSWORD} -DMYSQL_DATABASE=${MYSQL_DATABASE} -DDSG_LOCAL_PORT=${DSG_LOCAL_PORT} -DSSL_PWD=${SSL_PWD}
       - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
       - SSL_PWD=${SSL_PWD}
+#      - ENV=${ENV}
     healthcheck:
       test: curl https://pente.org && curl https://www.pente.org
       interval: 42s
@@ -51,7 +52,7 @@ services:
   main_auto_ssh:
     build:
       dockerfile: AutoSSH.Dockerfile
-    image: auto_ssh
+    image: main_auto_ssh
     restart: always
     environment:
       - LOCAL_PORT=${DSG_LOCAL_PORT}
@@ -79,7 +80,7 @@ services:
   main_db:
     build:
       dockerfile: mariadb.Dockerfile
-    image: dsg_sql
+    image: main_db
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "healthcheck.sh --connect --innodb_initialized"]

@@ -2,7 +2,7 @@ services:
   replica_auto_ssh:
     build:
       dockerfile: AutoSSH.Dockerfile
-    image: auto_ssh
+    image: replica_auto_ssh
     restart: always
     environment:
       - LOCAL_PORT=${REPLICA_LOCAL_PORT}
@@ -27,7 +27,7 @@ services:
   replica_db:
     build:
       dockerfile: mariadb.Dockerfile
-    image: dsg_sql
+    image: replica_db
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "test -f /var/lib/mysql/dsg/temp_tb.MYI"]
@@ -59,7 +59,7 @@ services:
   pentai:
     build:
       dockerfile: pentai.Dockerfile
-    image: dsg_pentai
+    image: pentai
     restart: always
     environment:
       - PENTAIPASSWORD=${PENTAIPASSWORD}
