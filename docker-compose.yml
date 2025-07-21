@@ -66,7 +66,7 @@ services:
     deploy:
         resources:
             limits:
-              memory: 32M
+              memory: 64M
     healthcheck:
       test: ["CMD-SHELL", "mariadb -u${MYSQL_RO_USER} -p${MYSQL_RO_PASSWORD} -h 127.0.0.1 -P ${DSG_LOCAL_PORT} ${MYSQL_DATABASE} -e \"select * from temp_tb limit 1\""]
       interval: 10s
@@ -95,6 +95,10 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - REPLICATION_USER=${REPLICATION_USER}
       - REPLICATION_PASSWORD=${REPLICATION_PASSWORD}
+#      - max_binlog_size=${max_binlog_size}
+#      - replica_pending_jobs_size_max=${replica_pending_jobs_size_max}
+#      - max_allowed_packet=${max_allowed_packet}
+#      - replica_max_allowed_packet=${replica_max_allowed_packet}
     ports:
       - '127.0.0.1:${REPLICA_REMOTE_PORT}:3306'
     networks:
