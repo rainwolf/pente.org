@@ -1,4 +1,4 @@
-FROM debian:bookworm-slim
+FROM debian:trixie-slim
 
 RUN apt update && apt install postfix opendkim procps inetutils-telnet inetutils-syslogd -y && apt autoremove -y && apt autopurge -y
 
