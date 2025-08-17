@@ -1,6 +1,6 @@
 FROM debian:trixie-slim
 
-RUN apt update && apt install postfix opendkim procps inetutils-telnet inetutils-syslogd -y && apt autoremove -y && apt autopurge -y
+RUN apt update && apt install postfix opendkim procps inetutils-telnet busybox-syslogd -y && apt autoremove -y && apt autopurge -y
 
 COPY dockerMail/ /etc
 

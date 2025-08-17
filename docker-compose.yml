@@ -115,8 +115,8 @@ services:
     image: pente_mail
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "service postfix status"]
-      interval: 10s
+      test: ["CMD-SHELL", "service postfix status > /dev/null 2>&1 || (echo 'postfix not running, help plssss'; exit 1)"]
+      interval: 333s
       timeout: 5s
       retries: 1000
     ports:
