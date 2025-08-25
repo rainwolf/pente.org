@@ -49,7 +49,7 @@ jive_init.properties must be in your appserver's classpath. -->
             <host>mail.pente.org</host>
             <port>25</port>
             <username>dsg-mailer@pente.org</username>
-            <password>***REMOVED***</password>
+            <password>**REMOVED**</password>
         </smtp>
         <!--
             The url information of this site. This is required for watch
@@ -175,7 +175,7 @@ DO NOT REPLY TO THIS EMAIL, to reply to this post, or to stop receiving emails f
     <GroupManager>
         <className>com.jivesoftware.base.database.DbGroupManager</className>
     </GroupManager>
-    <cookieKey>***REMOVED***</cookieKey>
+    <cookieKey>**REMOVED**</cookieKey>
     <AuthFactory>
         <className>org.pente.jive.DSGAuthFactory</className>
     </AuthFactory>
