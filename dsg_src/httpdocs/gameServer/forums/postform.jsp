@@ -289,7 +289,9 @@
     </script>
         <form action="" method="post">
         <%
-          ReCaptcha c = ReCaptchaFactory.newReCaptcha("***REMOVED***", "***REMOVED***", false);
+          String captchaSecret = System.getenv("CAPTCHA_SECRET");
+          String captchaSiteKey = System.getenv("CAPTCHA_SITE_KEY");
+          ReCaptcha c = ReCaptchaFactory.newReCaptcha(captchaSiteKey, captchaSecret, false);
           out.print(c.createRecaptchaHtml(null, null));
         %>
         <input type="submit" value="submit" />

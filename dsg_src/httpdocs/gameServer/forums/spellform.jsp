@@ -29,7 +29,8 @@
       String gResponse = "nothing yet";
       String gReCaptchaResponse = request.getParameter("g-recaptcha-response");
 
-      URL url = new URL("https://www.google.com/recaptcha/api/siteverify?secret=***REMOVED***&response=" + gReCaptchaResponse);
+      String captchaSecret = System.getenv("CAPTCHA_SECRET");
+      URL url = new URL("https://www.google.com/recaptcha/api/siteverify?secret=" + captchaSecret + "&response=" + gReCaptchaResponse);
       HttpURLConnection conn = (HttpURLConnection) url.openConnection();
       conn.setRequestMethod("GET");
       String line, outputString = "";

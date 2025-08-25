@@ -68,7 +68,7 @@
 
     <context-param>
         <param-name>mail.imap.password</param-name>
-        <param-value>***REMOVED***</param-value>
+        <param-value>**REMOVED**</param-value>
     </context-param>
 
 

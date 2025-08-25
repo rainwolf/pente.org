@@ -9,9 +9,7 @@
 <%@ page import="com.jivesoftware.base.*,
                  com.jivesoftware.forum.*,
                  com.jivesoftware.util.*,
-                 java.util.ArrayList,
                  java.io.BufferedReader,
-                 java.io.IOException,
                  java.io.InputStreamReader,
                  java.net.HttpURLConnection,
                  java.net.URL" %>
@@ -74,7 +72,8 @@
       String gResponse = "nothing yet";
       String gReCaptchaResponse = request.getParameter("g-recaptcha-response");
 
-      URL url = new URL("https://www.google.com/recaptcha/api/siteverify?secret=***REMOVED***&response=" + gReCaptchaResponse);
+      String captchaSecret = System.getenv("CAPTCHA_SECRET");
+      URL url = new URL("https://www.google.com/recaptcha/api/siteverify?secret=" + captchaSecret + "&response=" + gReCaptchaResponse);
       HttpURLConnection conn = (HttpURLConnection) url.openConnection();
       conn.setRequestMethod("GET");
       String line, outputString = "";

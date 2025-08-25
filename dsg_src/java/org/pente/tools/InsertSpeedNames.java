@@ -24,7 +24,7 @@ public class InsertSpeedNames {
 
         try {
             dbHandler = new MySQLDBHandler(
-                    "dsg_test_rw", "***REMOVED***", "dsg_test2", "pente.org");
+                    "dsg_test_rw", "**REMOVED**", "dsg_test2", "pente.org");
 
             con = dbHandler.getConnection();
 

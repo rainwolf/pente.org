@@ -24,7 +24,7 @@ public class MatchSpeedName {
 
         try {
             dbHandler = new MySQLDBHandler(
-                    "dsg_test_ro", "***REMOVED***", "dsg_test2", "pente.org");
+                    "dsg_test_ro", "**REMOVED**", "dsg_test2", "pente.org");
             gameVenueStorer = new MySQLGameVenueStorer(dbHandler);
             dsgPlayerStorer = new
                     MySQLDSGPlayerStorer(dbHandler, gameVenueStorer);
