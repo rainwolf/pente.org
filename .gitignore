@@ -23,3 +23,4 @@ MyDSKeyStore.jks
 *.crt
 *.key
 *.p12
+dsg_src/db2/
