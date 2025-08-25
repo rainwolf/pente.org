@@ -1,7 +1,0 @@
-#!/bin/bash
-
-sh justCompile
-rsync -vurt --checksum --stats --exclude .DS_Store --progress "deployClasses/" -e ssh "rainwolf@51.178.47.226:~/tomcat/WEB-INF/classes/"
-rsync -vurt --checksum --stats --exclude .DS_Store --progress "/Users/waliedothman/mariposa/coding/pente.org/dsg_src/httpdocs/" -e ssh "rainwolf@51.178.47.226:~/tomcat/"
-ssh rainwolf@51.178.47.226 chown -R rainwolf:tomcat tomcat/
-ssh -t rainwolf@51.178.47.226 sudo ./restartTomcat.sh
