@@ -24,3 +24,4 @@ MyDSKeyStore.jks
 *.key
 *.p12
 dsg_src/db2/
+config/
