@@ -299,7 +299,7 @@
 --> 
      <script src="https://www.google.com/recaptcha/api.js" async defer></script>
        <!-- <form action="?" method="POST"> -->
-      <div class="g-recaptcha" data-sitekey="***REMOVED***"></div>
+      <div class="g-recaptcha" data-sitekey="<%=captchaSiteKey%>"></div>
       <br/>
        <!-- <input type="submit" value="Submit"> -->
        <!-- </form> -->
