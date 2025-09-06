@@ -26,7 +26,7 @@ else
     if [[ ${target} == "pente.org" ]]
     then
       echo "Building the live game room"
-      cd ../react-live-game-room || exit
+      cd ../react_live_game_room || exit
       npm run build || exit 1
       rm -rf ../pente.org/react-live-game-room/build/*
       cp -r build/* ../pente.org/react-live-game-room/build/
