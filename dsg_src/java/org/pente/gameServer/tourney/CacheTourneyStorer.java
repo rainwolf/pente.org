@@ -203,7 +203,6 @@ public class CacheTourneyStorer implements TourneyStorer {
             ((CacheKOTHStorer) kothStorer).adjustCrown(lastTourney.getGame());
             dsgPlayerStorer.refreshPlayer(lastTourney.getWinner());
             backingStorer.assignCrown(tourney.getEventID(), tourney.getGame(), tourney.getWinnerPid(), currentCrownInt);
-            ;
             dsgPlayerStorer.refreshPlayer(tourney.getWinner());
         }
 

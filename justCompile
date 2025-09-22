@@ -1,7 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env fish
 
 #rm -r deploy/*
 clear; printf '\e[3J';
+set -gx JAVA_HOME /usr/local/opt/openjdk@21/
 rsync -vurtd --exclude-from exclude_compile.txt --stats --progress dsg_src/java/ deploy/
 ant
 
