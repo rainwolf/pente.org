@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -gx JAVA_HOME /usr/local/opt/openjdk@21/
 rm -r deploy/*
 rm -r deployClasses/*
 rsync -vurtd --exclude-from exclude_compile.txt --stats --progress dsg_src/java/ deploy/

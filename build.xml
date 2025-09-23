@@ -1,18 +1,18 @@
 <project default="compile">
-	<path id="3rd-party-classpath">
-	    <fileset dir="./dsg_src/lib">
-	        <include name="*.jar" />
-	    </fileset>
-	</path>
+    <path id="3rd-party-classpath">
+        <fileset dir="./dsg_src/lib">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
     <target name="compile">
         <mkdir dir="deployClasses"/>
-        <javac srcdir="deploy" destdir="deployClasses" debug="true" debuglevel="lines,vars,source"
-            executable="/usr/local/opt/openjdk/bin/javac">
-        	<classpath refid="3rd-party-classpath" />
-            <compilerarg value="-Xlint:deprecation,unchecked" />
+        <javac srcdir="deploy" destdir="deployClasses" debug="true" debuglevel="lines,vars,source">
+            <classpath refid="3rd-party-classpath"/>
+            <compilerarg value="-Xlint:deprecation,unchecked"/>
         </javac>
-<!-- 	    <classpath>
-	      <pathelement path="./dsg_src/lib/"/>
-	    </classpath>
- -->    </target>
+        <!-- 	    <classpath>
+                  <pathelement path="./dsg_src/lib/"/>
+                </classpath>
+         -->
+    </target>
 </project>

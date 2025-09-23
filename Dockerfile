@@ -1,4 +1,4 @@
-FROM tomcat:9-jdk21-openjdk-slim
+FROM tomcat:11.0.11-jre21
 
 # - mount /etc/dsg/, /var/log/tomcat, /var/log/dsg outside of container, maybe /var/lib/dsg
 
@@ -7,7 +7,6 @@ COPY dockerMain/SHA-2RootUSERTrustRSACertificationAuthority.crt /etc/ssl/certs/S
 RUN update-ca-certificates
 
 COPY dockerMain/SHA-2RootUSERTrustRSACertificationAuthority.crt /usr/local/openjdk-21/lib/security/SHA-2RootUSERTrustRSACertificationAuthority.crt
-RUN keytool -import -alias apnstrust -file /usr/local/openjdk-21/lib/security/SHA-2RootUSERTrustRSACertificationAuthority.crt -keystore /usr/local/openjdk-21/lib/security/cacerts -storepass changeit
 RUN keytool -import -alias apnstrust -file /usr/local/openjdk-21/lib/security/SHA-2RootUSERTrustRSACertificationAuthority.crt -keystore /etc/ssl/certs/java/cacerts -storepass changeit
 RUN rm /usr/local/openjdk-21/lib/security/SHA-2RootUSERTrustRSACertificationAuthority.crt
 
@@ -24,9 +23,9 @@ ARG ENV=""
 ARG DOCKER_DEFAULT_PLATFORM
 RUN mkdir -p /var/lib/dsg/gameServer/game && \
   mkdir -p /var/lib/dsg/gameServer/player && \
-  apt update && \
-  apt install nala -y && \
-  nala install -y curl fish git && \
+  apt update && apt install -y curl git fish && \
+#  apt install nala -y && \
+#  nala install -y curl fish git && \
   # AstroNvim for Apple Silicon
   if [ "$DOCKER_DEFAULT_PLATFORM" = "" ]; then \
       curl -LO https://github.com/matsuu/neovim-aarch64-appimage/releases/download/v0.9.4/nvim-v0.9.4-aarch64.appimage; \
@@ -51,13 +50,13 @@ RUN mkdir -p /var/lib/dsg/gameServer/game && \
   mkdir -p ~/.config/fish/functions && \
   echo "function l\n  ls -Alh \$argv\nend" > ~/.config/fish/functions/l.fish && \
   rm install && \
-  nala install ant fontconfig -y && \
-  # compile the code
-  ant -f /usr/local/tomcat/webapps/build-docker.xml && \
-  # cleanup
-  rm -rf /usr/local/tomcat/webapps/tmp_src && \
-  rm /usr/local/tomcat/webapps/build-docker.xml && \
-  nala remove -y ant && nala autoremove -y && nala autopurge -y && apt remove nala -y && apt autoremove -y && apt autopurge -y && \
+#  nala install ant fontconfig -y && \
+#  # compile the code
+#  ant -f /usr/local/tomcat/webapps/build-docker.xml && \
+#  # cleanup
+#  rm -rf /usr/local/tomcat/webapps/tmp_src && \
+#  rm /usr/local/tomcat/webapps/build-docker.xml && \
+#  nala remove -y ant && nala autoremove -y && nala autopurge -y && apt remove nala -y && apt autoremove -y && apt autopurge -y && \
   # local context doesn't access remote instance
   mv /usr/local/tomcat/webapps/ROOT/META-INF/${ENV}context.xml /usr/local/tomcat/webapps/ROOT/META-INF/context.xml
 
