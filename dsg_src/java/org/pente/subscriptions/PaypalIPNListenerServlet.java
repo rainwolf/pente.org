@@ -5,18 +5,15 @@ import java.sql.*;
 import java.io.IOException;
 import java.util.*;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.*;
-import javax.servlet.http.*;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 
-import com.paypal.core.LoggingManager;
 import com.paypal.ipn.IPNMessage;
-// import com.sample.util.Configuration;
 
-import net.sf.ehcache.config.Configuration;
 import org.apache.log4j.*;
 
 import org.pente.gameServer.core.*;
@@ -65,7 +62,7 @@ public class PaypalIPNListenerServlet extends HttpServlet {
             receiverEmail = "rainwolf-facilitator@submanifold.be";
         }
         configurationMap.put("mode", paypalMode);
-        IPNMessage ipnlistener = new IPNMessage(request, configurationMap);
+        IPNMessage ipnlistener = new IPNMessage(request.getParameterMap(), configurationMap);
         boolean isIpnVerified = ipnlistener.validate();
 
 

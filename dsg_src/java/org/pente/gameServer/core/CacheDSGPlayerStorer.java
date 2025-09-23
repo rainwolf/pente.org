@@ -40,7 +40,7 @@ import org.pente.database.DBHandler;
 import org.pente.notifications.NotificationServer;
 
 import javax.net.ssl.HttpsURLConnection;
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 public class CacheDSGPlayerStorer implements DSGPlayerStorer {
 

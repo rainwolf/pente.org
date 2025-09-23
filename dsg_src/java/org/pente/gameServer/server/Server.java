@@ -33,7 +33,7 @@ import org.pente.kingOfTheHill.*;
 
 import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLServerSocketFactory;
-import javax.websocket.Session;
+import jakarta.websocket.Session;
 
 
 /** A simple class to contain the necessary components that make up the server

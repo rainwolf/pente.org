@@ -16,8 +16,8 @@ import org.pente.message.*;
 
 import org.pente.kingOfTheHill.*;
 
-import javax.websocket.server.ServerContainer;
-import javax.websocket.server.ServerEndpointConfig;
+import jakarta.websocket.server.ServerContainer;
+import jakarta.websocket.server.ServerEndpointConfig;
 
 /**
  * Holder of server side resources that are reused
@@ -82,7 +82,7 @@ public class Resources {
     public void startNewServer(int tourneyID) {
         try {
             Tourney tournament = this.getTourneyStorer().getTourney(tourneyID);
-            ServerContainer serverContainer = (ServerContainer) ContextHolder.servletContext.getAttribute("javax.websocket.server.ServerContainer");
+            ServerContainer serverContainer = (ServerContainer) ContextHolder.servletContext.getAttribute("jakarta.websocket.server.ServerContainer");
             ServerData data = new ServerData();
             data.setTournament(true);
             data.setPort(getNewServerPort());

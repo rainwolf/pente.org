@@ -2,8 +2,8 @@ package org.pente.kingOfTheHill.web;
 
 import java.io.*;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 
 import org.pente.gameServer.core.*;
 import org.pente.gameServer.server.*;

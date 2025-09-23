@@ -1,20 +1,19 @@
 package org.pente.gameServer.client.web;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.*;
 import java.io.*;
 import java.util.*;
 
-import javax.imageio.ImageIO;
-import javax.servlet.*;
-import javax.servlet.http.*;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload2.core.DiskFileItemFactory;
+import org.apache.commons.fileupload2.core.FileItem;
+import org.apache.commons.fileupload2.core.FileUploadException;
+import org.apache.commons.fileupload2.jakarta.servlet5.JakartaServletFileUpload;
 import org.apache.log4j.*;
-import org.apache.commons.fileupload.*;
 
 import com.jivesoftware.base.*;
 
@@ -83,15 +82,13 @@ public class ChangeAvatarServlet extends HttpServlet {
             }
 
             // jakarta commons lib to handle upload files
-            DiskFileItemFactory factory = new DiskFileItemFactory();
-            factory.setSizeThreshold(50 * 1024); //50k to avoid out of memory issues
-            factory.setRepository(new File("/var/lib/dsg/gameServer"));
-            ServletFileUpload upload = new ServletFileUpload(factory);
+            DiskFileItemFactory factory = DiskFileItemFactory.builder().get();
+            JakartaServletFileUpload upload = new JakartaServletFileUpload(factory);
             upload.setSizeMax(4 * 1024 * 1024); //4mb
 
             // if request is multipart then we are saving, otherwise we are
             // viewing our profile
-            if (ServletFileUpload.isMultipartContent(request)) {
+            if (JakartaServletFileUpload.isMultipartContent(request)) {
 
                 // store request parameters in hash map for easy access
                 Map<String, String> params = new HashMap<String, String>();

@@ -82,7 +82,7 @@ public class MySQLDBHandler implements DBHandler {
             throw new Exception("No Context in MySQLDBHandler");
         }
 
-        log4j.info("Creating MySQLDBHandler.");
+        log4j.info("Creating MySQLDBHandler: " + resourceName);
         dataSource = (DataSource) ctx.lookup("java:comp/env/jdbc/" + resourceName);
     }
 

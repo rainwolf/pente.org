@@ -2,8 +2,8 @@ package org.pente.gameServer.server;
 
 import org.pente.gameServer.event.WebSocketDSGEventHandler;
 
-import javax.websocket.Session;
-import javax.websocket.server.ServerEndpointConfig;
+import jakarta.websocket.Session;
+import jakarta.websocket.server.ServerEndpointConfig;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 

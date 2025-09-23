@@ -6,7 +6,7 @@
                  org.pente.game.*,
                  org.pente.gameServer.core.*,
                  org.apache.log4j.*" %>
-<%@ page import="javax.websocket.server.ServerContainer" %>
+<%@ page import="jakarta.websocket.server.ServerContainer" %>
 
 <%! private static Category log4j =
    Category.getInstance("org.pente.gameServer.web.client.jsp");

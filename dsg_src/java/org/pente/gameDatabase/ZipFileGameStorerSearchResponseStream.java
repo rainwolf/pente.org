@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.*;
 import java.util.zip.*;
 
-import javax.servlet.http.*;
+import jakarta.servlet.http.*;
 
 import org.pente.game.*;
 

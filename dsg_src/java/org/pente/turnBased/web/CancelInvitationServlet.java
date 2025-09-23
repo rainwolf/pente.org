@@ -3,8 +3,8 @@ package org.pente.turnBased.web;
 import java.io.*;
 import java.util.List;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 
 import org.pente.turnBased.*;
 import org.pente.gameServer.core.*;

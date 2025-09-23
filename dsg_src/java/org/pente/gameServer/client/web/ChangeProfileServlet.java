@@ -5,18 +5,16 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.*;
 import java.io.*;
-import java.nio.file.Paths;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.stream.Collectors;
 
-import javax.imageio.ImageIO;
-import javax.servlet.*;
-import javax.servlet.http.*;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload2.core.FileItem;
+import org.apache.commons.fileupload2.core.FileUploadException;
+import org.apache.commons.fileupload2.jakarta.servlet5.JakartaServletFileUpload;
 import org.apache.log4j.*;
-import org.apache.commons.fileupload.*;
 
 import com.jivesoftware.base.*;
 
@@ -103,15 +101,12 @@ public class ChangeProfileServlet extends HttpServlet {
             LoginCookieHandler loginCookieHandler = new LoginCookieHandler();
 
             // jakarta commons lib to handle upload files
-            DiskFileItemFactory factory = new DiskFileItemFactory();
-            factory.setSizeThreshold(50 * 1024); //50k to avoid out of memory issues
-            factory.setRepository(new File("/var/lib/dsg/gameServer"));
-            ServletFileUpload upload = new ServletFileUpload(factory);
-            upload.setSizeMax(4 * 1024 * 1024); //4mb
+            org.apache.commons.fileupload2.core.DiskFileItemFactory factory = org.apache.commons.fileupload2.core.DiskFileItemFactory.builder().get();
+            JakartaServletFileUpload upload = new JakartaServletFileUpload(factory);
 
             // if request is multipart then we are saving, otherwise we are
             // viewing our profile
-            if (command.equals("myInfo") || ServletFileUpload.isMultipartContent(request)) {
+            if (command.equals("myInfo") || JakartaServletFileUpload.isMultipartContent(request)) {
 
                 // store request parameters in hash map for easy access
                 Map<String, String> params = new HashMap<String, String>();
@@ -129,9 +124,9 @@ public class ChangeProfileServlet extends HttpServlet {
                         if (item.getFieldName().equals("vacationDay")) {
                             newVacationDays.add(Integer.valueOf(item.getString()));
                         } else {
-                            params.put(item.getFieldName(), item.getString("UTF-8"));
+                            params.put(item.getFieldName(), item.getString(StandardCharsets.UTF_8));
                         }
-                    } else if (!item.getName().equals("")) {
+                    } else if (!item.getName().isEmpty()) {
                         avatarFileItem = item;
                     }
                 }

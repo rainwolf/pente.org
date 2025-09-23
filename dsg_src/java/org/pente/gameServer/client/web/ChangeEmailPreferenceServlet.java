@@ -1,24 +1,18 @@
 package org.pente.gameServer.client.web;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.awt.image.*;
 import java.io.*;
 import java.util.*;
 
-import javax.imageio.ImageIO;
-import javax.servlet.*;
-import javax.servlet.http.*;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 
 import org.apache.log4j.*;
-import org.apache.commons.fileupload.*;
 
 import com.jivesoftware.base.*;
 
 import org.pente.gameServer.core.*;
 import org.pente.gameServer.server.*;
-import org.pente.jive.DSGUserManager;
 
 
 public class ChangeEmailPreferenceServlet extends HttpServlet {

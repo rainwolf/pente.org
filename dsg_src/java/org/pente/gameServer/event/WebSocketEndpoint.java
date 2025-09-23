@@ -2,8 +2,8 @@ package org.pente.gameServer.event;
 
 import org.pente.gameServer.server.WebSocketConfigurator;
 
-import javax.websocket.*;
-import javax.websocket.server.ServerEndpointConfig;
+import jakarta.websocket.*;
+import jakarta.websocket.server.ServerEndpointConfig;
 
 public class WebSocketEndpoint extends Endpoint {
 

@@ -22,14 +22,13 @@ package org.pente.gameServer.server;
 import java.io.*;
 import java.util.*;
 
-import javax.servlet.*;
-import javax.websocket.server.ServerContainer;
-import javax.websocket.server.ServerEndpointConfig;
+import jakarta.servlet.*;
+import jakarta.websocket.server.ServerContainer;
+import jakarta.websocket.server.ServerEndpointConfig;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import org.apache.log4j.*;
 
-import org.apache.log4j.lf5.util.Resource;
 import org.pente.database.*;
 import org.pente.game.*;
 import org.pente.gameDatabase.*;
@@ -40,7 +39,6 @@ import org.pente.gameServer.tourney.*;
 import org.pente.notifications.CacheNotificationServer;
 import org.pente.notifications.MySQLNotificationServer;
 import org.pente.notifications.NotificationServer;
-import org.pente.notifications.NotificationServerException;
 import org.pente.turnBased.*;
 import org.pente.message.*;
 
@@ -250,10 +248,10 @@ public class DSGContextListener implements ServletContextListener {
                 List serverData = MySQLServerStorer.getActiveServers(
                         resources.getDbHandler(), resources.getGameVenueStorer());
 
-                ServerContainer serverContainer = (ServerContainer) ctx.getAttribute("javax.websocket.server.ServerContainer");
+                ServerContainer serverContainer = (ServerContainer) ctx.getAttribute("jakarta.websocket.server.ServerContainer");
 
-                for (Iterator it = serverData.iterator(); it.hasNext(); ) {
-                    ServerData data = (ServerData) it.next();
+                for (Object serverDatum : serverData) {
+                    ServerData data = (ServerData) serverDatum;
                     Server server;
                     if (data.isTournament()) {
                         continue;

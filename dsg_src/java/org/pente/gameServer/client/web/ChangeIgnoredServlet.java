@@ -8,8 +8,8 @@ import java.io.*;
 import java.util.*;
 
 import javax.imageio.ImageIO;
-import javax.servlet.*;
-import javax.servlet.http.*;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 
 import org.apache.log4j.*;
 import org.apache.commons.fileupload.*;

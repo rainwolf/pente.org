@@ -2,7 +2,7 @@ package org.pente.gameServer.client.web;
 
 import java.util.*;
 
-import javax.servlet.http.*;
+import jakarta.servlet.http.*;
 
 import org.pente.game.*;
 

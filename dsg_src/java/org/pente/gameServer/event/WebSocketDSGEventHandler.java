@@ -6,10 +6,11 @@ import org.pente.gameServer.core.DSGPlayerData;
 import org.pente.gameServer.core.DSGPlayerGameData;
 import org.pente.gameServer.core.SynchronizedQueue;
 
-import javax.websocket.Session;
 import java.awt.*;
 import java.io.IOException;
 import java.util.Vector;
+
+import jakarta.websocket.Session;
 
 public class WebSocketDSGEventHandler extends ServerSocketDSGEventHandler {
 
@@ -140,6 +141,6 @@ public class WebSocketDSGEventHandler extends ServerSocketDSGEventHandler {
     @Override
     public String getHostAddress() {
         return "127.0.0.1";
-//        return session.getUserProperties().get("javax.websocket.endpoint.remoteAddress").toString();
+//        return session.getUserProperties().get("jakarta.websocket.endpoint.remoteAddress").toString();
     }
 }

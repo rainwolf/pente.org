@@ -34,7 +34,7 @@ import org.pente.kingOfTheHill.*;
 
 import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLServerSocketFactory;
-import javax.websocket.Session;
+import jakarta.websocket.Session;
 
 import static java.lang.Thread.sleep;
 

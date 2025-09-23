@@ -2,7 +2,7 @@ package org.pente.jive;
 
 import java.sql.*;
 
-import javax.servlet.http.*;
+import jakarta.servlet.http.*;
 
 import com.jivesoftware.base.*;
 import org.apache.log4j.*;

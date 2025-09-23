@@ -1,8 +1,8 @@
 <%@ page import="java.sql.*,
                  java.util.*,
                  org.pente.database.*,
-                 javax.servlet.*,
-                 javax.servlet.http.*,
+                 jakarta.servlet.*,
+                 jakarta.servlet.http.*,
                  org.apache.log4j.*" %>
 
 <%

@@ -2,23 +2,15 @@ package org.pente.gameServer.tourney;
 
 import java.util.*;
 
-import com.jivesoftware.oro.util.Cache;
 import org.apache.log4j.*;
 
 import org.pente.game.*;
-import org.pente.gameServer.server.ContextHolder;
 import org.pente.gameServer.server.Resources;
 import org.pente.kingOfTheHill.CacheKOTHStorer;
 import org.pente.kingOfTheHill.KOTHStorer;
-import org.pente.notifications.CacheNotificationServer;
 import org.pente.notifications.NotificationServer;
-import org.pente.turnBased.TBGame;
-import org.pente.turnBased.TBSet;
-import org.pente.turnBased.Utilities;
 import org.pente.turnBased.CacheTBStorer;
 import org.pente.gameServer.core.*;
-
-import javax.websocket.server.ServerContainer;
 
 public class CacheTourneyStorer implements TourneyStorer {
 

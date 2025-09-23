@@ -1,6 +1,6 @@
 package org.pente.gameServer.server;
 
-import javax.servlet.*;
+import jakarta.servlet.*;
 
 import org.apache.log4j.*;
 

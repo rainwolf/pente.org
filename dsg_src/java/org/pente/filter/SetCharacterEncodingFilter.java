@@ -1,8 +1,8 @@
 package org.pente.filter;
 
 import java.io.IOException;
-import javax.servlet.*;
-import javax.servlet.http.*;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 
 /**
  * Set the character encoding of the request to as set in "encoding"

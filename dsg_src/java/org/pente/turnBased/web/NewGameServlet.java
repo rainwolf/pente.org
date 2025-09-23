@@ -4,8 +4,8 @@ import java.io.*;
 import java.util.*;
 import java.util.Date;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 
 import org.pente.game.*;
 import org.pente.notifications.NotificationServer;
