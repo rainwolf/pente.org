@@ -556,6 +556,10 @@ public class MoveServlet extends HttpServlet {
                         handleError(request, response, "Invalid move.");
                         return;
                     }
+                    if (message != null) {
+                        message.setMoveNum(game.getNumMoves());
+                        tbGameStorer.storeNewMessage(game.getGid(), message);
+                    }
                     tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(),
                             moves[0]);
                     // this will not add the 2nd move if the player
@@ -563,10 +567,6 @@ public class MoveServlet extends HttpServlet {
                     if (!game.isCompleted()) {
                         tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(),
                                 moves[1]);
-                    }
-                    if (message != null) {
-                        message.setMoveNum(game.getNumMoves());
-                        tbGameStorer.storeNewMessage(game.getGid(), message);
                     }
                 } else if ((game.getGame() == GridStateFactory.TB_GO ||
                         game.getGame() == GridStateFactory.TB_GO9 ||
@@ -610,16 +610,15 @@ public class MoveServlet extends HttpServlet {
                 } else {
                     log4j.debug("MoveServlet, store move " + moves[0]);
                     if (moves.length != 1) {
-                        log4j.error("MoveServlet, more moves received than, " +
-                                "expected.");
+                        log4j.error("MoveServlet, more moves received than expected.");
                         handleError(request, response, "Invalid move.");
                         return;
                     }
-                    tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(),
-                            moves[0]);
                     if (message != null && !(game.getPlayer1Pid() == 23000000020606L || game.getPlayer2Pid() == 23000000020606L)) {
                         tbGameStorer.storeNewMessage(game.getGid(), message);
                     }
+                    tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(),
+                            moves[0]);
                 }
 
 
