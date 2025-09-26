@@ -720,7 +720,7 @@
     </servlet-mapping>
 
     <session-config>
-        <session-timeout>8</session-timeout>
+        <session-timeout>30</session-timeout>
     </session-config>
 
     <servlet-mapping>

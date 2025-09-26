@@ -28,11 +28,11 @@ RUN mkdir -p /var/lib/dsg/gameServer/game && \
 #  nala install -y curl fish git && \
   # AstroNvim for Apple Silicon
   if [ "$DOCKER_DEFAULT_PLATFORM" = "" ]; then \
-      curl -LO https://github.com/matsuu/neovim-aarch64-appimage/releases/download/v0.9.4/nvim-v0.9.4-aarch64.appimage; \
-      chmod u+x nvim-v0.9.4-aarch64.appimage; \
-      ./nvim-v0.9.4-aarch64.appimage --appimage-extract; \
+      curl -LO https://github.com/matsuu/neovim-aarch64-appimage/releases/download/v0.10.3/nvim-v0.10.3-aarch64.appimage; \
+      chmod u+x nvim-v0.10.3-aarch64.appimage; \
+      ./nvim-v0.10.3-aarch64.appimage --appimage-extract; \
       cp -r squashfs-root/* /; \
-      rm -rf squashfs-root nvim-v0.9.4-aarch64.appimage; \
+      rm -rf squashfs-root nvim-v0.10.3-aarch64.appimage; \
   fi && \
   # AstroNvim for linux/amd64
   if [ "$DOCKER_DEFAULT_PLATFORM" = "linux/amd64" ]; then \
