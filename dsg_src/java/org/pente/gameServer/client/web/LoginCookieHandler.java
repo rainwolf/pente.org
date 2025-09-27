@@ -109,7 +109,7 @@ public class LoginCookieHandler {
 
     private void writeCookie(Cookie cookie, HttpServletRequest request, HttpServletResponse response) {
         StringBuffer buf = new StringBuffer();
-        buf.append(cookie.getName() + "=\"" + cookie.getValue() + "\"; Version=1; ");
+        buf.append(cookie.getName() + "=" + cookie.getValue() + "; Version=1; ");
         buf.append("Expires=" + df.format(new Date(System.currentTimeMillis() + cookie.getMaxAge() * 1000L)) + " GMT; ");
         buf.append("Path=" + cookie.getPath());
         response.addHeader("Set-Cookie", buf.toString());
