@@ -97,7 +97,9 @@
    if (pdata == null) {
       dbAccess = false;
    } else {
-      dbAccess = pdata.databaseAccess() || pdata.getRegisterDate().getTime() > System.currentTimeMillis() - 1000L * 3600 * 24 * 30;
+      dbAccess = pdata.databaseAccess() ||
+         ((pdata.getRegisterDate().getTime() > System.currentTimeMillis() - 1000L * 3600 * 24 * 30 * 2) &&
+         pdata.getTotalGames() > 0);
       List prefs = dsgPlayerStorer.loadPlayerPreferences(pdata.getPlayerID());
       for (Iterator it = prefs.iterator(); it.hasNext(); ) {
          DSGPlayerPreference p = (DSGPlayerPreference) it.next();
@@ -976,7 +978,7 @@
 
          <br>
          <br>
-         This feature is currently available to <a href="../subscriptions">subscribers</a> only.
+         This feature is currently available to <a href="../subscriptions">subscribers</a> or new players with at least 1 game and within their first 2 months only.
          <br>
          <br>
 
