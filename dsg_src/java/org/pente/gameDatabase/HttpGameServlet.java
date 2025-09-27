@@ -33,6 +33,8 @@ import org.pente.database.*;
 import org.pente.game.*;
 import org.pente.filter.http.*;
 import org.pente.filter.iyt.game.*;
+import org.pente.gameServer.core.DSGPlayerData;
+import org.pente.gameServer.core.DSGPlayerStorer;
 import org.pente.gameServer.server.*;
 
 public class HttpGameServlet extends HttpServlet {
@@ -47,6 +49,8 @@ public class HttpGameServlet extends HttpServlet {
     private static GameStats gameStats;
 
     private static ActivityLogger activityLogger;
+
+    private static DSGPlayerStorer playerStorer;
 
 
     private static final int MAX_MOVES = 20;
@@ -89,6 +93,8 @@ public class HttpGameServlet extends HttpServlet {
 
             activityLogger = (ActivityLogger) ctx.getAttribute(
                     ActivityLogger.class.getName());
+
+            playerStorer = resources.getDsgPlayerStorer();
 
         } catch (Throwable t) {
             cat.error("Problem in init()", t);
@@ -187,6 +193,17 @@ public class HttpGameServlet extends HttpServlet {
                 sendResponse(response, status, responseStr, HttpConstants.CONTENT_TYPE_TEXT, false);
             } else if (requestStr.equals(HttpGameServer.SEARCH) ||
                     requestStr.equals(HttpGameServer.SEARCH_ZIP)) {
+
+                String playerName = (String) request.getAttribute("name");
+                DSGPlayerData pdata = playerStorer.loadPlayer(playerName);
+
+                if (pdata == null || !pdata.databaseAccess() ||
+                    ((pdata.getRegisterDate().getTime() > System.currentTimeMillis() - 1000L * 3600 * 24 * 30 * 2) &&
+                                pdata.getTotalGames() == 0)) {
+                    cat.info("Blocking database access for player: " + playerName);
+                    request.setAttribute("blocked", new Object());
+                    requestStr = HttpGameServer.SEARCH; // force normal search
+                }
 
                 boolean downloadGames = requestStr.equals(HttpGameServer.SEARCH_ZIP);
 

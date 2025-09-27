@@ -89,7 +89,10 @@ public class RemoteLoginServlet extends HttpServlet {
             }
 
             DSGPlayerData pdata = resources.getDsgPlayerStorer().loadPlayer(name);
-            boolean access_allowed = pdata.databaseAccess() || pdata.getRegisterDate().getTime() > System.currentTimeMillis() - 1000L * 3600 * 24 * 30;
+            boolean access_allowed = pdata.databaseAccess() ||
+                    pdata.databaseAccess() ||
+                    ((pdata.getRegisterDate().getTime() > System.currentTimeMillis() - 1000L * 3600 * 24 * 30 * 2) &&
+                            pdata.getTotalGames() > 0);
 
 
             if (loginResult == LoginHandler.VALID && access_allowed) {
