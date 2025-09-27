@@ -1,5 +1,11 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="org.pente.gameServer.core.*, com.jivesoftware.util.*" %>
+<%@ page import="net.tanesha.recaptcha.ReCaptcha" %>
+<%@ page import="net.tanesha.recaptcha.ReCaptchaFactory" %>
+<%@ page import="java.net.URL" %>
+<%@ page import="java.net.HttpURLConnection" %>
+<%@ page import="java.io.BufferedReader" %>
+<%@ page import="java.io.InputStreamReader" %>
 
 <% if (request.getAttribute("name") != null) {
    response.sendRedirect("gameServer/index.jsp");
@@ -72,7 +78,7 @@
             <p>...it's ok, I hate filling out forms too</p>
             <p> Or perhaps you just want to <a href="features.jsp">check out all our features.</a></p>
          </div>
-         <div style="overflow: hidden;">
+         <div style="overflow: hidden; float: left">
             <div id="signupnow-button" style="float:left;">
                <a href="/gameServer/live?guest" target="_blank" rel="noopener noreferrer">Play as a Guest!</a>
             </div>
@@ -82,6 +88,35 @@
          </div>
       </div>
 
+<%
+   String captchaSecret = System.getenv("CAPTCHA_SECRET");
+   String captchaSiteKey = System.getenv("CAPTCHA_SITE_KEY");
+
+   String gReCaptchaResponse = (String) request.getAttribute("g-recaptcha-response");
+   URL url = new URL("https://www.google.com/recaptcha/api/siteverify?secret=" + captchaSecret + "&response=" + gReCaptchaResponse);
+   HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+   conn.setRequestMethod("GET");
+   String line, outputString = "";
+   BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+   while ((line = reader.readLine()) != null) {
+      outputString += line;
+   }
+   boolean verified = outputString.contains("\"success\": true");
+
+   if (!verified) { %>
+      <form method="post" action="/join">
+         <%
+             ReCaptcha c = ReCaptchaFactory.newReCaptcha(captchaSiteKey, captchaSecret, false);
+             out.print(c.createRecaptchaHtml(null, null));
+         %>
+         <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+         <div style="overflow: hidden; float: left">
+            <input id="signupnow-button" type="submit" value="Register now" style="background: url(/res/signupbackground.gif) center top no-repeat; display: block; text-shadow: #1e6c8f 2px 2px 0px;color: #fff;">
+            <div class="g-recaptcha" data-sitekey="<%=captchaSiteKey%>" style="float: left"></div>
+         </div>
+      </form>
+
+<% } else { %>
 
       <form name="register_form" method="post" action="/join">
          <table border="0" width="100%" cellpadding="9" cellspacing="9"
@@ -233,7 +268,7 @@ That's it, and remember to have fun of course!</textarea>
             </tr>
          </table>
       </form>
-
+<% } %>
    </div>
 </div>
 
@@ -245,8 +280,8 @@ That's it, and remember to have fun of course!</textarea>
    var a = document.getElementById('registerName');
    if (a) {
       a.focus();
-   } else {
-      alert('no');
+   // } else {
+   //    alert('no');
    }
 });</script>
 

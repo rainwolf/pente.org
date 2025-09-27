@@ -134,8 +134,14 @@ public class RegisterServlet extends HttpServlet {
         log4j.info("Register: name=" + name + ", email=" + email +
                 ", emailVisible=" + emailVisible +
                 ", location=" + location + ", sex=" + sex + ", age=" + age);
-
-        if (name == null || password == null || passwordConfirm == null || email == null ||
+        String captchaResponse = request.getParameter("g-recaptcha-response");
+        if ((name == null || password == null || name.equals("") || password.equals(""))
+         && captchaResponse != null) {
+            request.setAttribute("g-recaptcha-response", captchaResponse);
+            getServletContext().getRequestDispatcher(redirectPage).forward(
+                    request, response);
+            return;
+        } else if (name == null || password == null || passwordConfirm == null || email == null ||
                 name.equals("") || password.equals("") || passwordConfirm.equals("") || email.equals("")) {
             registrationError = "Please fill in all fields.";
         } else if (!password.equals(passwordConfirm)) {
