@@ -90,6 +90,8 @@ public class CacheTourneyStorer implements TourneyStorer {
                     @Override
                     public void run() {
                         resources.startNewServer(tourney.getEventID());
+                        timer.cancel();
+                        timer.purge();
                     }
                 }, startDate);
             }
@@ -102,6 +104,8 @@ public class CacheTourneyStorer implements TourneyStorer {
                         @Override
                         public void run() {
                             resources.startTournament(tourney.getEventID());
+                            timer.cancel();
+                            timer.purge();
                         }
                     }, tourney.getStartDate());
                 }
@@ -479,6 +483,7 @@ public class CacheTourneyStorer implements TourneyStorer {
 
     private int getCrownInt(String prizeStr) {
         int crownInt = 0;
+        prizeStr = prizeStr.toLowerCase();
         if (prizeStr.contains("gold")) {
             crownInt = DSGPlayerGameData.TOURNEY_WINNER_GOLD;
         } else if (prizeStr.contains("silver")) {
@@ -493,8 +498,7 @@ public class CacheTourneyStorer implements TourneyStorer {
     public void assignCrown(int eid, int game, long pid, int crown) throws Throwable {
         Tourney tourney = getTourney(eid);
         if (tourney != null) {
-            String prizeStr = tourney.getPrize().toLowerCase();
-            int crownInt = getCrownInt(prizeStr);
+            int crownInt = getCrownInt(tourney.getPrize());
             int gameInt = tourney.getGame();
             long winner = tourney.getWinnerPid();
             backingStorer.assignCrown(eid, gameInt, winner, crownInt);
@@ -506,7 +510,7 @@ public class CacheTourneyStorer implements TourneyStorer {
     public void removeCrown(int eid, int game, long pid, int crown) throws Throwable {
         Tourney tourney = getTourney(eid);
         if (tourney != null) {
-            String prizeStr = tourney.getPrize().toLowerCase();
+            String prizeStr = tourney.getPrize();
             int crownInt = getCrownInt(prizeStr);
             int gameInt = tourney.getGame();
             long winner = tourney.getWinnerPid();

@@ -245,13 +245,12 @@ public class DSGContextListener implements ServletContextListener {
 
             // start game servers
             try {
-                List serverData = MySQLServerStorer.getActiveServers(
+                List<ServerData> serverData = MySQLServerStorer.getActiveServers(
                         resources.getDbHandler(), resources.getGameVenueStorer());
 
                 ServerContainer serverContainer = (ServerContainer) ctx.getAttribute("jakarta.websocket.server.ServerContainer");
 
-                for (Object serverDatum : serverData) {
-                    ServerData data = (ServerData) serverDatum;
+                for (ServerData data : serverData) {
                     Server server;
                     if (data.isTournament()) {
                         continue;
@@ -287,6 +286,8 @@ public class DSGContextListener implements ServletContextListener {
                                 public void run() {
                                     resources.startNewServer(tourney.getEventID());
                                     log4j.info("Server " + tourney.getName() + " started.");
+                                    timer.cancel();
+                                    timer.purge();
                                 }
                             }, startDate);
                         }
@@ -299,6 +300,8 @@ public class DSGContextListener implements ServletContextListener {
                                     @Override
                                     public void run() {
                                         resources.startTournament(tourney.getEventID());
+                                        timer.cancel();
+                                        timer.purge();
                                     }
                                 }, tourney.getStartDate());
                             }

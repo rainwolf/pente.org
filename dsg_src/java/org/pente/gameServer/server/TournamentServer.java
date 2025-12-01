@@ -94,6 +94,8 @@ public class TournamentServer extends Server {
                         @Override
                         public void run() {
                             mainRoom.eventOccurred(new DSGSystemMessageTableEvent(0, finalI + " minutes left before round " + (tournament.getNumRounds() + 1) + " starts."));
+                            t.cancel();
+                            t.purge();
                         }
                     }, 1000L * 60 * (ROUND_PAUSE - finalI));
                 }
@@ -103,6 +105,8 @@ public class TournamentServer extends Server {
                 @Override
                 public void run() {
                     startNewRoundNow();
+                    timeoutBeforeNextRoundTimer.cancel();
+                    timeoutBeforeNextRoundTimer.purge();
                     timeoutBeforeNextRoundTimer = null;
                 }
             }, 1000L * 60 * ROUND_PAUSE);
@@ -237,6 +241,7 @@ public class TournamentServer extends Server {
                     for (Iterator<Timer> iterator = waitAnnouncementTimers.iterator(); iterator.hasNext(); ) {
                         Timer t = iterator.next();
                         t.cancel();
+                        t.purge();
                         iterator.remove();
                     }
                 }
@@ -247,6 +252,8 @@ public class TournamentServer extends Server {
                         @Override
                         public void run() {
                             mainRoom.eventOccurred(new DSGSystemMessageTableEvent(0, finalI + " minutes left before round " + (tournament.getNumRounds() + 1) + " starts."));
+                            t.cancel();
+                            t.purge();
                         }
                     }, 1000L * 60 * (pause - finalI));
                     waitAnnouncementTimers.add(t);
@@ -257,6 +264,8 @@ public class TournamentServer extends Server {
                 @Override
                 public void run() {
                     forfeitRemainingMatches();
+                    timeoutBeforeNextRoundTimer.cancel();
+                    timeoutBeforeNextRoundTimer.purge();
                     timeoutBeforeNextRoundTimer = null;
                 }
             }, 1000L * 60 * ROUND_PAUSE);

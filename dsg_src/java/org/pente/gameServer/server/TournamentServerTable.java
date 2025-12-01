@@ -101,9 +101,13 @@ public class TournamentServerTable extends ServerTable {
 
         if (closeTableTimer != null) {
             closeTableTimer.cancel();
+            closeTableTimer.purge();
+            closeTableTimer = null;
         }
         if (pressPlayTimer != null) {
             pressPlayTimer.cancel();
+            pressPlayTimer.purge();
+            pressPlayTimer = null;
         }
 
         super.destroy();
@@ -143,6 +147,7 @@ public class TournamentServerTable extends ServerTable {
         if (sittingPlayers[1] == null && sittingPlayers[2] == null) {
             if (pressPlayTimer != null) {
                 pressPlayTimer.cancel();
+                pressPlayTimer.purge();
                 pressPlayTimer = null;
             }
             closeTableNow();
@@ -173,6 +178,9 @@ public class TournamentServerTable extends ServerTable {
                 @Override
                 public void run() {
                     determineAndUpdateForfeit();
+                    pressPlayTimer.cancel();
+                    pressPlayTimer.purge();
+                    pressPlayTimer = null;
                 }
             }, 1000L * WAIT_TO_PRESS_PLAY);
             broadcastTable(new DSGSystemMessageTableEvent(
@@ -295,6 +303,7 @@ public class TournamentServerTable extends ServerTable {
     protected void startGame() {
         if (this.pressPlayTimer != null) {
             this.pressPlayTimer.cancel();
+            this.pressPlayTimer.purge();
             this.pressPlayTimer = null;
         }
         super.startGame();
@@ -379,6 +388,9 @@ public class TournamentServerTable extends ServerTable {
             @Override
             public void run() {
                 closeTableNow();
+                closeTableTimer.cancel();
+                closeTableTimer.purge();
+                closeTableTimer = null;
             }
         }, 1000L * WAIT_TO_CLOSE_TABLE);
     }
