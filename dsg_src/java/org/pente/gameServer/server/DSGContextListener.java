@@ -50,9 +50,6 @@ public class DSGContextListener implements ServletContextListener {
     private static final Category log4j =
             Category.getInstance(DSGContextListener.class.getName());
 
-    private DBHandler dbHandler;
-    private GameVenueStorer gameVenueStorer;
-    private CacheDSGPlayerStorer dsgPlayerStorer;
     private GameStats gameStats;
 
     public void contextInitialized(ServletContextEvent servletContextEvent) {
@@ -67,7 +64,7 @@ public class DSGContextListener implements ServletContextListener {
             ctx.setAttribute("appletVersion", appletVersion);
 
             // get property file location and initialize database handler
-            dbHandler = new MySQLDBHandler(true, "dsg");
+            DBHandler dbHandler = new MySQLDBHandler(true, "dsg");
             resources.setDbHandler(dbHandler);
             ctx.setAttribute(DBHandler.class.getName(), dbHandler);
             log4j.info("contextInitialized(), created DBHandler[dsg]");
@@ -87,12 +84,12 @@ public class DSGContextListener implements ServletContextListener {
             NotificationServer notificationServer = new CacheNotificationServer(new MySQLNotificationServer(dbHandler), penteLiveAPNSkey, googleCredentials, penteLiveAPNSpwd, productionFlag);
             resources.setNotificationServer(notificationServer);
 
-            gameVenueStorer = new MySQLGameVenueStorer(dbHandler);
+            GameVenueStorer gameVenueStorer = new MySQLGameVenueStorer(dbHandler);
             resources.setGameVenueStorer(gameVenueStorer);
             ctx.setAttribute(GameVenueStorer.class.getName(), gameVenueStorer);
             log4j.info("contextInitialized(), created GameVenueStorer");
 
-            dsgPlayerStorer = new CacheDSGPlayerStorer(new MySQLDSGPlayerStorer(dbHandler, gameVenueStorer), ctx, dbHandler);
+            CacheDSGPlayerStorer dsgPlayerStorer = new CacheDSGPlayerStorer(new MySQLDSGPlayerStorer(dbHandler, gameVenueStorer), ctx, dbHandler);
             dsgPlayerStorer.setNotificationServer(notificationServer);
             resources.setDsgPlayerStorer(dsgPlayerStorer);
             ctx.setAttribute(DSGPlayerStorer.class.getName(), dsgPlayerStorer);
@@ -196,7 +193,7 @@ public class DSGContextListener implements ServletContextListener {
 
             DSGMessageStorer dsgMessageStorer = new CacheMessageStorer(
                     new MySQLDSGMessageStorer(dbHandler),
-                    emailEnabled.booleanValue(),
+                    emailEnabled,
                     ctx.getInitParameter("mail.smtp.host"),
                     Integer.parseInt(ctx.getInitParameter("mail.smtp.port")),
                     ctx.getInitParameter("mail.smtp.user"),
@@ -220,14 +217,14 @@ public class DSGContextListener implements ServletContextListener {
             kothStorer.setTbStorer(tbGameStorer);
             resources.setKOTHStorer(kothStorer);
 
-            TourneyStorer tourneyStorer = new CacheTourneyStorer(
+            CacheTourneyStorer tourneyStorer = new CacheTourneyStorer(
                     new MySQLTourneyStorer(dbHandler, gameVenueStorer));
             resources.setTourneyStorer(tourneyStorer);
             tourneyStorer.addTourneyListener(tbGameStorer);
-            ((CacheTourneyStorer) tourneyStorer).setTBStorer(tbGameStorer);
-            ((CacheTourneyStorer) tourneyStorer).setDsgPlayerStorer(dsgPlayerStorer);
-            ((CacheTourneyStorer) tourneyStorer).setNotificationServer(notificationServer);
-            ((CacheTourneyStorer) tourneyStorer).setKothStorer(kothStorer);
+            tourneyStorer.setTBStorer(tbGameStorer);
+            tourneyStorer.setDsgPlayerStorer(dsgPlayerStorer);
+            tourneyStorer.setNotificationServer(notificationServer);
+            tourneyStorer.setKothStorer(kothStorer);
             tbGameStorer.setTourneyStorer(tourneyStorer);
             log4j.info("contextInitialized(), created TourneyStorer");
 
@@ -243,80 +240,84 @@ public class DSGContextListener implements ServletContextListener {
             LeaderBoard lb = new LeaderBoard(dbHandler, dsgPlayerStorer);
             ctx.setAttribute("leaderboard", lb);
 
-            // start game servers
-            try {
-                List<ServerData> serverData = MySQLServerStorer.getActiveServers(
-                        resources.getDbHandler(), resources.getGameVenueStorer());
+            setupLiveGameServers(resources, ctx, tourneyStorer);
 
-                ServerContainer serverContainer = (ServerContainer) ctx.getAttribute("jakarta.websocket.server.ServerContainer");
+        } catch (Throwable t) {
+            log4j.error("Problem in contextInitialized()", t);
+        }
+    }
 
-                for (ServerData data : serverData) {
-                    Server server;
-                    if (data.isTournament()) {
-                        continue;
-                    }
-                    server = new Server(resources, data);
-                    resources.addServer(server);
-                    log4j.info("Server " + data + " started.");
-                    ServerEndpointConfig.Configurator configurator = new WebSocketConfigurator(server);
-                    ServerEndpointConfig sec = ServerEndpointConfig.Builder.
-                            create(WebSocketEndpoint.class, "/websocketServer/" + data.getPort()).
-                            configurator(configurator).build();
-                    serverContainer.addEndpoint(sec);
+    private static void setupLiveGameServers(Resources resources, ServletContext ctx, TourneyStorer tourneyStorer) {
+        // start game servers
+        try {
+            List<ServerData> serverData = MySQLServerStorer.getActiveServers(
+                    resources.getDbHandler(), resources.getGameVenueStorer());
+
+            ServerContainer serverContainer = (ServerContainer) ctx.getAttribute("jakarta.websocket.server.ServerContainer");
+
+            for (ServerData data : serverData) {
+                Server server;
+                if (data.isTournament()) {
+                    continue;
                 }
+                server = new Server(resources, data);
+                resources.addServer(server);
+                log4j.info("Server " + data + " started.");
+                ServerEndpointConfig.Configurator configurator = new WebSocketConfigurator(server);
+                ServerEndpointConfig sec = ServerEndpointConfig.Builder.
+                        create(WebSocketEndpoint.class, "/websocketServer/" + data.getPort()).
+                        configurator(configurator).build();
+                serverContainer.addEndpoint(sec);
+            }
 
-                List<Tourney> tournaments = new ArrayList<>();
-                tournaments.addAll(tourneyStorer.getCurrentTournies());
-                tournaments.addAll(tourneyStorer.getUpcomingTournies());
-                Date oneHourAgo = new Date();
-                Date now = new Date();
-                oneHourAgo.setTime(oneHourAgo.getTime() - 3600L * 1000);
-                for (Tourney t : tournaments) {
-                    Tourney tourney = tourneyStorer.getTourneyDetails(t.getEventID());
-                    if (tourney.isSpeed()) {
-                        log4j.info("tournament " + tourney.getName());
-                        if (tourney.getStartDate().before(oneHourAgo)) {
-                            resources.startNewServer(tourney.getEventID());
-                            log4j.info("Server " + tourney.getName() + " started.");
+            List<Tourney> tournaments = new ArrayList<>();
+            tournaments.addAll(tourneyStorer.getCurrentTournies());
+            tournaments.addAll(tourneyStorer.getUpcomingTournies());
+            Date oneHourAgo = new Date();
+            Date now = new Date();
+            oneHourAgo.setTime(oneHourAgo.getTime() - 3600L * 1000);
+            for (Tourney t : tournaments) {
+                Tourney tourney = tourneyStorer.getTourneyDetails(t.getEventID());
+                if (tourney.isSpeed()) {
+                    log4j.info("tournament " + tourney.getName());
+                    if (tourney.getStartDate().before(oneHourAgo)) {
+                        resources.startNewServer(tourney.getEventID());
+                        log4j.info("Server " + tourney.getName() + " started.");
+                    } else {
+                        Date startDate = new Date(tourney.getStartDate().getTime() - 3600L * 1000);
+                        Timer timer = new Timer();
+                        timer.schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                resources.startNewServer(tourney.getEventID());
+                                log4j.info("Server " + tourney.getName() + " started.");
+                                timer.cancel();
+                                timer.purge();
+                            }
+                        }, startDate);
+                    }
+                    if (tourney.getNumRounds() == 0) {
+                        if (tourney.getStartDate().before(now)) {
+                            resources.startTournament(tourney.getEventID());
                         } else {
-                            Date startDate = new Date(tourney.getStartDate().getTime() - 3600L * 1000);
                             Timer timer = new Timer();
                             timer.schedule(new TimerTask() {
                                 @Override
                                 public void run() {
-                                    resources.startNewServer(tourney.getEventID());
-                                    log4j.info("Server " + tourney.getName() + " started.");
+                                    resources.startTournament(tourney.getEventID());
                                     timer.cancel();
                                     timer.purge();
                                 }
-                            }, startDate);
-                        }
-                        if (tourney.getNumRounds() == 0) {
-                            if (tourney.getStartDate().before(now)) {
-                                resources.startTournament(tourney.getEventID());
-                            } else {
-                                Timer timer = new Timer();
-                                timer.schedule(new TimerTask() {
-                                    @Override
-                                    public void run() {
-                                        resources.startTournament(tourney.getEventID());
-                                        timer.cancel();
-                                        timer.purge();
-                                    }
-                                }, tourney.getStartDate());
-                            }
+                            }, tourney.getStartDate());
                         }
                     }
                 }
-
-                log4j.info("Servers ready.");
-
-            } catch (Throwable t) {
-                log4j.error("Problem creating servers.", t);
             }
 
+            log4j.info("Servers ready.");
+
         } catch (Throwable t) {
-            log4j.error("Problem in contextInitialized()", t);
+            log4j.error("Problem creating servers.", t);
         }
     }
 
@@ -332,8 +333,8 @@ public class DSGContextListener implements ServletContextListener {
 
         resources.getTbGameStorer().destroy();
 
-        for (Iterator it = resources.getServers().iterator(); it.hasNext(); ) {
-            Server s = (Server) it.next();
+        for (Object o : resources.getServers()) {
+            Server s = (Server) o;
             log4j.info("Destroying server " + s.getServerData() + ".");
             s.destroy();
         }
