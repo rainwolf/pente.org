@@ -2,7 +2,7 @@
 
 #rm -r deploy/*
 clear; printf '\e[3J';
-set -gx JAVA_HOME /usr/local/opt/openjdk@21/
+set -gx JAVA_HOME /opt/homebrew/opt/java/ 
 rsync -vurtd --exclude-from exclude_compile.txt --stats --progress dsg_src/java/ deploy/
 ant
 
