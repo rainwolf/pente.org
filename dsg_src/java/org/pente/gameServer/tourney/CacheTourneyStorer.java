@@ -30,6 +30,8 @@ public class CacheTourneyStorer implements TourneyStorer {
     private NotificationServer notificationServer;
     private KOTHStorer kothStorer;
 
+    private List<Timer> timers = null;
+
 
     public void setDsgPlayerStorer(CacheDSGPlayerStorer dsgPlayerStorer) {
         this.dsgPlayerStorer = dsgPlayerStorer;
@@ -49,6 +51,7 @@ public class CacheTourneyStorer implements TourneyStorer {
 
     public CacheTourneyStorer(TourneyStorer backingStorer) {
         this.backingStorer = backingStorer;
+        this.timers = new ArrayList<>();
     }
 
 
@@ -96,19 +99,7 @@ public class CacheTourneyStorer implements TourneyStorer {
                 }, startDate);
             }
             if (tourney.getNumRounds() == 0) {
-                if (tourney.getStartDate().before(now)) {
-                    resources.startTournament(tourney.getEventID());
-                } else {
-                    Timer timer = new Timer();
-                    timer.schedule(new TimerTask() {
-                        @Override
-                        public void run() {
-                            resources.startTournament(tourney.getEventID());
-                            timer.cancel();
-                            timer.purge();
-                        }
-                    }, tourney.getStartDate());
-                }
+                startTournamentOrSetupTimer(tourney);
             }
         }
     }
@@ -517,6 +508,79 @@ public class CacheTourneyStorer implements TourneyStorer {
             backingStorer.removeCrown(eid, gameInt, winner, crownInt);
             ((CacheKOTHStorer) kothStorer).adjustCrown(tourney.getGame());
             dsgPlayerStorer.refreshPlayer(tourney.getWinner());
+        }
+    }
+
+    public void startTournament(int tourneyID) {
+        try {
+            // create first round
+            Tourney tournament = this.getTourney(tourneyID);
+            List<TourneyPlayerData> players = this.setInitialSeeds(tourneyID);
+            if (players.size() < 2) {
+                log4j.info("Not enough players to start tournament " + tournament.getName() +
+                        ". Cancelling tournament.");
+                cancelTourney(tourneyID);
+            } else {
+                log4j.info("Starting tournament " + tournament.getName() +
+                        " with " + players.size() + " players.");
+                TourneyRound newRound = tournament.createFirstRound(players);
+                this.insertRound(newRound);
+            }
+        } catch (Throwable t) {
+            t.printStackTrace();
+//            log4j.error("Problem in startTournament()", t);
+        }
+    }
+
+    public void startTournamentOrSetupTimer(Tourney tourney) {
+        Date now = new Date();
+        if (tourney.getStartDate().before(now)) {
+            startTournament(tourney.getEventID());
+        } else {
+            Timer timer = new Timer(tourney.getName() + "_startTimer");
+            int timerIdx = timers.size();
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    startTournament(tourney.getEventID());
+                    Timer timer = timers.get(timerIdx);
+                    timer.cancel();
+                    timer.purge();
+                    timers.set(timerIdx, null);
+                }
+            }, tourney.getStartDate());
+            timers.add(timer);
+            log4j.info("Scheduled TB tournament " + tourney.getName() +
+                    " to start at " + tourney.getStartDate());
+        }
+    }
+
+    public void setupTBTournaments() throws Throwable {
+        List<Tourney> tournaments = new ArrayList<>();
+        tournaments.addAll(this.getCurrentTournies());
+        tournaments.addAll(this.getUpcomingTournies());
+        for (Tourney t : tournaments) {
+            Tourney tourney = this.getTourneyDetails(t.getEventID());
+            if (tourney.isTurnBased() && tourney.getNumRounds() == 0) {
+                log4j.info("tournament " + tourney.getName());
+                startTournamentOrSetupTimer(tourney);
+            }
+        }
+        log4j.info("Finished setting up TB Tournaments.");
+    }
+
+    public void cancelTourney(int eid) throws Throwable {
+        log4j.info("cancelTourney(" + eid + ")");
+        backingStorer.cancelTourney(eid);
+        flushCache();
+    }
+
+    public void destroy() {
+        for (Timer timer : timers) {
+            if (timer != null) {
+                timer.cancel();
+                timer.purge();
+            }
         }
     }
 }

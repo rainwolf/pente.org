@@ -52,8 +52,11 @@ public class DSGContextListener implements ServletContextListener {
 
     private GameStats gameStats;
 
+    private List<Timer> timers = null;
+
     public void contextInitialized(ServletContextEvent servletContextEvent) {
         try {
+            timers = new ArrayList<>();
 
             ServletContext ctx = servletContextEvent.getServletContext();
             ContextHolder.servletContext = ctx;
@@ -242,12 +245,14 @@ public class DSGContextListener implements ServletContextListener {
 
             setupLiveGameServers(resources, ctx, tourneyStorer);
 
+            tourneyStorer.setupTBTournaments();
+
         } catch (Throwable t) {
             log4j.error("Problem in contextInitialized()", t);
         }
     }
 
-    private static void setupLiveGameServers(Resources resources, ServletContext ctx, TourneyStorer tourneyStorer) {
+    private void setupLiveGameServers(Resources resources, ServletContext ctx, TourneyStorer tourneyStorer) {
         // start game servers
         try {
             List<ServerData> serverData = MySQLServerStorer.getActiveServers(
@@ -274,7 +279,6 @@ public class DSGContextListener implements ServletContextListener {
             tournaments.addAll(tourneyStorer.getCurrentTournies());
             tournaments.addAll(tourneyStorer.getUpcomingTournies());
             Date oneHourAgo = new Date();
-            Date now = new Date();
             oneHourAgo.setTime(oneHourAgo.getTime() - 3600L * 1000);
             for (Tourney t : tournaments) {
                 Tourney tourney = tourneyStorer.getTourneyDetails(t.getEventID());
@@ -285,31 +289,23 @@ public class DSGContextListener implements ServletContextListener {
                         log4j.info("Server " + tourney.getName() + " started.");
                     } else {
                         Date startDate = new Date(tourney.getStartDate().getTime() - 3600L * 1000);
-                        Timer timer = new Timer();
+                        Timer timer = new Timer(tourney.getName() + " start timer");
+                        int index = timers.size();
                         timer.schedule(new TimerTask() {
                             @Override
                             public void run() {
                                 resources.startNewServer(tourney.getEventID());
                                 log4j.info("Server " + tourney.getName() + " started.");
+                                Timer timer = timers.get(index);
                                 timer.cancel();
                                 timer.purge();
+                                timers.set(index, null);
                             }
                         }, startDate);
+                        timers.add(timer);
                     }
                     if (tourney.getNumRounds() == 0) {
-                        if (tourney.getStartDate().before(now)) {
-                            resources.startTournament(tourney.getEventID());
-                        } else {
-                            Timer timer = new Timer();
-                            timer.schedule(new TimerTask() {
-                                @Override
-                                public void run() {
-                                    resources.startTournament(tourney.getEventID());
-                                    timer.cancel();
-                                    timer.purge();
-                                }
-                            }, tourney.getStartDate());
-                        }
+                        ((CacheTourneyStorer) tourneyStorer).startTournamentOrSetupTimer(tourney);
                     }
                 }
             }
@@ -332,6 +328,19 @@ public class DSGContextListener implements ServletContextListener {
                 ctx.getAttribute(Resources.class.getName());
 
         resources.getTbGameStorer().destroy();
+        ((CacheTourneyStorer) resources.getTourneyStorer()).destroy();
+        resources.getDsgPlayerStorer().destroy();
+        resources.getKOTHStorer().destroy();
+        ((CacheNotificationServer) resources.getNotificationServer()).destroy();
+        ((CacheMessageStorer) resources.getDsgMessageStorer()).destroy();
+
+        for (Timer timer : timers) {
+            if (timer != null) {
+                timer.cancel();
+                timer.purge();
+            }
+        }
+        timers.clear();
 
         for (Object o : resources.getServers()) {
             Server s = (Server) o;
