@@ -548,7 +548,7 @@ public class CacheTourneyStorer implements TourneyStorer {
                     timer.purge();
                     timers.set(timerIdx, null);
                 }
-            }, tourney.getStartDate());
+            }, new Date(tourney.getStartDate().getTime() + 5000L * timerIdx)); // stagger by 5 seconds per timer
             timers.add(timer);
             log4j.info("Scheduled TB tournament " + tourney.getName() +
                     " to start at " + tourney.getStartDate());
