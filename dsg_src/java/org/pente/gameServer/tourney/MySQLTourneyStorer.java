@@ -67,7 +67,7 @@ public class MySQLTourneyStorer implements TourneyStorer {
                     "select e.eid, e.name " +
                             "from game_event e, dsg_tournament_detail t " +
                             "where e.eid = t.event_id " +
-                            "and t.signup_end_date > sysdate()");
+                            "and t.signup_end_date > sysdate() and t.status <> 'S' ");
             result = stmt.executeQuery();
             while (result.next()) {
                 Tourney tourney = new Tourney(result.getInt(1));
@@ -106,7 +106,7 @@ public class MySQLTourneyStorer implements TourneyStorer {
                             "from game_event e, dsg_tournament_detail t " +
                             "where e.eid = t.event_id " +
                             "and sysdate() > t.signup_end_date " +
-                            "and t.completion_date is null");
+                            "and t.completion_date is null and t.status <> 'S' ");
             result = stmt.executeQuery();
             while (result.next()) {
                 Tourney tourney = new Tourney(result.getInt(1));
@@ -176,7 +176,7 @@ public class MySQLTourneyStorer implements TourneyStorer {
             con = dbHandler.getConnection();
             stmt = con.prepareStatement(
                     "update dsg_tournament_detail " +
-                            "set completion_date = ? " +
+                            "set completion_date = ?, status = 'C' " +
                             "where event_id = ?");
             stmt.setTimestamp(1, new Timestamp(tourney.getEndDate().getTime()));
             stmt.setInt(2, tourney.getEventID());
@@ -871,5 +871,26 @@ public class MySQLTourneyStorer implements TourneyStorer {
     }
 
     public void removeTourneyListener(TourneyListener listener) {
+    }
+
+    @Override
+    public void cancelTourney(int eid) throws Throwable {
+        Connection con = null;
+        PreparedStatement stmt = null;
+        try {
+            con = dbHandler.getConnection();
+            stmt = con.prepareStatement("update dsg_tournament_detail set status='S' where event_id = ?");
+            stmt.setInt(1, eid);
+            stmt.executeUpdate();
+
+        } finally {
+
+            if (stmt != null) {
+                stmt.close();
+            }
+            if (con != null) {
+                dbHandler.freeConnection(con);
+            }
+        }
     }
 }

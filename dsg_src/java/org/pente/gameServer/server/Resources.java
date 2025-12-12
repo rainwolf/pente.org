@@ -106,19 +106,6 @@ public class Resources {
         }
     }
 
-    public void startTournament(int tourneyID) {
-        try {
-            // create first round
-            Tourney tournament = this.getTourneyStorer().getTourney(tourneyID);
-            List<TourneyPlayerData> players = this.getTourneyStorer().setInitialSeeds(tourneyID);
-            TourneyRound newRound = tournament.createFirstRound(players);
-            this.getTourneyStorer().insertRound(newRound);
-        } catch (Throwable t) {
-            t.printStackTrace();
-//            log4j.error("Problem in startTournament()", t);
-        }
-    }
-
     private int getNewServerID() {
         int maxID = 0;
         for (Object o : this.getServers()) {

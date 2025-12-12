@@ -52,6 +52,14 @@ public class CacheKOTHStorer implements KOTHStorer {
                 new RemoveStalePlayersRunnable(), 5L * 60 * 1000, 24L * 3600 * 1000);
     }
 
+    public void destroy() {
+        if (removeStalePlayersTimer != null) {
+            removeStalePlayersTimer.cancel();
+            removeStalePlayersTimer.purge();
+            removeStalePlayersTimer = null;
+        }
+    }
+
     public void setTbStorer(CacheTBStorer tbStorer) {
         this.tbStorer = tbStorer;
     }

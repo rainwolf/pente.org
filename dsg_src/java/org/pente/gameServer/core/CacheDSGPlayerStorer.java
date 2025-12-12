@@ -86,6 +86,13 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         cachedPrefs = new HashMap<>();
     }
 
+    public void destroy() {
+        checkiOSSubscribersTimer.cancel();
+        checkiOSSubscribersTimer.purge();
+        checkSubscribersTimer.cancel();
+        checkSubscribersTimer.purge();
+    }
+
     public synchronized void addPlayerDataChangeListener(
             PlayerDataChangeListener l) {
         listeners.add(l);

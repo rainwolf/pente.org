@@ -46,4 +46,6 @@ public interface TourneyStorer {
     public void assignCrown(int eid, int game, long pid, int crown) throws Throwable;
 
     public void removeCrown(int eid, int game, long pid, int crown) throws Throwable;
+
+    public void cancelTourney(int eid) throws Throwable;
 }

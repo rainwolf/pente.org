@@ -247,4 +247,7 @@ public class CacheMessageStorer implements DSGMessageStorer {
         return cnt;
     }
 
+    public void destroy() {
+        mailer.destroy();
+    }
 }

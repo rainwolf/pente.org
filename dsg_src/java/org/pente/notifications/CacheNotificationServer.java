@@ -65,6 +65,16 @@ public class CacheNotificationServer implements NotificationServer {
         }
     }
 
+    public void destroy() {
+        checkRecordsTimer.cancel();
+        checkRecordsTimer.purge();
+        try {
+            client.close().get();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     synchronized public void registerDevice(long pid, String token, int device) throws NotificationServerException {
         Map<String, Date> notificationRecords = getTokens(pid, device);

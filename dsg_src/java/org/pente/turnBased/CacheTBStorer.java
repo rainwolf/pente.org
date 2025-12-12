@@ -328,14 +328,17 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         // not sure if cancel stops currently executing stuff, probably ok anyways
         if (loadExpireSoonTimer != null) {
             loadExpireSoonTimer.cancel();
+            loadExpireSoonTimer.purge();
             loadExpireSoonTimer = null;
         }
         if (checkTimeoutTimer != null) {
             checkTimeoutTimer.cancel();
+            checkTimeoutTimer.purge();
             checkTimeoutTimer = null;
         }
         if (stalePlayerTimer != null) {
             stalePlayerTimer.cancel();
+            stalePlayerTimer.purge();
             stalePlayerTimer = null;
         }
         if (endGameThread != null && endGameRunnable != null) {
@@ -347,6 +350,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
     public void destroy() {
         log4j.debug("CacheTBStorer.destroy()");
+
         stopTasks();
     }
 
