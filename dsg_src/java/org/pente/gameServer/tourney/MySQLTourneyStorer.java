@@ -893,4 +893,47 @@ public class MySQLTourneyStorer implements TourneyStorer {
             }
         }
     }
+
+    @Override
+    public String findNextTournamentName(String baseName) throws Throwable {
+        Connection con = null;
+        PreparedStatement stmt = null;
+        ResultSet results = null;
+
+        String nextName = baseName;
+        int maxSuffix = 0;
+
+        try {
+            con = dbHandler.getConnection();
+            stmt = con.prepareStatement(
+                    "select e.name " +
+                            "from game_event e " +
+                            "where e.name like ?");
+            stmt.setString(1, baseName + "%");
+
+            results = stmt.executeQuery();
+            List<String> names = new ArrayList<>();
+            while (results.next()) {
+                names.add(results.getString(1));
+            }
+
+            while (names.contains(nextName)) {
+                maxSuffix++;
+                nextName = baseName + " (" + maxSuffix + ")";
+            }
+
+        } finally {
+            if (results != null) {
+                results.close();
+            }
+            if (stmt != null) {
+                stmt.close();
+            }
+            if (con != null) {
+                dbHandler.freeConnection(con);
+            }
+        }
+
+        return nextName;
+    }
 }

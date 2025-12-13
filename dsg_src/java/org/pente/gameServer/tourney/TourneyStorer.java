@@ -48,4 +48,6 @@ public interface TourneyStorer {
     public void removeCrown(int eid, int game, long pid, int crown) throws Throwable;
 
     public void cancelTourney(int eid) throws Throwable;
+
+    public String findNextTournamentName(String baseName) throws Throwable;
 }

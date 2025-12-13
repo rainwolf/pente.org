@@ -101,6 +101,8 @@ public class CacheTourneyStorer implements TourneyStorer {
             if (tourney.getNumRounds() == 0) {
                 startTournamentOrSetupTimer(tourney);
             }
+        } else if (tourney.isTurnBased() && tourney.getNumRounds() == 0) {
+            startTournamentOrSetupTimer(tourney);
         }
     }
 
@@ -569,8 +571,38 @@ public class CacheTourneyStorer implements TourneyStorer {
         log4j.info("Finished setting up TB Tournaments.");
     }
 
+    public String findNextTournamentName(String baseName) throws Throwable {
+        return backingStorer.findNextTournamentName(baseName);
+    }
+
+    private void startAnotherTourney(int eid) throws Throwable {
+        log4j.info("startAnotherTourney from (" + eid + ")");
+        Tourney tourney = getTourney(eid);
+        int game = tourney.getGame();
+        if (game > 50) {
+            if (game == GridStateFactory.TB_PENTE) {
+                log4j.info("not starting another tourney for game " + game);
+//ToDo!: treat TB Pente tournaments differently
+                return;
+            }
+            game -= 50;
+        }
+        long time = (new Date()).getTime() + 21L * 24L * 3600L * 1000L;
+        Date nowPlus21Days = new Date(time);
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(nowPlus21Days);
+        String tournamentBaseName = GridStateFactory.getDisplayName(game) + " " + cal.get(Calendar.YEAR);
+        String newName = findNextTournamentName(tournamentBaseName);
+        Date signupEndDate = new Date(time - 3600L * 1000L);
+        tourney.setName(newName);
+        tourney.setStartDate(nowPlus21Days);
+        tourney.setSignupEndDate(signupEndDate);
+        insertTourney(tourney);
+    }
+
     public void cancelTourney(int eid) throws Throwable {
         log4j.info("cancelTourney(" + eid + ")");
+        startAnotherTourney(eid);
         backingStorer.cancelTourney(eid);
         flushCache();
     }
