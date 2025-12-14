@@ -9,7 +9,7 @@
 
 <h3>Pente.org Admin</h3>
 
-<% if (name.equals("rainwolf") || name.equals("zachburau")) { %>
+<% if (name.equals("rainwolf")) { %>
 
 <h2>Player Management</h2>
 <a href="setKOTHcrown.jsp">Assign/change KotH crown</a><br>

@@ -48,7 +48,8 @@
       response.setHeader("Refresh", refresh * 60 + "; URL=index.jsp?refresh=1");
    }
    TourneyStorer tourneyStorer = resources.getTourneyStorer();
-   List<Tourney> currentTournies = (List<Tourney>) tourneyStorer.getCurrentTournies();
+   List<Tourney> currentTournies = tourneyStorer.getCurrentTournies();
+   List<Tourney> upcomingTournies = tourneyStorer.getUpcomingTournies();
 
    TBGameStorer tbGameStorer = resources.getTbGameStorer();
    List<TBSet> currentSets = tbGameStorer.loadSets(dsgPlayerData.getPlayerID());
@@ -311,7 +312,7 @@
    <a href="/gameServer/myprofile">Edit Profile</a> | <a href="/gameServer/mymessages">My
    Messages <%= numMessages > 0 ? "(" + numMessages + " unread)" : "" %>
 </a> | <a href="/gameServer/social?social">Social</a>
-   <% if ("rainwolf".equals(dsgPlayerData.getName()) || "zachburau".equals(dsgPlayerData.getName())) { %>
+   <% if ("rainwolf".equals(dsgPlayerData.getName())) { %>
    | <a href="/gameServer/admin">adminLink</a> | <a href="/gameServer/who.jsp">who</a>
    <%}%>
 
@@ -382,8 +383,19 @@
          <%
             }
          %>
-
-            <li>New turn-based <a href="/gameServer/tournaments">tournaments</a></li>
+         <% String tourneyStr = "";
+            if (currentTournies.size() > 0) {
+               tourneyStr = currentTournies.size() + " ongoing";
+            }
+            if (upcomingTournies.size() > 0) {
+               if (!tourneyStr.equals("")) {
+                  tourneyStr += ", ";
+               }
+               tourneyStr += upcomingTournies.size() + " upcoming";
+            }
+            tourneyStr = "(" + tourneyStr + ")";
+         %>
+            <li>New turn-based <a href="/gameServer/tournaments">tournaments</a> <%=tourneyStr%></li>
          <%--    <li>New live speed-pente <a href="/gameServer/tournaments">tournament</a>, this is a tournament to test the code, if the code fails, the tournament will be aborted. More info <a href="/gameServer/forums/thread.jspa?forumID=2&threadID=232320">here.</a>--%>
          <%--    <li>Live (Speed) Test Tournament: <a href="/gameServer/tournaments">Test Tournament</a>--%>
          <%--            <br>--%>
