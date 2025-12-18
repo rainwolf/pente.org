@@ -197,6 +197,10 @@ public class CacheTourneyStorer implements TourneyStorer {
 
         completedTournies = null;
         currentTournies = null;
+
+        if (tourney.isTurnBased()) {
+            startAnotherTourney(tourney.getEventID());
+        }
     }
 
     private boolean compareRestrictions(int eid1, int eid2) throws Throwable {
