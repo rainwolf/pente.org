@@ -152,6 +152,9 @@ public class Tourney {
     }
 
     public List<Restriction> getRestrictions() {
+        if (restrictions == null) {
+            restrictions = new ArrayList<>();
+        }
         return restrictions;
     }
 
