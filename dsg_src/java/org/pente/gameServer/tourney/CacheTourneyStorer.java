@@ -669,6 +669,7 @@ public class CacheTourneyStorer implements TourneyStorer {
             penteAmateursTourney.setSignupEndDate(signupEndDate);
             insertTourney(penteAmateursTourney);
         }
+        flushCache();
     }
 
     public void cancelTourney(int eid) throws Throwable {
