@@ -1,3 +1,6 @@
 pentai/
+pentai.tar.gz
 dockerMain/db/
 dockerReplica/db/
+dsg_src/java/
+dockerMain/dbInit/penteDBdocker*
