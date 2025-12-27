@@ -9,7 +9,7 @@ openssl req -x509 -out localhost.crt -keyout localhost.key \
   -subj '/CN=localhost' -extensions EXT -config <( \
    printf "[dn]\nCN=localhost\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:localhost\nkeyUsage=digitalSignature\nextendedKeyUsage=serverAuth")
 
-openssl pkcs12 -export -in localhost.crt -inkey localhost.key -out fullchain_and_key.p12 -password pass:"$SSL_PWD" -name tomcat
+openssl pkcs12 -export -in localhost.crt -inkey localhost.key -out fullchain_and_key.p12 -password pass:"$SSL_PWD" -name tomcat -legacy
 keytool -importkeystore -deststorepass "$SSL_PWD" -destkeypass "$SSL_PWD" -destkeystore MyDSKeyStore.jks -srckeystore fullchain_and_key.p12 -srcstoretype PKCS12 -srcstorepass "$SSL_PWD" -alias tomcat -deststoretype pkcs12
 
 mv MyDSKeyStore.jks ./dockerMain/MyDSKeyStore.jks
