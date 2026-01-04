@@ -3,8 +3,8 @@ package org.pente.gameServer.server;
 import java.io.*;
 import java.util.*;
 
-import javax.mail.*;
-import javax.mail.internet.*;
+import jakarta.mail.*;
+import jakarta.mail.internet.*;
 
 import org.apache.log4j.*;
 

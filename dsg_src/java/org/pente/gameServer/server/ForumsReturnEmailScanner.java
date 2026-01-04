@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.*;
 import java.sql.*;
 
-import javax.mail.*;
+import jakarta.mail.*;
 
 import org.apache.log4j.*;
 

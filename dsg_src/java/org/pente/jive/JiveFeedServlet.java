@@ -8,7 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Collections;
 import java.util.Comparator;
-import javax.mail.Message;
+import jakarta.mail.Message;
 import jakarta.servlet.http.HttpServlet;
 
 import com.sun.syndication.io.FeedException;
