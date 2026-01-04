@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 open ~/mariposa/coding/keysCertificatesStuff.dmg
 
@@ -8,7 +8,7 @@ export P=$(dirname "$0")
 cd letsencrypt
 cd pente.org
 
-openssl pkcs12 -export -in fullchain.crt -inkey pente.org.key -out fullchain_and_key.p12 -password pass:"$SSL_PWD" -name tomcat
+openssl pkcs12 -export -in fullchain.crt -inkey pente.org.key -out fullchain_and_key.p12 -password pass:"$SSL_PWD" -name tomcat -legacy
 keytool -importkeystore -deststorepass "$SSL_PWD" -destkeypass "$SSL_PWD" -destkeystore MyDSKeyStore.jks -srckeystore fullchain_and_key.p12 -srcstoretype PKCS12 -srcstorepass "$SSL_PWD" -alias tomcat -deststoretype pkcs12
 #scp MyDSKeyStore.jks rainwolf@development.pente.org:/var/lib/tomcat9/webapps/
 #scp MyDSKeyStore.jks rainwolf@development.pente.org:~/dockerMain/
