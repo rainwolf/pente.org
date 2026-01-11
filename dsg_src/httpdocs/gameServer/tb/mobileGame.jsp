@@ -60,7 +60,7 @@
       moves = ",";
    }
 // if (loggedInStr.equals("rainwolf") || loggedInStr.equals(p1.getName()) || loggedInStr.equals(p2.getName())) {
-   if (loggedInStr.equals(p1.getName()) || loggedInStr.equals(p2.getName())) {
+   if ("rainwolf".equals(loggedInStr) || loggedInStr.equals(p1.getName()) || loggedInStr.equals(p2.getName())) {
       for (TBMessage m : game.getMessages()) {
          // bug in URLConverter
          if (m.getMessage().length() == 1) {
@@ -1118,30 +1118,24 @@
       }
       // document.getElementById("messageBox").innerHTML = "message";
       if (until <= moves.length) {
-         if (messageMoveNums.indexOf(until) !== -1) {
-            <% if (true) {
-               DSGPlayerData d = null;
-            %>
-
-            let encMessage = messages[messageMoveNums.indexOf(until)];
-            // let message = encMessage.replace("\\",",");
-            let msgr = myName;
-            if (((until + 1) % 2) === 0) {
-               msgr = p1Name;
-               <%  d = p1; %>
-            } else {
-               msgr = p2Name;
-               <%  d = p2; %>
-            }
+         if ((game !== 63 && messageMoveNums.indexOf(until) !== -1) || (game === 63 && messageMoveNums.indexOf(until - 2) !== -1)) {
+            let msgr, msgIdx;
             if (game === 63) {
                if ((Math.floor((until - 1) / 2) % 2) === 0) {
                   msgr = p1Name;
                } else {
                   msgr = p2Name;
                }
+               msgIdx = until - 2;
+            } else {
+               if (((until + 1) % 2) === 0) {
+                  msgr = p1Name;
+               } else {
+                  msgr = p2Name;
+               }
+               msgIdx = until;
             }
-            document.getElementById("messageBox").innerHTML = "<b>" + msgr + "</b>" + ": " + messages[messageMoveNums.indexOf(until)].replace("[host]", window.location.host);
-            <% } %>
+            document.getElementById("messageBox").innerHTML = "<b>" + msgr + "</b>" + ": " + messages[messageMoveNums.indexOf(msgIdx)].replace("[host]", window.location.host);
          } else {
             document.getElementById("messageBox").innerHTML = "";
          }

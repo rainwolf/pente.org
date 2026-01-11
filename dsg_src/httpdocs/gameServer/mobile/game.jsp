@@ -14,6 +14,8 @@
    String loggedInStr = (String) request.getAttribute("name");
    if (loggedInStr == null) {
       response.sendRedirect("../index.jsp");
+   } else {
+      loggedInStr = loggedInStr.toLowerCase();
    } %>
 
 <%
@@ -61,7 +63,7 @@ sid=<%=set.getSetId()%>
    DSGPlayerData player1 = dsgPlayerStorer.loadPlayer(tbGame.getPlayer1Pid()), player2 = dsgPlayerStorer.loadPlayer(tbGame.getPlayer2Pid()), visitor = dsgPlayerStorer.loadPlayer(loggedInStr);
    DSGPlayerGameData p1Data = player1.getPlayerGameData(tbGame.getGame());
 
-   if (loggedInStr.equals(player1.getName()) || loggedInStr.equals(player2.getName())) {
+   if ("rainwolf".equals(loggedInStr) || loggedInStr.equals(player1.getName()) || loggedInStr.equals(player2.getName())) {
 
       for (TBMessage m : tbGame.getMessages()) {
          // bug in URLConverter
