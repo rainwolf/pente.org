@@ -209,4 +209,8 @@ public interface DSGPlayerData extends Cloneable {
     public void setTimezone(String zone);
 
     public String getTimezone();
+
+    public boolean isMobileAdult();
+
+    public void setMobileAdult(boolean isAdult);
 }

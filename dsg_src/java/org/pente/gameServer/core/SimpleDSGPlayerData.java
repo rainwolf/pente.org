@@ -61,6 +61,16 @@ public class SimpleDSGPlayerData implements DSGPlayerData, java.io.Serializable 
     private transient long avatarLastModified;
     private String note;
 
+    private boolean mobileAdult;
+
+    public boolean isMobileAdult() {
+        return mobileAdult;
+    }
+
+    public void setMobileAdult(boolean mobileAdult) {
+        this.mobileAdult = mobileAdult;
+    }
+
     private Vector<DSGPlayerGameData> gameData;
 
     public SimpleDSGPlayerData() {

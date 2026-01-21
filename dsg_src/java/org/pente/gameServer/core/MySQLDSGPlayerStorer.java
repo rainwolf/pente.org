@@ -159,6 +159,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                                 "last_login_date = ?, " +
                                 "de_register_date = ?, " +
                                 "status = ?, " +
+                                "mobile_adult = ?, " +
                                 // don't ever update hash_code since
                                 // players may update password then
                                 // use old (now invalid) hash_code
@@ -186,6 +187,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                     stmt.setTimestamp(paramNum++, null);
                 }
                 stmt.setString(paramNum++, Character.valueOf(dsgPlayerData.getStatus()).toString());
+                stmt.setString(paramNum++, dsgPlayerData.isMobileAdult() ? "Y" : "N");
                 stmt.setTimestamp(paramNum++, new Timestamp(dsgPlayerData.getLastUpdateDate().getTime()));
                 stmt.setString(paramNum++, Character.valueOf(dsgPlayerData.getPlayerType()).toString());
                 stmt.setString(paramNum++, dsgPlayerData.getNote());
@@ -231,7 +233,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                                 "dsg_player.de_register_date, dsg_player.status, " +
                                 "dsg_player.hash_code, dsg_player.last_update_date, " +
                                 "dsg_player.player_type, dsg_player.note, dsg_player.admin, " +
-                                "dsg_player.timezone " +
+                                "dsg_player.timezone, dsg_player.mobile_adult " +
                                 "from player, dsg_player " +
                                 "where player.pid = dsg_player.pid " +
                                 "and player.pid = ?");
@@ -289,7 +291,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                                 "dsg_player.de_register_date, dsg_player.status, " +
                                 "dsg_player.hash_code, dsg_player.last_update_date, " +
                                 "dsg_player.player_type, dsg_player.note, dsg_player.admin, " +
-                                "dsg_player.timezone " +
+                                "dsg_player.timezone, dsg_player.mobile_adult " +
                                 "from player, dsg_player " +
                                 "where player.pid = dsg_player.pid " +
                                 "and player.name = ? " +
@@ -585,6 +587,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
         dsgPlayerData.setNote(result.getString(resultNum++));
         dsgPlayerData.setAdmin(result.getString(resultNum++).equals("Y"));
         dsgPlayerData.setTimezone(result.getString(resultNum++));
+        dsgPlayerData.setMobileAdult(result.getString(resultNum++).equals("Y"));
 
         return dsgPlayerData;
     }
