@@ -51,6 +51,10 @@ public class BackgroundMailer extends BackgroundWorker {
         Work w = (Work) obj;
         DSGMessage m = w.message;
 
+        if (!w.email && !w.ccSender) {
+            return;
+        }
+
         try {
             log4j.info("Email message " + m.getMid() + ", cc=" + w.ccSender);
 
@@ -81,8 +85,6 @@ public class BackgroundMailer extends BackgroundWorker {
             } else if (w.ccSender) {
                 message.addRecipient(Message.RecipientType.TO,
                         new InternetAddress(fromData.getEmail(), fromData.getName()));
-            } else {
-                return;
             }
             //message.addRecipient(Message.RecipientType.BCC,
             //	new InternetAddress("dweebo@pente.org", "dweebo"));

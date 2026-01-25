@@ -89,9 +89,11 @@ public class CacheMessageStorer implements DSGMessageStorer {
 
         if (emailEnabled) {
             try {
-                List toPrefs = dsgPlayerStorer.loadPlayerPreferences(
+                DSGPlayerData toData = dsgPlayerStorer.loadPlayer(message.getToPid());
+                DSGPlayerData fromData = dsgPlayerStorer.loadPlayer(message.getFromPid());
+                List<DSGPlayerPreference> toPrefs = dsgPlayerStorer.loadPlayerPreferences(
                         message.getToPid());
-                List fromPrefs = dsgPlayerStorer.loadPlayerPreferences(
+                List<DSGPlayerPreference> fromPrefs = dsgPlayerStorer.loadPlayerPreferences(
                         message.getFromPid());
 
                 //assumes that all users want to send messages via email
@@ -99,18 +101,20 @@ public class CacheMessageStorer implements DSGMessageStorer {
                 boolean email = true;
                 // cc sender is opt-in however
                 boolean ccSender = false;
-                if (ccSenderPossible) {
-                    for (Iterator it = fromPrefs.iterator(); it.hasNext(); ) {
-                        DSGPlayerPreference pref = (DSGPlayerPreference) it.next();
-                        if (pref.getName().equals("emailSentDsgMessages")) {
-                            ccSender = ((Boolean) pref.getValue()).booleanValue();
+                if (ccSenderPossible && fromData.getEmailValid()) {
+                    for (DSGPlayerPreference fromPref : fromPrefs) {
+                        if (fromPref.getName().equals("emailSentDsgMessages")) {
+                            ccSender = ((Boolean) fromPref.getValue()).booleanValue();
                         }
                     }
                 }
-                for (Iterator it = toPrefs.iterator(); it.hasNext(); ) {
-                    DSGPlayerPreference pref = (DSGPlayerPreference) it.next();
-                    if (pref.getName().equals("emailDsgMessages")) {
-                        email = ((Boolean) pref.getValue()).booleanValue();
+                if (!toData.getEmailValid()) {
+                    email = false;
+                } else {
+                    for (DSGPlayerPreference pref : toPrefs) {
+                        if (pref.getName().equals("emailDsgMessages")) {
+                            email = ((Boolean) pref.getValue()).booleanValue();
+                        }
                     }
                 }
 
