@@ -495,6 +495,10 @@
         <servlet-name>AgeVerificationServlet</servlet-name>
         <servlet-class>org.pente.gameServer.client.web.AgeVerificationServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>EmailVerificationServlet</servlet-name>
+        <servlet-class>org.pente.gameServer.client.web.EmailVerificationServlet</servlet-class>
+    </servlet>
 
 
     <servlet>
@@ -735,6 +739,10 @@
     <servlet-mapping>
         <servlet-name>AgeVerificationServlet</servlet-name>
         <url-pattern>/gameServer/ageVerification</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>EmailVerificationServlet</servlet-name>
+        <url-pattern>/verifyEmail</url-pattern>
     </servlet-mapping>
 
     <welcome-file-list>

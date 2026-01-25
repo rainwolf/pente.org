@@ -19,6 +19,7 @@
 
 package org.pente.gameServer.core;
 
+import java.security.MessageDigest;
 import java.util.*;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -87,7 +88,6 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
             PreparedStatement stmt = null;
 
             try {
-
                 con = dbHandler.getConnection();
 
                 // store the player in the player table used by the dsg database
@@ -105,7 +105,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                         " last_login_date, register_date, status, " +
                         " hash_code, last_update_date, player_type, " +
                         " timezone) " +
-                        "VALUES (? , ?, ?, 'Y', ?, ?, ?, ?, ?, " +
+                        "VALUES (? , ?, ?, 'N', ?, ?, ?, ?, ?, " +
                         "       sysdate(), sysdate(), 'A', " +
                         "       old_password(CONCAT(pid, password)), sysdate(), ?, ?)");
                 stmt.setLong(1, dsgPlayerData.getPlayerID());
@@ -2072,6 +2072,107 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
 
         } catch (SQLException sq) {
             throw new DSGPlayerStoreException("Problem updateiOSPaymentDate pid: " + pid, sq);
+        }
+    }
+
+    public String insertEmailVerificationCode(long playerID) throws DSGPlayerStoreException {
+        try {
+
+            Connection con = null;
+            PreparedStatement stmt = null;
+
+            try {
+                // generate a random code, sha256 it and create a hex string from that
+                String rawCode = Long.toString(System.currentTimeMillis()) + "-" + Long.toString(playerID) + "-" + Double.toString(Math.random());
+                MessageDigest digest = MessageDigest.getInstance("SHA-256");
+                byte[] hash = digest.digest(rawCode.getBytes("UTF-8"));
+                StringBuilder hexString = new StringBuilder();
+                for (byte b : hash) {
+                    String hex = Integer.toHexString(0xff & b);
+                    if (hex.length() == 1) hexString.append('0');
+                    hexString.append(hex);
+                }
+                String code = hexString.toString();
+
+                con = dbHandler.getConnection();
+
+                stmt = con.prepareStatement(
+                        "insert into dsg_email_verification " +
+                                "(pid, verification_code) " +
+                                "values(?, ?) " +
+                                "ON DUPLICATE KEY UPDATE verification_code=VALUES(verification_code)");
+                stmt.setLong(1, playerID);
+                stmt.setString(2, code);
+
+                stmt.executeUpdate();
+
+                return code;
+
+            } finally {
+                if (stmt != null) {
+                    stmt.close();
+                }
+                if (con != null) {
+                    dbHandler.freeConnection(con);
+                }
+            }
+        } catch (Throwable t) {
+            throw new DSGPlayerStoreException("Insert email verification code problem", t);
+        }
+    }
+
+    public long verifyEmailCode(String code) throws DSGPlayerStoreException {
+        try {
+            Connection con = null;
+            PreparedStatement stmt = null;
+            ResultSet result = null;
+
+            try {
+                con = dbHandler.getConnection();
+
+                stmt = con.prepareStatement(
+                        "select pid " +
+                                "from dsg_email_verification " +
+                                "where verification_code = ?");
+                stmt.setString(1, code);
+                result = stmt.executeQuery();
+
+                if (result.next()) {
+                    long playerID = result.getLong(1);
+                    result.close();
+                    stmt.close();
+
+                    stmt = con.prepareStatement(
+                            "delete from dsg_email_verification " +
+                                    "where pid = ?");
+                    stmt.setLong(1, playerID);
+                    stmt.executeUpdate();
+
+                    result.close();
+                    stmt.close();
+
+                    stmt = con.prepareStatement("update dsg_player set email_valid = 'Y' where pid = ?");
+                    stmt.setLong(1, playerID);
+                    stmt.executeUpdate();
+
+                    return playerID;
+                } else {
+                    throw new DSGPlayerStoreException("Invalid or expired verification code");
+                }
+
+            } finally {
+                if (result != null) {
+                    result.close();
+                }
+                if (stmt != null) {
+                    stmt.close();
+                }
+                if (con != null) {
+                    dbHandler.freeConnection(con);
+                }
+            }
+        } catch (Throwable t) {
+            throw new DSGPlayerStoreException("Verify email code problem", t);
         }
     }
 }

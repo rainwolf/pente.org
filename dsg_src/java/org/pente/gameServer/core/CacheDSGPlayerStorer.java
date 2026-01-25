@@ -673,6 +673,14 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         this.notificationServer = notificationServer;
     }
 
+    public String insertEmailVerificationCode(long playerID) throws DSGPlayerStoreException {
+        return basePlayerStorer.insertEmailVerificationCode(playerID);
+    }
+
+    public long verifyEmailCode(String code) throws DSGPlayerStoreException {
+        return basePlayerStorer.verifyEmailCode(code);
+    }
+
 }
 
 

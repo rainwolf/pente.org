@@ -175,7 +175,6 @@ public class RegisterServlet extends HttpServlet {
                 registerResult = registerHandler.register(
                         name, password, encryptedPassword, email, emailVisible, emailUpdates,
                         location, timezone, sex, age, homepage);
-
             }
 
             switch (registerResult) {
@@ -236,9 +235,11 @@ public class RegisterServlet extends HttpServlet {
                     try {
                         dsgPlayerData = dsgPlayerStorer.loadPlayer(name);
 
+                        String code = dsgPlayerStorer.insertEmailVerificationCode(dsgPlayerData.getPlayerID());
+
                         if (emailEnabled) {
                             sendRegistrationEmail(dsgPlayerData.getPlayerID(),
-                                    name, password, email);
+                                    name, password, email, code);
                         } else {
                             log4j.info("Email not enabled, no registration email sent.");
                         }
@@ -266,10 +267,10 @@ public class RegisterServlet extends HttpServlet {
         }
     }
 
-    private void sendRegistrationEmail(long playerID, String name, String password, String email) {
+    private void sendRegistrationEmail(long playerID, String name, String password,
+                                       String email, String emailVerificationCode) {
 
         try {
-
             String message;
             String line;
             String lineSeparator = "\n";
@@ -277,6 +278,9 @@ public class RegisterServlet extends HttpServlet {
             BufferedReader fileIn = new BufferedReader(new FileReader(registrationEmail));
 
             message = "Dear " + name + "," + lineSeparator + lineSeparator;
+
+            message += "Please verify your email address with the link below" + lineSeparator;
+            message += "https://www.pente.org/verifyEmail?code=" + emailVerificationCode + lineSeparator + lineSeparator;
 
             while (true) {
                 line = fileIn.readLine();

@@ -92,4 +92,8 @@ public interface DSGPlayerStorer {
             int game, boolean showProvisional,
             boolean showInactive, int playerType)
             throws DSGPlayerStoreException;
+
+    public String insertEmailVerificationCode(long playerID) throws DSGPlayerStoreException;
+
+    public long verifyEmailCode(String code) throws DSGPlayerStoreException;
 }

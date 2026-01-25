@@ -579,7 +579,7 @@ public class CacheTourneyStorer implements TourneyStorer {
         return backingStorer.findNextTournamentName(baseName);
     }
 
-    private void startAnotherTourney(int eid) throws Throwable {
+    private synchronized void startAnotherTourney(int eid) throws Throwable {
         log4j.info("startAnotherTourney from (" + eid + ")");
         Tourney tourney = getTourney(eid);
         Tourney penteAmateursTourney = null;
