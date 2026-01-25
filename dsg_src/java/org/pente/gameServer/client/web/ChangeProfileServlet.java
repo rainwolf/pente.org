@@ -221,11 +221,39 @@ public class ChangeProfileServlet extends HttpServlet {
                             // if user changed their email address
                             if (!dsgPlayerData.getEmail().equals(email)) {
                                 dsgPlayerData.setEmail(email);
+                                dsgPlayerData.setEmailValid(false);
+                                String emailCode = dsgPlayerStorer.insertEmailVerificationCode(dsgPlayerData.getPlayerID());
+                                try {
+                                    String message;
+                                    String lineSeparator = "\n";
+
+                                    message = "Dear " + dsgPlayerData.getName() + "," + lineSeparator + lineSeparator;
+
+                                    message += "Please verify your email address with the link below" + lineSeparator;
+                                    message += "https://www.pente.org/verifyEmail?code=" + emailCode + lineSeparator + lineSeparator;
+
+                                    message += lineSeparator;
+
+                                    String fromEmail = System.getProperty("mail.smtp.user");
+                                    SendMail2.sendMail(
+                                            "Pente.org",
+                                            fromEmail,
+                                            dsgPlayerData.getName(),
+                                            email,
+                                            null, null,
+                                            "Pente.org email verification",
+                                            message,
+                                            false,
+                                            null);
+
+                                } catch (Throwable t) {
+                                    log4j.error("Problem sending registration email for " + name, t);
+                                }
                             }
                             // always reset the email valid to true on any update
                             // in case an email was sent to the correct address
                             // but just didn't get through 1 time
-                            dsgPlayerData.setEmailValid(true);
+//                            dsgPlayerData.setEmailValid(true);
 
                             dsgPlayerData.setEmailVisible(emailVisible);
                             dsgPlayerData.setAge(age);
