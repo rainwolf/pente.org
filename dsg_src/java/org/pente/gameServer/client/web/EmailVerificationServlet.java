@@ -32,16 +32,16 @@ public class EmailVerificationServlet extends HttpServlet {
             if (verificationCode == null || verificationCode.isEmpty()) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 out.print("Missing verification code.");
-                return;
+            } else {
+                long pid = dsgPlayerStorer.verifyEmailCode(verificationCode);
+                DSGPlayerData player = dsgPlayerStorer.loadPlayer(pid);
+                dsgPlayerStorer.refreshPlayer(player.getName());
+                out.print("Email successfully verified for " + player.getName() + ". Thank you!");
             }
-
-            long pid = dsgPlayerStorer.verifyEmailCode(verificationCode);
-            DSGPlayerData player = dsgPlayerStorer.loadPlayer(pid);
-            out.print("Email successfully verified for " + player.getName() + ". Thank you!");
         } catch (Exception e) {
             cat.error("Error during email verification", e);
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            out.print("An error occurred while verifying your email. Please try again later.");
+            out.print("An error occurred while verifying your email. You are either already verified or please try again later.");
         }
 
     }
