@@ -123,7 +123,7 @@
                   filters.applyFilters(0, m.getMessage())) + ",";
             }
             seqNums += m.getSeqNbr() + ",";
-            moveNums += m.getMoveNum() + ",";
+            moveNums += (m.getMoveNum() + (tbGame.getGame() == GridStateFactory.TB_CONNECT6 ? 2 : 0)) + ",";
             dates += m.getDate().getTime() + ",";
             if (tbGame.getPlayer1Pid() == m.getPid()) {
                players += "1,";

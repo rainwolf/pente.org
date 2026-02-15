@@ -9,12 +9,6 @@ import jakarta.servlet.http.*;
 import org.apache.log4j.*;
 
 import org.pente.game.*;
-import org.pente.gameDatabase.GameStorerSearchRequestData;
-import org.pente.gameDatabase.GameStorerSearchRequestFilterData;
-import org.pente.gameDatabase.GameStorerSearchResponseData;
-import org.pente.gameDatabase.SimpleGameStorerSearchRequestData;
-import org.pente.gameDatabase.SimpleGameStorerSearchRequestFilterData;
-import org.pente.gameDatabase.SimpleGameStorerSearchResponseData;
 import org.pente.gameServer.core.*;
 import org.pente.gameServer.server.*;
 import org.pente.turnBased.*;
