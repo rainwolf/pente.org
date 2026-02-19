@@ -7,13 +7,13 @@
       Resources.class.getName());
 
    List signup = resources.getTourneyStorer().getUpcomingTournies();
-   List currentT = resources.getTourneyStorer().getCurrentTournies();
-   List completed = resources.getTourneyStorer().getCompletedTournies();
+   List<Tourney> currentT = resources.getTourneyStorer().getCurrentTournies();
+   List<Tourney> completed = resources.getTourneyStorer().getCompletedTournies();
    TourneyStorer tourneyStorer = resources.getTourneyStorer();
 
    List<Tourney> completedDetails = new ArrayList();
-   for (Object d : completed) {
-      completedDetails.add(tourneyStorer.getTourney(((Tourney) d).getEventID()));
+   for (Tourney d : completed) {
+      completedDetails.add(tourneyStorer.getTourney(d.getEventID()));
    }
    Collections.sort(completedDetails, (o1, o2) -> o2.getStartDate().compareTo(o1.getStartDate()));
 
@@ -85,6 +85,8 @@
    Tourney tbPenteOpen = getLastPenteOpenTBTourney(completedDetails);
    Tourney tbPenteBelow1800 = getLastPenteUnder1800TBTourney(completedDetails);
    Tourney tbPenteMasters = getLastPenteMastersTBTourney(completedDetails);
+   Tourney tbSwap2Pente = getLastTBTourney(completedDetails, GridStateFactory.TB_SWAP2PENTE);
+   Tourney tbSwap2Keryo = getLastTBTourney(completedDetails, GridStateFactory.TB_SWAP2KERYO);
 
    Tourney speedPente = getLastTBTourney(completedDetails, GridStateFactory.SPEED_PENTE);
 %>
@@ -115,8 +117,7 @@
          There are currently no tournaments in progress.
             <% }
          else {
-             for (Iterator it = currentT.iterator(); it.hasNext();) {
-               Tourney d = (Tourney) it.next();
+             for (Tourney d: currentT) {
                Tourney t = tourneyStorer.getTourney(d.getEventID());
                boolean live = !t.isTurnBased();
                if (t.getNumRounds() > 0) { %>
@@ -336,6 +337,36 @@
             <td align="center"><img src="/gameServer/avatar?name=<%=tbGPente.getWinner()%>"
                                     style="width:125px;height:125px;"></td>
             <td align="center"><img src="/gameServer/avatar?name=<%=tbOPente.getWinner()%>"
+                                    style="width:125px;height:125px;"></td>
+         </tr>
+      </table>
+   </td>
+</tr>
+<tr>
+   <td align="center">
+      <table width="80%" border="1" cellpadding="2" cellspacing="0" bordercolor="black">
+         <tr bgcolor="<%= bgColor1 %>">
+            <td align="center" width="33%"><font color="white">TB Swap2-Pente</font></td>
+            <td align="center" width="33%"><font color="white">TB Swap2-Keryo Pente</font></td>
+         </tr>
+         <tr>
+            <td align="center"><a
+               href="statusRound.jsp?eid=<%= tbSwap2Pente.getEventID() %>&round=<%= tbSwap2Pente.getNumRounds() %>"><%=tbSwap2Pente.getName()%>
+            </a></td>
+            <td align="center"><a
+               href="statusRound.jsp?eid=<%= tbGo9x9.getEventID() %>&round=<%= tbSwap2Keryo.getNumRounds() %>"><%=tbSwap2Keryo.getName()%>
+            </a></td>
+         </tr>
+         <tr>
+            <td align="center"><a href="../profile?viewName=<%=tbSwap2Pente.getWinner()%>"><%=tbSwap2Pente.getWinner()%>
+            </a> <img src="/gameServer/images/bcrown.gif"></td>
+            <td align="center"><a href="../profile?viewName=<%=tbSwap2Keryo.getWinner()%>"><%=tbSwap2Keryo.getWinner()%>
+            </a> <img src="/gameServer/images/bcrown.gif"></td>
+         </tr>
+         <tr>
+            <td align="center"><img src="/gameServer/avatar?name=<%=tbSwap2Pente.getWinner()%>"
+                                    style="width:125px;height:125px;"></td>
+            <td align="center"><img src="/gameServer/avatar?name=<%=tbSwap2Keryo.getWinner()%>"
                                     style="width:125px;height:125px;"></td>
          </tr>
       </table>
