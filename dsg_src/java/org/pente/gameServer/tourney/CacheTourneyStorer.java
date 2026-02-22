@@ -1,16 +1,17 @@
 package org.pente.gameServer.tourney;
 
-import java.util.*;
-
-import org.apache.log4j.*;
-
-import org.pente.game.*;
+import org.apache.log4j.Category;
+import org.pente.game.GridStateFactory;
+import org.pente.gameServer.core.CacheDSGPlayerStorer;
+import org.pente.gameServer.core.DSGPlayerData;
+import org.pente.gameServer.core.DSGPlayerGameData;
 import org.pente.gameServer.server.Resources;
 import org.pente.kingOfTheHill.CacheKOTHStorer;
 import org.pente.kingOfTheHill.KOTHStorer;
 import org.pente.notifications.NotificationServer;
 import org.pente.turnBased.CacheTBStorer;
-import org.pente.gameServer.core.*;
+
+import java.util.*;
 
 public class CacheTourneyStorer implements TourneyStorer {
 
@@ -525,6 +526,7 @@ public class CacheTourneyStorer implements TourneyStorer {
             if (players.size() < 2) {
                 log4j.info("Not enough players to start tournament " + tournament.getName() +
                         ". Cancelling tournament.");
+                tournament.setStatus('S');
                 cancelTourney(tourneyID);
             } else {
                 log4j.info("Starting tournament " + tournament.getName() +
@@ -586,32 +588,36 @@ public class CacheTourneyStorer implements TourneyStorer {
         String tournamentBaseName = null;
         String amateursBaseName = null;
 
-        long time = (new Date()).getTime() + 21L * 24L * 3600L * 1000L;
-        Date nowPlus21Days = new Date(time);
+        long time = (new Date()).getTime() + (tourney.getStatus() == 'S' ? 31L : 21L) * 24L * 3600L * 1000L;
+        Date nowPlus21or31Days = new Date(time);
         Calendar cal = Calendar.getInstance();
-        cal.setTime(nowPlus21Days);
+        cal.setTime(nowPlus21or31Days);
         Date signupEndDate = new Date(time - 3600L * 1000L);
 
         int game = tourney.getGame();
         if (game > 50) {
+            String dateSuffix = cal.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.getDefault()) +
+                    " " + cal.get(Calendar.YEAR);
             if (game == GridStateFactory.TB_PENTE) {
-                if (tourney.getRestrictions().stream().anyMatch(restriction -> (restriction.getType() == Restriction.RATING_RESTRICTION_ABOVE) ||
-                        (restriction.getType() == Restriction.RATING_RESTRICTION_BELOW))) {
+                if (tourney.getRestrictions().stream().anyMatch(restriction ->
+                        (restriction.getType() == Restriction.RATING_RESTRICTION_ABOVE) ||
+                                (restriction.getType() == Restriction.RATING_RESTRICTION_BELOW))) {
                     if (getCurrentTournies().stream().anyMatch(t ->
                             (t.getGame() == GridStateFactory.TB_PENTE) &&
-                                    t.getRestrictions().stream().anyMatch(restriction -> (restriction.getType() == Restriction.RATING_RESTRICTION_ABOVE) ||
-                                    (restriction.getType() == Restriction.RATING_RESTRICTION_BELOW))
-                            && !t.isComplete())) {
+                                    t.getRestrictions().stream().anyMatch(restriction ->
+                                            (restriction.getType() == Restriction.RATING_RESTRICTION_ABOVE) ||
+                                                    (restriction.getType() == Restriction.RATING_RESTRICTION_BELOW))
+                                    && !t.isComplete())) {
                         log4j.info("Pente Masters or Amateurs still ongoing, not starting Pente Open");
                         return;
                     }  // if no masters/amateurs ongoing, start open next
-                    tournamentBaseName = "Pente Open " + cal.get(Calendar.YEAR);
+                    tournamentBaseName = "Pente Open " + dateSuffix;
                     tourney = null;
-                    for (Tourney t: getCompletedTournies()) { // sorted already
+                    for (Tourney t : getCompletedTournies()) { // sorted already
                         if ((t.getGame() == GridStateFactory.TB_PENTE) &&
-                            t.getRestrictions().stream().noneMatch(r ->
-                                (r.getType() == Restriction.RATING_RESTRICTION_ABOVE) ||
-                                (r.getType() == Restriction.RATING_RESTRICTION_BELOW))) {
+                                t.getRestrictions().stream().noneMatch(r ->
+                                        (r.getType() == Restriction.RATING_RESTRICTION_ABOVE) ||
+                                                (r.getType() == Restriction.RATING_RESTRICTION_BELOW))) {
                             tourney = getTourney(t.getEventID());
                             break;
                         }
@@ -622,12 +628,12 @@ public class CacheTourneyStorer implements TourneyStorer {
                     }
 
                 } else { // open tournament just completed, start masters/amateurs next
-                    tournamentBaseName = "Pente Masters " + cal.get(Calendar.YEAR);
+                    tournamentBaseName = "Pente Masters " + dateSuffix;
                     tourney = null;
-                    for (Tourney t: getCompletedTournies()) { // sorted already
+                    for (Tourney t : getCompletedTournies()) { // sorted already
                         if ((t.getGame() == GridStateFactory.TB_PENTE) &&
                                 t.getRestrictions().stream().anyMatch(r ->
-                                                (r.getType() == Restriction.RATING_RESTRICTION_BELOW))) {
+                                        (r.getType() == Restriction.RATING_RESTRICTION_BELOW))) {
                             tourney = getTourney(t.getEventID());
                             break;
                         }
@@ -637,8 +643,8 @@ public class CacheTourneyStorer implements TourneyStorer {
                         return;
                     }
 
-                    amateursBaseName = "Pente Amateurs " + cal.get(Calendar.YEAR);
-                    for (Tourney t: getCompletedTournies()) { // sorted already
+                    amateursBaseName = "Pente Amateurs " + dateSuffix;
+                    for (Tourney t : getCompletedTournies()) { // sorted already
                         if ((t.getGame() == GridStateFactory.TB_PENTE) &&
                                 t.getRestrictions().stream().anyMatch(r ->
                                         (r.getType() == Restriction.RATING_RESTRICTION_ABOVE))) {
@@ -653,19 +659,18 @@ public class CacheTourneyStorer implements TourneyStorer {
                     }
                 }
             } else {
-                game -= 50; // only use to retrieve the game name
-                tournamentBaseName = GridStateFactory.getDisplayName(game) + " " + cal.get(Calendar.YEAR);
+                tournamentBaseName = GridStateFactory.getDisplayName(game - 50) + " " + dateSuffix;
             }
         }
         String newName = findNextTournamentName(tournamentBaseName);
         tourney.setName(newName);
-        tourney.setStartDate(nowPlus21Days);
+        tourney.setStartDate(nowPlus21or31Days);
         tourney.setSignupEndDate(signupEndDate);
         insertTourney(tourney);
         if (amateursBaseName != null) { // we're starting Pente Masters/Amateurs
             newName = findNextTournamentName(amateursBaseName);
             penteAmateursTourney.setName(newName);
-            penteAmateursTourney.setStartDate(nowPlus21Days);
+            penteAmateursTourney.setStartDate(nowPlus21or31Days);
             penteAmateursTourney.setSignupEndDate(signupEndDate);
             insertTourney(penteAmateursTourney);
         }
@@ -674,9 +679,9 @@ public class CacheTourneyStorer implements TourneyStorer {
 
     public void cancelTourney(int eid) throws Throwable {
         log4j.info("cancelTourney(" + eid + ")");
-        startAnotherTourney(eid);
         backingStorer.cancelTourney(eid);
         flushCache();
+        startAnotherTourney(eid);
     }
 
     public void destroy() {
