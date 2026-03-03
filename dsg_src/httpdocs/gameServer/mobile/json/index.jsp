@@ -5,23 +5,15 @@
                  org.pente.gameServer.tourney.*,
                  org.pente.gameServer.server.*,
                  org.pente.gameServer.client.web.*,
+                 org.pente.gameServer.mobile.*,
                  org.pente.message.*,
                  org.pente.kingOfTheHill.*,
-                 java.text.*,
-                 java.sql.*,
-                 java.util.Date,
-                 java.util.List,
+                 com.google.gson.Gson,
                  java.util.*,
                  org.apache.log4j.*"
 %>
 <%@ page contentType="application/json; charset=UTF-8" %>
-<%!
-   private static Category log4j = Category.getInstance("org.pente.gameServer.web.client.jsp");
-   private static String jsonStr(String s) {
-      if (s == null) return "null";
-      return "\"" + s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r") + "\"";
-   }
-%>
+<%! private static Category log4j = Category.getInstance("org.pente.gameServer.web.client.jsp"); %>
 <%
    String loginname = request.getParameter("name");
    String name = null;
@@ -99,8 +91,6 @@
          Utilities.organizeGames(myPID, currentSets, invitesTo, invitesFrom, myTurn, oppTurn);
          List<DSGMessage> messages = resources.getDsgMessageStorer().getMessages(myPID);
          TimeZone tz = TimeZone.getTimeZone(dsgPlayerData.getTimezone());
-         DateFormat messageDateFormat = new SimpleDateFormat("MM/dd/yy");
-         messageDateFormat.setTimeZone(tz);
          Collections.sort(messages, (m1,m2)-> (m2.getMid() - m1.getMid()));
 
          int openTBgames = 0;
@@ -268,262 +258,21 @@
 
          boolean isRainwolf = "rainwolf".equals(name);
          if (isRainwolf) { gamesLimit = 31; }
-         boolean noAds = isRainwolf || !dsgPlayerData.showAds();
-         boolean unlimitedGames = true;
          boolean hasTbGamesLimit = isRainwolf || (!dsgPlayerData.unlimitedTBGames() && !dsgPlayerData.unlimitedMobileTBGames());
-         boolean subscriber = dsgPlayerData.hasPlayerDonated();
-         boolean dbAccess = subscriber || dsgPlayerData.getRegisterDate().getTime() > System.currentTimeMillis() - 1000L*3600*24*30;
 
-         DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
-%>{"settings":{"noAds":<%=noAds%>,"unlimitedGames":<%=unlimitedGames%>,"tbGamesLimit":<%=(hasTbGamesLimit ? gamesLimit : -1)%>},"player":{"name":<%=jsonStr(dsgPlayerData.getName().toLowerCase())%>,"color":<%=(subscriber ? dsgPlayerData.getNameColorRGB() : 0)%>,"showAds":false,"subscriber":<%=subscriber%>,"livePlayers":<%=livePlayers%>,"dbAccess":<%=dbAccess%>,"emailMe":<%=emailMe%>,"onlineFollowing":<%=onlineFollowing%>,"personalizeAds":<%=personalizeAds%>},"kingOfTheHill":[<%
-         Hill hill;
-         long kingPid = 0;
-         boolean canSendOpenKotH = false, amImember = false;
-         boolean firstKoth = true;
-         for (int gameInt: CacheKOTHStorer.tbGames) {
-            hill = kothStorer.getHill(gameInt);
-            if (hill == null) { continue; }
-            kingPid = hill.getKing();
-            if (!subscriber) { canSendOpenKotH = kothStorer.canPlayerBeChallenged(gameInt, myPID); }
-            amImember = hill.hasPlayer(myPID);
-            if (!firstKoth) { %>,<% } firstKoth = false;
-%>{"numPlayers":<%=((hill != null) ? hill.getNumPlayers() : 0)%>,"amIMember":<%=((hill != null && amImember))%>,"iAmKing":<%=(kingPid == myPID)%>,"kingName":<%=jsonStr((kingPid != 0) ? dsgPlayerStorer.loadPlayer(kingPid).getName() : "")%>,"canChallenge":<%=(amImember && (subscriber || canSendOpenKotH))%>,"gameId":<%=gameInt%>}<%
-         }
-         for (int gameInt: CacheKOTHStorer.liveGames) {
-            if (gameInt%2 == 0) { continue; }
-            hill = kothStorer.getHill(gameInt);
-            if (hill == null || hill.getMembers().isEmpty()) { continue; }
-            kingPid = hill.getKing();
-            if (!subscriber) { canSendOpenKotH = kothStorer.canPlayerBeChallenged(gameInt, myPID); }
-            amImember = hill.hasPlayer(myPID);
-            if (!firstKoth) { %>,<% } firstKoth = false;
-%>{"numPlayers":<%=((hill != null) ? hill.getNumPlayers() : 0)%>,"amIMember":<%=((hill != null && amImember))%>,"iAmKing":<%=(kingPid == myPID)%>,"kingName":<%=jsonStr((kingPid != 0) ? dsgPlayerStorer.loadPlayer(kingPid).getName() : "")%>,"canChallenge":<%=(amImember && (subscriber || canSendOpenKotH))%>,"gameId":<%=gameInt%>}<%
-         }
-         for (int gameInt: CacheKOTHStorer.liveGames) {
-            if (gameInt%2 == 1) { continue; }
-            hill = kothStorer.getHill(gameInt);
-            if (hill == null || hill.getMembers().isEmpty()) { continue; }
-            kingPid = hill.getKing();
-            if (!subscriber) { canSendOpenKotH = kothStorer.canPlayerBeChallenged(gameInt, myPID); }
-            amImember = hill.hasPlayer(myPID);
-            if (!firstKoth) { %>,<% } firstKoth = false;
-%>{"numPlayers":<%=((hill != null) ? hill.getNumPlayers() : 0)%>,"amIMember":<%=((hill != null && amImember))%>,"iAmKing":<%=(kingPid == myPID)%>,"kingName":<%=jsonStr((kingPid != 0) ? dsgPlayerStorer.loadPlayer(kingPid).getName() : "")%>,"canChallenge":<%=(amImember && (subscriber || canSendOpenKotH))%>,"gameId":<%=gameInt%>}<%
-         }
-%>],"ratingStats":[<%
-         boolean firstStat = true;
-         Game[] statGames = GridStateFactory.getTbGames();
-         for (int i = 0; i < statGames.length; i++) {
-            DSGPlayerGameData dsgPlayerGameData = dsgPlayerData.getPlayerGameData(statGames[i].getId());
-            if (dsgPlayerGameData == null || dsgPlayerGameData.getTotalGames() == 0) { continue; }
-            if (!firstStat) { %>,<% } firstStat = false;
-%>{"gameName":<%=jsonStr((statGames[i].getId()>50?"tb-":"") + GridStateFactory.getGameName(statGames[i].getId()).replace("Speed ", "Speed-"))%>,"rating":<%=(int) Math.round(dsgPlayerGameData.getRating())%>,"totalGames":<%=dsgPlayerGameData.getTotalGames()%>,"tourneyWinner":<%=dsgPlayerGameData.getTourneyWinner()%>,"lastGameDate":<%=jsonStr(dateFormat.format(dsgPlayerGameData.getLastGameDate()))%>,"gameId":<%=statGames[i].getId()%>}<%
-         }
-         statGames = GridStateFactory.getNormalGames();
-         for (int i = 0; i < statGames.length; i++) {
-            DSGPlayerGameData dsgPlayerGameData = dsgPlayerData.getPlayerGameData(statGames[i].getId());
-            if (dsgPlayerGameData == null || dsgPlayerGameData.getTotalGames() == 0) { continue; }
-            if (!firstStat) { %>,<% } firstStat = false;
-%>{"gameName":<%=jsonStr((statGames[i].getId()>50?"tb-":"") + GridStateFactory.getGameName(statGames[i].getId()).replace("Speed ", "Speed-"))%>,"rating":<%=(int) Math.round(dsgPlayerGameData.getRating())%>,"totalGames":<%=dsgPlayerGameData.getTotalGames()%>,"tourneyWinner":<%=dsgPlayerGameData.getTourneyWinner()%>,"lastGameDate":<%=jsonStr(dateFormat.format(dsgPlayerGameData.getLastGameDate()))%>,"gameId":<%=statGames[i].getId()%>}<%
-         }
-         statGames = GridStateFactory.getSpeedGames();
-         for (int i = 0; i < statGames.length; i++) {
-            DSGPlayerGameData dsgPlayerGameData = dsgPlayerData.getPlayerGameData(statGames[i].getId());
-            if (dsgPlayerGameData == null || dsgPlayerGameData.getTotalGames() == 0) { continue; }
-            if (!firstStat) { %>,<% } firstStat = false;
-%>{"gameName":<%=jsonStr((statGames[i].getId()>50?"tb-":"") + GridStateFactory.getGameName(statGames[i].getId()).replace("Speed ", "Speed-"))%>,"rating":<%=(int) Math.round(dsgPlayerGameData.getRating())%>,"totalGames":<%=dsgPlayerGameData.getTotalGames()%>,"tourneyWinner":<%=dsgPlayerGameData.getTourneyWinner()%>,"lastGameDate":<%=jsonStr(dateFormat.format(dsgPlayerGameData.getLastGameDate()))%>,"gameId":<%=statGames[i].getId()%>}<%
-         }
-%>],"invitationsReceived":[<%
-         boolean firstInv = true;
-         for (TBSet s : invitesTo) {
-            String color = null;
-            TBGame g = s.getGame1();
-            boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
-            if (s.isTwoGameSet()) {
-               color = "whiteblack";
-            } else if (s.getPlayer2Pid() == myPID) {
-               color = (s.getGame1().getGame() == GridStateFactory.TB_GO)?"white (p2)":"black (p2)";
-            } else {
-               color = (s.getGame1().getGame() != GridStateFactory.TB_GO)?"white (p1)":"black (p1)";
-            }
-            boolean tourney = false;
-            if (!koth) {
-               for (Tourney tmpTourney : currentTournies) {
-                  if (tmpTourney.getEventID() == g.getEventId()) { tourney = true; break; }
-               }
-            }
-            String ratedStr = "Not Rated";
-            if (koth) { ratedStr = "KotH"; } else if (tourney) { ratedStr = "Tournament"; } else if (g.isRated()) { ratedStr = "Rated"; }
-            DSGPlayerData d = dsgPlayerStorer.loadPlayer(s.getInviterPid());
-            DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(s.getGame1().getGame());
-            if (!firstInv) { %>,<% } firstInv = false;
-%>{"setId":<%=s.getSetId()%>,"gameName":<%=jsonStr(GridStateFactory.getGameName(s.getGame1().getGame()))%>,"opponentName":<%=jsonStr(d.getName())%>,"opponentRating":<%=(int) Math.round(dsgPlayerGameData.getRating())%>,"color":<%=jsonStr(color)%>,"daysPerMove":<%=s.getGame1().getDaysPerMove()%>,"rated":<%=jsonStr(ratedStr)%>,"opponentColor":<%=(d.hasPlayerDonated()?((d.getNameColorRGB() & 0xFFFFFF)==0?((255<<24)+1):d.getNameColorRGB()):0)%>,"opponentTourneyWinner":<%=d.getTourneyWinner()%>}<%
-         }
-%>],"invitationsSent":[<%
-         boolean firstSent = true;
-         for (TBSet s : invitesFrom) {
-            String color = null;
-            boolean go = s.getGame1().getGame() == GridStateFactory.TB_GO ||
-                         s.getGame1().getGame() == GridStateFactory.TB_GO9 ||
-                         s.getGame1().getGame() == GridStateFactory.TB_GO13;
-            if (s.isTwoGameSet()) {
-               color = "whiteblack";
-            } else if (s.getPlayer2Pid() == myPID) {
-               color = (go)?"white (p2)":"black (p2)";
-            } else {
-               color = (!go)?"white (p1)":"black (p1)";
-            }
-            long pid = s.getInviteePid();
-            DSGPlayerGameData dsgPlayerGameData = null;
-            DSGPlayerData d = null;
-            String anyoneString = "Anyone";
-            TBGame g = s.getGame1();
-            boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
-            boolean tourney = false;
-            if (!koth) {
-               for (Tourney tmpTourney : currentTournies) {
-                  if (tmpTourney.getEventID() == g.getEventId()) { tourney = true; break; }
-               }
-            }
-            String ratedStr = "Not Rated";
-            if (koth) { ratedStr = "KotH"; } else if (tourney) { ratedStr = "Tournament"; } else if (g.isRated()) { ratedStr = "Rated"; }
-            if (s.getInvitationRestriction() == TBSet.BEGINNER) { ratedStr = ratedStr + ", beginner"; }
-            if (pid != 0) {
-               d = dsgPlayerStorer.loadPlayer(pid);
-               dsgPlayerGameData = d.getPlayerGameData(s.getGame1().getGame());
-            } else {
-               int myRating = 1600;
-               if (s.getInvitationRestriction() != TBSet.ANY_RATING) {
-                  DSGPlayerGameData myGameData = dsgPlayerData.getPlayerGameData(s.getGame1().getGame());
-                  if (myGameData != null && myGameData.getTotalGames() > 0) {
-                     myRating = (int) Math.round(myGameData.getRating());
-                  }
-               }
-               if (s.getInvitationRestriction() == TBSet.ANYONE_NOTPLAYING) { anyoneString += " (new opponent)"; }
-               if (s.getInvitationRestriction() == TBSet.LOWER_RATING) { anyoneString += " under " + myRating; }
-               if (s.getInvitationRestriction() == TBSet.HIGHER_RATING) { anyoneString += " over " + myRating; }
-               if (s.getInvitationRestriction() == TBSet.SIMILAR_RATING) { anyoneString += " similar"; }
-               if (s.getInvitationRestriction() == TBSet.CLASS_RATING) {
-                  if (myRating >= 1900) { anyoneString += " red"; }
-                  else if (myRating >= 1700) { anyoneString += " yellow"; }
-                  else if (myRating >= 1400) { anyoneString += " blue"; }
-                  else if (myRating >= 1000) { anyoneString += " green"; }
-                  else { anyoneString += " gray"; }
-               }
-            }
-            if (!firstSent) { %>,<% } firstSent = false;
-%>{"setId":<%=s.getSetId()%>,"gameName":<%=jsonStr(GridStateFactory.getGameName(s.getGame1().getGame()))%>,"opponentName":<%=jsonStr((pid == 0) ? anyoneString : d.getName())%>,"opponentRating":<%=((dsgPlayerGameData != null) ? (int) Math.round(dsgPlayerGameData.getRating()) : 1600)%>,"color":<%=jsonStr(color)%>,"daysPerMove":<%=s.getGame1().getDaysPerMove()%>,"rated":<%=jsonStr(ratedStr)%>,"opponentColor":<%=((pid == 0) ? 0 : (d.hasPlayerDonated()?((d.getNameColorRGB() & 0xFFFFFF)==0?((255<<24)+1):d.getNameColorRGB()):0))%>,"opponentTourneyWinner":<%=((pid == 0) ? 0 : d.getTourneyWinner())%>}<%
-         }
-%>],"activeGamesMyTurn":[<%
-         boolean firstMyTurn = true;
-         for (TBGame g : myTurn) {
-            String color = "";
-            boolean go = g.getGame() == GridStateFactory.TB_GO ||
-                         g.getGame() == GridStateFactory.TB_GO9 ||
-                         g.getGame() == GridStateFactory.TB_GO13;
-            if (g.getPlayer1Pid() == myPID) {
-               color = (!go)?"white (p1)":"black (p1)";
-            } else {
-               color = (go)?"white (p2)":"black (p2)";
-            }
-            boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
-            boolean tourney = false;
-            if (!koth) {
-               for (Tourney tmpTourney : currentTournies) {
-                  if (tmpTourney.getEventID() == g.getEventId()) { tourney = true; break; }
-               }
-            }
-            String ratedStr = "Not Rated";
-            if (koth) { ratedStr = "KotH"; } else if (tourney) { ratedStr = "Tournament"; } else if (g.isRated()) { ratedStr = "Rated"; }
-            long oppPid = myPID == g.getPlayer1Pid() ? g.getPlayer2Pid() : g.getPlayer1Pid();
-            DSGPlayerData d = dsgPlayerStorer.loadPlayer(oppPid);
-            DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(g.getGame());
-            if (!firstMyTurn) { %>,<% } firstMyTurn = false;
-%>{"gid":<%=g.getGid()%>,"gameName":<%=jsonStr(GridStateFactory.getGameName(g.getGame()))%>,"opponentName":<%=jsonStr(d.getName())%>,"opponentRating":<%=(int) Math.round(dsgPlayerGameData.getRating())%>,"color":<%=jsonStr(color)%>,"numMoves":<%=(g.getNumMoves() + 1)%>,"timeLeft":<%=jsonStr(Utilities.getTimeLeft(g.getTimeoutDate().getTime()))%>,"rated":<%=jsonStr(ratedStr)%>,"opponentColor":<%=(d.hasPlayerDonated()?((d.getNameColorRGB() & 0xFFFFFF)==0?((255<<24)+1):d.getNameColorRGB()):0)%>,"opponentTourneyWinner":<%=d.getTourneyWinner()%>}<%
-         }
-%>],"activeGamesOpponentTurn":[<%
-         boolean firstOppTurn = true;
-         for (TBGame g : oppTurn) {
-            String color = "";
-            boolean go = g.getGame() == GridStateFactory.TB_GO ||
-                         g.getGame() == GridStateFactory.TB_GO9 ||
-                         g.getGame() == GridStateFactory.TB_GO13;
-            if (g.getPlayer1Pid() == myPID) {
-               color = (!go)?"white (p1)":"black (p1)";
-            } else {
-               color = (go)?"white (p2)":"black (p2)";
-            }
-            boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
-            boolean tourney = false;
-            if (!koth) {
-               for (Tourney tmpTourney : currentTournies) {
-                  if (tmpTourney.getEventID() == g.getEventId()) { tourney = true; break; }
-               }
-            }
-            String ratedStr = "Not Rated";
-            if (koth) { ratedStr = "KotH"; } else if (tourney) { ratedStr = "Tournament"; } else if (g.isRated()) { ratedStr = "Rated"; }
-            long oppPid = myPID == g.getPlayer1Pid() ? g.getPlayer2Pid() : g.getPlayer1Pid();
-            DSGPlayerData d = dsgPlayerStorer.loadPlayer(oppPid);
-            DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(g.getGame());
-            if (!firstOppTurn) { %>,<% } firstOppTurn = false;
-%>{"gid":<%=g.getGid()%>,"gameName":<%=jsonStr(GridStateFactory.getGameName(g.getGame()))%>,"opponentName":<%=jsonStr(d.getName())%>,"opponentRating":<%=(int) Math.round(dsgPlayerGameData.getRating())%>,"color":<%=jsonStr(color)%>,"numMoves":<%=(g.getNumMoves() + 1)%>,"timeLeft":<%=jsonStr(Utilities.getTimeLeft(g.getTimeoutDate().getTime()))%>,"rated":<%=jsonStr(ratedStr)%>,"opponentColor":<%=(d.hasPlayerDonated()?((d.getNameColorRGB() & 0xFFFFFF)==0?((255<<24)+1):d.getNameColorRGB()):0)%>,"opponentTourneyWinner":<%=d.getTourneyWinner()%>}<%
-         }
-%>],"openInvitationGames":[<%
-         boolean firstOpen = true;
-         for (TBSet s : waitingSets) {
-            String color = null;
-            boolean go = s.getGame1().getGame() == GridStateFactory.TB_GO ||
-                         s.getGame1().getGame() == GridStateFactory.TB_GO9 ||
-                         s.getGame1().getGame() == GridStateFactory.TB_GO13;
-            boolean koth = false;
-            if (s.isTwoGameSet()) {
-               color = "whiteblack";
-            } else if (s.getPlayer2Pid() == 0) {
-               color = (go)?"white (p2)":"black (p2)";
-            } else {
-               color = (!go)?"white (p1)":"black (p1)";
-            }
-            if (kothStorer.getEventId(s.getGame1().getGame()) == s.getGame1().getEventId()) { koth = true; }
-            String ratedStr = "Not Rated";
-            if (koth) { ratedStr = "KotH"; } else if (s.getGame1().isRated()) { ratedStr = "Rated"; }
-            if (s.getInvitationRestriction() == TBSet.BEGINNER) { ratedStr = ratedStr + ", beginner"; }
-            DSGPlayerData d = dsgPlayerStorer.loadPlayer(s.getInviterPid());
-            DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(s.getGame1().getGame());
-            if (!firstOpen) { %>,<% } firstOpen = false;
-%>{"setId":<%=s.getSetId()%>,"gameName":<%=jsonStr(GridStateFactory.getGameName(s.getGame1().getGame()))%>,"inviterName":<%=jsonStr(d.getName())%>,"inviterRating":<%=(int) Math.round(dsgPlayerGameData.getRating())%>,"color":<%=jsonStr(color)%>,"daysPerMove":<%=s.getGame1().getDaysPerMove()%>,"rated":<%=jsonStr(ratedStr)%>,"inviterColor":<%=(d.hasPlayerDonated()?((d.getNameColorRGB() & 0xFFFFFF)==0?((255<<24)+1):d.getNameColorRGB()):0)%>,"inviterTourneyWinner":<%=d.getTourneyWinner()%>}<%
-         }
-%>],"messages":[<%
-         int msgCount = 0;
-         boolean firstMsg = true;
-         for (DSGMessage m : messages) {
-            msgCount += 1;
-            if (msgCount > 50) { break; }
-            DSGPlayerData from = dsgPlayerStorer.loadPlayer(m.getFromPid());
-            if (!firstMsg) { %>,<% } firstMsg = false;
-%>{"mid":<%=m.getMid()%>,"read":<%=m.isRead()%>,"subject":<%=jsonStr(m.getSubject())%>,"from":<%=jsonStr(from.getName())%>,"date":<%=jsonStr(messageDateFormat.format(m.getCreationDate()))%>,"fromColor":<%=(from.hasPlayerDonated()?((from.getNameColorRGB() & 0xFFFFFF)==0?((255<<24)+1):from.getNameColorRGB()):0)%>,"fromTourneyWinner":<%=from.getTourneyWinner()%>}<%
-         }
-%>],"tournaments":[<%
-         boolean firstTourney = true;
-         for (Tourney tmpTourney : (List<Tourney>) tourneyStorer.getUpcomingTournies()) {
-            Tourney tourney = tourneyStorer.getTourney(tmpTourney.getEventID());
-            if (!firstTourney) { %>,<% } firstTourney = false;
-%>{"name":<%=jsonStr(tourney.getName())%>,"eventId":<%=tourney.getEventID()%>,"numRounds":<%=tourney.getNumRounds()%>,"gameName":<%=jsonStr((tourney.isTurnBased()?"tb-":"") + GridStateFactory.getGameName(tourney.getGame()))%>,"status":1,"date":<%=jsonStr(dateFormat.format(tourney.getSignupEndDate()))%>}<%
-         }
-         for (Tourney tmpTourney : currentTournies) {
-            Tourney tourney = tourneyStorer.getTourney(tmpTourney.getEventID());
-            if (!firstTourney) { %>,<% } firstTourney = false;
-%>{"name":<%=jsonStr(tourney.getName())%>,"eventId":<%=tourney.getEventID()%>,"numRounds":<%=tourney.getNumRounds()%>,"gameName":<%=jsonStr((tourney.isTurnBased()?"tb-":"") + GridStateFactory.getGameName(tourney.getGame()))%>,"status":<%=(tourney.getNumRounds()==0?2:3)%>,"date":<%=jsonStr(dateFormat.format(tourney.getStartDate()))%>}<%
-         }
-%>],"onlinePlayers":[<%
-         boolean firstOnline = true;
-         for (String playerName : onlinePlayerNames) {
-            if (!firstOnline) { %>,<% } firstOnline = false;
-%><%=jsonStr(playerName)%><%
-         }
-%>]}<%
+         IndexResponse indexResponse = new IndexResponse.Builder(
+                 dsgPlayerData, name, dsgPlayerStorer, kothStorer, tourneyStorer, currentTournies)
+             .setOnlineStats(livePlayers, onlineFollowing, onlinePlayerNames)
+             .setPreferences(emailMe, personalizeAds, gamesLimit, hasTbGamesLimit)
+             .setGames(myTurn, oppTurn, invitesTo, invitesFrom, waitingSets)
+             .setMessages(messages, tz)
+             .setUpcomingTournies((List<Tourney>) tourneyStorer.getUpcomingTournies())
+             .build();
+         out.print(new Gson().toJson(indexResponse));
       } else {
-%>{"error":"Invalid name or password, please try again."}<%
+         out.print("{\"error\":\"Invalid name or password, please try again.\"}");
       }
    } else {
-%>{"error":"Invalid name or password, please try again."}<%
+      out.print("{\"error\":\"Invalid name or password, please try again.\"}");
    }
 %>

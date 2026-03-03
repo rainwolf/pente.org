@@ -1,23 +1,10 @@
-<%@ page import="org.pente.database.*,
-                 org.pente.gameServer.core.*,
-                 org.pente.gameServer.client.*,
+<%@ page import="org.pente.gameServer.core.*,
                  org.pente.gameServer.server.*,
-                 org.pente.gameServer.client.web.*,
-                 org.pente.game.*,
-                 org.pente.turnBased.*,
-                 org.pente.turnBased.web.*,
-                 com.jivesoftware.base.*,
-                 com.jivesoftware.base.filter.*,
-                 java.text.*,
+                 org.pente.gameServer.mobile.*,
+                 com.google.gson.Gson,
                  java.util.*"
 %>
 <%@ page contentType="application/json; charset=UTF-8" %>
-<%!
-   private static String jsonStr(String s) {
-      if (s == null) return "null";
-      return "\"" + s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r") + "\"";
-   }
-%>
 <%
    String loggedInStr = (String) request.getAttribute("name");
    if (loggedInStr == null) {
@@ -42,17 +29,5 @@
       webRoom.setName("Website");
       rooms.add(webRoom);
    }
-%>[<%
-   boolean firstRoom = true;
-   for (WhosOnlineRoom room : rooms) {
-      if (!firstRoom) { %>,<% } firstRoom = false;
-%>{"name":<%=jsonStr(room.getName())%>,"players":[<%
-      boolean firstPlayer = true;
-      for (DSGPlayerData d : room.getPlayers()) {
-         DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(GridStateFactory.TB_PENTE);
-         if (!firstPlayer) { %>,<% } firstPlayer = false;
-%>{"name":<%=jsonStr(d.getName())%>,"rating":<%=((dsgPlayerGameData != null) ? (int) Math.round(dsgPlayerGameData.getRating()) : 1600)%>,"color":<%=(d.hasPlayerDonated() ? d.getNameColorRGB() : 0)%>,"tourneyWinner":<%=d.getTourneyWinner()%>,"totalGames":<%=d.getTotalGames()%>}<%
-      }
-%>]}<%
-   }
-%>]
+   out.print(new Gson().toJson(WhosonlineAndLiveResponse.build(rooms)));
+%>

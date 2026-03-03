@@ -1,14 +1,9 @@
 <%@ page import="org.pente.database.*,
-                 org.pente.game.*,
                  org.pente.turnBased.*,
                  org.pente.gameServer.core.*,
                  org.pente.gameServer.server.*,
-                 org.pente.gameServer.tourney.*,
-                 org.pente.message.*,
-                 java.text.*,
-                 java.sql.*,
-                 java.util.Date,
-                 java.util.List,
+                 org.pente.gameServer.mobile.*,
+                 com.google.gson.Gson,
                  java.util.*,
                  org.apache.log4j.*"
 %>
@@ -49,17 +44,11 @@
          List<TBGame> myTurn = new ArrayList<TBGame>();
          List<TBGame> oppTurn = new ArrayList<TBGame>();
          Utilities.organizeGames(myPID, currentSets, invitesTo, invitesFrom, myTurn, oppTurn);
-%>{"myTurnGames":[<%
-         boolean first = true;
-         for (TBGame g : myTurn) {
-            if (!first) { %>,<% } first = false;
-%><%=g.getGid()%><%
-         }
-%>]}<%
+         out.print(new Gson().toJson(AiIndexResponse.build(myTurn)));
       } else {
-%>{"error":"Invalid name or password, please try again."}<%
+         out.print("{\"error\":\"Invalid name or password, please try again.\"}");
       }
    } else {
-%>{"error":"Invalid name or password, please try again."}<%
+      out.print("{\"error\":\"Invalid name or password, please try again.\"}");
    }
 %>
