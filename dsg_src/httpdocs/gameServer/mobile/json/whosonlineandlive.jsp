@@ -3,7 +3,7 @@
                  org.pente.gameServer.mobile.*,
                  com.google.gson.Gson,
                  java.util.*"
-%>
+%><%@ page import="org.pente.gameServer.client.web.WhosOnlineRoom"%><%@ page import="org.pente.gameServer.client.web.WhosOnline"%><%@ page import="org.pente.gameServer.client.web.SessionListener"%>
 <%@ page contentType="application/json; charset=UTF-8" %>
 <%
    String loggedInStr = (String) request.getAttribute("name");

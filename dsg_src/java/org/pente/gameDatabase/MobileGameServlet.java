@@ -17,6 +17,9 @@ import org.pente.game.*;
 import org.pente.filter.http.*;
 import org.pente.filter.iyt.game.*;
 import org.pente.gameServer.server.*;
+import org.pente.gameServer.mobile.DatabaseResponse;
+
+import com.google.gson.Gson;
 
 public class MobileGameServlet extends HttpServlet {
 
@@ -269,7 +272,18 @@ public class MobileGameServlet extends HttpServlet {
                 }
                 request.setAttribute("gameStats", gameStats);
 
-                if (responseStr != null && !responseStr.equals("")) {
+                if (request.getParameter("json") != null) {
+                    DatabaseResponse dbResponse;
+                    if (request.getAttribute("blocked") != null) {
+                        dbResponse = DatabaseResponse.blocked();
+                    } else if (responseData2 != null) {
+                        dbResponse = DatabaseResponse.build(responseData2, request.getContextPath());
+                    } else {
+                        dbResponse = DatabaseResponse.noAccess();
+                    }
+                    sendResponse(response, HttpConstants.STATUS_OK,
+                            new Gson().toJson(dbResponse), "application/json;charset=UTF-8", false);
+                } else if (responseStr != null && !responseStr.equals("")) {
                     sendResponse(response, status, responseStr, contentType, false);
                 } else {
                     request.getRequestDispatcher("/gameServer/mobile/database.jsp").
