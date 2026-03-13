@@ -1,23 +1,25 @@
 package org.pente.turnBased.web;
 
-import java.io.*;
-import java.util.*;
-
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
-
-import org.pente.game.*;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.apache.log4j.Category;
+import org.pente.game.GridStateFactory;
+import org.pente.gameServer.core.*;
+import org.pente.gameServer.server.Resources;
 import org.pente.kingOfTheHill.CacheKOTHStorer;
 import org.pente.kingOfTheHill.Hill;
-import org.pente.kingOfTheHill.KOTHException;
-import org.pente.kingOfTheHill.KOTHStorer;
+import org.pente.message.DSGMessage;
+import org.pente.message.DSGMessageStoreException;
+import org.pente.message.DSGMessageStorer;
 import org.pente.notifications.NotificationServer;
 import org.pente.turnBased.*;
-import org.pente.gameServer.core.*;
-import org.pente.gameServer.server.*;
-import org.pente.message.*;
 
-import org.apache.log4j.*;
+import java.io.IOException;
+import java.util.Date;
 
 public class ReplyInvitationServlet extends HttpServlet {
 
@@ -262,9 +264,11 @@ public class ReplyInvitationServlet extends HttpServlet {
                                     if (rated) {
                                         beginnerGame1 = createGame(1, invitee, null,
                                                 game, daysPerMove, true);
-                                        if (game != GridStateFactory.TB_GO) {
+                                        if (game != GridStateFactory.TB_GO
+                                                && game != GridStateFactory.TB_GO9
+                                                && game != GridStateFactory.GO13) {
                                             beginnerGame2 = createGame(2, invitee, null,
-                                                    game, daysPerMove, rated);
+                                                    game, daysPerMove, true);
                                         }
 
                                         pid1 = invitee.getPlayerID();
