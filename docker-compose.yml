@@ -32,16 +32,17 @@ services:
       - ./dockerMain/well-known:/usr/local/tomcat/othmanwsubmanifold/ROOT/.well-known
       - ./dockerMain/well-known:/usr/local/tomcat/pentelivesubmanifold/ROOT/.well-known
       # for hot reloading
+      - ./dsg_src/httpdocs/join.jsp:/usr/local/tomcat/webapps/ROOT/join.jsp
       - ./dsg_src/httpdocs/gameServer:/usr/local/tomcat/webapps/ROOT/gameServer
       - ./deployClasses/org:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/org
     environment:
-      - JAVA_OPTS=-DMYSQL_USER=${MYSQL_USER} -DMYSQL_PASSWORD=${MYSQL_PASSWORD} -DMYSQL_RO_USER=${MYSQL_RO_USER} -DMYSQL_RO_PASSWORD=${MYSQL_RO_PASSWORD} -DMYSQL_DATABASE=${MYSQL_DATABASE} -DDSG_LOCAL_PORT=${DSG_LOCAL_PORT} -DSSL_PWD=${SSL_PWD}
+      - JAVA_OPTS=-DMYSQL_USER=${MYSQL_USER} -DMYSQL_PASSWORD=${MYSQL_PASSWORD} -DMYSQL_RO_USER=${MYSQL_RO_USER} -DMYSQL_RO_PASSWORD=${MYSQL_RO_PASSWORD} -DMYSQL_DATABASE=${MYSQL_DATABASE} -DDSG_LOCAL_PORT=${DSG_LOCAL_PORT} -DSSL_PWD=${SSL_PWD} -Dsun.net.inetaddr.ttl=30
       - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
       - CAPTCHA_SECRET=${CAPTCHA_SECRET}
       - CAPTCHA_SITE_KEY=${CAPTCHA_SITE_KEY}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
       - SSL_PWD=${SSL_PWD}
-#      - ENV=${ENV}
+    #      - ENV=${ENV}
     healthcheck:
       test: curl https://pente.org && curl https://www.pente.org
       interval: 42s
@@ -67,11 +68,11 @@ services:
     volumes:
       - ~/.ssh:/root/.ssh
     deploy:
-        resources:
-            limits:
-              memory: 64M
+      resources:
+        limits:
+          memory: 64M
     healthcheck:
-      test: ["CMD-SHELL", "mariadb -u${MYSQL_RO_USER} -p${MYSQL_RO_PASSWORD} -h 127.0.0.1 -P ${DSG_LOCAL_PORT} ${MYSQL_DATABASE} -e \"select * from temp_tb limit 1\""]
+      test: [ "CMD-SHELL", "mariadb -u${MYSQL_RO_USER} -p${MYSQL_RO_PASSWORD} -h 127.0.0.1 -P ${DSG_LOCAL_PORT} ${MYSQL_DATABASE} -e \"select * from temp_tb limit 1\"" ]
       interval: 10s
       timeout: 5s
       retries: 1000
@@ -86,11 +87,11 @@ services:
     image: main_db
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "healthcheck.sh --connect --innodb_initialized"]
+      test: [ "CMD-SHELL", "healthcheck.sh --connect --innodb_initialized" ]
       interval: 10s
       timeout: 5s
       retries: 1000
-    environment:  # values from .env file
+    environment: # values from .env file
       - MYSQL_INITDB_SKIP_TZINFO=Y
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
@@ -98,32 +99,44 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - REPLICATION_USER=${REPLICATION_USER}
       - REPLICATION_PASSWORD=${REPLICATION_PASSWORD}
-#      - max_binlog_size=${max_binlog_size}
-#      - replica_pending_jobs_size_max=${replica_pending_jobs_size_max}
-#      - max_allowed_packet=${max_allowed_packet}
-#      - replica_max_allowed_packet=${replica_max_allowed_packet}
+    #      - max_binlog_size=${max_binlog_size}
+    #      - replica_pending_jobs_size_max=${replica_pending_jobs_size_max}
+    #      - max_allowed_packet=${max_allowed_packet}
+    #      - replica_max_allowed_packet=${replica_max_allowed_packet}
     ports:
       - '127.0.0.1:${REPLICA_REMOTE_PORT}:3306'
     networks:
       - pente_org
-    volumes:  # make the sh files executable
+    volumes: # make the sh files executable
       - ./dockerMain/dbConfig:/etc/mysql/conf.d
       - ./dockerMain/db:/var/lib/mysql
       - ./dockerMain/dbInit:/docker-entrypoint-initdb.d
       - ./dockerMain/dbAlwaysInit:/always-initdb.d
       - ./dockerMain/dbUpdateRoot:/update-root-initdb.d
+  pente_cache:
+    image: redis:8.0.6-alpine
+    restart: always
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 1000
+    ports:
+      - '127.0.0.1:6379:6379'
+    networks:
+      - pente_org
   pente_mail:
     build:
       dockerfile: mail.Dockerfile
     image: pente_mail
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "service postfix status > /dev/null 2>&1 || (echo 'postfix not running, help plssss'; exit 1)"]
+      test: [ "CMD-SHELL", "service postfix status > /dev/null 2>&1 || (echo 'postfix not running, help plssss'; exit 1)" ]
       interval: 333s
       timeout: 5s
       retries: 1000
     ports:
-      - '127.0.0.1:2525:25'  # change this to 25 when deploying, this is to prevent sending mail on local
+      - '127.0.0.1:25:25'  # change this to 25 when deploying, this is to prevent sending mail on local
     deploy:
       resources:
         limits:
