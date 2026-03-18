@@ -247,7 +247,7 @@ public class ReplyInvitationServlet extends HttpServlet {
                                 TBGame beginnerGame1 = null;
                                 TBGame beginnerGame2 = null;
                                 long pid1 = 0, pid2 = 0;
-                                boolean rated = set.isTwoGameSet();
+                                boolean rated = set.getGame1().isRated();
                                 int game = 51, daysPerMove = 7, playAs = 1;
                                 for (int i = 0; i < 2; i++) {
                                     TBGame tbGame = set.getGames()[i];
