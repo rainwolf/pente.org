@@ -19,30 +19,42 @@
 
 package org.pente.gameServer.server;
 
-import java.io.*;
-import java.util.*;
-
-import jakarta.servlet.*;
+import com.google.auth.oauth2.GoogleCredentials;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
 import jakarta.websocket.server.ServerContainer;
 import jakarta.websocket.server.ServerEndpointConfig;
-
-import com.google.auth.oauth2.GoogleCredentials;
-import org.apache.log4j.*;
-
-import org.pente.database.*;
+import org.apache.log4j.Category;
+import org.pente.database.DBHandler;
+import org.pente.database.MySQLDBHandler;
 import org.pente.game.*;
-import org.pente.gameDatabase.*;
+import org.pente.gameDatabase.GameStats;
+import org.pente.gameDatabase.GameStorerSearcher;
+import org.pente.gameDatabase.MySQLGameStorerSearcher;
+import org.pente.gameDatabase.SimpleMySQLGameStats;
+import org.pente.gameServer.client.web.LeaderBoard;
+import org.pente.gameServer.client.web.SiteStatsData;
 import org.pente.gameServer.core.*;
-import org.pente.gameServer.client.web.*;
 import org.pente.gameServer.event.WebSocketEndpoint;
-import org.pente.gameServer.tourney.*;
+import org.pente.gameServer.tourney.CacheTourneyStorer;
+import org.pente.gameServer.tourney.MySQLTourneyStorer;
+import org.pente.gameServer.tourney.Tourney;
+import org.pente.gameServer.tourney.TourneyStorer;
+import org.pente.kingOfTheHill.CacheKOTHStorer;
+import org.pente.kingOfTheHill.MySQLKOTHStorer;
+import org.pente.message.CacheMessageStorer;
+import org.pente.message.DSGMessageStorer;
+import org.pente.message.MySQLDSGMessageStorer;
 import org.pente.notifications.CacheNotificationServer;
 import org.pente.notifications.MySQLNotificationServer;
 import org.pente.notifications.NotificationServer;
-import org.pente.turnBased.*;
-import org.pente.message.*;
+import org.pente.turnBased.CacheTBStorer;
+import org.pente.turnBased.MySQLTBGameStorer;
 
-import org.pente.kingOfTheHill.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.*;
 
 
 public class DSGContextListener implements ServletContextListener {
@@ -61,6 +73,9 @@ public class DSGContextListener implements ServletContextListener {
             ServletContext ctx = servletContextEvent.getServletContext();
             ContextHolder.servletContext = ctx;
             Resources resources = new Resources();
+
+            RedisConnectionManager redisConnectionManager = RedisConnectionManager.initialize();
+            resources.setRedisConnectionManager(redisConnectionManager);
 
             String appletVersion = ctx.getInitParameter("appletVersion");
             resources.setAppletVersion(appletVersion);
@@ -333,6 +348,7 @@ public class DSGContextListener implements ServletContextListener {
         resources.getKOTHStorer().destroy();
         ((CacheNotificationServer) resources.getNotificationServer()).destroy();
         ((CacheMessageStorer) resources.getDsgMessageStorer()).destroy();
+        RedisConnectionManager.getInstance().destroy();
 
         for (Timer timer : timers) {
             if (timer != null) {

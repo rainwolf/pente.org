@@ -1,23 +1,24 @@
 package org.pente.gameServer.server;
 
 
-import java.util.*;
-
+import jakarta.websocket.server.ServerContainer;
+import jakarta.websocket.server.ServerEndpointConfig;
 import org.pente.database.DBHandler;
 import org.pente.game.*;
 import org.pente.gameDatabase.GameStorerSearcher;
 import org.pente.gameServer.client.web.SiteStatsData;
 import org.pente.gameServer.core.*;
 import org.pente.gameServer.event.WebSocketEndpoint;
-import org.pente.gameServer.tourney.*;
+import org.pente.gameServer.tourney.Tourney;
+import org.pente.gameServer.tourney.TourneyStorer;
+import org.pente.kingOfTheHill.CacheKOTHStorer;
+import org.pente.message.DSGMessageStorer;
 import org.pente.notifications.NotificationServer;
-import org.pente.turnBased.*;
-import org.pente.message.*;
+import org.pente.turnBased.TBGameStorer;
 
-import org.pente.kingOfTheHill.*;
-
-import jakarta.websocket.server.ServerContainer;
-import jakarta.websocket.server.ServerEndpointConfig;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Holder of server side resources that are reused
@@ -27,6 +28,7 @@ import jakarta.websocket.server.ServerEndpointConfig;
 public class Resources {
 
     private String appletVersion;
+    private RedisConnectionManager redisConnectionManager;
     private DBHandler dbHandler;
     private DBHandler dbHandlerRo;
     private GameVenueStorer gameVenueStorer;
@@ -341,5 +343,14 @@ public class Resources {
     public void setNotificationServer(NotificationServer notificationServer) {
         this.notificationServer = notificationServer;
     }
+
+    public RedisConnectionManager getRedisConnectionManager() {
+        return redisConnectionManager;
+    }
+
+    public void setRedisConnectionManager(RedisConnectionManager redisConnectionManager) {
+        this.redisConnectionManager = redisConnectionManager;
+    }
+
 
 }
