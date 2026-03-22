@@ -1,12 +1,11 @@
 package org.pente.gameServer.core;
 
 import org.apache.log4j.Category;
+import org.pente.gameServer.server.RedisConnectionManager;
 import org.pente.notifications.NotificationServer;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by waliedothman on 22/01/2017.
@@ -19,8 +18,6 @@ public class CacheDSGFollowerStorer implements DSGFollowerStorer {
     NotificationServer notificationServer;
     DSGPlayerStorer playerStorer;
 
-    private Map<Long, List<Long>> followerGraph;
-    private Map<Long, List<Long>> followingGraph;
 
     public CacheDSGFollowerStorer(MySQLDSGFollowerStorer baseStorer,
                                   NotificationServer notificationServer,
@@ -30,62 +27,53 @@ public class CacheDSGFollowerStorer implements DSGFollowerStorer {
         this.playerStorer = playerStorer;
     }
 
-    public Map<Long, List<Long>> getFollowerGraph() {
-        return followerGraph;
-    }
-
-    public Map<Long, List<Long>> getFollowingGraph() {
-        return followingGraph;
-    }
-
+    private RedisConnectionManager redisManager = RedisConnectionManager.getInstance();
 
     @Override
     synchronized public void addFollower(long pid, long followerPid) throws DSGFollowerStoreException {
-        List<Long> followerList = getFollowers(pid);
+        baseStorer.addFollower(pid, followerPid);
+        ArrayList<Long> followerList = getFollowers(pid);
         if (!followerList.contains(followerPid)) {
             followerList.add(followerPid);
+            redisManager.hput(RedisConnectionManager.PID_TO_FOLLOWERS, pid, followerList);
         }
 
-        List<Long> followingList = getFollowing(followerPid);
+        ArrayList<Long> followingList = getFollowing(followerPid);
         if (!followingList.contains(followerPid)) {
             followingList.add(pid);
+            redisManager.hput(RedisConnectionManager.PID_TO_FOLLOWING, followerPid, followingList);
         }
-        baseStorer.addFollower(pid, followerPid);
     }
 
     @Override
     synchronized public void removeFollower(long pid, long followerPid) throws DSGFollowerStoreException {
-        List<Long> followerList = getFollowers(pid);
-        followerList.remove(followerPid);
-
-        List<Long> followingList = getFollowing(followerPid);
-        followingList.remove(pid);
-
         baseStorer.removeFollower(pid, followerPid);
+
+        ArrayList<Long> followerList = getFollowers(pid);
+        followerList.remove(followerPid);
+        redisManager.hput(RedisConnectionManager.PID_TO_FOLLOWERS, pid, followerList);
+
+        ArrayList<Long> followingList = getFollowing(followerPid);
+        followingList.remove(pid);
+        redisManager.hput(RedisConnectionManager.PID_TO_FOLLOWING, followerPid, followingList);
     }
 
     @Override
-    synchronized public List<Long> getFollowers(long pid) throws DSGFollowerStoreException {
-        if (followerGraph == null) {
-            followerGraph = new HashMap<>();
-        }
-        List<Long> followerList = followerGraph.get(pid);
+    synchronized public ArrayList<Long> getFollowers(long pid) throws DSGFollowerStoreException {
+        ArrayList<Long> followerList = redisManager.hget(RedisConnectionManager.PID_TO_FOLLOWERS, pid);
         if (followerList == null) {
-            followerList = baseStorer.getFollowers(pid);
-            followerGraph.put(pid, followerList);
+            followerList = new ArrayList<>(baseStorer.getFollowers(pid));
+            redisManager.hput(RedisConnectionManager.PID_TO_FOLLOWERS, pid, followerList);
         }
         return followerList;
     }
 
     @Override
-    synchronized public List<Long> getFollowing(long pid) throws DSGFollowerStoreException {
-        if (followingGraph == null) {
-            followingGraph = new HashMap<>();
-        }
-        List<Long> followingList = followingGraph.get(pid);
+    synchronized public ArrayList<Long> getFollowing(long pid) throws DSGFollowerStoreException {
+        ArrayList<Long> followingList = redisManager.hget(RedisConnectionManager.PID_TO_FOLLOWING, pid);
         if (followingList == null) {
-            followingList = baseStorer.getFollowing(pid);
-            followingGraph.put(pid, followingList);
+            followingList = new ArrayList<>(baseStorer.getFollowing(pid));
+            redisManager.hput(RedisConnectionManager.PID_TO_FOLLOWING, pid, followingList);
         }
         return followingList;
     }
