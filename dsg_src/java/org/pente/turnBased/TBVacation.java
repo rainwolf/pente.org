@@ -1,8 +1,13 @@
 package org.pente.turnBased;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.Date;
 
-public class TBVacation {
+public class TBVacation implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
     private int hoursLeft;
     private Date lastPinched;
 

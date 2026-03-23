@@ -1,21 +1,19 @@
 package org.pente.turnBased;
 
-import java.util.*;
-import java.text.*;
-
+import org.apache.log4j.Category;
 import org.pente.game.*;
 import org.pente.gameServer.core.*;
-import org.pente.message.*;
-import org.pente.database.*;
-
+import org.pente.gameServer.server.RedisConnectionManager;
 import org.pente.gameServer.tourney.*;
-
-import org.pente.kingOfTheHill.*;
-
-import org.apache.log4j.*;
+import org.pente.kingOfTheHill.CacheKOTHStorer;
+import org.pente.message.DSGMessage;
+import org.pente.message.DSGMessageStoreException;
+import org.pente.message.DSGMessageStorer;
 import org.pente.notifications.NotificationServer;
 
-import static org.pente.turnBased.MySQLTBGameStorer.FLOATINGVACATIONDAYS;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
@@ -31,7 +29,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
     private CacheKOTHStorer kothStorer;
     private NotificationServer notificationServer;
 
-    private Map<Long, TBVacation> vacationPerPlayer;
+    RedisConnectionManager red = RedisConnectionManager.getInstance();
 
     /**
      * used to cache event ids for tb-games
@@ -191,7 +189,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
             waitingSetsLoaded = false;
             setsByPid.clear();
 
-            vacationPerPlayer.clear();
+            red.invalidate(RedisConnectionManager.PID_TO_TB_VACATION);
 
             // restart threads
             restartTasks();
@@ -297,8 +295,6 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         this.gameStorer = gameStorer;
         this.dsgMessageStorer = dsgMessageStorer;
         this.kothStorer = kothStorer;
-
-        this.vacationPerPlayer = new HashMap<>();
 
         startTasks();
     }
@@ -645,10 +641,10 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
     }
 
     public TBVacation getTBVacation(long pid) {
-        TBVacation vacation = this.vacationPerPlayer.get(pid);
+        TBVacation vacation = red.hget(RedisConnectionManager.PID_TO_TB_VACATION, pid);
         if (vacation == null) {
             vacation = baseStorer.getTBVacation(pid);
-            this.vacationPerPlayer.put(pid, vacation);
+            red.hput(RedisConnectionManager.PID_TO_TB_VACATION, pid, vacation);
         } else if (vacation.getLastPinched() != null) {
             Calendar now = Calendar.getInstance();
             int currentYear = now.get(Calendar.YEAR);
@@ -875,7 +871,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                     gameData.setSwapped(game.didDPenteSwap());
                 }
                 if (game.getGame() == GridStateFactory.TB_SWAP2PENTE ||
-                    game.getGame() == GridStateFactory.TB_SWAP2KERYO) {
+                        game.getGame() == GridStateFactory.TB_SWAP2KERYO) {
                     gameData.setSwap2Pass(game.didSwap2Pass());
                 }
 
