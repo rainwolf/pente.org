@@ -19,6 +19,16 @@
 
 package org.pente.gameServer.core;
 
+import jakarta.servlet.ServletContext;
+import org.apache.log4j.Category;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.pente.database.DBHandler;
+import org.pente.gameServer.server.RedisConnectionManager;
+import org.pente.notifications.NotificationServer;
+
+import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -28,19 +38,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
-import java.util.List;
-import java.util.Map;
-
-import net.sf.hibernate.collection.*;
-import org.apache.log4j.*;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.pente.database.DBHandler;
-import org.pente.notifications.NotificationServer;
-
-import javax.net.ssl.HttpsURLConnection;
-import jakarta.servlet.ServletContext;
 
 public class CacheDSGPlayerStorer implements DSGPlayerStorer {
 
@@ -50,8 +47,6 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
     private DSGPlayerStorer basePlayerStorer;
     private Hashtable<Long, DSGPlayerData> cacheByID;
     private Hashtable<String, DSGPlayerData> cacheByName;
-
-    private HashMap<Long, List<DSGPlayerPreference>> cachedPrefs;
 
     private Map<Long, List<DSGIgnoreData>> ignoreData;
 
@@ -66,6 +61,7 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
 
     private ServletContext ctx;
     private DBHandler dbHandler;
+    private RedisConnectionManager pente_cache = RedisConnectionManager.getInstance();
 
     public CacheDSGPlayerStorer(DSGPlayerStorer basePlayerStorer, ServletContext ctx, DBHandler dbHandler) throws Exception {
         this.basePlayerStorer = basePlayerStorer;
@@ -82,8 +78,6 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         checkSubscribersTimer = new Timer();
         checkSubscribersTimer.scheduleAtFixedRate(
                 new CheckSubscriptionsRunnable(), 1000000, 24L * 3600 * 1000);
-
-        cachedPrefs = new HashMap<>();
     }
 
     public void destroy() {
@@ -133,7 +127,7 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         DSGPlayerData newData = basePlayerStorer.loadPlayer(name);
         cacheByID.put(Long.valueOf(newData.getPlayerID()), newData);
         cacheByName.put(newData.getName(), newData);
-        cachedPrefs.remove(newData.getPlayerID());
+        pente_cache.hremove(RedisConnectionManager.PID_TO_PREFS, newData.getPlayerID());
 
         List<DSGIgnoreData> ignore = basePlayerStorer.getIgnoreData(newData.getPlayerID());
         ignoreData.put(newData.getPlayerID(), ignore);
@@ -371,19 +365,18 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
     // no great need to cache these i don't think, I think now yes
     public List<DSGPlayerPreference> loadPlayerPreferences(long playerID)
             throws DSGPlayerStoreException {
-        List<DSGPlayerPreference> prefs = cachedPrefs.get(playerID);
-        if (prefs != null) {
-            return prefs;
+        ArrayList<DSGPlayerPreference> prefs = pente_cache.hget(RedisConnectionManager.PID_TO_PREFS, playerID);
+        if (prefs == null) {
+            prefs = new ArrayList<>(basePlayerStorer.loadPlayerPreferences(playerID));
+            pente_cache.hput(RedisConnectionManager.PID_TO_PREFS, playerID, prefs);
         }
-        prefs = basePlayerStorer.loadPlayerPreferences(playerID);
-        cachedPrefs.put(playerID, prefs);
         return prefs;
     }
 
     public void storePlayerPreference(long playerID, DSGPlayerPreference pref)
             throws DSGPlayerStoreException {
         basePlayerStorer.storePlayerPreference(playerID, pref);
-        cachedPrefs.remove(playerID);
+        pente_cache.hremove(RedisConnectionManager.PID_TO_PREFS, playerID);
     }
 
     public List<java.util.Date> loadVacationDays(long playerID) throws DSGPlayerStoreException {
