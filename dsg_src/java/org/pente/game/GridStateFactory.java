@@ -1,5 +1,7 @@
 package org.pente.game;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 public class GridStateFactory {
 
     public static final int PENTE = 1;
@@ -33,6 +35,23 @@ public class GridStateFactory {
     public static final int SWAP2KERYO = 29;
     public static final int SPEED_SWAP2KERYO = SWAP2KERYO + 1;
 
+    public static final int[] LIVE_GAMES = {
+            PENTE, SPEED_PENTE,
+            KERYO, SPEED_KERYO,
+            GOMOKU, SPEED_GOMOKU,
+            DPENTE, SPEED_DPENTE,
+            GPENTE, SPEED_GPENTE,
+            POOF_PENTE, SPEED_POOF_PENTE,
+            CONNECT6, SPEED_CONNECT6,
+            BOAT_PENTE, SPEED_BOAT_PENTE,
+            DKERYO, SPEED_DKERYO,
+            GO, SPEED_GO,
+            GO9, SPEED_GO9,
+            GO13, SPEED_GO13,
+            OPENTE, SPEED_OPENTE,
+            SWAP2PENTE, SPEED_SWAP2PENTE,
+            SWAP2KERYO, SPEED_SWAP2KERYO
+    };
 
     // 50 + normal game for turn-based games
     // only used for separate ratings
@@ -52,6 +71,14 @@ public class GridStateFactory {
     public static final int TB_OPENTE = TB_START + OPENTE;
     public static final int TB_SWAP2PENTE = TB_START + SWAP2PENTE;
     public static final int TB_SWAP2KERYO = TB_START + SWAP2KERYO;
+
+    public static final int[] TB_GAMES = {
+            TB_PENTE, TB_KERYO, TB_GOMOKU, TB_DPENTE, TB_GPENTE, TB_POOF_PENTE,
+            TB_CONNECT6, TB_BOAT_PENTE, TB_DKERYO, TB_GO, TB_GO9, TB_GO13,
+            TB_OPENTE, TB_SWAP2PENTE, TB_SWAP2KERYO
+    };
+
+    public final static int[] ALL_GAMES = ArrayUtils.addAll(TB_GAMES, LIVE_GAMES);
 
 
     public static final Game PENTE_GAME = new Game(PENTE, "Pente", false);

@@ -52,22 +52,23 @@
                }
             }
          %><%
+
          List<KotHPlayerGame> players = new ArrayList();
-         for (int i = 0; i < CacheKOTHStorer.tbGames.length; i++) {
-            Hill hill = kothStorer.getHill(CacheKOTHStorer.tbGames[i]);
+         for (int i = 0; i < GridStateFactory.TB_GAMES.length; i++) {
+            Hill hill = kothStorer.getHill(GridStateFactory.TB_GAMES[i]);
             if (hill != null) {
                Player player = hill.getKingPlayer();
                if (player != null) {
-                  players.add(new KotHPlayerGame(player, CacheKOTHStorer.tbGames[i]));
+                  players.add(new KotHPlayerGame(player, GridStateFactory.TB_GAMES[i]));
                }
             }
          }
-         for (int i = 0; i < CacheKOTHStorer.liveGames.length; i++) {
-            Hill hill = kothStorer.getHill(CacheKOTHStorer.liveGames[i]);
+         for (int i = 0; i < GridStateFactory.LIVE_GAMES.length; i++) {
+            Hill hill = kothStorer.getHill(GridStateFactory.LIVE_GAMES[i]);
             if (hill != null) {
                Player player = hill.getKingPlayer();
                if (player != null) {
-                  players.add(new KotHPlayerGame(player, CacheKOTHStorer.liveGames[i]));
+                  players.add(new KotHPlayerGame(player, GridStateFactory.LIVE_GAMES[i]));
                }
             }
          }

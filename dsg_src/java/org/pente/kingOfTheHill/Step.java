@@ -1,15 +1,21 @@
 package org.pente.kingOfTheHill;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.*;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Created by waliedothman on 25/06/16.
  */
-public class Step {
+public class Step implements Serializable {
 
-    private List<Player> players;
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    private ArrayList<Player> players;
 
     public Step() {
         players = new ArrayList<Player>();
@@ -19,7 +25,7 @@ public class Step {
         return players;
     }
 
-    public void setPlayers(List<Player> players) {
+    public void setPlayers(ArrayList<Player> players) {
         this.players = players;
     }
 

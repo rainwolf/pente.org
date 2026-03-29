@@ -364,7 +364,7 @@ int game;
 boolean canSendOpenKotH = false, amImember = false;
 //hill = kothStorer.getHill(game);
 long kingPid = 0;
-for (int gameInt: CacheKOTHStorer.tbGames) {
+for (int gameInt: GridStateFactory.TB_GAMES) {
 hill = kothStorer.getHill(gameInt);
 if (hill == null) {
     continue;
@@ -374,7 +374,7 @@ if (!subscriber) {canSendOpenKotH = kothStorer.canPlayerBeChallenged(gameInt, my
 amImember = hill.hasPlayer(myPID); %>
 <%="update app;" + ((hill != null)?hill.getNumPlayers():0) + ";" + ((hill != null && amImember)?1:0) + ";" + ((kingPid == myPID)?1:0) + ";" + ((kingPid != 0)?dsgPlayerStorer.loadPlayer(kingPid).getName():"") + ";" + ((amImember && (subscriber || canSendOpenKotH))?"1":"0") + ";" + gameInt%><%
 }
-for (int gameInt: CacheKOTHStorer.liveGames) {
+for (int gameInt: GridStateFactory.LIVE_GAMES) {
 if (gameInt%2 == 0) { continue; }
 hill = kothStorer.getHill(gameInt);
 if (hill == null || hill.getMembers().isEmpty()) {
@@ -385,7 +385,7 @@ if (!subscriber) {canSendOpenKotH = kothStorer.canPlayerBeChallenged(gameInt, my
 amImember = hill.hasPlayer(myPID); %>
 <%="update app;" + ((hill != null)?hill.getNumPlayers():0) + ";" + ((hill != null && amImember)?1:0) + ";" + ((kingPid == myPID)?1:0) + ";" + ((kingPid != 0)?dsgPlayerStorer.loadPlayer(kingPid).getName():"") + ";" + ((amImember && (subscriber || canSendOpenKotH))?"1":"0") + ";" + gameInt%><%
 }
-for (int gameInt: CacheKOTHStorer.liveGames) {
+for (int gameInt: GridStateFactory.LIVE_GAMES) {
 if (gameInt%2 == 1) { continue; }
 hill = kothStorer.getHill(gameInt);
 if (hill == null || hill.getMembers().isEmpty()) {

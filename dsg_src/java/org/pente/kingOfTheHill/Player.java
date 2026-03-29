@@ -1,11 +1,17 @@
 package org.pente.kingOfTheHill;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * Created by waliedothman on 04/07/16.
  */
-public class Player {
+public class Player implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private long pid;
 
     private Date lastGame;

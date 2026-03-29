@@ -1,5 +1,7 @@
 package org.pente.kingOfTheHill;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -7,7 +9,11 @@ import java.util.List;
 /**
  * Created by waliedothman on 25/06/16.
  */
-public class Hill {
+public class Hill implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private List<Step> steps;
     private int hillID;
 

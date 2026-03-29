@@ -138,13 +138,13 @@
 
     
       <select name="game">
-      <% for (int i = 0; i < CacheKOTHStorer.tbGames.length; i++ ) {
+      <% for (int i = 0; i < GridStateFactory.TB_GAMES.length; i++ ) {
          %>
-             <option <%=(CacheKOTHStorer.tbGames[i]==game?"selected":"")%> value="<%= CacheKOTHStorer.tbGames[i] %>"><%= "Turn-based " + GridStateFactory.getGameName(CacheKOTHStorer.tbGames[i]) %></option>
+             <option <%=(GridStateFactory.TB_GAMES[i]==game?"selected":"")%> value="<%= GridStateFactory.TB_GAMES[i] %>"><%= "Turn-based " + GridStateFactory.getGameName(GridStateFactory.TB_GAMES[i]) %></option>
       <% } %>
-      <% for (int i = 0; i < CacheKOTHStorer.liveGames.length; i++ ) {
+      <% for (int i = 0; i < GridStateFactory.LIVE_GAMES.length; i++ ) {
          %>
-             <option <%=(CacheKOTHStorer.liveGames[i]==game?"selected":"")%> value="<%= CacheKOTHStorer.liveGames[i] %>"><%= GridStateFactory.getGameName(CacheKOTHStorer.liveGames[i]) %></option>
+             <option <%=(GridStateFactory.LIVE_GAMES[i]==game?"selected":"")%> value="<%= GridStateFactory.LIVE_GAMES[i] %>"><%= GridStateFactory.getGameName(GridStateFactory.LIVE_GAMES[i]) %></option>
       <% } %>
     </select>
 
@@ -382,7 +382,7 @@
             </tr>
             <%
                int color = 0;
-               for (int gameInt : CacheKOTHStorer.tbGames) {
+               for (int gameInt : GridStateFactory.TB_GAMES) {
                   hill = kothStorer.getHill(gameInt);
                   if (hill != null) {
                      color += 1;
@@ -395,7 +395,7 @@
                      long kingPid = hill.getKing();
                      if (kingPid != 0) {
                         DSGPlayerData d = dsgPlayerStorer.loadPlayer(kingPid);
-//				DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(CacheKOTHStorer.tbGames[i]);
+//				DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(GridStateFactory.TB_GAMES[i]);
                   %>ruled by
                   <%@ include file="playerLink.jspf" %>&nbsp;
                   <br>
@@ -407,7 +407,7 @@
             </tr>
             <% }
             } %>
-            <% for (int gameInt : CacheKOTHStorer.liveGames) {
+            <% for (int gameInt : GridStateFactory.LIVE_GAMES) {
                if (gameInt % 2 == 0) {
                   continue;
                }
@@ -423,7 +423,7 @@
                      long kingPid = hill.getKing();
                      if (kingPid != 0) {
                         DSGPlayerData d = dsgPlayerStorer.loadPlayer(kingPid);
-//				DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(CacheKOTHStorer.liveGames[i]);
+//				DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(GridStateFactory.LIVE_GAMES[i]);
                   %>ruled by
                   <%@ include file="playerLink.jspf" %>&nbsp;
                   <br>
@@ -435,7 +435,7 @@
             </tr>
             <% }
             } %>
-            <% for (int gameInt : CacheKOTHStorer.liveGames) {
+            <% for (int gameInt : GridStateFactory.LIVE_GAMES) {
                if (gameInt % 2 == 1) {
                   continue;
                }
@@ -451,7 +451,7 @@
                      long kingPid = hill.getKing();
                      if (kingPid != 0) {
                         DSGPlayerData d = dsgPlayerStorer.loadPlayer(kingPid);
-//				DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(CacheKOTHStorer.liveGames[i]);
+//				DSGPlayerGameData dsgPlayerGameData = d.getPlayerGameData(GridStateFactory.LIVE_GAMES[i]);
                   %>ruled by
                   <%@ include file="playerLink.jspf" %>&nbsp;
                   <br>

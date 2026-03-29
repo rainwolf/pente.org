@@ -416,8 +416,8 @@ public class IndexResponse {
 
         private List<KothEntry> buildKoth(long myPID, boolean subscriber) throws DSGPlayerStoreException {
             List<KothEntry> result = new ArrayList<>();
-            addKothEntries(result, CacheKOTHStorer.tbGames, myPID, subscriber, false);
-            addKothEntries(result, CacheKOTHStorer.liveGames, myPID, subscriber, true);  // odd first
+            addKothEntries(result, GridStateFactory.TB_GAMES, myPID, subscriber, false);
+            addKothEntries(result, GridStateFactory.LIVE_GAMES, myPID, subscriber, true);  // odd first
             return result;
         }
 

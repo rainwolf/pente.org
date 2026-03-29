@@ -1,16 +1,18 @@
 package org.pente.kingOfTheHill.web;
 
-import java.io.*;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.apache.log4j.Category;
+import org.pente.game.GridStateFactory;
+import org.pente.gameServer.core.DSGPlayerStorer;
+import org.pente.gameServer.server.Resources;
+import org.pente.kingOfTheHill.CacheKOTHStorer;
 
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
-
-import org.pente.gameServer.core.*;
-import org.pente.gameServer.server.*;
-
-import org.apache.log4j.*;
-
-import org.pente.kingOfTheHill.*;
+import java.io.IOException;
 
 public class KotHServlet extends HttpServlet {
 
@@ -61,8 +63,8 @@ public class KotHServlet extends HttpServlet {
 
         if (error == null) {
             error = "Invalid game.";
-            for (int i = 0; i < CacheKOTHStorer.tbGames.length; i++) {
-                if (game == CacheKOTHStorer.tbGames[i]) {
+            for (int i = 0; i < GridStateFactory.TB_GAMES.length; i++) {
+                if (game == GridStateFactory.TB_GAMES[i]) {
                     error = null;
                     break;
                 }
