@@ -48,8 +48,6 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
     private Hashtable<Long, DSGPlayerData> cacheByID;
     private Hashtable<String, DSGPlayerData> cacheByName;
 
-    private Map<Long, List<DSGIgnoreData>> ignoreData;
-
     private List<PlayerDataChangeListener> listeners;
     private List<IgnoreDataChangeListener> ignoreListeners;
     private List<DSGDonationData> donors;
@@ -68,7 +66,6 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         cacheByID = new Hashtable<Long, DSGPlayerData>(250);
         cacheByName = new Hashtable<String, DSGPlayerData>(250);
         listeners = new ArrayList<PlayerDataChangeListener>();
-        ignoreData = new HashMap<Long, List<DSGIgnoreData>>();
         ignoreListeners = new ArrayList<IgnoreDataChangeListener>();
         this.dbHandler = dbHandler;
         this.ctx = ctx;
@@ -127,10 +124,9 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         DSGPlayerData newData = basePlayerStorer.loadPlayer(name);
         cacheByID.put(Long.valueOf(newData.getPlayerID()), newData);
         cacheByName.put(newData.getName(), newData);
-        pente_cache.hremove(RedisConnectionManager.PID_TO_PREFS, newData.getPlayerID());
 
-        List<DSGIgnoreData> ignore = basePlayerStorer.getIgnoreData(newData.getPlayerID());
-        ignoreData.put(newData.getPlayerID(), ignore);
+        pente_cache.hremove(RedisConnectionManager.PID_TO_PREFS, newData.getPlayerID());
+        pente_cache.hremove(RedisConnectionManager.PID_TO_IGNORES, newData.getPlayerID());
         notifyListeners(newData);
     }
 
@@ -399,33 +395,28 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
     public void deleteIgnore(DSGIgnoreData data) throws DSGPlayerStoreException {
         if (!data.isGuest()) {
             basePlayerStorer.deleteIgnore(data);
-        }
-
-        List<DSGIgnoreData> l = ignoreData.get(data.getPid());
-        if (l != null) { //shouldn't be
-            l.remove(data);
+            pente_cache.hremove(RedisConnectionManager.PID_TO_IGNORES, data.getPid());
         }
     }
 
     public synchronized void insertIgnore(DSGIgnoreData data) throws DSGPlayerStoreException {
         if (!data.isGuest()) {
             basePlayerStorer.insertIgnore(data);
+            cacheIgnoreData(data);
         }
-
-        cacheIgnoreData(data);
     }
 
     private void cacheIgnoreData(DSGIgnoreData data) throws DSGPlayerStoreException {
-        List<DSGIgnoreData> l = ignoreData.get(data.getPid());
+        ArrayList<DSGIgnoreData> l = pente_cache.hget(RedisConnectionManager.PID_TO_IGNORES, data.getPid());
         if (l == null) {
-            l = new ArrayList<DSGIgnoreData>();
-            ignoreData.put(data.getPid(), l);
+            l = new ArrayList<DSGIgnoreData>(basePlayerStorer.getIgnoreData(data.getPid()));
         }
         l.add(data);
+        pente_cache.hput(RedisConnectionManager.PID_TO_IGNORES, data.getPid(), l);
     }
 
     public synchronized DSGIgnoreData getIgnoreData(long pid, long ignorePid) throws DSGPlayerStoreException {
-        List<DSGIgnoreData> l = ignoreData.get(pid);
+        ArrayList<DSGIgnoreData> l = pente_cache.hget(RedisConnectionManager.PID_TO_IGNORES, pid);
         if (l != null) {
             for (DSGIgnoreData d : l) {
                 if (d.getIgnorePid() == ignorePid) {
@@ -443,22 +434,19 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
     }
 
     public synchronized List<DSGIgnoreData> getIgnoreData(long pid) throws DSGPlayerStoreException {
-        List<DSGIgnoreData> l = ignoreData.get(pid);
-        if (l != null) {
-            return new ArrayList<DSGIgnoreData>(l); //wrap it
+        ArrayList<DSGIgnoreData> l = pente_cache.hget(RedisConnectionManager.PID_TO_IGNORES, pid);
+        if (l == null) {
+            l = new ArrayList<>(basePlayerStorer.getIgnoreData(pid));
+            pente_cache.hput(RedisConnectionManager.PID_TO_IGNORES, pid, l);
         }
 
-        l = basePlayerStorer.getIgnoreData(pid);
-        if (l != null) {
-            ignoreData.put(pid, l);
-        }
-
-        return new ArrayList<DSGIgnoreData>(l); //wrap it
+        return l;
     }
 
     public void updateIgnore(DSGIgnoreData data) throws DSGPlayerStoreException {
         if (!data.isGuest()) {
             basePlayerStorer.updateIgnore(data);
+            pente_cache.hremove(RedisConnectionManager.PID_TO_IGNORES, data.getPid());
         }
 
         // since we allow direct updates no need to do anything here

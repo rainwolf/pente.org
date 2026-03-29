@@ -1,6 +1,12 @@
 package org.pente.gameServer.core;
 
-public class DSGIgnoreData implements java.io.Serializable {
+import java.io.Serial;
+import java.io.Serializable;
+
+public class DSGIgnoreData implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private long ignoreId;
     private long pid;
