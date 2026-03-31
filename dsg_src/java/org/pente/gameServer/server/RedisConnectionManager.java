@@ -524,4 +524,8 @@ public class RedisConnectionManager {
         String value = System.getenv(key);
         return (value != null && !value.isEmpty()) ? value : defaultValue;
     }
+
+    public long count_cached(String namespace) {
+        return jedis.hlen(namespace);
+    }
 }
