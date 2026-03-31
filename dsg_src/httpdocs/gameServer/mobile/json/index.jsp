@@ -149,7 +149,7 @@
             }
             int game = s.getGame1().getGame();
             if (kothStorer.getEventId(game) == s.getGame1().getEventId()) {
-               Hill hill = kothStorer.getHill(game);
+               Hill hill = kothStorer.loadHill(game);
                if (!hill.hasPlayer(myPID)) {
                   openTBgames--;
                   iterator.remove();

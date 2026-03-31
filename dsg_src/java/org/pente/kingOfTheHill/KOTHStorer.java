@@ -7,4 +7,6 @@ public interface KOTHStorer {
 
     public int getEventId(int game) throws KOTHException;
 
+    public Hill loadHill(int game) throws KOTHException;
+
 }

@@ -55,7 +55,7 @@
 
          List<KotHPlayerGame> players = new ArrayList();
          for (int i = 0; i < GridStateFactory.TB_GAMES.length; i++) {
-            Hill hill = kothStorer.getHill(GridStateFactory.TB_GAMES[i]);
+            Hill hill = kothStorer.loadHill(GridStateFactory.TB_GAMES[i]);
             if (hill != null) {
                Player player = hill.getKingPlayer();
                if (player != null) {
@@ -64,7 +64,7 @@
             }
          }
          for (int i = 0; i < GridStateFactory.LIVE_GAMES.length; i++) {
-            Hill hill = kothStorer.getHill(GridStateFactory.LIVE_GAMES[i]);
+            Hill hill = kothStorer.loadHill(GridStateFactory.LIVE_GAMES[i]);
             if (hill != null) {
                Player player = hill.getKingPlayer();
                if (player != null) {

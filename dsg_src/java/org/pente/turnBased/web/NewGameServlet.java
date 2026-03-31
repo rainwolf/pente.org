@@ -1,21 +1,24 @@
 package org.pente.turnBased.web;
 
-import java.io.*;
-import java.util.*;
-import java.util.Date;
-
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
-
-import org.pente.game.*;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.apache.log4j.Category;
+import org.pente.game.GridStateFactory;
+import org.pente.gameServer.core.*;
+import org.pente.gameServer.server.Resources;
+import org.pente.kingOfTheHill.CacheKOTHStorer;
+import org.pente.kingOfTheHill.Hill;
 import org.pente.notifications.NotificationServer;
 import org.pente.turnBased.*;
-import org.pente.gameServer.core.*;
-import org.pente.gameServer.server.*;
 
-import org.apache.log4j.*;
-
-import org.pente.kingOfTheHill.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 public class NewGameServlet extends HttpServlet {
 
@@ -219,7 +222,7 @@ public class NewGameServlet extends HttpServlet {
                 error = "King of the Hill games must be rated sets";
             }
 
-            Hill hill = kothStorer.getHill(game);
+            Hill hill = kothStorer.loadHill(game);
             if (hill != null && error == null) {
                 long pid1 = invitePlayerData.getPlayerID(), pid2 = 0;
                 if (inviteePlayerData != null) {

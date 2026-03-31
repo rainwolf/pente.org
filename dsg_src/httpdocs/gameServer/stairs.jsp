@@ -19,7 +19,7 @@
 
    Resources resources = (Resources) application.getAttribute(Resources.class.getName());
    CacheKOTHStorer kothStorer = resources.getKOTHStorer();
-   Hill hill = kothStorer.getHill(game);
+   Hill hill = kothStorer.loadHill(game);
    long myPid = dsgPlayerData.getPlayerID();
    boolean iAmMember = false;
    if (hill != null) {
@@ -383,7 +383,7 @@
             <%
                int color = 0;
                for (int gameInt : GridStateFactory.TB_GAMES) {
-                  hill = kothStorer.getHill(gameInt);
+                  hill = kothStorer.loadHill(gameInt);
                   if (hill != null) {
                      color += 1;
             %>
@@ -411,7 +411,7 @@
                if (gameInt % 2 == 0) {
                   continue;
                }
-               hill = kothStorer.getHill(gameInt);
+               hill = kothStorer.loadHill(gameInt);
                if (hill != null && !hill.getMembers().isEmpty()) {
                   color += 1;
             %>
@@ -439,7 +439,7 @@
                if (gameInt % 2 == 1) {
                   continue;
                }
-               hill = kothStorer.getHill(gameInt);
+               hill = kothStorer.loadHill(gameInt);
                if (hill != null && !hill.getMembers().isEmpty()) {
                   color += 1;
             %>

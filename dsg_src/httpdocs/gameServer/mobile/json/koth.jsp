@@ -32,6 +32,6 @@
    DSGPlayerData dsgPlayerData = dsgPlayerStorer.loadPlayer(name);
    long myPid = dsgPlayerData.getPlayerID();
 
-   Hill hill = kothStorer.getHill(game);
+   Hill hill = kothStorer.loadHill(game);
    out.print(new Gson().toJson(KothResponse.build(hill, game, myPid, dsgPlayerData, dsgPlayerStorer, kothStorer)));
 %>

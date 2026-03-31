@@ -164,7 +164,7 @@
       if (s.isTwoGameSet()) {
          int game = s.getGame1().getGame();
          if (kothStorer.getEventId(game) == s.getGame1().getEventId()) {
-            Hill hill = kothStorer.getHill(game);
+            Hill hill = kothStorer.loadHill(game);
             if (!hill.hasPlayer(myPID)) {
                openTBgames--;
                iterator.remove();
@@ -395,7 +395,8 @@
             }
             tourneyStr = "(" + tourneyStr + ")";
          %>
-            <li>New turn-based <a href="/gameServer/tournaments">tournaments</a> <%=tourneyStr%></li>
+         <li>New turn-based <a href="/gameServer/tournaments">tournaments</a> <%=tourneyStr%>
+         </li>
          <%--    <li>New live speed-pente <a href="/gameServer/tournaments">tournament</a>, this is a tournament to test the code, if the code fails, the tournament will be aborted. More info <a href="/gameServer/forums/thread.jspa?forumID=2&threadID=232320">here.</a>--%>
          <%--    <li>Live (Speed) Test Tournament: <a href="/gameServer/tournaments">Test Tournament</a>--%>
          <%--            <br>--%>
@@ -411,15 +412,15 @@
       </ul>
    </div>
    <% } %>
-<%--   <% if (dsgPlayerData.showAds() && personalizeAds == null) { %>--%>
-<%--   <div align="left"--%>
-<%--        style="position:relative;padding:4px;font-weight:bold;border:2px <%= textColor2 %> solid; background:#ffd0a7">--%>
-<%--      Pente.org now offers a choice between personalized or non-personalized ads. Ads are non-personalized by default,--%>
-<%--      but this warning appears because you--%>
-<%--      have not yet registered a preference in your <a href="/gameServer/myprofile/prefs">settings</a>. Doing so will--%>
-<%--      make this warning disappear.--%>
-<%--   </div>--%>
-<%--   <% } %>--%>
+   <%--   <% if (dsgPlayerData.showAds() && personalizeAds == null) { %>--%>
+   <%--   <div align="left"--%>
+   <%--        style="position:relative;padding:4px;font-weight:bold;border:2px <%= textColor2 %> solid; background:#ffd0a7">--%>
+   <%--      Pente.org now offers a choice between personalized or non-personalized ads. Ads are non-personalized by default,--%>
+   <%--      but this warning appears because you--%>
+   <%--      have not yet registered a preference in your <a href="/gameServer/myprofile/prefs">settings</a>. Doing so will--%>
+   <%--      make this warning disappear.--%>
+   <%--   </div>--%>
+   <%--   <% } %>--%>
 </div>
 <%-- todo find actual width of avatar in case less than 80 --%>
 <div style="margin-left:10px;float:left;width:25%;">
@@ -551,11 +552,11 @@
                style="margin-right:5px;"><span>Live Game Room</span></a>
          </div>
          (best with Firefox or Chrome)
-<%--         <div style="margin-top:5px;">--%>
-<%--            or <a--%>
-<%--            href="/gameServer/pente.jnlp?name=<%=name%>&password=<%=dsgPlayerData.getPassword()%>"><span>install</span></a>--%>
-<%--            the (deprecated, unmaintained, old Java) game room on your desktop.--%>
-<%--         </div>--%>
+         <%--         <div style="margin-top:5px;">--%>
+         <%--            or <a--%>
+         <%--            href="/gameServer/pente.jnlp?name=<%=name%>&password=<%=dsgPlayerData.getPassword()%>"><span>install</span></a>--%>
+         <%--            the (deprecated, unmaintained, old Java) game room on your desktop.--%>
+         <%--         </div>--%>
       </td>
       <%
          }
@@ -668,19 +669,19 @@
                <font color="red"><b>(new)</b></font> Challenge the computer opponent with 12 levels
             </td>
          </tr>
-<%--         <tr>--%>
-<%--            <td>--%>
-<%--               <div class="buttonwrapper" style="margin-top:5px;">--%>
-<%--                  <a class="boldbuttons" href="/gameServer/strategy.jsp"--%>
-<%--                     style="margin-right:5px;"><span>Tutorials</span></a>--%>
-<%--                  <a class="boldbuttons" href="/gameServer/puzzle.jsp"--%>
-<%--                     style="margin-right:5px;"><span>Puzzles</span></a>--%>
-<%--               </div>--%>
-<%--            </td>--%>
-<%--            <td style="vertical-align:middle">--%>
-<%--               Learn the basics with the tutorials and challenge yourself with some fun puzzles--%>
-<%--            </td>--%>
-<%--         </tr>--%>
+         <%--         <tr>--%>
+         <%--            <td>--%>
+         <%--               <div class="buttonwrapper" style="margin-top:5px;">--%>
+         <%--                  <a class="boldbuttons" href="/gameServer/strategy.jsp"--%>
+         <%--                     style="margin-right:5px;"><span>Tutorials</span></a>--%>
+         <%--                  <a class="boldbuttons" href="/gameServer/puzzle.jsp"--%>
+         <%--                     style="margin-right:5px;"><span>Puzzles</span></a>--%>
+         <%--               </div>--%>
+         <%--            </td>--%>
+         <%--            <td style="vertical-align:middle">--%>
+         <%--               Learn the basics with the tutorials and challenge yourself with some fun puzzles--%>
+         <%--            </td>--%>
+         <%--         </tr>--%>
       </table>
    </div>
    <div style="clear:both"></div>
@@ -1086,11 +1087,11 @@ You haven't completed any rated games yet.<br>
    <%@ include file="leaderboard.jsp" %>
    <%@ include file="kothBox.jsp" %>
 
-<%--      <% if (dsgPlayerData.showAds()) { %>--%>
-<%--   <div class="box" style="background-color:white; border: 1px solid white;">--%>
-<%--      <%@ include file="dash200ad.jsp" %>--%>
-<%--   </div>--%>
-<%--      <% } %>--%>
+   <%--      <% if (dsgPlayerData.showAds()) { %>--%>
+   <%--   <div class="box" style="background-color:white; border: 1px solid white;">--%>
+   <%--      <%@ include file="dash200ad.jsp" %>--%>
+   <%--   </div>--%>
+   <%--      <% } %>--%>
 
    <%@ include file="whobox.jsp" %>
    <%@ include file="mobile.jsp" %>

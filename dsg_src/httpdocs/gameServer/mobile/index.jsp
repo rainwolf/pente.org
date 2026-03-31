@@ -169,7 +169,7 @@ for (Iterator<TBSet> iterator = waitingSets.iterator(); iterator.hasNext();) {
 //    if (s.isTwoGameSet()) {
         int game = s.getGame1().getGame();
         if (kothStorer.getEventId(game) == s.getGame1().getEventId()) {
-            Hill hill = kothStorer.getHill(game);
+            Hill hill = kothStorer.loadHill(game);
             if (!hill.hasPlayer(myPID)) {
                 openTBgames--;
                 iterator.remove();
@@ -362,10 +362,10 @@ King of the Hill<%
 Hill hill;
 int game;
 boolean canSendOpenKotH = false, amImember = false;
-//hill = kothStorer.getHill(game);
+//hill = kothStorer.loadHill(game);
 long kingPid = 0;
 for (int gameInt: GridStateFactory.TB_GAMES) {
-hill = kothStorer.getHill(gameInt);
+hill = kothStorer.loadHill(gameInt);
 if (hill == null) {
     continue;
 }
@@ -376,7 +376,7 @@ amImember = hill.hasPlayer(myPID); %>
 }
 for (int gameInt: GridStateFactory.LIVE_GAMES) {
 if (gameInt%2 == 0) { continue; }
-hill = kothStorer.getHill(gameInt);
+hill = kothStorer.loadHill(gameInt);
 if (hill == null || hill.getMembers().isEmpty()) {
     continue;
 }
@@ -387,7 +387,7 @@ amImember = hill.hasPlayer(myPID); %>
 }
 for (int gameInt: GridStateFactory.LIVE_GAMES) {
 if (gameInt%2 == 1) { continue; }
-hill = kothStorer.getHill(gameInt);
+hill = kothStorer.loadHill(gameInt);
 if (hill == null || hill.getMembers().isEmpty()) {
     continue;
 }

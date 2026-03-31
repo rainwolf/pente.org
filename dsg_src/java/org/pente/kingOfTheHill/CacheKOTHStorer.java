@@ -81,10 +81,18 @@ public class CacheKOTHStorer implements KOTHStorer {
         return 0;
     }
 
-    public Hill getHill(int game) {
+    public Hill loadHill(int game) {
         int hill_id = getEventId(game);
         if (hill_id != 0) {
             Hill hill = pente_cache.hget(RedisConnectionManager.GAME_TO_KOTH_HILL, hill_id);
+            if (hill == null) {
+                try {
+                    hill = baseStorer.loadHill(hill_id);
+                    pente_cache.hput(RedisConnectionManager.GAME_TO_KOTH_HILL, hill_id, hill);
+                } catch (KOTHException e) {
+                    log4j.error("Error: CacheKOTHStorer.getHill " + hill_id, e);
+                }
+            }
             if (hill == null && game > 50) {
                 hill = new Hill();
                 hill.setHillID(hill_id);
@@ -140,7 +148,7 @@ public class CacheKOTHStorer implements KOTHStorer {
             try {
                 if (!dsgPlayerStorer.loadPlayer(pid).hasPlayerDonated()) {
                     for (int gameId : GridStateFactory.ALL_GAMES) {
-                        Hill hill = getHill(gameId);
+                        Hill hill = loadHill(gameId);
                         if (hill == null) {
                             continue;
                         }
@@ -192,7 +200,7 @@ public class CacheKOTHStorer implements KOTHStorer {
             return;
         }
         synchronized (cacheKotHLock) {
-            Hill hill = pente_cache.hget(RedisConnectionManager.GAME_TO_KOTH_HILL, hill_id);
+            Hill hill = loadHill(game);
             if (hill != null) {
                 long oldKingPid = hill.getKing();
                 if (hill.removePlayer(pid)) {
@@ -216,7 +224,7 @@ public class CacheKOTHStorer implements KOTHStorer {
             return;
         }
         synchronized (cacheKotHLock) {
-            Hill hill = pente_cache.hget(RedisConnectionManager.GAME_TO_KOTH_HILL, hill_id);
+            Hill hill = loadHill(game);
             if (hill != null) {
                 long oldKingPid = hill.getKing();
                 hill.movePlayersUpDown(winner, loser);
@@ -237,7 +245,7 @@ public class CacheKOTHStorer implements KOTHStorer {
         if (hill_id == 0) {
             return -42;
         }
-        Hill hill = pente_cache.hget(RedisConnectionManager.GAME_TO_KOTH_HILL, hill_id);
+        Hill hill = loadHill(game);
         if (hill == null) {
             return 0;
         }
@@ -249,7 +257,7 @@ public class CacheKOTHStorer implements KOTHStorer {
         if (hill_id == 0) {
             return;
         }
-        Hill hill = pente_cache.hget(RedisConnectionManager.GAME_TO_KOTH_HILL, hill_id);
+        Hill hill = loadHill(game);
         if (hill != null) {
             try {
                 long kingPid = hill.getKing();
@@ -284,7 +292,7 @@ public class CacheKOTHStorer implements KOTHStorer {
 //            boolean altered = false;
             synchronized (cacheKotHLock) {
                 for (int tbGame : GridStateFactory.TB_GAMES) {
-                    Hill hill = getHill(tbGame);
+                    Hill hill = loadHill(tbGame);
                     if (hill != null) {
                         List<Player> players = hill.getMembers();
                         for (Player player : players) {
@@ -320,7 +328,7 @@ public class CacheKOTHStorer implements KOTHStorer {
                 lastMonth.setTime(lastMonth.getTime() - (31L * 3600 * 24 * 1000));
 //                altered = false;
                 for (int liveGame : GridStateFactory.LIVE_GAMES) {
-                    Hill hill = getHill(liveGame);
+                    Hill hill = loadHill(liveGame);
                     if (hill != null) {
                         List<Player> players = hill.getMembers();
                         for (Player player : players) {
@@ -358,7 +366,7 @@ public class CacheKOTHStorer implements KOTHStorer {
         if (hill_id == 0) {
             return;
         }
-        Hill hill = getHill(game);
+        Hill hill = loadHill(game);
         if (hill == null) {
             return;
         }

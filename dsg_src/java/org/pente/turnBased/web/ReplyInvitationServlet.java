@@ -209,7 +209,7 @@ public class ReplyInvitationServlet extends HttpServlet {
                             CacheKOTHStorer kothStorer = (CacheKOTHStorer) resources.getKOTHStorer();
                             int game = set.getGame1().getGame();
                             if (kothStorer.getEventId(game) == set.getGame1().getEventId()) {
-                                Hill hill = kothStorer.getHill(game);
+                                Hill hill = kothStorer.loadHill(game);
                                 if (hill != null) {
                                     long pid1 = set.getInviterPid(), pid2 = invitee.getPlayerID();
 //                                    int stepsBetween = hill.stepsBetween(pid1, pid2);
@@ -358,7 +358,7 @@ public class ReplyInvitationServlet extends HttpServlet {
                                 CacheKOTHStorer kothStorer = (CacheKOTHStorer) resources.getKOTHStorer();
                                 int game = set.getGame1().getGame();
                                 if (kothStorer.getEventId(game) == set.getGame1().getEventId() && set.getGame1().getDaysPerMove() >= 5) {
-                                    Hill hill = kothStorer.getHill(game);
+                                    Hill hill = kothStorer.loadHill(game);
                                     if (hill != null) {
                                         long pid1 = set.getInviterPid(), pid2 = invitee.getPlayerID(), kingPid = hill.getKing();
                                         try {

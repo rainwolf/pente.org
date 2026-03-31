@@ -4,8 +4,10 @@ import org.apache.log4j.Category;
 import org.pente.database.DBHandler;
 
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by waliedothman on 26/06/16.
@@ -184,6 +186,54 @@ public class MySQLKOTHStorer implements KOTHStorer {
         }
 
         return hills;
+    }
+
+    public Hill loadHill(int hill_id) throws KOTHException {
+        Connection con = null;
+        PreparedStatement stmt = null;
+        ResultSet result = null;
+        Hill hill = null;
+
+        try {
+            try {
+                con = dbHandler.getConnection();
+                stmt = con.prepareStatement("select pid, step, last_game from koth where koth_id = ? order by step asc");
+                stmt.setInt(1, hill_id);
+                result = stmt.executeQuery();
+
+                while (result.next()) {
+                    long pid = result.getLong(1);
+                    int step_idx = result.getInt(2);
+                    java.util.Date lastGameDate = new Date(result.getTimestamp(3).getTime());
+                    if (hill == null || hill.getHillID() != hill_id) {
+                        hill = new Hill();
+                        hill.setHillID(hill_id);
+                    }
+                    if (hill.getSteps() == null) {
+                        hill.setSteps(new ArrayList<>());
+                    }
+                    while (step_idx + 1 > hill.getSteps().size()) {
+                        hill.getSteps().add(new Step());
+                    }
+                    hill.getSteps().get(step_idx).addPlayer(new Player(pid, lastGameDate));
+                }
+
+            } finally {
+                if (result != null) {
+                    result.close();
+                }
+                if (stmt != null) {
+                    stmt.close();
+                }
+                if (con != null) {
+                    dbHandler.freeConnection(con);
+                }
+            }
+        } catch (SQLException se) {
+            throw new KOTHException(se);
+        }
+
+        return hill;
     }
 
     public void adjustCrown(int game, long pid) {

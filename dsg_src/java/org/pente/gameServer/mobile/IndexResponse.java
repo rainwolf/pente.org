@@ -442,7 +442,7 @@ public class IndexResponse {
 
         private void addKothEntry(List<KothEntry> result, int gameInt,
                                   long myPID, boolean subscriber) throws DSGPlayerStoreException {
-            Hill hill = kothStorer.getHill(gameInt);
+            Hill hill = kothStorer.loadHill(gameInt);
             if (hill == null) return;
             if (gameInt > 50 && (hill.getMembers() == null || hill.getMembers().isEmpty())) return;
 

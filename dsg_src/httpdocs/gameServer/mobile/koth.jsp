@@ -49,7 +49,7 @@
 
    Hill hill;
 // game = GridStateFactory.PENTE;
-   hill = kothStorer.getHill(game);
+   hill = kothStorer.loadHill(game);
    long kingPid = 0;
    if (hill != null && !hill.getSteps().isEmpty()) {
       boolean canIchallenge = hill.hasPlayer(myPid);
