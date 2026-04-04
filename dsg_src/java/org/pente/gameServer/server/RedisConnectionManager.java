@@ -96,6 +96,8 @@ public class RedisConnectionManager {
      */
     public static final String PID_TO_IGNORES = "pid:ignores";
 
+    public static final String PID_TO_AVATAR = "pid:avatar";
+
     /**
      * CacheDSGFollowerStorer: pid (long) → List<Long> followers
      */

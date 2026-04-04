@@ -121,6 +121,8 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
     private void cachePlayer(DSGPlayerData dsgPlayerData) {
         pente_cache.hput(RedisConnectionManager.PID_TO_PLAYER, dsgPlayerData.getPlayerID(), dsgPlayerData);
         this.nameToPIDCache.put(dsgPlayerData.getName(), dsgPlayerData.getPlayerID());
+        DSGAvatar avatar = new DSGAvatar(dsgPlayerData.getAvatar(), dsgPlayerData.getAvatarContentType(), dsgPlayerData.getAvatarLastModified());
+        pente_cache.hput(RedisConnectionManager.PID_TO_AVATAR, dsgPlayerData.getPlayerID(), avatar);
     }
 
     private void uncachePlayer(Long playerID) {
@@ -128,7 +130,21 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         if (data != null) {
             this.nameToPIDCache.remove(data.getName());
             pente_cache.hremove(RedisConnectionManager.PID_TO_PLAYER, playerID);
+            pente_cache.hremove(RedisConnectionManager.PID_TO_AVATAR, playerID);
         }
+    }
+
+    private DSGPlayerData loadPlayerFromCache(long pid) throws DSGPlayerStoreException {
+        DSGPlayerData dsgPlayerData = pente_cache.hget(RedisConnectionManager.PID_TO_PLAYER, pid);
+        if (dsgPlayerData != null) {
+            DSGAvatar avatar = pente_cache.hget(RedisConnectionManager.PID_TO_AVATAR, pid);
+            if (avatar != null) {
+                dsgPlayerData.setAvatar(avatar.getAvatar());
+                dsgPlayerData.setAvatarContentType(avatar.getAvatarContentType());
+                dsgPlayerData.setAvatarLastModified(avatar.getAvatarLastModified());
+            }
+        }
+        return dsgPlayerData;
     }
 
     public synchronized void refreshPlayer(String name) throws DSGPlayerStoreException {
@@ -155,7 +171,10 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
     public synchronized void deleteAvatar(DSGPlayerData dsgPlayerData)
             throws DSGPlayerStoreException {
         dsgPlayerData.setAvatar(null);
+        dsgPlayerData.setAvatarContentType(null);
+        dsgPlayerData.setAvatarLastModified(new Date().getTime());
         basePlayerStorer.deleteAvatar(dsgPlayerData);
+        pente_cache.hremove(RedisConnectionManager.PID_TO_AVATAR, dsgPlayerData.getPlayerID());
     }
 
     public void insertAvatar(DSGPlayerData dsgPlayerData)
@@ -189,7 +208,7 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
 
         log4j.debug("loadPlayer(" + playerID + ")");
         DSGPlayerData dsgPlayerData = null;
-        dsgPlayerData = pente_cache.hget(RedisConnectionManager.PID_TO_PLAYER, playerID);
+        dsgPlayerData = loadPlayerFromCache(playerID);
         if (dsgPlayerData == null) {
             log4j.debug(playerID + " was not cached");
             dsgPlayerData = basePlayerStorer.loadPlayer(playerID);
@@ -215,7 +234,7 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
                 cachePlayer(dsgPlayerData);
             }
         } else {
-            dsgPlayerData = pente_cache.hget(RedisConnectionManager.PID_TO_PLAYER, pid);
+            dsgPlayerData = loadPlayer(pid);
         }
         return dsgPlayerData;
     }
