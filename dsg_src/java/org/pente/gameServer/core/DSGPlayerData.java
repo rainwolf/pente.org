@@ -19,10 +19,11 @@
 
 package org.pente.gameServer.core;
 
-import java.util.*;
-import java.awt.Color;
+import java.awt.*;
+import java.util.Date;
+import java.util.Vector;
 
-public interface DSGPlayerData extends Cloneable {
+public interface DSGPlayerData extends Cloneable, java.io.Serializable {
 
     public void setPlayerID(long pid);
 
@@ -178,7 +179,7 @@ public interface DSGPlayerData extends Cloneable {
 
     public DSGPlayerGameData getPlayerGameData(int game, boolean computer);
 
-    public Vector getAllPlayerGameData();
+    public Vector<DSGPlayerGameData> getAllPlayerGameData();
 
     public boolean hasPlayerPlayed();
 

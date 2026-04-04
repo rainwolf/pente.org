@@ -19,10 +19,12 @@
 
 package org.pente.gameServer.core;
 
-import java.util.*;
-import java.awt.Color;
+import java.awt.*;
+import java.io.Serializable;
+import java.util.Date;
+import java.util.Vector;
 
-public class SimpleDSGPlayerData implements DSGPlayerData, java.io.Serializable {
+public class SimpleDSGPlayerData implements DSGPlayerData, Serializable {
 
     private long pid;
     private String name;
@@ -370,10 +372,11 @@ public class SimpleDSGPlayerData implements DSGPlayerData, java.io.Serializable 
         return count;
     }
 
-    /** Gets the "viewable" stats for a player.
-     *  Note that if the player is a human the data is stored
-     *  with isHumanScore() == true and if the player is a computer
-     *  it is stored with isComputerScore() == true
+    /**
+     * Gets the "viewable" stats for a player.
+     * Note that if the player is a human the data is stored
+     * with isHumanScore() == true and if the player is a computer
+     * it is stored with isComputerScore() == true
      */
     public DSGPlayerGameData getPlayerGameData(int game) {
         return getPlayerGameData(game, isComputer());
@@ -410,7 +413,7 @@ public class SimpleDSGPlayerData implements DSGPlayerData, java.io.Serializable 
         }
     }
 
-    public Vector getAllPlayerGameData() {
+    public Vector<DSGPlayerGameData> getAllPlayerGameData() {
         return gameData;
     }
 

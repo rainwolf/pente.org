@@ -19,12 +19,18 @@
 
 package org.pente.gameServer.core;
 
-import java.util.*;
-import java.text.*;
+import java.io.Serial;
+import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class SimpleDSGPlayerGameData implements
         DSGPlayerGameData,
-        java.io.Serializable {
+        Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private long playerID;
     private int game;
