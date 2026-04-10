@@ -1,4 +1,6 @@
 .idea
+dockerMain/redis/
+localhost.cer
 .DS_Store
 deploy
 deployClasses
