@@ -1,17 +1,22 @@
 package org.pente.turnBased.web;
 
-import java.io.*;
-import java.util.*;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.apache.log4j.Category;
+import org.pente.gameServer.core.DSGPlayerData;
+import org.pente.gameServer.core.DSGPlayerStoreException;
+import org.pente.gameServer.core.DSGPlayerStorer;
+import org.pente.gameServer.server.Resources;
+import org.pente.turnBased.TBGame;
+import org.pente.turnBased.TBGameStorer;
+import org.pente.turnBased.TBMessage;
+import org.pente.turnBased.TBStoreException;
 
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
-
-import org.pente.game.*;
-import org.pente.turnBased.*;
-import org.pente.gameServer.core.*;
-import org.pente.gameServer.server.*;
-
-import org.apache.log4j.*;
+import java.io.IOException;
 
 public class ResignServlet extends HttpServlet {
 
@@ -122,29 +127,26 @@ public class ResignServlet extends HttpServlet {
 
                 getServletContext().getRequestDispatcher(confirmRedirectPage).
                         forward(request, response);
-                return;
+
             } else if (command.equals("resign")) {
 
                 if (playerData.getPlayerID() != game.getCurrentPlayer()) {
-                    log4j.error("ResignServlet, not current player" + gid +
-                            "," + playerData.getPlayerID());
-                    handleError(request, response, "Not your turn.");
-                    return;
-                }
-
-                TBMessage message = null;
-                if (msg != null && !msg.trim().equals("")) {
-                    message = new TBMessage();
-                    message.setMessage(msg);
-                    message.setDate(new java.util.Date());
-                    // add message after other players since not making a move
-                    message.setMoveNum(game.getNumMoves());
-                    message.setSeqNbr(2);
-                    message.setPid(game.getCurrentPlayer());
-                }
-                tbGameStorer.resignGame(game);
-                if (message != null) {
-                    tbGameStorer.storeNewMessage(game.getGid(), message);
+                    tbGameStorer.resignGame(game, playerData.getPlayerID());
+                } else {
+                    TBMessage message = null;
+                    if (msg != null && !msg.trim().equals("")) {
+                        message = new TBMessage();
+                        message.setMessage(msg);
+                        message.setDate(new java.util.Date());
+                        // add message after other players since not making a move
+                        message.setMoveNum(game.getNumMoves());
+                        message.setSeqNbr(2);
+                        message.setPid(game.getCurrentPlayer());
+                    }
+                    tbGameStorer.resignGame(game);
+                    if (message != null) {
+                        tbGameStorer.storeNewMessage(game.getGid(), message);
+                    }
                 }
 
                 String isMobile = (String) request.getParameter("mobile");

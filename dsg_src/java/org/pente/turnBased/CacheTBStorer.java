@@ -17,24 +17,24 @@ import java.util.*;
 
 public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
-    private Category log4j = Category.getInstance(CacheTBStorer.class.getName());
+    private final Category log4j = Category.getInstance(CacheTBStorer.class.getName());
 
-    private DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+    private final DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 
-    private TBGameStorer baseStorer;
-    private DSGPlayerStorer dsgPlayerStorer;
-    private GameStorer gameStorer;
-    private DSGMessageStorer dsgMessageStorer;
+    private final TBGameStorer baseStorer;
+    private final DSGPlayerStorer dsgPlayerStorer;
+    private final GameStorer gameStorer;
+    private final DSGMessageStorer dsgMessageStorer;
     private TourneyStorer tourneyStorer;
-    private CacheKOTHStorer kothStorer;
+    private final CacheKOTHStorer kothStorer;
     private NotificationServer notificationServer;
 
-    RedisConnectionManager red = RedisConnectionManager.getInstance();
+    RedisConnectionManager pente_cache = RedisConnectionManager.getInstance();
 
     /**
      * used to cache event ids for tb-games
      */
-    private Map<Integer, Integer> eidMap = new HashMap<Integer, Integer>();
+    private final Map<Integer, Integer> eidMap = new HashMap<Integer, Integer>();
 
     /**
      * used for quick access by gid
@@ -189,7 +189,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
             waitingSetsLoaded = false;
             setsByPid.clear();
 
-            red.invalidate(RedisConnectionManager.PID_TO_TB_VACATION);
+            pente_cache.invalidate(RedisConnectionManager.PID_TO_TB_VACATION);
 
             // restart threads
             restartTasks();
@@ -641,10 +641,10 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
     }
 
     public TBVacation getTBVacation(long pid) {
-        TBVacation vacation = red.hget(RedisConnectionManager.PID_TO_TB_VACATION, pid);
+        TBVacation vacation = pente_cache.hget(RedisConnectionManager.PID_TO_TB_VACATION, pid);
         if (vacation == null) {
             vacation = baseStorer.getTBVacation(pid);
-            red.hput(RedisConnectionManager.PID_TO_TB_VACATION, pid, vacation);
+            pente_cache.hput(RedisConnectionManager.PID_TO_TB_VACATION, pid, vacation);
         } else if (vacation.getLastPinched() != null) {
             Calendar now = Calendar.getInstance();
             int currentYear = now.get(Calendar.YEAR);
@@ -1713,6 +1713,25 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         }
     }
 
+    public void resignGame(TBGame g, long resigningPlayer) throws TBStoreException {
+        log4j.debug("CacheTBGameStorer.resignGame(" + g.getGid() + " by " + resigningPlayer + ")");
+        TBGame game = loadGame(g.getGid());
+        int winner;
+        if (game.getPlayer1Pid() == resigningPlayer) {
+            winner = 2;
+        } else if (game.getPlayer2Pid() == resigningPlayer) {
+            winner = 1;
+        } else {
+            throw new TBStoreException("Player " + resigningPlayer + " is not in game " + g.getGid());
+        }
+        synchronized (cacheTbLock) {
+            game.end();
+            game.setWinner(winner);
+            endGameRunnable.endGame(game, EndGameRunnable.Data.REASON_RESIGN);
+        }
+    }
+
+
     public void endSet(TBSet set) throws TBStoreException {
         throw new UnsupportedOperationException("not supported");
     }
@@ -1963,9 +1982,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         }
     }
 
-
     public void setNotificationServer(NotificationServer notificationServer) {
         this.notificationServer = notificationServer;
     }
-
 }

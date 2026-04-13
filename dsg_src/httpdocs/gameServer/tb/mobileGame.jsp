@@ -130,8 +130,9 @@
 <% pageContext.setAttribute("leftNav", "false"); %>
 <%@ include file="../begin.jsp" %>
 <%
-   String version = globalResources.getAppletVersion();
+   boolean myTurnBool = !"false".equals(myTurn);
    DSGPlayerData meData = dsgPlayerStorer.loadPlayer(me);
+   boolean amIaPlayer = game.getPlayer1Pid() == meData.getPlayerID() || game.getPlayer2Pid() == meData.getPlayerID();
 //   List prefs = dsgPlayerStorer.loadPlayerPreferences(meData.getPlayerID());
 //   boolean personalizeAds = false;
 //   for (Iterator it = prefs.iterator(); it.hasNext(); ) {
@@ -453,8 +454,6 @@
                }
             %>
          </table>
-         </div>
-         </div>
       </td>
    </tr>
    <% if (game.getDPenteState() != 2) { %>
@@ -552,8 +551,14 @@
 
       </td>
    </tr>
+   <% if (!myTurnBool && amIaPlayer) { %>
+   <tr>
+      <td>
+         <a class="boldbuttons" style="float: right" href="javascript:resign();"><span>Resign</span></a>
+      </td>
+   </tr>
+   <% } %>
 </table>
-
 
 </td>
 </tr>

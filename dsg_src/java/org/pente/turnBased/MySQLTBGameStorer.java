@@ -1,12 +1,13 @@
 package org.pente.turnBased;
 
+import org.apache.log4j.Category;
+import org.pente.database.DBHandler;
+
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
-
-import org.pente.database.*;
-
-import org.apache.log4j.*;
+import java.util.List;
 
 public class MySQLTBGameStorer implements TBGameStorer {
 
@@ -1208,6 +1209,12 @@ public class MySQLTBGameStorer implements TBGameStorer {
     }
 
     public void resignGame(TBGame game) throws TBStoreException {
+        throw new UnsupportedOperationException("Not implemented, just " +
+                "use endGame()");
+    }
+
+    @Override
+    public void resignGame(TBGame game, long resigningPlayer) throws TBStoreException {
         throw new UnsupportedOperationException("Not implemented, just " +
                 "use endGame()");
     }
