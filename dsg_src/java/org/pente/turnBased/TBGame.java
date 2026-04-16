@@ -1,12 +1,21 @@
 package org.pente.turnBased;
 
-import java.io.Serializable;
-import java.util.*;
-
 import org.pente.game.*;
-import org.pente.gameServer.core.*;
+import org.pente.gameServer.core.DSGPlayerData;
+import org.pente.gameServer.core.DSGPlayerGameData;
+import org.pente.gameServer.core.DSGPlayerStoreException;
+import org.pente.gameServer.core.DSGPlayerStorer;
+
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 public class TBGame implements org.pente.game.MoveData, Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private long gid;
     private long setId;
@@ -41,8 +50,8 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
     private boolean undoRequested;
     private byte hiddenBy = 0;
 
-    private List<Integer> moves = new ArrayList<Integer>();
-    private List<TBMessage> messages = new ArrayList<TBMessage>();
+    private ArrayList<Integer> moves = new ArrayList<Integer>();
+    private ArrayList<TBMessage> messages = new ArrayList<TBMessage>();
 
     public static final int DPENTE_STATE_START = 1;
     public static final int DPENTE_STATE_DECIDE = 2;
@@ -219,7 +228,7 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
     }
 
     public void setMessages(List<TBMessage> messages) {
-        this.messages = messages;
+        this.messages = new ArrayList<>(messages);
     }
 
     public void addMessage(TBMessage m) {
@@ -262,7 +271,7 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
     }
 
     public void setMoves(List<Integer> moves) {
-        this.moves = moves;
+        this.moves = new ArrayList<>(moves);
     }
 
     public void addMove(int move) {

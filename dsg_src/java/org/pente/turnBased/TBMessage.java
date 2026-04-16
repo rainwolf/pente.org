@@ -1,9 +1,13 @@
 package org.pente.turnBased;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 
 public class TBMessage implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private int moveNum;
     private int seqNbr; //for moves with more than 1 message

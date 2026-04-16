@@ -1,6 +1,7 @@
 package org.pente.turnBased;
 
-import java.util.*;
+import java.util.Date;
+import java.util.List;
 
 public interface TBGameStorer {
 
@@ -39,6 +40,8 @@ public interface TBGameStorer {
     public void cancelSet(TBSet set) throws TBStoreException;
 
     public void resignGame(TBGame game) throws TBStoreException;
+
+    public void resignGame(TBGame game, long resigningPlayer) throws TBStoreException;
 
     public void endSet(TBSet set) throws TBStoreException;
 

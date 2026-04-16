@@ -1,8 +1,13 @@
 package org.pente.turnBased;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.Date;
 
-public class TBSet implements java.io.Serializable {
+public class TBSet implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private long setId;
 
@@ -238,6 +243,13 @@ public class TBSet implements java.io.Serializable {
         this.privateGame = privateGame;
     }
 
+    public void setGame1(TBGame game) {
+        this.games[0] = game;
+    }
+
+    public void setGame2(TBGame game) {
+        this.games[1] = game;
+    }
 
     @Override
     public boolean equals(Object o) {
