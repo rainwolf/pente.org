@@ -19,7 +19,6 @@
 
 package org.pente.gameServer.server;
 
-import org.pente.game.GameData;
 import org.pente.game.GameStorer;
 import org.pente.game.GridStateFactory;
 import org.pente.game.PlayerStorer;
@@ -27,7 +26,6 @@ import org.pente.gameServer.client.GameTimer;
 import org.pente.gameServer.client.MilliSecondGameTimer;
 import org.pente.gameServer.core.DSGPlayerData;
 import org.pente.gameServer.core.DSGPlayerStorer;
-import org.pente.gameServer.core.LiveSet;
 import org.pente.gameServer.core.MySQLDSGReturnEmailStorer;
 import org.pente.gameServer.event.*;
 
@@ -262,7 +260,6 @@ public class ArenaServerTable extends ServerTable {
 
 
     protected void resetTable(DSGArenaCreateTableEvent joinEvent) {
-
         if (gridState != null) {
             gridState.clear();
         }
@@ -421,146 +418,6 @@ public class ArenaServerTable extends ServerTable {
                     new DSGPlayTableErrorEvent(player, tableNum, error),
                     player);
         }
-    }
-
-    protected void gameOver(boolean draw,
-                            String winnerPlayer, String loserPlayer, boolean resign, boolean timeup,
-                            boolean forceResign) {
-
-        resetTableGameOver();
-
-        int winner = getPlayingPlayerSeat(winnerPlayer);
-
-        int newStatus = DSGGameStateTableEvent.NO_GAME_IN_PROGRESS;
-        int gameInSet = 0;
-        String setMsg = "";
-        String gameStatus = GameData.STATUS_WIN;
-        if (resign) {
-            gameStatus = GameData.STATUS_RESIGN;
-        } else if (timeup) {
-            gameStatus = GameData.STATUS_TIMEOUT;
-        } else if (forceResign) {
-            gameStatus = GameData.STATUS_FORCE_RESIGN;
-        }
-
-        boolean single_game = (game.getId() == GridStateFactory.GO || game.getId() == GridStateFactory.SPEED_GO
-                || game.getId() == GridStateFactory.GO9 || game.getId() == GridStateFactory.SPEED_GO9
-                || game.getId() == GridStateFactory.GO13 || game.getId() == GridStateFactory.SPEED_GO13);
-
-        if (rated && set != null) {
-            if (set.getG1Gid() == 0 && !single_game) {
-
-                // if not all sitting and
-                // resign or force resign means one player disconnected
-                // and other player made a decision during game 1
-                if (!allPlayersSitting() && (resign || forceResign)) {
-                    newStatus = DSGGameStateTableEvent.NO_GAME_IN_PROGRESS;
-                    set.setStatus(resign ? LiveSet.STATUS_RESIGN : LiveSet.STATUS_FORCED);
-                    gameInSet = 0;
-
-                    long winnerPid = playingPlayers[getPlayingPlayerSeat(winnerPlayer)].getPlayerID();
-                    int winnerSetPos = set.getP1Pid() == winnerPid ? 1 : 2;
-                    set.setWinner(winnerSetPos);
-                    set.setCompletionDate(new Date());
-                    setMsg = "set over, " + loserPlayer + " resigns";
-                } else {
-                    newStatus = DSGGameStateTableEvent.WAIT_GAME_TWO_OF_SET;
-                    set.setStatus(LiveSet.STATUS_ONE_GAME_COMPLETED);
-                    gameInSet = 1;
-                }
-            } else if (single_game) {
-
-
-                set.setWinner(winner);
-                set.setStatus(LiveSet.STATUS_COMPLETED);
-                set.setCompletionDate(new Date());
-
-                newStatus = DSGGameStateTableEvent.NO_GAME_IN_PROGRESS;
-                gameInSet = 0;
-
-            } else {
-
-                long g2WinnerPid = playingPlayers[getPlayingPlayerSeat(winnerPlayer)].getPlayerID();
-
-                int winnerSetPos = set.getP1Pid() == g2WinnerPid ? 1 : 2;
-
-                long g1WinnerPid = 0;
-                int result = 0;
-                // if first game draw
-                if (set.getG1().getWinner() == 0) {
-                    if (draw) {
-                        result = 0;
-                    } else {
-                        result = winnerSetPos;
-                    }
-                } else if (set.getG1().getWinner() == 1) {
-                    g1WinnerPid = set.getG1().getPlayer1Data().getUserID();
-                } else {
-                    g1WinnerPid = set.getG1().getPlayer2Data().getUserID();
-                }
-                // if a player won both games
-                if (g1WinnerPid == g2WinnerPid) {
-                    result = winnerSetPos;
-                } else {
-                    result = 0;
-                }
-
-                if (result == 0) {
-                    setMsg = "set over, set is a draw";
-                } else {
-                    setMsg = "set over, " + winnerPlayer + ", wins the set!";
-                }
-
-                set.setWinner(result);
-                set.setStatus(LiveSet.STATUS_COMPLETED);
-                set.setCompletionDate(new Date());
-
-                newStatus = DSGGameStateTableEvent.NO_GAME_IN_PROGRESS;
-                gameInSet = 0;
-            }
-        }
-
-        String txt = "";
-        if (draw) {
-            txt = "game over, game is a draw";
-            if (rated && setMsg != null) {
-                txt += ". " + setMsg;
-            }
-        } else {
-            winner = getPlayerSeat(winnerPlayer);
-
-            if (resign) {
-                txt = "game over, " + loserPlayer + " resigns";
-            } else if (timeup) {
-                txt = "game over, " + loserPlayer + " has run out of time";
-            } else if (forceResign) {
-                txt = "game over, " + loserPlayer + " was forced to resign";
-            } else {
-                txt = "game over, " + winnerPlayer + " wins the game";
-            }
-
-            if (rated && setMsg != null) {
-                txt += ". " + setMsg;
-            }
-        }
-
-        sendTimers(winnerPlayer);
-        sendTimers(loserPlayer);
-
-        changeGameState(newStatus, txt, winnerPlayer, gameInSet);
-
-        updateDatabaseAfterGameOverInSeparateThread(
-                winnerPlayer, loserPlayer, winner, set, gameStatus);
-
-        if (noHumanPlayersInTable()) {
-            removeAllComputers();
-        }
-
-        if (rated && set != null && set.isComplete()) {
-            set = null;//restart set
-        }
-
-        gameStarted = false;
     }
 
 }
