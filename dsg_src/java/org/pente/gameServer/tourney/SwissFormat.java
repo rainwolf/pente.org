@@ -2,9 +2,17 @@ package org.pente.gameServer.tourney;
 
 import org.pente.gameServer.core.DSGPlayerStorer;
 
-import java.util.*;
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
-public class SwissFormat implements TourneyFormat {
+public class SwissFormat implements TourneyFormat, Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     public String getName() {
         return "Swiss";

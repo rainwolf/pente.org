@@ -1,17 +1,25 @@
 package org.pente.gameServer.tourney;
 
-import java.util.*;
-
 import org.pente.game.GridStateFactory;
 import org.pente.gameServer.core.DSGPlayerStorer;
 
-public class Tourney {
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+public class Tourney implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private int eventID;
 
     private String name;
     private int game;
-    private TourneyFormat format;
+    private transient TourneyFormat format;
+    private int formatType; // 1=RoundRobin, 2=SingleElimination, 3=DoubleElimination, 4=Swiss
     private int status;
     private int initialTime;
     private int incrementalTime;
@@ -180,6 +188,31 @@ public class Tourney {
 
     public void setFormat(TourneyFormat format) {
         this.format = format;
+        if (format instanceof RoundRobinFormat) {
+            formatType = 1;
+        } else if (format instanceof DoubleEliminationFormat) {
+            formatType = 3;
+        } else if (format instanceof SingleEliminationFormat) {
+            formatType = 2;
+        } else if (format instanceof SwissFormat) {
+            formatType = 4;
+        } else {
+            formatType = 0;
+        }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        // Restore transient format from the persisted formatType
+        if (formatType == 1) {
+            format = new RoundRobinFormat();
+        } else if (formatType == 2) {
+            format = new SingleEliminationFormat();
+        } else if (formatType == 3) {
+            format = new DoubleEliminationFormat();
+        } else if (formatType == 4) {
+            format = new SwissFormat();
+        }
     }
 
 

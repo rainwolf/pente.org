@@ -1,8 +1,14 @@
 package org.pente.gameServer.tourney;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Category;
 
-public class TourneyMatch {
+import java.io.Serial;
+import java.io.Serializable;
+
+public class TourneyMatch implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private static final Category log4j = Category.getInstance(
             TourneyMatch.class.getName());

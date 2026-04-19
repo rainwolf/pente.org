@@ -5,7 +5,9 @@ package org.pente.gameServer.tourney;
  * this is used just to group matches together in a single-elimination match
  * TourneyMatch really should be called TourneyGame...
  */
-public class SingleEliminationMatch {
+public class SingleEliminationMatch implements java.io.Serializable {
+
+    private static final long serialVersionUID = 1L;
     private TourneyPlayerData player1;
     private TourneyPlayerData player2;
     private int player1Wins;

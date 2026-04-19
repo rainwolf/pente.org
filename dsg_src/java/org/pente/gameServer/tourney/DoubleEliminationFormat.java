@@ -1,14 +1,19 @@
 package org.pente.gameServer.tourney;
 
-import java.util.*;
-
-import org.apache.log4j.*;
+import org.apache.log4j.Category;
 import org.pente.game.GridStateFactory;
 import org.pente.gameServer.core.DSGPlayerData;
 import org.pente.gameServer.core.DSGPlayerStoreException;
 import org.pente.gameServer.core.DSGPlayerStorer;
 
-public class DoubleEliminationFormat extends SingleEliminationFormat {
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.*;
+
+public class DoubleEliminationFormat extends SingleEliminationFormat implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private Category log4j = Category.getInstance(
             DoubleEliminationFormat.class.getName());
@@ -157,7 +162,7 @@ public class DoubleEliminationFormat extends SingleEliminationFormat {
         int livePlayers = 0;
         for (TourneySection s : tourney.getLastRound().getSections()) {
             for (TourneyPlayerData p : s.getPlayers()) {
-                System.out.println("DoubleEliminationFormat, round: " + tourney.getNumRounds() + " sections: " + tourney.getLastRound().getSections().size() + " player=" + p.getName() + " match losses=" + p.getMatchLosses());
+//                System.out.println("DoubleEliminationFormat, round: " + tourney.getNumRounds() + " sections: " + tourney.getLastRound().getSections().size() + " player=" + p.getName() + " match losses=" + p.getMatchLosses());
                 if (p.getMatchLosses() < 2) {
                     livePlayers++;
                 }

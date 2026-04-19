@@ -1,8 +1,15 @@
 package org.pente.gameServer.tourney;
 
-import java.util.*;
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
-public class RoundRobinSection extends TourneySection {
+public class RoundRobinSection extends TourneySection implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private int numPlayers = -1;
     private List<TourneyPlayerData> players = new ArrayList<>();

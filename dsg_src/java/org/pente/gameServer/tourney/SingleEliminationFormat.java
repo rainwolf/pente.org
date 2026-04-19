@@ -1,11 +1,18 @@
 package org.pente.gameServer.tourney;
 
-import java.util.*;
-
-import org.pente.turnBased.*;
 import org.pente.game.GridStateFactory;
 
-public class SingleEliminationFormat extends AbstractTourneyFormat {
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+public class SingleEliminationFormat extends AbstractTourneyFormat implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     public String getName() {
         return "Single-Elimination";

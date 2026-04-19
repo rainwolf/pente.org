@@ -600,8 +600,6 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         }
     }
 
-    ;
-
 
     private Date newTimeout(long pid) {
         TBVacation vacation = getTBVacation(pid);

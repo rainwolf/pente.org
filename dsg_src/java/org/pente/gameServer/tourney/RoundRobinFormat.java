@@ -1,8 +1,15 @@
 package org.pente.gameServer.tourney;
 
-import java.util.*;
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-public class RoundRobinFormat extends AbstractTourneyFormat {
+public class RoundRobinFormat extends AbstractTourneyFormat implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private static final int MAX_PLAYERS_IN_SECTION = 4;
 

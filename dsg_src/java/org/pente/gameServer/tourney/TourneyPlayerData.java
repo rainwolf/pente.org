@@ -1,6 +1,12 @@
 package org.pente.gameServer.tourney;
 
-public class TourneyPlayerData {
+import java.io.Serial;
+import java.io.Serializable;
+
+public class TourneyPlayerData implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private long playerID;
     private String name;

@@ -1,10 +1,18 @@
 package org.pente.gameServer.tourney;
 
-import java.util.*;
+import org.apache.log4j.Category;
 
-import org.apache.log4j.*;
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
-public class SwissSection extends TourneySection {
+public class SwissSection extends TourneySection implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private static final Category log4j = Category.getInstance(
             SwissSection.class.getName());

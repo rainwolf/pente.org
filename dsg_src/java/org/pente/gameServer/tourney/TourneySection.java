@@ -1,12 +1,18 @@
 package org.pente.gameServer.tourney;
 
-import java.util.*;
+import org.apache.log4j.Category;
+import org.pente.turnBased.TBSet;
 
-import org.apache.log4j.*;
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
-import org.pente.turnBased.*;
+public abstract class TourneySection implements Serializable {
 
-public abstract class TourneySection {
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private static final Category log4j = Category.getInstance(
             TourneyMatch.class.getName());

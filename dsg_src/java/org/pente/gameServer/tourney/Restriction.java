@@ -1,6 +1,12 @@
 package org.pente.gameServer.tourney;
 
-public class Restriction {
+import java.io.Serial;
+import java.io.Serializable;
+
+public class Restriction implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     public static final int RATING_RESTRICTION_ABOVE = 1;
     public static final int RATING_RESTRICTION_BELOW = 2;

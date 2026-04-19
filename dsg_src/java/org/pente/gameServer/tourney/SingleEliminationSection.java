@@ -1,8 +1,15 @@
 package org.pente.gameServer.tourney;
 
-import java.util.*;
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
-public class SingleEliminationSection extends TourneySection {
+public class SingleEliminationSection extends TourneySection implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     List<TourneyPlayerData> players = new ArrayList<>();
     List<TourneyMatch> matches = new ArrayList<TourneyMatch>();
