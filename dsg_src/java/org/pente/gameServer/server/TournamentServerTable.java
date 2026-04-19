@@ -236,22 +236,6 @@ public class TournamentServerTable extends ServerTable {
 //    }
 
     @Override
-    protected void stand(String player, int seat) {
-        sittingPlayers[seat] = null;
-
-        // if waiting for 2nd game and player disconnected
-        // then don't want to reset the other player's click
-        if (prevState == DSGGameStateTableEvent.WAIT_GAME_TWO_OF_SET &&
-                state == DSGGameStateTableEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN) {
-            playerClickedPlay[seat] = false;
-        } else {
-            resetClickedPlays();
-        }
-
-        broadcastMainRoom(new DSGStandTableEvent(player, tableNum));
-    }
-
-    @Override
     public void handleJoin(String player) {
         super.handleJoin(player);
         if (isPlayerInTable(player)) {
