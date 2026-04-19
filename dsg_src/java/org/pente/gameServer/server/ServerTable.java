@@ -19,18 +19,20 @@
 
 package org.pente.gameServer.server;
 
-import java.util.*;
-import java.text.*;
-
-import org.apache.log4j.*;
-
+import org.apache.log4j.Category;
 import org.pente.game.*;
-import org.pente.gameServer.client.*;
+import org.pente.gameServer.client.GameTimer;
+import org.pente.gameServer.client.GameTimerListener;
+import org.pente.gameServer.client.MilliSecondGameTimer;
 import org.pente.gameServer.core.*;
 import org.pente.gameServer.event.*;
 import org.pente.gameServer.tourney.*;
+import org.pente.kingOfTheHill.CacheKOTHStorer;
+import org.pente.kingOfTheHill.Hill;
 
-import org.pente.kingOfTheHill.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class ServerTable {
 
@@ -69,12 +71,13 @@ public class ServerTable {
     protected GameTimer timers[];
 
 
-    /** Move times keeps track of the timer times when players have finished
-     *  with their turns.  Note that this doesn't always correspond to moves in
-     *  a game.  In d-pente, the time is recorded when player 2 sends in the
-     *  decision to swap or not in case after that decision the other player
-     *  undo's and we need to get back to that time. In connect6 it is after 2
-     *  moves.
+    /**
+     * Move times keeps track of the timer times when players have finished
+     * with their turns.  Note that this doesn't always correspond to moves in
+     * a game.  In d-pente, the time is recorded when player 2 sends in the
+     * decision to swap or not in case after that decision the other player
+     * undo's and we need to get back to that time. In connect6 it is after 2
+     * moves.
      */
     protected List<Time> moveTimes = new ArrayList<Time>();
     protected Date gameTime;
@@ -91,37 +94,40 @@ public class ServerTable {
 
     protected int tableNum;
 
-    /** This sequence number is needed for a very rare case that could occur.
-     *  1. player 1 exits in middle of game, waiting timer is activated
-     *  2. player 1 returns to table
-     *  3. player 1 exits table again right away
-     *  4. 1st waiting timer runs out and generates time up message
-     *     (this could happen as long as 2. and 3. hadn't processed
-     *      through the SynchronizedServerTable yet, so all 3 events
-     *      would be sitting in the queue.)
-     *  5. now the state of the table after 2. and 3. would be
-     *     waiting for a player to return and a new waiting timer
-     *     would be created. when 4. is processed it would see
-     *     that the state of the system was waiting and would
-     *     then send out the force resign / cancel WRONG!
-     *  6. by adding a sequence number the table can check
-     *     that the current sequence number matches the sequence
-     *     number given by the time up timer.
+    /**
+     * This sequence number is needed for a very rare case that could occur.
+     * 1. player 1 exits in middle of game, waiting timer is activated
+     * 2. player 1 returns to table
+     * 3. player 1 exits table again right away
+     * 4. 1st waiting timer runs out and generates time up message
+     * (this could happen as long as 2. and 3. hadn't processed
+     * through the SynchronizedServerTable yet, so all 3 events
+     * would be sitting in the queue.)
+     * 5. now the state of the table after 2. and 3. would be
+     * waiting for a player to return and a new waiting timer
+     * would be created. when 4. is processed it would see
+     * that the state of the system was waiting and would
+     * then send out the force resign / cancel WRONG!
+     * 6. by adding a sequence number the table can check
+     * that the current sequence number matches the sequence
+     * number given by the time up timer.
      */
     protected int waitingForPlayerToReturnSeqNbr;
     protected static final int WAITING_FOR_PLAYER_TO_RETURN_TIMEOUT = 1;
     protected boolean waitingForPlayerToReturnTimeUp;
     protected GameTimer waitingForPlayerToReturnTimer;
 
-    /** this represents the player was disconnected
-     *  in the middle of a set after game 1 and before game 2
-     *  the set timeout clock has started running, but if the other player later
-     *  gets disconnected, we want to give that player a full timeout clock as
-     *  well
+    /**
+     * this represents the player was disconnected
+     * in the middle of a set after game 1 and before game 2
+     * the set timeout clock has started running, but if the other player later
+     * gets disconnected, we want to give that player a full timeout clock as
+     * well
      */
     protected String disconnectedPlayer;
-    /** if both players have been disconnected at different times, don't allow
-     *  any more timer rests
+    /**
+     * if both players have been disconnected at different times, don't allow
+     * any more timer rests
      */
     protected boolean noMoreTimerResets;
 
@@ -511,7 +517,7 @@ public class ServerTable {
 
 
             if ((game == GridStateFactory.SWAP2PENTE_GAME || game == GridStateFactory.SPEED_SWAP2PENTE_GAME ||
-                game == GridStateFactory.SWAP2KERYO_GAME || game == GridStateFactory.SPEED_SWAP2KERYO_GAME) &&
+                    game == GridStateFactory.SWAP2KERYO_GAME || game == GridStateFactory.SPEED_SWAP2KERYO_GAME) &&
                     gridState != null &&
                     ((PenteState) gridState).didSwap2Pass() && !((PenteState) gridState).wasDPenteSwapDecisionMade()) {
                 dsgEventRouter.routeEvent(
@@ -601,7 +607,8 @@ public class ServerTable {
         }
     }
 
-    /** Just send out status of table to player
+    /**
+     * Just send out status of table to player
      */
     public void handleMainRoomJoin(DSGJoinMainRoomEvent mainRoomEvent) {
 
@@ -816,14 +823,14 @@ public class ServerTable {
                     }
                     timers[i].reset();
                 }
-                
+
                 // temporarily make 0 minutes unrated
                 if (initialMinutes == 0) {
                     rated = false;
-                    broadcastTable( new DSGTextTableEvent(SYSTEM, tableNum, 
-                                    "0 minute games are unrated for now."));
+                    broadcastTable(new DSGTextTableEvent(SYSTEM, tableNum,
+                            "0 minute games are unrated for now."));
                 }
-                
+
                 // get game for changeStateEvent.getGame()
                 // check if speed game, take into account timed!='N'
                 // convert game for changeStateEvent possibly
@@ -1256,8 +1263,9 @@ public class ServerTable {
         return true;
     }
 
-    /** Determine if all players have agreed to start the game
-     *  Assumes that computer opponents always want to play
+    /**
+     * Determine if all players have agreed to start the game
+     * Assumes that computer opponents always want to play
      */
     protected boolean allPlayersClickedPlay() {
         for (int i = 1; i < playerClickedPlay.length; i++) {
@@ -1972,10 +1980,11 @@ public class ServerTable {
         }
     }
 
-    /** Starts a waiting for player to return timer.
-     *  We let each timer run to completion even if
-     *  the player returns before the time up.  The synchronization
-     *  issues become to complex otherwise.
+    /**
+     * Starts a waiting for player to return timer.
+     * We let each timer run to completion even if
+     * the player returns before the time up.  The synchronization
+     * issues become to complex otherwise.
      */
     protected void startWaitingForPlayerToReturnTimer() {
 
@@ -2069,8 +2078,9 @@ public class ServerTable {
         }
     }
 
-    /** This method assumes that all validation has already
-     *  been done that it is ok to exit
+    /**
+     * This method assumes that all validation has already
+     * been done that it is ok to exit
      */
     protected void exit(String player, boolean booted) {
         boolean owner = isPlayerOwner(player);
@@ -2745,8 +2755,10 @@ public class ServerTable {
         return null;
     }
 
-    /** Returns a GameData representation of the current game
-     *  @return GameData The GameData for the current game
+    /**
+     * Returns a GameData representation of the current game
+     *
+     * @return GameData The GameData for the current game
      */
     public GameData getGameData(int winner, String status) {
         if (gridState == null || gridState.getNumMoves() == 0 || !gameStarted) {
@@ -2866,8 +2878,8 @@ public class ServerTable {
         // (if forced resign, don't swap)
         // (if d-pente and already swapped, don't swap back)
         if (game == GridStateFactory.DPENTE_GAME || game == GridStateFactory.SPEED_DPENTE_GAME
-            || game == GridStateFactory.DKERYO_GAME || game == GridStateFactory.SPEED_DKERYO_GAME
-            || swap2) {
+                || game == GridStateFactory.DKERYO_GAME || game == GridStateFactory.SPEED_DKERYO_GAME
+                || swap2) {
             if (((PenteState) gridState).didDPenteSwap()) {
                 return; // already swapped seats
             }
@@ -3005,8 +3017,9 @@ public class ServerTable {
         }
     }
 
-    /** I suppose its possible that if a player finished 2 games at near
-     *  the same time, one games stats updates could override the others
+    /**
+     * I suppose its possible that if a player finished 2 games at near
+     * the same time, one games stats updates could override the others
      */
     protected void updateDatabaseAfterGameOver
     (GameData gameData, GameData fileGameData, String winnerPlayer, String loserPlayer,
@@ -3189,7 +3202,7 @@ public class ServerTable {
                 if (serverData.getName() != null &&
                         serverData.getName().startsWith("King of the Hill") &&
                         localSet.getWinner() != 0) {
-                    Hill hill = kothStorer.getHill(game);
+                    Hill hill = kothStorer.loadHill(game);
                     long oldKingPid = (hill != null) ? hill.getKing() : 0;
                     long winnerPid = winnerPlayerData.getPlayerID();
                     long loserPid = loserPlayerData.getPlayerID();
@@ -3199,7 +3212,7 @@ public class ServerTable {
                     kothStorer.addPlayer(game, loserPid);
                     kothStorer.movePlayersUpDown(game, winnerPid, loserPid);
                     if (hill == null) {
-                        hill = kothStorer.getHill(game);
+                        hill = kothStorer.loadHill(game);
                     }
                     long kingPid = (hill != null) ? hill.getKing() : 0;
                     if (kingPid != oldKingPid && kingPid != 0) {
@@ -3338,4 +3351,17 @@ public class ServerTable {
             }
         }
     }
+
+    public void handleArenaRequestJoin(DSGArenaRequestJoinTableEvent dsgEvent) {
+        
+    }
+
+    public void handleArenaRejectJoin(DSGArenaRejectTableJoinEvent dsgEvent) {
+
+    }
+
+    public void handleArenaAcceptJoin(DSGArenaAcceptTableJoinEvent dsgEvent) {
+
+    }
+
 }

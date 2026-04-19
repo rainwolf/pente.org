@@ -19,15 +19,14 @@
 
 package org.pente.gameServer.server;
 
-import java.util.*;
-
-import org.apache.log4j.*;
-
-import org.pente.game.*;
-import org.pente.gameServer.event.*;
+import org.apache.log4j.Category;
+import org.pente.game.GameStorer;
+import org.pente.game.PlayerStorer;
 import org.pente.gameServer.core.*;
+import org.pente.gameServer.event.*;
+import org.pente.kingOfTheHill.CacheKOTHStorer;
 
-import org.pente.kingOfTheHill.*;
+import java.util.Collection;
 
 
 public class SynchronizedServerTable implements DSGEventListener {
@@ -36,6 +35,30 @@ public class SynchronizedServerTable implements DSGEventListener {
             Category.getInstance(SynchronizedServerTable.class.getName());
 
     private long sid;
+
+    // for ArenaServer
+    public SynchronizedServerTable(ArenaServer server, Resources resources, int newTableNum, DSGEventToPlayerRouter dsgEventToPlayerRouter, CacheDSGPlayerStorer dsgPlayerStorer, PingManager pingManager, GameStorer fileGameStorer, GameStorer gameStorer, PlayerStorer playerStorer, ServerStatsHandler serverStatsHandler, MySQLDSGReturnEmailStorer returnEmailStorer, Collection<DSGPlayerData> mainRoomPlayers, ActivityLogger activityLogger, DSGArenaCreateTableEvent joinEvent) throws Throwable {
+        sid = server.getServerData().getServerId();
+        serverTable = new ArenaServerTable(
+                server, resources, newTableNum, dsgEventToPlayerRouter, this, dsgPlayerStorer,
+                pingManager, fileGameStorer, gameStorer, playerStorer,
+                serverStatsHandler, returnEmailStorer, mainRoomPlayers,
+                activityLogger, joinEvent);
+        synchronizedQueue = new SynchronizedQueue();
+
+        Runnable queueRunnable = () -> {
+            while (running) {
+                try {
+                    callServerTable((DSGEvent) synchronizedQueue.remove());
+                } catch (InterruptedException e) {
+                }
+            }
+        };
+
+        running = true;
+        queueThread = new Thread(queueRunnable, "SynchronizedServerTable " + newTableNum);
+        queueThread.start();
+    }
 
     public ServerTable getServerTable() {
         return serverTable;
@@ -124,72 +147,71 @@ public class SynchronizedServerTable implements DSGEventListener {
 
         try {
 
-            if (dsgEvent instanceof DSGMainRoomEvent) {
-                DSGMainRoomEvent mainRoomEvent = (DSGMainRoomEvent) dsgEvent;
+            if (dsgEvent instanceof DSGMainRoomEvent mainRoomEvent) {
 
                 if (mainRoomEvent instanceof DSGJoinMainRoomEvent) {
                     serverTable.handleMainRoomJoin((DSGJoinMainRoomEvent) mainRoomEvent);
                 } else if (mainRoomEvent instanceof DSGExitMainRoomEvent) {
                     serverTable.handleMainRoomExit(mainRoomEvent.getPlayer());
                 }
-            } else if (dsgEvent instanceof DSGTableEvent) {
+            } else if (dsgEvent instanceof DSGTableEvent e) {
 
-                DSGTableEvent e = (DSGTableEvent) dsgEvent;
-
-                if (dsgEvent instanceof DSGJoinTableEvent) {
-                    DSGJoinTableEvent j = (DSGJoinTableEvent) e;
-                    serverTable.handleJoin(j.getPlayer());
-                } else if (dsgEvent instanceof DSGSitTableEvent) {
-                    DSGSitTableEvent s = (DSGSitTableEvent) e;
-                    serverTable.handleSit(s.getPlayer(), s.getSeat());
-                } else if (dsgEvent instanceof DSGStandTableEvent) {
-                    DSGStandTableEvent s = (DSGStandTableEvent) e;
-                    serverTable.handleStand(s.getPlayer());
-                } else if (dsgEvent instanceof DSGTextTableEvent) {
-                    DSGTextTableEvent t = (DSGTextTableEvent) e;
-                    serverTable.handleText(t.getPlayer(), t.getText());
-                } else if (dsgEvent instanceof DSGExitTableEvent) {
-                    DSGExitTableEvent x = (DSGExitTableEvent) e;
-                    serverTable.handleExit(x.getPlayer(), x.getForced());
-                } else if (dsgEvent instanceof DSGChangeStateTableEvent) {
-                    serverTable.handleChangeState((DSGChangeStateTableEvent) dsgEvent);
-                } else if (dsgEvent instanceof DSGPlayTableEvent) {
-                    serverTable.handleClickPlay((DSGPlayTableEvent) dsgEvent);
-                } else if (dsgEvent instanceof DSGMoveTableEvent) {
-                    DSGMoveTableEvent moveEvent = (DSGMoveTableEvent) dsgEvent;
-                    serverTable.handleMove(moveEvent.getPlayer(), moveEvent.getMove());
-                } else if (dsgEvent instanceof DSGTimeUpTableEvent) {
-                    serverTable.handleTimeUp((DSGTimeUpTableEvent) dsgEvent);
-                } else if (dsgEvent instanceof DSGUndoRequestTableEvent) {
-                    serverTable.handleUndoRequest((DSGUndoRequestTableEvent) dsgEvent);
-                } else if (dsgEvent instanceof DSGUndoReplyTableEvent) {
-                    serverTable.handleUndoReply((DSGUndoReplyTableEvent) dsgEvent);
-                } else if (dsgEvent instanceof DSGResignTableEvent) {
-                    serverTable.handleResign((DSGResignTableEvent) dsgEvent);
-                } else if (dsgEvent instanceof DSGCancelRequestTableEvent) {
-                    serverTable.handleCancelRequest((DSGCancelRequestTableEvent) dsgEvent);
-                } else if (dsgEvent instanceof DSGCancelReplyTableEvent) {
-                    serverTable.handleCancelReply((DSGCancelReplyTableEvent) dsgEvent);
-                } else if (dsgEvent instanceof DSGWaitingPlayerReturnTimeUpTableEvent) {
-                    serverTable.handleWaitingPlayerReturnTimeUp((DSGWaitingPlayerReturnTimeUpTableEvent) dsgEvent);
-                } else if (dsgEvent instanceof DSGForceCancelResignTableEvent) {
-                    serverTable.handleForceCancelResign((DSGForceCancelResignTableEvent) dsgEvent);
-                } else if (dsgEvent instanceof DSGEmailGameRequestTableEvent) {
-                    serverTable.handleEmailGame((DSGEmailGameRequestTableEvent) dsgEvent);
-                } else if (dsgEvent instanceof DSGAddAITableEvent) {
-                    serverTable.handleAddAI((DSGAddAITableEvent) dsgEvent);
-                } else if (dsgEvent instanceof DSGBootTableEvent) {
-                    serverTable.handleBoot((DSGBootTableEvent) dsgEvent);
-                } else if (dsgEvent instanceof DSGInviteTableEvent) {
-                    serverTable.handleInvite((DSGInviteTableEvent) dsgEvent);
-                } else if (dsgEvent instanceof DSGInviteResponseTableEvent) {
-                    serverTable.handleInviteResponse((DSGInviteResponseTableEvent) dsgEvent);
-                } else if (dsgEvent instanceof DSGSwapSeatsTableEvent) {
-                    serverTable.handleSwap((DSGSwapSeatsTableEvent) dsgEvent);
-                } else if (dsgEvent instanceof DSGRejectGoStateEvent) {
-                    serverTable.handleRejectGoState((DSGRejectGoStateEvent) dsgEvent);
-                } else if (dsgEvent instanceof DSGSwap2PassTableEvent) {
-                    serverTable.handleSwap2Pass((DSGSwap2PassTableEvent) dsgEvent);
+                switch (e) {
+                    case DSGJoinTableEvent dsgJoinTableEvent -> {
+                        serverTable.handleJoin(dsgJoinTableEvent.getPlayer());
+                    }
+                    case DSGSitTableEvent dsgSitTableEvent -> {
+                        serverTable.handleSit(dsgSitTableEvent.getPlayer(), dsgSitTableEvent.getSeat());
+                    }
+                    case DSGStandTableEvent dsgStandTableEvent -> {
+                        serverTable.handleStand(dsgStandTableEvent.getPlayer());
+                    }
+                    case DSGTextTableEvent dsgTextTableEvent -> {
+                        serverTable.handleText(dsgTextTableEvent.getPlayer(), dsgTextTableEvent.getText());
+                    }
+                    case DSGExitTableEvent dsgExitTableEvent -> {
+                        serverTable.handleExit(dsgExitTableEvent.getPlayer(), dsgExitTableEvent.getForced());
+                    }
+                    case DSGChangeStateTableEvent dsgChangeStateTableEvent ->
+                            serverTable.handleChangeState(dsgChangeStateTableEvent);
+                    case DSGPlayTableEvent dsgPlayTableEvent -> serverTable.handleClickPlay(dsgPlayTableEvent);
+                    case DSGMoveTableEvent dsgMoveTableEvent ->
+                            serverTable.handleMove(dsgMoveTableEvent.getPlayer(), dsgMoveTableEvent.getMove());
+                    case DSGTimeUpTableEvent dsgTimeUpTableEvent -> serverTable.handleTimeUp(dsgTimeUpTableEvent);
+                    case DSGUndoRequestTableEvent dsgUndoRequestTableEvent ->
+                            serverTable.handleUndoRequest(dsgUndoRequestTableEvent);
+                    case DSGUndoReplyTableEvent dsgUndoReplyTableEvent ->
+                            serverTable.handleUndoReply(dsgUndoReplyTableEvent);
+                    case DSGResignTableEvent dsgResignTableEvent -> serverTable.handleResign(dsgResignTableEvent);
+                    case DSGCancelRequestTableEvent dsgCancelRequestTableEvent ->
+                            serverTable.handleCancelRequest(dsgCancelRequestTableEvent);
+                    case DSGCancelReplyTableEvent dsgCancelReplyTableEvent ->
+                            serverTable.handleCancelReply(dsgCancelReplyTableEvent);
+                    case DSGWaitingPlayerReturnTimeUpTableEvent dsgWaitingPlayerReturnTimeUpTableEvent ->
+                            serverTable.handleWaitingPlayerReturnTimeUp(dsgWaitingPlayerReturnTimeUpTableEvent);
+                    case DSGForceCancelResignTableEvent dsgForceCancelResignTableEvent ->
+                            serverTable.handleForceCancelResign(dsgForceCancelResignTableEvent);
+                    case DSGEmailGameRequestTableEvent dsgEmailGameRequestTableEvent ->
+                            serverTable.handleEmailGame(dsgEmailGameRequestTableEvent);
+                    case DSGAddAITableEvent dsgAddAITableEvent -> serverTable.handleAddAI(dsgAddAITableEvent);
+                    case DSGBootTableEvent dsgBootTableEvent -> serverTable.handleBoot(dsgBootTableEvent);
+                    case DSGInviteTableEvent dsgInviteTableEvent -> serverTable.handleInvite(dsgInviteTableEvent);
+                    case DSGInviteResponseTableEvent dsgInviteResponseTableEvent ->
+                            serverTable.handleInviteResponse(dsgInviteResponseTableEvent);
+                    case DSGSwapSeatsTableEvent dsgSwapSeatsTableEvent ->
+                            serverTable.handleSwap(dsgSwapSeatsTableEvent);
+                    case DSGRejectGoStateEvent dsgRejectGoStateEvent ->
+                            serverTable.handleRejectGoState(dsgRejectGoStateEvent);
+                    case DSGSwap2PassTableEvent dsgSwap2PassTableEvent ->
+                            serverTable.handleSwap2Pass(dsgSwap2PassTableEvent);
+                    case DSGArenaRequestJoinTableEvent dsgArenaRequestJoinTableEvent ->
+                            serverTable.handleArenaRequestJoin(dsgArenaRequestJoinTableEvent);
+                    case DSGArenaRejectTableJoinEvent dsgArenaRejectTableJoinEvent ->
+                            serverTable.handleArenaRejectJoin(dsgArenaRejectTableJoinEvent);
+                    case DSGArenaAcceptTableJoinEvent dsgArenaAcceptTableJoinEvent ->
+                            serverTable.handleArenaAcceptJoin(dsgArenaAcceptTableJoinEvent);
+                    default -> {
+                    }
                 }
             } else {
                 log4j.info(psid() + "Illegal type of DSGEvent: " + dsgEvent.getClass().getName());

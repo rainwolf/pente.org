@@ -19,18 +19,18 @@
 
 package org.pente.gameServer.server;
 
-import java.util.*;
-import java.text.*;
-
-import org.apache.log4j.*;
-
-import org.pente.game.*;
-import org.pente.gameServer.client.*;
-import org.pente.gameServer.core.*;
+import org.pente.game.GameData;
+import org.pente.game.GameStorer;
+import org.pente.game.PlayerStorer;
+import org.pente.gameServer.core.DSGPlayerData;
+import org.pente.gameServer.core.DSGPlayerStorer;
+import org.pente.gameServer.core.LiveSet;
+import org.pente.gameServer.core.MySQLDSGReturnEmailStorer;
 import org.pente.gameServer.event.*;
-import org.pente.gameServer.tourney.*;
+import org.pente.gameServer.tourney.TourneyMatch;
+import org.pente.kingOfTheHill.CacheKOTHStorer;
 
-import org.pente.kingOfTheHill.*;
+import java.util.*;
 
 public class TournamentServerTable extends ServerTable {
 
@@ -66,34 +66,6 @@ public class TournamentServerTable extends ServerTable {
                                  final CacheKOTHStorer kothStorer) throws Throwable {
 
         super(server, resources, aiController, tableNum, dsgEventRouter, synchronizedTableListener, dsgPlayerStorer, pingManager, gameFileStorer, gameDbStorer, playerDbStorer, serverStatsHandler, returnEmailStorer, namesInMainRoom, activityLogger, joinEvent, kothStorer);
-
-//        this.server = server;
-//        this.serverData = server.getServerData();
-//        sid = serverData.getServerId();
-//        this.resources = resources;
-//        this.aiController = aiController;
-//		this.tableNum = tableNum;
-//		this.dsgEventRouter = dsgEventRouter;
-//		this.synchronizedTableListener = synchronizedTableListener;
-//        this.dsgPlayerStorer = dsgPlayerStorer;
-//		this.pingManager = pingManager;
-//        this.gameFileStorer = gameFileStorer;
-//        this.gameDbStorer = gameDbStorer;
-//        this.playerDbStorer = playerDbStorer;
-//        this.serverStatsHandler = serverStatsHandler;
-//        this.returnEmailStorer = returnEmailStorer;
-//        this.activityLogger = activityLogger;
-//        this.creator = joinEvent.getPlayer();
-//
-//        this.kothStorer = kothStorer;
-//
-//        this.playersInMainRoom = new Vector();
-//        for (Iterator it = namesInMainRoom.iterator(); it.hasNext();) {
-//            DSGPlayerData d = (DSGPlayerData) it.next();
-//            playersInMainRoom.add(d);
-//        }
-//        startGameOverThread();
-//        resetTable(joinEvent);
     }
 
 
@@ -113,7 +85,8 @@ public class TournamentServerTable extends ServerTable {
         super.destroy();
     }
 
-    /** Just send out status of table to player
+    /**
+     * Just send out status of table to player
      */
     @Override
     public void handleMainRoomJoin(DSGJoinMainRoomEvent mainRoomEvent) {
@@ -350,8 +323,9 @@ public class TournamentServerTable extends ServerTable {
     }
 
 
-    /** I suppose its possible that if a player finished 2 games at near
-     *  the same time, one games stats updates could override the others
+    /**
+     * I suppose its possible that if a player finished 2 games at near
+     * the same time, one games stats updates could override the others
      */
     @Override
     protected void updateDatabaseAfterGameOver

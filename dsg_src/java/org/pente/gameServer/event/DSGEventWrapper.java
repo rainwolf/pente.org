@@ -1,6 +1,7 @@
 package org.pente.gameServer.event;
 
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.pente.gameServer.core.DSGPlayerData;
 import org.pente.gameServer.core.DSGPlayerGameData;
 
@@ -76,6 +77,10 @@ public class DSGEventWrapper {
     private DSGUpdatePlayerDataEvent dsgUpdatePlayerDataEvent;
     private DSGWaitingPlayerReturnTimeUpTableEvent dsgWaitingPlayerReturnTimeUpTableEvent;
     private DSGSwap2PassTableEvent dsgSwap2PassTableEvent;
+    private DSGArenaRejectTableJoinEvent dsgArenaRejectTableJoinEvent;
+    private DSGArenaAcceptTableJoinEvent dsgArenaAcceptTableJoinEvent;
+    private DSGArenaCreateTableEvent dsgArenaCreateTableEvent;
+    private DSGArenaRequestJoinTableEvent dsgArenaRequestJoinTableEvent;
 
     public DSGEventWrapper(Object o) {
         Field[] fields = DSGEventWrapper.class.getDeclaredFields();
@@ -637,6 +642,38 @@ public class DSGEventWrapper {
 
     public void setDsgSwap2PassTableEvent(DSGSwap2PassTableEvent dsgSwap2PassTableEvent) {
         this.dsgSwap2PassTableEvent = dsgSwap2PassTableEvent;
+    }
+
+    public DSGArenaRejectTableJoinEvent getDsgArenaRejectTableJoinEvent() {
+        return dsgArenaRejectTableJoinEvent;
+    }
+
+    public void setDsgArenaRejectTableJoinEvent(DSGArenaRejectTableJoinEvent dsgArenaRejectTableJoinEvent) {
+        this.dsgArenaRejectTableJoinEvent = dsgArenaRejectTableJoinEvent;
+    }
+
+    public DSGArenaAcceptTableJoinEvent getDsgArenaAcceptTableJoinEvent() {
+        return dsgArenaAcceptTableJoinEvent;
+    }
+
+    public void setDsgArenaAcceptTableJoinEvent(DSGArenaAcceptTableJoinEvent dsgArenaAcceptTableJoinEvent) {
+        this.dsgArenaAcceptTableJoinEvent = dsgArenaAcceptTableJoinEvent;
+    }
+
+    public DSGArenaCreateTableEvent getDsgArenaCreateTableEvent() {
+        return dsgArenaCreateTableEvent;
+    }
+
+    public void setDsgArenaCreateTableEvent(DSGArenaCreateTableEvent dsgArenaCreateTableEvent) {
+        this.dsgArenaCreateTableEvent = dsgArenaCreateTableEvent;
+    }
+
+    public DSGArenaRequestJoinTableEvent getDsgArenaRequestJoinTableEvent() {
+        return dsgArenaRequestJoinTableEvent;
+    }
+
+    public void setDsgArenaRequestJoinTableEvent(DSGArenaRequestJoinTableEvent dsgArenaRequestJoinTableEvent) {
+        this.dsgArenaRequestJoinTableEvent = dsgArenaRequestJoinTableEvent;
     }
 }
 
