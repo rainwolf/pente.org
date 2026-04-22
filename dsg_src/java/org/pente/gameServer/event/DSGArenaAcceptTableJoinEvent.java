@@ -14,7 +14,7 @@ public class DSGArenaAcceptTableJoinEvent extends AbstractDSGTableEvent {
     }
 
     public String toString() {
-        return "Arena reject (" + playerToAccept + ") join " + super.toString();
+        return "Arena accept (" + playerToAccept + ") join " + super.toString();
     }
 }
 

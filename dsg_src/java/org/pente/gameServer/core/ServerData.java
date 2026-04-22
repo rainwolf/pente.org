@@ -1,9 +1,9 @@
 package org.pente.gameServer.core;
 
-import org.pente.game.*;
+import org.pente.game.GameEventData;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.Vector;
 
 public class ServerData implements Serializable {
 
@@ -12,6 +12,7 @@ public class ServerData implements Serializable {
     private int port;
     private boolean tournament;
     private boolean privateServer;
+    private boolean arena;
 
     private Vector<GameEventData> gameEvents = new Vector<>();
     private Vector<String> loginMessages = new Vector<>();
@@ -24,6 +25,14 @@ public class ServerData implements Serializable {
 
     public void setPrivateServer(boolean privateServer) {
         this.privateServer = privateServer;
+    }
+
+    public boolean isArena() {
+        return arena;
+    }
+
+    public void setArena(boolean arena) {
+        this.arena = arena;
     }
 
     public int getServerId() {

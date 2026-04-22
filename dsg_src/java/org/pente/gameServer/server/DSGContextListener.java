@@ -260,11 +260,51 @@ public class DSGContextListener implements ServletContextListener {
 
             setupLiveGameServers(resources, ctx, tourneyStorer);
 
+            setupArenaServers(resources, ctx);
+
             tourneyStorer.setupTBTournaments();
 
         } catch (Throwable t) {
             log4j.error("Problem in contextInitialized()", t);
         }
+    }
+
+    private void setupArenaServers(Resources resources, ServletContext ctx) {
+        ServerData toCopy = resources.getServerData(1);
+        ServerData serverData = new ServerData();
+        serverData.setName("Arena Server");
+        serverData.setPort(15999);
+        serverData.setServerId(0);
+        serverData.setTournament(false);
+        serverData.setPrivateServer(false);
+        serverData.setArena(true);
+        for (GameEventData g : toCopy.getGameEvents()) {
+            serverData.addGameEvent(g);
+        }
+
+        try {
+            ArenaServer server = new ArenaServer(resources, serverData);
+            addServer(server, ctx, resources);
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+    }
+
+    private void addServer(Server server, ServletContext ctx, Resources resources) {
+        ServerData serverData = server.getServerData();
+        resources.addServer(server);
+        log4j.info("Server " + serverData + " started.");
+        ServerEndpointConfig.Configurator configurator = new WebSocketConfigurator(server);
+        ServerEndpointConfig sec = ServerEndpointConfig.Builder.
+                create(WebSocketEndpoint.class, "/websocketServer/" + serverData.getPort()).
+                configurator(configurator).build();
+        ServerContainer serverContainer = (ServerContainer) ctx.getAttribute("jakarta.websocket.server.ServerContainer");
+        try {
+            serverContainer.addEndpoint(sec);
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+
     }
 
     private void setupLiveGameServers(Resources resources, ServletContext ctx, TourneyStorer tourneyStorer) {
@@ -273,21 +313,13 @@ public class DSGContextListener implements ServletContextListener {
             List<ServerData> serverData = MySQLServerStorer.getActiveServers(
                     resources.getDbHandler(), resources.getGameVenueStorer());
 
-            ServerContainer serverContainer = (ServerContainer) ctx.getAttribute("jakarta.websocket.server.ServerContainer");
-
             for (ServerData data : serverData) {
                 Server server;
                 if (data.isTournament()) {
                     continue;
                 }
                 server = new Server(resources, data);
-                resources.addServer(server);
-                log4j.info("Server " + data + " started.");
-                ServerEndpointConfig.Configurator configurator = new WebSocketConfigurator(server);
-                ServerEndpointConfig sec = ServerEndpointConfig.Builder.
-                        create(WebSocketEndpoint.class, "/websocketServer/" + data.getPort()).
-                        configurator(configurator).build();
-                serverContainer.addEndpoint(sec);
+                addServer(server, ctx, resources);
             }
 
             List<Tourney> tournaments = new ArrayList<>();

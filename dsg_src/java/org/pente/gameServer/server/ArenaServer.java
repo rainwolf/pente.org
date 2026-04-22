@@ -23,6 +23,7 @@ import org.pente.gameServer.core.DSGPlayerData;
 import org.pente.gameServer.core.ServerData;
 import org.pente.gameServer.event.DSGArenaCreateTableEvent;
 import org.pente.gameServer.event.DSGEvent;
+import org.pente.gameServer.event.DSGJoinTableEvent;
 
 import java.util.Collection;
 
@@ -40,12 +41,16 @@ public class ArenaServer extends Server {
 
     public void routeEventToTable(DSGEvent event, int tableNum) {
         if (event instanceof DSGArenaCreateTableEvent) {
+            DSGJoinTableEvent joinEvent = new DSGJoinTableEvent();
             try {
                 tableNum = createNewTable((DSGArenaCreateTableEvent) event);
                 ((DSGArenaCreateTableEvent) event).setTable(tableNum);
             } catch (Throwable t) {
                 log4j.error("Problem creating new ArenaServer table.", t);
             }
+            joinEvent.setPlayer(((DSGArenaCreateTableEvent) event).getPlayer());
+            joinEvent.setTable(tableNum);
+            event = joinEvent;
         }
         synchronized (tables) {
             if (tableNum < 1 || tableNum >= tables.size() || tables.get(tableNum) == null) {

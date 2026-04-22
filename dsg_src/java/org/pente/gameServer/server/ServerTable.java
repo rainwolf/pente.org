@@ -2997,6 +2997,10 @@ public class ServerTable {
         if (serverData.isTournament()) {
             updateDatabaseAfterGameOver(
                     gameData, fileGameData, winnerPlayer, loserPlayer, localGame, winner, set);
+        } else if (serverData.isArena()) {
+            swapSeats();
+            updateDatabaseAfterGameOver(
+                    gameData, fileGameData, winnerPlayer, loserPlayer, localGame, winner, set);
         } else {
             swapSeats();
 
@@ -3353,7 +3357,7 @@ public class ServerTable {
     }
 
     public void handleArenaRequestJoin(DSGArenaRequestJoinTableEvent dsgEvent) {
-        
+
     }
 
     public void handleArenaRejectJoin(DSGArenaRejectTableJoinEvent dsgEvent) {

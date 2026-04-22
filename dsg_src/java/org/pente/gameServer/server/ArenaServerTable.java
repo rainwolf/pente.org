@@ -19,6 +19,7 @@
 
 package org.pente.gameServer.server;
 
+import org.pente.game.GameData;
 import org.pente.game.GameStorer;
 import org.pente.game.GridStateFactory;
 import org.pente.game.PlayerStorer;
@@ -26,6 +27,7 @@ import org.pente.gameServer.client.GameTimer;
 import org.pente.gameServer.client.MilliSecondGameTimer;
 import org.pente.gameServer.core.DSGPlayerData;
 import org.pente.gameServer.core.DSGPlayerStorer;
+import org.pente.gameServer.core.LiveSet;
 import org.pente.gameServer.core.MySQLDSGReturnEmailStorer;
 import org.pente.gameServer.event.*;
 
@@ -109,7 +111,7 @@ public class ArenaServerTable extends ServerTable {
         if (state == DSGGameStateTableEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN) {
             int seat = getPlayerSeatReturningToGame(mainRoomEvent.getPlayer());
             if (seat != NOT_PLAYING) {
-                broadcastMainRoom(new DSGJoinTableEvent(mainRoomEvent.getPlayer(), tableNum));
+                synchronizedTableListener.eventOccurred((new DSGJoinTableEvent(mainRoomEvent.getPlayer(), tableNum)));
             }
         }
     }
@@ -130,6 +132,9 @@ public class ArenaServerTable extends ServerTable {
     }
 
     protected void startPressPlayTimer() {
+        if (state == DSGGameStateTableEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN) {
+            return;
+        }
         if (pressPlayTimer == null) {
             resetClickedPlays();
             pressPlayTimer = new Timer();
@@ -139,6 +144,7 @@ public class ArenaServerTable extends ServerTable {
                     pressPlayTimer.cancel();
                     pressPlayTimer.purge();
                     pressPlayTimer = null;
+                    startGame();
                 }
             }, 1000L * WAIT_TO_PRESS_PLAY);
             broadcastTable(new DSGSystemMessageTableEvent(
@@ -152,9 +158,9 @@ public class ArenaServerTable extends ServerTable {
         super.handleJoin(player);
         if (isPlayerInTable(player)) {
             if (this.sittingPlayers[1] == null) {
-                sit(player, 1);
+                this.sit(player, 1);
             } else if (this.sittingPlayers[2] == null) {
-                sit(player, 2);
+                this.sit(player, 2);
             }
         }
     }
@@ -252,7 +258,8 @@ public class ArenaServerTable extends ServerTable {
         String player = dsgEvent.getPlayerToAccept();
         if (joinRequestMap.containsKey(player)) {
             if (isPlayerInMainRoom(player)) {
-                broadcastMainRoom(new DSGJoinTableEvent(player, tableNum));
+                synchronizedTableListener.eventOccurred(
+                        new DSGJoinTableEvent(player, tableNum));
                 joinRequestMap.clear();
             }
         }
@@ -266,16 +273,14 @@ public class ArenaServerTable extends ServerTable {
 
         playersInvited.clear();
 
-        timed = true;
-        rated = false;
         tableType = DSGChangeStateTableEvent.TABLE_TYPE_PUBLIC;
 
-        initialMinutes = joinEvent.getMinutes();
-        incrementalSeconds = joinEvent.getIncrement();
+        initialMinutes = joinEvent.getInitialMinutes();
+        incrementalSeconds = joinEvent.getIncrementalSeconds();
         game = GridStateFactory.getGame(joinEvent.getGame());
         rated = joinEvent.isRated();
         // ToDo: allow untimed games?
-        timed = true;
+        timed = joinEvent.isTimed();
         tableType = DSGChangeStateTableEvent.TABLE_TYPE_PUBLIC;
 
         gameTime = null;
@@ -352,6 +357,16 @@ public class ArenaServerTable extends ServerTable {
         }
     }
 
+    @Override
+    protected void updateDatabaseAfterGameOver
+            (GameData gameData, GameData fileGameData, String winnerPlayer, String loserPlayer,
+             int game, int localWinner, LiveSet localSet) {
+
+        super.updateDatabaseAfterGameOver(gameData, fileGameData, winnerPlayer, loserPlayer, game, localWinner, localSet);
+        if (rated && set != null && !set.isComplete()) {
+            startPressPlayTimer();
+        }
+    }
 
     public void handleClickPlay(DSGPlayTableEvent playEvent) {
         String player = playEvent.getPlayer();
