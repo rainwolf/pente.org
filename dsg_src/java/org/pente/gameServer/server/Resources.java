@@ -140,7 +140,7 @@ public class Resources {
         return null;
     }
 
-    public List getServerData() {
+    public List<ServerData> getServerData() {
         return serverData;
     }
 

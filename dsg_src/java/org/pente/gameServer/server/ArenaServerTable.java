@@ -19,10 +19,7 @@
 
 package org.pente.gameServer.server;
 
-import org.pente.game.GameData;
-import org.pente.game.GameStorer;
-import org.pente.game.GridStateFactory;
-import org.pente.game.PlayerStorer;
+import org.pente.game.*;
 import org.pente.gameServer.client.GameTimer;
 import org.pente.gameServer.client.MilliSecondGameTimer;
 import org.pente.gameServer.core.DSGPlayerData;
@@ -278,9 +275,17 @@ public class ArenaServerTable extends ServerTable {
         initialMinutes = joinEvent.getInitialMinutes();
         incrementalSeconds = joinEvent.getIncrementalSeconds();
         game = GridStateFactory.getGame(joinEvent.getGame());
-        rated = joinEvent.isRated();
         // ToDo: allow untimed games?
         timed = joinEvent.isTimed();
+
+        boolean speed = timed && Game.isSpeedGame(initialMinutes, incrementalSeconds);
+        if (speed && !game.isSpeed()) {
+            game = GridStateFactory.getSpeedGame(game);
+        } else if (!speed && game.isSpeed()) {
+            game = GridStateFactory.getNormalGame(game);
+        }
+
+        rated = joinEvent.isRated();
         tableType = DSGChangeStateTableEvent.TABLE_TYPE_PUBLIC;
 
         gameTime = null;

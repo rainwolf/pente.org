@@ -29,9 +29,9 @@
       String serverAndPlayers = "";
       ServerData data = (ServerData) it.next();
       String serverName = data.getName();
-//            if ("Go".equals(serverName) && !go) {
-//                continue;
-//            }
+      if (serverName.toLowerCase().contains("arena")) {
+         continue;
+      }
       boolean empty = true;
       for (WhosOnlineRoom room : rooms) {
          if (serverName.equals(room.getName())) {
