@@ -254,6 +254,11 @@ public class ArenaServerTable extends ServerTable {
     public void handleArenaAcceptJoin(DSGArenaAcceptTableJoinEvent dsgEvent) {
         String player = dsgEvent.getPlayerToAccept();
         if (joinRequestMap.containsKey(player)) {
+            for (SynchronizedServerTable table : server.tables) {
+                if (table.getServerTable().isPlayerInTable(player)) {
+                    return;
+                }
+            }
             if (isPlayerInMainRoom(player)) {
                 synchronizedTableListener.eventOccurred(
                         new DSGJoinTableEvent(player, tableNum));

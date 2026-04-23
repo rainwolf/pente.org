@@ -23,11 +23,10 @@
 
 
    SessionListener sessionListener = (SessionListener) application.getAttribute(SessionListener.class.getName());
-   List<WhosOnlineRoom> rooms = new ArrayList(WhosOnline.getPlayers(globalResources, sessionListener));
+   List<WhosOnlineRoom> rooms = new ArrayList<>(WhosOnline.getPlayers(globalResources, sessionListener));
 
-   for (Iterator it = globalResources.getServerData().iterator(); it.hasNext(); ) {
+   for (ServerData data : globalResources.getServerData()) {
       String serverAndPlayers = "";
-      ServerData data = (ServerData) it.next();
       String serverName = data.getName();
       if (serverName.toLowerCase().contains("arena")) {
          continue;
