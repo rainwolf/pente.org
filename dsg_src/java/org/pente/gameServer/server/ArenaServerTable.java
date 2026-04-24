@@ -255,7 +255,7 @@ public class ArenaServerTable extends ServerTable {
         String player = dsgEvent.getPlayerToAccept();
         if (joinRequestMap.containsKey(player)) {
             for (SynchronizedServerTable table : server.tables) {
-                if (table.getServerTable().isPlayerInTable(player)) {
+                if (table != null && table.getServerTable().isPlayerInTable(player)) {
                     return;
                 }
             }
