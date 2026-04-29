@@ -630,12 +630,17 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                     lastPinched = new Date();
                     vacation.setLastPinched(lastPinched);
                     vacation.setHoursLeft(hoursLeft - 1);
-                    ((MySQLTBGameStorer) baseStorer).storeTBVacation(pid, vacation);
+                    storeTBVacation(pid, vacation);
                     return new Date(System.currentTimeMillis() + 3600L * 1000);
                 }
             }
         }
         return null;
+    }
+
+    public void storeTBVacation(long pid, TBVacation vacation) {
+        ((MySQLTBGameStorer) baseStorer).storeTBVacation(pid, vacation);
+        pente_cache.hput(RedisConnectionManager.PID_TO_TB_VACATION, pid, vacation);
     }
 
     public TBVacation getTBVacation(long pid) {
@@ -652,7 +657,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
             if (currentYear != lastPinchYear) {
                 vacation.setHoursLeft(MySQLTBGameStorer.FLOATINGVACATIONDAYS * 24);
                 vacation.setLastPinched(now.getTime());
-                ((MySQLTBGameStorer) baseStorer).storeTBVacation(pid, vacation);
+                storeTBVacation(pid, vacation);
             }
         }
         return vacation;
@@ -663,8 +668,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         if (vacation != null) {
             int hoursLeft = vacation.getHoursLeft();
             vacation.setHoursLeft(hoursLeft + 24 * extraDays);
-            ((MySQLTBGameStorer) baseStorer).storeTBVacation(pid, vacation);
-            pente_cache.hput(RedisConnectionManager.PID_TO_TB_VACATION, pid, vacation);
+            storeTBVacation(pid, vacation);
         }
     }
 
