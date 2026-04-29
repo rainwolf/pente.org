@@ -664,6 +664,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
             int hoursLeft = vacation.getHoursLeft();
             vacation.setHoursLeft(hoursLeft + 24 * extraDays);
             ((MySQLTBGameStorer) baseStorer).storeTBVacation(pid, vacation);
+            pente_cache.hput(RedisConnectionManager.PID_TO_TB_VACATION, pid, vacation);
         }
     }
 
