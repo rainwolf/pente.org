@@ -38,6 +38,8 @@ public class ArenaServerTable extends ServerTable {
 
     protected boolean closingTable = false;
 
+    protected int playAs = 1;
+
     Map<String, DSGArenaRequestJoinTableEvent> joinRequestMap = new HashMap<>();
     Map<String, Date> rejectMap = new HashMap<>();
 
@@ -154,6 +156,12 @@ public class ArenaServerTable extends ServerTable {
     public void handleJoin(String player) {
         super.handleJoin(player);
         if (isPlayerInTable(player)) {
+            if (!rated) {
+                if (sittingPlayers[playAs] == null) {
+                    this.sit(player, playAs);
+                    return;
+                }
+            }
             if (this.sittingPlayers[1] == null) {
                 this.sit(player, 1);
             } else if (this.sittingPlayers[2] == null) {
@@ -282,6 +290,7 @@ public class ArenaServerTable extends ServerTable {
         game = GridStateFactory.getGame(joinEvent.getGame());
         // ToDo: allow untimed games?
         timed = joinEvent.isTimed();
+        playAs = joinEvent.getPlayAs();
 
         boolean speed = timed && Game.isSpeedGame(initialMinutes, incrementalSeconds);
         if (speed && !game.isSpeed()) {
