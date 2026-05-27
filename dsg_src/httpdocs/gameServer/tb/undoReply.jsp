@@ -485,6 +485,12 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
          case 75:
             boardColor = oPenteColor;
             break;
+         case 77:
+            boardColor = swap2PenteColor;
+            break;
+         case 79:
+            boardColor = swap2KeryoColor;
+            break;
          default:
             boardColor = penteColor;
             break;
@@ -540,6 +546,12 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
             break;
          case 75:
             replayOPenteGame(abstractBoard, movesList, until);
+            break;
+         case 77:
+            replayPenteGame(abstractBoard, movesList, until);
+            break;
+         case 79:
+            replayKeryoPenteGame(abstractBoard, movesList, until);
             break;
       }
       // document.getElementById("messageBox").innerHTML = "message";
