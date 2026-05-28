@@ -263,7 +263,7 @@ public class ArenaServerTable extends ServerTable {
         String player = dsgEvent.getPlayerToAccept();
         if (joinRequestMap.containsKey(player)) {
             for (SynchronizedServerTable table : server.tables) {
-                if (table != null && table.getServerTable().isPlayerInTable(player)) {
+                if (table != null && table.getServerTable() != null && table.getServerTable().isPlayerInTable(player)) {
                     return;
                 }
             }
@@ -300,6 +300,9 @@ public class ArenaServerTable extends ServerTable {
         }
 
         rated = joinEvent.isRated();
+        if (joinEvent.getPlayer().toLowerCase().startsWith("guest")) {
+            rated = false;
+        }
         tableType = DSGChangeStateTableEvent.TABLE_TYPE_PUBLIC;
 
         gameTime = null;
