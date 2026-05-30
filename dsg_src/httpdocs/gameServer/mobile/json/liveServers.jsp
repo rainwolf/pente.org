@@ -15,8 +15,6 @@
    Resources globalResources = (Resources) ctx.getAttribute(Resources.class.getName());
    SessionListener sessionListener = (SessionListener) application.getAttribute(SessionListener.class.getName());
    List<WhosOnlineRoom> rooms = new ArrayList(WhosOnline.getPlayers(globalResources, sessionListener));
-   List<ServerData> servers = globalResources.getServerData().stream()
-           .filter(data -> !data.getName().toLowerCase().contains("arena"))
-           .collect(Collectors.toList());
+   List<ServerData> servers = globalResources.getServerData();
    out.print(new Gson().toJson(LiveServersResponse.build(servers, rooms)));
 %>

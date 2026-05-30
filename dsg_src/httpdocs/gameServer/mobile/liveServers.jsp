@@ -28,9 +28,9 @@
    for (ServerData data : globalResources.getServerData()) {
       String serverAndPlayers = "";
       String serverName = data.getName();
-      if (serverName.toLowerCase().contains("arena")) {
-         continue;
-      }
+//      if (serverName.toLowerCase().contains("arena")) {
+//         continue;
+//      }
       boolean empty = true;
       for (WhosOnlineRoom room : rooms) {
          if (serverName.equals(room.getName())) {
