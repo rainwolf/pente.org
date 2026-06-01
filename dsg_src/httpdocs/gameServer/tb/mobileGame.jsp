@@ -575,7 +575,9 @@
 <%--            </script>--%>
 
 
+<%@ include file="../gameConstants.jspf" %>
 <script src="/gameServer/tb/gameScript.js"></script>
+<script src="/gameServer/js/boardCommon.js"></script>
 
 <script type="text/javascript">
    var moves = [<%=moves.substring(0, moves.length() - 1)%>];
@@ -626,52 +628,7 @@
    document.onkeydown = leftRight;
 
    function init() {
-      switch (game) {
-         case 51:
-            boardColor = penteColor;
-            break;
-         case 53:
-            boardColor = keryoPenteColor;
-            break;
-         case 55:
-            boardColor = gomokuColor;
-            break;
-         case 57:
-            boardColor = dPenteColor;
-            break;
-         case 59:
-            boardColor = gPenteColor;
-            break;
-         case 61:
-            boardColor = poofPenteColor;
-            break;
-         case 63:
-            boardColor = connect6Color;
-            break;
-         case 65:
-            boardColor = boatPenteColor;
-            break;
-         case 67:
-            boardColor = dkeryoPenteColor;
-            break;
-         case 69:
-         case 71:
-         case 73:
-            boardColor = goColor;
-            break;
-         case 75:
-            boardColor = oPenteColor;
-            break;
-         case 77:
-            boardColor = swap2PenteColor;
-            break;
-         case 79:
-            boardColor = swap2KeryoColor;
-            break;
-         default:
-            boardColor = penteColor;
-            break;
-      }
+      boardColor = getBoardColor(game);
       boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
       interactionContext.clearRect(0, 0, interactionCanvas.width, interactionCanvas.height);
       drawGrid(boardContext, boardColor, gridSize, true);
@@ -1076,51 +1033,7 @@
 
 
    function replayGame(abstractBoard, movesList, until) {
-      whiteCaptures = 0;
-      blackCaptures = 0;
-      switch (game) {
-         case 51:
-            replayPenteGame(abstractBoard, movesList, until);
-            break;
-         case 53:
-            replayKeryoPenteGame(abstractBoard, movesList, until);
-            break;
-         case 55:
-            replayGomokuGame(abstractBoard, movesList, until);
-            break;
-         case 57:
-            replayPenteGame(abstractBoard, movesList, until);
-            break;
-         case 59:
-            replayGPenteGame(abstractBoard, movesList, until);
-            break;
-         case 61:
-            replayPoofPenteGame(abstractBoard, movesList, until);
-            break;
-         case 63:
-            replayConnect6Game(abstractBoard, movesList, until);
-            break;
-         case 65:
-            replayPenteGame(abstractBoard, movesList, until);
-            break;
-         case 67:
-            replayKeryoPenteGame(abstractBoard, movesList, until);
-            break;
-         case 69:
-         case 71:
-         case 73:
-            replayGoGame(abstractBoard, movesList, until);
-            break;
-         case 75:
-            replayOPenteGame(abstractBoard, movesList, until);
-            break;
-         case 77:
-            replayPenteGame(abstractBoard, movesList, until);
-            break;
-         case 79:
-            replayKeryoPenteGame(abstractBoard, movesList, until);
-            break;
-      }
+      replayMoves(abstractBoard, movesList, until);
       // document.getElementById("messageBox").innerHTML = "message";
       if (until <= moves.length) {
          if ((game !== 63 && messageMoveNums.indexOf(until) !== -1) || (game === 63 && messageMoveNums.indexOf(until - 2) !== -1)) {
@@ -1146,7 +1059,6 @@
          }
       }
    }
-
 
    function goBack() {
       if (drawUntilMove > 1) {

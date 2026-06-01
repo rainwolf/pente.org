@@ -465,6 +465,27 @@ Confirm and report: regression test green; `grep -rc 'function replayGame' dsg_s
 
 ---
 
+## Implementation Correction (applied during execution)
+
+The plan assumed every page's inline `replayGame` was **pure dispatch**. That held for only
+3 pages (`viewGameEmbed`, `viewLiveGameEmbed`, `tb/listedMobileGame`). The other 6
+(`viewLiveGameMobile`, `tb/mobileGame`, `tb/cancelReply`, `tb/undoReply`, `tb/finalGo`,
+`tb/deadGo`) had a `replayGame` that, **after** the dispatch, also renders the per-move
+chat **message box** (`document.getElementById("messageBox").innerHTML = …`), some with
+embedded JSP scriptlets (`<% DSGPlayerData d … %>`). Deleting the whole function would
+have dropped that behavior.
+
+Resolution:
+- The shared dispatcher in `boardCommon.js` is named **`replayMoves(abstractBoard,
+  movesList, until)`** (capture reset + game-type switch), not `replayGame`.
+- Every page keeps a local **`replayGame(...)`** (its call sites need it): the 3 pure pages
+  are a one-line wrapper `{ replayMoves(...); }`; the 6 message pages call `replayMoves(...)`
+  then keep their original message-box tail verbatim.
+- The dispatch logic still lives in exactly one place; no per-page behavior is lost.
+
+Note: a separate latent regression (CRLF→LF normalization) was introduced and then fixed —
+all 9 pages retain their original CRLF endings, so the net diff is minimal.
+
 ## Notes / Out of Scope
 - Navigation helpers (`selectMove`/`goBack`/`goForward`) and `init()` canvas setup are **not** consolidated in this pass.
 - The server-side `var game = <%= 50 + ... %>` expression in `viewGameEmbed.jsp` (a Java-side magic number) is left as-is; noted for a future cleanup.
