@@ -13,12 +13,11 @@ hard-coded magic numbers (`51`, `53`, `69`, …).
 
 ## Current State
 
-Already shared in `tb/gameServer/tb/gameScript.js`:
-- Color variables: `penteColor`, `keryoPenteColor`, `gomokuColor`, `dPenteColor`,
-  `gPenteColor`, `poofPenteColor`, `connect6Color`, `boatPenteColor`, `goColor`,
-  `oPenteColor` (verify `keryoPenteColor` and `dkeryoPenteColor` are actually defined —
-  they are referenced by the switches; if missing that is a pre-existing latent bug to
-  surface, not silently introduce).
+Already shared in `tb/gameScript.js`:
+- Color variables (all confirmed defined, lines 1–13): `penteColor`, `keryoPenteColor`,
+  `gomokuColor`, `dPenteColor`, `gPenteColor`, `poofPenteColor`, `connect6Color`,
+  `boatPenteColor`, `dkeryoPenteColor`, `goColor`, `oPenteColor`, `swap2PenteColor`,
+  `swap2KeryoColor`.
 - Per-game replay functions: `replayPenteGame`, `replayKeryoPenteGame`,
   `replayGomokuGame`, `replayGPenteGame`, `replayPoofPenteGame`, `replayConnect6Game`,
   `replayGoGame`, `replayOPenteGame`.
@@ -86,6 +85,11 @@ Static JS holding the two consolidated functions. It depends on globals provided
 `whiteCaptures`/`blackCaptures`), so it MUST load after both. A header comment documents
 that dependency.
 
+Unknown game ids are **loud**: both functions `throw` rather than silently defaulting,
+so an unexpected id surfaces immediately instead of rendering a wrong board. (This is a
+deliberate behavior change from the old inline switches, which silently fell back to
+`penteColor` / a no-op.)
+
 ```js
 // Depends on: GAME (gameConstants.jspf) and the color vars + replay*Game functions
 // defined in tb/gameScript.js. Load this AFTER gameScript.js.
@@ -118,11 +122,11 @@ function getBoardColor(game) {
       case GAME.OPENTE: case GAME.SPEED_OPENTE: case GAME.TB_OPENTE:
          return oPenteColor;
       case GAME.SWAP2PENTE: case GAME.SPEED_SWAP2PENTE: case GAME.TB_SWAP2PENTE:
-         return penteColor;
+         return swap2PenteColor;
       case GAME.SWAP2KERYO: case GAME.SPEED_SWAP2KERYO: case GAME.TB_SWAP2KERYO:
-         return keryoPenteColor;
+         return swap2KeryoColor;
       default:
-         return penteColor; // safe fallback (matches default board appearance)
+         throw new Error("getBoardColor: unknown game id " + game);
    }
 }
 
@@ -133,6 +137,15 @@ function replayGame(abstractBoard, movesList, until) {
    whiteCaptures = 0;
    blackCaptures = 0;
    switch (game) {
+      case GAME.PENTE: case GAME.SPEED_PENTE: case GAME.TB_PENTE:
+      case GAME.DPENTE: case GAME.SPEED_DPENTE: case GAME.TB_DPENTE:
+      case GAME.BOAT_PENTE: case GAME.SPEED_BOAT_PENTE: case GAME.TB_BOAT_PENTE:
+      case GAME.SWAP2PENTE: case GAME.SPEED_SWAP2PENTE: case GAME.TB_SWAP2PENTE:
+         replayPenteGame(abstractBoard, movesList, until); break;
+      case GAME.KERYO: case GAME.SPEED_KERYO: case GAME.TB_KERYO:
+      case GAME.DKERYO: case GAME.SPEED_DKERYO: case GAME.TB_DKERYO:
+      case GAME.SWAP2KERYO: case GAME.SPEED_SWAP2KERYO: case GAME.TB_SWAP2KERYO:
+         replayKeryoPenteGame(abstractBoard, movesList, until); break;
       case GAME.GOMOKU: case GAME.SPEED_GOMOKU: case GAME.TB_GOMOKU:
          replayGomokuGame(abstractBoard, movesList, until); break;
       case GAME.GPENTE: case GAME.SPEED_GPENTE: case GAME.TB_GPENTE:
@@ -141,10 +154,6 @@ function replayGame(abstractBoard, movesList, until) {
          replayPoofPenteGame(abstractBoard, movesList, until); break;
       case GAME.CONNECT6: case GAME.SPEED_CONNECT6: case GAME.TB_CONNECT6:
          replayConnect6Game(abstractBoard, movesList, until); break;
-      case GAME.KERYO: case GAME.SPEED_KERYO: case GAME.TB_KERYO:
-      case GAME.DKERYO: case GAME.SPEED_DKERYO: case GAME.TB_DKERYO:
-      case GAME.SWAP2KERYO: case GAME.SPEED_SWAP2KERYO: case GAME.TB_SWAP2KERYO:
-         replayKeryoPenteGame(abstractBoard, movesList, until); break;
       case GAME.GO:  case GAME.SPEED_GO:
       case GAME.GO9: case GAME.SPEED_GO9:
       case GAME.GO13: case GAME.SPEED_GO13:
@@ -152,16 +161,19 @@ function replayGame(abstractBoard, movesList, until) {
          replayGoGame(abstractBoard, movesList, until); break;
       case GAME.OPENTE: case GAME.SPEED_OPENTE: case GAME.TB_OPENTE:
          replayOPenteGame(abstractBoard, movesList, until); break;
-      // PENTE, DPENTE, BOAT_PENTE, SWAP2PENTE → replayPenteGame
       default:
-         replayPenteGame(abstractBoard, movesList, until); break;
+         throw new Error("replayGame: unknown game id " + game);
    }
 }
 ```
 
-Game→handler mapping is taken verbatim from the existing dispatcher:
-Pente / D-Pente / Boat-Pente / Swap2-Pente → `replayPenteGame`;
-Keryo / D-Keryo / Swap2-Keryo → `replayKeryoPenteGame`; the rest as shown.
+Mappings are taken **verbatim** from the existing switches (authoritative full copies
+live in `tb/mobileGame.jsp`, which includes the O-Pente/Swap2 cases that shorter pages
+like `cancelReply.jsp` omit):
+- **Color** — Swap2-Pente → `swap2PenteColor`, Swap2-Keryo → `swap2KeryoColor`
+  (distinct colors, *not* the plain Pente/Keryo colors), O-Pente → `oPenteColor`.
+- **Replay** — Pente / D-Pente / Boat-Pente / Swap2-Pente → `replayPenteGame`;
+  Keryo / D-Keryo / Swap2-Keryo → `replayKeryoPenteGame`; the rest as shown.
 
 > The exact case→handler and case→color mapping in this file is the single
 > authoritative copy; the implementation plan must reproduce the current behavior
@@ -193,9 +205,10 @@ calls at page bottom. `boardCommon.js` documents this dependency at the top.
 
 ## Error Handling
 
-- `getBoardColor`: unknown id → returns `penteColor` (a valid, neutral default).
-- `replayGame`: unknown id → falls through to `replayPenteGame` (the most common game),
-  matching the spirit of the current code where Pente variants are the default group.
+Unknown game ids are loud — both helpers `throw new Error("… unknown game id " + game)`
+on their `default` branch. This is an intentional change from the old inline switches
+(which silently fell back to `penteColor` / a no-op) so a mis-set `game` fails visibly in
+the console instead of rendering a subtly wrong board.
 
 ## Testing
 
