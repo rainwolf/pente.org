@@ -494,7 +494,9 @@
 <%--            </script>--%>
 
 
+<%@ include file="../gameConstants.jspf" %>
 <script src="/gameServer/tb/gameScript.js"></script>
+<script src="/gameServer/js/boardCommon.js"></script>
 
 <script type="text/javascript">
    var moves = [<%=moves.substring(0, moves.length() - 1)%>];
@@ -540,7 +542,7 @@
 
 
    function init() {
-      boardColor = goColor;
+      boardColor = getBoardColor(game);
       boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
       interactionContext.clearRect(0, 0, interactionCanvas.width, interactionCanvas.height);
       drawGrid(boardContext, boardColor, gridSize, true);
@@ -765,9 +767,7 @@
    }
 
    function replayGame(abstractBoard, movesList, until) {
-      whiteCaptures = 0;
-      blackCaptures = 0;
-      replayGoGame(abstractBoard, movesList, until);
+      replayMoves(abstractBoard, movesList, until);
 
       // document.getElementById("messageBox").innerHTML = "message";
       if (until <= moves.length) {
