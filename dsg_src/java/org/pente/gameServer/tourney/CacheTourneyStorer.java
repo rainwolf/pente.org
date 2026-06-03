@@ -599,10 +599,20 @@ public class CacheTourneyStorer implements TourneyStorer {
             String dateSuffix = cal.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.getDefault()) +
                     " " + cal.get(Calendar.YEAR);
             if (game == GridStateFactory.TB_PENTE) {
+                // getCurrentTournies()/getCompletedTournies() only populate eid+name;
+                // hydrate full details so game/restrictions are available below.
+                List<Tourney> currentDetails = new ArrayList<>();
+                for (Tourney t : getCurrentTournies()) {
+                    currentDetails.add(getTourney(t.getEventID()));
+                }
+                List<Tourney> completedDetails = new ArrayList<>();
+                for (Tourney t : getCompletedTournies()) { // sorted already
+                    completedDetails.add(getTourney(t.getEventID()));
+                }
                 if (tourney.getRestrictions().stream().anyMatch(restriction ->
                         (restriction.getType() == Restriction.RATING_RESTRICTION_ABOVE) ||
                                 (restriction.getType() == Restriction.RATING_RESTRICTION_BELOW))) {
-                    if (getCurrentTournies().stream().anyMatch(t ->
+                    if (currentDetails.stream().anyMatch(t ->
                             (t.getGame() == GridStateFactory.TB_PENTE) &&
                                     t.getRestrictions().stream().anyMatch(restriction ->
                                             (restriction.getType() == Restriction.RATING_RESTRICTION_ABOVE) ||
@@ -613,7 +623,7 @@ public class CacheTourneyStorer implements TourneyStorer {
                     }  // if no masters/amateurs ongoing, start open next
                     tournamentBaseName = "Pente Open " + dateSuffix;
                     tourney = null;
-                    for (Tourney t : getCompletedTournies()) { // sorted already
+                    for (Tourney t : completedDetails) { // sorted already
                         if ((t.getGame() == GridStateFactory.TB_PENTE) &&
                                 t.getRestrictions().stream().noneMatch(r ->
                                         (r.getType() == Restriction.RATING_RESTRICTION_ABOVE) ||
@@ -630,7 +640,7 @@ public class CacheTourneyStorer implements TourneyStorer {
                 } else { // open tournament just completed, start masters/amateurs next
                     tournamentBaseName = "Pente Masters " + dateSuffix;
                     tourney = null;
-                    for (Tourney t : getCompletedTournies()) { // sorted already
+                    for (Tourney t : completedDetails) { // sorted already
                         if ((t.getGame() == GridStateFactory.TB_PENTE) &&
                                 t.getRestrictions().stream().anyMatch(r ->
                                         (r.getType() == Restriction.RATING_RESTRICTION_BELOW))) {
@@ -644,7 +654,7 @@ public class CacheTourneyStorer implements TourneyStorer {
                     }
 
                     amateursBaseName = "Pente Amateurs " + dateSuffix;
-                    for (Tourney t : getCompletedTournies()) { // sorted already
+                    for (Tourney t : completedDetails) { // sorted already
                         if ((t.getGame() == GridStateFactory.TB_PENTE) &&
                                 t.getRestrictions().stream().anyMatch(r ->
                                         (r.getType() == Restriction.RATING_RESTRICTION_ABOVE))) {
