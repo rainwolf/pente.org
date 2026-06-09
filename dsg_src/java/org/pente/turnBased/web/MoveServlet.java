@@ -456,7 +456,6 @@ public class MoveServlet extends HttpServlet {
                             tbGameStorer.storeNewMessage(game.getGid(), message);
                         } else if (swap) {
                             log4j.debug("MoveServlet, swap, " + moves[1]);
-                            game.setDPenteSwapped(true);
                             tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(),
                                     moves[1]);
                             if (game.isHidden()) {
@@ -512,7 +511,6 @@ public class MoveServlet extends HttpServlet {
 
                         // didn't swap but still might have written message
                         if (pass) {
-                            game.setSwap2Pass(true);
                             tbGameStorer.swap2Pass(game);
 
                             int numMoves = game.getNumMoves();
@@ -630,7 +628,10 @@ public class MoveServlet extends HttpServlet {
                     notificationServer.sendMoveNotification(playerData.getName(), game.getCurrentPlayer(), game.getGid(), GridStateFactory.getGameName(game.getGame()));
                 }
 
-                game.setUndoRequested(false);
+                if (game.isUndoRequested()) {
+                    game.setUndoRequested(false);
+                    ((CacheTBStorer) tbGameStorer).updateGameAfterMove(game);
+                }
 
                 notificationServer.sendSilentNotification(game.getOpponent(game.getCurrentPlayer()));
 
