@@ -34,7 +34,8 @@ public class CacheTBStorerRedisTest extends TestCase {
                 RedisConnectionManager.SID_TO_TB_SET);
 
         base = new InMemoryTBGameStorer();
-        cache = new CacheTBStorer(base, null, null, null, null);
+        cache = new CacheTBStorer(
+                base, new InMemoryDSGPlayerStorer(), null, null, null);
     }
 
     protected void tearDown() throws Exception {
