@@ -31,21 +31,6 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
     RedisConnectionManager pente_cache = RedisConnectionManager.getInstance();
 
-    /**
-     * used to cache event ids for tb-games
-     */
-    private final Map<Integer, Integer> eidMap = new HashMap<Integer, Integer>();
-
-    /**
-     * used for quick access by gid
-     */
-    private Map<Long, TBGame> gamesMap = new HashMap<Long, TBGame>();
-
-    /**
-     * used for quick access by sid
-     */
-    private Map<Long, TBSet> setsMap = new HashMap<Long, TBSet>();
-
     /** cache of waiting games */
     /**
      * might be some duplication with games above, but thats probably ok
@@ -68,12 +53,6 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         }
     };
     private volatile boolean waitingSetsLoaded = false;
-
-    /**
-     * used to cache game gids by pid
-     */
-    private Map<Long, HashSet<Long>> setsByPid = new HashMap<Long, HashSet<Long>>();
-
 
     private final Object cacheTbLock = new Object();
 
@@ -1178,32 +1157,6 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                 if (g != null) g.setTbSet(set);
             }
             persistSet(set);
-            // legacy in-memory mirror (removed in Task 10)
-            setsMap.put(set.getSetId(), set);
-            for (TBGame g : set.getGames()) {
-                if (g != null) gamesMap.put(g.getGid(), g);
-            }
-        }
-    }
-
-    private void cacheGame(TBGame game) {
-
-        log4j.debug("CacheTBGameStorer.cacheGame(" + game.getGid() + ")");
-
-        cacheStats.incrementGameCached();
-
-        synchronized (cacheTbLock) {
-            gamesMap.put(game.getGid(), game);
-        }
-    }
-
-    private void uncacheGame(TBGame game) {
-        log4j.debug("CacheTBGameStorer.uncacheGame(" + game.getGid() + ")");
-
-        cacheStats.incrementGameUncached();
-
-        synchronized (cacheTbLock) {
-            gamesMap.remove(game.getGid());
         }
     }
 
