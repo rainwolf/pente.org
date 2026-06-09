@@ -456,7 +456,6 @@ public class MoveServlet extends HttpServlet {
                             tbGameStorer.storeNewMessage(game.getGid(), message);
                         } else if (swap) {
                             log4j.debug("MoveServlet, swap, " + moves[1]);
-                            game.setDPenteSwapped(true);
                             tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(),
                                     moves[1]);
                             if (game.isHidden()) {
@@ -512,7 +511,6 @@ public class MoveServlet extends HttpServlet {
 
                         // didn't swap but still might have written message
                         if (pass) {
-                            game.setSwap2Pass(true);
                             tbGameStorer.swap2Pass(game);
 
                             int numMoves = game.getNumMoves();
@@ -625,12 +623,25 @@ public class MoveServlet extends HttpServlet {
 // log4j.debug("************current player pid " + game.getCurrentPlayer());
 
 
+                // The storer mutated the canonical Redis copy, not this servlet's
+                // detached `game` (loaded once above). Refresh it so the move
+                // notifications below see the post-move current player / completion
+                // state instead of stale pre-move values.
+                TBGame refreshedGame = tbGameStorer.loadGame(gid);
+                if (refreshedGame != null) {
+                    game = refreshedGame;
+                }
+
                 NotificationServer notificationServer = resources.getNotificationServer();
                 if (!game.isCompleted() || game.getPlayer1Pid() == 23000000020606L || game.getPlayer2Pid() == 23000000020606L) {
                     notificationServer.sendMoveNotification(playerData.getName(), game.getCurrentPlayer(), game.getGid(), GridStateFactory.getGameName(game.getGame()));
                 }
 
-                game.setUndoRequested(false);
+                // Pending-undo clearing is handled storer-side: storeNewMove()
+                // sets undoRequested=false and persists the canonical set. Do NOT
+                // re-persist the servlet's pre-move `game` copy here — under the
+                // Redis aggregate root that copy is detached and would clobber the
+                // move that storeNewMove just persisted.
 
                 notificationServer.sendSilentNotification(game.getOpponent(game.getCurrentPlayer()));
 
