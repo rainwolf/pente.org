@@ -167,25 +167,21 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
      */
 
     public void uncacheGamesForPlayer(long pid) {
-
         synchronized (cacheTbLock) {
-            setsByPid.remove(pid);
+            pente_cache.hremove(RedisConnectionManager.PID_TO_TB_SET_IDS, pid);
         }
     }
 
     public void uncacheAll() {
-
         log4j.debug("CacheTBStorer.uncacheAll()");
         synchronized (cacheTbLock) {
-            gamesMap.clear();
-            setsMap.clear();
+            pente_cache.invalidate(RedisConnectionManager.SID_TO_TB_SET);
+            pente_cache.invalidate(RedisConnectionManager.GID_TO_SID);
+            pente_cache.invalidate(RedisConnectionManager.PID_TO_TB_SET_IDS);
             pente_cache.invalidate(RedisConnectionManager.TB_WAITING_SET_IDS);
-            waitingSetsLoaded = false;
-            setsByPid.clear();
-
+            pente_cache.invalidate(RedisConnectionManager.EID_TO_TB_EID);
             pente_cache.invalidate(RedisConnectionManager.PID_TO_TB_VACATION);
-
-            // restart threads
+            waitingSetsLoaded = false;
             restartTasks();
         }
     }
@@ -1116,41 +1112,6 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
     }
 
 
-    private void cacheSetForPlayer(TBSet set, long pid, boolean create) {
-        log4j.debug("CacheTBGameStorer.cacheSetForPlayer(" + set.getSetId() + ", " + pid + ", " +
-                create + ")");
-
-        if (pid == 0) return;
-        synchronized (cacheTbLock) {
-            HashSet<Long> sids = setsByPid.get(pid);
-            if (sids == null && create) {
-                log4j.debug("new cache for player: " + pid + ", " + set.getSetId());
-                sids = new HashSet<Long>();
-                setsByPid.put(pid, sids);
-            }
-            if (sids != null) {
-                log4j.debug("add to cache");
-                sids.add(set.getSetId());
-            }
-        }
-    }
-
-    private void uncacheSetForPlayer(TBSet set) {
-        log4j.debug("CacheTBGameStorer.uncacheSetForPlayer(" + set.getSetId() + ")");
-
-        synchronized (cacheTbLock) {
-            HashSet<Long> sids = setsByPid.get(set.getPlayer1Pid());
-            if (sids != null) {
-                sids.remove(set.getSetId());
-            }
-            sids = setsByPid.get(set.getPlayer2Pid());
-            if (sids != null) {
-                sids.remove(set.getSetId());
-            }
-        }
-    }
-
-
     /** THE write primitive: persist a set as the single source of truth and
      *  refresh its gid->sid index entries. Call inside synchronized(cacheTbLock). */
     private void persistSet(TBSet set) {
@@ -1208,24 +1169,6 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         }
     }
 
-    private void uncacheSet(TBSet set) {
-        log4j.debug("CacheTBGameStorer.uncacheSet(" + set.getSetId() + ")");
-
-        cacheStats.incrementSetsUncached();
-
-        synchronized (cacheTbLock) {
-            setsMap.remove(set.getSetId());
-            uncacheSetForPlayer(set);
-        }
-
-        for (int i = 0; i < 2; i++) {
-            TBGame g = set.getGames()[i];
-            if (g != null) {
-                uncacheGame(g);
-            }
-        }
-    }
-
     private void cacheGame(TBGame game) {
 
         log4j.debug("CacheTBGameStorer.cacheGame(" + game.getGid() + ")");
@@ -1250,10 +1193,10 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
     public int getEventId(int game) throws TBStoreException {
         log4j.debug("CacheTBStorer.getEventId(" + game + ")");
 
-        Integer e = eidMap.get(game);
+        Integer e = pente_cache.hget(RedisConnectionManager.EID_TO_TB_EID, game);
         if (e == null) {
             int eid = baseStorer.getEventId(game);
-            eidMap.put(game, eid);
+            pente_cache.hput(RedisConnectionManager.EID_TO_TB_EID, game, Integer.valueOf(eid));
             return eid;
         }
         return e.intValue();
