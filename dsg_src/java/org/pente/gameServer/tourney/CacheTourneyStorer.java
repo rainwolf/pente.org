@@ -161,25 +161,15 @@ public class CacheTourneyStorer implements TourneyStorer {
     private volatile boolean currentLoaded = false;
     private volatile boolean completedLoaded = false;
 
-    /**
-     * One-time bootstrap: if the Redis eid-list for this namespace has never been
-     * loaded, seed it from the backing storer's result. Always returns the Redis
-     * eid-list (the source of truth).
-     */
-    private java.util.List<Integer> ensureListLoaded(String namespace, java.util.List<Tourney> backingResult, boolean alreadyLoaded) {
-        if (!alreadyLoaded) {
-            java.util.List<Integer> eids = new java.util.ArrayList<Integer>();
-            for (Tourney t : backingResult) { if (!eids.contains(t.getEventID())) eids.add(t.getEventID()); }
-            writeEidList(namespace, eids);
-        }
-        return readEidList(namespace);
-    }
-
     public List<Tourney> getUpcomingTournies() throws Throwable {
-        java.util.List<Integer> eids = ensureListLoaded(
-                RedisConnectionManager.TOURNEY_LIST_UPCOMING,
-                backingStorer.getUpcomingTournies(), upcomingLoaded);
-        upcomingLoaded = true;
+        if (!upcomingLoaded) {
+            java.util.List<Tourney> backing = backingStorer.getUpcomingTournies();
+            java.util.List<Integer> bootstrapEids = new java.util.ArrayList<Integer>();
+            for (Tourney bt : backing) { if (!bootstrapEids.contains(bt.getEventID())) bootstrapEids.add(bt.getEventID()); }
+            writeEidList(RedisConnectionManager.TOURNEY_LIST_UPCOMING, bootstrapEids);
+            upcomingLoaded = true;
+        }
+        java.util.List<Integer> eids = readEidList(RedisConnectionManager.TOURNEY_LIST_UPCOMING);
         java.util.List<Tourney> out = new java.util.ArrayList<Tourney>();
         java.util.List<Integer> promote = new java.util.ArrayList<Integer>();
         Date today = new Date();
@@ -201,10 +191,14 @@ public class CacheTourneyStorer implements TourneyStorer {
 
 
     public List<Tourney> getCurrentTournies() throws Throwable {
-        java.util.List<Integer> eids = ensureListLoaded(
-                RedisConnectionManager.TOURNEY_LIST_CURRENT,
-                backingStorer.getCurrentTournies(), currentLoaded);
-        currentLoaded = true;
+        if (!currentLoaded) {
+            java.util.List<Tourney> backing = backingStorer.getCurrentTournies();
+            java.util.List<Integer> bootstrapEids = new java.util.ArrayList<Integer>();
+            for (Tourney bt : backing) { if (!bootstrapEids.contains(bt.getEventID())) bootstrapEids.add(bt.getEventID()); }
+            writeEidList(RedisConnectionManager.TOURNEY_LIST_CURRENT, bootstrapEids);
+            currentLoaded = true;
+        }
+        java.util.List<Integer> eids = readEidList(RedisConnectionManager.TOURNEY_LIST_CURRENT);
         java.util.List<Tourney> out = new java.util.ArrayList<Tourney>();
         java.util.List<Integer> ended = new java.util.ArrayList<Integer>();
         Date today = new Date();
@@ -228,10 +222,14 @@ public class CacheTourneyStorer implements TourneyStorer {
     }
 
     public List<Tourney> getCompletedTournies() throws Throwable {
-        java.util.List<Integer> eids = ensureListLoaded(
-                RedisConnectionManager.TOURNEY_LIST_COMPLETED,
-                backingStorer.getCompletedTournies(), completedLoaded);
-        completedLoaded = true;
+        if (!completedLoaded) {
+            java.util.List<Tourney> backing = backingStorer.getCompletedTournies();
+            java.util.List<Integer> bootstrapEids = new java.util.ArrayList<Integer>();
+            for (Tourney bt : backing) { if (!bootstrapEids.contains(bt.getEventID())) bootstrapEids.add(bt.getEventID()); }
+            writeEidList(RedisConnectionManager.TOURNEY_LIST_COMPLETED, bootstrapEids);
+            completedLoaded = true;
+        }
+        java.util.List<Integer> eids = readEidList(RedisConnectionManager.TOURNEY_LIST_COMPLETED);
         java.util.List<Tourney> out = new java.util.ArrayList<Tourney>();
         for (Integer eid : eids) {
             Tourney t = getTourney(eid);
@@ -454,7 +452,14 @@ public class CacheTourneyStorer implements TourneyStorer {
         // used for speed-tournies to notify main room
         notifyListeners(new TourneyEvent(eid, TourneyEvent.NEW_ROUND));
 
-        // don't need to cache round, should have already been done by client
+        // persist the owning tourney so the new round (added to it via
+        // createFirstRound/createNextRound -> addRound(this)) reaches Redis.
+        // The manageTourney.jsp path calls insertRound directly without a prior
+        // persistTourney; the startTournament/checkRoundStatus paths already
+        // persisted, so this redundant persist is harmless (idempotent).
+        if (round.getTourney() != null) {
+            persistTourney(round.getTourney());
+        }
     }
 
     public synchronized void insertMatch(TourneyMatch tourneyMatch) throws Throwable {
