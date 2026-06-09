@@ -1483,27 +1483,25 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                     game.getGid());
         }
 
-        synchronized (cacheTbLock) {
-            game.addMove(move);
-        }
-
         long newTimeout = Utilities.calculateNewTimeout(
                 game, dsgPlayerStorer);
 
+        boolean gameOver;
         synchronized (cacheTbLock) {
+            game.addMove(move);
             game.setTimeoutDate(new Date(newTimeout));
-        }
-
-        // check if game over
-        state.addMove(move);
-        if (state.isGameOver()) {
-            log4j.debug("CacheTbStorer.gameover, send to endGameRunnable");
-//			System.out.println(" *************** \n");
-//            state.printBoard();
-            synchronized (cacheTbLock) {
+            game.setUndoRequested(false);   // folded in from MoveServlet:633
+            state.addMove(move);
+            gameOver = state.isGameOver();
+            if (gameOver) {
                 game.end();
                 game.setWinner(state.getWinner());
             }
+            persistSet(game.getTbSet());     // single source of truth write
+        }
+
+        if (gameOver) {
+            log4j.debug("CacheTbStorer.gameover, send to endGameRunnable");
             endGameRunnable.endGame(game, EndGameRunnable.Data.REASON_WIN);
         }
 
@@ -1544,12 +1542,16 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
         synchronized (cacheTbLock) {
             game.addMessage(message);
+            persistSet(game.getTbSet());
         }
 
         baseStorer.storeNewMessage(gid, message);
     }
 
     public void updateGameAfterMove(TBGame game) throws TBStoreException {
+        synchronized (cacheTbLock) {
+            persistSet(game.getTbSet());
+        }
         baseStorer.updateGameAfterMove(game);
     }
 

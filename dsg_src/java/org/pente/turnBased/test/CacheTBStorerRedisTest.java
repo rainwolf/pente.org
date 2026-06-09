@@ -8,6 +8,7 @@ import org.pente.game.GridStateFactory;
 import org.pente.gameServer.server.RedisConnectionManager;
 import org.pente.turnBased.CacheTBStorer;
 import org.pente.turnBased.TBGame;
+import org.pente.turnBased.TBMessage;
 import org.pente.turnBased.TBSet;
 
 /**
@@ -82,5 +83,37 @@ public class CacheTBStorerRedisTest extends TestCase {
         // (Task 5); GREEN once it does.
         assertEquals(1, fromGame.getNumMoves());
         assertEquals(1, fromSet.getNumMoves());
+    }
+
+    public void testMessageSurvivesIntoCacheAfterStoreNewMessage() throws Exception {
+        TBGame g = new TBGame();
+        g.setGame(GridStateFactory.TB_PENTE);
+        g.setState(TBGame.STATE_ACTIVE);
+        g.setPlayer1Pid(1001L);
+        g.setPlayer2Pid(1002L);
+        g.setDaysPerMove(3);
+        g.setLastMoveDate(new Date());
+
+        TBSet set = new TBSet(101L, g, null);
+        base.createSet(set);
+
+        // Warm the cache.
+        cache.loadSet(101L);
+
+        long gid = set.getGame1().getGid();
+
+        TBMessage msg = new TBMessage();
+        msg.setMoveNum(0);
+        msg.setSeqNbr(0);
+        msg.setPid(1001L);
+        msg.setMessage("hello");
+        msg.setDate(new Date());
+        cache.storeNewMessage(gid, msg);
+
+        // Re-read from Redis aggregate root: the message must have been
+        // persisted by storeNewMessage (Task 5), not lost.
+        TBGame fromGame = cache.loadGame(gid);
+        assertEquals(1, fromGame.getMessages().size());
+        assertEquals("hello", fromGame.getMessages().get(0).getMessage());
     }
 }
