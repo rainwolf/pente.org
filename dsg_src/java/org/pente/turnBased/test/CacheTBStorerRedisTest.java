@@ -176,6 +176,43 @@ public class CacheTBStorerRedisTest extends TestCase {
                 !containsSid(cache.getWaitingSets(), 103L));
     }
 
+    /**
+     * Regression for the accept-public-invitation NPE: callers such as
+     * ReplyInvitationServlet pass their own TBSet to acceptInvite and then read
+     * that same object afterwards (for move notifications). The storer must
+     * update the passed object's seats, not just a detached Redis copy. Before
+     * the fix the caller's set kept player2Pid == 0, so
+     * getOpponent(getCurrentPlayer()) returned 0 and loadPlayer(0) NPE'd.
+     */
+    public void testAcceptInviteUpdatesCallerSet() throws Exception {
+        TBGame g = new TBGame();
+        g.setGame(GridStateFactory.TB_PENTE);
+        g.setState(TBGame.STATE_NOT_STARTED);
+        g.setPlayer1Pid(1001L);
+        g.setPlayer2Pid(0L);
+        g.setDaysPerMove(3);
+        g.setCreationDate(new Date());
+        g.setLastMoveDate(new Date());
+
+        TBSet set = new TBSet(104L, g, null);
+        set.setState(TBSet.STATE_NOT_STARTED);
+        set.setPlayer1Pid(1001L);
+        set.setPlayer2Pid(0L);
+        set.setInviterPid(1001L);
+
+        cache.createSet(set);
+        cache.acceptInvite(set, 1002L);
+
+        // The caller's own object must reflect the accept (pre-migration contract).
+        assertEquals("caller's set seat must be filled", 1002L, set.getPlayer2Pid());
+        assertEquals("caller's game seat must be filled",
+                1002L, set.getGame1().getPlayer2Pid());
+        // The exact crash condition: opponent of the current player must be real.
+        long cp = set.getGame1().getCurrentPlayer();
+        assertTrue("opponent of current player must be a real pid",
+                set.getGame1().getOpponent(cp) != 0L);
+    }
+
     private static boolean containsSid(java.util.List<TBSet> sets, long sid) {
         for (TBSet s : sets) {
             if (s.getSetId() == sid) {

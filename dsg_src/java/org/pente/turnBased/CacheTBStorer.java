@@ -1467,12 +1467,19 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         log4j.debug("CacheTBStorer.acceptInvite(" + s.getSetId() + ", " +
                 pid + ")");
 
-        TBSet set = loadSet(s.getSetId());
+        // Operate on the caller's object (the pre-migration contract) so callers
+        // that read `s` after the accept -- e.g. ReplyInvitationServlet's move
+        // notification loop -- see the filled-in seats. Validate against the
+        // canonical Redis copy so a concurrent accept (state no longer
+        // NOT_STARTED) still fails rather than double-accepting.
+        TBSet set = s;
 
         loadWaitingSets(); // in case set is a waiting set
 
         synchronized (cacheTbLock) {
-            if (set.getState() != TBSet.STATE_NOT_STARTED) {
+            TBSet canonical = loadSet(s.getSetId());
+            if (canonical == null ||
+                    canonical.getState() != TBSet.STATE_NOT_STARTED) {
                 throw new TBStoreException("Set can not be accepted, state " +
                         "has changed. " + s.getSetId() + ", pid=" + pid);
             }
