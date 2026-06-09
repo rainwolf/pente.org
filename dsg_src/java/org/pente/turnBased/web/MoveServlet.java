@@ -623,6 +623,15 @@ public class MoveServlet extends HttpServlet {
 // log4j.debug("************current player pid " + game.getCurrentPlayer());
 
 
+                // The storer mutated the canonical Redis copy, not this servlet's
+                // detached `game` (loaded once above). Refresh it so the move
+                // notifications below see the post-move current player / completion
+                // state instead of stale pre-move values.
+                TBGame refreshedGame = tbGameStorer.loadGame(gid);
+                if (refreshedGame != null) {
+                    game = refreshedGame;
+                }
+
                 NotificationServer notificationServer = resources.getNotificationServer();
                 if (!game.isCompleted() || game.getPlayer1Pid() == 23000000020606L || game.getPlayer2Pid() == 23000000020606L) {
                     notificationServer.sendMoveNotification(playerData.getName(), game.getCurrentPlayer(), game.getGid(), GridStateFactory.getGameName(game.getGame()));
