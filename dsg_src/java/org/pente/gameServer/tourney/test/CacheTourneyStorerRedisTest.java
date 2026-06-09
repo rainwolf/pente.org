@@ -6,6 +6,7 @@ import junit.framework.TestCase;
 
 import org.pente.gameServer.server.RedisConnectionManager;
 import org.pente.gameServer.tourney.CacheTourneyStorer;
+import org.pente.gameServer.tourney.RoundRobinFormat;
 import org.pente.gameServer.tourney.Tourney;
 import org.pente.turnBased.test.SerializingRedisConnectionManager;
 
@@ -74,5 +75,32 @@ public class CacheTourneyStorerRedisTest extends TestCase {
         List<Long> pids = cache.getTourneyPlayerPids(900);
         assertTrue("expected pid 1001 in player-pid index", pids.contains(1001L));
         assertTrue("expected pid 1002 in player-pid index", pids.contains(1002L));
+    }
+
+    /**
+     * Go/no-go gate for the Redis migration: Tourney's {@code transient
+     * TourneyFormat format} field is not serialized directly; it is rebuilt in a
+     * custom readObject from the persisted {@code formatType} int. Redis storage
+     * round-trips Tourney objects through ObjectOutputStream/ObjectInputStream
+     * (which invoke readObject), so this proves {@code format} survives.
+     *
+     * Note: Tourney exposes no getFormatType()/setFormatType(int). The format
+     * type is set via setFormat(TourneyFormat) (RoundRobinFormat -> formatType 1),
+     * and the only public, format-dependent accessor is getFormat(). We therefore
+     * assert getFormat() is non-null and is the same concrete TourneyFormat type
+     * after a Redis serialize/deserialize round trip.
+     */
+    public void testTourneyFormatSurvivesRedisRoundTrip() throws Exception {
+        Tourney t = newTourney(901);
+        t.setFormat(new RoundRobinFormat());   // sets formatType = 1
+        assertNotNull("precondition: format set before serialize", t.getFormat());
+
+        byte[] bytes = RedisConnectionManager.serialize(t);
+        Tourney loaded = (Tourney) RedisConnectionManager.deserialize(bytes);
+
+        assertNotNull("transient format must be rebuilt on deserialize",
+                loaded.getFormat());
+        assertEquals("format concrete type preserved across Redis round trip",
+                RoundRobinFormat.class, loaded.getFormat().getClass());
     }
 }
