@@ -158,6 +158,12 @@ public class RedisConnectionManager {
      */
     public static final String PID_TO_TB_VACATION = "pid:tb_vacation";
 
+    /** gid -> sid index (aggregate-root lookup, replaces GID_TO_TB_GAME) */
+    public static final String GID_TO_SID = "gid:tb_sid";
+
+    /** set of sids that are currently waiting (invitations) */
+    public static final String TB_WAITING_SET_IDS = "tb:waiting_set_ids";
+
     /**
      * CacheKOTHStorer: game (int) → Hill
      */
@@ -449,6 +455,31 @@ public class RedisConnectionManager {
         Map<String, Object> map = fallback.get(namespace);
         List<T> result = map == null ? new ArrayList<>() : new ArrayList<>((java.util.Collection<T>) map.values());
         log4j.info("CACHE SCAN  [memory] " + namespace + " (" + result.size() + " entries)");
+        return result;
+    }
+
+    /**
+     * Return all field names (hash keys) stored in a namespace hash.
+     * Useful for iterating over all cached entry ids; empty list if none.
+     */
+    public List<String> hgetAllFields(String namespace) {
+        if (jedis != null && redisAvailable) {
+            Set<String> fields;
+            try {
+                fields = jedis.hkeys(namespace);
+            } catch (Exception e) {
+                handleRedisFailure(e);
+                fields = null;
+            }
+            if (fields != null) {
+                List<String> result = new ArrayList<String>(fields);
+                log4j.info("CACHE KEYS  [redis]  " + namespace + " (" + result.size() + " entries)");
+                return result;
+            }
+        }
+        Map<String, Object> map = fallback.get(namespace);
+        List<String> result = map == null ? new ArrayList<String>() : new ArrayList<String>(map.keySet());
+        log4j.info("CACHE KEYS  [memory] " + namespace + " (" + result.size() + " entries)");
         return result;
     }
 
