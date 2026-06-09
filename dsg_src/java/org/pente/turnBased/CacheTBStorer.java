@@ -724,6 +724,11 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                     if (set.isCompleted()) {
                         set.setState(TBSet.STATE_COMPLETED);
                         set.setCompletionDate(new Date());
+                        // Persist the set's terminal COMPLETED state to Redis;
+                        // otherwise the cached set lingers as stale ACTIVE.
+                        synchronized (cacheTbLock) {
+                            persistSet(set);
+                        }
                         baseStorer.endSet(set);
                     }
 
@@ -1223,6 +1228,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                             game, dsgPlayerStorer);
                     synchronized (cacheTbLock) {
                         game.setTimeoutDate(new Date(newTimeout));
+                        persistSet(game.getTbSet());
                     }
                     baseStorer.updateGameAfterMove(game);
                     continue;
@@ -1466,6 +1472,13 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
     }
 
     public void setGameEventId(long gameId, long eventId) throws TBStoreException {
+        TBGame game = loadGame(gameId);
+        if (game != null) {
+            synchronized (cacheTbLock) {
+                game.setEventId((int) eventId);
+                persistSet(game.getTbSet());
+            }
+        }
         baseStorer.setGameEventId(gameId, eventId);
     }
 
@@ -1741,6 +1754,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
                             if (g.getTimeoutDate().getTime() != newTimeout) {
                                 g.setTimeoutDate(new Date(newTimeout));
+                                persistSet(g.getTbSet());
                                 update = true;
                             }
                         }

@@ -245,6 +245,32 @@ public class CacheTBStorerRedisTest extends TestCase {
                 !nums.get(0).equals(nums.get(1)));
     }
 
+    /**
+     * setGameEventId must update the cached game, not just the DB. Callers
+     * (ReplyInvitationServlet, CacheKOTHStorer) rely on the new event id being
+     * visible on the next loadGame; a DB-only write left the cache stale.
+     */
+    public void testSetGameEventIdPersistsToCache() throws Exception {
+        TBGame g = new TBGame();
+        g.setGame(GridStateFactory.TB_PENTE);
+        g.setState(TBGame.STATE_ACTIVE);
+        g.setPlayer1Pid(1001L);
+        g.setPlayer2Pid(1002L);
+        g.setDaysPerMove(3);
+        g.setLastMoveDate(new Date());
+        g.setEventId(5);
+
+        TBSet set = new TBSet(106L, g, null);
+        base.createSet(set);
+        cache.loadSet(106L);
+
+        long gid = set.getGame1().getGid();
+        cache.setGameEventId(gid, 99L);
+
+        assertEquals("cached game event id must reflect setGameEventId",
+                99, cache.loadGame(gid).getEventId());
+    }
+
     private static boolean containsSid(java.util.List<TBSet> sets, long sid) {
         for (TBSet s : sets) {
             if (s.getSetId() == sid) {
