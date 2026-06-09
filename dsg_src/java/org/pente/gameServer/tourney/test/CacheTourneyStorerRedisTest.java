@@ -8,6 +8,9 @@ import org.pente.gameServer.server.RedisConnectionManager;
 import org.pente.gameServer.tourney.CacheTourneyStorer;
 import org.pente.gameServer.tourney.RoundRobinFormat;
 import org.pente.gameServer.tourney.Tourney;
+import org.pente.gameServer.tourney.TourneyMatch;
+import org.pente.gameServer.tourney.TourneyPlayerData;
+import org.pente.gameServer.tourney.TourneyRound;
 import org.pente.turnBased.test.SerializingRedisConnectionManager;
 
 /**
@@ -121,6 +124,58 @@ public class CacheTourneyStorerRedisTest extends TestCase {
      * assert getFormat() is non-null and is the same concrete TourneyFormat type
      * after a Redis serialize/deserialize round trip.
      */
+    /** Minimal player builder for constructing a real round/section/match graph. */
+    private TourneyPlayerData player(long pid, String name) {
+        TourneyPlayerData p = new TourneyPlayerData();
+        p.setPlayerID(pid);
+        p.setName(name);
+        return p;
+    }
+
+    /**
+     * Core of Task 6: after the Redis migration getTourney returns a DETACHED
+     * deserialized copy, so a caller mutating that copy and calling updateMatch
+     * must have its result re-found + applied onto the canonical cached tourney.
+     *
+     * Build a real RoundRobin Tourney (2 players -> 1 section, 2 matches),
+     * persist it, pull a DETACHED match, set a result on it, updateMatch, then
+     * re-read: the canonical cached tourney must reflect the result+gid.
+     * RED before this task (canonical untouched), GREEN after.
+     */
+    public void testUpdateMatchAppliesResultToCanonicalTourney() throws Throwable {
+        Tourney t = newTourney(904);
+        t.setFormat(new RoundRobinFormat());   // <=6 players -> single section
+
+        java.util.List<TourneyPlayerData> players = new java.util.ArrayList<TourneyPlayerData>();
+        players.add(player(1L, "Alice"));
+        players.add(player(2L, "Bob"));
+
+        TourneyRound round = t.createFirstRound(players);   // round 1, section 1, 2 matches
+        // production assigns match ids from the DB autoincrement; emulate that so
+        // findMatch(...) can re-find by id.
+        long id = 1;
+        for (TourneyMatch m : round.getSection(1).getMatches()) {
+            m.setMatchID(id++);
+        }
+
+        cache.insertTourney(t);   // persists the full graph (rounds included) to Redis
+
+        // obtain a DETACHED match from the cached aggregate
+        TourneyMatch detached =
+                cache.getTourney(904).getRound(1).getSection(1).getMatches().get(0);
+        detached.setResult(TourneyMatch.RESULT_P1_WINS);   // 1
+        detached.setGid(555L);
+
+        cache.updateMatch(detached);
+
+        TourneyMatch reloaded =
+                cache.getTourney(904).getRound(1).getSection(1).getMatches().get(0);
+        assertEquals("result must be applied to the canonical cached tourney",
+                TourneyMatch.RESULT_P1_WINS, reloaded.getResult());
+        assertEquals("gid must be applied to the canonical cached tourney",
+                555L, reloaded.getGid());
+    }
+
     public void testTourneyFormatSurvivesRedisRoundTrip() throws Exception {
         Tourney t = newTourney(901);
         t.setFormat(new RoundRobinFormat());   // sets formatType = 1

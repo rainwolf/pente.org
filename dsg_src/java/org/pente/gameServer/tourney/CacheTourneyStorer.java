@@ -476,42 +476,35 @@ public class CacheTourneyStorer implements TourneyStorer {
 
 
     /**
-     * update a group of matches and then check if round needs to be updated
-     * right now only called from admin management screen
+     * Re-find the canonical match (by match id) inside a freshly-loaded section.
+     * After the Redis migration getTourney/getUnplayedMatch return DETACHED
+     * deserialized copies, so callers' match objects are no longer the same
+     * instances held by the cached aggregate; we must re-find by id.
      */
-    public synchronized void updateMatches(List tourneyMatches, Tourney t) throws Throwable {
-
-        log4j.debug("updateMatches()");
-        if (tourneyMatches != null) {
-            for (Iterator it = tourneyMatches.iterator(); it.hasNext(); ) {
-                TourneyMatch m = (TourneyMatch) it.next();
-                updateMatchOnly(m);
+    private static TourneyMatch findMatch(TourneySection s, TourneyMatch like) {
+        for (TourneyMatch m : s.getMatches()) {
+            if (m.getMatchID() == like.getMatchID()) {
+                return m;
             }
         }
-        checkRoundStatus(t);
+        return null;
     }
 
     /**
-     * update a single match and then check if round needs to be updated
-     * right now only called from servertable
+     * Apply a (possibly detached) match's mutable result fields onto the
+     * canonical match inside the supplied tourney graph, re-init the section,
+     * and run any single-elimination tie follow-up. Does NOT persist; the caller
+     * persists the graph (so caller-passed tourneys stay the source of truth).
      */
-    public synchronized void updateMatch(
-            TourneyMatch tourneyMatch) throws Throwable {
-
-        log4j.debug("updateMatch(" + tourneyMatch.getMatchID() + ")");
-
-        updateMatchOnly(tourneyMatch);
-
-        Tourney t = getTourney(tourneyMatch.getEvent());
-        checkRoundStatus(t);
-    }
-
-    private void updateMatchOnly(TourneyMatch tourneyMatch) throws Throwable {
-        log4j.debug("updateMatchOnly(" + tourneyMatch.getMatchID() + ")");
-        backingStorer.updateMatch(tourneyMatch);
-
-        Tourney t = getTourney(tourneyMatch.getEvent());
+    private void applyMatchTo(Tourney t, TourneyMatch tourneyMatch) throws Throwable {
         TourneySection s = t.getRound(tourneyMatch.getRound()).getSection(tourneyMatch.getSection());
+
+        TourneyMatch canonical = findMatch(s, tourneyMatch);
+        if (canonical != null) {
+            canonical.setGid(tourneyMatch.getGid());
+            canonical.setResult(tourneyMatch.getResult());
+            canonical.setForfeit(tourneyMatch.isForfeit());
+        }
 
         // reinit section to show these results, and do anything else needed
         s.init();
@@ -549,6 +542,53 @@ public class CacheTourneyStorer implements TourneyStorer {
         }
     }
 
+    /**
+     * update a group of matches and then check if round needs to be updated
+     * right now only called from admin management screen
+     *
+     * Operates on the CALLER'S passed tourney (so admin/manageTourney.jsp's
+     * reads-after-write see the applied results) and persists it.
+     */
+    public synchronized void updateMatches(List tourneyMatches, Tourney t) throws Throwable {
+
+        log4j.debug("updateMatches()");
+        if (tourneyMatches != null) {
+            for (Iterator it = tourneyMatches.iterator(); it.hasNext(); ) {
+                TourneyMatch m = (TourneyMatch) it.next();
+                backingStorer.updateMatch(m);
+                applyMatchTo(t, m);
+            }
+        }
+        persistTourney(t);
+        checkRoundStatus(t);
+    }
+
+    /**
+     * update a single match and then check if round needs to be updated
+     * right now only called from servertable
+     */
+    public synchronized void updateMatch(
+            TourneyMatch tourneyMatch) throws Throwable {
+
+        log4j.debug("updateMatch(" + tourneyMatch.getMatchID() + ")");
+
+        updateMatchOnly(tourneyMatch);
+
+        Tourney t = getTourney(tourneyMatch.getEvent());
+        checkRoundStatus(t);
+    }
+
+    private void updateMatchOnly(TourneyMatch tourneyMatch) throws Throwable {
+        log4j.debug("updateMatchOnly(" + tourneyMatch.getMatchID() + ")");
+        backingStorer.updateMatch(tourneyMatch);
+
+        // load the canonical (cached) tourney, re-find + apply, then persist.
+        // tourneyMatch is a DETACHED copy, so we cannot mutate it in place.
+        Tourney t = getTourney(tourneyMatch.getEvent());
+        applyMatchTo(t, tourneyMatch);
+        persistTourney(t);
+    }
+
     private void checkRoundStatus(Tourney t) throws Throwable {
 
         if (t.isComplete()) {
@@ -556,6 +596,9 @@ public class CacheTourneyStorer implements TourneyStorer {
             notificationServer.sendAdminNotification(t.getName() + " completed. Winner is " + t.getWinner());
         } else if (t.getLastRound().isComplete()) {
             TourneyRound newRound = t.createNextRound(dsgPlayerStorer);
+            // persist the new round into the aggregate BEFORE insertRound, so
+            // insertRound's getTourney(...) re-reads the round we just created.
+            persistTourney(t);
             insertRound(newRound);
             notificationServer.sendAdminNotification("Round " + t.getNumRounds() + " started in " + t.getName());
         }
@@ -609,11 +652,15 @@ public class CacheTourneyStorer implements TourneyStorer {
                 log4j.info("Not enough players to start tournament " + tournament.getName() +
                         ". Cancelling tournament.");
                 tournament.setStatus('S');
+                persistTourney(tournament);   // persist the status change
                 cancelTourney(tourneyID);
             } else {
                 log4j.info("Starting tournament " + tournament.getName() +
                         " with " + players.size() + " players.");
                 TourneyRound newRound = tournament.createFirstRound(players);
+                // persist the first round into the aggregate BEFORE insertRound,
+                // so insertRound's getTourney(...) re-reads the round.
+                persistTourney(tournament);
                 this.insertRound(newRound);
             }
         } catch (Throwable t) {
