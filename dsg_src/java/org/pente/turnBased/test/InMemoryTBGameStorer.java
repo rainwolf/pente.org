@@ -23,7 +23,15 @@ public class InMemoryTBGameStorer implements TBGameStorer {
 
     private final Map<Long, TBSet> setsById = new HashMap<Long, TBSet>();
     private final Map<Long, Long> gidToSid = new HashMap<Long, Long>();
+    private final Map<Long, List<Integer>> storedMoveNums =
+            new HashMap<Long, List<Integer>>();
     private long nextGid = 1L;
+
+    /** Move numbers passed to storeNewMove per gid, in call order (for tests). */
+    public synchronized List<Integer> getStoredMoveNums(long gid) {
+        List<Integer> l = storedMoveNums.get(gid);
+        return l == null ? new ArrayList<Integer>() : new ArrayList<Integer>(l);
+    }
 
     private static TBSet copy(TBSet set) {
         if (set == null) {
@@ -93,9 +101,16 @@ public class InMemoryTBGameStorer implements TBGameStorer {
         return new ArrayList<TBSet>();
     }
 
-    public void storeNewMove(long gid, int moveNum, int move)
+    public synchronized void storeNewMove(long gid, int moveNum, int move)
             throws TBStoreException {
-        // no-op: moves persist via updateGameAfterMove in this mock.
+        // Record the move number so tests can assert no tb_move PK collision.
+        // Moves themselves persist via updateGameAfterMove in this mock.
+        List<Integer> nums = storedMoveNums.get(gid);
+        if (nums == null) {
+            nums = new ArrayList<Integer>();
+            storedMoveNums.put(gid, nums);
+        }
+        nums.add(moveNum);
     }
 
     public void storeNewMessage(long gid, TBMessage message)

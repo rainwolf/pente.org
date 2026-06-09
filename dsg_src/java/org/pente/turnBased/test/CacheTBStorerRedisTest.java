@@ -213,6 +213,38 @@ public class CacheTBStorerRedisTest extends TestCase {
                 set.getGame1().getOpponent(cp) != 0L);
     }
 
+    /**
+     * Regression for the multi-stone move-collision: MoveServlet reads
+     * game.getNumMoves() off a TBGame it loaded once and passes it as moveNum for
+     * every stone of a turn (connect6/swap2/go submit 2-3 moves). Under the Redis
+     * aggregate root that local copy no longer advances, so the same moveNum was
+     * passed twice -> tb_move (gid, move_num) PK collision -> earlier stones lost.
+     * storeNewMove must derive move_num from the freshly-loaded game instead.
+     */
+    public void testStoreNewMoveUsesAuthoritativeMoveNum() throws Exception {
+        TBGame g = new TBGame();
+        g.setGame(GridStateFactory.TB_PENTE);
+        g.setState(TBGame.STATE_ACTIVE);
+        g.setPlayer1Pid(1001L);
+        g.setPlayer2Pid(1002L);
+        g.setDaysPerMove(3);
+        g.setLastMoveDate(new Date());
+
+        TBSet set = new TBSet(105L, g, null);
+        base.createSet(set);
+        cache.loadSet(105L);
+
+        long gid = set.getGame1().getGid();
+        // Simulate MoveServlet's stale moveNum: pass 0 for BOTH stones of a turn.
+        cache.storeNewMove(gid, 0, 180);
+        cache.storeNewMove(gid, 0, 181);
+
+        java.util.List<Integer> nums = base.getStoredMoveNums(gid);
+        assertEquals("both moves must reach the base storer", 2, nums.size());
+        assertTrue("move numbers must be distinct (no tb_move PK collision)",
+                !nums.get(0).equals(nums.get(1)));
+    }
+
     private static boolean containsSid(java.util.List<TBSet> sets, long sid) {
         for (TBSet s : sets) {
             if (s.getSetId() == sid) {

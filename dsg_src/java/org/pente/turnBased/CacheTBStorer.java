@@ -1389,7 +1389,15 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                 game, dsgPlayerStorer);
 
         boolean gameOver;
+        // Derive the move index from the freshly-loaded game, NOT from the
+        // caller-supplied moveNum. Callers (e.g. MoveServlet) read getNumMoves()
+        // off a TBGame they loaded once; under the Redis aggregate root that copy
+        // no longer advances across successive storeNewMove calls, so a stale
+        // moveNum would collide on the tb_move (gid, move_num) primary key and
+        // overwrite prior moves of a multi-stone turn (connect6, swap2, go).
+        int actualMoveNum;
         synchronized (cacheTbLock) {
+            actualMoveNum = game.getNumMoves();
             game.addMove(move);
             game.setTimeoutDate(new Date(newTimeout));
             game.setUndoRequested(false);   // folded in from MoveServlet:633
@@ -1409,9 +1417,9 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
         // do this in background thread for performance?
         if (game.getPlayer1Pid() == 23000000020606L || game.getPlayer2Pid() == 23000000020606L) {
-            ((MySQLTBGameStorer) baseStorer).storeNewAIMove(gid, moveNum, move);
+            ((MySQLTBGameStorer) baseStorer).storeNewAIMove(gid, actualMoveNum, move);
         } else {
-            baseStorer.storeNewMove(gid, moveNum, move);
+            baseStorer.storeNewMove(gid, actualMoveNum, move);
         }
 
         baseStorer.updateGameAfterMove(game);
