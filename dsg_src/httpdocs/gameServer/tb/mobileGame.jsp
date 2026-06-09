@@ -260,7 +260,12 @@
                <td valign="top" width="70%">
 
 
-                  <div style="position: relative; top: 0; height: 600px; ">
+                  <style>
+                     /* Don't reserve vertical space for the score/message boxes
+                        when they have no content (no Go score, no chat). */
+                     #scoreBox:empty, #messageBox:empty { display: none; }
+                  </style>
+                  <div style="position: relative; top: 0; width: 600px; height: 600px; ">
                      <canvas id="stone" width="600" height="600"
                              style="position: absolute; left: 0; top: 0; z-index: -1;  "></canvas>
                      <canvas id="board" width="600" height="600"
@@ -269,15 +274,10 @@
                              style="position: absolute; left: 0; top: 0; z-index: 1;  "></canvas>
                   </div>
 
-
-                  <br>
-                  <div id="scoreBox" style="width:550px; height:auto; "></div>
-                  <br>
-                  <br>
-                  <div id="messageBox" style="width:550px; height:auto; background: #cf9;"></div>
-                  <br>
+                  <div id="scoreBox" style="width:550px; height:auto; margin-top:10px;"></div>
+                  <div id="messageBox" style="width:550px; height:auto; background: #cf9; margin-top:10px;"></div>
                   <% if (!"false".equals(myTurn)) { %>
-                  Message: <input type="text" id="message" size="256" style="width:500px;">
+                  <div style="margin-top:10px;">Message: <input type="text" id="message" size="256" style="width:500px;"></div>
                   <br>
                   <br>
                   <label><input id="cycleCheck" name="cycleCheck" type="checkbox" onclick="changeCycle()"/> check
