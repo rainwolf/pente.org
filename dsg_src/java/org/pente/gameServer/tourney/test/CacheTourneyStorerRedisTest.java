@@ -77,6 +77,15 @@ public class CacheTourneyStorerRedisTest extends TestCase {
         assertTrue("expected pid 1002 in player-pid index", pids.contains(1002L));
     }
 
+    public void testAddPlayerUpdatesRedisCachedPidList() throws Throwable {
+        Tourney t = newTourney(902);
+        cache.insertTourney(t);
+        cache.getTourneyPlayerPids(902);          // warm the Redis-cached (empty) pid list
+        cache.addPlayerToTourney(1001L, 902);     // not yet Redis-aware (Task 5)
+        java.util.List<Long> pids = cache.getTourneyPlayerPids(902);
+        assertTrue("re-read must reflect the added player", pids.contains(1001L));
+    }
+
     /**
      * Go/no-go gate for the Redis migration: Tourney's {@code transient
      * TourneyFormat format} field is not serialized directly; it is rebuilt in a
