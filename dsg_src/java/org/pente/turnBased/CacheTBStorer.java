@@ -212,6 +212,8 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
             tbGame.setTimeoutDate(new Date(newTimeout));
 
+            persistSet(tbGame.getTbSet());
+
             try {
                 baseStorer.updateGameAfterMove(tbGame);
             } catch (TBStoreException e) {
@@ -226,6 +228,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
             if (tbGame.isUndoRequested()) {
                 tbGame.setUndoRequested(false);
                 ((MySQLTBGameStorer) baseStorer).undoLastMove(gid);
+                persistSet(tbGame.getTbSet());
             }
 //			long newTimeout = Utilities.calculateNewTimeout(
 //					tbGame, dsgPlayerStorer);
@@ -246,6 +249,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
             try {
                 ((MySQLTBGameStorer) baseStorer).storeNewMove(gid, tbGame.getNumMoves(), -1);
                 tbGame.setUndoRequested(true);
+                persistSet(tbGame.getTbSet());
 //				long newTimeout = Utilities.calculateNewTimeout(
 //						tbGame, dsgPlayerStorer);
 //
@@ -282,6 +286,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
             TBGame tbGame = getGame(gid);
             baseStorer.hideGame(gid, hiddenBy);
             tbGame.setHiddenBy(hiddenBy);
+            persistSet(tbGame.getTbSet());
         }
     }
 
