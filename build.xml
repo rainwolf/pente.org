@@ -4,15 +4,72 @@
             <include name="*.jar"/>
         </fileset>
     </path>
+
+    <path id="test-classpath">
+        <pathelement path="deployClasses"/>
+        <path refid="3rd-party-classpath"/>
+    </path>
+
+    <!-- Sync dsg_src/java → deploy before compiling (respects exclude_compile.txt). Run ./justCompile for the full sync+compile in one step. -->
+    <target name="sync">
+        <exec executable="./justCompile" failonerror="true"/>
+    </target>
+
     <target name="compile">
         <mkdir dir="deployClasses"/>
         <javac srcdir="deploy" destdir="deployClasses" debug="true" debuglevel="lines,vars,source">
             <classpath refid="3rd-party-classpath"/>
             <compilerarg value="-Xlint:deprecation,unchecked"/>
         </javac>
-        <!-- 	    <classpath>
-                  <pathelement path="./dsg_src/lib/"/>
-                </classpath>
-         -->
+    </target>
+
+    <!-- Compile test sources directly from dsg_src/java (bypasses rsync/exclude_compile.txt). -->
+    <target name="compile-tests" depends="compile">
+        <javac srcdir="dsg_src/java" destdir="deployClasses" debug="true" debuglevel="lines,vars,source">
+            <include name="**/test/**/*.java"/>
+            <!-- Exclude pre-existing tests with unresolvable dependencies -->
+            <exclude name="**/client/**"/>
+            <exclude name="**/opengl/**"/>
+            <exclude name="**/tourney/test/DoubleEliminationDriver.java"/>
+            <exclude name="**/message/test/**"/>
+            <exclude name="**/turnBased/test/TBStorerTest.java"/>
+            <classpath refid="test-classpath"/>
+        </javac>
+    </target>
+
+    <!-- Run all Redis cache unit tests. Does not require a real Redis or DB. -->
+    <target name="test" depends="compile-tests">
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.server.test.RedisConnectionManagerTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.core.test.CacheDSGFollowerStorerTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.core.test.CacheDSGPlayerStorerTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.tourney.test.CacheTourneyStorerTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.tourney.test.TourneySerializationTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.turnBased.test.CacheTBStorerRedisTest"/>
+        </java>
+    </target>
+
+    <!-- Run a single test class: ant test-one -Dtest=org.pente.gameServer.server.test.RedisConnectionManagerTest -->
+    <target name="test-one" depends="compile-tests">
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="${test}"/>
+        </java>
     </target>
 </project>
