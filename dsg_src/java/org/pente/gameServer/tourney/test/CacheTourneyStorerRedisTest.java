@@ -176,6 +176,78 @@ public class CacheTourneyStorerRedisTest extends TestCase {
                 555L, reloaded.getGid());
     }
 
+    /**
+     * Regression: getCurrentTournies() must NOT write back the stale loop-start
+     * snapshot of the CURRENT eid-list. During the loop, checkRoundStatus() may
+     * complete a tourney, moving its eid CURRENT->COMPLETED in Redis. The buggy
+     * code removed the separately-"ended" eids from the stale snapshot and wrote
+     * that back, re-inserting the just-completed eid into CURRENT (so it lived in
+     * BOTH lists and got double-completed on the next sweep -> duplicate crown,
+     * notification, startAnotherTourney).
+     *
+     * We model the mid-loop completion by overriding getTourney for the "trigger"
+     * eid: it performs the same CURRENT->COMPLETED move completeTourney would, and
+     * returns a tourney with a future endDate so it is NOT itself added to the
+     * loop's `ended` list (mirroring completeTourney setting endDate to ~now,
+     * which is after the loop-start `today`). A separate tourney with a past
+     * endDate populates `ended`, forcing the buggy write-back path. After one
+     * sweep, CURRENT must not contain the completed trigger eid.
+     */
+    public void testGetCurrentTourniesDoesNotReinsertCompletedEid() throws Throwable {
+        final int endedEid = 907;     // past endDate -> goes into `ended`
+        final int triggerEid = 906;   // "completed" mid-loop -> moved CURRENT->COMPLETED
+
+        final Tourney endedT = newTourney(endedEid);
+        endedT.setEndDate(new java.util.Date(System.currentTimeMillis() - 600000L)); // 10 min ago
+
+        final Tourney triggerT = newTourney(triggerEid);
+        triggerT.setEndDate(new java.util.Date(System.currentTimeMillis() + 3600000L)); // +1h, not "ended"
+
+        final RedisConnectionManager rcm = RedisConnectionManager.getInstance();
+
+        CacheTourneyStorer triggerCache = new CacheTourneyStorer(backing) {
+            @Override
+            public synchronized Tourney getTourney(int eid) throws Throwable {
+                if (eid == triggerEid) {
+                    // mimic checkRoundStatus()->completeTourney()'s moveEid(CURRENT -> COMPLETED)
+                    java.util.ArrayList<Integer> cur = rcm.hget(RedisConnectionManager.TOURNEY_LIST_CURRENT, "list");
+                    if (cur == null) cur = new java.util.ArrayList<Integer>();
+                    cur.remove(Integer.valueOf(triggerEid));
+                    rcm.hput(RedisConnectionManager.TOURNEY_LIST_CURRENT, "list", cur);
+                    java.util.ArrayList<Integer> comp = rcm.hget(RedisConnectionManager.TOURNEY_LIST_COMPLETED, "list");
+                    if (comp == null) comp = new java.util.ArrayList<Integer>();
+                    if (!comp.contains(triggerEid)) comp.add(triggerEid);
+                    rcm.hput(RedisConnectionManager.TOURNEY_LIST_COMPLETED, "list", comp);
+                    return triggerT;
+                }
+                if (eid == endedEid) return endedT;
+                return super.getTourney(eid);
+            }
+        };
+
+        try {
+            // bootstrap CURRENT (empty backing) so currentLoaded=true, then seed the list
+            triggerCache.getCurrentTournies();
+            java.util.ArrayList<Integer> seed = new java.util.ArrayList<Integer>();
+            seed.add(endedEid);
+            seed.add(triggerEid);
+            rcm.hput(RedisConnectionManager.TOURNEY_LIST_CURRENT, "list", seed);
+
+            triggerCache.getCurrentTournies();   // the sweep under test
+
+            java.util.ArrayList<Integer> current = rcm.hget(RedisConnectionManager.TOURNEY_LIST_CURRENT, "list");
+            if (current == null) current = new java.util.ArrayList<Integer>();
+            assertTrue("completed eid must NOT be re-inserted into CURRENT", !current.contains(triggerEid));
+            assertTrue("ended eid must be removed from CURRENT", !current.contains(endedEid));
+
+            java.util.ArrayList<Integer> completed = rcm.hget(RedisConnectionManager.TOURNEY_LIST_COMPLETED, "list");
+            assertNotNull(completed);
+            assertTrue("completed eid must remain in COMPLETED", completed.contains(triggerEid));
+        } finally {
+            triggerCache.destroy();
+        }
+    }
+
     public void testTourneyFormatSurvivesRedisRoundTrip() throws Exception {
         Tourney t = newTourney(901);
         t.setFormat(new RoundRobinFormat());   // sets formatType = 1

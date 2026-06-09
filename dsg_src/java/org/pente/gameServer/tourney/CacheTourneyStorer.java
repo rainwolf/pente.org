@@ -148,7 +148,7 @@ public class CacheTourneyStorer implements TourneyStorer {
     private volatile boolean currentLoaded = false;
     private volatile boolean completedLoaded = false;
 
-    public List<Tourney> getUpcomingTournies() throws Throwable {
+    public synchronized List<Tourney> getUpcomingTournies() throws Throwable {
         if (!upcomingLoaded) {
             java.util.List<Tourney> backing = backingStorer.getUpcomingTournies();
             java.util.List<Integer> bootstrapEids = new java.util.ArrayList<Integer>();
@@ -167,8 +167,9 @@ public class CacheTourneyStorer implements TourneyStorer {
             else { out.add(t); }
         }
         if (!promote.isEmpty()) {
-            eids.removeAll(promote);
-            writeEidList(RedisConnectionManager.TOURNEY_LIST_UPCOMING, eids);
+            java.util.List<Integer> freshUp = readEidList(RedisConnectionManager.TOURNEY_LIST_UPCOMING);
+            freshUp.removeAll(promote);
+            writeEidList(RedisConnectionManager.TOURNEY_LIST_UPCOMING, freshUp);
             java.util.List<Integer> cur = readEidList(RedisConnectionManager.TOURNEY_LIST_CURRENT);
             for (Integer eid : promote) if (!cur.contains(eid)) cur.add(eid);
             writeEidList(RedisConnectionManager.TOURNEY_LIST_CURRENT, cur);
@@ -177,7 +178,7 @@ public class CacheTourneyStorer implements TourneyStorer {
     }
 
 
-    public List<Tourney> getCurrentTournies() throws Throwable {
+    public synchronized List<Tourney> getCurrentTournies() throws Throwable {
         if (!currentLoaded) {
             java.util.List<Tourney> backing = backingStorer.getCurrentTournies();
             java.util.List<Integer> bootstrapEids = new java.util.ArrayList<Integer>();
@@ -202,13 +203,17 @@ public class CacheTourneyStorer implements TourneyStorer {
             }
         }
         if (!ended.isEmpty()) {
-            eids.removeAll(ended);
-            writeEidList(RedisConnectionManager.TOURNEY_LIST_CURRENT, eids);
+            // Re-read CURRENT fresh: checkRoundStatus()->completeTourney() may have
+            // already moved completed eids out of CURRENT during the loop. Writing back
+            // the stale loop-start snapshot would re-insert them.
+            java.util.List<Integer> fresh = readEidList(RedisConnectionManager.TOURNEY_LIST_CURRENT);
+            fresh.removeAll(ended);
+            writeEidList(RedisConnectionManager.TOURNEY_LIST_CURRENT, fresh);
         }
         return out;
     }
 
-    public List<Tourney> getCompletedTournies() throws Throwable {
+    public synchronized List<Tourney> getCompletedTournies() throws Throwable {
         if (!completedLoaded) {
             java.util.List<Tourney> backing = backingStorer.getCompletedTournies();
             java.util.List<Integer> bootstrapEids = new java.util.ArrayList<Integer>();
@@ -225,7 +230,7 @@ public class CacheTourneyStorer implements TourneyStorer {
         return out;
     }
 
-    public void completeTourney(Tourney tourney) throws Throwable {
+    public synchronized void completeTourney(Tourney tourney) throws Throwable {
         log4j.debug("completeTourney(" + tourney.getEventID() + ")");
 
         tourney.setEndDate(new Date());
@@ -791,7 +796,7 @@ public class CacheTourneyStorer implements TourneyStorer {
         flushCache();
     }
 
-    public void cancelTourney(int eid) throws Throwable {
+    public synchronized void cancelTourney(int eid) throws Throwable {
         log4j.info("cancelTourney(" + eid + ")");
         backingStorer.cancelTourney(eid);
 
