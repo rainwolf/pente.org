@@ -57,6 +57,10 @@
         </java>
         <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
             <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.tourney.test.CacheTourneyStorerRedisTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
             <arg value="org.pente.gameServer.tourney.test.TourneySerializationTest"/>
         </java>
         <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
