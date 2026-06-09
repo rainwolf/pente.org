@@ -20,11 +20,6 @@ public class CacheTourneyStorer implements TourneyStorer {
             CacheTourneyStorer.class.getName());
 
     private TourneyStorer backingStorer;
-    private Map<Integer, Tourney> tournies = new HashMap<Integer, Tourney>();
-    private List<Tourney> upcomingTournies = null;
-    private List<Tourney> currentTournies = null;
-    private List<Tourney> completedTournies = null;
-    private Map<Integer, List<Long>> tourneyPlayerPids = null;
     private List<TourneyListener> listeners = new ArrayList<TourneyListener>();
 
     private CacheTBStorer tbStorer;
@@ -110,12 +105,6 @@ public class CacheTourneyStorer implements TourneyStorer {
         pente_cache.invalidate(RedisConnectionManager.TOURNEY_LIST_CURRENT);
         pente_cache.invalidate(RedisConnectionManager.TOURNEY_LIST_COMPLETED);
         upcomingLoaded = false; currentLoaded = false; completedLoaded = false;
-        // keep existing in-memory clears for now (Task 7 removes them)
-        tournies.clear();
-        upcomingTournies = null;
-        currentTournies = null;
-        completedTournies = null;
-        tourneyPlayerPids = null;
     }
 
     public synchronized void insertTourney(Tourney tourney, Resources resources) throws Throwable {
@@ -153,8 +142,6 @@ public class CacheTourneyStorer implements TourneyStorer {
         persistTourney(tourney);
         java.util.List<Integer> up = readEidList(RedisConnectionManager.TOURNEY_LIST_UPCOMING);
         if (!up.contains(tourney.getEventID())) { up.add(tourney.getEventID()); writeEidList(RedisConnectionManager.TOURNEY_LIST_UPCOMING, up); }
-        tournies.put(tourney.getEventID(), tourney);
-        upcomingTournies = null;
     }
 
     private volatile boolean upcomingLoaded = false;
@@ -276,9 +263,6 @@ public class CacheTourneyStorer implements TourneyStorer {
         moveEid(RedisConnectionManager.TOURNEY_LIST_CURRENT,
                 RedisConnectionManager.TOURNEY_LIST_COMPLETED, tourney.getEventID());
 
-        completedTournies = null;
-        currentTournies = null;
-
         if (tourney.isTurnBased()) {
             startAnotherTourney(tourney.getEventID());
         }
@@ -327,13 +311,6 @@ public class CacheTourneyStorer implements TourneyStorer {
         if (!pids.contains(pid)) pids.add(pid);
         pente_cache.hput(RedisConnectionManager.EID_TO_TOURNEY_PLAYER_PIDS, eid, new java.util.ArrayList<Long>(pids));
 
-        if (tourneyPlayerPids != null) {
-            List<Long> playerPids = tourneyPlayerPids.get(eid);
-            if (playerPids != null) {
-                playerPids.add(pid);
-            }
-        }
-
         notifyListeners(new TourneyEvent(eid, TourneyEvent.PLAYER_REGISTER,
                 Long.valueOf(pid)));
     }
@@ -345,13 +322,6 @@ public class CacheTourneyStorer implements TourneyStorer {
         java.util.List<Long> pids = getTourneyPlayerPids(eid);
         pids.remove(Long.valueOf(pid));   // remove the Long value, NOT remove-by-index
         pente_cache.hput(RedisConnectionManager.EID_TO_TOURNEY_PLAYER_PIDS, eid, new java.util.ArrayList<Long>(pids));
-
-        if (tourneyPlayerPids != null) {
-            List<Long> playerPids = tourneyPlayerPids.get(eid);
-            if (playerPids != null) {
-                playerPids.remove(pid);
-            }
-        }
 
         notifyListeners(new TourneyEvent(eid, TourneyEvent.PLAYER_DROP,
                 Long.valueOf(pid)));
