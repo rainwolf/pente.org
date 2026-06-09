@@ -144,4 +144,44 @@ public class CacheTBStorerRedisTest extends TestCase {
         assertEquals(fromGame.getWinner(),
                 cache.loadSet(102L).getGame(gid).getWinner());
     }
+
+    public void testWaitingSetAppearsThenClearsOnAccept() throws Exception {
+        // A waiting set has an open seat (player2Pid == 0). State must be
+        // NOT_STARTED so the set is a genuine outstanding invite.
+        TBGame g = new TBGame();
+        g.setGame(GridStateFactory.TB_PENTE);
+        g.setState(TBGame.STATE_NOT_STARTED);
+        g.setPlayer1Pid(1001L);
+        g.setPlayer2Pid(0L);
+        g.setDaysPerMove(3);
+        g.setCreationDate(new Date());
+        g.setLastMoveDate(new Date());
+
+        TBSet set = new TBSet(103L, g, null);
+        set.setState(TBSet.STATE_NOT_STARTED);
+        set.setPlayer1Pid(1001L);
+        set.setPlayer2Pid(0L);
+        set.setInviterPid(1001L);
+        assertTrue("set must be a waiting set", set.isWaitingSet());
+
+        cache.createSet(set);
+
+        // The waiting set must be visible in the Redis-backed waiting list.
+        assertTrue("waiting set should appear after createSet",
+                containsSid(cache.getWaitingSets(), 103L));
+
+        // Accepting the invite must remove it from the waiting list.
+        cache.acceptInvite(set, 1002L);
+        assertTrue("waiting set should clear after acceptInvite",
+                !containsSid(cache.getWaitingSets(), 103L));
+    }
+
+    private static boolean containsSid(java.util.List<TBSet> sets, long sid) {
+        for (TBSet s : sets) {
+            if (s.getSetId() == sid) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

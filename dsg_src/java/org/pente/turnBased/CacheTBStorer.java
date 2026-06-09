@@ -50,7 +50,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
     /**
      * might be some duplication with games above, but thats probably ok
      */
-    private Set<TBSet> waitingSets = new TreeSet<TBSet>((s1, s2) -> {
+    private static final Comparator<TBSet> WAITING_CMP = (s1, s2) -> {
         TBGame g1 = s1.getGame1();
         TBGame g2 = s2.getGame1();
         if (g1.getGid() == g2.getGid()) return 0;
@@ -66,8 +66,8 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         } else {
             return comp;
         }
-    });
-    private boolean waitingSetsLoaded = false;
+    };
+    private volatile boolean waitingSetsLoaded = false;
 
     /**
      * used to cache game gids by pid
@@ -153,16 +153,11 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
     }
 
     public List<TBSet> getWaitingSets() {
-        synchronized (cacheTbLock) {
-            if (!waitingSetsLoaded) {
-                try {
-                    loadWaitingSets();
-                } catch (TBStoreException e) {
-                    e.printStackTrace();
-                }
-            }
-            HashSet<TBSet> tmp = new HashSet<TBSet>(waitingSets);
-            return new ArrayList<TBSet>(tmp);
+        try {
+            return loadWaitingSets();
+        } catch (TBStoreException e) {
+            log4j.error("getWaitingSets", e);
+            return new ArrayList<TBSet>();
         }
     }
     /** end accessors */
@@ -184,7 +179,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         synchronized (cacheTbLock) {
             gamesMap.clear();
             setsMap.clear();
-            waitingSets.clear();
+            pente_cache.invalidate(RedisConnectionManager.TB_WAITING_SET_IDS);
             waitingSetsLoaded = false;
             setsByPid.clear();
 
@@ -435,15 +430,12 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                         dateFormat.format(d));
                 List<TBSet> sets = baseStorer.loadGamesExpiringBefore(d);
                 log4j.debug(getName() + " loaded " + sets.size() + " sets");
-                synchronized (cacheTbLock) {
-                    for (TBSet s : sets) {
-                        TBSet cachedSet = setsMap.get(s.getSetId());
-
-                        log4j.debug(getName() + " examine set " + s.getSetId());
-                        if (cachedSet == null) {
-                            cacheSet(s);
-                            log4j.debug(getName() + " cache set");
-                        }
+                for (TBSet s : sets) {
+                    boolean cached = pente_cache.hexists(RedisConnectionManager.SID_TO_TB_SET, s.getSetId());
+                    log4j.debug(getName() + " examine set " + s.getSetId());
+                    if (!cached) {
+                        cacheSet(s);
+                        log4j.debug(getName() + " cache set");
                     }
                 }
 
@@ -478,10 +470,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         public void run() {
             log4j.debug(getName() + " run");
 
-            List<TBGame> gs = null;
-            synchronized (cacheTbLock) {
-                gs = new ArrayList<TBGame>(gamesMap.values());
-            }
+            List<TBGame> gs = getGames();
 
             // this should probably be synced, and also
             // only look at games in sorted order until you find one that
@@ -598,6 +587,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                     //keep around for viewing through profile
                     //uncacheGameForPlayer(t);
 
+                    synchronized (cacheTbLock) { persistSet(t.getTbSet()); }
                     endGameRunnable.endGame(t, EndGameRunnable.Data.REASON_TO);
                 }
             }
@@ -1290,20 +1280,16 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
         baseStorer.createSet(set);
 
-        loadWaitingSets(); // make sure loaded
-
-        // update waiting games
-        synchronized (cacheTbLock) {
-            if (set.isWaitingSet()) {
-                waitingSets.add(set);
-            }
-        }
-
         cacheSet(set);
 
+        // update waiting games
+        if (set.isWaitingSet()) {
+            pente_cache.hput(RedisConnectionManager.TB_WAITING_SET_IDS, set.getSetId(), set.getSetId());
+        }
+
         // if players involved in set already have cached sets, update caches
-        cacheSetForPlayer(set, set.getPlayer1Pid(), false);
-        cacheSetForPlayer(set, set.getPlayer2Pid(), false);
+        indexSetForPlayer(set, set.getPlayer1Pid());
+        indexSetForPlayer(set, set.getPlayer2Pid());
 
         // tourney games are started automatically
         if (set.getState() == TBSet.STATE_ACTIVE) {
@@ -1387,25 +1373,26 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
     public List<TBSet> loadWaitingSets() throws TBStoreException {
 
         log4j.debug("CacheTBGameStorer.loadWaitingSets()");
-        synchronized (cacheTbLock) {
-            if (waitingSetsLoaded) {
-                log4j.debug("cached");
-                // return copy so can modify it locally while
-                // clients display on screen
-                return new ArrayList<TBSet>(waitingSets);
-            }
-        }
-
-        List<TBSet> gs = baseStorer.loadWaitingSets();
-        synchronized (cacheTbLock) {
-            waitingSets.clear();//protect against race condition
-            waitingSets.addAll(gs);
+        List<String> sidFields = pente_cache.hgetAllFields(RedisConnectionManager.TB_WAITING_SET_IDS);
+        if (sidFields.isEmpty() && !waitingSetsLoaded) {
+            List<TBSet> gs = baseStorer.loadWaitingSets();
             for (TBSet s : gs) {
+                cacheSet(s);
+                pente_cache.hput(RedisConnectionManager.TB_WAITING_SET_IDS, s.getSetId(), s.getSetId());
                 log4j.debug("cached " + s.getSetId());
             }
             waitingSetsLoaded = true;
+            List<TBSet> sorted = new ArrayList<TBSet>(gs);
+            Collections.sort(sorted, WAITING_CMP);
+            return sorted;
         }
-        return new ArrayList<TBSet>(waitingSets);
+        List<TBSet> sets = new ArrayList<TBSet>();
+        for (String f : sidFields) {
+            TBSet s = pente_cache.hget(RedisConnectionManager.SID_TO_TB_SET, Long.valueOf(f));
+            if (s != null) sets.add(s);
+        }
+        Collections.sort(sets, WAITING_CMP);
+        return sets;
     }
 
     public int getNumGamesMyTurn(long pid) throws TBStoreException {
