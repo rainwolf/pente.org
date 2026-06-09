@@ -628,10 +628,11 @@ public class MoveServlet extends HttpServlet {
                     notificationServer.sendMoveNotification(playerData.getName(), game.getCurrentPlayer(), game.getGid(), GridStateFactory.getGameName(game.getGame()));
                 }
 
-                if (game.isUndoRequested()) {
-                    game.setUndoRequested(false);
-                    ((CacheTBStorer) tbGameStorer).updateGameAfterMove(game);
-                }
+                // Pending-undo clearing is handled storer-side: storeNewMove()
+                // sets undoRequested=false and persists the canonical set. Do NOT
+                // re-persist the servlet's pre-move `game` copy here — under the
+                // Redis aggregate root that copy is detached and would clobber the
+                // move that storeNewMove just persisted.
 
                 notificationServer.sendSilentNotification(game.getOpponent(game.getCurrentPlayer()));
 
