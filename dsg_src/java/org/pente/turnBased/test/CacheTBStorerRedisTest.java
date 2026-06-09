@@ -12,9 +12,14 @@ import org.pente.turnBased.TBSet;
 
 /**
  * Verifies that CacheTBStorer keeps the cached game and the cached set in sync
- * after a move. Pre-migration this is EXPECTED TO FAIL (game and set diverge,
- * or the move path NPEs on a null collaborator) because reads hit two separate
- * in-memory maps rather than a single Redis aggregate root.
+ * after a move — the core invariant of the Redis aggregate-root migration.
+ *
+ * Regression-guard semantics: this passes today because the pre-migration code
+ * shares one TBGame instance across gamesMap and setsMap, so the two reads
+ * cannot diverge. It goes RED once reads are switched to Redis (Task 4) and a
+ * mutator fails to persist the whole set, and returns GREEN when every mutator
+ * follows the write invariant (Task 5+). Treat a RED here as a missing
+ * persistSet() on some mutation path.
  */
 public class CacheTBStorerRedisTest extends TestCase {
 
