@@ -94,45 +94,44 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
     }
 
     public TBGame getGame(long gid) {
-        synchronized (cacheTbLock) {
-            return gamesMap.get(gid);
+        try {
+            return loadGame(gid);
+        } catch (TBStoreException e) {
+            log4j.error("getGame failed for " + gid, e);
+            return null;
         }
     }
 
     public List<TBGame> getGames() {
-        synchronized (cacheTbLock) {
-            return new ArrayList<TBGame>(gamesMap.values());
+        List<TBSet> sets = pente_cache.hgetAllValues(RedisConnectionManager.SID_TO_TB_SET);
+        List<TBGame> games = new ArrayList<TBGame>();
+        for (TBSet s : sets) {
+            for (TBGame g : s.getGames()) {
+                if (g != null) games.add(g);
+            }
         }
+        return games;
     }
 
     public List<TBSet> getSets() {
-        synchronized (cacheTbLock) {
-            return new ArrayList<TBSet>(setsMap.values());
-        }
+        return pente_cache.hgetAllValues(RedisConnectionManager.SID_TO_TB_SET);
     }
 
     public List<Long> getCachedPids() {
-        synchronized (cacheTbLock) {
-            return new ArrayList<Long>(setsByPid.keySet());
+        List<String> fields = pente_cache.hgetAllFields(RedisConnectionManager.PID_TO_TB_SET_IDS);
+        List<Long> pids = new ArrayList<Long>(fields.size());
+        for (String f : fields) {
+            pids.add(Long.valueOf(f));
         }
+        return pids;
     }
 
     public List<TBSet> getSetsByPid(long pid) {
-        synchronized (cacheTbLock) {
-            HashSet<Long> sids = setsByPid.get(pid);
-            if (sids == null) {
-                return new ArrayList<TBSet>();
-            }
-            List<TBSet> sets = new ArrayList<TBSet>(sids.size());
-            for (Long l : sids) {
-                TBSet s = setsMap.get(l);
-                // since not synced since loaded sids, sets might have
-                // been flushed from cache
-                if (s != null) {
-                    sets.add(s);
-                }
-            }
-            return sets;
+        try {
+            return loadSets(pid);
+        } catch (TBStoreException e) {
+            log4j.error("getSetsByPid " + pid, e);
+            return new ArrayList<TBSet>();
         }
     }
 
@@ -1336,24 +1335,14 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
     public TBSet loadSet(long sid) throws TBStoreException {
         log4j.debug("CacheTBGameStorer.loadSet(" + sid + ")");
-
         cacheStats.incrementSetLoads();
-
-        TBSet s = null;
-        synchronized (cacheTbLock) {
-            s = setsMap.get(sid);
-        }
-
+        TBSet s = pente_cache.hget(RedisConnectionManager.SID_TO_TB_SET, sid);
         if (s == null) {
-            log4j.debug("not cached");
             s = baseStorer.loadSet(sid);
-            if (s != null) {
-                cacheSet(s);
-            }
+            if (s != null) cacheSet(s);
         } else {
             cacheStats.incrementSetLoadsCached();
         }
-
         return s;
     }
 
@@ -1372,24 +1361,17 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
     public TBGame loadGame(long gid) throws TBStoreException {
         log4j.debug("CacheTBGameStorer.loadGame(" + gid + ")");
-
         cacheStats.incrementGameLoads();
-        TBGame g = null;
-        synchronized (cacheTbLock) {
-            g = gamesMap.get(gid);
-        }
-        if (g == null) {
-            log4j.debug("not cached");
-            TBSet s = baseStorer.loadSetByGid(gid);
-            if (s != null) {
-                cacheSet(s);
-                g = s.getGame(gid);
-            }
+        Long sid = pente_cache.hget(RedisConnectionManager.GID_TO_SID, gid);
+        TBSet s = (sid == null) ? null
+                : (TBSet) pente_cache.hget(RedisConnectionManager.SID_TO_TB_SET, sid);
+        if (s == null) {
+            s = baseStorer.loadSetByGid(gid);
+            if (s != null) cacheSet(s);
         } else {
             cacheStats.incrementGameLoadsCached();
         }
-
-        return g;
+        return s == null ? null : s.getGame(gid);
     }
 
     public List<TBSet> loadGamesExpiringBefore(Date date)
@@ -1445,62 +1427,28 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
     }
 
     public List<TBSet> loadSets(long pid) throws TBStoreException {
-
         log4j.debug("CacheTBGameStorer.loadSets(" + pid + ")");
-        // maintain a separate cache for each pid
-        // store all game data in gamesMap
-        // store all set data in setMap
-        // store list of setIds in setsByPid
-
-        HashSet<Long> sids = null;
-        List<TBSet> sets = null;
-
-        synchronized (cacheTbLock) {
-            sids = setsByPid.get(pid);
-            // copy sids since whole method is not synched
-            if (sids != null) {
-                sids = new HashSet<Long>(sids);
-            }
-        }
-
+        HashSet<Long> sids = pente_cache.hget(RedisConnectionManager.PID_TO_TB_SET_IDS, pid);
         if (sids == null) {
-            log4j.debug("not cached yet");
-
-            sets = baseStorer.loadSets(pid);
-
+            List<TBSet> sets = baseStorer.loadSets(pid);
             cacheStats.incrementSetLoads(sets.size());
-
-            synchronized (cacheTbLock) {
-                // even if player has no tb games, cache an empty list
-                // just so we don't hit db every page load
-                if (sets.isEmpty()) {
-                    setsByPid.put(pid, new HashSet<Long>());
-                } else {
-                    for (TBSet s : sets) {
-                        cacheSet(s);
-                        cacheSetForPlayer(s, pid, true);
-                    }
+            if (sets.isEmpty()) {
+                pente_cache.hput(RedisConnectionManager.PID_TO_TB_SET_IDS, pid, new HashSet<Long>());
+            } else {
+                for (TBSet s : sets) {
+                    cacheSet(s);
+                    indexSetForPlayer(s, pid);
                 }
             }
-
             return new ArrayList<TBSet>(sets);
-        } else {
-            log4j.debug("cached");
-            cacheStats.incrementSetLoads(sids.size());
-            cacheStats.incrementSetLoadsCached(sids.size());
-
-            sets = new ArrayList<TBSet>(sids.size());
-            for (Long l : sids) {
-                TBSet s = setsMap.get(l);
-                // since not synced since loaded sids, sets might have
-                // been flushed from cache
-                if (s != null) {
-                    sets.add(s);
-                }
-            }
-            return sets;
         }
-
+        cacheStats.incrementSetLoadsCached(sids.size());
+        List<TBSet> sets = new ArrayList<TBSet>(sids.size());
+        for (Long sid : sids) {
+            TBSet s = pente_cache.hget(RedisConnectionManager.SID_TO_TB_SET, sid);
+            if (s != null) sets.add(s);
+        }
+        return sets;
     }
 
     public void storeNewMove(long gid, int moveNum, int move)
