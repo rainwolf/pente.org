@@ -75,13 +75,15 @@ public abstract class TourneySection implements Serializable {
 
     public abstract List<TourneyMatch> getMatches();
 
-    private List<TBSet> sets = new ArrayList<TBSet>();
+    private transient List<TBSet> sets = new ArrayList<TBSet>();
 
     public List<TBSet> getSets() {
+        if (sets == null) { sets = new ArrayList<TBSet>(); }
         return sets;
     }
 
     public void addSet(TBSet set) {
+        if (sets == null) { sets = new ArrayList<TBSet>(); }
         sets.add(set);
     }
 

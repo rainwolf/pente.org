@@ -9,6 +9,7 @@ import org.pente.gameServer.server.Resources;
 import org.pente.kingOfTheHill.CacheKOTHStorer;
 import org.pente.kingOfTheHill.KOTHStorer;
 import org.pente.notifications.NotificationServer;
+import org.pente.gameServer.server.RedisConnectionManager;
 import org.pente.turnBased.CacheTBStorer;
 
 import java.util.*;
@@ -32,6 +33,37 @@ public class CacheTourneyStorer implements TourneyStorer {
     private KOTHStorer kothStorer;
 
     private List<Timer> timers = null;
+
+    private final RedisConnectionManager pente_cache = RedisConnectionManager.getInstance();
+
+    private static final String LIST_FIELD = "list";
+
+    /** THE write primitive: persist a tourney as the single source of truth. */
+    private void persistTourney(Tourney t) {
+        if (t == null) return;
+        pente_cache.hput(RedisConnectionManager.EID_TO_TOURNEY, t.getEventID(), t);
+    }
+
+    /** Read an ordered eid list stored under a single fixed field in a namespace. */
+    @SuppressWarnings("unchecked")
+    private java.util.List<Integer> readEidList(String namespace) {
+        java.util.ArrayList<Integer> l = pente_cache.hget(namespace, LIST_FIELD);
+        return l == null ? new java.util.ArrayList<Integer>() : l;
+    }
+
+    /** Write an ordered eid list under a single fixed field in a namespace. */
+    private void writeEidList(String namespace, java.util.List<Integer> eids) {
+        pente_cache.hput(namespace, LIST_FIELD, new java.util.ArrayList<Integer>(eids));
+    }
+
+    /** Move an eid from one list namespace to another (dedup). */
+    private void moveEid(String fromNs, String toNs, int eid) {
+        java.util.List<Integer> from = readEidList(fromNs);
+        from.remove(Integer.valueOf(eid));
+        writeEidList(fromNs, from);
+        java.util.List<Integer> to = readEidList(toNs);
+        if (!to.contains(eid)) { to.add(eid); writeEidList(toNs, to); }
+    }
 
 
     public void setDsgPlayerStorer(CacheDSGPlayerStorer dsgPlayerStorer) {
