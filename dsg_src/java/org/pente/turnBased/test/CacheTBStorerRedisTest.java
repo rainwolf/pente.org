@@ -116,4 +116,32 @@ public class CacheTBStorerRedisTest extends TestCase {
         assertEquals(1, fromGame.getMessages().size());
         assertEquals("hello", fromGame.getMessages().get(0).getMessage());
     }
+
+    public void testResignPersistsWinner() throws Exception {
+        TBGame g = new TBGame();
+        g.setGame(GridStateFactory.TB_PENTE);
+        g.setState(TBGame.STATE_ACTIVE);
+        g.setPlayer1Pid(1001L);
+        g.setPlayer2Pid(1002L);
+        g.setDaysPerMove(3);
+        g.setLastMoveDate(new Date());
+
+        TBSet set = new TBSet(102L, g, null);
+        base.createSet(set);
+
+        // Warm the cache.
+        cache.loadSet(102L);
+
+        long gid = set.getGame1().getGid();
+
+        // Player 1 (seat winner 2) resigns. resignGame persists the set with the
+        // winner set synchronously (before queuing the background endGame work),
+        // so the canonical Redis aggregate must reflect the winner immediately.
+        cache.resignGame(cache.loadGame(gid), 1001L);
+
+        TBGame fromGame = cache.loadGame(gid);
+        assertTrue(fromGame.getWinner() != 0);
+        assertEquals(fromGame.getWinner(),
+                cache.loadSet(102L).getGame(gid).getWinner());
+    }
 }

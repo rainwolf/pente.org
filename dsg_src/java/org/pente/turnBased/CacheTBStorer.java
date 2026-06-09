@@ -1581,8 +1581,8 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
             }
 
             if (set.isWaitingSet()) {
-                waitingSets.remove(set);
-                cacheSetForPlayer(set, pid, false);
+                pente_cache.hremove(RedisConnectionManager.TB_WAITING_SET_IDS, set.getSetId());
+                indexSetForPlayer(set, pid);
             }
 
             set.acceptInvite(pid);
@@ -1619,6 +1619,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                         game, dsgPlayerStorer);
                 game.setTimeoutDate(new Date(newTimeout));
             }
+            persistSet(set);
         }
 
         // do this in background thread for performance?
@@ -1649,7 +1650,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         loadWaitingSets();
         synchronized (cacheTbLock) {
             if (set.isWaitingSet()) {
-                waitingSets.remove(set);
+                pente_cache.hremove(RedisConnectionManager.TB_WAITING_SET_IDS, set.getSetId());
             }
 
             if (set.getState() == TBSet.STATE_ACTIVE) {
@@ -1676,23 +1677,29 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
         baseStorer.cancelSet(set);
 
-        uncacheSet(set);
+        synchronized (cacheTbLock) {
+            evictSet(set);
+        }
     }
 
-    public void declineCancel(TBSet set) throws TBStoreException {
+    public void declineCancel(TBSet setArg) throws TBStoreException {
+        TBSet set = loadSet(setArg.getSetId());
         synchronized (cacheTbLock) {
             //should do some error checking here but too lazy
             set.setCancelMsg("");
             set.setCancelPid(0);
+            persistSet(set);
         }
         baseStorer.declineCancel(set);
     }
 
-    public void requestCancel(TBSet set, long requestorPid, String message) throws TBStoreException {
+    public void requestCancel(TBSet setArg, long requestorPid, String message) throws TBStoreException {
+        TBSet set = loadSet(setArg.getSetId());
         synchronized (cacheTbLock) {
             //should do some error checking here but too lazy
             set.setCancelMsg(message);
             set.setCancelPid(requestorPid);
+            persistSet(set);
         }
         baseStorer.requestCancel(set, requestorPid, message);
     }
@@ -1705,6 +1712,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         synchronized (cacheTbLock) {
             game.end();
             game.setWinner(3 - g.getPlayerSeat(g.getCurrentPlayer()));
+            persistSet(game.getTbSet());
             endGameRunnable.endGame(game, EndGameRunnable.Data.REASON_RESIGN);
         }
     }
@@ -1723,6 +1731,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         synchronized (cacheTbLock) {
             game.end();
             game.setWinner(winner);
+            persistSet(game.getTbSet());
             endGameRunnable.endGame(game, EndGameRunnable.Data.REASON_RESIGN);
         }
     }
@@ -1745,6 +1754,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
         synchronized (cacheTbLock) {
             game.setDPenteState(state);
+            persistSet(game.getTbSet());
         }
         baseStorer.updateDPenteState(game, state);
     }
@@ -1761,6 +1771,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                 game, dsgPlayerStorer);
         synchronized (cacheTbLock) {
             game.setTimeoutDate(new Date(newTimeout));
+            persistSet(game.getTbSet());
         }
         baseStorer.dPenteSwap(game, swap);
     }
@@ -1769,6 +1780,10 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         log4j.debug("CacheTBGameStorer.swap2Pass(" + g.getGid() + ", " + g.didSwap2Pass() + ")");
         TBGame game = loadGame(g.getGid());
 
+        synchronized (cacheTbLock) {
+            game.setSwap2Pass(true);
+            persistSet(game.getTbSet());
+        }
         baseStorer.swap2Pass(game);
     }
 
