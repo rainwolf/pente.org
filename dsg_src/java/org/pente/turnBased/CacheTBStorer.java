@@ -1157,21 +1157,59 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
     }
 
 
-    private void cacheSet(TBSet set) {
-
-        log4j.debug("CacheTBGameStorer.cacheSet(" + set.getSetId() + ")");
-
-        cacheStats.incrementSetsCached();
-
-        synchronized (cacheTbLock) {
-            setsMap.put(set.getSetId(), set);
-        }
-
-        for (int i = 0; i < 2; i++) {
-            TBGame g = set.getGames()[i];
+    /** THE write primitive: persist a set as the single source of truth and
+     *  refresh its gid->sid index entries. Call inside synchronized(cacheTbLock). */
+    private void persistSet(TBSet set) {
+        if (set == null) return;
+        pente_cache.hput(RedisConnectionManager.SID_TO_TB_SET, set.getSetId(), set);
+        for (TBGame g : set.getGames()) {
             if (g != null) {
-                g.setTbSet(set);
-                cacheGame(g);
+                pente_cache.hput(RedisConnectionManager.GID_TO_SID, g.getGid(), set.getSetId());
+            }
+        }
+    }
+
+    /** Add a set's sid to a player's set-id index. */
+    private void indexSetForPlayer(TBSet set, long pid) {
+        if (pid == 0) return;
+        HashSet<Long> sids = pente_cache.hget(RedisConnectionManager.PID_TO_TB_SET_IDS, pid);
+        if (sids == null) sids = new HashSet<Long>();
+        sids.add(set.getSetId());
+        pente_cache.hput(RedisConnectionManager.PID_TO_TB_SET_IDS, pid, sids);
+    }
+
+    /** Remove a set from Redis and from both players' indexes and the waiting set. */
+    private void evictSet(TBSet set) {
+        pente_cache.hremove(RedisConnectionManager.SID_TO_TB_SET, set.getSetId());
+        for (TBGame g : set.getGames()) {
+            if (g != null) pente_cache.hremove(RedisConnectionManager.GID_TO_SID, g.getGid());
+        }
+        removeSetFromPlayerIndex(set.getSetId(), set.getPlayer1Pid());
+        removeSetFromPlayerIndex(set.getSetId(), set.getPlayer2Pid());
+        pente_cache.hremove(RedisConnectionManager.TB_WAITING_SET_IDS, set.getSetId());
+    }
+
+    private void removeSetFromPlayerIndex(long sid, long pid) {
+        if (pid == 0) return;
+        HashSet<Long> sids = pente_cache.hget(RedisConnectionManager.PID_TO_TB_SET_IDS, pid);
+        if (sids != null) {
+            sids.remove(sid);
+            pente_cache.hput(RedisConnectionManager.PID_TO_TB_SET_IDS, pid, sids);
+        }
+    }
+
+    private void cacheSet(TBSet set) {
+        log4j.debug("CacheTBGameStorer.cacheSet(" + set.getSetId() + ")");
+        cacheStats.incrementSetsCached();
+        synchronized (cacheTbLock) {
+            for (TBGame g : set.getGames()) {
+                if (g != null) g.setTbSet(set);
+            }
+            persistSet(set);
+            // legacy in-memory mirror (removed in Task 10)
+            setsMap.put(set.getSetId(), set);
+            for (TBGame g : set.getGames()) {
+                if (g != null) gamesMap.put(g.getGid(), g);
             }
         }
     }
