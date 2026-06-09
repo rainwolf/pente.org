@@ -576,15 +576,32 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                         log4j.debug("TimeoutCheckRunnable, Throwable " + e);
                     }
 
-                    t.timeout();
-                    int seat = t.getPlayerSeat(cp);
-                    t.setWinner(3 - seat);
-
                     //keep around for viewing through profile
                     //uncacheGameForPlayer(t);
 
-                    synchronized (cacheTbLock) { persistSet(t.getTbSet()); }
-                    endGameRunnable.endGame(t, EndGameRunnable.Data.REASON_TO);
+                    try {
+                        long nowCheck = System.currentTimeMillis();
+                        TBGame fresh;
+                        boolean doEnd = false;
+                        synchronized (cacheTbLock) {
+                            fresh = loadGame(t.getGid());
+                            if (fresh != null
+                                    && fresh.getState() == TBGame.STATE_ACTIVE
+                                    && fresh.getTimeoutDate() != null
+                                    && fresh.getTimeoutDate().getTime() < nowCheck) {
+                                fresh.timeout();
+                                int seat = fresh.getPlayerSeat(fresh.getCurrentPlayer());
+                                fresh.setWinner(3 - seat);
+                                persistSet(fresh.getTbSet());
+                                doEnd = true;
+                            }
+                        }
+                        if (doEnd) {
+                            endGameRunnable.endGame(fresh, EndGameRunnable.Data.REASON_TO);
+                        }
+                    } catch (TBStoreException e) {
+                        log4j.error("TimeoutCheckRunnable: Error ending timed-out game " + t.getGid(), e);
+                    }
                 }
             }
         }
@@ -1316,8 +1333,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
     public List<TBSet> loadWaitingSets() throws TBStoreException {
 
         log4j.debug("CacheTBGameStorer.loadWaitingSets()");
-        List<String> sidFields = pente_cache.hgetAllFields(RedisConnectionManager.TB_WAITING_SET_IDS);
-        if (sidFields.isEmpty() && !waitingSetsLoaded) {
+        if (!waitingSetsLoaded) {
             List<TBSet> gs = baseStorer.loadWaitingSets();
             for (TBSet s : gs) {
                 cacheSet(s);
@@ -1325,10 +1341,8 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                 log4j.debug("cached " + s.getSetId());
             }
             waitingSetsLoaded = true;
-            List<TBSet> sorted = new ArrayList<TBSet>(gs);
-            Collections.sort(sorted, WAITING_CMP);
-            return sorted;
         }
+        List<String> sidFields = pente_cache.hgetAllFields(RedisConnectionManager.TB_WAITING_SET_IDS);
         List<TBSet> sets = new ArrayList<TBSet>();
         for (String f : sidFields) {
             TBSet s = pente_cache.hget(RedisConnectionManager.SID_TO_TB_SET, Long.valueOf(f));
