@@ -158,10 +158,14 @@ public class RedisConnectionManager {
      */
     public static final String PID_TO_TB_VACATION = "pid:tb_vacation";
 
-    /** gid -> sid index (aggregate-root lookup, replaces GID_TO_TB_GAME) */
+    /**
+     * gid -> sid index (aggregate-root lookup, replaces GID_TO_TB_GAME)
+     */
     public static final String GID_TO_SID = "gid:tb_sid";
 
-    /** set of sids that are currently waiting (invitations) */
+    /**
+     * set of sids that are currently waiting (invitations)
+     */
     public static final String TB_WAITING_SET_IDS = "tb:waiting_set_ids";
 
     /**
@@ -288,14 +292,14 @@ public class RedisConnectionManager {
             try {
                 jedis.hset(namespace.getBytes(), field.getBytes(), bytes);
                 jedis.expire(namespace.getBytes(), 60 * 60 * 2);
-                log4j.info("CACHE WRITE [redis]  " + namespace + "[" + field + "] (" + value.getClass().getSimpleName() + ")");
+                log4j.debug("CACHE WRITE [redis]  " + namespace + "[" + field + "] (" + value.getClass().getSimpleName() + ")");
                 return;
             } catch (Exception e) {
                 handleRedisFailure(e);
             }
         }
         fallbackPut(namespace, field, value);
-        log4j.info("CACHE WRITE [memory] " + namespace + "[" + field + "] (" + value.getClass().getSimpleName() + ")");
+        log4j.debug("CACHE WRITE [memory] " + namespace + "[" + field + "] (" + value.getClass().getSimpleName() + ")");
     }
 
     /**
@@ -328,18 +332,18 @@ public class RedisConnectionManager {
             }
             if (bytes != null) {
                 T val = (T) deserialize(bytes); // throws RuntimeException on deserialization failure — not a Redis failure
-                log4j.info("CACHE HIT  [redis]  " + namespace + "[" + field + "] (" + val.getClass().getSimpleName() + ")");
+                log4j.debug("CACHE HIT  [redis]  " + namespace + "[" + field + "] (" + val.getClass().getSimpleName() + ")");
                 return val;
             } else if (redisAvailable) {
-                log4j.info("CACHE MISS [redis]  " + namespace + "[" + field + "]");
+                log4j.debug("CACHE MISS [redis]  " + namespace + "[" + field + "]");
                 return null;
             }
         }
         T val = fallbackGet(namespace, field);
         if (val != null) {
-            log4j.info("CACHE HIT  [memory] " + namespace + "[" + field + "] (" + val.getClass().getSimpleName() + ")");
+            log4j.debug("CACHE HIT  [memory] " + namespace + "[" + field + "] (" + val.getClass().getSimpleName() + ")");
         } else {
-            log4j.info("CACHE MISS [memory] " + namespace + "[" + field + "]");
+            log4j.debug("CACHE MISS [memory] " + namespace + "[" + field + "]");
         }
         return val;
     }
@@ -387,14 +391,14 @@ public class RedisConnectionManager {
         if (jedis != null && redisAvailable) {
             try {
                 jedis.hdel(namespace.getBytes(), field.getBytes());
-                log4j.info("CACHE EVICT [redis]  " + namespace + "[" + field + "]");
+                log4j.debug("CACHE EVICT [redis]  " + namespace + "[" + field + "]");
                 return;
             } catch (Exception e) {
                 handleRedisFailure(e);
             }
         }
         fallbackRemove(namespace, field);
-        log4j.info("CACHE EVICT [memory] " + namespace + "[" + field + "]");
+        log4j.debug("CACHE EVICT [memory] " + namespace + "[" + field + "]");
     }
 
     /**
@@ -419,14 +423,14 @@ public class RedisConnectionManager {
         if (jedis != null && redisAvailable) {
             try {
                 jedis.del(namespace);
-                log4j.info("CACHE FLUSH [redis]  " + namespace);
+                log4j.debug("CACHE FLUSH [redis]  " + namespace);
                 return;
             } catch (Exception e) {
                 handleRedisFailure(e);
             }
         }
         fallback.remove(namespace);
-        log4j.info("CACHE FLUSH [memory] " + namespace);
+        log4j.debug("CACHE FLUSH [memory] " + namespace);
     }
 
     /**
@@ -448,13 +452,13 @@ public class RedisConnectionManager {
                 for (byte[] value : entries.values()) {
                     result.add((T) deserialize(value)); // throws RuntimeException on deserialization failure — not a Redis failure
                 }
-                log4j.info("CACHE SCAN  [redis]  " + namespace + " (" + result.size() + " entries)");
+                log4j.debug("CACHE SCAN  [redis]  " + namespace + " (" + result.size() + " entries)");
                 return result;
             }
         }
         Map<String, Object> map = fallback.get(namespace);
         List<T> result = map == null ? new ArrayList<>() : new ArrayList<>((java.util.Collection<T>) map.values());
-        log4j.info("CACHE SCAN  [memory] " + namespace + " (" + result.size() + " entries)");
+        log4j.debug("CACHE SCAN  [memory] " + namespace + " (" + result.size() + " entries)");
         return result;
     }
 
@@ -473,13 +477,13 @@ public class RedisConnectionManager {
             }
             if (fields != null) {
                 List<String> result = new ArrayList<String>(fields);
-                log4j.info("CACHE KEYS  [redis]  " + namespace + " (" + result.size() + " entries)");
+                log4j.debug("CACHE KEYS  [redis]  " + namespace + " (" + result.size() + " entries)");
                 return result;
             }
         }
         Map<String, Object> map = fallback.get(namespace);
         List<String> result = map == null ? new ArrayList<String>() : new ArrayList<String>(map.keySet());
-        log4j.info("CACHE KEYS  [memory] " + namespace + " (" + result.size() + " entries)");
+        log4j.debug("CACHE KEYS  [memory] " + namespace + " (" + result.size() + " entries)");
         return result;
     }
 
@@ -502,7 +506,7 @@ public class RedisConnectionManager {
                     try {
                         jedis.ping();
                         synchronized (RedisConnectionManager.this) {
-                            log4j.info("Redis recovered — resuming Redis cache (clearing in-memory fallback).");
+                            log4j.debug("Redis recovered — resuming Redis cache (clearing in-memory fallback).");
                             fallback.clear();
                             redisAvailable = true;
                         }
