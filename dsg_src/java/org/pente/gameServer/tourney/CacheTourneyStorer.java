@@ -104,6 +104,13 @@ public class CacheTourneyStorer implements TourneyStorer {
     }
 
     public synchronized void flushCache() {
+        pente_cache.invalidate(RedisConnectionManager.EID_TO_TOURNEY);
+        pente_cache.invalidate(RedisConnectionManager.EID_TO_TOURNEY_PLAYER_PIDS);
+        pente_cache.invalidate(RedisConnectionManager.TOURNEY_LIST_UPCOMING);
+        pente_cache.invalidate(RedisConnectionManager.TOURNEY_LIST_CURRENT);
+        pente_cache.invalidate(RedisConnectionManager.TOURNEY_LIST_COMPLETED);
+        upcomingLoaded = false; currentLoaded = false; completedLoaded = false;
+        // keep existing in-memory clears for now (Task 7 removes them)
         tournies.clear();
         upcomingTournies = null;
         currentTournies = null;
@@ -143,6 +150,9 @@ public class CacheTourneyStorer implements TourneyStorer {
         backingStorer.insertTourney(tourney);
 
         log4j.debug("insertTourney(" + tourney.getEventID() + "), cached");
+        persistTourney(tourney);
+        java.util.List<Integer> up = readEidList(RedisConnectionManager.TOURNEY_LIST_UPCOMING);
+        if (!up.contains(tourney.getEventID())) { up.add(tourney.getEventID()); writeEidList(RedisConnectionManager.TOURNEY_LIST_UPCOMING, up); }
         tournies.put(tourney.getEventID(), tourney);
         upcomingTournies = null;
     }
@@ -264,6 +274,10 @@ public class CacheTourneyStorer implements TourneyStorer {
             dsgPlayerStorer.refreshPlayer(tourney.getWinner());
         }
 
+        persistTourney(tourney);
+        moveEid(RedisConnectionManager.TOURNEY_LIST_CURRENT,
+                RedisConnectionManager.TOURNEY_LIST_COMPLETED, tourney.getEventID());
+
         completedTournies = null;
         currentTournies = null;
 
@@ -311,6 +325,10 @@ public class CacheTourneyStorer implements TourneyStorer {
         // ratings from cacheplayerstorer
         backingStorer.addPlayerToTourney(pid, eid);
 
+        java.util.List<Long> pids = getTourneyPlayerPids(eid);   // loads+caches current
+        if (!pids.contains(pid)) pids.add(pid);
+        pente_cache.hput(RedisConnectionManager.EID_TO_TOURNEY_PLAYER_PIDS, eid, new java.util.ArrayList<Long>(pids));
+
         if (tourneyPlayerPids != null) {
             List<Long> playerPids = tourneyPlayerPids.get(eid);
             if (playerPids != null) {
@@ -325,6 +343,10 @@ public class CacheTourneyStorer implements TourneyStorer {
     public synchronized void removePlayerFromTourney(long pid, int eid) throws Throwable {
         log4j.debug("removePlayerFromTourney(" + pid + ", " + eid + ")");
         backingStorer.removePlayerFromTourney(pid, eid);
+
+        java.util.List<Long> pids = getTourneyPlayerPids(eid);
+        pids.remove(Long.valueOf(pid));   // remove the Long value, NOT remove-by-index
+        pente_cache.hput(RedisConnectionManager.EID_TO_TOURNEY_PLAYER_PIDS, eid, new java.util.ArrayList<Long>(pids));
 
         if (tourneyPlayerPids != null) {
             List<Long> playerPids = tourneyPlayerPids.get(eid);
@@ -750,7 +772,15 @@ public class CacheTourneyStorer implements TourneyStorer {
     public void cancelTourney(int eid) throws Throwable {
         log4j.info("cancelTourney(" + eid + ")");
         backingStorer.cancelTourney(eid);
-        flushCache();
+
+        // remove from all three lists + drop the tourney + its pid index
+        for (String ns : new String[]{RedisConnectionManager.TOURNEY_LIST_UPCOMING, RedisConnectionManager.TOURNEY_LIST_CURRENT, RedisConnectionManager.TOURNEY_LIST_COMPLETED}) {
+            java.util.List<Integer> l = readEidList(ns);
+            if (l.remove(Integer.valueOf(eid))) writeEidList(ns, l);
+        }
+        pente_cache.hremove(RedisConnectionManager.EID_TO_TOURNEY, eid);
+        pente_cache.hremove(RedisConnectionManager.EID_TO_TOURNEY_PLAYER_PIDS, eid);
+
         startAnotherTourney(eid);
     }
 

@@ -87,6 +87,28 @@ public class CacheTourneyStorerRedisTest extends TestCase {
     }
 
     /**
+     * completeTourney must persist the mutated Tourney (endDate set) to Redis as
+     * the aggregate root. We insert tourney 903 (lands in the upcoming eid-list),
+     * complete it, then re-read it: a fresh getTourney must reflect the endDate
+     * mutation, proving persistTourney wrote the updated blob. (Direct list-move
+     * assertion is not reachable from the test since the eid-lists have no public
+     * accessor; the endDate round-trip is the meaningful, robust signal.)
+     */
+    public void testCompleteTourneyMovesEidToCompletedList() throws Throwable {
+        Tourney t = newTourney(903);
+        t.setPrize("none");   // getCrownInt() lowercases prize; avoid NPE on null
+        cache.insertTourney(t);
+        assertNull("precondition: new tourney has no endDate", cache.getTourney(903).getEndDate());
+
+        cache.completeTourney(t);
+
+        Tourney reread = cache.getTourney(903);
+        assertNotNull("completed tourney must still be retrievable", reread);
+        assertNotNull("completeTourney must persist the endDate mutation to Redis",
+                reread.getEndDate());
+    }
+
+    /**
      * Go/no-go gate for the Redis migration: Tourney's {@code transient
      * TourneyFormat format} field is not serialized directly; it is rebuilt in a
      * custom readObject from the persisted {@code formatType} int. Redis storage
