@@ -32,9 +32,11 @@ public class CacheTBStorerRedisTest extends TestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        // Fallback-backed RedisConnectionManager (no real Redis required); the
-        // anonymous subclass reaches the protected no-arg constructor.
-        RedisConnectionManager.setInstance(new RedisConnectionManager() {});
+        // Serializing RedisConnectionManager (no real Redis required); it
+        // serializes on put and deserializes on get so reads return independent
+        // copies, faithfully mimicking real Redis (unlike the raw-reference
+        // production fallback, which makes divergence tests toothless).
+        RedisConnectionManager.setInstance(new SerializingRedisConnectionManager());
         RedisConnectionManager.getInstance().invalidate(
                 RedisConnectionManager.SID_TO_TB_SET);
 
@@ -72,6 +74,13 @@ public class CacheTBStorerRedisTest extends TestCase {
 
         TBGame fromGame = cache.loadGame(gid);
         TBGame fromSet = cache.loadSet(100L).getGame(gid);
-        assertEquals(fromGame.getNumMoves(), fromSet.getNumMoves());
+        // With a faithful (serializing) Redis fixture, both reads are
+        // independent deserialized copies of the SID_TO_TB_SET aggregate root,
+        // so they cannot diverge from each other — the only way to detect a
+        // mutator that forgot to persist the set is to assert the move actually
+        // survived into the cache. RED until storeNewMove persists the set
+        // (Task 5); GREEN once it does.
+        assertEquals(1, fromGame.getNumMoves());
+        assertEquals(1, fromSet.getNumMoves());
     }
 }
