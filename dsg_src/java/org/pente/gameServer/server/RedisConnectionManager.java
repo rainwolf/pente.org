@@ -291,7 +291,8 @@ public class RedisConnectionManager {
             byte[] bytes = serialize(value); // throws RuntimeException on serialization failure — not a Redis failure
             try {
                 jedis.hset(namespace.getBytes(), field.getBytes(), bytes);
-                jedis.expire(namespace.getBytes(), 60 * 60 * 2);
+                // no TTL: namespaces are write-through source-of-truth caches; expiry
+                // strands load-once flags (e.g. waitingSetsLoaded) and empties reads
                 log4j.debug("CACHE WRITE [redis]  " + namespace + "[" + field + "] (" + value.getClass().getSimpleName() + ")");
                 return;
             } catch (Exception e) {
