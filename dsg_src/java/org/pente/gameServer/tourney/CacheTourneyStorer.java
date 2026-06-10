@@ -9,6 +9,7 @@ import org.pente.gameServer.server.Resources;
 import org.pente.kingOfTheHill.CacheKOTHStorer;
 import org.pente.kingOfTheHill.KOTHStorer;
 import org.pente.notifications.NotificationServer;
+import org.pente.gameServer.server.RedisConnectionManager;
 import org.pente.turnBased.CacheTBStorer;
 
 import java.util.*;
@@ -19,11 +20,6 @@ public class CacheTourneyStorer implements TourneyStorer {
             CacheTourneyStorer.class.getName());
 
     private TourneyStorer backingStorer;
-    private Map<Integer, Tourney> tournies = new HashMap<Integer, Tourney>();
-    private List<Tourney> upcomingTournies = null;
-    private List<Tourney> currentTournies = null;
-    private List<Tourney> completedTournies = null;
-    private Map<Integer, List<Long>> tourneyPlayerPids = null;
     private List<TourneyListener> listeners = new ArrayList<TourneyListener>();
 
     private CacheTBStorer tbStorer;
@@ -32,6 +28,37 @@ public class CacheTourneyStorer implements TourneyStorer {
     private KOTHStorer kothStorer;
 
     private List<Timer> timers = null;
+
+    private final RedisConnectionManager pente_cache = RedisConnectionManager.getInstance();
+
+    private static final String LIST_FIELD = "list";
+
+    /** THE write primitive: persist a tourney as the single source of truth. */
+    private void persistTourney(Tourney t) {
+        if (t == null) return;
+        pente_cache.hput(RedisConnectionManager.EID_TO_TOURNEY, t.getEventID(), t);
+    }
+
+    /** Read an ordered eid list stored under a single fixed field in a namespace. */
+    @SuppressWarnings("unchecked")
+    private java.util.List<Integer> readEidList(String namespace) {
+        java.util.ArrayList<Integer> l = pente_cache.hget(namespace, LIST_FIELD);
+        return l == null ? new java.util.ArrayList<Integer>() : l;
+    }
+
+    /** Write an ordered eid list under a single fixed field in a namespace. */
+    private void writeEidList(String namespace, java.util.List<Integer> eids) {
+        pente_cache.hput(namespace, LIST_FIELD, new java.util.ArrayList<Integer>(eids));
+    }
+
+    /** Move an eid from one list namespace to another (dedup). */
+    private void moveEid(String fromNs, String toNs, int eid) {
+        java.util.List<Integer> from = readEidList(fromNs);
+        from.remove(Integer.valueOf(eid));
+        writeEidList(fromNs, from);
+        java.util.List<Integer> to = readEidList(toNs);
+        if (!to.contains(eid)) { to.add(eid); writeEidList(toNs, to); }
+    }
 
 
     public void setDsgPlayerStorer(CacheDSGPlayerStorer dsgPlayerStorer) {
@@ -72,11 +99,12 @@ public class CacheTourneyStorer implements TourneyStorer {
     }
 
     public synchronized void flushCache() {
-        tournies.clear();
-        upcomingTournies = null;
-        currentTournies = null;
-        completedTournies = null;
-        tourneyPlayerPids = null;
+        pente_cache.invalidate(RedisConnectionManager.EID_TO_TOURNEY);
+        pente_cache.invalidate(RedisConnectionManager.EID_TO_TOURNEY_PLAYER_PIDS);
+        pente_cache.invalidate(RedisConnectionManager.TOURNEY_LIST_UPCOMING);
+        pente_cache.invalidate(RedisConnectionManager.TOURNEY_LIST_CURRENT);
+        pente_cache.invalidate(RedisConnectionManager.TOURNEY_LIST_COMPLETED);
+        upcomingLoaded = false; currentLoaded = false; completedLoaded = false;
     }
 
     public synchronized void insertTourney(Tourney tourney, Resources resources) throws Throwable {
@@ -111,58 +139,98 @@ public class CacheTourneyStorer implements TourneyStorer {
         backingStorer.insertTourney(tourney);
 
         log4j.debug("insertTourney(" + tourney.getEventID() + "), cached");
-        tournies.put(tourney.getEventID(), tourney);
-        upcomingTournies = null;
+        persistTourney(tourney);
+        java.util.List<Integer> up = readEidList(RedisConnectionManager.TOURNEY_LIST_UPCOMING);
+        if (!up.contains(tourney.getEventID())) { up.add(tourney.getEventID()); writeEidList(RedisConnectionManager.TOURNEY_LIST_UPCOMING, up); }
     }
 
-    public List<Tourney> getUpcomingTournies() throws Throwable {
-        // more complicated to cache, not that important anyways
-        if (upcomingTournies == null) {
-            upcomingTournies = backingStorer.getUpcomingTournies();
-        } else {
-            Date today = new Date();
-            for (Iterator<Tourney> iterator = upcomingTournies.iterator(); iterator.hasNext(); ) {
-                Tourney t = iterator.next();
-                Tourney fullTourney = getTourney(t.getEventID());
-                if (fullTourney.getSignupEndDate().before(today)) {
-                    currentTournies.add(t);
-                    iterator.remove();
-                }
+    private volatile boolean upcomingLoaded = false;
+    private volatile boolean currentLoaded = false;
+    private volatile boolean completedLoaded = false;
+
+    public synchronized List<Tourney> getUpcomingTournies() throws Throwable {
+        if (!upcomingLoaded) {
+            java.util.List<Tourney> backing = backingStorer.getUpcomingTournies();
+            java.util.List<Integer> bootstrapEids = new java.util.ArrayList<Integer>();
+            for (Tourney bt : backing) { if (!bootstrapEids.contains(bt.getEventID())) bootstrapEids.add(bt.getEventID()); }
+            writeEidList(RedisConnectionManager.TOURNEY_LIST_UPCOMING, bootstrapEids);
+            upcomingLoaded = true;
+        }
+        java.util.List<Integer> eids = readEidList(RedisConnectionManager.TOURNEY_LIST_UPCOMING);
+        java.util.List<Tourney> out = new java.util.ArrayList<Tourney>();
+        java.util.List<Integer> promote = new java.util.ArrayList<Integer>();
+        Date today = new Date();
+        for (Integer eid : new java.util.ArrayList<Integer>(eids)) {
+            Tourney t = getTourney(eid);
+            if (t == null) continue;
+            if (t.getSignupEndDate().before(today)) { promote.add(eid); }
+            else { out.add(t); }
+        }
+        if (!promote.isEmpty()) {
+            java.util.List<Integer> freshUp = readEidList(RedisConnectionManager.TOURNEY_LIST_UPCOMING);
+            freshUp.removeAll(promote);
+            writeEidList(RedisConnectionManager.TOURNEY_LIST_UPCOMING, freshUp);
+            java.util.List<Integer> cur = readEidList(RedisConnectionManager.TOURNEY_LIST_CURRENT);
+            for (Integer eid : promote) if (!cur.contains(eid)) cur.add(eid);
+            writeEidList(RedisConnectionManager.TOURNEY_LIST_CURRENT, cur);
+        }
+        return out;
+    }
+
+
+    public synchronized List<Tourney> getCurrentTournies() throws Throwable {
+        if (!currentLoaded) {
+            java.util.List<Tourney> backing = backingStorer.getCurrentTournies();
+            java.util.List<Integer> bootstrapEids = new java.util.ArrayList<Integer>();
+            for (Tourney bt : backing) { if (!bootstrapEids.contains(bt.getEventID())) bootstrapEids.add(bt.getEventID()); }
+            writeEidList(RedisConnectionManager.TOURNEY_LIST_CURRENT, bootstrapEids);
+            currentLoaded = true;
+        }
+        java.util.List<Integer> eids = readEidList(RedisConnectionManager.TOURNEY_LIST_CURRENT);
+        java.util.List<Tourney> out = new java.util.ArrayList<Tourney>();
+        java.util.List<Integer> ended = new java.util.ArrayList<Integer>();
+        Date today = new Date();
+        for (Integer eid : new java.util.ArrayList<Integer>(eids)) {
+            Tourney t = getTourney(eid);
+            if (t == null) continue;
+            if (t.getNumRounds() > 0) {
+                checkRoundStatus(t);
+            }
+            if (t.getEndDate() != null && t.getEndDate().before(today)) {
+                ended.add(eid);
+            } else {
+                out.add(t);
             }
         }
-        return upcomingTournies;
-    }
-
-
-    public List<Tourney> getCurrentTournies() throws Throwable {
-        // more complicated to cache, not that important anyways
-        if (currentTournies == null) {
-            currentTournies = backingStorer.getCurrentTournies();
-        } else {
-            Date today = new Date();
-            for (Iterator<Tourney> iterator = currentTournies.iterator(); iterator.hasNext(); ) {
-                Tourney t = iterator.next();
-                Tourney fullTourney = getTourney(t.getEventID());
-                if (fullTourney.getNumRounds() > 0) {
-                    checkRoundStatus(fullTourney);
-                }
-                if (fullTourney.getEndDate() != null && fullTourney.getEndDate().before(today)) {
-                    iterator.remove();
-                }
-            }
+        if (!ended.isEmpty()) {
+            // Re-read CURRENT fresh: checkRoundStatus()->completeTourney() may have
+            // already moved completed eids out of CURRENT during the loop. Writing back
+            // the stale loop-start snapshot would re-insert them.
+            java.util.List<Integer> fresh = readEidList(RedisConnectionManager.TOURNEY_LIST_CURRENT);
+            fresh.removeAll(ended);
+            writeEidList(RedisConnectionManager.TOURNEY_LIST_CURRENT, fresh);
         }
-        return currentTournies;
+        return out;
     }
 
-    public List<Tourney> getCompletedTournies() throws Throwable {
-        // more complicated to cache, not that important anyways
-        if (completedTournies == null) {
-            completedTournies = backingStorer.getCompletedTournies();
+    public synchronized List<Tourney> getCompletedTournies() throws Throwable {
+        if (!completedLoaded) {
+            java.util.List<Tourney> backing = backingStorer.getCompletedTournies();
+            java.util.List<Integer> bootstrapEids = new java.util.ArrayList<Integer>();
+            for (Tourney bt : backing) { if (!bootstrapEids.contains(bt.getEventID())) bootstrapEids.add(bt.getEventID()); }
+            writeEidList(RedisConnectionManager.TOURNEY_LIST_COMPLETED, bootstrapEids);
+            completedLoaded = true;
         }
-        return completedTournies;
+        java.util.List<Integer> eids = readEidList(RedisConnectionManager.TOURNEY_LIST_COMPLETED);
+        java.util.List<Tourney> out = new java.util.ArrayList<Tourney>();
+        for (Integer eid : eids) {
+            Tourney t = getTourney(eid);
+            if (t != null) out.add(t);
+        }
+        return out;
     }
 
-    public void completeTourney(Tourney tourney) throws Throwable {
+    public synchronized void completeTourney(Tourney tourney) throws Throwable {
         log4j.debug("completeTourney(" + tourney.getEventID() + ")");
 
         tourney.setEndDate(new Date());
@@ -196,8 +264,9 @@ public class CacheTourneyStorer implements TourneyStorer {
             dsgPlayerStorer.refreshPlayer(tourney.getWinner());
         }
 
-        completedTournies = null;
-        currentTournies = null;
+        persistTourney(tourney);
+        moveEid(RedisConnectionManager.TOURNEY_LIST_CURRENT,
+                RedisConnectionManager.TOURNEY_LIST_COMPLETED, tourney.getEventID());
 
         if (tourney.isTurnBased()) {
             startAnotherTourney(tourney.getEventID());
@@ -225,18 +294,13 @@ public class CacheTourneyStorer implements TourneyStorer {
 
 
     public synchronized Tourney getTourney(int eid) throws Throwable {
-        // cache tourney data, including round/section/match data
-
+        // Redis (EID_TO_TOURNEY) is the source of truth; fall through to backing.
         log4j.debug("getTourney(" + eid + ")");
-        Tourney t = (Tourney) tournies.get(Integer.valueOf(eid));
-
-        if (t != null) {
-            log4j.debug("return cached copy");
-        } else {
+        Tourney t = pente_cache.hget(RedisConnectionManager.EID_TO_TOURNEY, eid);
+        if (t == null) {
             t = backingStorer.getTourney(eid);
-            tournies.put(Integer.valueOf(eid), t);
+            if (t != null) persistTourney(t);
         }
-
         return t;
     }
 
@@ -248,12 +312,9 @@ public class CacheTourneyStorer implements TourneyStorer {
         // ratings from cacheplayerstorer
         backingStorer.addPlayerToTourney(pid, eid);
 
-        if (tourneyPlayerPids != null) {
-            List<Long> playerPids = tourneyPlayerPids.get(eid);
-            if (playerPids != null) {
-                playerPids.add(pid);
-            }
-        }
+        java.util.List<Long> pids = getTourneyPlayerPids(eid);   // loads+caches current
+        if (!pids.contains(pid)) pids.add(pid);
+        pente_cache.hput(RedisConnectionManager.EID_TO_TOURNEY_PLAYER_PIDS, eid, new java.util.ArrayList<Long>(pids));
 
         notifyListeners(new TourneyEvent(eid, TourneyEvent.PLAYER_REGISTER,
                 Long.valueOf(pid)));
@@ -263,12 +324,9 @@ public class CacheTourneyStorer implements TourneyStorer {
         log4j.debug("removePlayerFromTourney(" + pid + ", " + eid + ")");
         backingStorer.removePlayerFromTourney(pid, eid);
 
-        if (tourneyPlayerPids != null) {
-            List<Long> playerPids = tourneyPlayerPids.get(eid);
-            if (playerPids != null) {
-                playerPids.remove(pid);
-            }
-        }
+        java.util.List<Long> pids = getTourneyPlayerPids(eid);
+        pids.remove(Long.valueOf(pid));   // remove the Long value, NOT remove-by-index
+        pente_cache.hput(RedisConnectionManager.EID_TO_TOURNEY_PLAYER_PIDS, eid, new java.util.ArrayList<Long>(pids));
 
         notifyListeners(new TourneyEvent(eid, TourneyEvent.PLAYER_DROP,
                 Long.valueOf(pid)));
@@ -284,16 +342,13 @@ public class CacheTourneyStorer implements TourneyStorer {
 
     @Override
     public synchronized List<Long> getTourneyPlayerPids(int eid) throws Throwable {
-        if (tourneyPlayerPids == null) {
-            tourneyPlayerPids = new HashMap<>();
+        java.util.ArrayList<Long> pids = pente_cache.hget(RedisConnectionManager.EID_TO_TOURNEY_PLAYER_PIDS, eid);
+        if (pids == null) {
+            List<Long> loaded = backingStorer.getTourneyPlayerPids(eid);
+            pids = new java.util.ArrayList<Long>(loaded);
+            pente_cache.hput(RedisConnectionManager.EID_TO_TOURNEY_PLAYER_PIDS, eid, pids);
         }
-        List<Long> playerPids = tourneyPlayerPids.get(eid);
-        if (playerPids == null) {
-            playerPids = backingStorer.getTourneyPlayerPids(eid);
-            tourneyPlayerPids.put(eid, playerPids);
-        }
-
-        return playerPids;
+        return new java.util.ArrayList<Long>(pids);
     }
 
     public Tourney getTourneyDetails(int eid) throws Throwable {
@@ -372,7 +427,14 @@ public class CacheTourneyStorer implements TourneyStorer {
         // used for speed-tournies to notify main room
         notifyListeners(new TourneyEvent(eid, TourneyEvent.NEW_ROUND));
 
-        // don't need to cache round, should have already been done by client
+        // persist the owning tourney so the new round (added to it via
+        // createFirstRound/createNextRound -> addRound(this)) reaches Redis.
+        // The manageTourney.jsp path calls insertRound directly without a prior
+        // persistTourney; the startTournament/checkRoundStatus paths already
+        // persisted, so this redundant persist is harmless (idempotent).
+        if (round.getTourney() != null) {
+            persistTourney(round.getTourney());
+        }
     }
 
     public synchronized void insertMatch(TourneyMatch tourneyMatch) throws Throwable {
@@ -394,42 +456,35 @@ public class CacheTourneyStorer implements TourneyStorer {
 
 
     /**
-     * update a group of matches and then check if round needs to be updated
-     * right now only called from admin management screen
+     * Re-find the canonical match (by match id) inside a freshly-loaded section.
+     * After the Redis migration getTourney/getUnplayedMatch return DETACHED
+     * deserialized copies, so callers' match objects are no longer the same
+     * instances held by the cached aggregate; we must re-find by id.
      */
-    public synchronized void updateMatches(List tourneyMatches, Tourney t) throws Throwable {
-
-        log4j.debug("updateMatches()");
-        if (tourneyMatches != null) {
-            for (Iterator it = tourneyMatches.iterator(); it.hasNext(); ) {
-                TourneyMatch m = (TourneyMatch) it.next();
-                updateMatchOnly(m);
+    private static TourneyMatch findMatch(TourneySection s, TourneyMatch like) {
+        for (TourneyMatch m : s.getMatches()) {
+            if (m.getMatchID() == like.getMatchID()) {
+                return m;
             }
         }
-        checkRoundStatus(t);
+        return null;
     }
 
     /**
-     * update a single match and then check if round needs to be updated
-     * right now only called from servertable
+     * Apply a (possibly detached) match's mutable result fields onto the
+     * canonical match inside the supplied tourney graph, re-init the section,
+     * and run any single-elimination tie follow-up. Does NOT persist; the caller
+     * persists the graph (so caller-passed tourneys stay the source of truth).
      */
-    public synchronized void updateMatch(
-            TourneyMatch tourneyMatch) throws Throwable {
-
-        log4j.debug("updateMatch(" + tourneyMatch.getMatchID() + ")");
-
-        updateMatchOnly(tourneyMatch);
-
-        Tourney t = getTourney(tourneyMatch.getEvent());
-        checkRoundStatus(t);
-    }
-
-    private void updateMatchOnly(TourneyMatch tourneyMatch) throws Throwable {
-        log4j.debug("updateMatchOnly(" + tourneyMatch.getMatchID() + ")");
-        backingStorer.updateMatch(tourneyMatch);
-
-        Tourney t = getTourney(tourneyMatch.getEvent());
+    private void applyMatchTo(Tourney t, TourneyMatch tourneyMatch) throws Throwable {
         TourneySection s = t.getRound(tourneyMatch.getRound()).getSection(tourneyMatch.getSection());
+
+        TourneyMatch canonical = findMatch(s, tourneyMatch);
+        if (canonical != null) {
+            canonical.setGid(tourneyMatch.getGid());
+            canonical.setResult(tourneyMatch.getResult());
+            canonical.setForfeit(tourneyMatch.isForfeit());
+        }
 
         // reinit section to show these results, and do anything else needed
         s.init();
@@ -467,6 +522,53 @@ public class CacheTourneyStorer implements TourneyStorer {
         }
     }
 
+    /**
+     * update a group of matches and then check if round needs to be updated
+     * right now only called from admin management screen
+     *
+     * Operates on the CALLER'S passed tourney (so admin/manageTourney.jsp's
+     * reads-after-write see the applied results) and persists it.
+     */
+    public synchronized void updateMatches(List tourneyMatches, Tourney t) throws Throwable {
+
+        log4j.debug("updateMatches()");
+        if (tourneyMatches != null) {
+            for (Iterator it = tourneyMatches.iterator(); it.hasNext(); ) {
+                TourneyMatch m = (TourneyMatch) it.next();
+                backingStorer.updateMatch(m);
+                applyMatchTo(t, m);
+            }
+        }
+        persistTourney(t);
+        checkRoundStatus(t);
+    }
+
+    /**
+     * update a single match and then check if round needs to be updated
+     * right now only called from servertable
+     */
+    public synchronized void updateMatch(
+            TourneyMatch tourneyMatch) throws Throwable {
+
+        log4j.debug("updateMatch(" + tourneyMatch.getMatchID() + ")");
+
+        updateMatchOnly(tourneyMatch);
+
+        Tourney t = getTourney(tourneyMatch.getEvent());
+        checkRoundStatus(t);
+    }
+
+    private void updateMatchOnly(TourneyMatch tourneyMatch) throws Throwable {
+        log4j.debug("updateMatchOnly(" + tourneyMatch.getMatchID() + ")");
+        backingStorer.updateMatch(tourneyMatch);
+
+        // load the canonical (cached) tourney, re-find + apply, then persist.
+        // tourneyMatch is a DETACHED copy, so we cannot mutate it in place.
+        Tourney t = getTourney(tourneyMatch.getEvent());
+        applyMatchTo(t, tourneyMatch);
+        persistTourney(t);
+    }
+
     private void checkRoundStatus(Tourney t) throws Throwable {
 
         if (t.isComplete()) {
@@ -474,6 +576,9 @@ public class CacheTourneyStorer implements TourneyStorer {
             notificationServer.sendAdminNotification(t.getName() + " completed. Winner is " + t.getWinner());
         } else if (t.getLastRound().isComplete()) {
             TourneyRound newRound = t.createNextRound(dsgPlayerStorer);
+            // persist the new round into the aggregate BEFORE insertRound, so
+            // insertRound's getTourney(...) re-reads the round we just created.
+            persistTourney(t);
             insertRound(newRound);
             notificationServer.sendAdminNotification("Round " + t.getNumRounds() + " started in " + t.getName());
         }
@@ -527,11 +632,15 @@ public class CacheTourneyStorer implements TourneyStorer {
                 log4j.info("Not enough players to start tournament " + tournament.getName() +
                         ". Cancelling tournament.");
                 tournament.setStatus('S');
+                persistTourney(tournament);   // persist the status change
                 cancelTourney(tourneyID);
             } else {
                 log4j.info("Starting tournament " + tournament.getName() +
                         " with " + players.size() + " players.");
                 TourneyRound newRound = tournament.createFirstRound(players);
+                // persist the first round into the aggregate BEFORE insertRound,
+                // so insertRound's getTourney(...) re-reads the round.
+                persistTourney(tournament);
                 this.insertRound(newRound);
             }
         } catch (Throwable t) {
@@ -687,10 +796,18 @@ public class CacheTourneyStorer implements TourneyStorer {
         flushCache();
     }
 
-    public void cancelTourney(int eid) throws Throwable {
+    public synchronized void cancelTourney(int eid) throws Throwable {
         log4j.info("cancelTourney(" + eid + ")");
         backingStorer.cancelTourney(eid);
-        flushCache();
+
+        // remove from all three lists + drop the tourney + its pid index
+        for (String ns : new String[]{RedisConnectionManager.TOURNEY_LIST_UPCOMING, RedisConnectionManager.TOURNEY_LIST_CURRENT, RedisConnectionManager.TOURNEY_LIST_COMPLETED}) {
+            java.util.List<Integer> l = readEidList(ns);
+            if (l.remove(Integer.valueOf(eid))) writeEidList(ns, l);
+        }
+        pente_cache.hremove(RedisConnectionManager.EID_TO_TOURNEY, eid);
+        pente_cache.hremove(RedisConnectionManager.EID_TO_TOURNEY_PLAYER_PIDS, eid);
+
         startAnotherTourney(eid);
     }
 
