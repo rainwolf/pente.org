@@ -71,7 +71,7 @@ function gameHasCaptures() {
 }
 
 function gameHasTripleCaptures() {
-   return (game === 3 || game === 4 || game === 17 || game === 18 || game === 25 || game === 26);
+   return (game === 3 || game === 4 || game === 17 || game === 18 || game === 25 || game === 26 || game === 29 || game === 30);
 }
 
 function initializeGame() {
@@ -944,7 +944,7 @@ function detectKeryoPoofCapture(intMove, internal) {
       }
    }
    if (((i - 2) > -1) && ((j - 2) > -1) && ((i + 2) < 19) && ((j + 2) < 19)) { // up right
-      if (board[i + 1][j - 1] === myColor && board[i + 1][j - 1] === myColor) {
+      if (board[i + 1][j - 1] === myColor && board[i - 1][j + 1] === myColor) {
          if ((board[i - 2][j + 2] === opponentColor) && (board[i + 2][j - 2] === opponentColor)) {
             board[i + 1][j - 1] = 0;
             board[i - 1][j + 1] = 0;
