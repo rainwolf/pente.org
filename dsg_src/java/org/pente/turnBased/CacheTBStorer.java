@@ -52,8 +52,6 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
             return comp;
         }
     };
-    private volatile boolean waitingSetsLoaded = false;
-
     private final Object cacheTbLock = new Object();
 
     private Timer loadExpireSoonTimer;
@@ -160,7 +158,8 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
             pente_cache.invalidate(RedisConnectionManager.TB_WAITING_SET_IDS);
             pente_cache.invalidate(RedisConnectionManager.EID_TO_TB_EID);
             pente_cache.invalidate(RedisConnectionManager.PID_TO_TB_VACATION);
-            waitingSetsLoaded = false;
+            pente_cache.hremove(RedisConnectionManager.CACHE_LOADED_FLAGS,
+                    RedisConnectionManager.TB_WAITING_SET_IDS);
             restartTasks();
         }
     }
@@ -1292,14 +1291,19 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
     public List<TBSet> loadWaitingSets() throws TBStoreException {
 
         log4j.debug("CacheTBGameStorer.loadWaitingSets()");
-        if (!waitingSetsLoaded) {
+        // Loaded sentinel lives in Redis, not the JVM: if Redis loses its data
+        // (crash without save, FLUSHALL, failover) the sentinel goes with it
+        // and the next call re-bootstraps from the DB.
+        if (!pente_cache.hexists(RedisConnectionManager.CACHE_LOADED_FLAGS,
+                RedisConnectionManager.TB_WAITING_SET_IDS)) {
             List<TBSet> gs = baseStorer.loadWaitingSets();
             for (TBSet s : gs) {
                 cacheSet(s);
                 pente_cache.hput(RedisConnectionManager.TB_WAITING_SET_IDS, s.getSetId(), s.getSetId());
                 log4j.debug("cached " + s.getSetId());
             }
-            waitingSetsLoaded = true;
+            pente_cache.hput(RedisConnectionManager.CACHE_LOADED_FLAGS,
+                    RedisConnectionManager.TB_WAITING_SET_IDS, Boolean.TRUE);
         }
         List<String> sidFields = pente_cache.hgetAllFields(RedisConnectionManager.TB_WAITING_SET_IDS);
         List<TBSet> sets = new ArrayList<TBSet>();

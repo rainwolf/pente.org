@@ -271,6 +271,57 @@ public class CacheTBStorerRedisTest extends TestCase {
                 99, cache.loadGame(gid).getEventId());
     }
 
+    /**
+     * Redis can lose every key while the JVM keeps running (container OOM-kill
+     * with no RDB save, FLUSHALL, failover to a fallback that is cleared on
+     * recovery). A JVM-side load-once flag survives such a wipe and pins the
+     * waiting list to empty until Tomcat restarts. The loaded sentinel must
+     * live in Redis itself so a wipe also wipes the sentinel and the next read
+     * re-bootstraps from the DB.
+     */
+    public void testWaitingSetsRehealAfterRedisWipe() throws Exception {
+        TBGame g = new TBGame();
+        g.setGame(GridStateFactory.TB_PENTE);
+        g.setState(TBGame.STATE_NOT_STARTED);
+        g.setPlayer1Pid(1001L);
+        g.setPlayer2Pid(0L);
+        g.setDaysPerMove(3);
+        g.setCreationDate(new Date());
+        g.setLastMoveDate(new Date());
+
+        final TBSet set = new TBSet(104L, g, null);
+        set.setState(TBSet.STATE_NOT_STARTED);
+        set.setPlayer1Pid(1001L);
+        set.setPlayer2Pid(0L);
+        set.setInviterPid(1001L);
+
+        // Base storer that, like the real DB, still knows the waiting set
+        // after the cache loses it.
+        InMemoryTBGameStorer base2 = new InMemoryTBGameStorer() {
+            @Override
+            public java.util.List<TBSet> loadWaitingSets() {
+                java.util.List<TBSet> l = new java.util.ArrayList<TBSet>();
+                l.add(set);
+                return l;
+            }
+        };
+        CacheTBStorer cache2 = new CacheTBStorer(
+                base2, new InMemoryDSGPlayerStorer(), null, null, null);
+        try {
+            base2.createSet(set);
+            assertTrue("waiting set visible before wipe",
+                    containsSid(cache2.getWaitingSets(), 104L));
+
+            ((SerializingRedisConnectionManager)
+                    RedisConnectionManager.getInstance()).flushAll();
+
+            assertTrue("waiting sets must reheal from DB after a Redis wipe",
+                    containsSid(cache2.getWaitingSets(), 104L));
+        } finally {
+            cache2.destroy();
+        }
+    }
+
     private static boolean containsSid(java.util.List<TBSet> sets, long sid) {
         for (TBSet s : sets) {
             if (s.getSetId() == sid) {

@@ -86,4 +86,12 @@ public class SerializingRedisConnectionManager extends RedisConnectionManager {
         if (map == null) return new ArrayList<String>();
         return new ArrayList<String>(map.keySet());
     }
+
+    /**
+     * Simulates total Redis data loss while the JVM keeps running (container
+     * OOM-kill without an RDB save, FLUSHALL, failover to a cleared fallback).
+     */
+    public void flushAll() {
+        store.clear();
+    }
 }

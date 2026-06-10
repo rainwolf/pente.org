@@ -178,6 +178,16 @@ public class RedisConnectionManager {
      */
     public static final String GAME_TO_KOTH_EID = "game:koth_eid";
 
+    /**
+     * Sentinel hash: namespace → Boolean.TRUE once that namespace has been
+     * fully bootstrapped from the DB. Lives in Redis (NOT a JVM field) so that
+     * losing the cached data also loses the sentinel and the next read
+     * re-bootstraps — a JVM flag survives a Redis wipe and pins list caches to
+     * empty until Tomcat restarts. Deleted on failover recovery because reads
+     * and writes during an outage hit the discarded in-memory fallback.
+     */
+    public static final String CACHE_LOADED_FLAGS = "cache:loaded_flags";
+
     // -------------------------------------------------------------------------
 
     /**
@@ -506,6 +516,11 @@ public class RedisConnectionManager {
                 public void run() {
                     try {
                         jedis.ping();
+                        // Bootstraps that ran during the outage only reached the
+                        // (discarded) fallback, and pre-outage reads may feed
+                        // post-outage writes. Drop the loaded sentinels so list
+                        // caches re-bootstrap from the DB.
+                        jedis.del(CACHE_LOADED_FLAGS.getBytes());
                         synchronized (RedisConnectionManager.this) {
                             log4j.debug("Redis recovered — resuming Redis cache (clearing in-memory fallback).");
                             fallback.clear();

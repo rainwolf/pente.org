@@ -104,7 +104,9 @@ public class CacheTourneyStorer implements TourneyStorer {
         pente_cache.invalidate(RedisConnectionManager.TOURNEY_LIST_UPCOMING);
         pente_cache.invalidate(RedisConnectionManager.TOURNEY_LIST_CURRENT);
         pente_cache.invalidate(RedisConnectionManager.TOURNEY_LIST_COMPLETED);
-        upcomingLoaded = false; currentLoaded = false; completedLoaded = false;
+        pente_cache.hremove(RedisConnectionManager.CACHE_LOADED_FLAGS, RedisConnectionManager.TOURNEY_LIST_UPCOMING);
+        pente_cache.hremove(RedisConnectionManager.CACHE_LOADED_FLAGS, RedisConnectionManager.TOURNEY_LIST_CURRENT);
+        pente_cache.hremove(RedisConnectionManager.CACHE_LOADED_FLAGS, RedisConnectionManager.TOURNEY_LIST_COMPLETED);
     }
 
     public synchronized void insertTourney(Tourney tourney, Resources resources) throws Throwable {
@@ -144,17 +146,26 @@ public class CacheTourneyStorer implements TourneyStorer {
         if (!up.contains(tourney.getEventID())) { up.add(tourney.getEventID()); writeEidList(RedisConnectionManager.TOURNEY_LIST_UPCOMING, up); }
     }
 
-    private volatile boolean upcomingLoaded = false;
-    private volatile boolean currentLoaded = false;
-    private volatile boolean completedLoaded = false;
+    /**
+     * "List bootstrapped from DB" sentinels live in Redis (not JVM fields) so
+     * that losing the cached data — crash without save, FLUSHALL, failover —
+     * also loses the sentinel and the next read re-bootstraps from the DB.
+     */
+    private boolean listLoaded(String listNamespace) {
+        return pente_cache.hexists(RedisConnectionManager.CACHE_LOADED_FLAGS, listNamespace);
+    }
+
+    private void markListLoaded(String listNamespace) {
+        pente_cache.hput(RedisConnectionManager.CACHE_LOADED_FLAGS, listNamespace, Boolean.TRUE);
+    }
 
     public synchronized List<Tourney> getUpcomingTournies() throws Throwable {
-        if (!upcomingLoaded) {
+        if (!listLoaded(RedisConnectionManager.TOURNEY_LIST_UPCOMING)) {
             java.util.List<Tourney> backing = backingStorer.getUpcomingTournies();
             java.util.List<Integer> bootstrapEids = new java.util.ArrayList<Integer>();
             for (Tourney bt : backing) { if (!bootstrapEids.contains(bt.getEventID())) bootstrapEids.add(bt.getEventID()); }
             writeEidList(RedisConnectionManager.TOURNEY_LIST_UPCOMING, bootstrapEids);
-            upcomingLoaded = true;
+            markListLoaded(RedisConnectionManager.TOURNEY_LIST_UPCOMING);
         }
         java.util.List<Integer> eids = readEidList(RedisConnectionManager.TOURNEY_LIST_UPCOMING);
         java.util.List<Tourney> out = new java.util.ArrayList<Tourney>();
@@ -179,12 +190,12 @@ public class CacheTourneyStorer implements TourneyStorer {
 
 
     public synchronized List<Tourney> getCurrentTournies() throws Throwable {
-        if (!currentLoaded) {
+        if (!listLoaded(RedisConnectionManager.TOURNEY_LIST_CURRENT)) {
             java.util.List<Tourney> backing = backingStorer.getCurrentTournies();
             java.util.List<Integer> bootstrapEids = new java.util.ArrayList<Integer>();
             for (Tourney bt : backing) { if (!bootstrapEids.contains(bt.getEventID())) bootstrapEids.add(bt.getEventID()); }
             writeEidList(RedisConnectionManager.TOURNEY_LIST_CURRENT, bootstrapEids);
-            currentLoaded = true;
+            markListLoaded(RedisConnectionManager.TOURNEY_LIST_CURRENT);
         }
         java.util.List<Integer> eids = readEidList(RedisConnectionManager.TOURNEY_LIST_CURRENT);
         java.util.List<Tourney> out = new java.util.ArrayList<Tourney>();
@@ -214,12 +225,12 @@ public class CacheTourneyStorer implements TourneyStorer {
     }
 
     public synchronized List<Tourney> getCompletedTournies() throws Throwable {
-        if (!completedLoaded) {
+        if (!listLoaded(RedisConnectionManager.TOURNEY_LIST_COMPLETED)) {
             java.util.List<Tourney> backing = backingStorer.getCompletedTournies();
             java.util.List<Integer> bootstrapEids = new java.util.ArrayList<Integer>();
             for (Tourney bt : backing) { if (!bootstrapEids.contains(bt.getEventID())) bootstrapEids.add(bt.getEventID()); }
             writeEidList(RedisConnectionManager.TOURNEY_LIST_COMPLETED, bootstrapEids);
-            completedLoaded = true;
+            markListLoaded(RedisConnectionManager.TOURNEY_LIST_COMPLETED);
         }
         java.util.List<Integer> eids = readEidList(RedisConnectionManager.TOURNEY_LIST_COMPLETED);
         java.util.List<Tourney> out = new java.util.ArrayList<Tourney>();

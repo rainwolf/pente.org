@@ -261,4 +261,42 @@ public class CacheTourneyStorerRedisTest extends TestCase {
         assertEquals("format concrete type preserved across Redis round trip",
                 RoundRobinFormat.class, loaded.getFormat().getClass());
     }
+
+    /**
+     * Redis can lose every key while the JVM keeps running (container OOM-kill
+     * with no RDB save, FLUSHALL, failover to a fallback that is cleared on
+     * recovery). JVM-side upcomingLoaded/currentLoaded/completedLoaded flags
+     * survive such a wipe and pin the tourney lists to empty until Tomcat
+     * restarts. The loaded sentinel must live in Redis itself so a wipe also
+     * wipes the sentinel and the next read re-bootstraps from the DB.
+     */
+    public void testCompletedTourniesRehealAfterRedisWipe() throws Throwable {
+        final Tourney t = newTourney(910);
+
+        // Backing storer that, like the real DB, still knows the completed
+        // tourney after the cache loses it.
+        InMemoryTourneyStorer backing2 = new InMemoryTourneyStorer() {
+            @Override
+            public List<Tourney> getCompletedTournies() throws Throwable {
+                java.util.List<Tourney> l = new java.util.ArrayList<Tourney>();
+                Tourney stored = getTourney(910);
+                if (stored != null) l.add(stored);
+                return l;
+            }
+        };
+        backing2.insertTourney(t);
+        CacheTourneyStorer cache2 = new CacheTourneyStorer(backing2);
+        try {
+            assertEquals("completed tourney visible before wipe",
+                    1, cache2.getCompletedTournies().size());
+
+            ((SerializingRedisConnectionManager)
+                    RedisConnectionManager.getInstance()).flushAll();
+
+            assertEquals("completed list must reheal from DB after a Redis wipe",
+                    1, cache2.getCompletedTournies().size());
+        } finally {
+            cache2.destroy();
+        }
+    }
 }
