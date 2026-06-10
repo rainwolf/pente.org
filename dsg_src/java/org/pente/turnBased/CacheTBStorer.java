@@ -152,14 +152,18 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
     public void uncacheAll() {
         log4j.debug("CacheTBStorer.uncacheAll()");
         synchronized (cacheTbLock) {
+            // Remove the loaded sentinel BEFORE the data it guards: if this is
+            // interrupted partway, sentinel-gone + data-present re-bootstraps
+            // harmlessly, whereas data-gone + sentinel-present would pin the
+            // waiting list empty until the next wipe.
+            pente_cache.hremove(RedisConnectionManager.CACHE_LOADED_FLAGS,
+                    RedisConnectionManager.TB_WAITING_SET_IDS);
             pente_cache.invalidate(RedisConnectionManager.SID_TO_TB_SET);
             pente_cache.invalidate(RedisConnectionManager.GID_TO_SID);
             pente_cache.invalidate(RedisConnectionManager.PID_TO_TB_SET_IDS);
             pente_cache.invalidate(RedisConnectionManager.TB_WAITING_SET_IDS);
             pente_cache.invalidate(RedisConnectionManager.EID_TO_TB_EID);
             pente_cache.invalidate(RedisConnectionManager.PID_TO_TB_VACATION);
-            pente_cache.hremove(RedisConnectionManager.CACHE_LOADED_FLAGS,
-                    RedisConnectionManager.TB_WAITING_SET_IDS);
             restartTasks();
         }
     }
@@ -1291,6 +1295,14 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
     public List<TBSet> loadWaitingSets() throws TBStoreException {
 
         log4j.debug("CacheTBGameStorer.loadWaitingSets()");
+        // Redis down: an empty cached waiting-set index is indistinguishable
+        // from a down cache, so serve straight from the DB (the source of
+        // truth) rather than bootstrap-then-read-back an empty list.
+        if (!pente_cache.isAvailable()) {
+            List<TBSet> sets = baseStorer.loadWaitingSets();
+            Collections.sort(sets, WAITING_CMP);
+            return sets;
+        }
         // Loaded sentinel lives in Redis, not the JVM: if Redis loses its data
         // (crash without save, FLUSHALL, failover) the sentinel goes with it
         // and the next call re-bootstraps from the DB.

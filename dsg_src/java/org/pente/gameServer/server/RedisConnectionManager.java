@@ -10,7 +10,6 @@ import redis.clients.jedis.providers.PooledConnectionProvider;
 import java.io.*;
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Manages a shared UnifiedJedis instance for the application.
@@ -49,13 +48,17 @@ public class RedisConnectionManager {
     private final UnifiedJedis jedis;
 
     // -------------------------------------------------------------------------
-    // In-memory fallback (used when Redis is unreachable)
+    // Availability circuit breaker
+    //
+    // Redis is a best-effort cache; MariaDB (reached via each storer's
+    // baseStorer) is the source of truth. When Redis is unreachable, reads
+    // report a cache miss and writes are skipped, so callers fall through to
+    // the DB. There is deliberately NO in-memory fallback store — a second
+    // cache that diverges from Redis is exactly what produced the
+    // post-recovery stale-read bugs. The flag exists only to fast-fail during
+    // an outage instead of blocking every request on Jedis's connect/retry
+    // timeout (which would exhaust the Tomcat thread pool).
     // -------------------------------------------------------------------------
-
-    /**
-     * Mirrors Redis hash structure: namespace → (field → raw value).
-     */
-    private final Map<String, Map<String, Object>> fallback = new ConcurrentHashMap<>();
 
     /**
      * True while Redis is healthy; set to false on first error, restored by the recovery probe.
@@ -183,8 +186,8 @@ public class RedisConnectionManager {
      * fully bootstrapped from the DB. Lives in Redis (NOT a JVM field) so that
      * losing the cached data also loses the sentinel and the next read
      * re-bootstraps — a JVM flag survives a Redis wipe and pins list caches to
-     * empty until Tomcat restarts. Deleted on failover recovery because reads
-     * and writes during an outage hit the discarded in-memory fallback.
+     * empty until Tomcat restarts. The failover recovery probe flushes the DB,
+     * which clears these sentinels along with the data they guard.
      */
     public static final String CACHE_LOADED_FLAGS = "cache:loaded_flags";
 
@@ -268,6 +271,17 @@ public class RedisConnectionManager {
     }
 
     /**
+     * True when Redis is healthy. Callers whose read CANNOT distinguish an empty
+     * cache from a down cache — the list-bootstrap getters, where an empty
+     * {@code hgetAllFields} during an outage would be served as an empty list
+     * rather than re-loaded from the DB — must consult this and serve straight
+     * from the source of truth when it returns false.
+     */
+    public boolean isAvailable() {
+        return jedis == null || redisAvailable;
+    }
+
+    /**
      * Close the pool. Call from DSGContextListener.contextDestroyed().
      */
     public void destroy() {
@@ -288,12 +302,14 @@ public class RedisConnectionManager {
     // Invalidate one entry:            HDEL namespace field
     // Invalidate entire subset:        DEL  namespace
     //
-    // All operations fall back to an in-memory map when Redis is unavailable.
-    // A background probe re-enables Redis as soon as it recovers.
+    // When Redis is unavailable, reads report a cache miss and writes are
+    // skipped; the caller falls through to the DB. A background probe resumes
+    // Redis as soon as it recovers.
     // -------------------------------------------------------------------------
 
     /**
-     * Store a Serializable value under namespace[field].
+     * Store a Serializable value under namespace[field]. A no-op when Redis is
+     * unavailable — the storer's DB write-through is the source of truth.
      */
     public <T extends Serializable> void hput(String namespace, String field, T value) {
         if (value == null) return;
@@ -302,15 +318,12 @@ public class RedisConnectionManager {
             try {
                 jedis.hset(namespace.getBytes(), field.getBytes(), bytes);
                 // no TTL: namespaces are write-through source-of-truth caches; expiry
-                // strands load-once flags (e.g. waitingSetsLoaded) and empties reads
+                // strands the CACHE_LOADED_FLAGS sentinels and empties list reads
                 log4j.debug("CACHE WRITE [redis]  " + namespace + "[" + field + "] (" + value.getClass().getSimpleName() + ")");
-                return;
             } catch (Exception e) {
                 handleRedisFailure(e);
             }
         }
-        fallbackPut(namespace, field, value);
-        log4j.debug("CACHE WRITE [memory] " + namespace + "[" + field + "] (" + value.getClass().getSimpleName() + ")");
     }
 
     /**
@@ -334,29 +347,20 @@ public class RedisConnectionManager {
     @SuppressWarnings("unchecked")
     public <T> T hget(String namespace, String field) {
         if (jedis != null && redisAvailable) {
-            byte[] bytes;
             try {
-                bytes = jedis.hget(namespace.getBytes(), field.getBytes());
+                byte[] bytes = jedis.hget(namespace.getBytes(), field.getBytes());
+                if (bytes != null) {
+                    T val = (T) deserialize(bytes); // throws RuntimeException on deserialization failure — not a Redis failure
+                    log4j.debug("CACHE HIT  [redis]  " + namespace + "[" + field + "] (" + val.getClass().getSimpleName() + ")");
+                    return val;
+                }
+                log4j.debug("CACHE MISS [redis]  " + namespace + "[" + field + "]");
             } catch (Exception e) {
                 handleRedisFailure(e);
-                bytes = null;
-            }
-            if (bytes != null) {
-                T val = (T) deserialize(bytes); // throws RuntimeException on deserialization failure — not a Redis failure
-                log4j.debug("CACHE HIT  [redis]  " + namespace + "[" + field + "] (" + val.getClass().getSimpleName() + ")");
-                return val;
-            } else if (redisAvailable) {
-                log4j.debug("CACHE MISS [redis]  " + namespace + "[" + field + "]");
-                return null;
             }
         }
-        T val = fallbackGet(namespace, field);
-        if (val != null) {
-            log4j.debug("CACHE HIT  [memory] " + namespace + "[" + field + "] (" + val.getClass().getSimpleName() + ")");
-        } else {
-            log4j.debug("CACHE MISS [memory] " + namespace + "[" + field + "]");
-        }
-        return val;
+        // Redis unavailable: report a miss so the caller reloads from the DB.
+        return null;
     }
 
     /**
@@ -384,8 +388,8 @@ public class RedisConnectionManager {
                 handleRedisFailure(e);
             }
         }
-        Map<String, Object> map = fallback.get(namespace);
-        return map != null && map.containsKey(field);
+        // Redis unavailable: report absent so a loaded-sentinel check re-bootstraps from the DB.
+        return false;
     }
 
     /**
@@ -403,13 +407,11 @@ public class RedisConnectionManager {
             try {
                 jedis.hdel(namespace.getBytes(), field.getBytes());
                 log4j.debug("CACHE EVICT [redis]  " + namespace + "[" + field + "]");
-                return;
             } catch (Exception e) {
                 handleRedisFailure(e);
             }
         }
-        fallbackRemove(namespace, field);
-        log4j.debug("CACHE EVICT [memory] " + namespace + "[" + field + "]");
+        // Redis unavailable: nothing cached to evict.
     }
 
     /**
@@ -435,13 +437,11 @@ public class RedisConnectionManager {
             try {
                 jedis.del(namespace);
                 log4j.debug("CACHE FLUSH [redis]  " + namespace);
-                return;
             } catch (Exception e) {
                 handleRedisFailure(e);
             }
         }
-        fallback.remove(namespace);
-        log4j.debug("CACHE FLUSH [memory] " + namespace);
+        // Redis unavailable: nothing cached to flush.
     }
 
     /**
@@ -467,10 +467,8 @@ public class RedisConnectionManager {
                 return result;
             }
         }
-        Map<String, Object> map = fallback.get(namespace);
-        List<T> result = map == null ? new ArrayList<>() : new ArrayList<>((java.util.Collection<T>) map.values());
-        log4j.debug("CACHE SCAN  [memory] " + namespace + " (" + result.size() + " entries)");
-        return result;
+        // Redis unavailable: report an empty scan so the caller reloads from the DB.
+        return new ArrayList<>();
     }
 
     /**
@@ -492,10 +490,8 @@ public class RedisConnectionManager {
                 return result;
             }
         }
-        Map<String, Object> map = fallback.get(namespace);
-        List<String> result = map == null ? new ArrayList<String>() : new ArrayList<String>(map.keySet());
-        log4j.debug("CACHE KEYS  [memory] " + namespace + " (" + result.size() + " entries)");
-        return result;
+        // Redis unavailable: report no keys so the caller reloads from the DB.
+        return new ArrayList<String>();
     }
 
     // -------------------------------------------------------------------------
@@ -503,53 +499,44 @@ public class RedisConnectionManager {
     // -------------------------------------------------------------------------
 
     /**
-     * Called on any Redis exception. Switches to in-memory mode and schedules
-     * a background probe that switches back when Redis recovers.
+     * Called on any Redis exception. Trips the circuit breaker (so subsequent
+     * calls fast-fail to the DB instead of each blocking on the connect/retry
+     * timeout) and schedules a background probe that resumes Redis when it
+     * recovers.
      */
     private synchronized void handleRedisFailure(Exception e) {
-        if (!redisAvailable) return; // already in fallback mode
+        if (!redisAvailable) return; // already fast-failing
         redisAvailable = false;
-        log4j.error("Redis unavailable — switching to in-memory cache fallback: " + e.getMessage());
+        log4j.error("Redis unavailable — serving from the DB until it recovers: " + e.getMessage());
         if (recoveryTimer != null) {
             recoveryTimer.scheduleAtFixedRate(new TimerTask() {
                 @Override
                 public void run() {
                     try {
                         jedis.ping();
-                        // Writes during the outage only reached the (discarded)
-                        // fallback, so any aggregate mutated meanwhile is stale
-                        // in Redis — and a stale hit would feed the next
-                        // reload→mutate→persist cycle. Flush everything: lists
-                        // re-bootstrap via CACHE_LOADED_FLAGS sentinels, items
-                        // reheal via cache-aside DB loads.
-                        jedis.flushDB();
-                        synchronized (RedisConnectionManager.this) {
-                            log4j.debug("Redis recovered — flushed cache and resuming Redis (clearing in-memory fallback).");
-                            fallback.clear();
-                            redisAvailable = true;
-                        }
-                        cancel();
                     } catch (Exception ex) {
-                        // still unavailable, keep probing
+                        return; // still down, keep probing
                     }
+                    // Redis is reachable again. If it kept its data through the
+                    // outage, anything mutated meanwhile (DB written, cache
+                    // write skipped) is now stale in Redis. Flush so list caches
+                    // re-bootstrap via CACHE_LOADED_FLAGS and item caches reheal
+                    // from the DB on miss. Best-effort: a denied FLUSHDB (e.g. a
+                    // read-only replica) must not pin us in fast-fail mode, so
+                    // we resume regardless and just log.
+                    try {
+                        jedis.flushDB();
+                    } catch (Exception ex) {
+                        log4j.error("Redis recovered but FLUSHDB failed; resuming with possibly stale cache: " + ex.getMessage());
+                    }
+                    synchronized (RedisConnectionManager.this) {
+                        redisAvailable = true;
+                    }
+                    log4j.info("Redis recovered — resuming cache.");
+                    cancel();
                 }
             }, RECOVERY_INTERVAL_MS, RECOVERY_INTERVAL_MS);
         }
-    }
-
-    private void fallbackPut(String namespace, String field, Object value) {
-        fallback.computeIfAbsent(namespace, k -> new ConcurrentHashMap<>()).put(field, value);
-    }
-
-    @SuppressWarnings("unchecked")
-    private <T> T fallbackGet(String namespace, String field) {
-        Map<String, Object> map = fallback.get(namespace);
-        return map == null ? null : (T) map.get(field);
-    }
-
-    private void fallbackRemove(String namespace, String field) {
-        Map<String, Object> map = fallback.get(namespace);
-        if (map != null) map.remove(field);
     }
 
     // -------------------------------------------------------------------------

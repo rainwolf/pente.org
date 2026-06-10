@@ -99,14 +99,19 @@ public class CacheTourneyStorer implements TourneyStorer {
     }
 
     public synchronized void flushCache() {
+        // Remove the loaded sentinels BEFORE the data they guard: if this is
+        // interrupted partway (crash, Redis error mid-sequence), sentinel-gone
+        // + data-present makes the next read harmlessly re-bootstrap, whereas
+        // data-gone + sentinel-present would pin the lists empty until the
+        // next wipe.
+        pente_cache.hremove(RedisConnectionManager.CACHE_LOADED_FLAGS, RedisConnectionManager.TOURNEY_LIST_UPCOMING);
+        pente_cache.hremove(RedisConnectionManager.CACHE_LOADED_FLAGS, RedisConnectionManager.TOURNEY_LIST_CURRENT);
+        pente_cache.hremove(RedisConnectionManager.CACHE_LOADED_FLAGS, RedisConnectionManager.TOURNEY_LIST_COMPLETED);
         pente_cache.invalidate(RedisConnectionManager.EID_TO_TOURNEY);
         pente_cache.invalidate(RedisConnectionManager.EID_TO_TOURNEY_PLAYER_PIDS);
         pente_cache.invalidate(RedisConnectionManager.TOURNEY_LIST_UPCOMING);
         pente_cache.invalidate(RedisConnectionManager.TOURNEY_LIST_CURRENT);
         pente_cache.invalidate(RedisConnectionManager.TOURNEY_LIST_COMPLETED);
-        pente_cache.hremove(RedisConnectionManager.CACHE_LOADED_FLAGS, RedisConnectionManager.TOURNEY_LIST_UPCOMING);
-        pente_cache.hremove(RedisConnectionManager.CACHE_LOADED_FLAGS, RedisConnectionManager.TOURNEY_LIST_CURRENT);
-        pente_cache.hremove(RedisConnectionManager.CACHE_LOADED_FLAGS, RedisConnectionManager.TOURNEY_LIST_COMPLETED);
     }
 
     public synchronized void insertTourney(Tourney tourney, Resources resources) throws Throwable {
@@ -160,6 +165,12 @@ public class CacheTourneyStorer implements TourneyStorer {
     }
 
     public synchronized List<Tourney> getUpcomingTournies() throws Throwable {
+        // Redis down: an empty cached eid list is indistinguishable from a
+        // down cache, so serve straight from the DB (the source of truth)
+        // rather than bootstrap-then-read-back an empty list.
+        if (!pente_cache.isAvailable()) {
+            return backingStorer.getUpcomingTournies();
+        }
         if (!listLoaded(RedisConnectionManager.TOURNEY_LIST_UPCOMING)) {
             java.util.List<Tourney> backing = backingStorer.getUpcomingTournies();
             java.util.List<Integer> bootstrapEids = new java.util.ArrayList<Integer>();
@@ -190,6 +201,9 @@ public class CacheTourneyStorer implements TourneyStorer {
 
 
     public synchronized List<Tourney> getCurrentTournies() throws Throwable {
+        if (!pente_cache.isAvailable()) {
+            return backingStorer.getCurrentTournies();
+        }
         if (!listLoaded(RedisConnectionManager.TOURNEY_LIST_CURRENT)) {
             java.util.List<Tourney> backing = backingStorer.getCurrentTournies();
             java.util.List<Integer> bootstrapEids = new java.util.ArrayList<Integer>();
@@ -225,6 +239,9 @@ public class CacheTourneyStorer implements TourneyStorer {
     }
 
     public synchronized List<Tourney> getCompletedTournies() throws Throwable {
+        if (!pente_cache.isAvailable()) {
+            return backingStorer.getCompletedTournies();
+        }
         if (!listLoaded(RedisConnectionManager.TOURNEY_LIST_COMPLETED)) {
             java.util.List<Tourney> backing = backingStorer.getCompletedTournies();
             java.util.List<Integer> bootstrapEids = new java.util.ArrayList<Integer>();
