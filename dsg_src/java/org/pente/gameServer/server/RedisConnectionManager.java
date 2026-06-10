@@ -516,13 +516,15 @@ public class RedisConnectionManager {
                 public void run() {
                     try {
                         jedis.ping();
-                        // Bootstraps that ran during the outage only reached the
-                        // (discarded) fallback, and pre-outage reads may feed
-                        // post-outage writes. Drop the loaded sentinels so list
-                        // caches re-bootstrap from the DB.
-                        jedis.del(CACHE_LOADED_FLAGS.getBytes());
+                        // Writes during the outage only reached the (discarded)
+                        // fallback, so any aggregate mutated meanwhile is stale
+                        // in Redis — and a stale hit would feed the next
+                        // reload→mutate→persist cycle. Flush everything: lists
+                        // re-bootstrap via CACHE_LOADED_FLAGS sentinels, items
+                        // reheal via cache-aside DB loads.
+                        jedis.flushDB();
                         synchronized (RedisConnectionManager.this) {
-                            log4j.debug("Redis recovered — resuming Redis cache (clearing in-memory fallback).");
+                            log4j.debug("Redis recovered — flushed cache and resuming Redis (clearing in-memory fallback).");
                             fallback.clear();
                             redisAvailable = true;
                         }
