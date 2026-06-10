@@ -1468,7 +1468,7 @@ function detectKeryoPoof(abstractBoard, i, j, myColor) {
       }
    }
    if (((i - 2) > -1) && ((j - 2) > -1) && ((i + 2) < 19) && ((j + 2) < 19)) { // up right
-      if (abstractBoard[i + 1][j - 1] === myColor && abstractBoard[i + 1][j - 1] === myColor) {
+      if (abstractBoard[i + 1][j - 1] === myColor && abstractBoard[i - 1][j + 1] === myColor) {
          if ((abstractBoard[i - 2][j + 2] === opponentColor) && (abstractBoard[i + 2][j - 2] === opponentColor)) {
             abstractBoard[i + 1][j - 1] = 0;
             abstractBoard[i - 1][j + 1] = 0;
