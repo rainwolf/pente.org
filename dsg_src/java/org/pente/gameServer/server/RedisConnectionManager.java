@@ -182,14 +182,17 @@ public class RedisConnectionManager {
     public static final String GAME_TO_KOTH_EID = "game:koth_eid";
 
     /**
-     * Sentinel hash: namespace → Boolean.TRUE once that namespace has been
-     * fully bootstrapped from the DB. Lives in Redis (NOT a JVM field) so that
-     * losing the cached data also loses the sentinel and the next read
-     * re-bootstraps — a JVM flag survives a Redis wipe and pins list caches to
-     * empty until Tomcat restarts. The failover recovery probe flushes the DB,
-     * which clears these sentinels along with the data they guard.
+     * Reserved hash field marking a namespace as fully bootstrapped from the DB
+     * (see {@link #isLoaded}/{@link #markLoaded}). It lives INSIDE the namespace
+     * hash it guards — not in a separate hash — so it is created, evicted (under
+     * maxmemory), and deleted (by {@link #invalidate}) atomically with the data.
+     * A separate sentinel hash could be LRU-evicted while the data survived (or
+     * vice versa), pinning a list cache to a wrong loaded/empty state; co-located
+     * it cannot. The name cannot collide with real field names
+     * (numeric ids, "list"); {@link #hgetAllFields}/{@link #hgetAllValues} filter
+     * it out so callers iterating a namespace never see it.
      */
-    public static final String CACHE_LOADED_FLAGS = "cache:loaded_flags";
+    public static final String LOADED_FIELD = "__loaded__";
 
     // -------------------------------------------------------------------------
 
@@ -282,6 +285,25 @@ public class RedisConnectionManager {
     }
 
     /**
+     * True once {@link #markLoaded} has run for this namespace and the marker
+     * has not since been evicted/deleted. Used by the list-bootstrap caches to
+     * tell "already loaded, legitimately empty" from "never loaded" — a plain
+     * empty hash cannot be told apart from a missing one.
+     */
+    public boolean isLoaded(String namespace) {
+        return hexists(namespace, LOADED_FIELD);
+    }
+
+    /**
+     * Mark a namespace as bootstrapped by writing the reserved {@link #LOADED_FIELD}
+     * into its hash. Cleared automatically by {@link #invalidate} (same key) and
+     * by eviction/flush.
+     */
+    public void markLoaded(String namespace) {
+        hput(namespace, LOADED_FIELD, Boolean.TRUE);
+    }
+
+    /**
      * Close the pool. Call from DSGContextListener.contextDestroyed().
      */
     public void destroy() {
@@ -318,7 +340,7 @@ public class RedisConnectionManager {
             try {
                 jedis.hset(namespace.getBytes(), field.getBytes(), bytes);
                 // no TTL: namespaces are write-through source-of-truth caches; expiry
-                // strands the CACHE_LOADED_FLAGS sentinels and empties list reads
+                // strands the LOADED_FIELD markers and empties list reads
                 log4j.debug("CACHE WRITE [redis]  " + namespace + "[" + field + "] (" + value.getClass().getSimpleName() + ")");
             } catch (Exception e) {
                 handleRedisFailure(e);
@@ -459,9 +481,11 @@ public class RedisConnectionManager {
                 entries = null;
             }
             if (entries != null) {
+                byte[] loadedField = LOADED_FIELD.getBytes();
                 List<T> result = new ArrayList<>(entries.size());
-                for (byte[] value : entries.values()) {
-                    result.add((T) deserialize(value)); // throws RuntimeException on deserialization failure — not a Redis failure
+                for (Map.Entry<byte[], byte[]> e : entries.entrySet()) {
+                    if (Arrays.equals(e.getKey(), loadedField)) continue; // skip the loaded marker
+                    result.add((T) deserialize(e.getValue())); // throws RuntimeException on deserialization failure — not a Redis failure
                 }
                 log4j.debug("CACHE SCAN  [redis]  " + namespace + " (" + result.size() + " entries)");
                 return result;
@@ -485,6 +509,7 @@ public class RedisConnectionManager {
                 fields = null;
             }
             if (fields != null) {
+                fields.remove(LOADED_FIELD); // never expose the loaded marker as a data field
                 List<String> result = new ArrayList<String>(fields);
                 log4j.debug("CACHE KEYS  [redis]  " + namespace + " (" + result.size() + " entries)");
                 return result;
@@ -520,7 +545,7 @@ public class RedisConnectionManager {
                     // Redis is reachable again. If it kept its data through the
                     // outage, anything mutated meanwhile (DB written, cache
                     // write skipped) is now stale in Redis. Flush so list caches
-                    // re-bootstrap via CACHE_LOADED_FLAGS and item caches reheal
+                    // re-bootstrap via their LOADED_FIELD marker and item caches reheal
                     // from the DB on miss. Best-effort: a denied FLUSHDB (e.g. a
                     // read-only replica) must not pin us in fast-fail mode, so
                     // we resume regardless and just log.

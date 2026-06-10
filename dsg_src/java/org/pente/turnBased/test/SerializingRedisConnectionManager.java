@@ -74,8 +74,9 @@ public class SerializingRedisConnectionManager extends RedisConnectionManager {
         Map<String, byte[]> map = store.get(namespace);
         if (map == null) return new ArrayList<T>();
         List<T> result = new ArrayList<T>(map.size());
-        for (byte[] bytes : map.values()) {
-            result.add((T) RedisConnectionManager.deserialize(bytes));
+        for (Map.Entry<String, byte[]> e : map.entrySet()) {
+            if (RedisConnectionManager.LOADED_FIELD.equals(e.getKey())) continue; // skip the loaded marker
+            result.add((T) RedisConnectionManager.deserialize(e.getValue()));
         }
         return result;
     }
@@ -84,7 +85,9 @@ public class SerializingRedisConnectionManager extends RedisConnectionManager {
     public List<String> hgetAllFields(String namespace) {
         Map<String, byte[]> map = store.get(namespace);
         if (map == null) return new ArrayList<String>();
-        return new ArrayList<String>(map.keySet());
+        List<String> fields = new ArrayList<String>(map.keySet());
+        fields.remove(RedisConnectionManager.LOADED_FIELD); // never expose the loaded marker as a data field
+        return fields;
     }
 
     /**

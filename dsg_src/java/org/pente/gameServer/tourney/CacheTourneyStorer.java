@@ -99,14 +99,8 @@ public class CacheTourneyStorer implements TourneyStorer {
     }
 
     public synchronized void flushCache() {
-        // Remove the loaded sentinels BEFORE the data they guard: if this is
-        // interrupted partway (crash, Redis error mid-sequence), sentinel-gone
-        // + data-present makes the next read harmlessly re-bootstrap, whereas
-        // data-gone + sentinel-present would pin the lists empty until the
-        // next wipe.
-        pente_cache.hremove(RedisConnectionManager.CACHE_LOADED_FLAGS, RedisConnectionManager.TOURNEY_LIST_UPCOMING);
-        pente_cache.hremove(RedisConnectionManager.CACHE_LOADED_FLAGS, RedisConnectionManager.TOURNEY_LIST_CURRENT);
-        pente_cache.hremove(RedisConnectionManager.CACHE_LOADED_FLAGS, RedisConnectionManager.TOURNEY_LIST_COMPLETED);
+        // Each invalidate() drops the list's in-hash loaded marker with its
+        // data, so the next getter re-bootstraps from the DB.
         pente_cache.invalidate(RedisConnectionManager.EID_TO_TOURNEY);
         pente_cache.invalidate(RedisConnectionManager.EID_TO_TOURNEY_PLAYER_PIDS);
         pente_cache.invalidate(RedisConnectionManager.TOURNEY_LIST_UPCOMING);
@@ -157,11 +151,11 @@ public class CacheTourneyStorer implements TourneyStorer {
      * also loses the sentinel and the next read re-bootstraps from the DB.
      */
     private boolean listLoaded(String listNamespace) {
-        return pente_cache.hexists(RedisConnectionManager.CACHE_LOADED_FLAGS, listNamespace);
+        return pente_cache.isLoaded(listNamespace);
     }
 
     private void markListLoaded(String listNamespace) {
-        pente_cache.hput(RedisConnectionManager.CACHE_LOADED_FLAGS, listNamespace, Boolean.TRUE);
+        pente_cache.markLoaded(listNamespace);
     }
 
     public synchronized List<Tourney> getUpcomingTournies() throws Throwable {

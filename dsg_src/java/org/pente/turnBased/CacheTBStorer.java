@@ -152,12 +152,8 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
     public void uncacheAll() {
         log4j.debug("CacheTBStorer.uncacheAll()");
         synchronized (cacheTbLock) {
-            // Remove the loaded sentinel BEFORE the data it guards: if this is
-            // interrupted partway, sentinel-gone + data-present re-bootstraps
-            // harmlessly, whereas data-gone + sentinel-present would pin the
-            // waiting list empty until the next wipe.
-            pente_cache.hremove(RedisConnectionManager.CACHE_LOADED_FLAGS,
-                    RedisConnectionManager.TB_WAITING_SET_IDS);
+            // invalidate(TB_WAITING_SET_IDS) drops the in-hash loaded marker
+            // with the data, so the next loadWaitingSets re-bootstraps.
             pente_cache.invalidate(RedisConnectionManager.SID_TO_TB_SET);
             pente_cache.invalidate(RedisConnectionManager.GID_TO_SID);
             pente_cache.invalidate(RedisConnectionManager.PID_TO_TB_SET_IDS);
@@ -1303,19 +1299,17 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
             Collections.sort(sets, WAITING_CMP);
             return sets;
         }
-        // Loaded sentinel lives in Redis, not the JVM: if Redis loses its data
-        // (crash without save, FLUSHALL, failover) the sentinel goes with it
-        // and the next call re-bootstraps from the DB.
-        if (!pente_cache.hexists(RedisConnectionManager.CACHE_LOADED_FLAGS,
-                RedisConnectionManager.TB_WAITING_SET_IDS)) {
+        // Loaded marker lives in Redis, not the JVM: if Redis loses its data
+        // (crash without save, FLUSHALL, failover, eviction) the marker goes
+        // with it and the next call re-bootstraps from the DB.
+        if (!pente_cache.isLoaded(RedisConnectionManager.TB_WAITING_SET_IDS)) {
             List<TBSet> gs = baseStorer.loadWaitingSets();
             for (TBSet s : gs) {
                 cacheSet(s);
                 pente_cache.hput(RedisConnectionManager.TB_WAITING_SET_IDS, s.getSetId(), s.getSetId());
                 log4j.debug("cached " + s.getSetId());
             }
-            pente_cache.hput(RedisConnectionManager.CACHE_LOADED_FLAGS,
-                    RedisConnectionManager.TB_WAITING_SET_IDS, Boolean.TRUE);
+            pente_cache.markLoaded(RedisConnectionManager.TB_WAITING_SET_IDS);
         }
         List<String> sidFields = pente_cache.hgetAllFields(RedisConnectionManager.TB_WAITING_SET_IDS);
         List<TBSet> sets = new ArrayList<TBSet>();
