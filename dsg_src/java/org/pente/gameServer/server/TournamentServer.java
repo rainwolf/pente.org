@@ -47,6 +47,11 @@ public class TournamentServer extends Server {
     protected int FIRST_ROUND_WAIT = 5;
     protected Map<Long, Integer> pid2tables;
     protected Map<Integer, TourneyMatch> table2matches;
+    // bumped whenever startNewRoundNow() replaces the round state. An
+    // attemptMatchStart thread captures it before sleeping and re-checks after
+    // waking, so a thread that slept through a round transition aborts instead
+    // of seating players against the previous round's matches.
+    protected int matchStartGeneration;
     protected HashSet<String> tournamentPlayers;
     protected Tourney tournament;
     protected List<TourneyMatch> matches;
@@ -100,20 +105,32 @@ public class TournamentServer extends Server {
                     }, 1000L * 60 * (ROUND_PAUSE - finalI));
                 }
             }
-            timeoutBeforeNextRoundTimer = new Timer();
-            timeoutBeforeNextRoundTimer.schedule(new TimerTask() {
+            final Timer roundTimer = new Timer();
+            timeoutBeforeNextRoundTimer = roundTimer;
+            roundTimer.schedule(new TimerTask() {
                 @Override
                 public void run() {
                     startNewRoundNow();
-                    timeoutBeforeNextRoundTimer.cancel();
-                    timeoutBeforeNextRoundTimer.purge();
-                    timeoutBeforeNextRoundTimer = null;
+                    synchronized (TournamentServer.this) {
+                        roundTimer.cancel();
+                        roundTimer.purge();
+                        // only clear the field under the monitor, and only if it
+                        // still refers to this timer — stopWait() or a newer
+                        // schedule may have already replaced it.
+                        if (timeoutBeforeNextRoundTimer == roundTimer) {
+                            timeoutBeforeNextRoundTimer = null;
+                        }
+                    }
                 }
             }, 1000L * 60 * ROUND_PAUSE);
         }
     }
 
-    protected void startNewRoundNow() {
+    // synchronized: rebuilds pid2tables/table2matches/matches/tournamentPlayers, so
+    // it must hold the same monitor as removeTable/initNewRound. Callers that bypass
+    // initNewRound (the director /start command, the break timer) are now safe too.
+    protected synchronized void startNewRoundNow() {
+        matchStartGeneration++;
         pid2tables = new ConcurrentHashMap<>();
         table2matches = new ConcurrentHashMap<>();
         tournamentPlayers = new HashSet<>();
@@ -145,7 +162,9 @@ public class TournamentServer extends Server {
         super.removeTable(tableNum);
     }
 
-    public void matchOnJoin(DSGPlayerData playerData) {
+    public synchronized void matchOnJoin(DSGPlayerData playerData) {
+        // synchronized: reads tournamentPlayers/pid2tables, which startNewRoundNow
+        // rebuilds under the same monitor.
         if (tournament.getNumRounds() == 0 || !tournamentPlayers.contains(playerData.getName()) || pid2tables.get(playerData.getPlayerID()) != null) {
             return;
         }
@@ -153,58 +172,74 @@ public class TournamentServer extends Server {
     }
 
     private synchronized void attemptMatchStart(Long pid) {
+        // capture the round we're seating for; the thread re-checks it after waking
+        final int gen = matchStartGeneration;
         Thread thread = new Thread(() -> {
             try {
                 sleep(200);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            for (TourneyMatch match : matches) {
-                if (match.hasBeenPlayed()) {
-                    continue;
+            // The seating loop runs under the server monitor so it reads/writes
+            // matches/pid2tables/table2matches with the same lock startNewRoundNow
+            // and removeTable use. This serializes concurrent runs (no double
+            // seating) and gives a consistent view. Holding the monitor here is
+            // deadlock-free: createNewTable/removeTable lock on `tables`, and the
+            // lock order is always this -> tables. The 200ms sleep is OUTSIDE the
+            // lock so we never block other work while idling.
+            synchronized (TournamentServer.this) {
+                // a new round started while we slept; its matches/maps replaced
+                // ours, so anything we'd seat now would be against a stale round
+                if (gen != matchStartGeneration) {
+                    return;
                 }
-                if (pid != null && match.getPlayer1().getPlayerID() != pid && match.getPlayer2().getPlayerID() != pid) {
-                    continue;
+                for (TourneyMatch match : matches) {
+                    if (match.hasBeenPlayed()) {
+                        continue;
+                    }
+                    if (pid != null && match.getPlayer1().getPlayerID() != pid && match.getPlayer2().getPlayerID() != pid) {
+                        continue;
+                    }
+                    // make sure they're not playing
+                    long pid1 = match.getPlayer1().getPlayerID();
+                    if (pid2tables.get(pid1) != null) {
+                        continue;
+                    }
+                    long pid2 = match.getPlayer2().getPlayerID();
+                    if (pid2tables.get(pid2) != null) {
+                        continue;
+                    }
+                    String player1 = match.getPlayer1().getName();
+                    String player2 = match.getPlayer2().getName();
+                    // make sure they're logged on
+                    if (!mainRoom.isPlayerInMainRoom(player1) || !mainRoom.isPlayerInMainRoom(player2)) {
+                        continue;
+                    }
+                    try {
+                        stopWait();
+                        int tableNum = createNewTable(new DSGJoinTableEvent());
+                        // remove them if they're spectating
+                        removePlayerFromTables(player1);
+                        removePlayerFromTables(player2);
+                        SynchronizedServerTable syncedTable = (SynchronizedServerTable) tables.get(tableNum);
+                        ServerTable table = syncedTable.getServerTable();
+                        table.setTourneyMatch(match);
+                        // join only, table will sit them
+                        syncedTable.eventOccurred(new DSGJoinTableEvent(player1, tableNum));
+                        syncedTable.eventOccurred(new DSGJoinTableEvent(player2, tableNum));
+                        // housekeeping
+                        pid2tables.put(pid1, tableNum);
+                        pid2tables.put(pid2, tableNum);
+                        table2matches.put(tableNum, match);
+                    } catch (Throwable throwable) {
+                        throwable.printStackTrace();
+                    }
                 }
-                // make sure they're not playing
-                long pid1 = match.getPlayer1().getPlayerID();
-                if (pid2tables.get(pid1) != null) {
-                    continue;
-                }
-                long pid2 = match.getPlayer2().getPlayerID();
-                if (pid2tables.get(pid2) != null) {
-                    continue;
-                }
-                String player1 = match.getPlayer1().getName();
-                String player2 = match.getPlayer2().getName();
-                // make sure they're logged on
-                if (!mainRoom.isPlayerInMainRoom(player1) || !mainRoom.isPlayerInMainRoom(player2)) {
-                    continue;
-                }
-                try {
+                if (pid2tables.isEmpty() && startNewTimers) {
+                    startWait();
+                } else {
                     stopWait();
-                    int tableNum = createNewTable(new DSGJoinTableEvent());
-                    // remove them if they're spectating
-                    removePlayerFromTables(player1);
-                    removePlayerFromTables(player2);
-                    SynchronizedServerTable syncedTable = (SynchronizedServerTable) tables.get(tableNum);
-                    ServerTable table = syncedTable.getServerTable();
-                    table.setTourneyMatch(match);
-                    // join only, table will sit them
-                    syncedTable.eventOccurred(new DSGJoinTableEvent(player1, tableNum));
-                    syncedTable.eventOccurred(new DSGJoinTableEvent(player2, tableNum));
-                    // housekeeping
-                    pid2tables.put(pid1, tableNum);
-                    pid2tables.put(pid2, tableNum);
-                    table2matches.put(tableNum, match);
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
                 }
-            }
-            if (pid2tables.isEmpty() && startNewTimers) {
-                startWait();
-            } else {
-                stopWait();
             }
         });
         thread.start();
@@ -259,16 +294,27 @@ public class TournamentServer extends Server {
                     waitAnnouncementTimers.add(t);
                 }
             }
-            timeoutBeforeNextRoundTimer = new Timer();
-            timeoutBeforeNextRoundTimer.schedule(new TimerTask() {
+            final Timer forfeitTimer = new Timer();
+            timeoutBeforeNextRoundTimer = forfeitTimer;
+            forfeitTimer.schedule(new TimerTask() {
                 @Override
                 public void run() {
                     forfeitRemainingMatches();
-                    timeoutBeforeNextRoundTimer.cancel();
-                    timeoutBeforeNextRoundTimer.purge();
-                    timeoutBeforeNextRoundTimer = null;
+                    synchronized (TournamentServer.this) {
+                        forfeitTimer.cancel();
+                        forfeitTimer.purge();
+                        // only clear the field under the monitor, and only if it
+                        // still refers to this timer — stopWait() or a newer
+                        // schedule may have already replaced it.
+                        if (timeoutBeforeNextRoundTimer == forfeitTimer) {
+                            timeoutBeforeNextRoundTimer = null;
+                        }
+                    }
                 }
-            }, 1000L * 60 * ROUND_PAUSE);
+            // Forfeit after the same delay announced to players (`pause`), not
+            // ROUND_PAUSE. Round 1 sets pause = FIRST_ROUND_WAIT, so using
+            // ROUND_PAUSE here forfeited first-round players minutes early.
+            }, 1000L * 60 * pause);
         }
     }
 
@@ -297,13 +343,19 @@ public class TournamentServer extends Server {
             String player1 = match.getPlayer1().getName();
             String player2 = match.getPlayer2().getName();
             boolean p1inRoom = mainRoom.isPlayerInMainRoom(player1), p2inRoom = mainRoom.isPlayerInMainRoom(player2);
-            int result = TourneyMatch.RESULT_UNFINISHED;
+            int result;
             if (!p1inRoom && !p2inRoom) {
                 result = TourneyMatch.RESULT_DBL_FORFEIT;
             } else if (!p1inRoom && p2inRoom) {
                 result = TourneyMatch.RESULT_P2_WINS;
             } else if (!p2inRoom && p1inRoom) {
                 result = TourneyMatch.RESULT_P1_WINS;
+            } else {
+                // both present but never completed their game before the round
+                // cutoff (a late rejoin that missed re-pairing) — enforce a double
+                // forfeit so the round can complete; never persist RESULT_UNFINISHED
+                // with setForfeit(true), which is a contradictory state.
+                result = TourneyMatch.RESULT_DBL_FORFEIT;
             }
 
             match.setForfeit(true);

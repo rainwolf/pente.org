@@ -130,4 +130,10 @@ public class TourneyPlayerData implements Serializable {
         TourneyPlayerData p = (TourneyPlayerData) o;
         return p.playerID == playerID;
     }
+
+    // equals() compares by playerID, so hashCode() must too — otherwise equal
+    // players land in different buckets and HashSet/HashMap dedup breaks.
+    public int hashCode() {
+        return Long.hashCode(playerID);
+    }
 }

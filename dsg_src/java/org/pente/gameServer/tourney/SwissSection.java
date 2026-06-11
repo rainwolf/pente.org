@@ -103,7 +103,8 @@ public class SwissSection extends TourneySection implements Serializable {
         // or players who were dropped
         for (Iterator<TourneyPlayerData> it = ranked.iterator(); it.hasNext(); ) {
             TourneyPlayerData p = it.next();
-            if (p.getNumForfeits() == 2) {
+            // >= not ==: a player who reaches 3+ forfeits must still be dropped
+            if (p.getNumForfeits() >= 2) {
                 log4j.debug("2 forfeits, remove " + p.getName());
                 it.remove();
             } else if (dropoutPlayers.contains(p.getPlayerID())) {

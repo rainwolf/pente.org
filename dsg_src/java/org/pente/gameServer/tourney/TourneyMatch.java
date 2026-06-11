@@ -124,10 +124,13 @@ public class TourneyMatch implements Serializable {
     }
 
     public int getMaxSeed() {
+        // bye matches have a null player2; only player1's seed is meaningful
+        if (isBye()) return player1.getSeed();
         return Math.max(player1.getSeed(), player2.getSeed());
     }
 
     public int getMinSeed() {
+        if (isBye()) return player1.getSeed();
         return Math.min(player1.getSeed(), player2.getSeed());
     }
 
@@ -146,6 +149,8 @@ public class TourneyMatch implements Serializable {
     }
 
     public int hashCode() {
-        return (int) getMatchID();
+        // matchID is a bigint PK; (int) cast drops the high 32 bits and collides
+        // once IDs exceed Integer.MAX_VALUE. Long.hashCode folds both halves.
+        return Long.hashCode(getMatchID());
     }
 }

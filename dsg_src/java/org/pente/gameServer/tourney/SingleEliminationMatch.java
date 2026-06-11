@@ -145,6 +145,9 @@ public class SingleEliminationMatch implements java.io.Serializable {
     }
 
     public boolean samePlayers(TourneyMatch other) {
+        // Bye matches have a null player2; guard before dereferencing so iterating
+        // a section that contains a bye (odd player count) does not NPE.
+        if (isBye() || other.isBye()) return false;
         if (other.getPlayer1().getPlayerID() == player1.getPlayerID() &&
                 other.getPlayer2().getPlayerID() == player2.getPlayerID()) return true;
         if (other.getPlayer1().getPlayerID() == player2.getPlayerID() &&

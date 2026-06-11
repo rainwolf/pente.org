@@ -285,11 +285,20 @@ public class Tourney implements Serializable {
 
 
     public String getWinner() {
+        // no rounds yet, or no single resolved winner: avoid IndexOutOfBounds
+        if (rounds.isEmpty() || getLastRound().getWinners().isEmpty()) {
+            return null;
+        }
         TourneyPlayerData p = (TourneyPlayerData) getLastRound().getWinners().get(0);
         return p.getName();
     }
 
     public long getWinnerPid() {
+        // 0 = "no winner" (idiomatic sentinel here); avoids IndexOutOfBounds when
+        // the tourney isn't resolved to a single winner
+        if (rounds.isEmpty() || getLastRound().getWinners().isEmpty()) {
+            return 0;
+        }
         TourneyPlayerData p = (TourneyPlayerData) getLastRound().getWinners().get(0);
         return p.getPlayerID();
     }

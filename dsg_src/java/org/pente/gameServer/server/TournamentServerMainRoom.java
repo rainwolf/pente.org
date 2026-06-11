@@ -24,9 +24,43 @@ import org.pente.gameServer.event.*;
 import org.pente.gameServer.tourney.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class TournamentServerMainRoom extends ServerMainRoom {
+
+    // Director names for this room's tournament. getDirectors() holds pids, but
+    // handleText compares against the player's name and fires on every chat line.
+    // A MainRoom serves one tournament whose director list is fixed, so resolve
+    // pids -> names once (null = not yet resolved).
+    private Set<String> directorNames;
+
+    private Set<String> getDirectorNames(Tourney tourney) {
+        if (directorNames != null) {
+            return directorNames;
+        }
+        if (tourney == null) {
+            // don't memoize before the tourney exists
+            return Collections.emptySet();
+        }
+        Set<String> names = new HashSet<>();
+        boolean allResolved = true;
+        for (Long pid : tourney.getDirectors()) {
+            try {
+                names.add(dsgPlayerStorer.loadPlayer(pid).getName());
+            } catch (DSGPlayerStoreException e) {
+                // couldn't load this director right now (e.g. transient DB blip);
+                // don't memoize a partial set, retry on the next message instead
+                allResolved = false;
+            }
+        }
+        if (allResolved) {
+            directorNames = names;
+        }
+        return names;
+    }
 
     public void handleText(String player, String text) {
         if (!isPlayerInMainRoom(player)) {
@@ -35,21 +69,16 @@ public class TournamentServerMainRoom extends ServerMainRoom {
                     player);
         } else {
             Tourney tourney = server.getTourney();
-            if (tourney != null && tourney.getDirectors().contains(player)) {
+            Set<String> directorNames = getDirectorNames(tourney);
+            // tourney != null still required: the command block below dereferences
+            // tourney, and the memoized name set can outlive a now-null getTourney().
+            if (tourney != null && directorNames.contains(player)) {
                 if (text.startsWith("/")) {
                     String command = text.substring(1);
                     if (command.equals("pause")) {
                         ((TournamentServer) server).startNewTimers = false;
                         ((TournamentServer) server).stopWait();
-                        List<String> directors = new ArrayList<>();
-                        for(Long pid : tourney.getDirectors()) {
-                            try {
-                                directors.add(dsgPlayerStorer.loadPlayer(pid).getName());
-                            } catch (DSGPlayerStoreException e) {
-//                                throw new RuntimeException(e);
-                            }
-                        }
-                        server.mainRoom.eventOccurred(new DSGSystemMessageTableEvent(0, player + " paused the tournament, waiting for "+String.join(", ", directors)+" to restart."));
+                        server.mainRoom.eventOccurred(new DSGSystemMessageTableEvent(0, player + " paused the tournament, waiting for "+String.join(", ", directorNames)+" to restart."));
                     } else if (command.equals("start")) {
                         if (!tourney.isComplete()) {
                             if (tourney.getLastRound().isComplete()) {
@@ -108,7 +137,10 @@ public class TournamentServerMainRoom extends ServerMainRoom {
             broadcast(new DSGExitMainRoomEvent(exitEvent.getPlayer(), exitEvent.wasBooted()));
         }
 
-        if (server.getTourney().isComplete()) {
+        // getTourney() can be null (server shutting down, tourney not yet assigned);
+        // handleExit fires on every disconnect, so guard like handleText does.
+        Tourney tourney = server.getTourney();
+        if (tourney != null && tourney.isComplete()) {
             if (playersInMainRoom.isEmpty()) {
                 resources.removeServer(server.getServerData().getServerId());
             }
