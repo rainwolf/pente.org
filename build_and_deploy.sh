@@ -60,7 +60,6 @@ do
   docker save "${image}" | bzip2 | pv | ssh "${target}" docker load
 done
 
-# update the remote http_docs
 ./sync_gameServer.sh
 
 # restart the containers with new images

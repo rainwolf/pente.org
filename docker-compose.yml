@@ -10,6 +10,7 @@ services:
       - "80:80"
       - "443:443"
       # ports for the live game room, ToDo: websocket only
+      - "15999:15999"
       - "16000:16000"
       - "16001:16001"
       - "16002:16002"
@@ -42,6 +43,7 @@ services:
       - CAPTCHA_SITE_KEY=${CAPTCHA_SITE_KEY}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
       - SSL_PWD=${SSL_PWD}
+      - REDIS_HOST=${REDIS_HOST}
     #      - ENV=${ENV}
     healthcheck:
       test: curl https://pente.org && curl https://www.pente.org
@@ -52,6 +54,8 @@ services:
       - pente_org
     depends_on:
       main_auto_ssh:
+        condition: service_healthy
+      pente_cache:
         condition: service_healthy
   main_auto_ssh:
     build:
@@ -116,6 +120,26 @@ services:
   pente_cache:
     image: redis:8.0.6-alpine
     restart: always
+    # Redis is a best-effort cache; MariaDB is the source of truth. Run it
+    # ephemeral (no RDB/AOF: a restart comes back empty and the app reheals
+    # from the DB — which also avoids ever serving a stale snapshot) and cap
+    # memory with LRU eviction. Each namespace's loaded-marker lives inside its
+    # own hash, so evicting a list's data also drops its marker and the next
+    # read re-bootstraps from the DB. maxmemory caps the dataset (RSS runs
+    # ~1.3x that); with allkeys-lru over an authoritative DB, undersizing only
+    # costs cache hits, never correctness — so err small. 256mb suits a 4G box
+    # shared with MariaDB(+replica) + Tomcat; raise toward 512mb if Redis is
+    # the main perf lever.
+    command:
+      - redis-server
+      - --maxmemory
+      - 256mb
+      - --maxmemory-policy
+      - allkeys-lru
+      - --save
+      - ""
+      - --appendonly
+      - "no"
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
