@@ -109,4 +109,25 @@ public interface GameVenueStorer {
      *  @throws Exception If the game event data can't be added
      */
     public void addGameEventData(int game, GameEventData gameEventData, String site) throws Exception;
+
+    /** Idempotently register all game_event rows a newly-added game needs so its
+     *  results can have their event_id resolved and be stored.  For a single base
+     *  game this creates the six (game, name) combinations: "Live Game" for the
+     *  normal and speed ids, "Turn-based Game" for the turn-based id, and
+     *  "King of the Hill" for all three.  Safe to call repeatedly; existing rows
+     *  are left untouched.
+     *  @param baseGame The base (normal) game id, e.g. GridStateFactory.BOAT_PENTE
+     *  @param siteId The site the events belong to (the live site is normally 2)
+     *  @throws Exception If the rows can't be registered
+     */
+    public void registerGame(int baseGame, int siteId) throws Exception;
+
+    /** Idempotently register the game_event rows for every game defined in
+     *  GridStateFactory (LIVE_GAMES and TB_GAMES), so that adding a new game
+     *  only requires adding its ids there.  Intended to be called once at app
+     *  boot; safe to re-run.
+     *  @param siteId The site the events belong to (the live site is normally 2)
+     *  @throws Exception If the rows can't be registered
+     */
+    public void registerAllGames(int siteId) throws Exception;
 }

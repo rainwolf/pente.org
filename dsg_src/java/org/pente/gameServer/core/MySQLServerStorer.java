@@ -73,6 +73,56 @@ public class MySQLServerStorer {
         }
     }
 
+    /**
+     * Idempotently make a server offer each of the given games under the given
+     * event name (e.g. "Live Game" or "King of the Hill").  Used at boot to keep
+     * a server's offerings in sync with GridStateFactory, replacing the manual
+     * dsg_server_game inserts in the old add_dummy_*.sql scripts.
+     *
+     * A game is added only if the server exists, a matching game_event row
+     * exists, and the server does not already offer that game.  Where a
+     * (game, name, site) has more than one game_event row (legacy duplicates),
+     * min(eid) is used so the server still maps to a single offering.
+     */
+    public static void addServerGames(DBHandler dbHandler, int serverId,
+            int siteId, int[] games, String eventName) throws Throwable {
+
+        Connection con = null;
+        PreparedStatement stmt = null;
+        try {
+            con = dbHandler.getConnection();
+            stmt = con.prepareStatement(
+                    "insert into dsg_server_game (server_id, event_id, game) " +
+                    "select d.id, ge.eid, ge.game " +
+                    "from dsg_server d " +
+                    "join game_event ge on ge.site_id = ? and ge.game = ? " +
+                    "  and ge.name = ? and ge.eid = (" +
+                    "    select min(eid) from game_event " +
+                    "    where site_id = ? and game = ? and name = ?) " +
+                    "where d.id = ? " +
+                    "and not exists (select 1 from dsg_server_game sg " +
+                    "  where sg.server_id = d.id and sg.game = ?)");
+            for (int game : games) {
+                stmt.setInt(1, siteId);
+                stmt.setInt(2, game);
+                stmt.setString(3, eventName);
+                stmt.setInt(4, siteId);
+                stmt.setInt(5, game);
+                stmt.setString(6, eventName);
+                stmt.setInt(7, serverId);
+                stmt.setInt(8, game);
+                stmt.executeUpdate();
+            }
+        } finally {
+            if (stmt != null) {
+                stmt.close();
+            }
+            if (con != null) {
+                dbHandler.freeConnection(con);
+            }
+        }
+    }
+
     public static void removeServer(DBHandler dbHandler, long id)
             throws Throwable {
 

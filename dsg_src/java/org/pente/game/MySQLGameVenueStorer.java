@@ -34,6 +34,11 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
     public static final String GAME_SITE_TABLE = "game_site";
     public static final String GAME_EVENT_TABLE = "game_event";
 
+    // event name strings stored in game_event.name, one per variant
+    public static final String LIVE_EVENT = "Live Game";
+    public static final String TB_EVENT = "Turn-based Game";
+    public static final String KOTH_EVENT = "King of the Hill";
+
     private DBHandler dbHandler;
     private Vector<GameTreeData> tree;
 
@@ -156,7 +161,7 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
             result.close();
             stmt.close();
 
-            stmt = con.prepareStatement("select eid, name, game from game_event " +
+            stmt = con.prepareStatement("select eid, name, game, site_id from game_event " +
                     "order by eid");
 
 
@@ -164,6 +169,7 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
 
             // get all events in order of eid
             Map<Integer, GameEventData> eventData = new HashMap<Integer, GameEventData>(400);
+            Map<Integer, Integer> eventSiteId = new HashMap<Integer, Integer>(400);
             result = stmt.executeQuery();
             while (result.next()) {
                 GameEventData e = new SimpleGameEventData();
@@ -171,6 +177,52 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
                 e.setName(result.getString(2));
                 e.setGame(result.getInt(3));
                 eventData.put(e.getEventID(), e);
+                eventSiteId.put(e.getEventID(), result.getInt(4));
+            }
+
+            // Seed the tree from game_event so that registered live games resolve
+            // their event_id even before any game has been stored.  Historically
+            // this required inserting dummy pente_game rows; instead we synthesize
+            // the same nodes here from the "Live Game" events themselves.  Only
+            // live events are seeded so the venue tree (live game browser) keeps
+            // showing exactly what it did before; turn-based and king-of-the-hill
+            // events resolve via direct SQL and never used this tree.
+            //
+            // game_event has legacy duplicate eids for a few (game, name, site),
+            // so we seed at most one "Live Game" node per (game, site): skip the
+            // pair entirely if pente_game already backs a "Live Game" event for
+            // it (keeping the in-use eid), otherwise add the lowest eid.  This
+            // avoids creating a duplicate node / changing which eid resolves.
+            Set<String> liveCovered = new HashSet<String>();
+            for (Data existing : data) {
+                GameEventData ev = eventData.get(existing.eventId);
+                if (ev != null && LIVE_EVENT.equals(ev.getName())) {
+                    liveCovered.add(existing.game + ":" + existing.siteId);
+                }
+            }
+            List<GameEventData> liveEvents = new ArrayList<GameEventData>();
+            for (GameEventData e : eventData.values()) {
+                if (LIVE_EVENT.equals(e.getName())) {
+                    liveEvents.add(e);
+                }
+            }
+            // lowest eid first, so it wins when a (game, site) has duplicates
+            // and none of them has stored games yet
+            Collections.sort(liveEvents,
+                    (a, b) -> a.getEventID() - b.getEventID());
+            for (GameEventData e : liveEvents) {
+                int sid = eventSiteId.get(e.getEventID());
+                String key = e.getGame() + ":" + sid;
+                if (!liveCovered.contains(key)) {
+                    Data d = new Data();
+                    d.game = e.getGame();
+                    d.siteId = sid;
+                    d.eventId = e.getEventID();
+                    d.round = null;
+                    d.section = null;
+                    data.add(d);
+                    liveCovered.add(key);
+                }
             }
 
 
@@ -379,16 +431,24 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
         return -1;
     }
 
+    // Find the tree node for a game by its id.  The tree is no longer guaranteed
+    // to be densely packed by game id (that only held when every live game had
+    // pente_game rows), so look the node up by getID() instead of by position.
+    private GameTreeData findGameTreeData(int game) {
+        for (int i = 0; i < tree.size(); i++) {
+            GameTreeData gameTreeData = (GameTreeData) tree.get(i);
+            if (gameTreeData != null && gameTreeData.getID() == game) {
+                return gameTreeData;
+            }
+        }
+        return null;
+    }
+
     public GameSiteData getGameSiteData(int game, int sid) {
 
         synchronized (tree) {
 
-            GameTreeData gameTreeData;
-            if (game > 50) {
-                gameTreeData = (GameTreeData) tree.get(game - 1 - 50);
-            } else {
-                gameTreeData = (GameTreeData) tree.get(game - 1);
-            }
+            GameTreeData gameTreeData = findGameTreeData(game);
             if (gameTreeData == null) {
                 return null;
             }
@@ -406,12 +466,7 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
     public GameSiteData getGameSiteData(int game, String name) {
 
         synchronized (tree) {
-            GameTreeData gameTreeData;
-            if (game > 50) {
-                gameTreeData = (GameTreeData) tree.get(game - 1 - 50);
-            } else {
-                gameTreeData = (GameTreeData) tree.get(game - 1);
-            }
+            GameTreeData gameTreeData = findGameTreeData(game);
             if (gameTreeData == null) {
                 return null;
             }
@@ -591,6 +646,119 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
                 } catch (Exception ex) {
                 }
             }
+        }
+    }
+
+    public void registerGame(int baseGame, int siteId) throws Exception {
+
+        log4j.info("MySQLGameVenueStorer.registerGame(" + baseGame + ", " + siteId + ")");
+
+        // speed variant is base + 1, turn-based variant is base + 50
+        // (mirrors GridStateFactory.SPEED_* and the private TB_START offset)
+        int speedGame = baseGame + 1;
+        int tbGame = baseGame + 50;
+
+        // the six (game, name) rows a new game needs to be fully storable:
+        // live + speed are browsed via the venue tree ("Live Game"), turn-based
+        // resolves by direct SQL ("Turn-based Game"), and king-of-the-hill
+        // applies to all three ids ("King of the Hill").
+        List<Object[]> rows = new ArrayList<Object[]>(6);
+        rows.add(new Object[]{baseGame, LIVE_EVENT});
+        rows.add(new Object[]{speedGame, LIVE_EVENT});
+        rows.add(new Object[]{tbGame, TB_EVENT});
+        rows.add(new Object[]{baseGame, KOTH_EVENT});
+        rows.add(new Object[]{speedGame, KOTH_EVENT});
+        rows.add(new Object[]{tbGame, KOTH_EVENT});
+
+        ensureGameEvents(siteId, rows);
+    }
+
+    public void registerAllGames(int siteId) throws Exception {
+
+        log4j.info("MySQLGameVenueStorer.registerAllGames(" + siteId + ")");
+
+        // Derive everything from the authoritative GridStateFactory arrays so
+        // adding a game only means adding its ids there.  Every live id needs a
+        // "Live Game" event and a "King of the Hill" event; every turn-based id
+        // needs a "Turn-based Game" event and a "King of the Hill" event.  This
+        // matches how the live storer, MySQLTBGameStorer and the KOTH storer
+        // resolve their event_id (see CacheKOTHStorer's LIVE_GAMES/TB_GAMES loop).
+        List<Object[]> rows = new ArrayList<Object[]>();
+        for (int game : GridStateFactory.LIVE_GAMES) {
+            rows.add(new Object[]{game, LIVE_EVENT});
+            rows.add(new Object[]{game, KOTH_EVENT});
+        }
+        for (int game : GridStateFactory.TB_GAMES) {
+            rows.add(new Object[]{game, TB_EVENT});
+            rows.add(new Object[]{game, KOTH_EVENT});
+        }
+
+        ensureGameEvents(siteId, rows);
+    }
+
+    // Idempotently insert each (game, name) row at the given site, then rebuild
+    // the in-memory tree so newly registered live events resolve their event_id
+    // immediately, without needing dummy pente_game rows.
+    private void ensureGameEvents(int siteId, List<Object[]> rows) throws Exception {
+
+        Connection con = null;
+        PreparedStatement stmt = null;
+        int inserted = 0;
+        try {
+            con = dbHandler.getConnection();
+
+            // verify the site exists so we fail loudly rather than create orphans
+            stmt = con.prepareStatement(
+                    "select count(*) from " + GAME_SITE_TABLE + " where sid = ?");
+            stmt.setInt(1, siteId);
+            ResultSet siteCheck = stmt.executeQuery();
+            if (siteCheck.next() && siteCheck.getInt(1) == 0) {
+                siteCheck.close();
+                throw new Exception("registerGame: no " + GAME_SITE_TABLE +
+                        " row for sid=" + siteId);
+            }
+            siteCheck.close();
+            stmt.close();
+
+            // insert-if-absent, so this is idempotent and safe to re-run on boot
+            // (game_event has no unique key on (game, name, site_id), so guard
+            // the insert with NOT EXISTS rather than relying on INSERT IGNORE)
+            stmt = con.prepareStatement(
+                    "insert into " + GAME_EVENT_TABLE + " (name, site_id, game) " +
+                    "select ?, ?, ? from dual where not exists (" +
+                    "select 1 from " + GAME_EVENT_TABLE + " " +
+                    "where game = ? and site_id = ? and name = ?)");
+            for (Object[] row : rows) {
+                int game = (Integer) row[0];
+                String name = (String) row[1];
+                stmt.setString(1, name);
+                stmt.setInt(2, siteId);
+                stmt.setInt(3, game);
+                stmt.setInt(4, game);
+                stmt.setInt(5, siteId);
+                stmt.setString(6, name);
+                inserted += stmt.executeUpdate();
+            }
+        } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException ex) {
+                }
+            }
+            if (con != null) {
+                try {
+                    dbHandler.freeConnection(con);
+                } catch (Exception ex) {
+                }
+            }
+        }
+
+        // only rebuild the tree if we actually added rows; on a steady-state
+        // boot every row already exists, so the constructor's build stands and
+        // we avoid a second full rebuild
+        if (inserted > 0) {
+            updateGameTree(dbHandler);
         }
     }
 }

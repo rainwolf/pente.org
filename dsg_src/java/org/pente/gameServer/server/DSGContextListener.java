@@ -103,6 +103,39 @@ public class DSGContextListener implements ServletContextListener {
             resources.setNotificationServer(notificationServer);
 
             GameVenueStorer gameVenueStorer = new MySQLGameVenueStorer(dbHandler);
+            // ensure every game defined in GridStateFactory has its game_event
+            // rows (live/speed/turn-based/koth) so results can resolve their
+            // event_id without hand-written add_dummy_*.sql scripts.  site 2 is
+            // the live Pente.org site.  idempotent and cheap; safe every boot.
+            // Register game_event rows + server offerings as a best-effort step:
+            // a transient DB error (or a missing site row on a half-migrated DB)
+            // must not abort the whole context init the way an uncaught throw
+            // here would.  Mirrors the venue-storer constructor, which already
+            // swallows its own DB errors, so boot degrades rather than fails.
+            try {
+                gameVenueStorer.registerAllGames(2);
+
+                // keep each server's offered games in sync with GridStateFactory
+                // so adding a game only means adding its ids to the arrays below.
+                // idempotent; runs before setupLiveGameServers() reads offerings.
+                // the Arena server (in-memory, id 0) copies its games from server
+                // 1 in setupArenaServers(), so it inherits the live+speed set.
+                int[] liveGames = GridStateFactory.LIVE_GAMES;
+                int[] goGames = {
+                        GridStateFactory.GO, GridStateFactory.SPEED_GO,
+                        GridStateFactory.GO9, GridStateFactory.SPEED_GO9,
+                        GridStateFactory.GO13, GridStateFactory.SPEED_GO13};
+                // servers 1 (Main Room) and 37 (Beginners): all live + speed games
+                MySQLServerStorer.addServerGames(dbHandler, 1, 2, liveGames, MySQLGameVenueStorer.LIVE_EVENT);
+                MySQLServerStorer.addServerGames(dbHandler, 37, 2, liveGames, MySQLGameVenueStorer.LIVE_EVENT);
+                // server 46 (Go): the 3 Go variants and their speed variants
+                MySQLServerStorer.addServerGames(dbHandler, 46, 2, goGames, MySQLGameVenueStorer.LIVE_EVENT);
+                // server 45 (King of the Hill): koth of all normal + speed variants
+                MySQLServerStorer.addServerGames(dbHandler, 45, 2, liveGames, MySQLGameVenueStorer.KOTH_EVENT);
+            } catch (Throwable t) {
+                log4j.error("Problem registering games / server offerings at boot", t);
+            }
+
             resources.setGameVenueStorer(gameVenueStorer);
             ctx.setAttribute(GameVenueStorer.class.getName(), gameVenueStorer);
             log4j.info("contextInitialized(), created GameVenueStorer");
