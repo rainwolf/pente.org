@@ -79,7 +79,7 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
         super.clear();
         openingComplete = false;
         awaitingSwap = false;
-        branchChosen = true; // Task 6 flips default
+        branchChosen = false;
         tenOffer = false;
         for (int i = 0; i < swapDecision.length; i++) swapDecision[i] = false;
         refreshFinder();
@@ -148,8 +148,22 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
         openingComplete = true;
     }
 
+    public boolean isAwaitingBranchChoice() {
+        return !openingComplete && !awaitingSwap
+                && gridState.getNumMoves() == 4 && !branchChosen;
+    }
+
+    /** Black picks the post-move-4 path. false = Branch A (9x9 + swap), true = Branch B (10 offers). */
+    public void chooseBranch(boolean tenOffer) {
+        if (!isAwaitingBranchChoice()) {
+            throw new IllegalStateException("branch choice not pending");
+        }
+        this.tenOffer = tenOffer;
+        this.branchChosen = true;
+    }
+
     // branch flags (Branch B / offers wired in Tasks 6-7; default Branch A here)
-    private boolean branchChosen = true;   // Task 5/6 will flip default to false
+    private boolean branchChosen = false;
     private boolean tenOffer = false;
 
     private boolean awaitingSwap = false;
@@ -198,6 +212,7 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
         if (!openingComplete) {
             if (awaitingSwap) return false;
             int n = gridState.getNumMoves();
+            if (n == 4 && !branchChosen) return false; // must choose branch first
             if (!withinOpeningSquare(move, n)) return false;
             return true;
         }
@@ -214,8 +229,11 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
         if (openingComplete) return super.getCurrentPlayer();
         int n = gridState.getNumMoves();
         if (awaitingSwap) {
-            int lastColor = (n - 1) % 2 + 1; // color of stone n
-            return 3 - lastColor;            // opponent decides
+            int lastColor = (n - 1) % 2 + 1;
+            return 3 - lastColor;
+        }
+        if (n == 4 && !branchChosen) {
+            return 1; // black chooses branch (and would play move 5)
         }
         return n % 2 + 1;
     }

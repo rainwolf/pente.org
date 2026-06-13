@@ -167,4 +167,37 @@ public class RenjuStateTest extends TestCase {
         s.renjuSwapDecisionMade(true);
         assertTrue(s.didSwapAt(1)); // swap recorded for the window after stone 1
     }
+
+    private RenjuState openedToFour() {
+        RenjuState s = newState();
+        s.addMove(xy(s, 7, 7)); s.renjuSwapDecisionMade(false);  // 1 black
+        s.addMove(xy(s, 8, 8)); s.renjuSwapDecisionMade(false);  // 2 white
+        s.addMove(xy(s, 9, 7)); s.renjuSwapDecisionMade(false);  // 3 black
+        s.addMove(xy(s, 6, 8)); s.renjuSwapDecisionMade(false);  // 4 white
+        return s;
+    }
+
+    public void testBranchChoiceRequiredAfterMove4() {
+        RenjuState s = openedToFour();
+        assertTrue(s.isAwaitingBranchChoice());
+        assertEquals(1, s.getCurrentPlayer());               // black chooses
+        assertTrue(!s.isValidMove(xy(s, 5, 5), 1));          // blocked until chosen
+    }
+
+    public void testBranchAFullSequence() {
+        RenjuState s = openedToFour();
+        s.chooseBranch(false);                                // Branch A
+        assertTrue(!s.isAwaitingBranchChoice());
+        // move 5 (black) must be within 9x9
+        assertTrue(!s.isValidMove(xy(s, 7, 12), 1));          // dy=5 outside 9x9
+        assertTrue(s.isValidMove(xy(s, 11, 7), 1));           // dx=4 inside 9x9
+        s.addMove(xy(s, 11, 7));                               // move 5
+        // swap window for white before move 6
+        assertTrue(s.isAwaitingSwapDecision());
+        s.renjuSwapDecisionMade(false);
+        // move 6 (white) anywhere
+        assertTrue(s.isValidMove(xy(s, 0, 0), 2));
+        s.addMove(xy(s, 0, 0));                                // move 6
+        assertTrue(s.isOpeningComplete());
+    }
 }
