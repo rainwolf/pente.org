@@ -57,8 +57,14 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
         gridState.addMove(move);
         refreshFinder();
         int n = gridState.getNumMoves();
-        if (!openingComplete && n >= 6) {
-            openingComplete = true;
+        if (!openingComplete) {
+            if (n >= 1 && n <= 4) {
+                awaitingSwap = true;
+            } else if (n == 5 && !tenOffer) {
+                awaitingSwap = true; // Branch A: white may swap before move 6
+            } else if (n == 6) {
+                openingComplete = true;
+            }
         }
         updateHash(this);
     }
@@ -67,6 +73,16 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
         gridState.undoMove();
         refreshFinder();
         updateHash(this);
+    }
+
+    public void clear() {
+        super.clear();
+        openingComplete = false;
+        awaitingSwap = false;
+        branchChosen = true; // Task 6 flips default
+        tenOffer = false;
+        for (int i = 0; i < swapDecision.length; i++) swapDecision[i] = false;
+        refreshFinder();
     }
 
     public boolean isGameOver() {
@@ -136,6 +152,26 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
     private boolean branchChosen = true;   // Task 5/6 will flip default to false
     private boolean tenOffer = false;
 
+    private boolean awaitingSwap = false;
+    // swap decisions indexed by the stone count after which the window opened (1..5)
+    private final boolean[] swapDecision = new boolean[6];
+
+    public boolean isAwaitingSwapDecision() {
+        return awaitingSwap;
+    }
+
+    public boolean didSwapAt(int afterStone) {
+        return swapDecision[afterStone];
+    }
+
+    public void renjuSwapDecisionMade(boolean swap) {
+        if (!awaitingSwap) {
+            throw new IllegalStateException("no swap decision pending");
+        }
+        swapDecision[gridState.getNumMoves()] = swap;
+        awaitingSwap = false;
+    }
+
     private int centerX() { return gridState.getGridSizeX() / 2; }
     private int centerY() { return gridState.getGridSizeY() / 2; }
 
@@ -160,6 +196,7 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
         if (getPosition(move) != 0) return false;
 
         if (!openingComplete) {
+            if (awaitingSwap) return false;
             int n = gridState.getNumMoves();
             if (!withinOpeningSquare(move, n)) return false;
             return true;
@@ -175,8 +212,11 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
 
     public int getCurrentPlayer() {
         if (openingComplete) return super.getCurrentPlayer();
-        // Straight-line sequencing (swaps added in Task 5): color by parity.
         int n = gridState.getNumMoves();
+        if (awaitingSwap) {
+            int lastColor = (n - 1) % 2 + 1; // color of stone n
+            return 3 - lastColor;            // opponent decides
+        }
         return n % 2 + 1;
     }
 

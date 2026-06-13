@@ -125,25 +125,46 @@ public class RenjuStateTest extends TestCase {
 
     public void testMove2WithinThreeBySquare() {
         RenjuState s = newState();
-        s.addMove(xy(s, 7, 7));                       // move 1 (black) center
-        assertTrue(!s.isValidMove(xy(s, 7, 9), 2));   // dy=2 -> outside 3x3
-        assertTrue(s.isValidMove(xy(s, 8, 8), 2));    // inside 3x3
+        s.addMove(xy(s, 7, 7));
+        s.renjuSwapDecisionMade(false);
+        assertTrue(!s.isValidMove(xy(s, 7, 9), 2));
+        assertTrue(s.isValidMove(xy(s, 8, 8), 2));
     }
 
     public void testMove3WithinFiveBySquare() {
         RenjuState s = newState();
-        s.addMove(xy(s, 7, 7));   // 1 black
-        s.addMove(xy(s, 8, 8));   // 2 white
-        assertTrue(!s.isValidMove(xy(s, 7, 10), 1));  // dy=3 -> outside 5x5
-        assertTrue(s.isValidMove(xy(s, 9, 9), 1));    // inside 5x5
+        s.addMove(xy(s, 7, 7)); s.renjuSwapDecisionMade(false);
+        s.addMove(xy(s, 8, 8)); s.renjuSwapDecisionMade(false);
+        assertTrue(!s.isValidMove(xy(s, 7, 10), 1));
+        assertTrue(s.isValidMove(xy(s, 9, 9), 1));
     }
 
     public void testMove4WithinSevenBySquare() {
         RenjuState s = newState();
+        s.addMove(xy(s, 7, 7)); s.renjuSwapDecisionMade(false);
+        s.addMove(xy(s, 8, 8)); s.renjuSwapDecisionMade(false);
+        s.addMove(xy(s, 9, 9)); s.renjuSwapDecisionMade(false);
+        assertTrue(!s.isValidMove(xy(s, 7, 11), 2));
+        assertTrue(s.isValidMove(xy(s, 10, 10), 2));
+    }
+
+    public void testSwapWindowBlocksMovesUntilDecided() {
+        RenjuState s = newState();
+        s.addMove(xy(s, 7, 7)); // move 1 (black, color 1)
+        // swap window open: white (player 2) is the decider, no board move allowed
+        assertTrue(s.isAwaitingSwapDecision());
+        assertEquals(2, s.getCurrentPlayer());
+        assertTrue(!s.isValidMove(xy(s, 8, 8), 2)); // blocked while pending
+        s.renjuSwapDecisionMade(false);              // white declines swap
+        assertTrue(!s.isAwaitingSwapDecision());
+        assertEquals(2, s.getCurrentPlayer());        // white now plays move 2
+        assertTrue(s.isValidMove(xy(s, 8, 8), 2));
+    }
+
+    public void testSwapDecisionRecorded() {
+        RenjuState s = newState();
         s.addMove(xy(s, 7, 7));
-        s.addMove(xy(s, 8, 8));
-        s.addMove(xy(s, 9, 9));
-        assertTrue(!s.isValidMove(xy(s, 7, 11), 2));  // dy=4 -> outside 7x7
-        assertTrue(s.isValidMove(xy(s, 10, 10), 2));  // inside 7x7
+        s.renjuSwapDecisionMade(true);
+        assertTrue(s.didSwapAt(1)); // swap recorded for the window after stone 1
     }
 }
