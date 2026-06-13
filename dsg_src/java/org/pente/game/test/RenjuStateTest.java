@@ -226,22 +226,41 @@ public class RenjuStateTest extends TestCase {
         assertTrue(s.isOpeningComplete());
     }
 
+    // Exact-duplicate rejection: the degenerate symmetry (identity, rot=0).
     public void testSymmetricDuplicateOfferRejected() {
-        RenjuState s = newState();
-        // Empty-ish board symmetry: with only the center stone placed, the position is
-        // symmetric under all 8 D4 operations. Offer (5,7); its mirror (9,7) is a duplicate.
-        s.addMove(xy(s, 7, 7)); s.renjuSwapDecisionMade(false); // move 1 only
-        // Force into Branch B offer state via the normal path is not possible at n=1;
-        // instead drive a minimal 4-move opening that is symmetric about the center.
-        // Use a center-symmetric 4-stone setup: (7,7) black, (7,7) is the only forced one.
-        // Simpler: assert offerFifthMove dedup directly after reaching offer state.
-        RenjuState t = openedToFour();
-        t.chooseBranch(true);
-        t.offerFifthMove(xy(t, 0, 0));
+        RenjuState s = openedToFour();
+        s.chooseBranch(true);
+        s.offerFifthMove(xy(s, 0, 0));
         try {
-            t.offerFifthMove(xy(t, 0, 0)); // exact duplicate
+            s.offerFifthMove(xy(s, 0, 0)); // exact duplicate
             fail("expected duplicate rejection");
         } catch (IllegalArgumentException expected) {
         }
+    }
+
+    // Non-identity D4 dedup: build a 4-stone opening invariant under the horizontal
+    // mirror (reflection across the y=7 axis). Blacks {(7,7),(9,7)} sit on the axis;
+    // whites {(7,6),(7,8)} are a mirror pair. positionStabilizer() is therefore {0,2}
+    // (identity + that reflection), so offering (0,0) must reject its mirror (0,14) —
+    // a DIFFERENT point mapped onto the existing offer by the non-identity symmetry.
+    // A bug in positionStabilizer() or the rotation direction would let (0,14) through.
+    public void testMirroredOfferRejectedUnderSymmetry() {
+        RenjuState s = newState();
+        s.addMove(xy(s, 7, 7)); s.renjuSwapDecisionMade(false); // 1 black (center, on axis)
+        s.addMove(xy(s, 7, 6)); s.renjuSwapDecisionMade(false); // 2 white (below axis)
+        s.addMove(xy(s, 9, 7)); s.renjuSwapDecisionMade(false); // 3 black (on axis)
+        s.addMove(xy(s, 7, 8)); s.renjuSwapDecisionMade(false); // 4 white (mirror of move 2)
+        s.chooseBranch(true);
+        assertTrue(s.isAwaitingFifthOffers());
+
+        s.offerFifthMove(xy(s, 0, 0));
+        try {
+            s.offerFifthMove(xy(s, 0, 14)); // mirror of (0,0) across y=7; not identical
+            fail("expected symmetric-duplicate rejection of mirrored offer");
+        } catch (IllegalArgumentException expected) {
+        }
+        // A genuinely distinct, non-mirrored point is still accepted.
+        s.offerFifthMove(xy(s, 1, 0));
+        assertEquals(2, s.getOfferedFifthMoves().size());
     }
 }
