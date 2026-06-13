@@ -1,6 +1,7 @@
 package org.pente.game;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -48,7 +49,26 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
         return ((SimpleGomokuState) gridState).areOverlinesAllowed();
     }
 
-    /** Sync the finder's board from the wrapped grid (color 1 -> 'X', 2 -> 'O', 0 -> '.'). */
+    /**
+     * Rebuild a RenjuState from a move list (used by GridStateFactory to
+     * reconstruct stored games). Must return a RenjuState — without this the
+     * decorator would delegate to the wrapped gomoku and silently drop Renju
+     * rules. Swap/branch decisions are not part of the move list (same
+     * reconstruction limitation as swap2/dPente); the board and move order are
+     * reproduced exactly.
+     */
+    public GridState getInstance(MoveData moveData) {
+        RenjuState state = new RenjuState(
+                gridState.getGridSizeX(), gridState.getGridSizeY());
+        for (int i = 0; i < moveData.getNumMoves(); i++) {
+            state.addMove(moveData.getMove(i));
+        }
+        return state;
+    }
+
+    /**
+     * Sync the finder's board from the wrapped grid (color 1 -> 'X', 2 -> 'O', 0 -> '.').
+     */
     private void refreshFinder() {
         finder.clear();
         int sx = gridState.getGridSizeX();
@@ -90,7 +110,7 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
         awaitingSwap = false;
         branchChosen = false;
         tenOffer = false;
-        for (int i = 0; i < swapDecision.length; i++) swapDecision[i] = false;
+        Arrays.fill(swapDecision, false);
         offeredFifth.clear();
         selectedFifth = null;
         refreshFinder();
@@ -142,7 +162,9 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
                 || c.y < 0 || c.y >= gridState.getGridSizeY();
     }
 
-    /** Black forbidden points on the current board (for UI). */
+    /**
+     * Black forbidden points on the current board (for UI).
+     */
     public List<Coord> getForbiddenPoints() {
         return finder.findForbiddenPoints();
     }
@@ -154,7 +176,9 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
         return openingComplete;
     }
 
-    /** Test/seam hook: mark the opening done so post-opening rules apply. */
+    /**
+     * Test/seam hook: mark the opening done so post-opening rules apply.
+     */
     public void forceOpeningComplete() {
         openingComplete = true;
     }
@@ -164,7 +188,9 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
                 && gridState.getNumMoves() == 4 && !branchChosen;
     }
 
-    /** Black picks the post-move-4 path. false = Branch A (9x9 + swap), true = Branch B (10 offers). */
+    /**
+     * Black picks the post-move-4 path. false = Branch A (9x9 + swap), true = Branch B (10 offers).
+     */
     public void chooseBranch(boolean tenOffer) {
         if (!isAwaitingBranchChoice()) {
             throw new IllegalStateException("branch choice not pending");
@@ -228,7 +254,9 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
         return false;
     }
 
-    /** Rotation indices (0..7) whose D4 operation leaves the current stones invariant. */
+    /**
+     * Rotation indices (0..7) whose D4 operation leaves the current stones invariant.
+     */
     private List<Integer> positionStabilizer() {
         List<Integer> stab = new ArrayList<Integer>();
         int n = gridState.getNumMoves();
@@ -271,22 +299,29 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
         awaitingSwap = false;
     }
 
-    private int centerX() { return gridState.getGridSizeX() / 2; }
-    private int centerY() { return gridState.getGridSizeY() / 2; }
+    private int centerX() {
+        return gridState.getGridSizeX() / 2;
+    }
 
-    /** Opening central-square restriction by number of stones already placed (n). */
+    private int centerY() {
+        return gridState.getGridSizeY() / 2;
+    }
+
+    /**
+     * Opening central-square restriction by number of stones already placed (n).
+     */
     private boolean withinOpeningSquare(int move, int n) {
         Coord c = convertMove(move);
         int dx = Math.abs(c.x - centerX());
         int dy = Math.abs(c.y - centerY());
-        switch (n) {
-            case 0: return dx == 0 && dy == 0; // move 1: center
-            case 1: return dx <= 1 && dy <= 1; // move 2: 3x3
-            case 2: return dx <= 2 && dy <= 2; // move 3: 5x5
-            case 3: return dx <= 3 && dy <= 3; // move 4: 7x7
-            case 4: return dx <= 4 && dy <= 4; // move 5 (Branch A): 9x9
-            default: return true;              // move 6+: anywhere
-        }
+        return switch (n) {
+            case 0 -> dx == 0 && dy == 0; // move 1: center
+            case 1 -> dx <= 1 && dy <= 1; // move 2: 3x3
+            case 2 -> dx <= 2 && dy <= 2; // move 3: 5x5
+            case 3 -> dx <= 3 && dy <= 3; // move 4: 7x7
+            case 4 -> dx <= 4 && dy <= 4; // move 5 (Branch A): 9x9
+            default -> true;              // move 6+: anywhere
+        };
     }
 
     public boolean isValidMove(int move, int player) {
@@ -302,14 +337,13 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
                 // offers/selection go through dedicated hooks, not isValidMove
                 return false;
             }
-            if (!withinOpeningSquare(move, n)) return false;
-            return true;
+            return withinOpeningSquare(move, n);
         }
 
         // post-opening: block black forbidden points
         if (getCurrentColor() == 1) {
             Coord c = convertMove(move);
-            if (finder.isForbidden(c.x, c.y)) return false;
+            return !finder.isForbidden(c.x, c.y);
         }
         return true;
     }
