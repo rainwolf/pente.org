@@ -12,6 +12,9 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
 
     private final RenjuForbiddenPointFinder finder;
 
+    private final List<Integer> offeredFifth = new ArrayList<Integer>();
+    private Integer selectedFifth = null;
+
     public RenjuState() {
         this(15, 15);
     }
@@ -82,6 +85,8 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
         branchChosen = false;
         tenOffer = false;
         for (int i = 0; i < swapDecision.length; i++) swapDecision[i] = false;
+        offeredFifth.clear();
+        selectedFifth = null;
         refreshFinder();
     }
 
@@ -162,6 +167,80 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
         this.branchChosen = true;
     }
 
+    public boolean isAwaitingFifthOffers() {
+        return !openingComplete && branchChosen && tenOffer
+                && gridState.getNumMoves() == 4 && offeredFifth.size() < 10;
+    }
+
+    public boolean isAwaitingFifthSelection() {
+        return !openingComplete && branchChosen && tenOffer
+                && gridState.getNumMoves() == 4 && offeredFifth.size() == 10
+                && selectedFifth == null;
+    }
+
+    public List<Integer> getOfferedFifthMoves() {
+        return new ArrayList<Integer>(offeredFifth);
+    }
+
+    public void offerFifthMove(int move) {
+        if (!isAwaitingFifthOffers()) {
+            throw new IllegalStateException("not accepting 5th-move offers");
+        }
+        if (outOfBounds(move) || getPosition(move) != 0) {
+            throw new IllegalArgumentException("offered move not an empty board point");
+        }
+        if (isSymmetricDuplicate(move)) {
+            throw new IllegalArgumentException("offered move is a symmetric duplicate");
+        }
+        offeredFifth.add(move);
+    }
+
+    public void selectFifthMove(int move) {
+        if (!isAwaitingFifthSelection()) {
+            throw new IllegalStateException("not awaiting 5th-move selection");
+        }
+        if (!offeredFifth.contains(move)) {
+            throw new IllegalArgumentException("selected move was not offered");
+        }
+        selectedFifth = move;
+        addMove(move); // commit as move 5 (color parity -> black); discards the other 9
+    }
+
+    /**
+     * D4 symmetry dedup: a candidate is a duplicate if some board symmetry that maps the
+     * current placed-stone position onto itself also maps the candidate onto an existing offer.
+     */
+    private boolean isSymmetricDuplicate(int move) {
+        for (int rot : positionStabilizer()) {
+            int image = rotateMove(move, rot);
+            for (Integer existing : offeredFifth) {
+                if (existing.intValue() == image) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** Rotation indices (0..7) whose D4 operation leaves the current stones invariant. */
+    private List<Integer> positionStabilizer() {
+        List<Integer> stab = new ArrayList<Integer>();
+        int n = gridState.getNumMoves();
+        for (int rot = 0; rot < 8; rot++) {
+            boolean invariant = true;
+            for (int m = 0; m < n && invariant; m++) {
+                int src = getMove(m);
+                if (outOfBounds(src)) continue;
+                int dst = rotateMove(src, rot);
+                if (getPosition(dst) != getPosition(src)) {
+                    invariant = false;
+                }
+            }
+            if (invariant) stab.add(rot);
+        }
+        return stab;
+    }
+
     // branch flags (Branch B / offers wired in Tasks 6-7; default Branch A here)
     private boolean branchChosen = false;
     private boolean tenOffer = false;
@@ -213,6 +292,10 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
             if (awaitingSwap) return false;
             int n = gridState.getNumMoves();
             if (n == 4 && !branchChosen) return false; // must choose branch first
+            if (branchChosen && tenOffer && n == 4) {
+                // offers/selection go through dedicated hooks, not isValidMove
+                return false;
+            }
             if (!withinOpeningSquare(move, n)) return false;
             return true;
         }
@@ -231,6 +314,11 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
         if (awaitingSwap) {
             int lastColor = (n - 1) % 2 + 1;
             return 3 - lastColor;
+        }
+        if (branchChosen && tenOffer && n == 4) {
+            if (offeredFifth.size() < 10) return 1;   // black offering
+            if (selectedFifth == null) return 2;      // white selecting
+            return 2;                                  // white plays move 6
         }
         if (n == 4 && !branchChosen) {
             return 1; // black chooses branch (and would play move 5)
