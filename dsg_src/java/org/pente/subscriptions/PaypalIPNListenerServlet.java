@@ -41,6 +41,18 @@ public class PaypalIPNListenerServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request,
                           HttpServletResponse response) throws ServletException, IOException {
 
+        // PayPal IPN posts the body in the charset configured on the PayPal
+        // account (windows-1252 by default). Tomcat defaults to UTF-8, which
+        // mangles non-ASCII bytes (e.g. 0xE9 'é' in first_name) into U+FFFD
+        // before they reach IPNMessage, breaking the _notify-validate postback
+        // handshake (PayPal returns INVALID, so the payment looks unverified).
+        // This MUST run before any getParameter*/getParameterMap call: the first
+        // such call parses and caches the body with the current encoding, after
+        // which setCharacterEncoding is a no-op. We cannot read the "charset"
+        // field to drive this without triggering that parse, so we assume the
+        // account default of windows-1252.
+        request.setCharacterEncoding("windows-1252");
+
         ServletContext ctx = getServletContext();
         String paypalMode = ctx.getInitParameter("paypalMode");
         resources = (Resources) ctx.getAttribute(Resources.class.getName());
