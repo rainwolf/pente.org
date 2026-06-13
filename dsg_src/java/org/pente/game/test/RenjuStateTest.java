@@ -280,4 +280,19 @@ public class RenjuStateTest extends TestCase {
         // after move 7 it's white's turn; white just did NOT move last -> black may undo
         assertTrue(s.canPlayerUndo(s.getCurrentColor() == 1 ? 2 : 1));
     }
+
+    // openingComplete is latched and undoMove() never restores it, so an undo that
+    // dropped numMoves below the 6-stone committed opening would corrupt the state
+    // machine (post-opening branch of isValidMove would skip the central-square /
+    // swap windows). No undo may cross back into the negotiated region.
+    public void testNoUndoBackIntoOpening() {
+        RenjuState s = openedToFour();
+        s.chooseBranch(false);
+        s.addMove(xy(s, 11, 7)); s.renjuSwapDecisionMade(false); // move 5
+        s.addMove(xy(s, 0, 0));                                  // move 6 -> opening complete
+        assertTrue(s.isOpeningComplete());
+        assertEquals(6, s.getNumMoves());
+        assertTrue(!s.canPlayerUndo(1));
+        assertTrue(!s.canPlayerUndo(2));
+    }
 }

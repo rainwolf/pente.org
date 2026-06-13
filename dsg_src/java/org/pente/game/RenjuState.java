@@ -331,6 +331,14 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
             // No undo while any opening decision is pending or being negotiated.
             return false;
         }
+        // The completed opening is 6 committed stones. openingComplete is latched and
+        // undoMove() does not recompute the opening flags, so an undo that dropped
+        // numMoves below 6 would re-enter the negotiated region with the state machine
+        // already past it. Mirror SimplePenteState: never undo back into the committed
+        // opening.
+        if (gridState.getNumMoves() <= 6) {
+            return false;
+        }
         return gridState.canPlayerUndo(player);
     }
 
