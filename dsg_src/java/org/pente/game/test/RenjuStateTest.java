@@ -295,4 +295,97 @@ public class RenjuStateTest extends TestCase {
         assertTrue(!s.canPlayerUndo(1));
         assertTrue(!s.canPlayerUndo(2));
     }
+
+    // End-to-end: a full legal Taraguchi-10 Branch A opening with NO forceOpeningComplete.
+    // Center, then 3x3/5x5/7x7 moves each followed by a declined swap, chooseBranch(false),
+    // a 9x9 move 5, a declined swap, and move 6 anywhere -> opening naturally completes.
+    // Afterwards the post-opening forbidden switch must be live: a black double-three point
+    // (built far from the opening with extra post-opening stones) is rejected by isValidMove.
+    public void testNaturalOpeningThenForbiddenSwitchesOn() {
+        RenjuState s = newState();
+        s.addMove(xy(s, 7, 7)); s.renjuSwapDecisionMade(false); // 1 black (center)
+        s.addMove(xy(s, 8, 8)); s.renjuSwapDecisionMade(false); // 2 white (3x3)
+        s.addMove(xy(s, 9, 9)); s.renjuSwapDecisionMade(false); // 3 black (5x5)
+        s.addMove(xy(s, 6, 6)); s.renjuSwapDecisionMade(false); // 4 white (7x7)
+        s.chooseBranch(false);                                  // Branch A
+        s.addMove(xy(s, 11, 7)); s.renjuSwapDecisionMade(false); // 5 black (9x9)
+        s.addMove(xy(s, 13, 13));                                // 6 white (anywhere)
+        assertTrue(s.isOpeningComplete());
+
+        // Continue past the opening with normal alternating moves. Black stones at move
+        // indices 6,8,10,12 form a double-three around (3,3); whites are harmless fillers.
+        // The trailing white filler leaves it black's turn so the forbidden check applies.
+        s.addMove(xy(s, 1, 3));  s.addMove(xy(s, 14, 0)); // b,w
+        s.addMove(xy(s, 2, 3));  s.addMove(xy(s, 14, 1)); // b,w
+        s.addMove(xy(s, 3, 1));  s.addMove(xy(s, 14, 2)); // b,w
+        s.addMove(xy(s, 3, 2));  s.addMove(xy(s, 14, 3)); // b,w
+        assertEquals(1, s.getCurrentColor());             // black to move
+
+        assertTrue(!s.isValidMove(xy(s, 3, 3), 1));       // double-three now forbidden
+        assertTrue(s.isValidMove(xy(s, 12, 12), 1));      // ordinary empty point is fine
+    }
+
+    // selectFifthMove with a move that was never offered -> IllegalArgumentException.
+    public void testSelectFifthMoveNonOfferedThrows() {
+        RenjuState s = openedToFour();
+        s.chooseBranch(true);
+        int[][] offers = {
+            {0,0},{0,2},{0,4},{0,6},{0,8},{0,10},{0,12},{0,14},{2,0},{4,0}
+        };
+        for (int[] o : offers) s.offerFifthMove(xy(s, o[0], o[1]));
+        assertTrue(s.isAwaitingFifthSelection());
+        try {
+            s.selectFifthMove(xy(s, 1, 1)); // never offered
+            fail("expected IllegalArgumentException for non-offered selection");
+        } catch (IllegalArgumentException expected) {
+        }
+    }
+
+    // offerFifthMove while not in the offer state (no branch chosen) -> IllegalStateException.
+    public void testOfferFifthMoveBeforeBranchThrows() {
+        RenjuState s = openedToFour();
+        assertTrue(!s.isAwaitingFifthOffers());
+        try {
+            s.offerFifthMove(xy(s, 0, 0));
+            fail("expected IllegalStateException offering before chooseBranch(true)");
+        } catch (IllegalStateException expected) {
+        }
+    }
+
+    // renjuSwapDecisionMade with no swap window open -> IllegalStateException.
+    public void testRenjuSwapDecisionNonePendingThrows() {
+        RenjuState s = newState(); // fresh: no swap pending
+        assertTrue(!s.isAwaitingSwapDecision());
+        try {
+            s.renjuSwapDecisionMade(false);
+            fail("expected IllegalStateException with no swap decision pending");
+        } catch (IllegalStateException expected) {
+        }
+    }
+
+    // chooseBranch when not awaiting a branch choice -> IllegalStateException.
+    public void testChooseBranchNotAwaitingThrows() {
+        RenjuState s = newState(); // fresh: numMoves 0, not awaiting branch
+        assertTrue(!s.isAwaitingBranchChoice());
+        try {
+            s.chooseBranch(false);
+            fail("expected IllegalStateException choosing branch when not awaiting");
+        } catch (IllegalStateException expected) {
+        }
+    }
+
+    // Full-board draw. A 5x4 board is used (not 5x5): only its length-5 horizontal lines
+    // can reach five, and a simple row-major fill alternates colors within every row, so
+    // no five ever forms (5x5 would force its main diagonals monochrome under naive fills).
+    public void testFullBoardDrawNoWinner() {
+        RenjuState s = new RenjuState(5, 4);
+        for (int y = 0; y < 4; y++) {
+            for (int x = 0; x < 5; x++) {
+                s.addMove(s.convertMove(x, y));
+            }
+        }
+        assertEquals(20, s.getNumMoves());
+        assertTrue(s.isGameOver());
+        assertEquals(0, s.getWinner());
+    }
 }

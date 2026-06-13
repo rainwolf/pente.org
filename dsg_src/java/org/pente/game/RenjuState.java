@@ -21,6 +21,12 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
 
     public RenjuState(GridState gridState) {
         super(gridState);
+        // Mirror the (int,int) ctor setup so a wrapped SimpleGomokuState behaves
+        // identically: report overlines (white wins on 6+) and skip its own hashing.
+        if (gridState instanceof SimpleGomokuState) {
+            ((SimpleGomokuState) gridState).allowOverlines(true);
+            ((SimpleGomokuState) gridState).setDoHashes(false);
+        }
         finder = new RenjuForbiddenPointFinder(gridState.getGridSizeX());
         refreshFinder();
     }
@@ -317,8 +323,10 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
         }
         if (branchChosen && tenOffer && n == 4) {
             if (offeredFifth.size() < 10) return 1;   // black offering
+            // selectFifthMove() commits via addMove(), bumping numMoves to 5, so
+            // selectedFifth is always null while this n==4 block is reachable; the
+            // old trailing `return 2;` after this line was unreachable dead code.
             if (selectedFifth == null) return 2;      // white selecting
-            return 2;                                  // white plays move 6
         }
         if (n == 4 && !branchChosen) {
             return 1; // black chooses branch (and would play move 5)
