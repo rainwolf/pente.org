@@ -263,4 +263,21 @@ public class RenjuStateTest extends TestCase {
         s.offerFifthMove(xy(s, 1, 0));
         assertEquals(2, s.getOfferedFifthMoves().size());
     }
+
+    public void testNoUndoWhileSwapPending() {
+        RenjuState s = newState();
+        s.addMove(xy(s, 7, 7)); // swap window open
+        assertTrue(!s.canPlayerUndo(1));
+        assertTrue(!s.canPlayerUndo(2));
+    }
+
+    public void testUndoDelegatesPostOpening() {
+        RenjuState s = openedToFour();
+        s.chooseBranch(false);
+        s.addMove(xy(s, 11, 7)); s.renjuSwapDecisionMade(false); // move 5
+        s.addMove(xy(s, 0, 0));                                  // move 6 -> opening complete
+        s.addMove(xy(s, 1, 1));                                  // move 7 (black)
+        // after move 7 it's white's turn; white just did NOT move last -> black may undo
+        assertTrue(s.canPlayerUndo(s.getCurrentColor() == 1 ? 2 : 1));
+    }
 }

@@ -326,6 +326,14 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
         return n % 2 + 1;
     }
 
+    public boolean canPlayerUndo(int player) {
+        if (!openingComplete) {
+            // No undo while any opening decision is pending or being negotiated.
+            return false;
+        }
+        return gridState.canPlayerUndo(player);
+    }
+
     public long calcHash(long cHash, int p, int move, int rot) {
         cHash ^= ZobristUtil.rand[p - 1][rotateMove(move, rot)];
         return cHash;
