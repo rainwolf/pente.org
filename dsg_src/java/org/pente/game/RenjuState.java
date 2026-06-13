@@ -56,6 +56,10 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
     public void addMove(int move) {
         gridState.addMove(move);
         refreshFinder();
+        int n = gridState.getNumMoves();
+        if (!openingComplete && n >= 6) {
+            openingComplete = true;
+        }
         updateHash(this);
     }
 
@@ -128,27 +132,52 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
         openingComplete = true;
     }
 
+    // branch flags (Branch B / offers wired in Tasks 6-7; default Branch A here)
+    private boolean branchChosen = true;   // Task 5/6 will flip default to false
+    private boolean tenOffer = false;
+
+    private int centerX() { return gridState.getGridSizeX() / 2; }
+    private int centerY() { return gridState.getGridSizeY() / 2; }
+
+    /** Opening central-square restriction by number of stones already placed (n). */
+    private boolean withinOpeningSquare(int move, int n) {
+        Coord c = convertMove(move);
+        int dx = Math.abs(c.x - centerX());
+        int dy = Math.abs(c.y - centerY());
+        switch (n) {
+            case 0: return dx == 0 && dy == 0; // move 1: center
+            case 1: return dx <= 1 && dy <= 1; // move 2: 3x3
+            case 2: return dx <= 2 && dy <= 2; // move 3: 5x5
+            case 3: return dx <= 3 && dy <= 3; // move 4: 7x7
+            case 4: return dx <= 4 && dy <= 4; // move 5 (Branch A): 9x9
+            default: return true;              // move 6+: anywhere
+        }
+    }
+
     public boolean isValidMove(int move, int player) {
-        if (outOfBounds(move)) {
-            return false;
-        }
-        if (player != getCurrentPlayer()) {
-            return false;
-        }
-        if (getPosition(move) != 0) {
-            return false;
+        if (outOfBounds(move)) return false;
+        if (player != getCurrentPlayer()) return false;
+        if (getPosition(move) != 0) return false;
+
+        if (!openingComplete) {
+            int n = gridState.getNumMoves();
+            if (!withinOpeningSquare(move, n)) return false;
+            return true;
         }
 
-        if (openingComplete) {
-            // Block black forbidden points.
-            if (getCurrentColor() == 1) {
-                Coord c = convertMove(move);
-                if (finder.isForbidden(c.x, c.y)) {
-                    return false;
-                }
-            }
+        // post-opening: block black forbidden points
+        if (getCurrentColor() == 1) {
+            Coord c = convertMove(move);
+            if (finder.isForbidden(c.x, c.y)) return false;
         }
         return true;
+    }
+
+    public int getCurrentPlayer() {
+        if (openingComplete) return super.getCurrentPlayer();
+        // Straight-line sequencing (swaps added in Task 5): color by parity.
+        int n = gridState.getNumMoves();
+        return n % 2 + 1;
     }
 
     public long calcHash(long cHash, int p, int move, int rot) {

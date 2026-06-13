@@ -116,4 +116,34 @@ public class RenjuStateTest extends TestCase {
         int dbl3 = xy(s, 7, 7);
         assertTrue(s.isValidMove(dbl3, 2)); // white allowed
     }
+
+    public void testMove1MustBeCenter() {
+        RenjuState s = newState();
+        assertTrue(!s.isValidMove(xy(s, 7, 8), 1)); // off-center
+        assertTrue(s.isValidMove(xy(s, 7, 7), 1));  // center
+    }
+
+    public void testMove2WithinThreeBySquare() {
+        RenjuState s = newState();
+        s.addMove(xy(s, 7, 7));                       // move 1 (black) center
+        assertTrue(!s.isValidMove(xy(s, 7, 9), 2));   // dy=2 -> outside 3x3
+        assertTrue(s.isValidMove(xy(s, 8, 8), 2));    // inside 3x3
+    }
+
+    public void testMove3WithinFiveBySquare() {
+        RenjuState s = newState();
+        s.addMove(xy(s, 7, 7));   // 1 black
+        s.addMove(xy(s, 8, 8));   // 2 white
+        assertTrue(!s.isValidMove(xy(s, 7, 10), 1));  // dy=3 -> outside 5x5
+        assertTrue(s.isValidMove(xy(s, 9, 9), 1));    // inside 5x5
+    }
+
+    public void testMove4WithinSevenBySquare() {
+        RenjuState s = newState();
+        s.addMove(xy(s, 7, 7));
+        s.addMove(xy(s, 8, 8));
+        s.addMove(xy(s, 9, 9));
+        assertTrue(!s.isValidMove(xy(s, 7, 11), 2));  // dy=4 -> outside 7x7
+        assertTrue(s.isValidMove(xy(s, 10, 10), 2));  // inside 7x7
+    }
 }
