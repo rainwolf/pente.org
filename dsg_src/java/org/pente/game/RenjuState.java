@@ -116,6 +116,41 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
         return finder.findForbiddenPoints();
     }
 
+    // --- opening protocol state (fully wired in Task 4) ---
+    private boolean openingComplete = false;
+
+    public boolean isOpeningComplete() {
+        return openingComplete;
+    }
+
+    /** Test/seam hook: mark the opening done so post-opening rules apply. */
+    public void forceOpeningComplete() {
+        openingComplete = true;
+    }
+
+    public boolean isValidMove(int move, int player) {
+        if (outOfBounds(move)) {
+            return false;
+        }
+        if (player != getCurrentPlayer()) {
+            return false;
+        }
+        if (getPosition(move) != 0) {
+            return false;
+        }
+
+        if (openingComplete) {
+            // Block black forbidden points.
+            if (getCurrentColor() == 1) {
+                Coord c = convertMove(move);
+                if (finder.isForbidden(c.x, c.y)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     public long calcHash(long cHash, int p, int move, int rot) {
         cHash ^= ZobristUtil.rand[p - 1][rotateMove(move, rot)];
         return cHash;

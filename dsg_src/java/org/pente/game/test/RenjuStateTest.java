@@ -84,4 +84,36 @@ public class RenjuStateTest extends TestCase {
         assertTrue(s.isGameOver());
         assertEquals(2, s.getWinner());
     }
+
+    // After enough moves to be "post-opening", black may not play a double-three.
+    public void testForbiddenMoveBlockedForBlack() {
+        RenjuState s = newState();
+        // Build a black double-three around (7,7) with interleaved harmless white moves,
+        // then assert black cannot play (7,7). Black stones: (5,7),(6,7),(7,5),(7,6).
+        // Sequence so that it is black's turn (color 1) to play (7,7).
+        add(s,
+            xy(s, 5, 7), xy(s, 0, 0),   // b, w
+            xy(s, 6, 7), xy(s, 0, 1),   // b, w
+            xy(s, 7, 5), xy(s, 0, 2),   // b, w
+            xy(s, 7, 6), xy(s, 0, 3));  // b, w  -> 8 moves, next is black (color 1)
+        s.forceOpeningComplete(); // test hook (see implementation)
+        int forbidden = xy(s, 7, 7);
+        assertTrue(!s.isValidMove(forbidden, 1));
+        // a normal empty non-forbidden point is fine for black
+        assertTrue(s.isValidMove(xy(s, 12, 12), 1));
+    }
+
+    public void testForbiddenPointNotBlockedForWhite() {
+        RenjuState s = newState();
+        // Same double-three shape but it becomes white's turn; white has no forbidden points.
+        add(s,
+            xy(s, 0, 0), xy(s, 5, 7),   // b, w
+            xy(s, 0, 1), xy(s, 6, 7),   // b, w
+            xy(s, 0, 2), xy(s, 7, 5),   // b, w
+            xy(s, 0, 3), xy(s, 7, 6),   // b, w
+            xy(s, 0, 4));               // b -> 9 moves, next is white (color 2)
+        s.forceOpeningComplete();
+        int dbl3 = xy(s, 7, 7);
+        assertTrue(s.isValidMove(dbl3, 2)); // white allowed
+    }
 }
