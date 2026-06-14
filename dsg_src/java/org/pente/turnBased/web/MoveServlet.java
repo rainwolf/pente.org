@@ -439,9 +439,23 @@ public class MoveServlet extends HttpServlet {
                     }
 
                     if ("swap".equals(renjuAction)) {
-                        // moves[0] == 1 means the deciding player takes over (swap)
+                        // moves[0] == 1 means the deciding player takes over (swap).
+                        // When declining (moves[0] == 0) the decider plays their next
+                        // stone in the same submission: moves[1] is that move.
                         boolean swap = moves[0] == 1;
                         tbGameStorer.renjuSwap(game, swap);
+                        if (!swap) {
+                            if (moves.length < 2) {
+                                handleError(request, response,
+                                        "Expected a move when declining to swap.");
+                                return;
+                            }
+                            tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(), moves[1]);
+                            if (message != null) {
+                                message.setMoveNum(game.getNumMoves() + 1);
+                                tbGameStorer.storeNewMessage(game.getGid(), message);
+                            }
+                        }
 
                     } else if ("branch".equals(renjuAction)) {
                         // moves[0] == 2 selects Branch B (10-offer); 1 selects Branch A

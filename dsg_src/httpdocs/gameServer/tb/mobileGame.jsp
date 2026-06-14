@@ -1372,8 +1372,23 @@
    )
       ;
    }
-   function renjuSwapYes() { renjuPost("swap", "1"); }
-   function renjuSwapNo()  { renjuPost("swap", "0"); }
+   function renjuSwapYes() {
+      // Swapping takes over your opponent's side — you do NOT place a stone.
+      if (playedMove >= 0) {
+         alert("Don't place a stone when swapping — remove it first.");
+         return;
+      }
+      renjuPost("swap", "1");
+   }
+   function renjuSwapNo()  {
+      // Declining the swap means you play your own next stone — submit the
+      // decision and the move together. Require a placed stone first.
+      if (!(playedMove >= 0)) {
+         alert("Place your next move before choosing not to swap.");
+         return;
+      }
+      renjuPost("swap", "0," + playedMove);
+   }
    function renjuBranchA() { renjuPost("branch", "1"); }
    function renjuBranchB() { renjuPost("branch", "2"); }
    function renjuSubmitOffers() {
