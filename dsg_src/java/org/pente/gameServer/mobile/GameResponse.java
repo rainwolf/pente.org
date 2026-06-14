@@ -42,6 +42,9 @@ public class GameResponse {
     public final CancelInfo cancel;
     public final String dPenteState;   // non-null for dPente/swap2 variants
     public final Boolean swap2pass;
+    public final String renjuPhase;    // TB_RENJU only: SWAP|BRANCH|OFFERS|SELECTION|MOVE|COMPLETE, else null
+    public final String renjuOffers;   // TB_RENJU Branch B: comma-separated offered moves, else null
+    public final Integer renjuSwaps;   // TB_RENJU: packed opening word, else null
 
     public static class PlayerRef {
         public final String name;
@@ -70,7 +73,8 @@ public class GameResponse {
                          Long sid, String currentPlayer, String seqNums,
                          String dates, String players, String state, String goState,
                          Boolean undoRequested, Boolean canHide, Boolean canUnHide,
-                         CancelInfo cancel, String dPenteState, Boolean swap2pass) {
+                         CancelInfo cancel, String dPenteState, Boolean swap2pass,
+                         String renjuPhase, String renjuOffers, Integer renjuSwaps) {
         this.gid = gid;
         this.privateGame = privateGame;
         this.rated = rated;
@@ -93,6 +97,9 @@ public class GameResponse {
         this.cancel = cancel;
         this.dPenteState = dPenteState;
         this.swap2pass = swap2pass;
+        this.renjuPhase = renjuPhase;
+        this.renjuOffers = renjuOffers;
+        this.renjuSwaps = renjuSwaps;
     }
 
     /**
@@ -147,6 +154,21 @@ public class GameResponse {
                 || tbGame.getGame() == GridStateFactory.TB_SWAP2PENTE
                 || tbGame.getGame() == GridStateFactory.TB_SWAP2KERYO);
 
+        boolean isRenju = !tbGame.isCompleted()
+                && tbGame.getGame() == GridStateFactory.TB_RENJU;
+        String renjuPhase = isRenju ? tbGame.getRenjuPhase() : null;
+        String renjuOffersStr = null;
+        if (isRenju && tbGame.getRenjuOffers() != null) {
+            StringBuilder ro = new StringBuilder();
+            int[] offers = tbGame.getRenjuOffers();
+            for (int i = 0; i < offers.length; i++) {
+                if (i > 0) ro.append(',');
+                ro.append(offers[i]);
+            }
+            renjuOffersStr = ro.toString();
+        }
+        Integer renjuSwaps = isRenju ? Integer.valueOf(tbGame.getRenjuSwaps()) : null;
+
         return new GameResponse(
                 String.valueOf(tbGame.getGid()),
                 (set.isPrivateGame() ? "" : "non-") + "private",
@@ -169,7 +191,8 @@ public class GameResponse {
                 tbGame.canUnHide(visitor.getPlayerID()),
                 cancelInfo,
                 isDPente ? String.valueOf(tbGame.getDPenteState()) : null,
-                isDPente ? tbGame.didSwap2Pass() : null
+                isDPente ? tbGame.didSwap2Pass() : null,
+                renjuPhase, renjuOffersStr, renjuSwaps
         );
     }
 
@@ -201,7 +224,8 @@ public class GameResponse {
                 new PlayerRef(p2.getUserIDName(), (int) p2.getRating()),
                 "", "",
                 null, null, null, null, null, null, null,
-                null, null, null, null, null, null
+                null, null, null, null, null, null,
+                null, null, null
         );
     }
 
