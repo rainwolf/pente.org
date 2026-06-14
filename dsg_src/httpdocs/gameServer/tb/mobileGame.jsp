@@ -848,6 +848,14 @@
                return;
             }
          }
+         if (isRenju && renjuPhase === "MOVE") {
+            var rCenter = Math.floor(gridSize / 2);
+            var rRadius = renjuMoveRadius(moves.length);
+            if (rRadius >= 0 &&
+                (Math.abs(i - rCenter) > rRadius || Math.abs(j - rCenter) > rRadius)) {
+               return; // outside the allowed central square for this opening move
+            }
+         }
          if (abstractBoard[i][j] === 0 && active === true && playedMove !== koMove) {
             let newMoves = moves.slice(0);
             if (game === 63) {
@@ -942,6 +950,15 @@
 
    }
 
+   function renjuMoveRadius(n) {
+      // half-width of the allowed central square by opening move number
+      if (n === 0) return 0;   // move 1: center only
+      if (n === 1) return 1;   // move 2: 3x3
+      if (n === 2) return 2;   // move 3: 5x5
+      if (n === 3) return 3;   // move 4: 7x7
+      if (n === 4) return 4;   // move 5 (Branch A): 9x9
+      return -1;               // move 6+: unrestricted
+   }
    function renjuRedrawBoard() {
       resetAbstractBoard(abstractBoard);
       drawUntilMove = moves.length;
