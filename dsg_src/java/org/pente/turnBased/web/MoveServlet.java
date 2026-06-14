@@ -380,6 +380,8 @@ public class MoveServlet extends HttpServlet {
                     return;
                 }
 
+                String renjuAction = request.getParameter("renjuAction");
+
                 String msg = request.getParameter("message");
                 TBMessage message = null;
                 if (msg != null && !msg.trim().equals("")) {
@@ -404,6 +406,70 @@ public class MoveServlet extends HttpServlet {
                     }
                 }
 
+                if (game.getGame() == GridStateFactory.TB_RENJU && renjuAction != null) {
+                    org.pente.game.RenjuOpeningState rst =
+                            org.pente.game.RenjuOpeningState.decode(game.getRenjuSwaps());
+
+                    if ("swap".equals(renjuAction)) {
+                        // moves[0] == 1 means the deciding player takes over (swap)
+                        boolean swap = moves[0] == 1;
+                        tbGameStorer.renjuSwap(game, swap);
+
+                    } else if ("branch".equals(renjuAction)) {
+                        // moves[0] == 2 selects Branch B (10-offer); 1 selects Branch A
+                        boolean tenOffer = moves[0] == 2;
+                        tbGameStorer.renjuBranch(game, tenOffer);
+
+                    } else if ("offer".equals(renjuAction)) {
+                        if (rst.branch != org.pente.game.RenjuOpeningState.YES
+                                || game.getNumMoves() != 4
+                                || moves.length != 10) {
+                            handleError(request, response, "Expected 10 offered moves.");
+                            return;
+                        }
+                        // validate via the engine's offer rules (distinct, non-symmetric, empty)
+                        RenjuState rs = RenjuState.reconstruct(
+                                game, game.getRenjuSwaps(), null);
+                        try {
+                            for (int off : moves) {
+                                rs.offerFifthMove(off);
+                            }
+                        } catch (RuntimeException bad) {
+                            handleError(request, response, "Invalid 5th-move offer.");
+                            return;
+                        }
+                        int[] offers = new int[10];
+                        System.arraycopy(moves, 0, offers, 0, 10);
+                        game.setRenjuOffers(offers);
+                        tbGameStorer.renjuOffers(game);
+
+                    } else if ("select".equals(renjuAction)) {
+                        int[] offers = game.getRenjuOffers();
+                        boolean offered = false;
+                        if (offers != null) {
+                            for (int o : offers) {
+                                if (o == moves[0]) {
+                                    offered = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (!offered) {
+                            handleError(request, response, "Selected move was not offered.");
+                            return;
+                        }
+                        // the chosen move becomes the real 5th move
+                        tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(), moves[0]);
+                        if (message != null) {
+                            message.setMoveNum(game.getNumMoves() + 1);
+                            tbGameStorer.storeNewMessage(game.getGid(), message);
+                        }
+                    } else {
+                        handleError(request, response, "Unknown renju action.");
+                        return;
+                    }
+
+                } else
                 // handle dpente separately
                 if ((game.getGame() == GridStateFactory.TB_DPENTE || game.getGame() == GridStateFactory.TB_DKERYO) &&
                         game.getDPenteState() != TBGame.DPENTE_STATE_DECIDED) {
