@@ -2,7 +2,7 @@
 
 Date: 2026-06-13
 Branch: feat/renju
-Status: approved-pending-review
+Status: implemented (TB path; live pente_game write deferred)
 
 ## Goal
 
