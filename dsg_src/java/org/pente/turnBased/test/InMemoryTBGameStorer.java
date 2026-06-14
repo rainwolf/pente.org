@@ -189,6 +189,18 @@ public class InMemoryTBGameStorer implements TBGameStorer {
         // no-op
     }
 
+    public void renjuSwap(TBGame game, boolean swap) throws TBStoreException {
+        // no-op
+    }
+
+    public void renjuBranch(TBGame game, boolean tenOffer) throws TBStoreException {
+        // no-op
+    }
+
+    public void renjuOffers(TBGame game) throws TBStoreException {
+        // no-op
+    }
+
     public void restoreGame(long gid) throws TBStoreException {
         // no-op
     }
