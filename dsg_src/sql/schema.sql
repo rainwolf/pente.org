@@ -918,6 +918,8 @@ CREATE TABLE `tb_game_ai` (
   `dpente_swap` enum('Y','N') DEFAULT NULL,
   `hiddenBy` tinyint(1) NOT NULL DEFAULT 0,
   `swap2pass` tinyint(1) DEFAULT 0,
+  `renju_swaps` smallint(5) unsigned DEFAULT NULL,
+  `renju_offers` varbinary(10) DEFAULT NULL,
   PRIMARY KEY (`gid`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
