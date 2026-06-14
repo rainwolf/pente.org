@@ -767,6 +767,7 @@ CREATE TABLE `pente_game` (
   `set_id` bigint(20) unsigned DEFAULT NULL,
   `status` char(1) DEFAULT NULL,
   `swap2pass` tinyint(1) DEFAULT 0,
+  `renju_swaps` smallint(5) unsigned DEFAULT NULL,
   PRIMARY KEY (`gid`),
   KEY `game` (`game`,`site_id`,`event_id`,`round`,`section`),
   KEY `game_2` (`game`,`play_date`,`gid`),
@@ -777,6 +778,13 @@ CREATE TABLE `pente_game` (
   KEY `game_rating2` (`player2_rating`,`game`,`gid`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+CREATE TABLE `pente_renju_offer` (
+  `gid` bigint(20) unsigned NOT NULL DEFAULT 0,
+  `site_id` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `offer_num` tinyint(3) unsigned NOT NULL DEFAULT 0,
+  `move` smallint(5) unsigned NOT NULL DEFAULT 0,
+  PRIMARY KEY (`gid`,`site_id`,`offer_num`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 DROP TABLE IF EXISTS `pente_move`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -880,6 +888,8 @@ CREATE TABLE `tb_game` (
   `dpente_swap` enum('Y','N') DEFAULT NULL,
   `hiddenBy` tinyint(1) NOT NULL DEFAULT 0,
   `swap2pass` tinyint(1) DEFAULT 0,
+  `renju_swaps` smallint(5) unsigned DEFAULT NULL,
+  `renju_offers` varbinary(10) DEFAULT NULL,
   PRIMARY KEY (`gid`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
