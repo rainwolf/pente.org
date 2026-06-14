@@ -1406,6 +1406,41 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
         // check that it is a valid move
         //TODO performance might show keeping state around a good idea
+        boolean valid;
+        if (game.getGame() == GridStateFactory.TB_RENJU) {
+            RenjuState rs = RenjuState.reconstruct(
+                    game, game.getRenjuSwaps(), game.getRenjuOffers());
+            if (rs.isAwaitingFifthSelection()) {
+                // the 5th move is chosen from the 10 offered moves, not placed freely
+                valid = false;
+                int[] offs = game.getRenjuOffers();
+                if (offs != null) {
+                    for (int o : offs) {
+                        if (o == move) { valid = true; break; }
+                    }
+                }
+            } else {
+                valid = rs.isValidMove(move, rs.getCurrentPlayer());
+            }
+        } else {
+            GridState state = GridStateFactory.createGridState(
+                    game.getGame(), game);
+            if (game.getGame() == GridStateFactory.TB_PENTE ||
+                    game.getGame() == GridStateFactory.TB_KERYO ||
+                    game.getGame() == GridStateFactory.TB_BOAT_PENTE ||
+                    game.getGame() == GridStateFactory.TB_POOF_PENTE ||
+                    game.getGame() == GridStateFactory.TB_OPENTE) {
+                ((PenteState) state).setTournamentRule(game.isRated());
+            }
+            valid = state.isValidMove(move, state.getCurrentPlayer());
+        }
+        if (!valid) {
+            throw new TBStoreException("Invalid move [" + move + "] for " +
+                    GridStateFactory.getGameName(game.getGame()) + " game: " +
+                    game.getGid());
+        }
+
+        // engine used below for move application + game-over detection
         GridState state = GridStateFactory.createGridState(
                 game.getGame(), game);
         if (game.getGame() == GridStateFactory.TB_PENTE ||
@@ -1414,10 +1449,6 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                 game.getGame() == GridStateFactory.TB_POOF_PENTE ||
                 game.getGame() == GridStateFactory.TB_OPENTE) {
             ((PenteState) state).setTournamentRule(game.isRated());
-        }
-        if (!state.isValidMove(move, state.getCurrentPlayer())) {
-            throw new TBStoreException("Invalid move [" + move + "] for " + GridStateFactory.getGameName(game.getGame()) + " game: " +
-                    game.getGid());
         }
 
         // Derive the move index from the freshly-loaded game, NOT from the
