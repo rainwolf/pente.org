@@ -305,6 +305,17 @@
                   <br>
 
 
+                  <%
+                     // Renju Taraguchi-10 opening decision pending? (gates Submit + opening buttons)
+                     boolean renjuDecision = false;
+                     if (game.getGame() == GridStateFactory.TB_RENJU && !"false".equals(myTurn)) {
+                        String renjuPh = game.getRenjuPhase();
+                        renjuDecision = TBGame.RENJU_SWAP.equals(renjuPh)
+                                     || TBGame.RENJU_BRANCH.equals(renjuPh)
+                                     || TBGame.RENJU_OFFERS.equals(renjuPh)
+                                     || TBGame.RENJU_SELECTION.equals(renjuPh);
+                     }
+                  %>
                   <div class="buttonwrapper" style="margin-top:5px; width:500px;">
                      <% if ("false".equals(myTurn) && isGo) { %>
                      <a class="boldbuttons" href="javascript:drawTerritories();"
@@ -312,8 +323,10 @@
 
                      <% }%>
                      <% if (!"false".equals(myTurn) && (game.getDPenteState() != 2)) { %>
+                     <% if (!renjuDecision) { %>
                      <a class="boldbuttons" href="javascript:submit();"
                         style="margin-right:5px;"><span>Submit</span></a>
+                     <% } %>
                      <% if (isGo) { %>
                      <a class="boldbuttons" href="javascript:submitPass();"
                         style="margin-right:5px;"><span>Pass</span></a>
@@ -349,7 +362,14 @@
                      <a class="boldbuttons" href="javascript:swap2pass();"
                         style="margin-right:5px;"><span>Let P1 decide to swap</span></a>
                      <% } %>
-                     <% if (game.getGame() == GridStateFactory.TB_RENJU && !"false".equals(myTurn)) {
+                     &nbsp;
+                     <a class="boldbuttons" href="javascript:resign();"
+                        style="margin-left:50px;"><span>Resign</span></a>
+                     <a class="boldbuttons" href="javascript:requestCancel();"
+                        style="margin-left:5px;"><span>Cancel Set</span></a>
+                     <%
+                     } else if (!"false".equals(myTurn)) { %>
+                     <% if (game.getGame() == GridStateFactory.TB_RENJU) {
                         String renjuPh = game.getRenjuPhase();
                         if (TBGame.RENJU_SWAP.equals(renjuPh)) { %>
                      <a class="boldbuttons" href="javascript:renjuSwapYes();"
@@ -368,15 +388,7 @@
                      <% } else if (TBGame.RENJU_SELECTION.equals(renjuPh)) { %>
                      <a class="boldbuttons" href="javascript:renjuSelect();"
                         style="margin-right:5px;"><span>Choose this 5th move</span></a>
-                     <% } %>
-                     <% } %>
-                     &nbsp;
-                     <a class="boldbuttons" href="javascript:resign();"
-                        style="margin-left:50px;"><span>Resign</span></a>
-                     <a class="boldbuttons" href="javascript:requestCancel();"
-                        style="margin-left:5px;"><span>Cancel Set</span></a>
-                     <%
-                     } else if (!"false".equals(myTurn)) { %>
+                     <% } } %>
                      <a class="boldbuttons" href="javascript:resign();"
                         style="margin-left:100px;"><span>Resign</span></a>
                      <a class="boldbuttons" href="javascript:requestCancel();"
