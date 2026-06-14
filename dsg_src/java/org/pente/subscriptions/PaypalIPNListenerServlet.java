@@ -74,7 +74,15 @@ public class PaypalIPNListenerServlet extends HttpServlet {
             receiverEmail = "rainwolf-facilitator@submanifold.be";
         }
         configurationMap.put("mode", paypalMode);
-        IPNMessage ipnlistener = new IPNMessage(request.getParameterMap(), configurationMap);
+        // Pass decoded=true: getParameterMap() returns values Tomcat already
+        // percent- and charset-decoded (e.g. "Léo"). The 2-arg constructor
+        // assumes decoded=false and re-appends values RAW into the
+        // _notify-validate postback, sending a literal 'é' instead of PayPal's
+        // original "%E9" -> the handshake bytes mismatch -> PayPal returns
+        // INVALID (verified=0). With decoded=true the SDK URLEncoder.encode()s
+        // each value (windows-1252) back to "L%E9o", making the postback
+        // byte-identical (pure ASCII) to what PayPal sent.
+        IPNMessage ipnlistener = new IPNMessage(request.getParameterMap(), configurationMap, true);
         boolean isIpnVerified = ipnlistener.validate();
 
 
