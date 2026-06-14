@@ -410,6 +410,34 @@ public class MoveServlet extends HttpServlet {
                     org.pente.game.RenjuOpeningState rst =
                             org.pente.game.RenjuOpeningState.decode(game.getRenjuSwaps());
 
+                    // Guard: the requested action must match the opening decision
+                    // currently pending for this game. The window is otherwise
+                    // inferred only from move count + packed state, so a stray or
+                    // duplicate 'swap' would re-run renjuSwap() (re-swapping
+                    // p1_pid<->p2_pid -> silent seat corruption) and a duplicate
+                    // 'branch'/'offer' would overwrite an already-decided window.
+                    // reconstruct() replays moves + decisions and reports the one
+                    // genuinely pending. (Unknown actions skip this and fall to the
+                    // explicit "Unknown renju action." handler below.)
+                    boolean knownAction = "swap".equals(renjuAction)
+                            || "branch".equals(renjuAction)
+                            || "offer".equals(renjuAction)
+                            || "select".equals(renjuAction);
+                    if (knownAction) {
+                        RenjuState pending = RenjuState.reconstruct(
+                                game, game.getRenjuSwaps(), game.getRenjuOffers());
+                        boolean matchesPending =
+                                ("swap".equals(renjuAction)   && pending.isAwaitingSwapDecision())
+                             || ("branch".equals(renjuAction) && pending.isAwaitingBranchChoice())
+                             || ("offer".equals(renjuAction)  && pending.isAwaitingFifthOffers())
+                             || ("select".equals(renjuAction) && pending.isAwaitingFifthSelection());
+                        if (!matchesPending) {
+                            handleError(request, response,
+                                    "Renju action does not match the pending decision.");
+                            return;
+                        }
+                    }
+
                     if ("swap".equals(renjuAction)) {
                         // moves[0] == 1 means the deciding player takes over (swap)
                         boolean swap = moves[0] == 1;

@@ -324,6 +324,26 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
             }
         } else if (game == GridStateFactory.TB_CONNECT6) {
             cp = ((moves.size() + 1) / 2) % 2 + 1;
+        } else if (game == GridStateFactory.TB_RENJU) {
+            // Taraguchi-10 Branch B: at numMoves==4 the offer sub-phase (black,
+            // seat 1) and the select sub-phase (white, seat 2) share the same
+            // move count with no move stored between them. Plain parity would
+            // return seat 1 for BOTH, so the unconditional turn gate would block
+            // the selecting player (white) and let the offerer pick their own
+            // candidate. Once the 10 offers are persisted, the 5th-move
+            // selection belongs to white (seat 2); mirror dPente/swap2 by
+            // flipping the seat for this one phase. Every other Renju window
+            // (swaps 1-4, branch choice, Branch-A swap 5, post-opening) is
+            // parity-consistent and falls through unchanged.
+            org.pente.game.RenjuOpeningState rst =
+                    org.pente.game.RenjuOpeningState.decode(renjuSwaps);
+            if (rst.branch == org.pente.game.RenjuOpeningState.YES
+                    && moves.size() == 4
+                    && renjuOffers != null && renjuOffers.length == 10) {
+                cp = 2;
+            } else {
+                cp = moves.size() % 2 + 1;
+            }
         } else {
             cp = moves.size() % 2 + 1;
         }
