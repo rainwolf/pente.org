@@ -444,7 +444,10 @@ public class MoveServlet extends HttpServlet {
                         // stone in the same submission: moves[1] is that move.
                         boolean swap = moves[0] == 1;
                         tbGameStorer.renjuSwap(game, swap);
-                        if (!swap) {
+                        // After move 4, declining leads to the branch choice (a
+                        // separate action), not a stone — so only bundle the next
+                        // move for the other swap windows.
+                        if (!swap && game.getNumMoves() != 4) {
                             if (moves.length < 2) {
                                 handleError(request, response,
                                         "Expected a move when declining to swap.");

@@ -860,7 +860,7 @@
                return;
             }
          }
-         if (isRenju && renjuPhase === "MOVE") {
+         if (isRenju && (renjuPhase === "MOVE" || renjuPhase === "SWAP")) {
             var rCenter = Math.floor(gridSize / 2);
             var rRadius = renjuMoveRadius(moves.length);
             if (rRadius >= 0 &&
@@ -1049,7 +1049,7 @@
                return;
             }
          }
-         if (isRenju && renjuPhase === "MOVE") {
+         if (isRenju && (renjuPhase === "MOVE" || renjuPhase === "SWAP")) {
             var rCenter = Math.floor(gridSize / 2);
             var rRadius = renjuMoveRadius(moves.length);
             if (rRadius >= 0 &&
@@ -1381,8 +1381,17 @@
       renjuPost("swap", "1");
    }
    function renjuSwapNo()  {
-      // Declining the swap means you play your own next stone — submit the
-      // decision and the move together. Require a placed stone first.
+      // After move 4 the next step is the branch choice, not a stone.
+      if (moves.length === 4) {
+         if (playedMove >= 0) {
+            alert("After move 4 you pick a branch next — don't place a stone.");
+            return;
+         }
+         renjuPost("swap", "0");
+         return;
+      }
+      // Other swap windows: declining means you play your own next stone —
+      // submit the decision and the move together. Require a placed stone first.
       if (!(playedMove >= 0)) {
          alert("Place your next move before choosing not to swap.");
          return;
