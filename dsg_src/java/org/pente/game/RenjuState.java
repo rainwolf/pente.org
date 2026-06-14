@@ -67,6 +67,63 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
     }
 
     /**
+     * Rebuild a RenjuState from a persisted move list + opening state.
+     * Replays moves AND re-applies swap/branch/offer/select decisions in
+     * protocol order, stopping wherever the persisted state is still pending,
+     * so the result reports the correct pending decision and current player.
+     *
+     * @param moves   the played moves (opening moves, then the selected 5th, then the rest)
+     * @param renjuSwapsPacked the base-3 packed opening word (see RenjuOpeningState)
+     * @param offers  the 10 offered 5th moves (Branch B), or null
+     */
+    public static RenjuState reconstruct(MoveData moves, int renjuSwapsPacked, int[] offers) {
+        RenjuState s = new RenjuState(15, 15);
+        RenjuOpeningState st = RenjuOpeningState.decode(renjuSwapsPacked);
+        int n = moves.getNumMoves();
+        int idx = 0;
+
+        // moves 1-4 each followed by a swap window
+        int[] swaps = {st.swap1, st.swap2, st.swap3, st.swap4};
+        for (int k = 0; k < 4; k++) {
+            if (idx >= n) return s;
+            s.addMove(moves.getMove(idx++));
+            if (swaps[k] == RenjuOpeningState.PENDING) return s;
+            s.renjuSwapDecisionMade(swaps[k] == RenjuOpeningState.YES);
+        }
+
+        // branch choice
+        if (st.branch == RenjuOpeningState.PENDING) return s;
+        boolean tenOffer = st.branch == RenjuOpeningState.YES;
+        s.chooseBranch(tenOffer);
+
+        if (!tenOffer) {
+            // Branch A: move 5, its swap window, move 6, then the rest
+            if (idx >= n) return s;
+            s.addMove(moves.getMove(idx++));            // move 5
+            if (st.swap5 == RenjuOpeningState.PENDING) return s;
+            s.renjuSwapDecisionMade(st.swap5 == RenjuOpeningState.YES);
+            while (idx < n) {
+                s.addMove(moves.getMove(idx++));
+            }
+            return s;
+        }
+
+        // Branch B: re-offer the candidates, then the selection commits move 5
+        if (offers != null) {
+            for (int off : offers) {
+                s.offerFifthMove(off);
+            }
+        }
+        if (offers != null && offers.length == 10 && idx < n) {
+            s.selectFifthMove(moves.getMove(idx++)); // selectFifthMove addMoves the chosen move
+            while (idx < n) {
+                s.addMove(moves.getMove(idx++));
+            }
+        }
+        return s;
+    }
+
+    /**
      * Sync the finder's board from the wrapped grid (color 1 -> 'X', 2 -> 'O', 0 -> '.').
      */
     private void refreshFinder() {
