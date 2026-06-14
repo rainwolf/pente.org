@@ -2,7 +2,7 @@
 
 Date: 2026-06-14
 Branch: feat/renju
-Status: approved-pending-review
+Status: implemented (mobile JSP + JSON; manual render pending)
 
 ## Goal
 
