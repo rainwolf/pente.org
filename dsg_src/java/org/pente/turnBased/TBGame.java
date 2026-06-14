@@ -81,6 +81,9 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 
     private boolean swap2Pass = false;
 
+    private int renjuSwaps = 0;       // RenjuOpeningState packed word (0 = fresh / non-Renju)
+    private int[] renjuOffers = null; // Branch B: the 10 offered 5th moves, or null
+
 
     public int containsDoublePass() {
         boolean hasPass = false;
@@ -496,6 +499,58 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 
     public void setSwap2Pass(boolean swap2PentePass) {
         this.swap2Pass = swap2PentePass;
+    }
+
+    public int getRenjuSwaps() {
+        return renjuSwaps;
+    }
+
+    public void setRenjuSwaps(int renjuSwaps) {
+        this.renjuSwaps = renjuSwaps;
+    }
+
+    public int[] getRenjuOffers() {
+        return renjuOffers;
+    }
+
+    public void setRenjuOffers(int[] renjuOffers) {
+        this.renjuOffers = renjuOffers;
+    }
+
+    /**
+     * Resolve the currently-pending Taraguchi swap window (identified by the
+     * number of stones played) and, on a swap, hand the just-played side to the
+     * other seat by swapping pids -- mirrors dPenteSwap(boolean).
+     */
+    public void renjuSwap(boolean swap) {
+        org.pente.game.RenjuOpeningState st =
+                org.pente.game.RenjuOpeningState.decode(renjuSwaps);
+        int v = swap ? org.pente.game.RenjuOpeningState.YES
+                     : org.pente.game.RenjuOpeningState.NO;
+        int n = getNumMoves();
+        if (n == 1) st.swap1 = v;
+        else if (n == 2) st.swap2 = v;
+        else if (n == 3) st.swap3 = v;
+        else if (n == 4) st.swap4 = v;
+        else if (n == 5) st.swap5 = v;
+        renjuSwaps = st.encode();
+
+        if (swap) {
+            long tmp = getPlayer1Pid();
+            setPlayer1Pid(getPlayer2Pid());
+            setPlayer2Pid(tmp);
+        }
+        lastMoveDate = new Date();
+    }
+
+    /** Record the post-move-4 branch choice (false = Branch A, true = Branch B / 10-offer). */
+    public void renjuBranch(boolean tenOffer) {
+        org.pente.game.RenjuOpeningState st =
+                org.pente.game.RenjuOpeningState.decode(renjuSwaps);
+        st.branch = tenOffer ? org.pente.game.RenjuOpeningState.YES
+                             : org.pente.game.RenjuOpeningState.NO;
+        renjuSwaps = st.encode();
+        lastMoveDate = new Date();
     }
 
 
