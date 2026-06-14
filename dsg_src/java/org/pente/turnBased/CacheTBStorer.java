@@ -1749,6 +1749,43 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         baseStorer.swap2Pass(game);
     }
 
+    public void renjuSwap(TBGame g, boolean swap) throws TBStoreException {
+        log4j.debug("CacheTBStorer.renjuSwap(" + g.getGid() + ", " + swap + ")");
+        TBGame game = loadGame(g.getGid());
+
+        synchronized (cacheTbLock) {
+            game.renjuSwap(swap);
+        }
+        long newTimeout = Utilities.calculateNewTimeout(game, dsgPlayerStorer);
+        synchronized (cacheTbLock) {
+            game.setTimeoutDate(new Date(newTimeout));
+            persistSet(game.getTbSet());
+        }
+        baseStorer.renjuSwap(game, swap);
+    }
+
+    public void renjuBranch(TBGame g, boolean tenOffer) throws TBStoreException {
+        log4j.debug("CacheTBStorer.renjuBranch(" + g.getGid() + ", " + tenOffer + ")");
+        TBGame game = loadGame(g.getGid());
+
+        synchronized (cacheTbLock) {
+            game.renjuBranch(tenOffer);
+            persistSet(game.getTbSet());
+        }
+        baseStorer.renjuBranch(game, tenOffer);
+    }
+
+    public void renjuOffers(TBGame g) throws TBStoreException {
+        log4j.debug("CacheTBStorer.renjuOffers(" + g.getGid() + ")");
+        TBGame game = loadGame(g.getGid());
+
+        synchronized (cacheTbLock) {
+            game.setRenjuOffers(g.getRenjuOffers());
+            persistSet(game.getTbSet());
+        }
+        baseStorer.renjuOffers(game);
+    }
+
 
     public void updateDaysOff(long pid, int weekend[]) throws TBStoreException {
         log4j.debug("updateWeekend(" + pid + ", " + weekend[0] + "," +
