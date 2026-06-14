@@ -1030,6 +1030,33 @@
          }
          playedMove = j * gridSize + i;
          // alert("" + i + " and " + j + " and gridsize " + gridSize);
+         if (isRenju && (renjuPhase === "OFFERS" || renjuPhase === "SELECTION")) {
+            var rMove = j * gridSize + i;
+            if (renjuPhase === "OFFERS") {
+               if (abstractBoard[i][j] !== 0) return;       // only empty points
+               var oi = renjuOfferList.indexOf(rMove);
+               if (oi >= 0) {
+                  renjuOfferList.splice(oi, 1);             // click again removes
+               } else if (renjuOfferList.length < 10) {
+                  renjuOfferList.push(rMove);
+               }
+               renjuRenderOffers();
+               return;
+            } else { // SELECTION
+               if (renjuOfferedMoves.indexOf(rMove) < 0) return; // only offered points
+               playedMove = rMove;
+               renjuRenderSelection();
+               return;
+            }
+         }
+         if (isRenju && renjuPhase === "MOVE") {
+            var rCenter = Math.floor(gridSize / 2);
+            var rRadius = renjuMoveRadius(moves.length);
+            if (rRadius >= 0 &&
+                (Math.abs(i - rCenter) > rRadius || Math.abs(j - rCenter) > rRadius)) {
+               return; // outside the allowed central square for this opening move
+            }
+         }
          if (abstractBoard[i][j] === 0 && active === true && playedMove !== dPenteMove1 && playedMove !== dPenteMove2 && playedMove !== dPenteMove3 && playedMove !== dPenteMove4) {
             let newMoves = moves.slice(0);
             if (game === 63) {
