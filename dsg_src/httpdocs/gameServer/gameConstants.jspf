@@ -45,6 +45,9 @@ var GAME = {
    TB_SWAP2PENTE:     <%= GridStateFactory.TB_SWAP2PENTE %>,
    SWAP2KERYO:        <%= GridStateFactory.SWAP2KERYO %>,
    SPEED_SWAP2KERYO:  <%= GridStateFactory.SPEED_SWAP2KERYO %>,
-   TB_SWAP2KERYO:     <%= GridStateFactory.TB_SWAP2KERYO %>
+   TB_SWAP2KERYO:     <%= GridStateFactory.TB_SWAP2KERYO %>,
+   RENJU:             <%= GridStateFactory.RENJU %>,
+   SPEED_RENJU:       <%= GridStateFactory.SPEED_RENJU %>,
+   TB_RENJU:          <%= GridStateFactory.TB_RENJU %>
 };
 </script>

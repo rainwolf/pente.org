@@ -13,6 +13,7 @@ function getBoardColor(game) {
       case GAME.KERYO: case GAME.SPEED_KERYO: case GAME.TB_KERYO:
          return keryoPenteColor;
       case GAME.GOMOKU: case GAME.SPEED_GOMOKU: case GAME.TB_GOMOKU:
+      case GAME.RENJU: case GAME.SPEED_RENJU: case GAME.TB_RENJU:
          return gomokuColor;
       case GAME.DPENTE: case GAME.SPEED_DPENTE: case GAME.TB_DPENTE:
          return dPenteColor;
@@ -60,6 +61,7 @@ function replayMoves(abstractBoard, movesList, until) {
       case GAME.SWAP2KERYO: case GAME.SPEED_SWAP2KERYO: case GAME.TB_SWAP2KERYO:
          replayKeryoPenteGame(abstractBoard, movesList, until); break;
       case GAME.GOMOKU: case GAME.SPEED_GOMOKU: case GAME.TB_GOMOKU:
+      case GAME.RENJU: case GAME.SPEED_RENJU: case GAME.TB_RENJU:
          replayGomokuGame(abstractBoard, movesList, until); break;
       case GAME.GPENTE: case GAME.SPEED_GPENTE: case GAME.TB_GPENTE:
          replayGPenteGame(abstractBoard, movesList, until); break;
