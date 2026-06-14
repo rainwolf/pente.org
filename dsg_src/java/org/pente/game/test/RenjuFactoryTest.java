@@ -88,4 +88,14 @@ public class RenjuFactoryTest extends TestCase {
     public void testRenjuIdLookupByName() {
         assertEquals(GridStateFactory.RENJU, GridStateFactory.getGameId("Renju"));
     }
+
+    // The auto-placed opening "center" move must come from the game's board size:
+    // 19x19 games -> 180 (9+9*19), Renju 15x15 -> 112 (7+7*15). A hardcoded 180
+    // for Renju lands at (0,12) = "A3" instead of the center.
+    public void testCenterMoveIsBoardAware() {
+        assertEquals(180, GridStateFactory.getCenterMove(GridStateFactory.PENTE));
+        assertEquals(180, GridStateFactory.getCenterMove(GridStateFactory.TB_PENTE));
+        assertEquals(112, GridStateFactory.getCenterMove(GridStateFactory.RENJU));
+        assertEquals(112, GridStateFactory.getCenterMove(GridStateFactory.TB_RENJU));
+    }
 }

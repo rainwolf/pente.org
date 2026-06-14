@@ -479,4 +479,17 @@ public class GridStateFactory {
     public static int getColor(int moveNum, int game) {
         return gridStates[game].getColor(moveNum);
     }
+
+    /**
+     * The board-center move for a game, used as the auto-placed opening stone
+     * (tournament/Taraguchi "first stone in the center"). Derived from the
+     * game's actual board size so it is correct for every variant: 19x19 -> 180,
+     * Renju 15x15 -> 112. Avoids hardcoding the 19x19 center.
+     */
+    public static int getCenterMove(int game) {
+        GridState gs = createGridState(game);
+        int cx = gs.getGridSizeX() / 2;
+        int cy = gs.getGridSizeY() / 2;
+        return gs.convertMove(cx, cy);
+    }
 }
