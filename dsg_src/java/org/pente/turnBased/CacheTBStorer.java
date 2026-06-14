@@ -563,15 +563,34 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                         boolean doEnd = false;
                         synchronized (cacheTbLock) {
                             fresh = loadGame(t.getGid());
+                            // Defense-in-depth: never time out a game before the player
+                            // has actually had their raw allotment. lastMoveDate +
+                            // daysPerMove (calendar days) is a strict LOWER BOUND on the
+                            // real deadline (weekends/vacation only push it later), so if
+                            // now hasn't reached it the timeoutDate must be stale/wrong.
+                            boolean pastFloor = fresh != null
+                                    && fresh.getLastMoveDate() != null
+                                    && nowCheck >= fresh.getLastMoveDate().getTime()
+                                        + (long) fresh.getDaysPerMove() * 86400000L;
                             if (fresh != null
                                     && fresh.getState() == TBGame.STATE_ACTIVE
                                     && fresh.getTimeoutDate() != null
-                                    && fresh.getTimeoutDate().getTime() < nowCheck) {
+                                    && fresh.getTimeoutDate().getTime() < nowCheck
+                                    && pastFloor) {
                                 fresh.timeout();
                                 int seat = fresh.getPlayerSeat(fresh.getCurrentPlayer());
                                 fresh.setWinner(3 - seat);
                                 persistSet(fresh.getTbSet());
                                 doEnd = true;
+                            } else if (fresh != null
+                                    && fresh.getState() == TBGame.STATE_ACTIVE
+                                    && fresh.getTimeoutDate() != null
+                                    && fresh.getTimeoutDate().getTime() < nowCheck
+                                    && !pastFloor) {
+                                log4j.warn("TimeoutCheckRunnable: SKIP premature timeout for "
+                                        + fresh.getGid() + " timeoutDate=" + fresh.getTimeoutDate()
+                                        + " lastMoveDate=" + fresh.getLastMoveDate()
+                                        + " daysPerMove=" + fresh.getDaysPerMove());
                             }
                         }
                         if (doEnd) {
@@ -1401,20 +1420,28 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                     game.getGid());
         }
 
-        long newTimeout = Utilities.calculateNewTimeout(
-                game, dsgPlayerStorer);
-
-        boolean gameOver;
         // Derive the move index from the freshly-loaded game, NOT from the
         // caller-supplied moveNum. Callers (e.g. MoveServlet) read getNumMoves()
         // off a TBGame they loaded once; under the Redis aggregate root that copy
         // no longer advances across successive storeNewMove calls, so a stale
         // moveNum would collide on the tb_move (gid, move_num) primary key and
         // overwrite prior moves of a multi-stone turn (connect6, swap2, go).
-        int actualMoveNum;
+        int actualMoveNum = game.getNumMoves();
+
+        // `game` is a private copy deserialized from Redis by loadGame() above, so
+        // it is not shared with other threads until persistSet() publishes it below;
+        // mutating it here without cacheTbLock is safe. addMove sets lastMoveDate to
+        // now and flips currentPlayer to the responder, so compute the next deadline
+        // AFTER it (fresh move time + responder's tz/weekend). Keep this OUTSIDE the
+        // lock: calculateNewTimeout does loadPlayer/loadPlayerPreferences DB round-trips,
+        // and holding the global cacheTbLock across that I/O would serialize every TB
+        // write behind per-move DB latency. Computing before addMove used the PREVIOUS
+        // move's date -> premature timeouts.
+        game.addMove(move);
+        long newTimeout = Utilities.calculateNewTimeout(game, dsgPlayerStorer);
+
+        boolean gameOver;
         synchronized (cacheTbLock) {
-            actualMoveNum = game.getNumMoves();
-            game.addMove(move);
             game.setTimeoutDate(new Date(newTimeout));
             game.setUndoRequested(false);   // folded in from MoveServlet:633
             state.addMove(move);

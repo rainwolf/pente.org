@@ -1,6 +1,6 @@
 package org.pente.gameServer.client;
 
-import java.util.*;
+import java.util.Vector;
 
 public class MilliSecondGameTimer implements GameTimer {
 
@@ -58,18 +58,18 @@ public class MilliSecondGameTimer implements GameTimer {
         int i = 10;
         while (!threadIsWaiting()) {
             if (i-- < 0) {
-                System.out.println("waitForThreadStop: failed");
+//                System.out.println("waitForThreadStop: failed");
                 return;
             } else {
-                System.out.println("waitForThreadStop: sleeping 20ms");
+//                System.out.println("waitForThreadStop: sleeping 20ms");
             }
             try {
                 Thread.sleep(20);
             } catch (InterruptedException ex) {
-                System.out.println("waitForThreadStop: interrupted");
+//                System.out.println("waitForThreadStop: interrupted");
             }
         }
-        System.out.println("waitForThreadStop: thread stopped");
+//        System.out.println("waitForThreadStop: thread stopped");
     }
 
     public void setStartMinutes(int minutes) {
@@ -275,7 +275,7 @@ public class MilliSecondGameTimer implements GameTimer {
                         long actualTimeElapsed = System.currentTimeMillis() - startTime + tempTimeElapsed;
                         long timeElapsed = getStartMillis() - timeLeft;
                         long diff = actualTimeElapsed - timeElapsed;
-                        if (diff > 2*normalSleepTime) {
+                        if (diff > 2 * normalSleepTime) {
                             nextSleepTime = 0;
                         } else if (normalSleepTime > Math.abs(diff)) {
                             nextSleepTime = normalSleepTime - diff;
