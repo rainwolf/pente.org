@@ -122,6 +122,25 @@
       gridSize = 9;
    } else if (game.getGame() == GridStateFactory.TB_GO13) {
       gridSize = 13;
+   } else if (game.getGame() == GridStateFactory.TB_RENJU) {
+      gridSize = 15;
+   }
+
+   // Renju opening state exposed to the client script (empty/blank for non-Renju)
+   String renjuPhaseStr = "";
+   String renjuOffersJs = "";
+   if (game.getGame() == GridStateFactory.TB_RENJU) {
+      String ph = game.getRenjuPhase();
+      renjuPhaseStr = ph == null ? "" : ph;
+      if (game.getRenjuOffers() != null) {
+         StringBuilder sb = new StringBuilder();
+         int[] ro = game.getRenjuOffers();
+         for (int k = 0; k < ro.length; k++) {
+            if (k > 0) sb.append(',');
+            sb.append(ro[k]);
+         }
+         renjuOffersJs = sb.toString();
+      }
    }
 
 %>
@@ -595,6 +614,10 @@
    // var boardSize = 500;
 
    var gridSize = <%=gridSize%>;
+   var isRenju = game === <%= GridStateFactory.TB_RENJU %>;
+   var renjuPhase = "<%=renjuPhaseStr%>";
+   var renjuOfferedMoves = [<%=renjuOffersJs%>];  // persisted offers (for SELECTION)
+   var renjuOfferList = [];                         // client picks (Branch B OFFERS)
    var boardCanvas = document.getElementById("board");
    var boardContext = boardCanvas.getContext("2d");
    var indentWidth = (boardCanvas.width / (gridSize + 3)) / 2;
