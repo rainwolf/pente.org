@@ -60,6 +60,15 @@ public interface TBGameStorer {
     public void swap2Pass(TBGame game)
             throws TBStoreException;
 
+    public void renjuSwap(TBGame game, boolean swap)
+            throws TBStoreException;
+
+    public void renjuBranch(TBGame game, boolean tenOffer)
+            throws TBStoreException;
+
+    public void renjuOffers(TBGame game)
+            throws TBStoreException;
+
     public void restoreGame(long gid) throws TBStoreException;
 
     public TBVacation getTBVacation(long pid);

@@ -431,7 +431,8 @@ public class MySQLTBGameStorer implements TBGameStorer {
             "gid, state, p1_pid, p2_pid, creation_date, " +
                     "start_date, last_move_date, timeout_date, completion_date, " +
                     "game, event_id, round, section, days_per_move, rated, " +
-                    "winner, dpente_state, dpente_swap, hiddenBy, swap2pass";
+                    "winner, dpente_state, dpente_swap, hiddenBy, swap2pass, " +
+                    "renju_swaps, renju_offers";
 
     public TBGame loadGame(long gid) throws TBStoreException {
 
@@ -630,6 +631,8 @@ public class MySQLTBGameStorer implements TBGameStorer {
         game.setDPenteSwapped(swapped != null && swapped.equals("Y"));
         game.setHiddenBy(result.getByte(r++));
         game.setSwap2Pass(result.getInt(r++) == 1);
+        game.setRenjuSwaps(result.getInt(r++));
+        game.setRenjuOffers(org.pente.game.RenjuOpeningState.decodeOffers(result.getBytes(r++)));
     }
 
     private java.util.Date getDate(ResultSet result, int column)
@@ -1372,6 +1375,127 @@ public class MySQLTBGameStorer implements TBGameStorer {
             stmt.setString(4, g.didDPenteSwap() ? "Y" : "N");
             stmt.setInt(5, g.didSwap2Pass() ? 1 : 0);
             stmt.setLong(6, g.getGid());
+            stmt.executeUpdate();
+
+        } catch (SQLException se) {
+            throw new TBStoreException(se);
+        } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException se) {
+                }
+            }
+            if (con != null) {
+                try {
+                    dbHandler.freeConnection(con);
+                } catch (SQLException se) {
+                }
+            }
+        }
+    }
+
+    public void renjuSwap(TBGame g, boolean swap) throws TBStoreException {
+
+        log4j.debug("MySQLTBGameStorer.renjuSwap(" + g.getGid() + ", " + swap + ")");
+
+        Connection con = null;
+        PreparedStatement stmt = null;
+
+        try {
+            con = dbHandler.getConnection();
+            stmt = con.prepareStatement(
+                    "update tb_game " +
+                            "set last_move_date = ?, " +
+                            "timeout_date = ?, " +
+                            "renju_swaps = ?, " +
+                            "p1_pid = ?, " +
+                            "p2_pid = ? " +
+                            "where gid = ?");
+            stmt.setTimestamp(1, new Timestamp(g.getLastMoveDate().getTime()));
+            stmt.setTimestamp(2, new Timestamp(g.getTimeoutDate().getTime()));
+            stmt.setInt(3, g.getRenjuSwaps());
+            stmt.setLong(4, g.getPlayer1Pid());
+            stmt.setLong(5, g.getPlayer2Pid());
+            stmt.setLong(6, g.getGid());
+            stmt.executeUpdate();
+
+        } catch (SQLException se) {
+            throw new TBStoreException(se);
+        } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException se) {
+                }
+            }
+            if (con != null) {
+                try {
+                    dbHandler.freeConnection(con);
+                } catch (SQLException se) {
+                }
+            }
+        }
+    }
+
+    public void renjuBranch(TBGame g, boolean tenOffer) throws TBStoreException {
+
+        log4j.debug("MySQLTBGameStorer.renjuBranch(" + g.getGid() + ", " + tenOffer + ")");
+
+        Connection con = null;
+        PreparedStatement stmt = null;
+
+        try {
+            con = dbHandler.getConnection();
+            stmt = con.prepareStatement(
+                    "update tb_game " +
+                            "set last_move_date = ?, " +
+                            "timeout_date = ?, " +
+                            "renju_swaps = ? " +
+                            "where gid = ?");
+            stmt.setTimestamp(1, new Timestamp(g.getLastMoveDate().getTime()));
+            stmt.setTimestamp(2, new Timestamp(g.getTimeoutDate().getTime()));
+            stmt.setInt(3, g.getRenjuSwaps());
+            stmt.setLong(4, g.getGid());
+            stmt.executeUpdate();
+
+        } catch (SQLException se) {
+            throw new TBStoreException(se);
+        } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException se) {
+                }
+            }
+            if (con != null) {
+                try {
+                    dbHandler.freeConnection(con);
+                } catch (SQLException se) {
+                }
+            }
+        }
+    }
+
+    public void renjuOffers(TBGame g) throws TBStoreException {
+
+        log4j.debug("MySQLTBGameStorer.renjuOffers(" + g.getGid() + ")");
+
+        Connection con = null;
+        PreparedStatement stmt = null;
+
+        try {
+            con = dbHandler.getConnection();
+            stmt = con.prepareStatement(
+                    "update tb_game " +
+                            "set last_move_date = ?, " +
+                            "timeout_date = ?, " +
+                            "renju_offers = ? " +
+                            "where gid = ?");
+            stmt.setTimestamp(1, new Timestamp(g.getLastMoveDate().getTime()));
+            stmt.setTimestamp(2, new Timestamp(g.getTimeoutDate().getTime()));
+            stmt.setBytes(3, org.pente.game.RenjuOpeningState.encodeOffers(g.getRenjuOffers()));
+            stmt.setLong(4, g.getGid());
             stmt.executeUpdate();
 
         } catch (SQLException se) {
