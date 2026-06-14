@@ -61,8 +61,9 @@ function replayMoves(abstractBoard, movesList, until) {
       case GAME.SWAP2KERYO: case GAME.SPEED_SWAP2KERYO: case GAME.TB_SWAP2KERYO:
          replayKeryoPenteGame(abstractBoard, movesList, until); break;
       case GAME.GOMOKU: case GAME.SPEED_GOMOKU: case GAME.TB_GOMOKU:
-      case GAME.RENJU: case GAME.SPEED_RENJU: case GAME.TB_RENJU:
          replayGomokuGame(abstractBoard, movesList, until); break;
+      case GAME.RENJU: case GAME.SPEED_RENJU: case GAME.TB_RENJU:
+         replayRenjuGame(abstractBoard, movesList, until); break;
       case GAME.GPENTE: case GAME.SPEED_GPENTE: case GAME.TB_GPENTE:
          replayGPenteGame(abstractBoard, movesList, until); break;
       case GAME.POOF_PENTE: case GAME.SPEED_POOF_PENTE: case GAME.TB_POOF_PENTE:

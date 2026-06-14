@@ -1516,6 +1516,16 @@ function replayGomokuGame(abstractBoard, movesList, until) {
    }
 }
 
+function replayRenjuGame(abstractBoard, movesList, until) {
+   resetAbstractBoard(abstractBoard);
+   // Renju: black plays first. drawStone() renders value 2 as black, 1 as white,
+   // so move 0 must be color 2 (black), then strict alternation. gridSize-aware.
+   for (let i = 0; i < Math.min(movesList.length, until); i++) {
+      let color = 2 - (i % 2);
+      abstractBoard[movesList[i] % gridSize][Math.floor(movesList[i] / gridSize)] = color;
+   }
+}
+
 function replayPenteGame(abstractBoard, movesList, until) {
    resetAbstractBoard(abstractBoard);
    for (let i = 0; i < Math.min(movesList.length, until); i++) {
