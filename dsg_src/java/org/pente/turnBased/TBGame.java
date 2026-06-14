@@ -537,6 +537,33 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
         this.renjuOffers = renjuOffers;
     }
 
+    public static final String RENJU_SWAP = "SWAP";
+    public static final String RENJU_BRANCH = "BRANCH";
+    public static final String RENJU_OFFERS = "OFFERS";
+    public static final String RENJU_SELECTION = "SELECTION";
+    public static final String RENJU_MOVE = "MOVE";
+    public static final String RENJU_COMPLETE = "COMPLETE";
+
+    /**
+     * Derived Taraguchi-10 opening phase for the mobile/JSON views. Returns null
+     * for non-Renju games. Reconstructs the engine once from the persisted
+     * (moves + renjuSwaps + renjuOffers) and maps its pending decision to a
+     * phase string. Not serialized; computed on demand (no cost for non-Renju).
+     */
+    public String getRenjuPhase() {
+        if (game != GridStateFactory.TB_RENJU) {
+            return null;
+        }
+        org.pente.game.RenjuState rs =
+                org.pente.game.RenjuState.reconstruct(this, renjuSwaps, renjuOffers);
+        if (rs.isAwaitingSwapDecision())   return RENJU_SWAP;
+        if (rs.isAwaitingBranchChoice())   return RENJU_BRANCH;
+        if (rs.isAwaitingFifthOffers())    return RENJU_OFFERS;
+        if (rs.isAwaitingFifthSelection()) return RENJU_SELECTION;
+        if (rs.isOpeningComplete())        return RENJU_COMPLETE;
+        return RENJU_MOVE;
+    }
+
     /**
      * Resolve the currently-pending Taraguchi swap window (identified by the
      * number of stones played) and, on a swap, hand the just-played side to the
