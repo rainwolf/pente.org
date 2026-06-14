@@ -349,6 +349,27 @@
                      <a class="boldbuttons" href="javascript:swap2pass();"
                         style="margin-right:5px;"><span>Let P1 decide to swap</span></a>
                      <% } %>
+                     <% if (game.getGame() == GridStateFactory.TB_RENJU && !"false".equals(myTurn)) {
+                        String renjuPh = game.getRenjuPhase();
+                        if (TBGame.RENJU_SWAP.equals(renjuPh)) { %>
+                     <a class="boldbuttons" href="javascript:renjuSwapYes();"
+                        style="margin-right:5px;"><span>Swap (take over)</span></a>
+                     <a class="boldbuttons" href="javascript:renjuSwapNo();"
+                        style="margin-right:5px;"><span>Don't swap</span></a>
+                     <% } else if (TBGame.RENJU_BRANCH.equals(renjuPh)) { %>
+                     <a class="boldbuttons" href="javascript:renjuBranchA();"
+                        style="margin-right:5px;"><span>Branch A — place 5th in 9×9</span></a>
+                     <a class="boldbuttons" href="javascript:renjuBranchB();"
+                        style="margin-right:5px;"><span>Branch B — offer 10 moves</span></a>
+                     <% } else if (TBGame.RENJU_OFFERS.equals(renjuPh)) { %>
+                     <span id="renjuOfferCount" style="margin-right:5px;">0/10</span>
+                     <a class="boldbuttons" href="javascript:renjuSubmitOffers();"
+                        style="margin-right:5px;"><span>Submit 10 offers</span></a>
+                     <% } else if (TBGame.RENJU_SELECTION.equals(renjuPh)) { %>
+                     <a class="boldbuttons" href="javascript:renjuSelect();"
+                        style="margin-right:5px;"><span>Choose this 5th move</span></a>
+                     <% } %>
+                     <% } %>
                      &nbsp;
                      <a class="boldbuttons" href="javascript:resign();"
                         style="margin-left:50px;"><span>Resign</span></a>
@@ -1241,6 +1262,32 @@
       } else {
          alert("You decided to pass the choice to swap to P1, you need to play 2 stones to do so");
       }
+   }
+
+   function renjuPost(action, moveStr) {
+      window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+
+      cycleStr + hideStr + "&renjuAction=" + action + "&moves=" + moveStr +
+      "&message=" + encodeURIComponent(document.getElementById('message').value), "_self"
+   )
+      ;
+   }
+   function renjuSwapYes() { renjuPost("swap", "1"); }
+   function renjuSwapNo()  { renjuPost("swap", "0"); }
+   function renjuBranchA() { renjuPost("branch", "1"); }
+   function renjuBranchB() { renjuPost("branch", "2"); }
+   function renjuSubmitOffers() {
+      if (renjuOfferList.length !== 10) {
+         alert("Pick exactly 10 offered moves (currently " + renjuOfferList.length + ").");
+         return;
+      }
+      renjuPost("offer", renjuOfferList.join(","));
+   }
+   function renjuSelect() {
+      if (playedMove < 0 || renjuOfferedMoves.indexOf(playedMove) < 0) {
+         alert("Tap one of the highlighted offered points first.");
+         return;
+      }
+      renjuPost("select", "" + playedMove);
    }
 
    function resign() {
