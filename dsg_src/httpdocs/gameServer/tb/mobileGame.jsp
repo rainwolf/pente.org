@@ -829,6 +829,25 @@
 
       if (i >= 0 && i < gridSize && j >= 0 && j < gridSize) {
          playedMove = j * gridSize + i;
+         if (isRenju && (renjuPhase === "OFFERS" || renjuPhase === "SELECTION")) {
+            var rMove = j * gridSize + i;
+            if (renjuPhase === "OFFERS") {
+               if (abstractBoard[i][j] !== 0) return;       // only empty points
+               var oi = renjuOfferList.indexOf(rMove);
+               if (oi >= 0) {
+                  renjuOfferList.splice(oi, 1);             // tap again removes
+               } else if (renjuOfferList.length < 10) {
+                  renjuOfferList.push(rMove);
+               }
+               renjuRenderOffers();
+               return;
+            } else { // SELECTION
+               if (renjuOfferedMoves.indexOf(rMove) < 0) return; // only offered points
+               playedMove = rMove;
+               renjuRenderSelection();
+               return;
+            }
+         }
          if (abstractBoard[i][j] === 0 && active === true && playedMove !== koMove) {
             let newMoves = moves.slice(0);
             if (game === 63) {
@@ -921,6 +940,32 @@
       }
 
 
+   }
+
+   function renjuRedrawBoard() {
+      resetAbstractBoard(abstractBoard);
+      drawUntilMove = moves.length;
+      replayGame(abstractBoard, moves, drawUntilMove);
+      boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
+      boardContext.fill();
+      drawGrid(boardContext, boardColor, gridSize, true);
+      drawGame();
+   }
+   function renjuRenderOffers() {
+      renjuRedrawBoard();
+      for (var k = 0; k < renjuOfferList.length; k++) {
+         var m = renjuOfferList[k];
+         drawRedDot(m % gridSize, Math.floor(m / gridSize));
+      }
+      var cnt = document.getElementById('renjuOfferCount');
+      if (cnt) cnt.innerText = renjuOfferList.length + "/10";
+   }
+   function renjuRenderSelection() {
+      renjuRedrawBoard();
+      for (var k = 0; k < renjuOfferedMoves.length; k++) {
+         var m = renjuOfferedMoves[k];
+         drawRedDot(m % gridSize, Math.floor(m / gridSize));
+      }
    }
 
    function boardClick(e) {
@@ -1319,6 +1364,9 @@
       selectMove(drawUntilMove - 1);
    }
    document.getElementById("movesTable").scrollTop = document.getElementById("movesTable").scrollHeight;
+   if (isRenju && renjuPhase === "SELECTION") {
+      renjuRenderSelection();
+   }
 </script>
 
 
