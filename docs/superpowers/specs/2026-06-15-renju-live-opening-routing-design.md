@@ -2,7 +2,7 @@
 
 Date: 2026-06-15
 Branch: feat/renju
-Status: implemented (manual WS round-trip pending)
+Status: implemented; live WS round-trip verified 2026-06-15 (6/6 scenarios, headless two-client harness)
 
 ## Goal
 

@@ -207,7 +207,7 @@ Live (WebSocket + raw-TCP) Renju games now drive the full Taraguchi-10 opening s
 - **Branch-A move-5 phase:** Branch A move-5 is sent as a swap-event (`swap=false`, `move5`) by the to-move side in **BOTH** the move-4 swap-decline and post-swap (`isAwaitingBranchChoice`) states; `swap=true` is valid only while the swap window is open (rejected with `INVALID_MOVE` in the branch-choice state); windows 1–3 post-swap place the next opening stone as a plain `DSGMoveTableEvent`.
 - **Echo recipient:** echoes currently use `broadcastMainRoom` (mirrors `handleSwap`/`handleSwap2Pass`); verify opponent/spectator receipt in the manual round-trip and switch the three echoes to `broadcastTable` if exact recipient parity is needed.
 - **Known minor:** the three handlers use `state != GAME_IN_PROGRESS` as a single catch-all, so a disconnect-mid-opening surfaces `NO_GAME_IN_PROGRESS` rather than `GAME_WAITING_FOR_PLAYER_TO_RETURN` — cosmetic error code only, no logic impact.
-- **Manual WS round-trip (QA — pending; DB/transport-coupled, no `ServerTable` unit-test harness exists):** restart the backend, then drive a live Renju game over two sessions and confirm — (a) **swap window:** swap (seats swap, no stone), and decline+move (echo + one `DSGMoveTableEvent`); (b) **Branch A:** decline+move5 (single `DSGMoveTableEvent`); (c) **Branch B:** offer10 → select1 (move 5 placed once, other nine clear); (d) a **rejoin/spectator mid-selection** receives the ten; (e) the **OPPONENT actually receives each decision echo** (sent via `broadcastMainRoom`) — if not, switch the three echoes to `broadcastTable`; (f) **error events** (`DSGMoveTableErrorEvent`) reach the sender on an illegal swap/offer/select.
+- **Live WS round-trip (QA — DONE 2026-06-15):** verified via a headless two-client WS harness (login → create Renju table → sit → start → drive the opening) against `localhost`. All scenarios passed: **auto-center**; **Branch A** (decline+move5, single `DSGMoveTableEvent`); **Branch B** (offer10 → select1, move 5 placed once, other nine clear); **swap=true + post-swap Branch A** (take-over then `swap=false`+move5); **error-to-sender** (`NOT_TURN` / `INVALID_MOVE`, offer10 with `move=-1`, sender-only delivery, table state intact on reject); and **rejoin-mid-offer** (re-sent ten offers + silent `DSGSwapSeatsTableEvent` + current seats).
 
 ### Still deferred
 
@@ -380,6 +380,12 @@ The ten Branch-B offers must contain no two D4-symmetric duplicates. The server 
 violations via `RenjuState.offerFifthMoves` (→ `offerFifthMove`), so client-side checking is a
 **UX nicety** (instant feedback instead of a round-trip error) — recommended, not required.
 
+**The ten offers are NOT box-constrained.** `offerFifthMove` accepts **any** in-bounds, empty,
+non-D4-symmetric point — corner offers are legal (confirmed by the 2026-06-15 round-trip). Only
+the **Branch-A** move 5 is restricted to the 9×9 box; the Branch-B offered 5th moves can be
+anywhere on the board. So the 10-pick multi-select must allow the **whole board** (minus
+occupied + symmetric-duplicate cells), **not** a central square.
+
 Algorithm for the 15×15 board (center `(7,7)`):
 - For move `m`: `x=m%15`, `y=Math.floor(m/15)`, `dx=x-7`, `dy=y-7`.
 - The **8 D4 images** of `(dx,dy)`: rotations `(dx,dy)`,`(-dy,dx)`,`(-dx,-dy)`,`(dy,-dx)` and reflections `(-dx,dy)`,`(dx,-dy)`,`(dy,dx)`,`(-dy,-dx)`. Map each back: `m' = (tx+7) + (ty+7)·15`.
@@ -395,7 +401,9 @@ interaction with **no existing analogue** in this client:
 - **Central-box highlight** — highlight only the legal cells inside the N×N square about center
   112 for the current opening move: **moves 2/3/4/5 → 3×3 / 5×5 / 7×7 / 9×9** (radius 1/2/3/4).
   Applies during both the `MOVE`/placement phase and the **decline-and-place** action of a `SWAP`
-  window (the bundled stone is constrained to the same square).
+  window (the bundled stone is constrained to the same square). This box constraint covers **only
+  the single-stone placements (moves 2–5, including the Branch-A move 5)** — the ten Branch-B
+  offers are **not** box-constrained (§8.5), so do **not** draw a box for the offer-10 picker.
 - **Translucent "dead-stone" candidates** — render the 10 Branch-B offers (and, during
   `SELECTION`, the non-picked nine) as translucent black. The Go **dead-stone** render path is
   the closest existing primitive (`Board.js` `board[s].deadStone`; `Stone`/`SimpleStone` take an
@@ -403,7 +411,8 @@ interaction with **no existing analogue** in this client:
   add a translucent variant.
 - **10-pick multi-select + submit** — tap to add a candidate, tap again to remove, with an
   `n/10` counter and a submit button. **Validation before send:** exactly **1** stone (and inside
-  the 9×9) for Branch A, or exactly **10** distinct, non-D4-duplicate (§8.5) stones for Branch B;
+  the 9×9) for Branch A, or exactly **10** distinct, non-D4-duplicate (§8.5) stones placed
+  **anywhere on the board** (in-bounds + empty; **not** box-constrained) for Branch B;
   alert otherwise. Branch is inferred from the count (1 = continue / 10 = offer), matching the
   `MoveServlet`/`ServerTable` contract.
 
