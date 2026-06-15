@@ -1442,7 +1442,136 @@ public class ServerTable {
     }
 
     public void handleRenjuSelect1(DSGRenjuTaraguchi10Select1TableEvent selectEvent) {
-        // implemented in Task 5
+
+        String actor = selectEvent.getPlayer();
+        int move = selectEvent.getMove();
+        int error = NO_ERROR;
+
+        if (!isPlayerInTable(actor)) {
+            error = DSGTableErrorEvent.NOT_IN_TABLE;
+        } else if (!(gridState instanceof RenjuState)) {
+            error = DSGTableErrorEvent.UNKNOWN;
+        } else {
+            int seat = getPlayerSeat(actor);
+            RenjuState rs = (RenjuState) gridState;
+            if (seat == NOT_SITTING) {
+                error = DSGTableErrorEvent.NOT_SITTING;
+            } else if (state != DSGGameStateTableEvent.GAME_IN_PROGRESS) {
+                error = DSGTableErrorEvent.NO_GAME_IN_PROGRESS;
+            } else if (!rs.isAwaitingFifthSelection()) {
+                error = DSGTableErrorEvent.INVALID_MOVE;   // not awaiting a selection
+            } else if (gridState.getCurrentPlayer() != seat) {
+                error = DSGTableErrorEvent.NOT_TURN;
+            } else if (!rs.getOfferedFifthMoves().contains(move)) {
+                error = DSGTableErrorEvent.INVALID_MOVE;    // not one of the ten
+            } else {
+
+                // Do NOT pre-clear undoRequested here. Unlike the swap handlers (which
+                // mirror handleSwap and set undoRequested=false directly), this path
+                // places a stone via the handleMove tail, so broadcastRenjuFifthMove
+                // performs the undo/cancel reset exactly as handleMove does (it
+                // broadcasts the decline replies before clearing the flags).
+                int oldCurrentPlayer = gridState.getCurrentPlayer();   // white, selecting
+                rs.selectFifthMove(move);          // engine addMove's the chosen candidate as move 5 (opening completes at move 6)
+
+                // decision echo: which offer became move 5 (clears the other nine)
+                broadcastMainRoom(selectEvent);
+                // sole stone placement + timer accounting + game-over (handleMove tail)
+                broadcastRenjuFifthMove(actor, move, oldCurrentPlayer);
+            }
+        }
+
+        if (error != NO_ERROR) {
+            dsgEventRouter.routeEvent(
+                    new DSGMoveTableErrorEvent(actor, tableNum, move, error),
+                    actor);
+        }
+    }
+
+    /**
+     * Post-commit tail for the Branch-B 5th move. selectFifthMove() already did
+     * addMove(), so this does exactly what handleMove does AFTER its own addMove:
+     * the timer + moveTimes accounting (BOTH the player-changed and the same-player
+     * branch), the undo/cancel decline replies, the single DSGMoveTableEvent
+     * placement broadcast, activity logging, and the game-over / final-go() check.
+     *
+     * In Branch B oldCurrentPlayer == newCurrentPlayer (white selects move 5 and
+     * also plays move 6), so handleMove's same-player branch is the one that fires;
+     * both branches are reproduced verbatim so the per-move time list and the
+     * Fischer/byo-yomi clocks stay consistent with every stone placed via
+     * handleMove. oldCurrentPlayer was captured BEFORE selectFifthMove().
+     */
+    private void broadcastRenjuFifthMove(String player, int move, int oldCurrentPlayer) {
+        int newCurrentPlayer = gridState.getCurrentPlayer();
+        synchronized (this) {
+
+            if (timed) {
+                if (oldCurrentPlayer != newCurrentPlayer) {
+                    timers[oldCurrentPlayer].stop();
+                    if (shouldTimerRun()) {
+                        if (initialMinutes == 0) {
+                            timers[oldCurrentPlayer].reset();
+                        } else {
+                            timers[oldCurrentPlayer].increment(incrementalSeconds);
+                            timers[oldCurrentPlayer].incrementMillis(
+                                    (int) pingManager.getPingTime(player));
+                        }
+                    }
+                    moveTimes.add(new Time(timers[oldCurrentPlayer].getMinutes(),
+                            timers[oldCurrentPlayer].getSeconds()));
+                } else {  // same player (Branch B: white selected move 5 and plays move 6)
+                    if (shouldTimerRun()) {
+                        if (initialMinutes == 0) {
+                            timers[oldCurrentPlayer].stop();
+                            timers[oldCurrentPlayer].reset();
+                        } else {
+                            timers[oldCurrentPlayer].increment(incrementalSeconds);
+                            timers[oldCurrentPlayer].incrementMillis(
+                                    (int) pingManager.getPingTime(player));
+                        }
+                    }
+                    moveTimes.add(new Time(timers[oldCurrentPlayer].getMinutes(),
+                            timers[oldCurrentPlayer].getSeconds()));
+                }
+            }
+
+            // undo/cancel reset, mirroring handleMove (≈1651-1659)
+            if (undoRequested) {
+                broadcastTable(new DSGUndoReplyTableEvent(player, tableNum, false));
+                undoRequested = false;
+            }
+            if (cancelRequested) {
+                broadcastTable(new DSGCancelReplyTableEvent(player, tableNum, false));
+                cancelRequested = false;
+                cancelRequestedBy = null;
+            }
+
+            broadcastTable(new DSGMoveTableEvent(player, tableNum, move));
+
+            if (shouldTimerRun() && timed) {
+                broadCastPlayerTimer(oldCurrentPlayer);
+            }
+
+            activityLogger.updateGameState(sid, tableNum, gridState.getHash(),
+                    gridState.getMoves());
+
+            if (gridState.isGameOver()) {
+                String winner;
+                String loser;
+                if (gridState.getWinner() == 0) {
+                    winner = playingPlayers[1].getName();
+                    loser = playingPlayers[2].getName();
+                } else {
+                    winner = playingPlayers[gridState.getWinner()].getName();
+                    loser = playingPlayers[3 - gridState.getWinner()].getName();
+                }
+                gameOver(gridState.getWinner() == 0, winner, loser, false, false, false);
+            } else if (timed) {
+                if (oldCurrentPlayer != newCurrentPlayer || initialMinutes == 0) {
+                    timers[newCurrentPlayer].go();
+                }
+            }
+        }
     }
 
     protected void copySittingPlayersToPlayingPlayers() {
