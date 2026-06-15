@@ -103,9 +103,19 @@ implementation.
     — the other player picks one of the ten as move 5.
 - **Naming:** all three carry the `…TableEvent` suffix for convention consistency
   with every existing event class.
-- **Echo, not separate move broadcast.** Each applied event is re-broadcast to the
-  table (like `DSGSwap2PassTableEvent`), carrying everything the other client needs
-  to mirror the decision (and any bundled move). Move 6+ uses `DSGMoveTableEvent`.
+- **Decision-only echoes; stones ride `DSGMoveTableEvent`.** Each opening decision
+  event (swap / offer10 / select1) is re-broadcast as a **decision signal** the other
+  client must NOT place a stone from. Stone placement always travels as a normal
+  `DSGMoveTableEvent`: a declined-swap-with-move delegates the placement to
+  `handleMove` (reusing its proven timer / game-over / activity-logging tail rather
+  than reimplementing it); the Branch-B move-5 stone (placed inside `selectFifthMove`)
+  is broadcast via a small `broadcastRenjuFifthMove` helper that reproduces
+  handleMove's post-move tail — BOTH the player-changed and same-player branches,
+  since in Branch B the selector is white and also plays move 6, so the current
+  player does NOT change at selection (a player-changed-only tail would drop white's
+  increment and desync `moveTimes`). Move 6+ is the normal `DSGMoveTableEvent` path.
+  Clients therefore treat the opening as decision-echo + the `DSGMoveTableEvent` they
+  already handle — settled here for sub-project 3.
 - **Seats encode swaps.** On `swap=true` the handler swaps both seat arrays, so the
   seat assignments already-sent on join fully describe the swap history — no packed
   word is sent live. (`getRenjuSwapsPacked()`/offers stay in `RenjuState` for the
@@ -142,17 +152,32 @@ the existing `DSGMoveTableEvent` / `DSGSwap2PassTableEvent` arms.
 ### 4. `ServerTable` handlers
 - `handleRenjuSwap(DSGRenjuTaraguchiSwapTableEvent)` — verify it's a Renju game,
   the actor's seat is the current player, and `gridState` `isAwaitingSwapDecision()`
-  (or the move-5 window). If `swap`: swap both seat arrays (mirror `handleSwap`) and
-  `renjuSwapDecisionMade(true)`. Else: `renjuSwapDecisionMade(false)` then validate
-  + `addMove(move)` (engine enforces the box/forbidden rules). Echo the event.
+  (or the move-5 window). If `swap`: swap both seat arrays (mirror `handleSwap`) +
+  `renjuSwapDecisionMade(true)`, then echo the decision (no stone). Else:
+  `renjuSwapDecisionMade(false)`, echo the decision, then **delegate the placement
+  to `handleMove(player, move)`** — `handleMove` enforces box/forbidden via
+  `isValidMove`, ticks timers, broadcasts the `DSGMoveTableEvent`, and checks game
+  over. (Do not place the stone directly — that would bypass / duplicate that path.)
 - `handleRenjuOffer10(DSGRenjuTaraguchiOffer10TableEvent)` — verify Renju, actor
   seat, and that the engine is at the post-move-4 decision. Resolve the move-4 swap
-  window as declined (`renjuSwapDecisionMade(false)` if still awaiting),
-  `chooseBranch(true)`, then `offerFifthMove(move)` for each of the ten (engine
-  rejects empty/duplicate/symmetric). Echo the event.
+  window as declined (`renjuSwapDecisionMade(false)` if still awaiting) +
+  `chooseBranch(true)`, then commit the ten via a new **atomic**
+  `RenjuState.offerFifthMoves(int[])` (validate-all / commit-none: snapshot the
+  internal list, `offerFifthMove` each, restore on any rejection — engine rejects
+  empty/duplicate/symmetric/occupied). Echo the offer event; hand the turn to the
+  selector (timer choreography mirrors `handleSwap2Pass`).
 - `handleRenjuSelect1(DSGRenjuTaraguchi10Select1TableEvent)` — verify Renju, actor
-  seat, `isAwaitingFifthSelection()`, and membership; `selectFifthMove(move)` (engine
-  `addMove`s it). Echo the event.
+  seat, `isAwaitingFifthSelection()`, and membership; `selectFifthMove(move)`
+  (engine places the stone itself). Because the stone is placed inside the hook (not
+  via `handleMove`), broadcast it through `broadcastRenjuFifthMove` (the helper that
+  reproduces handleMove's post-move tail, both branches) and echo the select event.
+
+**Echo recipient.** The three decision echoes use `broadcastMainRoom` to mirror the
+shipped `handleSwap`/`handleSwap2Pass` precedent (seated players are also in the
+main-room list, so the opponent receives them); the bundled stone goes via
+`broadcastTable`. Task 7's manual round-trip verifies the opponent/spectators
+actually receive the echoes and offers — switch the echoes to `broadcastTable` for
+exact recipient parity if not.
 
 All three: on any validation failure, no state is mutated and a
 `DSGMoveTableErrorEvent` is emitted to the sending player — see Error handling.
@@ -173,9 +198,13 @@ client JSON ─(TCP socket OR WebSocket)→ Socket/WebSocketDSGEventHandler
             → SynchronizedServerTable.callServerTable() switch
             → ServerTable.handleRenju{Swap|Offer10|Select1}
                  ├─ validate (Renju? actor seat == current player? phase ok? legal?)
-                 ├─ drive RenjuState hooks (+ addMove where applicable)
+                 ├─ drive RenjuState hooks (renjuSwapDecisionMade/chooseBranch/
+                 │                          offerFifthMoves/selectFifthMove)
                  ├─ if swap=true: swap playingPlayers[]/sittingPlayers[] (1↔2)
-                 └─ dsgEventRouter echo same event → other connected client(s)
+                 ├─ echo the DECISION event (no stone placed from it)
+                 └─ place stones as DSGMoveTableEvent:
+                      swap=false move → handleMove(player, move)
+                      select1        → broadcastRenjuFifthMove (handleMove tail)
             (move 6+ → normal DSGMoveTableEvent path)
 
 join/rejoin → handleJoin → … → sendPlayingPlayers (seats, swap-aware)
@@ -199,11 +228,12 @@ join/rejoin → handleJoin → … → sendPlayingPlayers (seats, swap-aware)
     the ten.
 
   Reusing `DSGMoveTableErrorEvent` (carries `move` + error code) means clients
-  handle Renju opening errors via the exact same path as normal-move errors. For
-  the offer/select handlers, `move` in the error event is the offending move (the
-  rejected candidate / bad selection); for a pure swap with no move, use the
-  event's move field (placeholder). A dedicated forbidden-point error code could be
-  added later if a client wants to distinguish it — out of scope here.
+  handle Renju opening errors via the exact same path as normal-move errors. The
+  `move` field carried in the error event: the swap handler uses the event's move;
+  `select1` uses the rejected selection; **`offer10` reports `-1`** — the ten are
+  committed atomically (validate-all / commit-none), so no single candidate is "the"
+  offender. A dedicated forbidden-point error code could be added later if a client
+  wants to distinguish it — out of scope here.
 - **Forbidden points / symmetric offers:** detected by `RenjuState`
   (`isValidMove`, offer dedup). On detection the handler sets `INVALID_MOVE` and
   emits as above **without partially mutating state** — in particular, validate all
