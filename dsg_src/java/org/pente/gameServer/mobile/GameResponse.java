@@ -102,6 +102,20 @@ public class GameResponse {
         this.renjuSwaps = renjuSwaps;
     }
 
+    private static String buildOffersString(int[] offers) {
+        if (offers == null) {
+            return null;
+        }
+        StringBuilder ro = new StringBuilder();
+        for (int i = 0; i < offers.length; i++) {
+            if (i > 0) {
+                ro.append(',');
+            }
+            ro.append(offers[i]);
+        }
+        return ro.toString();
+    }
+
     /**
      * Builds a response for an active or completed turn-based game.
      *
@@ -214,6 +228,8 @@ public class GameResponse {
             movesBuilder.append(gameMoves[i]);
         }
 
+        String historicRenjuOffers = buildOffersString(game.getRenjuOffers());
+
         return new GameResponse(
                 gid,
                 (game.isPrivateGame() ? "" : "non-") + "private",
@@ -225,7 +241,7 @@ public class GameResponse {
                 "", "",
                 null, null, null, null, null, null, null,
                 null, null, null, null, null, null,
-                null, null, null
+                null, historicRenjuOffers, game.getRenjuSwaps()
         );
     }
 
