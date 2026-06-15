@@ -1237,6 +1237,18 @@ public class ServerTable {
         }
     }
 
+    public void handleRenjuSwap(DSGRenjuTaraguchiSwapTableEvent swapEvent) {
+        // implemented in Task 3
+    }
+
+    public void handleRenjuOffer10(DSGRenjuTaraguchiOffer10TableEvent offerEvent) {
+        // implemented in Task 4
+    }
+
+    public void handleRenjuSelect1(DSGRenjuTaraguchi10Select1TableEvent selectEvent) {
+        // implemented in Task 5
+    }
+
     protected void copySittingPlayersToPlayingPlayers() {
         for (int i = 1; i < playingPlayers.length; i++) {
             playingPlayers[i] = sittingPlayers[i];
