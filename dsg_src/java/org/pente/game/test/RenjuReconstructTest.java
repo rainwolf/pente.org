@@ -159,4 +159,50 @@ public class RenjuReconstructTest extends TestCase {
         assertEquals(RenjuOpeningState.PENDING, st.swap5);
         assertEquals(RenjuOpeningState.PENDING, st.branch);
     }
+
+    // Builds a Branch-B position: 4 opening moves with swaps declined, branch B chosen.
+    private RenjuState branchBAtFour() {
+        RenjuState s = new RenjuState(15, 15);
+        s.addMove(xy(7, 7));  s.renjuSwapDecisionMade(false);   // after move 1
+        s.addMove(xy(8, 8));  s.renjuSwapDecisionMade(false);   // after move 2
+        s.addMove(xy(9, 7));  s.renjuSwapDecisionMade(false);   // after move 3
+        s.addMove(xy(6, 8));  s.renjuSwapDecisionMade(false);   // after move 4 (swap4)
+        s.chooseBranch(true);                                   // Branch B
+        return s;
+    }
+
+    public void testOfferFifthMovesRejectsWrongCount() {
+        RenjuState s = branchBAtFour();
+        try {
+            s.offerFifthMoves(new int[]{ xy(10, 10) });   // only 1, needs 10
+            fail("expected rejection for wrong offer count");
+        } catch (IllegalArgumentException expected) {
+        }
+        assertTrue("no offers may be committed on rejection",
+                s.getOfferedFifthMoves().isEmpty());
+        assertTrue("engine must still accept the ten offers",
+                s.isAwaitingFifthOffers());
+    }
+
+    public void testOfferFifthMovesRollsBackOnOccupiedPoint() {
+        RenjuState s = branchBAtFour();
+        // Nine VALID candidates, then move 1's occupied point as the 10th. The loop
+        // commits the first nine to offeredFifth, then offerFifthMove throws on the
+        // occupied 10th -> this genuinely exercises the partial-rollback path
+        // (offeredFifth.clear() + addAll(snapshot) over a NON-empty accumulation),
+        // not just the "throws before anything is added" case.
+        int[] bad = new int[]{
+                xy(10, 10), xy(11, 10), xy(12, 10), xy(13, 10), xy(10, 11),
+                xy(11, 11), xy(12, 11), xy(13, 11), xy(10, 12),
+                xy(7, 7)   // occupied (move 1) -> throws after nine offers were added
+        };
+        try {
+            s.offerFifthMoves(bad);
+            fail("expected rejection for occupied offer point");
+        } catch (IllegalArgumentException expected) {
+        }
+        assertTrue("a rejected batch must roll back the nine already-added offers",
+                s.getOfferedFifthMoves().isEmpty());
+        assertTrue(s.isAwaitingFifthOffers());
+    }
 }

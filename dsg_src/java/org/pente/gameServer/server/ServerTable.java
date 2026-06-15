@@ -1362,7 +1362,83 @@ public class ServerTable {
     }
 
     public void handleRenjuOffer10(DSGRenjuTaraguchiOffer10TableEvent offerEvent) {
-        // implemented in Task 4
+
+        String actor = offerEvent.getPlayer();
+        int[] moves = offerEvent.getMoves();
+        int error = NO_ERROR;
+
+        if (!isPlayerInTable(actor)) {
+            error = DSGTableErrorEvent.NOT_IN_TABLE;
+        } else if (!(gridState instanceof RenjuState)) {
+            error = DSGTableErrorEvent.UNKNOWN;
+        } else {
+            int seat = getPlayerSeat(actor);
+            RenjuState rs = (RenjuState) gridState;
+            boolean atMove4 = !rs.isOpeningComplete() && gridState.getNumMoves() == 4 &&
+                    (rs.isAwaitingSwapDecision() || rs.isAwaitingBranchChoice()
+                            || rs.isAwaitingFifthOffers());
+            if (seat == NOT_SITTING) {
+                error = DSGTableErrorEvent.NOT_SITTING;
+            } else if (state != DSGGameStateTableEvent.GAME_IN_PROGRESS) {
+                error = DSGTableErrorEvent.NO_GAME_IN_PROGRESS;
+            } else if (!atMove4) {
+                error = DSGTableErrorEvent.INVALID_MOVE;   // not at the post-move-4 decision
+            } else if (gridState.getCurrentPlayer() != seat) {
+                error = DSGTableErrorEvent.NOT_TURN;
+            } else if (moves == null || moves.length != 10) {
+                error = DSGTableErrorEvent.INVALID_MOVE;
+            } else {
+
+                undoRequested = false;
+                int offererSeat = gridState.getCurrentPlayer();   // black, the offerer
+
+                try {
+                    if (rs.isAwaitingSwapDecision()) {
+                        rs.renjuSwapDecisionMade(false);   // decline the move-4 swap
+                    }
+                    if (rs.isAwaitingBranchChoice()) {
+                        rs.chooseBranch(true);             // Branch B
+                    }
+                    rs.offerFifthMoves(moves);             // atomic; throws -> INVALID_MOVE
+                } catch (RuntimeException ex) {
+                    log4j.info(psid() + "Renju offer10 rejected: " + ex.getMessage());
+                    error = DSGTableErrorEvent.INVALID_MOVE;
+                }
+
+                if (error == NO_ERROR) {
+                    // turn + timer pass to the selector (white), mirror handleSwap2Pass
+                    if (timed) {
+                        timers[offererSeat].stop();
+                        if (initialMinutes == 0) {
+                            timers[offererSeat].reset();
+                        }
+                        timers[offererSeat].incrementMillis(
+                                (int) pingManager.getPingTime(actor));
+                        int selector = gridState.getCurrentPlayer();   // white selecting
+                        if (initialMinutes == 0) {
+                            timers[selector].reset();
+                        }
+                        timers[selector].go();
+                        broadCastPlayerTimer(offererSeat);
+                        broadCastPlayerTimer(selector);
+                    }
+                    broadcastMainRoom(offerEvent);
+                }
+            }
+        }
+
+        if (error != NO_ERROR) {
+            // The ten-offer commit is atomic (validate-all / commit-none via
+            // offerFifthMoves), so on rejection NO candidate was applied and there is
+            // no single "offending move" the way handleMove has one. We therefore
+            // report move = -1; the client re-sends a corrected ten. (Spec alignment:
+            // Task 7 updates the spec's Error-handling section to state that the
+            // offer10 handler reports -1 for batch rejections, superseding its earlier
+            // "the offending move" wording, which assumed an incremental commit.)
+            dsgEventRouter.routeEvent(
+                    new DSGMoveTableErrorEvent(actor, tableNum, -1, error),
+                    actor);
+        }
     }
 
     public void handleRenjuSelect1(DSGRenjuTaraguchi10Select1TableEvent selectEvent) {

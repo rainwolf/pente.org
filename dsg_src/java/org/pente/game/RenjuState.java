@@ -310,6 +310,32 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
         offeredFifth.add(move);
     }
 
+    /**
+     * Atomically offer all ten Branch-B 5th-move candidates. Each is validated by
+     * the SAME rules as offerFifthMove (empty board point, in bounds, not a
+     * duplicate, not a symmetric duplicate). If ANY is rejected, NO offer is
+     * committed: the offeredFifth list is restored to its prior contents and the
+     * triggering exception is rethrown. Reuses offerFifthMove - no new rules.
+     */
+    public void offerFifthMoves(int[] moves) {
+        if (!isAwaitingFifthOffers()) {
+            throw new IllegalStateException("not accepting 5th-move offers");
+        }
+        if (moves == null || moves.length != 10) {
+            throw new IllegalArgumentException("Branch B requires exactly ten 5th-move offers");
+        }
+        List<Integer> snapshot = new ArrayList<Integer>(offeredFifth);
+        try {
+            for (int m : moves) {
+                offerFifthMove(m);
+            }
+        } catch (RuntimeException e) {
+            offeredFifth.clear();
+            offeredFifth.addAll(snapshot);
+            throw e;
+        }
+    }
+
     public void selectFifthMove(int move) {
         if (!isAwaitingFifthSelection()) {
             throw new IllegalStateException("not awaiting 5th-move selection");
