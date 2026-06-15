@@ -749,7 +749,7 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
 
                 moveResult = moveStmt.executeQuery();
                 if (!firstMoveCanBeOffCenter(game)) {
-                    gameData.addMove(180);
+                    gameData.addMove(GridStateFactory.getCenterMove(game));
                 }
                 while (moveResult.next()) {
                     gameData.addMove(moveResult.getInt(1));
@@ -1008,7 +1008,7 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
                 gameData.setSwap2Pass(gameResult.getInt(20) == 1);
 
                 if (!firstMoveCanBeOffCenter(game)) {
-                    gameData.addMove(180);
+                    gameData.addMove(GridStateFactory.getCenterMove(game));
                 }
 
                 if (movesMap.get(gameID) != null) {
