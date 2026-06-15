@@ -1487,7 +1487,7 @@ public class ServerTable {
                 game != GridStateFactory.GO13_GAME && game != GridStateFactory.SPEED_GO13_GAME &&
                 game != GridStateFactory.SWAP2PENTE_GAME && game != GridStateFactory.SPEED_SWAP2PENTE_GAME &&
                 game != GridStateFactory.SWAP2KERYO_GAME && game != GridStateFactory.SPEED_SWAP2KERYO_GAME) {
-            handleMove(playingPlayers[1].getName(), 180);
+            handleMove(playingPlayers[1].getName(), GridStateFactory.getCenterMove(game.getId()));
         } else if (timed) {
             timers[gridState.getCurrentPlayer()].go();
         }
