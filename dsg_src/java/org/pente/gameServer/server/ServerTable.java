@@ -1304,24 +1304,36 @@ public class ServerTable {
                 } else {
 
                     int n = gridState.getNumMoves();
-                    rs.renjuSwapDecisionMade(false);
-                    // decision echo (decision-only on the client; the stone, if any,
-                    // arrives via the DSGMoveTableEvent that handleMove broadcasts)
-                    broadcastMainRoom(swapEvent);
-
-                    if (n == 4) {
-                        // move-4 window declined -> Branch A: choose A, then place move 5
-                        rs.chooseBranch(false);
-                        handleMove(actor, move);
-                    } else if (n < 4) {
-                        // move-2/3/4 windows: place the next opening stone
-                        handleMove(actor, move);
+                    if (n <= 4) {
+                        // bundled-stone windows (move-2/3/4 declines, and the move-4
+                        // decline that continues Branch A): the decline carries the
+                        // next opening stone. Pre-validate that stone BEFORE committing
+                        // anything -- RenjuState.isValidMove() returns false while
+                        // awaitingSwap, so use the pure pre-check. If it fails, reject
+                        // cleanly (nothing committed, nothing broadcast); only on
+                        // success do we commit the decision, choose Branch A at move 4,
+                        // echo the decision, then place the stone via handleMove.
+                        if (!rs.wouldAcceptDeclinedOpeningMove(move)) {
+                            error = DSGTableErrorEvent.INVALID_MOVE;
+                        } else {
+                            rs.renjuSwapDecisionMade(false);
+                            if (n == 4) {
+                                // move-4 window declined -> Branch A
+                                rs.chooseBranch(false);
+                            }
+                            // decision echo (decision-only on the client; the stone
+                            // arrives via the DSGMoveTableEvent that handleMove broadcasts)
+                            broadcastMainRoom(swapEvent);
+                            handleMove(actor, move);
+                        }
                     } else {
                         // move-5 window: white declines swap5 and continues to play
                         // move 6 itself, so getCurrentPlayer() is unchanged (next ==
                         // seat == white). No bundled stone and no handoff to the other
                         // player; white's own clock is simply reset/continued. Move 6
                         // then arrives later as a normal DSGMoveTableEvent.
+                        rs.renjuSwapDecisionMade(false);
+                        broadcastMainRoom(swapEvent);
                         if (timed) {
                             timers[seat].stop();
                             if (initialMinutes == 0) {
@@ -1333,7 +1345,8 @@ public class ServerTable {
                                 timers[next].reset();
                             }
                             timers[next].go();
-                            broadCastPlayerTimer(seat);
+                            // seat == next here (both white, seat 2): broadcast the
+                            // current player's timer once, matching handleSwap2Pass.
                             broadCastPlayerTimer(next);
                         }
                     }

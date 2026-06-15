@@ -109,6 +109,46 @@ public class RenjuReconstructTest extends TestCase {
         assertEquals(RenjuOpeningState.YES, st.swap5);
     }
 
+    public void testWouldAcceptDeclinedOpeningMove_move1Window() {
+        // After move 1, white is in the swap-1 window.
+        RenjuState s = new RenjuState(15, 15);
+        s.addMove(xy(7, 7));
+        assertTrue(s.isAwaitingSwapDecision());
+
+        // A legal in-box move 2 (within the 3x3 around center) accepts;
+        // an already-occupied point is rejected.
+        assertTrue(s.wouldAcceptDeclinedOpeningMove(xy(8, 8)));
+        assertTrue(!s.wouldAcceptDeclinedOpeningMove(xy(7, 7))); // occupied
+
+        // Pure check: nothing was mutated.
+        assertTrue(s.isAwaitingSwapDecision());
+        assertEquals(1, s.getNumMoves());
+    }
+
+    public void testWouldAcceptDeclinedOpeningMove_move4Window_branchA() {
+        // Drive declines through the move-4 swap window (Branch A continuation).
+        RenjuState s = new RenjuState(15, 15);
+        s.addMove(xy(7, 7)); s.renjuSwapDecisionMade(false);
+        s.addMove(xy(8, 8)); s.renjuSwapDecisionMade(false);
+        s.addMove(xy(9, 7)); s.renjuSwapDecisionMade(false);
+        s.addMove(xy(6, 8));               // n == 4, swap-4 window open
+        assertTrue(s.isAwaitingSwapDecision());
+
+        // A legal move 5 (within the 9x9) accepts; an occupied point is rejected.
+        assertTrue(s.wouldAcceptDeclinedOpeningMove(xy(11, 7)));
+        assertTrue(!s.wouldAcceptDeclinedOpeningMove(xy(7, 7))); // occupied
+
+        // Pure check: swap window + branch flags untouched.
+        assertTrue(s.isAwaitingSwapDecision());
+        assertTrue(!s.isAwaitingBranchChoice());
+        assertEquals(4, s.getNumMoves());
+    }
+
+    public void testWouldAcceptDeclinedOpeningMove_falseWhenNotAwaitingSwap() {
+        RenjuState s = new RenjuState(15, 15);
+        assertTrue(!s.wouldAcceptDeclinedOpeningMove(xy(7, 7)));
+    }
+
     public void testGetRenjuSwapsPackedLeavesUnresolvedPending() {
         // Only move 1 placed, swap1 not yet decided -> all PENDING.
         RenjuState s = new RenjuState(15, 15);

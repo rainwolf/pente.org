@@ -435,6 +435,33 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
         return true;
     }
 
+    /**
+     * Pure check: would the current player's bundled opening stone be legal if they
+     * decline the pending swap (Branch A continuation at the move-4 window)? Mutates
+     * nothing. Returns false if not currently awaiting a swap decision. Single-thread
+     * use only (table events are serialized by SynchronizedServerTable).
+     *
+     * isValidMove() returns false while awaitingSwap is set, so this temporarily lifts
+     * the gating flags (and, at the move-4 window, simulates chooseBranch(false)),
+     * delegates to the EXISTING isValidMove, and restores every flag in finally.
+     */
+    public boolean wouldAcceptDeclinedOpeningMove(int move) {
+        if (!awaitingSwap) {
+            return false;
+        }
+        int n = gridState.getNumMoves();
+        boolean savedAwaiting = awaitingSwap, savedBranch = branchChosen, savedTen = tenOffer;
+        try {
+            awaitingSwap = false;
+            if (n == 4) { branchChosen = true; tenOffer = false; } // simulate chooseBranch(false)
+            return isValidMove(move, getCurrentPlayer());
+        } finally {
+            awaitingSwap = savedAwaiting;
+            branchChosen = savedBranch;
+            tenOffer = savedTen;
+        }
+    }
+
     public int getCurrentPlayer() {
         if (openingComplete) return super.getCurrentPlayer();
         int n = gridState.getNumMoves();
