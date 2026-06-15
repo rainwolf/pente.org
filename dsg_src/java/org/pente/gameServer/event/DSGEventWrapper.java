@@ -81,6 +81,9 @@ public class DSGEventWrapper {
     private DSGArenaAcceptTableJoinEvent dsgArenaAcceptTableJoinEvent;
     private DSGArenaCreateTableEvent dsgArenaCreateTableEvent;
     private DSGArenaRequestJoinTableEvent dsgArenaRequestJoinTableEvent;
+    private DSGRenjuTaraguchiSwapTableEvent dsgRenjuTaraguchiSwapTableEvent;
+    private DSGRenjuTaraguchiOffer10TableEvent dsgRenjuTaraguchiOffer10TableEvent;
+    private DSGRenjuTaraguchi10Select1TableEvent dsgRenjuTaraguchi10Select1TableEvent;
 
     public DSGEventWrapper(Object o) {
         Field[] fields = DSGEventWrapper.class.getDeclaredFields();
@@ -674,6 +677,30 @@ public class DSGEventWrapper {
 
     public void setDsgArenaRequestJoinTableEvent(DSGArenaRequestJoinTableEvent dsgArenaRequestJoinTableEvent) {
         this.dsgArenaRequestJoinTableEvent = dsgArenaRequestJoinTableEvent;
+    }
+
+    public DSGRenjuTaraguchiSwapTableEvent getDsgRenjuTaraguchiSwapTableEvent() {
+        return dsgRenjuTaraguchiSwapTableEvent;
+    }
+
+    public void setDsgRenjuTaraguchiSwapTableEvent(DSGRenjuTaraguchiSwapTableEvent dsgRenjuTaraguchiSwapTableEvent) {
+        this.dsgRenjuTaraguchiSwapTableEvent = dsgRenjuTaraguchiSwapTableEvent;
+    }
+
+    public DSGRenjuTaraguchiOffer10TableEvent getDsgRenjuTaraguchiOffer10TableEvent() {
+        return dsgRenjuTaraguchiOffer10TableEvent;
+    }
+
+    public void setDsgRenjuTaraguchiOffer10TableEvent(DSGRenjuTaraguchiOffer10TableEvent dsgRenjuTaraguchiOffer10TableEvent) {
+        this.dsgRenjuTaraguchiOffer10TableEvent = dsgRenjuTaraguchiOffer10TableEvent;
+    }
+
+    public DSGRenjuTaraguchi10Select1TableEvent getDsgRenjuTaraguchi10Select1TableEvent() {
+        return dsgRenjuTaraguchi10Select1TableEvent;
+    }
+
+    public void setDsgRenjuTaraguchi10Select1TableEvent(DSGRenjuTaraguchi10Select1TableEvent dsgRenjuTaraguchi10Select1TableEvent) {
+        this.dsgRenjuTaraguchi10Select1TableEvent = dsgRenjuTaraguchi10Select1TableEvent;
     }
 }
 
