@@ -886,6 +886,10 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                         game.getGame() == GridStateFactory.TB_SWAP2KERYO) {
                     gameData.setSwap2Pass(game.didSwap2Pass());
                 }
+                if (game.getGame() == GridStateFactory.TB_RENJU) {
+                    gameData.setRenjuSwaps(game.getRenjuSwaps());
+                    gameData.setRenjuOffers(game.getRenjuOffers());
+                }
 
                 for (int i = 0; i < game.getNumMoves(); i++) {
                     gameData.addMove(game.getMove(i));

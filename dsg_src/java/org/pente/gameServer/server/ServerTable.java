@@ -2861,6 +2861,19 @@ public class ServerTable {
                 gameData.setSwap2Pass(((PenteState) gridState).didSwap2Pass());
             }
 
+            if (gridState instanceof RenjuState) {
+                RenjuState rs = (RenjuState) gridState;
+                gameData.setRenjuSwaps(rs.getRenjuSwapsPacked());
+                java.util.List<Integer> offers = rs.getOfferedFifthMoves();
+                if (offers != null && !offers.isEmpty()) {
+                    int[] arr = new int[offers.size()];
+                    for (int i = 0; i < arr.length; i++) {
+                        arr[i] = offers.get(i);
+                    }
+                    gameData.setRenjuOffers(arr);
+                }
+            }
+
             gameData.setStatus(status);
 
             for (int i = 0; i < gridState.getNumMoves(); i++) {

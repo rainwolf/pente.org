@@ -700,6 +700,10 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
         if (getGame() == GridStateFactory.TB_SWAP2PENTE || getGame() == GridStateFactory.TB_SWAP2KERYO) {
             gameData.setSwap2Pass(swap2Pass);
         }
+        if (getGame() == GridStateFactory.TB_RENJU) {
+            gameData.setRenjuSwaps(renjuSwaps);
+            gameData.setRenjuOffers(renjuOffers);
+        }
 
         for (int i = 0; i < getNumMoves(); i++) {
             gameData.addMove(getMove(i));
