@@ -345,8 +345,8 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
                         "(site_id, event_id, round, section, play_date, timer, rated, " +
                         " initial_time, incremental_time, player1_pid, player2_pid, " +
                         " player1_rating, player2_rating, player1_type, player2_type, " +
-                        " winner, gid, game, swapped, private, status, swap2pass) " +
-                        "values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                        " winner, gid, game, swapped, private, status, swap2pass, renju_swaps) " +
+                        "values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
                 String timer = "N";
                 if (data.getTimed()) {
@@ -401,8 +401,36 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
                 stmt.setString(20, data.isPrivateGame() ? "Y" : "N");
                 stmt.setString(21, data.getStatus());
                 stmt.setInt(22, data.didSwap2Pass() ? 1 : 0);
+                if (data.getRenjuSwaps() != null) {
+                    stmt.setInt(23, data.getRenjuSwaps());
+                } else {
+                    stmt.setNull(23, java.sql.Types.SMALLINT);
+                }
                 stmt.executeUpdate();
                 stmt.close();
+
+                if (data.getRenjuOffers() != null) {
+                    PreparedStatement offerStmt = null;
+                    try {
+                        offerStmt = con.prepareStatement("insert into pente_renju_offer " +
+                                "(gid, site_id, offer_num, move) values(?, ?, ?, ?)");
+                        int[] offers = data.getRenjuOffers();
+                        for (int i = 0; i < offers.length; i++) {
+                            offerStmt.setLong(1, data.getGameID());
+                            offerStmt.setInt(2, siteData.getSiteID());
+                            offerStmt.setInt(3, i);
+                            offerStmt.setInt(4, offers[i]);
+                            offerStmt.executeUpdate();
+                        }
+                    } finally {
+                        if (offerStmt != null) {
+                            try {
+                                offerStmt.close();
+                            } catch (SQLException ex) {
+                            }
+                        }
+                    }
+                }
             } else {
                 gameAlreadyStored = true;
             }
