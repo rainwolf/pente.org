@@ -988,9 +988,15 @@
    }
    function renjuRenderOffers() {
       renjuRedrawBoard();
-      for (var k = 0; k < renjuOfferList.length; k++) {
-         var m = renjuOfferList[k];
-         drawRedDot(m % gridSize, Math.floor(m / gridSize));
+      if (renjuOfferList.length === 1) {
+         // a lone stone is the real move 5 (Branch A) -> solid black
+         var m = renjuOfferList[0];
+         drawStone(m % gridSize, Math.floor(m / gridSize), 2);
+      } else {
+         // 2+ are the Branch B offer candidates -> translucent black (like Go dead stones)
+         for (var k = 0; k < renjuOfferList.length; k++) {
+            drawDeadStone(renjuOfferList[k], 2);
+         }
       }
       var cnt = document.getElementById('renjuOfferCount');
       if (cnt) cnt.innerText = renjuOfferList.length + "/10";
@@ -999,7 +1005,12 @@
       renjuRedrawBoard();
       for (var k = 0; k < renjuOfferedMoves.length; k++) {
          var m = renjuOfferedMoves[k];
-         drawRedDot(m % gridSize, Math.floor(m / gridSize));
+         if (m === playedMove) {
+            // the candidate white has picked -> solid black
+            drawStone(m % gridSize, Math.floor(m / gridSize), 2);
+         } else {
+            drawDeadStone(m, 2); // unpicked candidates -> translucent black
+         }
       }
    }
 
