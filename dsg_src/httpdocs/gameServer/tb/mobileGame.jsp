@@ -855,6 +855,10 @@
                if (oi >= 0) {
                   renjuOfferList.splice(oi, 1);             // tap again removes
                } else if (renjuOfferList.length < 10) {
+                  if (renjuIsSymmetricDup(rMove)) {
+                     alert("That move is symmetric to one you've already offered.");
+                     return;
+                  }
                   renjuOfferList.push(rMove);
                }
                renjuRenderOffers();
@@ -986,6 +990,49 @@
       drawGrid(boardContext, boardColor, gridSize, true);
       drawGame();
    }
+   // D4 board symmetries — mirror of SimpleGridState.rotateMove so the client
+   // rejects symmetric 5th-move offers exactly as the server (offerFifthMove) does.
+   var RENJU_ROTX = [1, 1, 1, 1, -1, -1, -1, -1];
+   var RENJU_ROTY = [1, 1, -1, -1, -1, -1, 1, 1];
+   var RENJU_ROTF = [0, 1, 0, 1, 0, 1, 0, 1];
+   function renjuRotate(move, r) {
+      var off = Math.floor(gridSize / 2);
+      var x = (move % gridSize) - off;
+      var y = Math.floor(move / gridSize) - off;
+      var x1 = x * RENJU_ROTX[r];
+      var y1 = y * RENJU_ROTY[r];
+      if (RENJU_ROTF[r]) { var t = x1; x1 = y1; y1 = t; }
+      return (x1 + off) + (y1 + off) * gridSize;
+   }
+   // Rotations that map the current placed position onto itself (its stabilizer).
+   function renjuStabilizer() {
+      var stab = [];
+      for (var r = 0; r < 8; r++) {
+         var inv = true;
+         for (var i = 0; i < gridSize && inv; i++) {
+            for (var j = 0; j < gridSize && inv; j++) {
+               if (abstractBoard[i][j] > 0) {
+                  var dst = renjuRotate(i + j * gridSize, r);
+                  if (abstractBoard[dst % gridSize][Math.floor(dst / gridSize)] !== abstractBoard[i][j]) {
+                     inv = false;
+                  }
+               }
+            }
+         }
+         if (inv) stab.push(r);
+      }
+      return stab;
+   }
+   // True if `move` is symmetric (under the position's stabilizer) to an offer already placed.
+   function renjuIsSymmetricDup(move) {
+      var stab = renjuStabilizer();
+      for (var s = 0; s < stab.length; s++) {
+         if (renjuOfferList.indexOf(renjuRotate(move, stab[s])) >= 0) {
+            return true;
+         }
+      }
+      return false;
+   }
    function renjuRenderOffers() {
       renjuRedrawBoard();
       if (renjuOfferList.length === 1) {
@@ -1056,6 +1103,10 @@
                if (oi >= 0) {
                   renjuOfferList.splice(oi, 1);             // click again removes
                } else if (renjuOfferList.length < 10) {
+                  if (renjuIsSymmetricDup(rMove)) {
+                     alert("That move is symmetric to one you've already offered.");
+                     return;
+                  }
                   renjuOfferList.push(rMove);
                }
                renjuRenderOffers();
