@@ -166,14 +166,27 @@ Full commit list (oldest→newest) on `feat/renju`: from `b279564` (design spec)
 
 ---
 
-## 7. Deferred / not done (next up: the live path)
+## 7. Status: archival persistence done; live path still deferred
 
-- **Live Renju play** — `ServerTable` only auto-centers so far; the swap/branch/offer/selection opening flow is **not** routed for live games (it special-cases swap2 only).
-- **`pente_game` opening-state write/read is UNWRITTEN (schema ready) — confirmed gap.** Affects BOTH the TB→historic archival (`CacheTBStorer.storeGameDSG` → `gameStorer.storeGame`; also `TBGame.convertToGameData`) and the live game-over path. Today an archived Branch-B Renju game **loses its 10 offers + swap/branch record**: `pente_game.renju_swaps` stays NULL and `pente_renju_offer` never gets rows (verified: `GameData`/`DefaultGameData` have no Renju fields; nothing writes `pente_renju_offer`). Fix surface:
-  - `GameData`/`DefaultGameData` — add `renjuSwaps` (int) + `renjuOffers` (int[]) + accessors.
-  - `CacheTBStorer.storeGameDSG` (+ `TBGame.convertToGameData`) — copy `getRenjuSwaps()/getRenjuOffers()` onto the `GameData` at archival.
-  - `MySQLPenteGameStorer.storeGame` — write `pente_game.renju_swaps` + insert `pente_renju_offer` rows.
-  - `MySQLPenteGameStorer.loadGame` — read them back (it currently only re-adds the implicit center via `getCenterMove`; the 9 rejected offers are non-moves and otherwise unrecoverable for replay).
+### Done — archival persistence (sub-project 1: `pente_game` write/read/expose)
+
+Completed Renju games — **TB-archived and live** — now persist their Taraguchi-10 opening record into `pente_game` / `pente_renju_offer`, load it back into `GameData`, and expose it in the historic JSON endpoint. This **closes the prior confirmed gap** (an archived Branch-B game used to lose its 10 offers + swap/branch record: `pente_game.renju_swaps` stayed NULL and `pente_renju_offer` got no rows).
+
+- **`GameData` / `DefaultGameData`** now carry nullable `Integer renjuSwaps` + `int[] renjuOffers`, added as **interface default methods** on `GameData` (all implementors compile unchanged; `null` ⇒ non-Renju).
+- **`RenjuState.getRenjuSwapsPacked()`** encodes the *resolved* opening decisions for archival, carrying a `swapResolved[]` flag so a decided-NO is distinguishable from a not-yet-decided (pending) swap window.
+- Both archival builders carry the fields **only when the game is Renju**:
+  - **TB:** `CacheTBStorer.storeGameDSG` + `TBGame.convertToGameData`, guarded on `game == TB_RENJU`.
+  - **Live:** `ServerTable.getGameData(...)`, guarded on `gridState instanceof RenjuState`.
+- **`MySQLPenteGameStorer.storeGame` / `loadGame`** write/read `pente_game.renju_swaps` (nullable `SMALLINT`, `wasNull` on load) plus the `pente_renju_offer(gid, site_id, offer_num, move)` rows.
+- **`GameResponse.buildHistoric`** emits `renjuOffers` (comma-separated, **same format as the active `build(...)` path**) + `renjuSwaps` in the JSON.
+- **Manual DB round-trip (QA — pending; DB-coupled, not unit-testable in this repo):** complete a Branch-B TB Renju game → `select * from pente_renju_offer where gid=<gid>` returns the offered-move rows and `pente_game.renju_swaps` is set for that gid → load it via the historic JSON endpoint / a viewer → confirm `renjuOffers` and `renjuSwaps` appear in the response.
+- **KNOWN LIMITATION (still open):** only the single-game `MySQLPenteGameStorer.loadGame` reads `renju_swaps`/offers — that is the path the historic JSON endpoint uses. The bulk-load path `MySQLPenteGameStorer.loadGames` (game-list / history bulk query) does **not** read them; a future feature needing Renju opening data in the bulk list must give `loadGames` the same treatment.
+
+### Still deferred (next up: the live path)
+
+- **Live Renju play — opening-decision routing (sub-project 2).** `ServerTable` only auto-centers so far; the swap/branch/offer/selection opening flow is **not** routed for live games (it special-cases swap2 only). Needs the new `DSG…TableEvent` types.
+- **React `react_live_game_room` opening UI (sub-project 3)** — not started.
+- **Viewer rendering of the offer phase during historic replay** — the offers/swaps are now persisted + exposed in JSON, but the historic viewers don't yet render the offer/selection phase.
 - **Forbidden-point marking** in any client — deferred (server-enforced only). Add via `getForbiddenPoints` → expose like `renjuOffers` → mark; don't port the finder.
 - **React / iOS / Android** clients — not started (this guide is their input).
 - **AI** for Renju — none.
