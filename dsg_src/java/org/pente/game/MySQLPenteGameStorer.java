@@ -680,7 +680,7 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
             gameStmt = con.prepareStatement(
                     "select site_id, event_id, round, section, play_date, timer, " +
                             "rated, initial_time, incremental_time, player1_pid, " +
-                            "player2_pid, player1_rating, player2_rating, winner, game, swapped, private, status, swap2pass " +
+                            "player2_pid, player1_rating, player2_rating, winner, game, swapped, private, status, swap2pass, renju_swaps " +
                             "from " + GAME_TABLE + " " +
                             "where gid = ?");
             gameStmt.setLong(1, gameID);
@@ -756,6 +756,11 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
                 gameData.setStatus(gameResult.getString(18));
                 gameData.setSwap2Pass(gameResult.getInt(19) == 1);
 
+                int renjuSwaps = gameResult.getInt(20);
+                if (!gameResult.wasNull()) {
+                    gameData.setRenjuSwaps(renjuSwaps);
+                }
+
                 gameData.setGame(GridStateFactory.getGameName(game));
 
                 log4j.debug("get moves");
@@ -781,6 +786,33 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
                 }
                 while (moveResult.next()) {
                     gameData.addMove(moveResult.getInt(1));
+                }
+
+                PreparedStatement offerStmt = null;
+                ResultSet offerResult = null;
+                try {
+                    offerStmt = con.prepareStatement("select move from pente_renju_offer " +
+                            "where gid = ? order by offer_num");
+                    offerStmt.setLong(1, gameID);
+                    offerResult = offerStmt.executeQuery();
+                    java.util.List<Integer> offers = new java.util.ArrayList<Integer>();
+                    while (offerResult.next()) {
+                        offers.add(offerResult.getInt(1));
+                    }
+                    if (!offers.isEmpty()) {
+                        int[] arr = new int[offers.size()];
+                        for (int i = 0; i < arr.length; i++) {
+                            arr[i] = offers.get(i);
+                        }
+                        gameData.setRenjuOffers(arr);
+                    }
+                } finally {
+                    if (offerResult != null) {
+                        try { offerResult.close(); } catch (SQLException ex) { }
+                    }
+                    if (offerStmt != null) {
+                        try { offerStmt.close(); } catch (SQLException ex) { }
+                    }
                 }
             }
 
