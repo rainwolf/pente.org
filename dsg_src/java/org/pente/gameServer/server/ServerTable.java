@@ -1238,7 +1238,114 @@ public class ServerTable {
     }
 
     public void handleRenjuSwap(DSGRenjuTaraguchiSwapTableEvent swapEvent) {
-        // implemented in Task 3
+
+        String actor = swapEvent.getPlayer();
+        int move = swapEvent.getMove();
+        int error = NO_ERROR;
+
+        if (!isPlayerInTable(actor)) {
+            error = DSGTableErrorEvent.NOT_IN_TABLE;
+        } else if (!(gridState instanceof RenjuState)) {
+            error = DSGTableErrorEvent.UNKNOWN;
+        } else {
+            int seat = getPlayerSeat(actor);
+            RenjuState rs = (RenjuState) gridState;
+            if (seat == NOT_SITTING) {
+                error = DSGTableErrorEvent.NOT_SITTING;
+            } else if (state != DSGGameStateTableEvent.GAME_IN_PROGRESS) {
+                error = DSGTableErrorEvent.NO_GAME_IN_PROGRESS;
+            } else if (!rs.isAwaitingSwapDecision()) {
+                error = DSGTableErrorEvent.INVALID_MOVE;   // not in a swap window
+            } else if (gridState.getCurrentPlayer() != seat) {
+                error = DSGTableErrorEvent.NOT_TURN;
+            } else {
+
+                // decision is final; cancel any pending undo (mirror handleSwap)
+                undoRequested = false;
+
+                if (swapEvent.isSwap()) {
+
+                    // take the other side: swap both seat arrays exactly like handleSwap
+                    DSGPlayerData tmp = playingPlayers[1];
+                    playingPlayers[1] = playingPlayers[2];
+                    playingPlayers[2] = tmp;
+                    sittingPlayers[1] = sittingPlayers[2];
+                    sittingPlayers[2] = tmp;
+
+                    // update timers after the swap decision (mirror handleSwap)
+                    if (timed) {
+                        timers[gridState.getCurrentPlayer()].stop();
+                        if (initialMinutes == 0) {
+                            timers[gridState.getCurrentPlayer()].reset();
+                        }
+                        timers[gridState.getCurrentPlayer()].incrementMillis(
+                                (int) pingManager.getPingTime(actor));
+                        int s1 = timers[1].getSeconds();
+                        int m1 = timers[1].getMinutes();
+                        int s2 = timers[2].getSeconds();
+                        int m2 = timers[2].getMinutes();
+                        timers[1].adjust(m2, s2);
+                        timers[2].adjust(m1, s1);
+                    }
+
+                    rs.renjuSwapDecisionMade(true);
+
+                    if (timed) {
+                        if (initialMinutes == 0) {
+                            timers[gridState.getCurrentPlayer()].reset();
+                        }
+                        broadCastPlayerTimer(1);
+                        broadCastPlayerTimer(2);
+                        timers[gridState.getCurrentPlayer()].go();
+                    }
+
+                    broadcastMainRoom(swapEvent);
+
+                } else {
+
+                    int n = gridState.getNumMoves();
+                    rs.renjuSwapDecisionMade(false);
+                    // decision echo (decision-only on the client; the stone, if any,
+                    // arrives via the DSGMoveTableEvent that handleMove broadcasts)
+                    broadcastMainRoom(swapEvent);
+
+                    if (n == 4) {
+                        // move-4 window declined -> Branch A: choose A, then place move 5
+                        rs.chooseBranch(false);
+                        handleMove(actor, move);
+                    } else if (n < 4) {
+                        // move-2/3/4 windows: place the next opening stone
+                        handleMove(actor, move);
+                    } else {
+                        // move-5 window: white declines swap5 and continues to play
+                        // move 6 itself, so getCurrentPlayer() is unchanged (next ==
+                        // seat == white). No bundled stone and no handoff to the other
+                        // player; white's own clock is simply reset/continued. Move 6
+                        // then arrives later as a normal DSGMoveTableEvent.
+                        if (timed) {
+                            timers[seat].stop();
+                            if (initialMinutes == 0) {
+                                timers[seat].reset();
+                            }
+                            timers[seat].incrementMillis((int) pingManager.getPingTime(actor));
+                            int next = gridState.getCurrentPlayer();
+                            if (initialMinutes == 0) {
+                                timers[next].reset();
+                            }
+                            timers[next].go();
+                            broadCastPlayerTimer(seat);
+                            broadCastPlayerTimer(next);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (error != NO_ERROR) {
+            dsgEventRouter.routeEvent(
+                    new DSGMoveTableErrorEvent(actor, tableNum, move, error),
+                    actor);
+        }
     }
 
     public void handleRenjuOffer10(DSGRenjuTaraguchiOffer10TableEvent offerEvent) {
