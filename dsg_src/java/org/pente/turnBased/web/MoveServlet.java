@@ -422,7 +422,8 @@ public class MoveServlet extends HttpServlet {
                     boolean knownAction = "swap".equals(renjuAction)
                             || "branch".equals(renjuAction)
                             || "offer".equals(renjuAction)
-                            || "select".equals(renjuAction);
+                            || "select".equals(renjuAction)
+                            || "move4".equals(renjuAction);
                     if (knownAction) {
                         RenjuState pending = RenjuState.reconstruct(
                                 game, game.getRenjuSwaps(), game.getRenjuOffers());
@@ -430,7 +431,8 @@ public class MoveServlet extends HttpServlet {
                                 ("swap".equals(renjuAction)   && pending.isAwaitingSwapDecision())
                              || ("branch".equals(renjuAction) && pending.isAwaitingBranchChoice())
                              || ("offer".equals(renjuAction)  && pending.isAwaitingFifthOffers())
-                             || ("select".equals(renjuAction) && pending.isAwaitingFifthSelection());
+                             || ("select".equals(renjuAction) && pending.isAwaitingFifthSelection())
+                             || ("move4".equals(renjuAction) && (pending.isAwaitingSwapDecision() || pending.isAwaitingBranchChoice()));
                         if (!matchesPending) {
                             handleError(request, response,
                                     "Renju action does not match the pending decision.");
@@ -505,6 +507,47 @@ public class MoveServlet extends HttpServlet {
                         }
                         // the chosen move becomes the real 5th move
                         tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(), moves[0]);
+                        if (message != null) {
+                            message.setMoveNum(game.getNumMoves() + 1);
+                            tbGameStorer.storeNewMessage(game.getGid(), message);
+                        }
+                    } else if ("move4".equals(renjuAction)) {
+                        // Combined move-4 decision. moves[0] = 1 if declining the
+                        // swap (SWAP phase), 0 if the swap was already taken
+                        // (BRANCH phase). The remaining moves are the placed stones:
+                        // 1 stone = Branch A (move 5, must be in 9x9), 10 = Branch B.
+                        boolean declineSwap = moves[0] == 1;
+                        if (declineSwap) {
+                            tbGameStorer.renjuSwap(game, false);
+                        }
+                        int stoneCount = moves.length - 1;
+                        if (stoneCount == 1) {
+                            tbGameStorer.renjuBranch(game, false);
+                            // move 5 — storeNewMove validates the 9x9 restriction
+                            tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(), moves[1]);
+                        } else if (stoneCount == 10) {
+                            tbGameStorer.renjuBranch(game, true);
+                            // reload so the engine sees branch=B before validating offers
+                            TBGame fresh = tbGameStorer.loadGame(game.getGid());
+                            RenjuState rs = RenjuState.reconstruct(
+                                    fresh, fresh.getRenjuSwaps(), null);
+                            try {
+                                for (int k = 1; k <= 10; k++) {
+                                    rs.offerFifthMove(moves[k]);
+                                }
+                            } catch (RuntimeException bad) {
+                                handleError(request, response, "Invalid 5th-move offer.");
+                                return;
+                            }
+                            int[] offers = new int[10];
+                            System.arraycopy(moves, 1, offers, 0, 10);
+                            fresh.setRenjuOffers(offers);
+                            tbGameStorer.renjuOffers(fresh);
+                        } else {
+                            handleError(request, response,
+                                    "Place 1 stone (continue) or 10 stones (offer).");
+                            return;
+                        }
                         if (message != null) {
                             message.setMoveNum(game.getNumMoves() + 1);
                             tbGameStorer.storeNewMessage(game.getGid(), message);

@@ -371,16 +371,21 @@
                      } else if (!"false".equals(myTurn)) { %>
                      <% if (game.getGame() == GridStateFactory.TB_RENJU) {
                         String renjuPh = game.getRenjuPhase();
-                        if (TBGame.RENJU_SWAP.equals(renjuPh)) { %>
+                        if (TBGame.RENJU_SWAP.equals(renjuPh) && game.getNumMoves() == 4) { %>
+                     <a class="boldbuttons" href="javascript:renjuSwapYes();"
+                        style="margin-right:5px;"><span>Swap (take over)</span></a>
+                     <span id="renjuOfferCount" style="margin-right:5px;">0/10</span>
+                     <a class="boldbuttons" href="javascript:renjuMoveFour(true);"
+                        style="margin-right:5px;"><span>Don't swap or place 10</span></a>
+                     <% } else if (TBGame.RENJU_SWAP.equals(renjuPh)) { %>
                      <a class="boldbuttons" href="javascript:renjuSwapYes();"
                         style="margin-right:5px;"><span>Swap (take over)</span></a>
                      <a class="boldbuttons" href="javascript:renjuSwapNo();"
                         style="margin-right:5px;"><span>Don't swap</span></a>
                      <% } else if (TBGame.RENJU_BRANCH.equals(renjuPh)) { %>
-                     <a class="boldbuttons" href="javascript:renjuBranchA();"
-                        style="margin-right:5px;"><span>Branch A — place 5th in 9×9</span></a>
-                     <a class="boldbuttons" href="javascript:renjuBranchB();"
-                        style="margin-right:5px;"><span>Branch B — offer 10 moves</span></a>
+                     <span id="renjuOfferCount" style="margin-right:5px;">0/10</span>
+                     <a class="boldbuttons" href="javascript:renjuMoveFour(false);"
+                        style="margin-right:5px;"><span>Place 5th: 1 to continue, 10 to offer</span></a>
                      <% } else if (TBGame.RENJU_OFFERS.equals(renjuPh)) { %>
                      <span id="renjuOfferCount" style="margin-right:5px;">0/10</span>
                      <a class="boldbuttons" href="javascript:renjuSubmitOffers();"
@@ -841,9 +846,10 @@
 
       if (i >= 0 && i < gridSize && j >= 0 && j < gridSize) {
          playedMove = j * gridSize + i;
-         if (isRenju && (renjuPhase === "OFFERS" || renjuPhase === "SELECTION")) {
+         if (isRenju && (renjuPhase === "OFFERS" || renjuPhase === "SELECTION"
+               || (renjuPhase === "SWAP" && moves.length === 4) || renjuPhase === "BRANCH")) {
             var rMove = j * gridSize + i;
-            if (renjuPhase === "OFFERS") {
+            if (renjuPhase !== "SELECTION") {
                if (abstractBoard[i][j] !== 0) return;       // only empty points
                var oi = renjuOfferList.indexOf(rMove);
                if (oi >= 0) {
@@ -1030,9 +1036,10 @@
          }
          playedMove = j * gridSize + i;
          // alert("" + i + " and " + j + " and gridsize " + gridSize);
-         if (isRenju && (renjuPhase === "OFFERS" || renjuPhase === "SELECTION")) {
+         if (isRenju && (renjuPhase === "OFFERS" || renjuPhase === "SELECTION"
+               || (renjuPhase === "SWAP" && moves.length === 4) || renjuPhase === "BRANCH")) {
             var rMove = j * gridSize + i;
-            if (renjuPhase === "OFFERS") {
+            if (renjuPhase !== "SELECTION") {
                if (abstractBoard[i][j] !== 0) return;       // only empty points
                var oi = renjuOfferList.indexOf(rMove);
                if (oi >= 0) {
@@ -1373,33 +1380,40 @@
       ;
    }
    function renjuSwapYes() {
-      // Swapping takes over your opponent's side — you do NOT place a stone.
-      if (playedMove >= 0) {
-         alert("Don't place a stone when swapping — remove it first.");
+      // Swapping takes over your opponent's side — you do NOT place any stone.
+      if (playedMove >= 0 || renjuOfferList.length > 0) {
+         alert("Don't place a stone when swapping — clear it first.");
          return;
       }
       renjuPost("swap", "1");
    }
    function renjuSwapNo()  {
-      // After move 4 the next step is the branch choice, not a stone.
-      if (moves.length === 4) {
-         if (playedMove >= 0) {
-            alert("After move 4 you pick a branch next — don't place a stone.");
-            return;
-         }
-         renjuPost("swap", "0");
-         return;
-      }
-      // Other swap windows: declining means you play your own next stone —
-      // submit the decision and the move together. Require a placed stone first.
+      // Declining means you play your own next stone — submit the decision and
+      // the move together. (Move 4 uses renjuMoveFour instead of this button.)
       if (!(playedMove >= 0)) {
          alert("Place your next move before choosing not to swap.");
          return;
       }
       renjuPost("swap", "0," + playedMove);
    }
-   function renjuBranchA() { renjuPost("branch", "1"); }
-   function renjuBranchB() { renjuPost("branch", "2"); }
+   // Move-4 branch decision: place 1 stone (continue = Branch A move 5) or 10
+   // stones (offer = Branch B). The branch is inferred from the count. declineSwap
+   // is true from the swap window (SWAP phase), false after a swap (BRANCH phase).
+   function renjuMoveFour(declineSwap) {
+      var n = renjuOfferList.length;
+      if (n === 1) {
+         var c = Math.floor(gridSize / 2);
+         var x = renjuOfferList[0] % gridSize, y = Math.floor(renjuOfferList[0] / gridSize);
+         if (Math.abs(x - c) > 4 || Math.abs(y - c) > 4) {
+            alert("A single (continue) stone must be inside the 9×9 center.");
+            return;
+         }
+      } else if (n !== 10) {
+         alert("Place 1 stone to continue, or 10 stones to offer (currently " + n + ").");
+         return;
+      }
+      renjuPost("move4", (declineSwap ? "1" : "0") + "," + renjuOfferList.join(","));
+   }
    function renjuSubmitOffers() {
       if (renjuOfferList.length !== 10) {
          alert("Pick exactly 10 offered moves (currently " + renjuOfferList.length + ").");
