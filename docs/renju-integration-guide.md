@@ -166,7 +166,7 @@ Full commit list (oldest→newest) on `feat/renju`: from `b279564` (design spec)
 
 ---
 
-## 7. Status: archival persistence done; live path still deferred
+## 7. Status: archival persistence + live opening routing done
 
 ### Done — archival persistence (sub-project 1: `pente_game` write/read/expose)
 
@@ -182,9 +182,29 @@ Completed Renju games — **TB-archived and live** — now persist their Taraguc
 - **Manual DB round-trip (QA — pending; DB-coupled, not unit-testable in this repo):** complete a Branch-B TB Renju game → `select * from pente_renju_offer where gid=<gid>` returns the offered-move rows and `pente_game.renju_swaps` is set for that gid → load it via the historic JSON endpoint / a viewer → confirm `renjuOffers` and `renjuSwaps` appear in the response.
 - **KNOWN LIMITATION (still open):** only the single-game `MySQLPenteGameStorer.loadGame` reads `renju_swaps`/offers — that is the path the historic JSON endpoint uses. The bulk-load path `MySQLPenteGameStorer.loadGames` (game-list / history bulk query) does **not** read them; a future feature needing Renju opening data in the bulk list must give `loadGames` the same treatment.
 
-### Still deferred (next up: the live path)
+### Done — live opening routing (sub-project 2: `ServerTable` Taraguchi-10)
 
-- **Live Renju play — opening-decision routing (sub-project 2).** `ServerTable` only auto-centers so far; the swap/branch/offer/selection opening flow is **not** routed for live games (it special-cases swap2 only). Needs the new `DSG…TableEvent` types.
+Live (WebSocket + raw-TCP) Renju games now drive the full Taraguchi-10 opening server-side — the per-window swap, the Branch-A decline+move-5, the Branch-B ten offers, and the selection — keeping the seat↔color binding correct across swaps. This **closes the prior gap** where `ServerTable` only auto-centered and special-cased the Pente swap2 pass.
+
+- **Three inbound events** — `DSGRenjuTaraguchiSwapTableEvent` (`boolean swap`, `int move`), `DSGRenjuTaraguchiOffer10TableEvent` (`int[] moves`), `DSGRenjuTaraguchi10Select1TableEvent` (`int move`) — extend `AbstractDSGTableEvent` and are registered **once** in `DSGEventWrapper` (one field + getter/setter each). The Gson codec reflects over the declared fields, so this single registration serves **both** transports (TCP socket **and** WebSocket — shared codec).
+- **Three `SynchronizedServerTable.callServerTable` dispatch arms** route each event to its handler.
+- **Three `ServerTable` handlers** — `handleRenjuSwap` / `handleRenjuOffer10` / `handleRenjuSelect1` — mirror the proven `handleMove`/`handleSwap`/`handleSwap2Pass` error-accumulate / single-emit pattern: validate (Renju + seat + phase + turn), mutate nothing on failure, emit `DSGMoveTableErrorEvent` to the sender.
+  - `handleRenjuSwap`: on `swap=true` swaps both seat arrays + timers exactly like `handleSwap`; on `swap=false` commits the decline and (for the move-2/3/4 + Branch-A windows) places the bundled stone via `handleMove`.
+  - `handleRenjuOffer10`: declines the move-4 swap, `chooseBranch(true)`, commits the ten atomically, hands the turn/timer to the selector (mirrors `handleSwap2Pass`).
+  - `handleRenjuSelect1`: commits the chosen candidate as move 5 and places it via `broadcastRenjuFifthMove`.
+- **Two `RenjuState` additions** — `wouldAcceptDeclinedOpeningMove(...)` (pre-validate the bundled stone before committing the decline) and `offerFifthMoves(int[])` (atomic **validate-all / commit-none** wrapper over `offerFifthMove`; unit-tested in `RenjuReconstructTest`).
+- **Decision-only echoes; stones ride `DSGMoveTableEvent`.** The three echoes carry only the decision; the stone (if any) is placed exactly once — swap+move via `handleMove`, select1 via `broadcastRenjuFifthMove` (which reproduces `handleMove`'s post-move tail for **BOTH** the player-changed and the same-player branches).
+- **Join re-send** — `handleJoin` re-sends the ten offers to a client that (re)joins while Branch-B selection is still pending.
+
+**KNOWN NOTES (for sub-project 3 — the React client — and future games):**
+- **Decision-echo contract:** clients must **NOT** place stones from the swap/offer/select echo events; stones arrive as `DSGMoveTableEvent`.
+- **Recovery contracts:** if a declined-swap's bundled stone is rejected, the swap-decline is **already committed** — the client recovers by sending the stone as a plain move (the swap window is consumed). If an offer10's ten are rejected, the move-4 decline + Branch-B are **already committed** — the client recovers by re-sending a corrected ten (the handler re-accepts via the `isAwaitingFifthOffers` guard).
+- **Echo recipient:** echoes currently use `broadcastMainRoom` (mirrors `handleSwap`/`handleSwap2Pass`); verify opponent/spectator receipt in the manual round-trip and switch the three echoes to `broadcastTable` if exact recipient parity is needed.
+- **Known minor:** the three handlers use `state != GAME_IN_PROGRESS` as a single catch-all, so a disconnect-mid-opening surfaces `NO_GAME_IN_PROGRESS` rather than `GAME_WAITING_FOR_PLAYER_TO_RETURN` — cosmetic error code only, no logic impact.
+- **Manual WS round-trip (QA — pending; DB/transport-coupled, no `ServerTable` unit-test harness exists):** restart the backend, then drive a live Renju game over two sessions and confirm — (a) **swap window:** swap (seats swap, no stone), and decline+move (echo + one `DSGMoveTableEvent`); (b) **Branch A:** decline+move5 (single `DSGMoveTableEvent`); (c) **Branch B:** offer10 → select1 (move 5 placed once, other nine clear); (d) a **rejoin/spectator mid-selection** receives the ten; (e) the **OPPONENT actually receives each decision echo** (sent via `broadcastMainRoom`) — if not, switch the three echoes to `broadcastTable`; (f) **error events** (`DSGMoveTableErrorEvent`) reach the sender on an illegal swap/offer/select.
+
+### Still deferred
+
 - **React `react_live_game_room` opening UI (sub-project 3)** — not started.
 - **Viewer rendering of the offer phase during historic replay** — the offers/swaps are now persisted + exposed in JSON, but the historic viewers don't yet render the offer/selection phase.
 - **Forbidden-point marking** in any client — deferred (server-enforced only). Add via `getForbiddenPoints` → expose like `renjuOffers` → mark; don't port the finder.

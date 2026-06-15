@@ -2,7 +2,7 @@
 
 Date: 2026-06-15
 Branch: feat/renju
-Status: approved-pending-review
+Status: implemented (manual WS round-trip pending)
 
 ## Goal
 
