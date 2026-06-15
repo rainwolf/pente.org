@@ -168,6 +168,7 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
         branchChosen = false;
         tenOffer = false;
         Arrays.fill(swapDecision, false);
+        Arrays.fill(swapResolved, false);
         offeredFifth.clear();
         selectedFifth = null;
         refreshFinder();
@@ -271,6 +272,31 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
         return new ArrayList<Integer>(offeredFifth);
     }
 
+    /**
+     * Encode the engine's resolved opening decisions into the RenjuOpeningState
+     * packed word (base-3). Unresolved windows encode as PENDING, so this is
+     * correct mid-opening (used live) and at game-over (used for archival).
+     */
+    public int getRenjuSwapsPacked() {
+        RenjuOpeningState st = new RenjuOpeningState();
+        st.swap1 = swapDigit(1);
+        st.swap2 = swapDigit(2);
+        st.swap3 = swapDigit(3);
+        st.swap4 = swapDigit(4);
+        st.branch = branchChosen
+                ? (tenOffer ? RenjuOpeningState.YES : RenjuOpeningState.NO)
+                : RenjuOpeningState.PENDING;
+        st.swap5 = swapDigit(5);
+        return st.encode();
+    }
+
+    private int swapDigit(int window) {
+        if (!swapResolved[window]) {
+            return RenjuOpeningState.PENDING;
+        }
+        return swapDecision[window] ? RenjuOpeningState.YES : RenjuOpeningState.NO;
+    }
+
     public void offerFifthMove(int move) {
         if (!isAwaitingFifthOffers()) {
             throw new IllegalStateException("not accepting 5th-move offers");
@@ -339,6 +365,9 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
     private boolean awaitingSwap = false;
     // swap decisions indexed by the stone count after which the window opened (1..5)
     private final boolean[] swapDecision = new boolean[6];
+    // parallels swapDecision: true once the window's decision has been recorded
+    // (so a false decision is distinguishable from "not yet decided").
+    private final boolean[] swapResolved = new boolean[6];
 
     public boolean isAwaitingSwapDecision() {
         return awaitingSwap;
@@ -353,6 +382,7 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
             throw new IllegalStateException("no swap decision pending");
         }
         swapDecision[gridState.getNumMoves()] = swap;
+        swapResolved[gridState.getNumMoves()] = true;
         awaitingSwap = false;
     }
 

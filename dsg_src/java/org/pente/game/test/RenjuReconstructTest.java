@@ -89,4 +89,34 @@ public class RenjuReconstructTest extends TestCase {
         assertEquals(4, s.getNumMoves());
         assertTrue(s.isAwaitingFifthSelection());
     }
+
+    public void testGetRenjuSwapsPackedEncodesResolvedDecisions() {
+        // Branch A opening: decline swaps 1-4, branch A, decline swap 5.
+        RenjuState s = new RenjuState(15, 15);
+        s.addMove(xy(7, 7));  s.renjuSwapDecisionMade(false);   // swap1 = NO
+        s.addMove(xy(8, 8));  s.renjuSwapDecisionMade(false);   // swap2 = NO
+        s.addMove(xy(9, 7));  s.renjuSwapDecisionMade(false);   // swap3 = NO
+        s.addMove(xy(6, 8));  s.renjuSwapDecisionMade(false);   // swap4 = NO
+        s.chooseBranch(false);                                  // Branch A
+        s.addMove(xy(11, 7)); s.renjuSwapDecisionMade(true);    // swap5 = YES
+
+        RenjuOpeningState st = RenjuOpeningState.decode(s.getRenjuSwapsPacked());
+        assertEquals(RenjuOpeningState.NO,  st.swap1);
+        assertEquals(RenjuOpeningState.NO,  st.swap2);
+        assertEquals(RenjuOpeningState.NO,  st.swap3);
+        assertEquals(RenjuOpeningState.NO,  st.swap4);
+        assertEquals(RenjuOpeningState.NO,  st.branch);   // Branch A -> NO
+        assertEquals(RenjuOpeningState.YES, st.swap5);
+    }
+
+    public void testGetRenjuSwapsPackedLeavesUnresolvedPending() {
+        // Only move 1 placed, swap1 not yet decided -> all PENDING.
+        RenjuState s = new RenjuState(15, 15);
+        s.addMove(xy(7, 7));
+        RenjuOpeningState st = RenjuOpeningState.decode(s.getRenjuSwapsPacked());
+        assertEquals(RenjuOpeningState.PENDING, st.swap1);
+        assertEquals(RenjuOpeningState.PENDING, st.swap2);
+        assertEquals(RenjuOpeningState.PENDING, st.swap5);
+        assertEquals(RenjuOpeningState.PENDING, st.branch);
+    }
 }
