@@ -837,6 +837,9 @@ public class MoveServlet extends HttpServlet {
                 }
             }
 
+        } catch (InvalidMoveException ime) {
+            log4j.debug("MoveServlet: invalid move, " + gid + ": " + ime.getMessage());
+            handleError(request, response, "Invalid move.");
         } catch (TBStoreException tbe) {
             log4j.error("MoveServlet: " + gid, tbe);
             handleError(request, response, "Database error, please try again later.");

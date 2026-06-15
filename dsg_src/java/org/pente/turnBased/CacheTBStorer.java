@@ -1435,7 +1435,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
             valid = state.isValidMove(move, state.getCurrentPlayer());
         }
         if (!valid) {
-            throw new TBStoreException("Invalid move [" + move + "] for " +
+            throw new InvalidMoveException("Invalid move [" + move + "] for " +
                     GridStateFactory.getGameName(game.getGame()) + " game: " +
                     game.getGid());
         }
