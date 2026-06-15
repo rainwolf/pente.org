@@ -412,6 +412,19 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
         awaitingSwap = false;
     }
 
+    /** True iff the net of all recorded swap decisions leaves the seats swapped
+     *  from the original sit order (odd number of swap=true decisions). Used by the
+     *  controller to tell a (re)joining client the current swap state. */
+    public boolean isNetSwapped() {
+        int swaps = 0;
+        for (int i = 0; i < swapResolved.length; i++) {
+            if (swapResolved[i] && swapDecision[i]) {
+                swaps++;
+            }
+        }
+        return (swaps % 2) == 1;
+    }
+
     private int centerX() {
         return gridState.getGridSizeX() / 2;
     }

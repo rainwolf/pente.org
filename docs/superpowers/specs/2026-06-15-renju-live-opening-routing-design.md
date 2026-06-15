@@ -119,7 +119,10 @@ implementation.
 - **Seats encode swaps.** On `swap=true` the handler swaps both seat arrays, so the
   seat assignments already-sent on join fully describe the swap history — no packed
   word is sent live. (`getRenjuSwapsPacked()`/offers stay in `RenjuState` for the
-  game-over historic serialization from sub-project 1, unchanged.)
+  game-over historic serialization from sub-project 1, unchanged.) A (re)joining
+  client is ALSO sent a silent `DSGSwapSeatsTableEvent(net-swapped, silent=true)` so
+  it sets its swap-state flag, mirroring the dPente/swap2 join convention
+  (`RenjuState.isNetSwapped()` = parity of swap decisions).
 - **Minimal join snapshot.** Seats + moves only, **except** when interrupted in
   Branch B after the ten were offered but before selection — then also re-send the
   ten. Uncommitted swap/branch decisions are not persisted; the player re-decides

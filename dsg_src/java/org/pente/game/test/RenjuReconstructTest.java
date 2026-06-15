@@ -228,4 +228,24 @@ public class RenjuReconstructTest extends TestCase {
                 s.getOfferedFifthMoves().isEmpty());
         assertTrue(s.isAwaitingFifthOffers());
     }
+
+    public void testIsNetSwappedReflectsParityOfSwapDecisions() {
+        // isNetSwapped() returns the parity of recorded swap=true decisions: each
+        // swap flips the seats, so an even count nets to no swap, odd nets swapped.
+        RenjuState s = new RenjuState(15, 15);
+        assertTrue("no decisions recorded -> not net-swapped", !s.isNetSwapped());
+
+        s.addMove(xy(7, 7));  s.renjuSwapDecisionMade(true);   // 1 swap=true -> odd
+        assertTrue("one swap -> net-swapped", s.isNetSwapped());
+
+        s.addMove(xy(8, 8));  s.renjuSwapDecisionMade(false);  // declines don't flip
+        assertTrue("declined swap leaves parity odd -> still net-swapped",
+                s.isNetSwapped());
+
+        s.addMove(xy(9, 7));  s.renjuSwapDecisionMade(true);   // 2 swaps=true -> even
+        assertTrue("two swaps -> not net-swapped", !s.isNetSwapped());
+
+        s.addMove(xy(6, 8));  s.renjuSwapDecisionMade(true);   // 3 swaps=true -> odd
+        assertTrue("three swaps -> net-swapped", s.isNetSwapped());
+    }
 }

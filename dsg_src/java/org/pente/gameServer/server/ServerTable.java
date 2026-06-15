@@ -539,6 +539,16 @@ public class ServerTable {
                         player);
             }
 
+            // Renju: tell a (re)joining client the current swap state with a silent
+            // swap-seats event (mirrors the d-pente/swap2 convention above). Seats are
+            // already authoritative via sendPlayingPlayers; only push when net-swapped.
+            if (gridState instanceof RenjuState
+                    && ((RenjuState) gridState).isNetSwapped()) {
+                dsgEventRouter.routeEvent(
+                        new DSGSwapSeatsTableEvent(null, tableNum, true, true),
+                        player);
+            }
+
             sendMoves(player);
 
             sendRenjuBranchBOffers(player);
