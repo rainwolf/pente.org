@@ -168,7 +168,12 @@ Full commit list (oldest→newest) on `feat/renju`: from `b279564` (design spec)
 
 ## 7. Deferred / not done (next up: the live path)
 
-- **Live Renju play** — `ServerTable` only auto-centers so far; the swap/branch/offer/selection opening flow is **not** routed for live games (it special-cases swap2 only). The live `pente_game` **write** path for `renju_swaps` + `pente_renju_offer` (at game-over, for replay) is unwritten; the schema is ready.
+- **Live Renju play** — `ServerTable` only auto-centers so far; the swap/branch/offer/selection opening flow is **not** routed for live games (it special-cases swap2 only).
+- **`pente_game` opening-state write/read is UNWRITTEN (schema ready) — confirmed gap.** Affects BOTH the TB→historic archival (`CacheTBStorer.storeGameDSG` → `gameStorer.storeGame`; also `TBGame.convertToGameData`) and the live game-over path. Today an archived Branch-B Renju game **loses its 10 offers + swap/branch record**: `pente_game.renju_swaps` stays NULL and `pente_renju_offer` never gets rows (verified: `GameData`/`DefaultGameData` have no Renju fields; nothing writes `pente_renju_offer`). Fix surface:
+  - `GameData`/`DefaultGameData` — add `renjuSwaps` (int) + `renjuOffers` (int[]) + accessors.
+  - `CacheTBStorer.storeGameDSG` (+ `TBGame.convertToGameData`) — copy `getRenjuSwaps()/getRenjuOffers()` onto the `GameData` at archival.
+  - `MySQLPenteGameStorer.storeGame` — write `pente_game.renju_swaps` + insert `pente_renju_offer` rows.
+  - `MySQLPenteGameStorer.loadGame` — read them back (it currently only re-adds the implicit center via `getCenterMove`; the 9 rejected offers are non-moves and otherwise unrecoverable for replay).
 - **Forbidden-point marking** in any client — deferred (server-enforced only). Add via `getForbiddenPoints` → expose like `renjuOffers` → mark; don't port the finder.
 - **React / iOS / Android** clients — not started (this guide is their input).
 - **AI** for Renju — none.
