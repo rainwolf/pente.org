@@ -1272,16 +1272,22 @@ public class ServerTable {
                 error = DSGTableErrorEvent.NOT_SITTING;
             } else if (state != DSGGameStateTableEvent.GAME_IN_PROGRESS) {
                 error = DSGTableErrorEvent.NO_GAME_IN_PROGRESS;
-            } else if (!rs.isAwaitingSwapDecision()) {
-                error = DSGTableErrorEvent.INVALID_MOVE;   // not in a swap window
+            } else if (!rs.isAwaitingSwapDecision() && !rs.isAwaitingBranchChoice()) {
+                error = DSGTableErrorEvent.INVALID_MOVE;   // not at a swap/branch window
             } else if (gridState.getCurrentPlayer() != seat) {
                 error = DSGTableErrorEvent.NOT_TURN;
+            } else if (swapEvent.isSwap() && !rs.isAwaitingSwapDecision()) {
+                // swap=true is valid ONLY while the swap window is open. In the
+                // post-swap branch-choice state the window is already closed, so a
+                // swap request here is illegal: reject with no mutation/broadcast.
+                error = DSGTableErrorEvent.INVALID_MOVE;
             } else {
 
                 // decision is final; cancel any pending undo (mirror handleSwap)
                 undoRequested = false;
 
                 if (swapEvent.isSwap()) {
+                    // guaranteed isAwaitingSwapDecision() here (guarded above)
 
                     // take the other side: swap both seat arrays exactly like handleSwap
                     DSGPlayerData tmp = playingPlayers[1];
@@ -1319,7 +1325,8 @@ public class ServerTable {
 
                     broadcastMainRoom(swapEvent);
 
-                } else {
+                } else if (rs.isAwaitingSwapDecision()) {
+                    // swap=false at an OPEN swap window (windows 1-5): unchanged.
 
                     int n = gridState.getNumMoves();
                     if (n <= 4) {
@@ -1367,6 +1374,24 @@ public class ServerTable {
                             // current player's timer once, matching handleSwap2Pass.
                             broadCastPlayerTimer(next);
                         }
+                    }
+                } else {
+                    // swap=false in the post-swap branch-choice state (n == 4): the
+                    // move-4 swap was already accepted, so the to-move side (black)
+                    // declines Branch B and continues Branch A by playing move 5 in
+                    // the 9x9. The swap is already resolved -- do NOT call
+                    // renjuSwapDecisionMade, only chooseBranch(false). Pre-validate the
+                    // bundled move 5 BEFORE committing/broadcasting, so a rejected move
+                    // leaves nothing committed and emits no phantom broadcast (same
+                    // no-partial-mutation property as the decline path above). On
+                    // success: choose Branch A, echo the decision, then place move 5
+                    // (which arrives via the DSGMoveTableEvent that handleMove broadcasts).
+                    if (!rs.wouldAcceptDeclinedOpeningMove(move)) {
+                        error = DSGTableErrorEvent.INVALID_MOVE;
+                    } else {
+                        rs.chooseBranch(false);
+                        broadcastMainRoom(swapEvent);
+                        handleMove(actor, move);
                     }
                 }
             }

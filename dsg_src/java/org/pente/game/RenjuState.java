@@ -462,24 +462,29 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
     }
 
     /**
-     * Pure check: would the current player's bundled opening stone be legal if they
-     * decline the pending swap (Branch A continuation at the move-4 window)? Mutates
-     * nothing. Returns false if not currently awaiting a swap decision. Single-thread
-     * use only (table events are serialized by SynchronizedServerTable).
+     * Pure check: would the current player's bundled opening stone be legal as a
+     * Branch-A continuation? Covers BOTH the move-4 swap window (decline the pending
+     * swap and play the bundled stone) AND the post-swap branch-choice state (the
+     * move-4 swap was accepted; black now chooses Branch A by playing move 5 in the
+     * 9x9). Mutates nothing. Returns false unless a swap decision OR a branch choice
+     * is currently pending. Single-thread use only (table events are serialized by
+     * SynchronizedServerTable).
      *
-     * isValidMove() returns false while awaitingSwap is set, so this temporarily lifts
-     * the gating flags (and, at the move-4 window, simulates chooseBranch(false)),
-     * delegates to the EXISTING isValidMove, and restores every flag in finally.
+     * isValidMove() returns false while awaitingSwap is set or the branch is unchosen,
+     * so this temporarily lifts the gating flags (simulating chooseBranch(false) -- a
+     * no-op for the already-cleared awaitingSwap in the branch-choice case), delegates
+     * to the EXISTING isValidMove, and restores every flag in finally.
      */
     public boolean wouldAcceptDeclinedOpeningMove(int move) {
-        if (!awaitingSwap) {
+        if (!awaitingSwap && !isAwaitingBranchChoice()) {
             return false;
         }
-        int n = gridState.getNumMoves();
         boolean savedAwaiting = awaitingSwap, savedBranch = branchChosen, savedTen = tenOffer;
         try {
-            awaitingSwap = false;
-            if (n == 4) { branchChosen = true; tenOffer = false; } // simulate chooseBranch(false)
+            awaitingSwap = false;  // lift the swap gate (no-op in the branch-choice case)
+            branchChosen = true;   // simulate chooseBranch(false): branch picked,
+            tenOffer = false;      // Branch A. Harmless for windows 1-3, where these
+                                   // flags are not consulted unless n == 4.
             return isValidMove(move, getCurrentPlayer());
         } finally {
             awaitingSwap = savedAwaiting;

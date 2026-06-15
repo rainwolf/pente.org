@@ -144,6 +144,29 @@ public class RenjuReconstructTest extends TestCase {
         assertEquals(4, s.getNumMoves());
     }
 
+    public void testWouldAcceptDeclinedOpeningMove_postSwapBranchChoice_branchA() {
+        // Drive to the move-4 swap window, then ACCEPT the swap. The engine clears the
+        // swap window and enters the branch-choice state (n == 4, awaitingSwap = false):
+        // the to-move side (black) must now pick Branch A by playing move 5 in the 9x9.
+        RenjuState s = new RenjuState(15, 15);
+        s.addMove(xy(7, 7)); s.renjuSwapDecisionMade(false);
+        s.addMove(xy(8, 8)); s.renjuSwapDecisionMade(false);
+        s.addMove(xy(9, 7)); s.renjuSwapDecisionMade(false);
+        s.addMove(xy(6, 8));                 // n == 4, swap-4 window open
+        s.renjuSwapDecisionMade(true);       // ACCEPT the swap -> branch-choice state
+        assertTrue(!s.isAwaitingSwapDecision());
+        assertTrue(s.isAwaitingBranchChoice());
+
+        // A legal Branch-A move 5 (within the 9x9) accepts; an occupied point rejects.
+        assertTrue(s.wouldAcceptDeclinedOpeningMove(xy(11, 7)));
+        assertTrue(!s.wouldAcceptDeclinedOpeningMove(xy(7, 7))); // occupied
+
+        // Pure check: nothing mutated -- still awaiting the branch choice, no stone
+        // committed, branch not actually chosen.
+        assertTrue(s.isAwaitingBranchChoice());
+        assertEquals(4, s.getNumMoves());
+    }
+
     public void testWouldAcceptDeclinedOpeningMove_falseWhenNotAwaitingSwap() {
         RenjuState s = new RenjuState(15, 15);
         assertTrue(!s.wouldAcceptDeclinedOpeningMove(xy(7, 7)));
