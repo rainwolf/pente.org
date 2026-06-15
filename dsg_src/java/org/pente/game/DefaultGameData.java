@@ -85,6 +85,12 @@ public class DefaultGameData implements GameData {
     /** Did players swap */
     protected boolean swap2Pass;
 
+    /** Renju packed opening word (RenjuOpeningState), null for non-Renju */
+    protected Integer renjuSwaps;
+
+    /** Renju Branch-B offered 5th moves, null for none */
+    protected int[] renjuOffers;
+
     /** Is game private */
     protected boolean privateGame;
 
@@ -369,6 +375,26 @@ public class DefaultGameData implements GameData {
     @Override
     public void setSwap2Pass(boolean swap2Pass) {
         this.swap2Pass = swap2Pass;
+    }
+
+    @Override
+    public Integer getRenjuSwaps() {
+        return renjuSwaps;
+    }
+
+    @Override
+    public void setRenjuSwaps(Integer renjuSwaps) {
+        this.renjuSwaps = renjuSwaps;
+    }
+
+    @Override
+    public int[] getRenjuOffers() {
+        return renjuOffers;
+    }
+
+    @Override
+    public void setRenjuOffers(int[] renjuOffers) {
+        this.renjuOffers = renjuOffers;
     }
 
     /** Add a move for this game
