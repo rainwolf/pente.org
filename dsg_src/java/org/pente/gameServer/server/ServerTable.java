@@ -541,6 +541,8 @@ public class ServerTable {
 
             sendMoves(player);
 
+            sendRenjuBranchBOffers(player);
+
             if (timed && (state == DSGGameStateTableEvent.GAME_IN_PROGRESS ||
                     state == DSGGameStateTableEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN)) {
                 sendTimers(player);
@@ -577,6 +579,22 @@ public class ServerTable {
             dsgEventRouter.routeEvent(
                     new DSGMoveTableEvent(tableNum, gridState.getMoves()),
                     toPlayer);
+        }
+    }
+
+    private void sendRenjuBranchBOffers(String player) {
+        if (gridState instanceof RenjuState) {
+            RenjuState rs = (RenjuState) gridState;
+            if (rs.isAwaitingFifthSelection()) {
+                java.util.List<Integer> offers = rs.getOfferedFifthMoves();
+                int[] arr = new int[offers.size()];
+                for (int i = 0; i < arr.length; i++) {
+                    arr[i] = offers.get(i);
+                }
+                dsgEventRouter.routeEvent(
+                        new DSGRenjuTaraguchiOffer10TableEvent(null, tableNum, arr),
+                        player);
+            }
         }
     }
 
