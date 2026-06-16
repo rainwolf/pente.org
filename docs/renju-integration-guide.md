@@ -269,7 +269,7 @@ All verified in the submodule; treat as fact unless marked **(verify)**.
 | event fields | `…/event/DSGRenjuTaraguchi*.java` | `…Swap`: `boolean swap`, `int move`. `…Offer10`: `int[] moves`. `…Select1`: `int move`. All `extends AbstractDSGTableEvent` → inherited `String player`, `int table`; `AbstractDSGEvent` → `long time`. So each inner JSON object carries `player`, `table`, `time` plus its own fields. |
 
 **Could NOT confirm from code (state as "verify" in any implementation):**
-- The exact `move` sentinel sent on **`swap=true`** (take-over, no stone). The field is a plain `int`; the server `handleRenjuSwap` ignores it on `swap=true`. Send `0` and verify against `ServerTable.handleRenjuSwap`.
+- **Take-over (`swap=true`) no-move sentinel — RESOLVED: send `-1`.** `handleRenjuSwap` reads `move` but never uses it on `swap=true` (nor on the bare window-5 decline) — it is a pure sentinel. Use `-1`, not `0`: `0` is the legal corner cell `(0,0)`, so it is ambiguous; `-1` is not a board index and matches the house no-move convention (`ServerTable:1529` emits `move = -1` for "no single move"). The client reducer (`utils.js renjuSwap`) also ignores `move`, so `-1` is safe end-to-end.
 - Whether a per-variant `currentPlayer()` opening branch is strictly required for correct `isMyTurn` during the Renju opening (a `renjuOpeningPlayer` mirroring `swap2OpeningPlayer` is the safe move). **(verify)**
 - Reuse of the Go **dead-stone** render path for translucent candidates is now **confirmed**: `Board.js` sets `board[s].deadStone = player_colors[i]` (today only inside the `game.isGo()` block); `BoardSquare.js` renders it as `SimpleStone({size, id: deadStone, opacity: 0.6})`; both `Stone.js`/`SimpleStone.js` accept an `opacity` prop → SVG `fillOpacity`. So the translucent primitive works for any board — the only change is to set `board[s].deadStone` for Renju candidates outside the Go-only block.
 
@@ -369,8 +369,9 @@ non-zero `time`** (epoch ms). One literal per event (table 5, center 112, 15×15
 ```json
 // outbound: decline window-1 swap + place move 2 at col8,row7 (=113, in 3×3)
 { "dsgRenjuTaraguchiSwapTableEvent": { "swap": false, "move": 113, "player": "alice", "table": 5, "time": 0 } }
-// outbound: take over the side (no stone; move ignored on swap=true — verify sentinel)
-{ "dsgRenjuTaraguchiSwapTableEvent": { "swap": true,  "move": 0,   "player": "bob",   "table": 5, "time": 0 } }
+// outbound: take over the side (no stone). move = -1 is the no-move sentinel — the server ignores
+// `move` on swap=true; -1 (not 0, a legal corner cell) is unambiguous (cf. ServerTable:1529)
+{ "dsgRenjuTaraguchiSwapTableEvent": { "swap": true,  "move": -1,  "player": "bob",   "table": 5, "time": 0 } }
 // inbound echo (server time stamped); the stone, if any, arrives separately as dsgMoveTableEvent
 { "dsgRenjuTaraguchiSwapTableEvent": { "swap": false, "move": 113, "player": "alice", "table": 5, "time": 1718400000123 } }
 ```
@@ -681,9 +682,9 @@ let e1: [String: Any] = ["dsgRenjuTaraguchiSwapTableEvent":
     ["swap": false, "move": 113, "player": me, "table": table.table, "time": 0]]
 socket.sendEvent(eventDictionary: e1)
 
-// outbound: take over the side (no stone). Send move 0 — the server ignores `move` on swap=true
-// (ServerTable.handleRenjuSwap reads getMove() but never uses it for placement on a take-over).
-["dsgRenjuTaraguchiSwapTableEvent": ["swap": true, "move": 0, "player": me, "table": table.table, "time": 0]]
+// outbound: take over the side (no stone). Send move -1 — the no-move sentinel; the server ignores
+// `move` on swap=true (handleRenjuSwap reads getMove() but never uses it), and -1 (not 0 = corner cell) is unambiguous.
+["dsgRenjuTaraguchiSwapTableEvent": ["swap": true, "move": -1, "player": me, "table": table.table, "time": 0]]
 ```
 ```json
 // inbound echo (server time stamped); the stone, if any, arrives separately as dsgMoveTableEvent
@@ -1087,8 +1088,9 @@ Live-first ordering. **(L)** = live path, **(TB)** = turn-based/offline, **(both
 ```json
 // outbound: decline window-1 swap + place move 2 at col8,row7 (=113, in 3×3)
 { "dsgRenjuTaraguchiSwapTableEvent": { "swap": false, "move": 113, "player": "alice", "table": 5, "time": 0 } }
-// outbound: take over the side (no stone; move ignored on swap=true — verify sentinel, send 0)
-{ "dsgRenjuTaraguchiSwapTableEvent": { "swap": true,  "move": 0,   "player": "bob",   "table": 5, "time": 0 } }
+// outbound: take over the side (no stone). move = -1 no-move sentinel — server ignores `move` on
+// swap=true; -1 (not 0, a legal corner cell) is unambiguous (cf. ServerTable:1529)
+{ "dsgRenjuTaraguchiSwapTableEvent": { "swap": true,  "move": -1,  "player": "bob",   "table": 5, "time": 0 } }
 // inbound echo (server time stamped); the stone, if any, arrives separately as dsgMoveTableEvent
 { "dsgRenjuTaraguchiSwapTableEvent": { "swap": false, "move": 113, "player": "alice", "table": 5, "time": 1718400000123 } }
 ```
@@ -1177,8 +1179,9 @@ board JS — `drawDeadStone`, the central-square hinting by move number, the mul
   `currentColor` is already black-first; the *board* pass + verified `BoardState.java:6` +
   `currentColor:287` say the first stone is **white** today. The §10.0/§10.3 black-first fix
   (`2 - moves%2`) is required — confirm by rendering a live Renju move 1.
-- **`swap=true` take-over `move` sentinel** — the field is ignored server-side; send `0` and verify
-  against `ServerTable.handleRenjuSwap`.
+- **`swap=true` take-over `move` sentinel — RESOLVED: send `-1`.** `handleRenjuSwap` ignores `move`
+  on `swap=true` (and on the bare window-5 decline); use `-1` (not `0`, a legal corner cell) — the
+  house no-move convention (`ServerTable:1529`).
 - **`renjuOpeningPlayer` need** — whether a Renju arm in `Table.currentPlayer` is strictly required
   for correct `isMyTurn` during the opening (mirror `swap2OpeningPlayer`; the safe move). **(verify)**
 - **`TB_RENJU=81` resolution** — does the TB/offline path call `Variants.fromGameId(81)` (needs a
