@@ -171,16 +171,7 @@ public class GameResponse {
         boolean isRenju = !tbGame.isCompleted()
                 && tbGame.getGame() == GridStateFactory.TB_RENJU;
         String renjuPhase = isRenju ? tbGame.getRenjuPhase() : null;
-        String renjuOffersStr = null;
-        if (isRenju && tbGame.getRenjuOffers() != null) {
-            StringBuilder ro = new StringBuilder();
-            int[] offers = tbGame.getRenjuOffers();
-            for (int i = 0; i < offers.length; i++) {
-                if (i > 0) ro.append(',');
-                ro.append(offers[i]);
-            }
-            renjuOffersStr = ro.toString();
-        }
+        String renjuOffersStr = isRenju ? buildOffersString(tbGame.getRenjuOffers()) : null;
         Integer renjuSwaps = isRenju ? Integer.valueOf(tbGame.getRenjuSwaps()) : null;
 
         return new GameResponse(

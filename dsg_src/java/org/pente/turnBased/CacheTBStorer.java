@@ -1816,6 +1816,11 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
         synchronized (cacheTbLock) {
             game.setRenjuOffers(g.getRenjuOffers());
+            game.setLastMoveDate(new Date());
+        }
+        long newTimeout = Utilities.calculateNewTimeout(game, dsgPlayerStorer);
+        synchronized (cacheTbLock) {
+            game.setTimeoutDate(new Date(newTimeout));
             persistSet(game.getTbSet());
         }
         baseStorer.renjuOffers(game);

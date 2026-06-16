@@ -518,7 +518,18 @@ public class MoveServlet extends HttpServlet {
                         // 1 stone = Branch A (move 5, must be in 9x9), 10 = Branch B.
                         boolean declineSwap = moves[0] == 1;
                         if (declineSwap) {
-                            tbGameStorer.renjuSwap(game, false);
+                            // Only resolve the swap window when it is genuinely
+                            // still pending. The branch-choice phase is also
+                            // reachable after a move-4 take-over (swap already
+                            // resolved, pids already swapped); re-running
+                            // renjuSwap(false) there would overwrite swap4
+                            // YES->NO without unswapping the pids, desyncing the
+                            // persisted renjuSwaps from the seats.
+                            RenjuState swapPending = RenjuState.reconstruct(
+                                    game, game.getRenjuSwaps(), game.getRenjuOffers());
+                            if (swapPending.isAwaitingSwapDecision()) {
+                                tbGameStorer.renjuSwap(game, false);
+                            }
                         }
                         int stoneCount = moves.length - 1;
                         if (stoneCount == 1) {

@@ -1477,17 +1477,24 @@ public class ServerTable {
                 undoRequested = false;
                 int offererSeat = gridState.getCurrentPlayer();   // black, the offerer
 
-                try {
-                    if (rs.isAwaitingSwapDecision()) {
-                        rs.renjuSwapDecisionMade(false);   // decline the move-4 swap
-                    }
-                    if (rs.isAwaitingBranchChoice()) {
-                        rs.chooseBranch(true);             // Branch B
-                    }
-                    rs.offerFifthMoves(moves);             // atomic; throws -> INVALID_MOVE
-                } catch (RuntimeException ex) {
-                    log4j.info(psid() + "Renju offer10 rejected: " + ex.getMessage());
+                if (!rs.wouldAcceptFifthOffers(moves)) {
+                    // Pure pre-check: reject before mutating the swap/branch
+                    // flags, so a bad offer can't leave the player committed to
+                    // Branch B with zero offers (and locked out of Branch A).
                     error = DSGTableErrorEvent.INVALID_MOVE;
+                } else {
+                    try {
+                        if (rs.isAwaitingSwapDecision()) {
+                            rs.renjuSwapDecisionMade(false);   // decline the move-4 swap
+                        }
+                        if (rs.isAwaitingBranchChoice()) {
+                            rs.chooseBranch(true);             // Branch B
+                        }
+                        rs.offerFifthMoves(moves);             // atomic; throws -> INVALID_MOVE
+                    } catch (RuntimeException ex) {
+                        log4j.info(psid() + "Renju offer10 rejected: " + ex.getMessage());
+                        error = DSGTableErrorEvent.INVALID_MOVE;
+                    }
                 }
 
                 if (error == NO_ERROR) {

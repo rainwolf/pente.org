@@ -336,6 +336,44 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
         }
     }
 
+    /**
+     * Pure pre-check for the ten Branch-B 5th-move candidates: returns true iff
+     * offerFifthMoves(moves) would accept all of them. Applies the SAME rules
+     * (exactly ten entries, each in bounds, on an empty point, and not a
+     * symmetric duplicate of the offers accepted before it), WITHOUT mutating any
+     * state, so a caller can validate before committing the swap/branch flags.
+     */
+    public boolean wouldAcceptFifthOffers(int[] moves) {
+        if (moves == null || moves.length != 10) {
+            return false;
+        }
+        List<Integer> stabilizer = positionStabilizer();
+        List<Integer> accepted = new ArrayList<Integer>(offeredFifth);
+        for (int move : moves) {
+            if (outOfBounds(move) || getPosition(move) != 0) {
+                return false;
+            }
+            boolean duplicate = false;
+            for (int rot : stabilizer) {
+                int image = rotateMove(move, rot);
+                for (Integer existing : accepted) {
+                    if (existing.intValue() == image) {
+                        duplicate = true;
+                        break;
+                    }
+                }
+                if (duplicate) {
+                    break;
+                }
+            }
+            if (duplicate) {
+                return false;
+            }
+            accepted.add(move);
+        }
+        return true;
+    }
+
     public void selectFifthMove(int move) {
         if (!isAwaitingFifthSelection()) {
             throw new IllegalStateException("not awaiting 5th-move selection");

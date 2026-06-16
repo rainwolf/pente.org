@@ -333,6 +333,7 @@ public class RenjuForbiddenPointFinder {
     }
 
     public boolean isOpenThree(int x, int y, int nColor, int dir) {
+        if (b[x + 1][y + 1] != EMPTY) return false;
         if (isFive(x, y, nColor)) return false;
         if (nColor == 0 && isOverline(x, y)) return false;
 
