@@ -11,6 +11,7 @@ var goColor = "#FAC832";
 var oPenteColor = '#52BE80';
 var swap2PenteColor = "#E5AA70";
 var swap2KeryoColor = "#50C878";
+var renjuColor = "#D98880";
 
 var abstractBoard = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
