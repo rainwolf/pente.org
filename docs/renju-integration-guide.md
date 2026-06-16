@@ -201,13 +201,20 @@ Live (WebSocket + raw-TCP) Renju games now drive the full Taraguchi-10 opening s
 - **Join re-send** — `handleJoin` re-sends the ten offers to a client that (re)joins while Branch-B selection is still pending.
 
 **KNOWN NOTES (for sub-project 3 — the React client — and future games):**
-- **Rejoin/spectate swap state:** on (re)join `handleJoin` sends the current seats (`sendPlayingPlayers`) PLUS a silent `DSGSwapSeatsTableEvent` when `RenjuState.isNetSwapped()` (parity of swap decisions) — the client must handle it like the dPente silent swap: set the swap-state flag only, do **not** re-animate or double-swap on top of the already-current seats.
+- **Rejoin/spectate opening state (current-decision-point signal):** on (re)join `handleJoin` sends the authoritative seats (`sendPlayingPlayers`, unchanged — that conveys *position*) PLUS **exactly one** signal for the **current** decision point. Reaching `numMoves=N` implies windows `1..N-1` are already resolved, so only the current window is in question. The signal table (keyed by `numMoves`) — and the client phase it reconstructs via `RenjuRejoin.decode(numMoves, signal)`:
+  - **`numMoves=1..3`** — *nothing* → `SWAP` pending (present the swap choice); *silent `DSGSwapSeatsTableEvent`* → window resolved, `MOVE` (place move n+1).
+  - **`numMoves=4`** — *nothing* → `SWAP` pending; *silent swap* → `BRANCH` pending (move-4 window resolved; black picks Branch A vs B); *ten offers* (`DSGRenjuTaraguchiOffer10TableEvent`) → `SELECTION` pending.
+  - **`numMoves=5`** — *nothing* → Branch A swap-5 `SWAP` pending; *silent swap* → Branch A swap-5 resolved, `MOVE` (place move 6); *replayed `DSGRenjuTaraguchi10Select1TableEvent`* → Branch B (move 5 was a selection) → `MOVE` (place move 6), **no swap window**.
+  - **`numMoves>=6` / opening complete** — *nothing* → `COMPLETE` (normal play).
+
+  Within each `numMoves` the four kinds `{nothing, silent-swap, ten-offers, select1}` are distinct, so `(numMoves, signal)` is **injective** and the client reconstructs the exact server phase. **Seats still come from `sendPlayingPlayers`** — the silent swap event is a *phase marker*, not a seat re-apply: handle it like the dPente silent swap (advance the tracked opening phase for the current window; do **not** re-animate or double-swap on top of the already-current seats). **Its `swap` bit is the CURRENT window's resolved decision, NOT net seat orientation** — `RenjuRejoin.decode` ignores it, and the client must **not** derive who-owns-black from it (seats come only from `sendPlayingPlayers`). The server truth is `RenjuState.getOpeningPhase()` (`SWAP/BRANCH/SELECTION/MOVE/COMPLETE`); the encode/decode contract lives in `RenjuRejoin` and is proven equivalent to the server phase across every **rejoin-reachable** (persisted-between-events) opening state by `RenjuReconstructTest` (`decode(numMoves, encode(state)) == getOpeningPhase()`; the transient intra-handler pre-commit `n==4` `MOVE` states are atomically committed inside one handler, so they are not rejoin-observable and are intentionally out of contract). **(This replaces the prior `isNetSwapped()`/net-swap design, which has been removed.)**
+  - **Two design-verification notes accounted for:** *(a)* a `(numMoves=1, silent-swap)` rejoin is not meaningful in production (the move-1 window is the symmetric centre; a take-over there does not occur), but the new signal keys on *window resolution*, not swap parity, so the contract round-trips regardless and needs no special case. *(b)* `select1` **is** sent on rejoin under the new design (it is the Branch-B `numMoves=5` signal); under the old design only the ten-offers signal existed and `handleJoin` never replayed `select1`.
 - **Decision-echo contract:** clients must **NOT** place stones from the swap/offer/select echo events; stones arrive as `DSGMoveTableEvent`.
 - **Recovery contracts:** if a declined-swap's bundled stone is rejected, the swap-decline is **already committed** — the client recovers by sending the stone as a plain move (the swap window is consumed). If an offer10's ten are rejected, the move-4 decline + Branch-B are **already committed** — the client recovers by re-sending a corrected ten (the handler re-accepts via the `isAwaitingFifthOffers` guard).
 - **Branch-A move-5 phase:** Branch A move-5 is sent as a swap-event (`swap=false`, `move5`) by the to-move side in **BOTH** the move-4 swap-decline and post-swap (`isAwaitingBranchChoice`) states; `swap=true` is valid only while the swap window is open (rejected with `INVALID_MOVE` in the branch-choice state); windows 1–3 post-swap place the next opening stone as a plain `DSGMoveTableEvent`.
 - **Echo recipient:** echoes currently use `broadcastMainRoom` (mirrors `handleSwap`/`handleSwap2Pass`); verify opponent/spectator receipt in the manual round-trip and switch the three echoes to `broadcastTable` if exact recipient parity is needed.
 - **Known minor:** the three handlers use `state != GAME_IN_PROGRESS` as a single catch-all, so a disconnect-mid-opening surfaces `NO_GAME_IN_PROGRESS` rather than `GAME_WAITING_FOR_PLAYER_TO_RETURN` — cosmetic error code only, no logic impact.
-- **Live WS round-trip (QA — DONE 2026-06-15):** verified via a headless two-client WS harness (login → create Renju table → sit → start → drive the opening) against `localhost`. All scenarios passed: **auto-center**; **Branch A** (decline+move5, single `DSGMoveTableEvent`); **Branch B** (offer10 → select1, move 5 placed once, other nine clear); **swap=true + post-swap Branch A** (take-over then `swap=false`+move5); **error-to-sender** (`NOT_TURN` / `INVALID_MOVE`, offer10 with `move=-1`, sender-only delivery, table state intact on reject); and **rejoin-mid-offer** (re-sent ten offers + silent `DSGSwapSeatsTableEvent` + current seats).
+- **Live WS round-trip (QA — DONE 2026-06-15):** verified via a headless two-client WS harness (login → create Renju table → sit → start → drive the opening) against `localhost`. All scenarios passed: **auto-center**; **Branch A** (decline+move5, single `DSGMoveTableEvent`); **Branch B** (offer10 → select1, move 5 placed once, other nine clear); **swap=true + post-swap Branch A** (take-over then `swap=false`+move5); **error-to-sender** (`NOT_TURN` / `INVALID_MOVE`, offer10 with `move=-1`, sender-only delivery, table state intact on reject); and **rejoin-mid-offer** (the `SELECTION`-phase rejoin signal is the re-sent ten offers — `DSGRenjuTaraguchiOffer10TableEvent` — alongside the authoritative seats; under the current-decision-point design no silent swap accompanies it). *(The QA harness above predates the `isNetSwapped`→current-decision-point redesign; re-verify the per-phase rejoin signals against the new `RenjuRejoin` table when re-running it.)*
 
 ### Still deferred
 
@@ -273,11 +280,14 @@ record the client accumulates **from the echo events** (§8.4), not a computed g
 ```
 renjuState = {
   swapWindowOpen,   // bool — is the current swap window still undecided?
-  netSwapped,       // bool — parity of accepted swaps (who currently owns black)
   branch,           // null | 'A' | 'B' — set by the move-4 decision echoes
   offers,           // int[] | null — the 10 Branch-B candidates (offer10 echo)
   selection,        // int | null — white's pick (select1 echo)
 }
+// NOTE: no net-swap/orientation field is tracked here. Who-owns-black comes from
+// `table.seats` (the visual seat swap on a live swap=true, and `sendPlayingPlayers`
+// on rejoin) — never derived from the silent rejoin swap event (its swap bit is the
+// current window's decision, not net orientation).
 ```
 
 `movesLength = game.moves.length` (stones on board, incl. the auto-center = move 1).
@@ -331,15 +341,15 @@ it tracks only the four decision variables the echoes already carry.
 3. **`src/game/openingPhase.js`** — add `RenjuPhase` enum + `renjuPhase(...)` per §8.2, plus a derived `isRenjuSwapChoice` / `isRenjuBranchChoice` / `isRenjuSelection` (pattern: `started && phase===…`), so the UI gating mirrors `isSwap2Choice`.
 4. **`src/game/gameState.js`** — add the Renju tracking slice (e.g. `GameState.RenjuState` enum **and/or** the `renjuState` object of §8.2). Initialize it in `GameClass.reset()` next to `dPenteState`/`swap2State`.
 5. **`src/redux_reducers/utils.js`**
-   - Extend `swapSeats(data, state)`: when the game is Renju, in the **silent branch** (rejoin net-swap, §7) set the Renju net-swap flag **only** — do not animate (the silent `DSGSwapSeatsTableEvent` arrives after seats are already current; double-swapping corrupts the board, exactly the dPente silent-swap contract).
-   - Add three reducers `renjuSwap` / `renjuOffer10` / `renjuSelect1` that **update opening-tracking state only and place NO stones** — stones arrive via `addMove` (`DSGMoveTableEvent`). `renjuSwap`: toggle `netSwapped` on `swap===true`, mark the window decided, and (when the bundled stone follows) leave placement to `addMove`; at `movesLength==4`, **any** `swap=false` echo carrying a valid stone ⇒ `branch='A'` (whether the move-4 swap window was still open — i.e. a bundled decline — or already closed by a prior take-over). `renjuOffer10`: `branch='B'`, store `offers = data.moves`. `renjuSelect1`: store `selection = data.move`.
+   - Extend `swapSeats(data, state)`: when the game is Renju, in the **silent branch** (rejoin phase marker, §7) **advance the tracked opening phase for the current window only** (mark the current window resolved → the derivation in §8.2 moves it to `MOVE`/`BRANCH`) — do **not** animate (the silent `DSGSwapSeatsTableEvent` arrives after seats are already current; double-swapping corrupts the board, exactly the dPente silent-swap contract) and do **not** set any net-swap/orientation flag (its `swap` bit is the current window's decision, not net orientation; seats come from `sendPlayingPlayers`).
+   - Add three reducers `renjuSwap` / `renjuOffer10` / `renjuSelect1` that **update opening-tracking state only and place NO stones** — stones arrive via `addMove` (`DSGMoveTableEvent`). `renjuSwap`: mark the window decided (the visual seat swap that reflects who-owns-black is handled by the non-silent `swapSeats` branch / `table.swap()`, not tracked here) and (when the bundled stone follows) leave placement to `addMove`; at `movesLength==4`, **any** `swap=false` echo carrying a valid stone ⇒ `branch='A'` (whether the move-4 swap window was still open — i.e. a bundled decline — or already closed by a prior take-over). `renjuOffer10`: `branch='B'`, store `offers = data.moves`. `renjuSelect1`: store `selection = data.move`.
 6. **`src/redux_reducers/rootReducer.js`** — register three `EVENT_HANDLERS` entries (keys **must** equal the wrapper keys in 8.1):
    ```js
    dsgRenjuTaraguchiSwapTableEvent:    (p, s) => renjuSwap(p, s),
    dsgRenjuTaraguchiOffer10TableEvent: (p, s) => renjuOffer10(p, s),
    dsgRenjuTaraguchi10Select1TableEvent:(p, s) => renjuSelect1(p, s),
    ```
-   This is still the registration point post-refactor (it did **not** move to `protocol/middleware.js`). Decode + dispatch is automatic: once these types are in `MESSAGES`/`INBOUND_TYPES` (step 7), `protocol/middleware.js` decodes each frame and dispatches the typed action, which the reducer's `default:` arm routes through `EVENT_HANDLERS`. The silent net-swap is already routed (`dsgSwapSeatsTableEvent → swapSeats`); just teach `swapSeats` the Renju flag (step 5).
+   This is still the registration point post-refactor (it did **not** move to `protocol/middleware.js`). Decode + dispatch is automatic: once these types are in `MESSAGES`/`INBOUND_TYPES` (step 7), `protocol/middleware.js` decodes each frame and dispatches the typed action, which the reducer's `default:` arm routes through `EVENT_HANDLERS`. The silent swap-seats **phase marker** is already routed (`dsgSwapSeatsTableEvent → swapSeats`); just teach `swapSeats` to advance the Renju opening phase in the silent branch (step 5) — it is a phase marker, **not** a net-swap (seats come from `sendPlayingPlayers`).
 7. **`src/protocol/messages.js`** — add three `MESSAGES` entries (`time` is auto-stamped, omit from `out`; `TBL = ['table']` is defined at the top of the file):
    ```js
    dsgRenjuTaraguchiSwapTableEvent:     { dir:'both', cmd:'renjuSwap',    out:['swap','move','player','table'], req:TBL },
@@ -372,8 +382,15 @@ non-zero `time`** (epoch ms). One literal per event (table 5, center 112, 15×15
 { "dsgRenjuTaraguchi10Select1TableEvent": { "move": 57, "player": "bob", "table": 5, "time": 0 } }
 ```
 **Contract reminders (from §7):** never place stones from these three echoes — stones ride
-`DSGMoveTableEvent` (`addMove`). On (re)join while Branch-B selection is pending, the server
-re-sends the ten via an offer10 frame, plus a **silent** `dsgSwapSeatsTableEvent` if net-swapped.
+`DSGMoveTableEvent` (`addMove`). On (re)join the server sends the authoritative seats
+(`sendPlayingPlayers`) plus **exactly one** current-decision-point signal (§7 table, keyed by
+`numMoves`): *nothing* (window open / opening complete), a **silent** `dsgSwapSeatsTableEvent`
+(window resolved → `MOVE`/`BRANCH`; its `swap` is the **current window's** resolved decision —
+**not** net orientation — and seats are NOT re-applied), an **offer10** frame (Branch-B
+selection pending), or a replayed **select1** frame
+(Branch-B move 5 already chosen). The client reconstructs the phase via
+`RenjuRejoin.decode(numMoves, signal)`. *(This supersedes the old "re-send the ten plus a silent
+swap if net-swapped" behavior — `isNetSwapped()` was removed.)*
 
 ### 8.5 Offer symmetry dedup (client-side, UX nicety)
 The ten Branch-B offers must contain no two D4-symmetric duplicates. The server already rejects

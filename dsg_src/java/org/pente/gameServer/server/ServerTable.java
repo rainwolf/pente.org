@@ -539,19 +539,47 @@ public class ServerTable {
                         player);
             }
 
-            // Renju: tell a (re)joining client the current swap state with a silent
-            // swap-seats event (mirrors the d-pente/swap2 convention above). Seats are
-            // already authoritative via sendPlayingPlayers; only push when net-swapped.
-            if (gridState instanceof RenjuState
-                    && ((RenjuState) gridState).isNetSwapped()) {
-                dsgEventRouter.routeEvent(
-                        new DSGSwapSeatsTableEvent(null, tableNum, true, true),
-                        player);
+            // Renju: tell a (re)joining client the CURRENT opening decision point with
+            // exactly one signal. Seats are already authoritative via sendPlayingPlayers;
+            // this only conveys the phase (the client reconstructs it via
+            // RenjuRejoin.decode(numMoves, signal)). Reaching numMoves=N implies windows
+            // 1..N-1 are already resolved, so only the current window is signalled:
+            //   NONE        -> nothing (swap window still open, or opening complete)
+            //   SILENT_SWAP -> silent DSGSwapSeatsTableEvent (window resolved -> MOVE/BRANCH)
+            //   OFFERS      -> the ten Branch-B offers (selection pending)
+            //   SELECT1     -> the chosen Branch-B move 5 (already selected)
+            // The silent swap-seats event is a PHASE MARKER: its swap bit is the
+            // CURRENT window's resolved decision (NOT net seat orientation -- seats come
+            // from sendPlayingPlayers). It is suppressed when no window has resolved yet
+            // (numMoves==0), mirroring the dPente wasDPenteSwapDecisionMade() guard, to
+            // avoid a meaningless swap=false event on a fresh board. (numMoves==0 is not
+            // a live rejoin state anyway: the centre is auto-placed as move 1.)
+            if (gridState instanceof RenjuState) {
+                RenjuState rs = (RenjuState) gridState;
+                RenjuRejoin.RejoinSignal sig = RenjuRejoin.encode(rs);
+                switch (sig.kind) {
+                    case SILENT_SWAP:
+                        if (rs.isSwapResolvedAt(rs.getNumMoves())) {
+                            dsgEventRouter.routeEvent(
+                                    new DSGSwapSeatsTableEvent(null, tableNum, sig.swapValue, true),
+                                    player);
+                        }
+                        break;
+                    case OFFERS:
+                        sendRenjuBranchBOffers(player);
+                        break;
+                    case SELECT1:
+                        dsgEventRouter.routeEvent(
+                                new DSGRenjuTaraguchi10Select1TableEvent(null, tableNum, sig.move),
+                                player);
+                        break;
+                    case NONE:
+                    default:
+                        break;
+                }
             }
 
             sendMoves(player);
-
-            sendRenjuBranchBOffers(player);
 
             if (timed && (state == DSGGameStateTableEvent.GAME_IN_PROGRESS ||
                     state == DSGGameStateTableEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN)) {

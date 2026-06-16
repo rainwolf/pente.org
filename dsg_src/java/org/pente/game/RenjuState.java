@@ -412,17 +412,57 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
         awaitingSwap = false;
     }
 
-    /** True iff the net of all recorded swap decisions leaves the seats swapped
-     *  from the original sit order (odd number of swap=true decisions). Used by the
-     *  controller to tell a (re)joining client the current swap state. */
-    public boolean isNetSwapped() {
-        int swaps = 0;
-        for (int i = 0; i < swapResolved.length; i++) {
-            if (swapResolved[i] && swapDecision[i]) {
-                swaps++;
-            }
-        }
-        return (swaps % 2) == 1;
+    /**
+     * The CURRENT decision point of the Taraguchi-10 opening, computed from the
+     * existing predicates. This is the server truth a (re)joining client must
+     * reconstruct from only (numMoves, rejoin-signal); see {@link RenjuRejoin}.
+     */
+    public RenjuOpeningPhase getOpeningPhase() {
+        if (openingComplete) return RenjuOpeningPhase.COMPLETE;
+        if (isAwaitingSwapDecision()) return RenjuOpeningPhase.SWAP;
+        if (isAwaitingBranchChoice()) return RenjuOpeningPhase.BRANCH;
+        if (isAwaitingFifthSelection()) return RenjuOpeningPhase.SELECTION;
+        return RenjuOpeningPhase.MOVE;
+    }
+
+    /**
+     * The resolved swap decision for the window that opened after {@code window}
+     * stones (1..5). Only meaningful once that window has been resolved; a
+     * not-yet-resolved or never-existent window reads false. Used by the rejoin
+     * encoder to populate the silent swap-seats signal.
+     *
+     * This is the CURRENT (per-window) decision, NOT the net seat orientation:
+     * with multiple windows an earlier take-over can flip the orientation while a
+     * later window declines. The rejoin signal carries this as a phase-marker
+     * datum only; clients must read seats from sendPlayingPlayers and must not
+     * derive who-owns-black from it.
+     */
+    public boolean getSwapDecisionAt(int window) {
+        return swapDecision[window];
+    }
+
+    /**
+     * Whether the swap window that opened after {@code window} stones (1..5) has
+     * had its decision recorded. Used by the rejoin emitter to suppress a
+     * meaningless silent swap-seats event when no window has resolved yet
+     * (numMoves==0); see ServerTable's Renju (re)join block.
+     */
+    public boolean isSwapResolvedAt(int window) {
+        return swapResolved[window];
+    }
+
+    /** True once Branch B (the ten-offer branch) has been chosen. */
+    public boolean isBranchOffer() {
+        return tenOffer;
+    }
+
+    /**
+     * The board point committed as move 5 in Branch B (the selected offer), or
+     * -1 if no selection has been committed. Used to replay the select1 signal
+     * to a client that (re)joins after the Branch-B 5th move was chosen.
+     */
+    public int getSelectedFifthMove() {
+        return selectedFifth != null ? selectedFifth.intValue() : -1;
     }
 
     private int centerX() {

@@ -116,17 +116,37 @@ implementation.
   increment and desync `moveTimes`). Move 6+ is the normal `DSGMoveTableEvent` path.
   Clients therefore treat the opening as decision-echo + the `DSGMoveTableEvent` they
   already handle — settled here for sub-project 3.
-- **Seats encode swaps.** On `swap=true` the handler swaps both seat arrays, so the
-  seat assignments already-sent on join fully describe the swap history — no packed
-  word is sent live. (`getRenjuSwapsPacked()`/offers stay in `RenjuState` for the
-  game-over historic serialization from sub-project 1, unchanged.) A (re)joining
-  client is ALSO sent a silent `DSGSwapSeatsTableEvent(net-swapped, silent=true)` so
-  it sets its swap-state flag, mirroring the dPente/swap2 join convention
-  (`RenjuState.isNetSwapped()` = parity of swap decisions).
-- **Minimal join snapshot.** Seats + moves only, **except** when interrupted in
-  Branch B after the ten were offered but before selection — then also re-send the
-  ten. Uncommitted swap/branch decisions are not persisted; the player re-decides
-  on re-entry.
+- **Seats encode position; one signal encodes the current decision point.** On
+  `swap=true` the handler swaps both seat arrays, so the seat assignments sent on join
+  (`sendPlayingPlayers`, unchanged) fully describe *position* — no packed word is sent
+  live. (`getRenjuSwapsPacked()`/offers stay in `RenjuState` for the game-over historic
+  serialization from sub-project 1, unchanged.) On a mid-opening (re)join the server
+  ALSO sends **exactly one** signal for the **current** decision point. Reaching
+  `numMoves=N` implies windows `1..N-1` are already resolved, so only the current window
+  is in question. Signal table (`numMoves` → signal → reconstructed client phase):
+  - **`1..3`** — *nothing* → `SWAP` pending; *silent `DSGSwapSeatsTableEvent`* → window
+    resolved, `MOVE` (place move n+1).
+  - **`4`** — *nothing* → `SWAP` pending; *silent swap* → `BRANCH` pending (move-4
+    resolved); *ten offers* (`DSGRenjuTaraguchiOffer10TableEvent`) → `SELECTION` pending.
+  - **`5`** — *nothing* → Branch A swap-5 `SWAP` pending; *silent swap* → Branch A swap-5
+    resolved, `MOVE` (place move 6); *replayed `DSGRenjuTaraguchi10Select1TableEvent`* →
+    Branch B (move 5 was a selection) → `MOVE` (place move 6), no swap window.
+  - **`>=6` / opening complete** — *nothing* → `COMPLETE`.
+
+  Within each `numMoves` the four kinds `{nothing, silent-swap, ten-offers, select1}` are
+  distinct, so `(numMoves, signal)` is **injective**; the client reconstructs the exact
+  server phase via `RenjuRejoin.decode(numMoves, signal)`. **Seats still come from
+  `sendPlayingPlayers`** — the silent swap event is a phase marker (its `swap` value is
+  the resolved decision), NOT a seat re-apply, so the client must not double-swap on top
+  of the already-current seats. The server truth is `RenjuState.getOpeningPhase()`
+  (`SWAP/BRANCH/SELECTION/MOVE/COMPLETE`); `RenjuRejoin.encode`/`decode` are pure and the
+  reconstruction equivalence `decode(numMoves, encode(state)) == getOpeningPhase()` is
+  proven across the whole opening in `RenjuReconstructTest`. **(This replaces the earlier
+  `RenjuState.isNetSwapped()` net-swap-parity design, which has been removed.)**
+- **Minimal join snapshot.** Seats + moves + the single current-decision-point signal
+  above. Uncommitted swap/branch decisions are not persisted; the player re-decides on
+  re-entry. (The Branch-B "after the ten were offered but before selection" case is the
+  `SELECTION` row of the table: the signal is the re-sent ten offers.)
 - **No new opening rules.** Phase legality, forbidden-point blocking, and symmetric
   -offer rejection all reuse `RenjuState`'s existing checks.
 - **Transport-agnostic by construction.** All work lands in the shared event/
@@ -185,13 +205,19 @@ exact recipient parity if not.
 All three: on any validation failure, no state is mutated and a
 `DSGMoveTableErrorEvent` is emitted to the sending player — see Error handling.
 
-### 5. Join push — Branch-B offer re-send
-In `handleJoin`, immediately after `sendMoves(player)` (≈542), add a guarded step:
-if the game is Renju and `isAwaitingFifthSelection()` (ten offered, not yet
-selected), send the joiner a `DSGRenjuTaraguchiOffer10TableEvent` built from
-`getOfferedFifthMoves()`. A small private helper
-(`sendRenjuBranchBOffers(player)`) keeps `handleJoin` readable. Scope available:
-`player`, `gridState`, `tableNum`, `dsgEventRouter`.
+### 5. Join push — current-decision-point signal
+In `handleJoin` (before `sendMoves(player)`), when the game is Renju, compute
+`RenjuRejoin.encode((RenjuState) gridState)` and send **exactly one** signal by kind
+(see the "Seats encode position" decision for the full `numMoves`→signal→phase table):
+`NONE` → send nothing; `SILENT_SWAP` → silent
+`DSGSwapSeatsTableEvent(null, tableNum, sig.swapValue, true)`; `OFFERS` → the existing
+`sendRenjuBranchBOffers(player)` helper (a `DSGRenjuTaraguchiOffer10TableEvent` from
+`getOfferedFifthMoves()`, sent when `isAwaitingFifthSelection()`); `SELECT1` →
+`DSGRenjuTaraguchi10Select1TableEvent(null, tableNum, sig.move)`. `sendPlayingPlayers`
+(authoritative seats) and the rest of `handleJoin` are untouched. Scope available:
+`player`, `gridState`, `tableNum`, `dsgEventRouter`. *(Earlier this step only re-sent the
+Branch-B offers and — under the removed `isNetSwapped()` design — a silent net-swap event;
+it now routes all four current-decision-point kinds.)*
 
 ## Data flow
 

@@ -229,23 +229,201 @@ public class RenjuReconstructTest extends TestCase {
         assertTrue(s.isAwaitingFifthOffers());
     }
 
-    public void testIsNetSwappedReflectsParityOfSwapDecisions() {
-        // isNetSwapped() returns the parity of recorded swap=true decisions: each
-        // swap flips the seats, so an even count nets to no swap, odd nets swapped.
+    // ----- reconstruction equivalence (server phase <-> client rejoin signal) -----
+    //
+    // The deliverable: drive RenjuState through every REJOIN-reachable (persisted-
+    // between-events) opening state and, for each, assert that the client's
+    // reconstruction -- decode(numMoves, encode(state)) -- yields the SAME
+    // RenjuOpeningPhase the server holds (getOpeningPhase()), from only (numMoves,
+    // signal). This proves server<->client reconstruction equivalence across the whole
+    // Taraguchi-10 opening. Also asserts getOpeningPhase() itself per state.
+    //
+    // SCOPE -- rejoin-reachable states. Two transient INTRA-handler states at n==4
+    // (Branch A chosen before move 5; Branch B chosen before the ten offers) report
+    // getOpeningPhase()==MOVE but encode to SILENT_SWAP (-> BRANCH), so they do NOT
+    // round-trip. They are never persisted between network events (handleRenjuSwap
+    // commits chooseBranch(false)+move5 atomically; handleRenjuOffer10 commits
+    // chooseBranch(true)+offerFifthMoves atomically, each in one serialized handler),
+    // so they are not rejoin-observable. testTransientPreCommitStatesAtFour_* pins
+    // that they are intentionally out of contract.
+
+    // The four shared opening stones (same as the other tests in this file).
+    private static final int M1 = 7  + 7  * 15;  // xy(7,7) center
+    private static final int M2 = 8  + 8  * 15;  // xy(8,8)
+    private static final int M3 = 9  + 7  * 15;  // xy(9,7)
+    private static final int M4 = 6  + 8  * 15;  // xy(6,8)
+    private static final int M5A = 11 + 7 * 15;  // xy(11,7) Branch A move 5 (in 9x9)
+    private static final int M6 = 0;             // xy(0,0) any empty point
+
+    // Ten valid Branch-B 5th-move offers for the {M1..M4} position (reused from the
+    // existing Branch-B reconstruct tests, where these are accepted by offerFifthMove).
+    private int[] tenOffers() {
+        return new int[]{xy(0,0), xy(0,2), xy(0,4), xy(0,6), xy(0,8),
+                         xy(0,10), xy(0,12), xy(0,14), xy(2,0), xy(4,0)};
+    }
+
+    // Assert BOTH (a) the server phase equals expected, and (b) the client reconstructs
+    // that exact phase from only (numMoves, encode(state)).
+    private void assertReconstructs(RenjuState s, RenjuOpeningPhase expected) {
+        assertEquals("server getOpeningPhase() @ n=" + s.getNumMoves(),
+                expected, s.getOpeningPhase());
+        RenjuRejoin.RejoinSignal sig = RenjuRejoin.encode(s);
+        RenjuOpeningPhase reconstructed = RenjuRejoin.decode(s.getNumMoves(), sig);
+        assertEquals("decode(numMoves, encode(state)) must equal the server phase"
+                        + " @ n=" + s.getNumMoves() + " sig=" + sig,
+                s.getOpeningPhase(), reconstructed);
+    }
+
+    // Build a RenjuState with moves 1..k placed and windows 1..(k-1) declined, leaving
+    // window k OPEN (SWAP pending). k in 1..4.
+    private RenjuState swapWindowOpen(int k) {
         RenjuState s = new RenjuState(15, 15);
-        assertTrue("no decisions recorded -> not net-swapped", !s.isNetSwapped());
+        int[] m = {M1, M2, M3, M4};
+        for (int i = 0; i < k; i++) {
+            s.addMove(m[i]);
+            if (i < k - 1) s.renjuSwapDecisionMade(false); // resolve earlier windows
+        }
+        return s;
+    }
 
-        s.addMove(xy(7, 7));  s.renjuSwapDecisionMade(true);   // 1 swap=true -> odd
-        assertTrue("one swap -> net-swapped", s.isNetSwapped());
+    public void testReconstruct_swapWindowsPending() {
+        for (int k = 1; k <= 4; k++) {
+            assertReconstructs(swapWindowOpen(k), RenjuOpeningPhase.SWAP);
+        }
+    }
 
-        s.addMove(xy(8, 8));  s.renjuSwapDecisionMade(false);  // declines don't flip
-        assertTrue("declined swap leaves parity odd -> still net-swapped",
-                s.isNetSwapped());
+    public void testReconstruct_swapWindows1to3Resolved_declineAndTakeover() {
+        // Windows 1..3 resolved -> MOVE (place the next opening stone). Window 4 is
+        // covered separately because resolving it yields BRANCH, not MOVE.
+        for (int k = 1; k <= 3; k++) {
+            RenjuState decline = swapWindowOpen(k);
+            decline.renjuSwapDecisionMade(false);
+            assertReconstructs(decline, RenjuOpeningPhase.MOVE);
 
-        s.addMove(xy(9, 7));  s.renjuSwapDecisionMade(true);   // 2 swaps=true -> even
-        assertTrue("two swaps -> not net-swapped", !s.isNetSwapped());
+            RenjuState takeover = swapWindowOpen(k);
+            takeover.renjuSwapDecisionMade(true);   // engine allows take-over at any open window
+            assertReconstructs(takeover, RenjuOpeningPhase.MOVE);
+        }
+    }
 
-        s.addMove(xy(6, 8));  s.renjuSwapDecisionMade(true);   // 3 swaps=true -> odd
-        assertTrue("three swaps -> net-swapped", s.isNetSwapped());
+    public void testReconstruct_window4Resolved_isBranch_declineAndTakeover() {
+        RenjuState decline = swapWindowOpen(4);
+        decline.renjuSwapDecisionMade(false);       // window 4 declined -> branch choice
+        assertReconstructs(decline, RenjuOpeningPhase.BRANCH);
+
+        RenjuState takeover = swapWindowOpen(4);
+        takeover.renjuSwapDecisionMade(true);        // window 4 take-over -> branch choice
+        assertReconstructs(takeover, RenjuOpeningPhase.BRANCH);
+    }
+
+    // Branch A: window 4 resolved, Branch A chosen, move 5 placed -> swap-5 window OPEN.
+    private RenjuState branchAAtFiveSwapOpen() {
+        RenjuState s = swapWindowOpen(4);
+        s.renjuSwapDecisionMade(false);  // resolve window 4 -> BRANCH
+        s.chooseBranch(false);           // Branch A
+        s.addMove(M5A);                  // move 5 in the 9x9 -> swap-5 window opens
+        return s;
+    }
+
+    public void testReconstruct_branchA_swap5Pending() {
+        assertReconstructs(branchAAtFiveSwapOpen(), RenjuOpeningPhase.SWAP);
+    }
+
+    public void testReconstruct_branchA_swap5Resolved_declineAndTakeover() {
+        RenjuState decline = branchAAtFiveSwapOpen();
+        decline.renjuSwapDecisionMade(false);   // swap-5 declined -> place move 6
+        assertReconstructs(decline, RenjuOpeningPhase.MOVE);
+
+        RenjuState takeover = branchAAtFiveSwapOpen();
+        takeover.renjuSwapDecisionMade(true);   // swap-5 take-over -> place move 6
+        assertReconstructs(takeover, RenjuOpeningPhase.MOVE);
+    }
+
+    public void testReconstruct_branchA_complete() {
+        RenjuState s = branchAAtFiveSwapOpen();
+        s.renjuSwapDecisionMade(false);
+        s.addMove(M6);                          // move 6 -> opening complete
+        assertReconstructs(s, RenjuOpeningPhase.COMPLETE);
+    }
+
+    public void testReconstruct_branchB_selectionPending() {
+        RenjuState s = branchBAtFour();
+        s.offerFifthMoves(tenOffers());         // ten offered -> selection pending
+        assertReconstructs(s, RenjuOpeningPhase.SELECTION);
+    }
+
+    public void testReconstruct_branchB_afterSelect_isMove() {
+        RenjuState s = branchBAtFour();
+        int[] offers = tenOffers();
+        s.offerFifthMoves(offers);
+        s.selectFifthMove(offers[3]);           // commit move 5 -> place move 6 next
+        assertEquals(5, s.getNumMoves());
+        assertReconstructs(s, RenjuOpeningPhase.MOVE);
+        // The Branch-B move-5 signal carries the selected point so it can be replayed.
+        RenjuRejoin.RejoinSignal sig = RenjuRejoin.encode(s);
+        assertEquals(RenjuRejoin.RejoinKind.SELECT1, sig.kind);
+        assertEquals(offers[3], sig.move);
+    }
+
+    public void testReconstruct_branchB_complete() {
+        RenjuState s = branchBAtFour();
+        int[] offers = tenOffers();
+        s.offerFifthMoves(offers);
+        s.selectFifthMove(offers[3]);
+        s.addMove(M6);                          // move 6 -> opening complete
+        assertReconstructs(s, RenjuOpeningPhase.COMPLETE);
+    }
+
+    // The initial board (move 1 not yet placed) is a MOVE state that round-trips
+    // cleanly. In production the centre is auto-placed as move 1, so n==0 is not a
+    // live rejoin state, but the encode/decode contract still holds for it.
+    public void testReconstruct_initialBoard_isMove() {
+        assertReconstructs(new RenjuState(15, 15), RenjuOpeningPhase.MOVE);
+        assertEquals(0, new RenjuState(15, 15).getNumMoves());
+    }
+
+    // The two transient INTRA-handler states at n==4 that are intentionally OUT of the
+    // encode/decode contract: getOpeningPhase()==MOVE, but the rejoin signal encodes to
+    // SILENT_SWAP, which decodes to BRANCH at n==4. These never persist between network
+    // events (handleRenjuSwap commits chooseBranch(false)+move5 atomically;
+    // handleRenjuOffer10 commits chooseBranch(true)+offerFifthMoves atomically, each in
+    // one serialized handler), so they are not rejoin-observable. This PINS the
+    // documented mismatch -- it deliberately does NOT use assertReconstructs.
+    public void testTransientPreCommitStatesAtFour_areOutOfContract() {
+        // (b) Branch B chosen, the ten offers not yet complete.
+        RenjuState branchB = branchBAtFour();
+        assertEquals(RenjuOpeningPhase.MOVE, branchB.getOpeningPhase());
+        RenjuRejoin.RejoinSignal sigB = RenjuRejoin.encode(branchB);
+        assertEquals(RenjuRejoin.RejoinKind.SILENT_SWAP, sigB.kind);
+        assertEquals("transient Branch-B offers-pending is out of contract",
+                RenjuOpeningPhase.BRANCH,
+                RenjuRejoin.decode(branchB.getNumMoves(), sigB)); // != getOpeningPhase()
+
+        // (a) Branch A chosen, move 5 not yet placed.
+        RenjuState branchA = swapWindowOpen(4);
+        branchA.renjuSwapDecisionMade(false); // window 4 resolved -> BRANCH
+        branchA.chooseBranch(false);          // Branch A chosen, move 5 not yet placed
+        assertEquals(RenjuOpeningPhase.MOVE, branchA.getOpeningPhase());
+        RenjuRejoin.RejoinSignal sigA = RenjuRejoin.encode(branchA);
+        assertEquals(RenjuRejoin.RejoinKind.SILENT_SWAP, sigA.kind);
+        assertEquals("transient Branch-A pre-move-5 is out of contract",
+                RenjuOpeningPhase.BRANCH,
+                RenjuRejoin.decode(branchA.getNumMoves(), sigA)); // != getOpeningPhase()
+    }
+
+    // Spot-check the signal KIND for a couple of phases, so a regression in the
+    // encode mapping (not just the decode round-trip) is caught.
+    public void testReconstruct_signalKinds() {
+        assertEquals(RenjuRejoin.RejoinKind.NONE,
+                RenjuRejoin.encode(swapWindowOpen(2)).kind);          // SWAP pending
+        RenjuState resolved = swapWindowOpen(2);
+        resolved.renjuSwapDecisionMade(true);
+        assertEquals(RenjuRejoin.RejoinKind.SILENT_SWAP,
+                RenjuRejoin.encode(resolved).kind);                  // MOVE after resolve
+        assertTrue("take-over swap value carried", RenjuRejoin.encode(resolved).swapValue);
+        RenjuState branchB = branchBAtFour();
+        branchB.offerFifthMoves(tenOffers());
+        assertEquals(RenjuRejoin.RejoinKind.OFFERS,
+                RenjuRejoin.encode(branchB).kind);                   // SELECTION
     }
 }
