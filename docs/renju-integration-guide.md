@@ -89,7 +89,7 @@ Every game's auto-placed opening center stone was historically the literal `180`
 
 Board rendering is shared across the canvas viewers via two files; teach them about the game **once**:
 - **`gameServer/gameConstants.jspf`** — add `GAME.RENJU/SPEED_RENJU/TB_RENJU` (emitted from `GridStateFactory`). Without these the `switch(game)` in `boardCommon.js` can't match → "unknown game id 81" thrown → board never renders.
-- **`gameServer/js/boardCommon.js`** — `getBoardColor` (board wood color) and `replayMoves` (replay dispatch) must handle the new ids. Renju → `gomokuColor` for the board, but its **own** `replayRenjuGame` (see next).
+- **`gameServer/js/boardCommon.js`** — `getBoardColor` (board wood color) and `replayMoves` (replay dispatch) must handle the new ids. Renju → its **own** `renjuColor` (`#D98880`, dusty rose — **distinct from gomoku**) for the board, and its **own** `replayRenjuGame` (see next).
 - **`gameServer/tb/gameScript.js`**:
   - `replayRenjuGame` — **black first**: `color = 2 - (i % 2)` (drawStone renders value **2 = black, 1 = white**; gomoku's `1 + (i%2)` is white-first). Use `% gridSize` / `/ gridSize`, **never hardcoded 19** (a `%19` move on a 15-board lands outside the `0..gridSize-1` cells `drawGame()` iterates → invisible stone).
   - `drawGrid` star points — route Renju to the gridSize-aware branch (`c = floor(gridSize/2)`, `l = 3`, `r = gridSize-1-3` → 3/7/11 for 15×15) instead of the hardcoded-19 default.
@@ -115,6 +115,7 @@ The server is authoritative; clients render + drive the opening. Each client nee
 - [ ] Renju board size **15×15** (game ids 31/32/81 → 15; don't assume 19). Move encoding **`x + y·15`**.
 - [ ] **Black plays first**; color by move parity. Offer candidates shown translucent (1 placed = solid).
 - [ ] Star points at **3/7/11** (center 7); coordinate labels **A–P skipping I** (first 15 of the standard set).
+- [ ] Board background colour **`#D98880`** (`renjuColor`, dusty rose) — **distinct from gomoku** (`#A3FDEB`). Canonical across web (`getBoardColor`/`gameScript.js`), react_live (`.renju` + `VARIANT_COLORS`), iOS (`BoardVariantMapping.backgroundColor`, §9), Android (`Table.getGameColor`, §10).
 
 **Opening flow (Taraguchi-10)** — phase source depends on the transport:
 - **Historic / turn-based JSON** (`GameResponse`): the server ships the phase in the `renjuPhase` field (derived once by `TBGame.getRenjuPhase()`, §2.6). Read it directly.
@@ -218,10 +219,10 @@ Live (WebSocket + raw-TCP) Renju games now drive the full Taraguchi-10 opening s
 
 ### Still deferred
 
-- **React `react_live_game_room` opening UI (sub-project 3)** — not started in code, but **fully scoped in §8** (grounded zero-context handoff: anchors, live phase derivation, file-by-file map, wire examples).
+- **React `react_live_game_room` opening UI (sub-project 3)** — **IMPLEMENTED** (§8 is the as-built reference: anchors, live phase derivation, file-by-file map, wire examples). Live-verified: Branch A/B opening, take-over seat swap, offer-10 auto-send, white selection + server prompt.
 - **Viewer rendering of the offer phase during historic replay** — the offers/swaps are now persisted + exposed in JSON, but the historic viewers don't yet render the offer/selection phase.
 - **Forbidden-point marking** in any client — deferred (server-enforced only). Add via `getForbiddenPoints` → expose like `renjuOffers` → mark; don't port the finder.
-- **React / iOS / Android** clients — not started (this guide is their input).
+- **iOS / Android** clients — not started in code; **zero-context handoffs now written** (§9 iOS, §10 Android: transport verdicts, confirmed anchors, live phase derivation, file-by-file maps, wire examples). React (`react_live_game_room`) is implemented (above).
 - **AI** for Renju — none.
 
 ---
@@ -373,13 +374,14 @@ non-zero `time`** (epoch ms). One literal per event (table 5, center 112, 15×15
 // inbound echo (server time stamped); the stone, if any, arrives separately as dsgMoveTableEvent
 { "dsgRenjuTaraguchiSwapTableEvent": { "swap": false, "move": 113, "player": "alice", "table": 5, "time": 1718400000123 } }
 ```
-**Offer 10** (Branch B — black offers ten 5th-move candidates):
+**Offer 10** (Branch B — black offers ten 5th-move candidates; no two D4-symmetric — offsets
+`(1,0)(2,0)(3,0)(4,0)(1,1)(2,1)(3,1)(4,1)(2,2)(3,2)` about centre 112 → **10 distinct {|dx|,|dy|} orbits**):
 ```json
-{ "dsgRenjuTaraguchiOffer10TableEvent": { "moves": [40,41,42,55,57,70,71,72,160,176], "player": "alice", "table": 5, "time": 0 } }
+{ "dsgRenjuTaraguchiOffer10TableEvent": { "moves": [113,114,115,116,128,129,130,131,144,145], "player": "alice", "table": 5, "time": 0 } }
 ```
 **Select 1** (white picks one of the ten → becomes move 5; placed via a following `dsgMoveTableEvent`):
 ```json
-{ "dsgRenjuTaraguchi10Select1TableEvent": { "move": 57, "player": "bob", "table": 5, "time": 0 } }
+{ "dsgRenjuTaraguchi10Select1TableEvent": { "move": 130, "player": "bob", "table": 5, "time": 0 } }
 ```
 **Contract reminders (from §7):** never place stones from these three echoes — stones ride
 `DSGMoveTableEvent` (`addMove`). On (re)join the server sends the authoritative seats
@@ -435,3 +437,772 @@ interaction with **no existing analogue** in this client:
 
 Visual reference (different framework, do not copy code): `gameServer/tb/mobileGame.jsp` and its
 board JS — `drawDeadStone`, the central-square hinting by move number, and the multi-pick picker.
+
+---
+
+## 9. Sub-project 4 — iOS (`penteLive-iOS`) Taraguchi-10 handoff
+
+Zero-context handoff for a fresh agent wiring the live Renju opening UI into the
+`penteLive-iOS` submodule (a **separate repo** — do not edit it from this one). Every anchor
+below was grep-verified against the submodule on this branch; line numbers are as-of-now and
+drift, so grep the symbol.
+
+**TRANSPORT VERDICT: LIVE ONLY — derive the phase, exactly like §8.2 (React).** The iOS app is a
+raw-TCP / WebSocket client: `PenteLiveSocket.swift` opens a `GCDAsyncSocket` and reads
+255-delimited JSON frames (`separator = Data([255])`, `PenteLiveSocket.swift:25`), dispatching by
+top-level key in `processEvent` (`:105-174`); moves are **sent** as a hand-built
+`dsgMoveTableEvent` dict via `socket.sendEvent(...)` (`TableViewController.sendMove:547`). There
+is **no** `MoveServlet`/`renjuAction` POST path and **no** `GameResponse`/`renjuPhase` consumer
+anywhere in the codebase (grep for `renjuPhase`/`renjuOffers`/`renjuSwaps`/`GameResponse` → zero
+hits). So the live client gets **NO `renjuPhase` on the wire** and must **derive** the
+Taraguchi-10 phase from tracked decision-echo state (§9.2), identical in spirit to the React port.
+A **secondary, read-only** path exists — the legacy Objective-C `BoardViewController.m` loads
+finished games via `GET /gameServer/mobile/json/game.jsp?gid=…` (`:1422` production URL / `:1427`
+localhost variant) — but its JSON parser (`:1453-1503`; `NSJSONSerialization` at `:1453`, field
+reads `player1`/`player2`/`currentPlayer`/`moves` at `:1473-1503`) reads only
+`moves`/`currentPlayer`/`player1`/`player2` and does **not** read
+`renjuPhase`/`renjuOffers`/`renjuSwaps`; rendering the historic opening there is the §2.6/§4
+read-the-field path and is **deferred** (it does not affect live play).
+
+**iOS and Android have no Renju support whatsoever today.** Game ids 31/32/81 are absent from
+every enum and map; see §9.1 for the silent-degradation fall-through.
+
+**How iOS genuinely differs from the React reference (§8) — read before forcing the React shape:**
+- **Two languages.** The live-play stack is **Swift** (`PenteLiveSocket`, `TableViewController`,
+  `RoomViewController`, `HelperClasses`, `LiveBoard`, `PenteEngine/*`). The read-only replay /
+  turn-based viewer is **legacy Objective-C** (`BoardViewController.m/.h`, `BoardView.m/.h`,
+  179 KB of ObjC). All Renju live work lands in the Swift files; the ObjC viewer is optional.
+- **A client-side rules-engine *copy*.** `PenteEngine/PenteGame.swift` + `RuleSet.swift` +
+  `PenteVariant.swift` are a structured Swift port of the move engine (capture rules, a
+  `cadence` enum for move→color, and an `OpeningMask` enum for opening legality). React replays
+  inline in `GameClass.js`; iOS routes color through `rules.cadence` and opening through
+  `OpeningMask`, so Renju needs a **new variant + RuleSet + cadence + opening-mask kind** — more
+  structured work than React’s inline `2-(i%2)` flip.
+- **No event-wrapper classes, no Protocol module.** iOS parses each frame into a bare
+  `[String: Any]` (`convertJSONStringToDictionary:177`) and dispatches via a literal if-else chain;
+  outbound frames are **hand-built dicts** (`sendMove:548`). There is no `MESSAGES`/`Commands`
+  registry (React) and no typed event package (Android). Adding the three Renju events = three new
+  if-else arms + three hand-built send methods. Simpler plumbing, but **no schema validation** and
+  **no `time:0` auto-stamp** — the sender must include `"time": 0` literally (as `sendMove` does).
+- **No `openingPhase.js` analogue.** React centralizes phase logic in pure classifiers; iOS
+  scatters it across `HelperClasses` (`isSwap2ChoiceWithPassOption:150`, `currentPlayer:466`) and
+  carries only `swap2State`/`dPenteState` enums — there is **no `renjuState`**. You add the
+  tracking slice and a `renjuPhase(...)` derivation from scratch.
+- **Board size hardcoded `19` more pervasively.** Beyond the Swift engine’s literal `/19`/`%19`,
+  there is a C array `abstractBoard[19][19]` in `BoardViewController.h:36`. React already had
+  `gridSizeForGame` (only missing the 31/32/81 case); iOS needs a broader sizing pass.
+- **No multi-select opening-UI precedent** (same gap as React, but worse): the swap2/dPente UI is
+  a yes/no/pass `UIAlertController` action-sheet (`stateChanged:593/611/632`), not board
+  interaction. There is no 10-pick picker, no translucent-candidate array, no central-box
+  highlight, no “select 1 of 10” screen.
+
+### 9.0 Board basics (restated for this client)
+- Board **15×15**, game ids **31 (Renju) / 32 (Speed Renju) / 81 (TB Renju)**. Move encoding
+  `x + y·15`; **center = 112** (`7 + 7·15`). The **server auto-places** the center as move 1 —
+  it arrives as an ordinary `dsgMoveTableEvent`, so the client only needs the board sized to 15
+  to render it correctly (no client-side auto-center).
+- **Board background colour = `#D98880` (dusty rose)** — the canonical Renju board colour,
+  **distinct from gomoku's `#A3FDEB`**. Matches the web (`renjuColor`, `gameScript.js:14`) and
+  `react_live_game_room` (`.renju` in `TableClass.js`). This is the exact value the `.renju`
+  `backgroundColor` case (§9.3 step 2a) must return.
+- **Black plays first.** iOS color conventions to reconcile:
+  - `abstractBoard` cell values: **0 = empty, 1 = WHITE, 2 = BLACK, −1 = masked** (the rendering
+    convention; `BoardView.h:13-15` separately `#define WHITE 0 / BLACK 1 / RED 2` is a distinct
+    legacy palette enum, **not** the board-value convention — do not conflate them).
+  - The engine’s move→color is `PenteGame.colorForMove(_:)` `:94`: for the `.alternating` cadence
+    it returns `(index % 2) + 1`, i.e. **move 0 → value 1 = WHITE first** — this is the **opposite**
+    of Renju. The same white-first parity is echoed in `HelperClasses.currentPlayer():466`
+    (`1 + moves.count % 2`).
+  - So **“black first” ⇒ the first stone (move 0/center) must carry board value 2**. Because color
+    flows through `rules.cadence`, the fix is a **new black-first cadence** (e.g.
+    `colorForMove → 2 - (index % 2)`, giving move 0 → value 2), **not** an inline flip.
+
+### 9.1 Confirmed anchors (file : symbol)
+All grep-verified in the submodule on this branch; treat as fact unless marked **(verify)**.
+“**WRONG today**” = the code path Renju ids 31/32/81 hit right now, which is incorrect for Renju.
+
+| Area | File | Symbol / fact |
+|---|---|---|
+| inbound dispatch | `test1/PenteLiveSocket.swift` | `processEvent(eventString:)` **:105-174** — if-else chain keyed on the top-level JSON key. Present: `dsgMoveTableEvent` (:146), `dsgSystemMessageTableEvent` (:148), `dsgSwapSeatsTableEvent` (:150), `dsgSwap2PassTableEvent` (:170). **No** `dsgRenjuTaraguchiSwapTableEvent` / `…Offer10…` / `…Select1…` → the three echoes are **silently dropped** (no else-arm). **WRONG today.** |
+| frame decode | `test1/PenteLiveSocket.swift` | `socket(didRead:withTag:)` **:89-96** reads to `separator = Data([255])` (:25), UTF-8 → `convertJSONStringToDictionary` (:177) → `[String: Any]`; **no schema validation**. |
+| outbound send | `test1/PenteLiveSocket.swift` | `sendEvent(eventDictionary:)` → `sendEvent(eventData:)` **:225-243** — `JSONSerialization` → append `separator` → `socket.write`. Generic; senders hand-build the dict. **No `time` auto-stamp.** |
+| move send | `test1/TableViewController.swift` | `sendMove(move:)` **:547-548** builds `["dsgMoveTableEvent": ["move": move, "moves": [move], "player": me, "table": table.table, "time": 0]]`. The dict-shape template for the new Renju senders. |
+| dPente swap UI | `test1/TableViewController.swift` | `stateChanged()` **:593-607** — `UIAlertController(.actionSheet)` “Continue play as” with **Player 1 (white)** / **Player 2 (black)**; sends `dsgSwapSeatsTableEvent`. |
+| swap2 swap UI | `test1/TableViewController.swift` | `stateChanged()` **:611-631** (with pass: P1/P2/**Pass Decision**) and **:632+** (without pass); sends `dsgSwapSeatsTableEvent` or `dsgSwap2PassTableEvent`. The opening-UI dispatch precedent to mirror — **yes/no/pass only, no board interaction.** |
+| swap2 detection | `test1/HelperClasses.swift` | `isSwap2ChoiceWithPassOption()` **:150-152** = `isSwap2() && moves.count==3 && state.swap2State == .noChoice`; `isSwap2ChoiceWithoutPassOption()` **:154-156** (`moves.count==5`). The count+state derivation pattern to copy for Renju. |
+| opening-state enums | `test1/HelperClasses.swift` | `class GameState` **:651-683** with `enum DPenteState` (:659) + `enum Swap2State` (:665); fields `dPenteState`/`swap2State` (:679-680). **No `renjuState` / `RenjuState` enum.** **WRONG today.** |
+| swap reducers | `test1/HelperClasses.swift` | `swapSeats(swap:silent:)` **:414-434** sets `dPenteState`/`swap2State` → `.swapped`/`.notSwapped`; `swap2Pass(silent:)` **:436-438** sets `.swap2Pass`. Table-level wrappers `swapSeats(tableId:swap:silent:)` (:777) / `swap2Pass(tableId:silent:)` (:785). |
+| color parity (table) | `test1/HelperClasses.swift` | `currentPlayer()` **:466-485** — non-Go/non-Connect6 returns `1 + (moves.count % 2)`. This turn-order parity is **CORRECT for Renju normal play** (alternation is unchanged); the black-first concern is a stone-**COLOUR** fix via the cadence (`colorForMove → 2 - (index % 2)`, §9.0), **NOT** a `currentPlayer` change. **WRONG today only in the OPENING** — needs a `renjuOpeningPlayer` arm (§9.2) for the swap/branch/selection decision points. |
+| color parity (engine) | `test1/PenteEngine/PenteGame.swift` | `colorForMove(_:)` **:94-101** — `.alternating` cadence → `(index % 2) + 1` (move 0 = value 1 = white); `.connect6` cadence is special. Keyed on `rules.cadence`. **WRONG today** for Renju. |
+| board-value palette | `test1/BoardView.h` | **:13-15** `#define WHITE 0 / BLACK 1 / RED 2` (legacy palette, distinct from the `abstractBoard` 0/1/2/−1 convention). `abstractBoard` ivar at :29. |
+| board size (Table) | `test1/HelperClasses.swift` | `abstractBoard` **:103** = `Array(repeating: Array(repeating: 0, count: 19), count: 19)` (also re-inited :211, :374, :445); `var gridSize = 19` **:328** (dynamic only for Go ids). **WRONG today** (Renju needs 15). |
+| board size (engine) | `test1/PenteEngine/PenteGame.swift` | board init `count: 19` (**:15, :20**); `stone(at:)` **:27-31** `board[rowCol/19][rowCol%19]`; `play(_:)` **:34-45** `board[move/19][move%19]`; `apply(removed)` **:106** `cap.position/19`. Literal `19` divisor throughout. **WRONG today.** |
+| board size (ObjC) | `test1/BoardViewController.h` | C array `abstractBoard[19][19]` **:36** (+ `replayGame` `gridSize` default 19, `BoardViewController.m:1383`). Read-only viewer; **WRONG today** if used for Renju. |
+| opening mask | `test1/PenteEngine/PenteGame.swift` | `applyOpeningMask()` **:127-130** dispatches on `OpeningMask`; `maskTournamentOpening()` **:145-148** = `for i in 7..<12, j in 7..<12` (center 5×5 of 19×19, masks idx 7-11); `maskGPenteOpening()` :153-159; `.swap2` case is **unhandled** (`break`). **No radius-by-move-number mask** for Renju’s 3×3/5×5/7×7/9×9. **WRONG today.** |
+| opening-mask enum | `test1/PenteEngine/RuleSet.swift` | `enum OpeningMask { none, tournament, gpente, swap2 }` **:7** — no Renju/radius mask. **WRONG today.** |
+| variant→ruleset | `test1/PenteEngine/RuleSet.swift` | `ruleSet(for:)` **:114-126** — switch over **11** `PenteVariant` cases, **no `.renju`**. **WRONG today.** |
+| variant enum | `test1/PenteEngine/PenteVariant.swift` | `enum PenteVariant: Int` **:6-17** — 11 cases `pente=0 … connect6=10`; **no `renju`**. Raw values frozen to legacy ObjC enum → **next free raw value is 11**. **WRONG today.** |
+| id→variant | `test1/HelperClasses.swift` | `penteVariant(for:)` **:266-280** — switch on `GameEnum`; `default: return .pente` (:278). Ids 31/32/81 hit default → **`.pente`** (Pente capture rules, not Gomoku). **WRONG today.** |
+| game-id enum | `test1/HelperClasses.swift` | `enum GameEnum: Int` **:81** — cases 1…30 (`speedSwap2Keryo=30`). `GameEnum(rawValue: 31)` ⇒ **nil**. **WRONG today.** |
+| game names | `test1/HelperClasses.swift` | `static let gameNames` **:115-121** — keys 1…30 only; **31/32/81 absent** (UI shows no name). **WRONG today.** |
+| string→variant | `test1/BoardVariantMapping.swift` | `variant(forGameType:)` **:8-28** — maps game-type strings to `PenteVariant`; fallback `return .pente` (:28). **No Renju gameType.** **WRONG today.** |
+| star points + sizing | `test1/LiveBoard.swift` | `var gridSize = 19` **:23**; `draw(_:)` **:80-151** draws 5 special circles via `c = floor(gridSize/2)` and a 19-specific point set (with a `gridSize == 9` special-case). **No central-box concept.** Needs 15×15 star points {3,7,11} → indices `[48,52,56,108,112,116,168,172,176]`. **WRONG today.** |
+| translucent stones | `test1/LiveBoard.swift` | `init` **:30-35** — `whiteStone`/`blackStone` created with `alpha = 0.7; isOpaque = false; fill = true`. **Reusable translucent primitive** for offer candidates. |
+| move-apply path | `test1/RoomViewController.swift` | `moveTableEvent(event:)` **:871** — on `dsgMoveTableEvent` reads `event["move"] as! Int` (**:877**) and `event["moves"] as! [Int]` (**:878**), then calls `table.addMove`/`addMoves` and `tableViewController.stateChanged()`. **Confirmed: a coordinate is a single `Int` board index (`x + y·15`), inbound (`:877-878`) and outbound (`sendMove:548`).** |
+| move replay | `test1/HelperClasses.swift` | `addMoves(moves:)` (≈**:209-232**) → `engine.replay(...)` then `syncFromEngine()` (:296-309, hardcoded `0..<19` loop). Engine is authority for Pente-family. |
+| swap2 handler pattern | `test1/RoomViewController.swift` | `swapSeatsTableEvent(event:)` **:745**; `swap2PassTableEvent(event:)` (≈**:760-769**) extracts fields on main queue → `playersAndTables.swap2Pass(tableId:silent:)` → `stateChanged()`. **The direct reference for the three new Renju handlers.** |
+| system-message handler | `test1/PenteLiveSocket.swift` / `RoomViewController.swift` | dispatch at `PenteLiveSocket:148` → `systemMessageTableEvent(event:)` (≈`RoomViewController:894-905`) extracts `message` and shows it via `tableViewController.addText`. **Display-only** today; reusable (with a non-dismissible variant) as the Branch-B selector prompt. |
+| dPente choice precedent (ObjC) | `test1/BoardViewController.m` | `dPenteChoiceLabel` (`:52, :340, :1824-1870`) — “Play as” server-driven opening-UI precedent in the legacy viewer; `boardTap:` (`:644`) tracks `swap2Move1/2/3`, `dPenteMove1-4`. **(verify — legacy ObjC, read-only path)** |
+
+### 9.2 Live phase derivation (mirror `swap2Phase` / §8.2)
+iOS plays Renju **live**, so — exactly as React — there is **no `renjuPhase` on the socket**; the
+client must derive it. iOS has **no `openingPhase.js`** and **no `renjuState`** (only
+`swap2State`/`dPenteState`, `HelperClasses.swift:679-680`), so add both:
+
+(1) a tracking slice on the `Table`/`GameState`, accumulated **from the three echo events** (§9.4):
+
+```swift
+enum RenjuBranch { case a, b }
+struct RenjuTracking {
+    var swapWindowOpen: Bool = true   // is the CURRENT swap window still undecided?
+    var branch: RenjuBranch? = nil    // set by the move-4 decision echoes
+    var offers: [Int]? = nil          // the 10 Branch-B candidates (offer10 echo)
+    var selection: Int? = nil         // white's pick (select1 echo)
+}
+// NOTE: no net-swap / orientation field here. Who-owns-black comes from `table.seats`
+// (the visual seat swap on a live swap=true, and sendPlayingPlayers on rejoin) — NEVER
+// from the silent rejoin swap event (its swap bit is the current window's decision, §7).
+```
+
+(2) a pure `renjuPhase(movesCount, tracking)` classifier (mirror `isSwap2ChoiceWithPassOption`),
+where `movesCount = table.moves.count` (stones on board, incl. the auto-center = move 1):
+
+| movesCount | tracked state | phase | to-move acts |
+|---|---|---|---|
+| 1 | swapWindowOpen | `SWAP` (window 1) | Swap, **or** decline + place move 2 ∈ 3×3 |
+| 2 | swapWindowOpen | `SWAP` (window 2) | Swap, **or** decline + place move 3 ∈ 5×5 |
+| 3 | swapWindowOpen | `SWAP` (window 3) | Swap, **or** decline + place move 4 ∈ 7×7 |
+| **4** | **swapWindowOpen** | **`SWAP`** (window 4) | THREE actions: `swap=true` take-over → **`BRANCH`** (no stone) · `swap=false` **bundled with move 5 ∈ 9×9** → **Branch A** (constrained **`MOVE`** placement) · `Offer10` → **Branch B** (**`OFFERS`**) |
+| **4** | swap=true taken, `branch==nil` | **`BRANCH`** | black chooses → place move 5 ∈ 9×9 (**`MOVE`**, Branch A) **or** offer 10 (**`OFFERS`**, Branch B) |
+| **4** | `branch==.a` (after take-over) | **`MOVE`** | place move 5 inside the 9×9 — constrained opening placement |
+| **4** | `branch==.b`, offering | **`OFFERS`** | black offers ten 5th-move candidates (anywhere on board, §9.5) |
+| **4** | `branch==.b`, `offers` present | **`SELECTION`** | white picks 1 of the 10 → becomes move 5 |
+| **5** | `branch==.a`, swap-5 undecided | **`SWAP`** (window 5) | Swap, **or** decline → then move 6 |
+| **5** | `branch==.a`, swap-5 decided | **`COMPLETE`** (move 6 anywhere) | place move 6 — free alternating play |
+| **5** | `branch==.b` (selection done) | **`COMPLETE`** (move 6 anywhere) | place move 6 — **no swap-5 window in Branch B** |
+| ≥6 | — | **`COMPLETE`** | plain alternation; black forbidden-points **server-enforced** |
+
+**Move-4 model (live path), identical to §8.2.** At the move-4 window the to-move player has
+**three** wire actions: (a) `swap=true` take-over → standalone **`BRANCH`** (no stone);
+(b) `swap=false` **bundled with move 5 in the 9×9** = **Branch A** (there is **no** stoneless
+move-4 decline); (c) `Offer10` = **Branch B**. The standalone `BRANCH` state therefore arises
+**only** after a take-over. Branch-A move 5 itself arrives as a **swap event** (`swap=false`, with
+the move) per the §7 decision-echo notes, not as a branch event. Grounds (server side, §7):
+`ServerTable.handleRenjuSwap` (bundled decline + `chooseBranch(false)`),
+`RenjuState.wouldAcceptDeclinedOpeningMove`.
+
+**Reuse the swap2 derivation shape.** `currentPlayer()` (`:466`) and the `isSwap2Choice*`
+predicates already derive “whose move / which choice” from `(moves.count, swap2State)`. Add a
+`renjuOpeningPlayer(movesCount, tracking)` and an `isRenjuSwapChoice`/`isRenjuBranchChoice`/
+`isRenjuSelection` set in the same style, then gate the UI (§9.6) off them — **(verify the exact
+`currentPlayer()` arm is needed for correct `isMyTurn` during the opening; the safe move is to add
+it, mirroring the swap2 arm).**
+
+**Rejoin / spectate.** Honour the §7 current-decision-point contract: the server sends
+authoritative seats (`sendPlayingPlayers`) **plus exactly one** signal keyed by `numMoves` —
+*nothing* (window open / complete), a **silent** `dsgSwapSeatsTableEvent` (window resolved →
+`MOVE`/`BRANCH`), an **offer10** frame (Branch-B selection pending), or a replayed **select1**
+(Branch-B move 5 chosen). Reconstruct via the §7 `RenjuRejoin.decode(numMoves, signal)` rules. In
+the **silent** `swapSeats` branch (`swapSeats(swap:silent:)` :414) for Renju, **advance the
+tracked phase for the current window only** — do **not** double-swap seats (seats are already
+current) and do **not** derive who-owns-black from the swap bit (seats come from
+`sendPlayingPlayers`). This is exactly the dPente silent-swap contract.
+
+**Alternative considered:** port `RenjuState`’s server-side Taraguchi-10 state machine into Swift.
+**Not recommended** — it duplicates a non-trivial engine plus the forbidden-point finder it leans
+on. Track only the four decision variables above; the server stays authoritative.
+
+### 9.3 iOS file-by-file map
+1. **`test1/HelperClasses.swift`** — Renju ids resolve WRONG today (§9.1). 
+   - `GameEnum` (:81): add `case renju = 31`, `speedRenju = 32`, `tbRenju = 81`.
+   - `gameNames` (:115): add `31: "Renju", 32: "Speed Renju", 81: "TB Renju"`.
+   - `penteVariant(for:)` (:266-280): add `case .renju, .speedRenju, .tbRenju: return .renju` **before** the `.pente` default (requires the new `PenteVariant.renju`, step 4).
+   - `var gridSize` (:328): add a Renju branch returning **15** (alongside the Go 9/13/19 cases).
+   - `abstractBoard` (:103, and the re-inits at :211/:374/:445): size from `gridSize` (15 for Renju) instead of the literal `19`.
+   - `currentPlayer()` (:466-485): add a `#isRenju` arm. Outside the opening, Renju is plain move-parity; during the opening, return `renjuOpeningPlayer(moves.count, renjuTracking)` (mirror the swap2 arm). **(verify need.)**
+   - `GameState` (:651-683): add a `renjuTracking` slice (the §9.2 struct/enum) next to `dPenteState`/`swap2State`; initialise it in `reset()` (next to :380-381 / :451).
+   - `swapSeats(swap:silent:)` (:414-434): add a Renju branch — in the **silent** branch advance `renjuTracking` for the current window only (rejoin phase marker, §7); do **not** set `.swapped`/`.notSwapped` and do **not** re-animate. The non-silent branch keeps the visual `table.swap()` (who-owns-black).
+   - Add mutators `renjuSwap(swap:move:silent:)`, `renjuOffer10(moves:)`, `renjuSelect1(move:)` (mirror `swap2Pass:436`) that **update `renjuTracking` only and place NO stones** (stones arrive via the `addMove` path). At `moves.count == 4`, **any** `swap=false` echo carrying a valid stone ⇒ `branch = .a` (whether the window was open — a bundled decline — or already closed by a prior take-over). `renjuOffer10`: `branch = .b`, `offers = data["moves"]`. `renjuSelect1`: `selection = data["move"]`.
+   - `addMoves`/`syncFromEngine` (:209-232 / :296-309): drive the loop from `gridSize`, not `0..<19`; the engine replay must run the Renju variant.
+2. **`test1/PenteEngine/PenteVariant.swift`** (:6-17): add `case renju = 11` (next frozen raw value). **⚠ Bumping this enum breaks the build at every *exhaustive* `switch` over `PenteVariant` that has no `default` — audit and patch each one, INCLUDING the test targets (`PenteVariantTests` / `RuleSetTests`).** Known non-default switch: `BoardVariantMapping.backgroundColor(for:boatPente:)` (step 2a). (`hidesCaptureLabels(for:opening:)` at `BoardVariantMapping.swift:66` is **safe** — it has a `default`.)
+2a. **`test1/BoardVariantMapping.swift`** — `backgroundColor(for:boatPente:)` (**:35-60**) is an exhaustive `switch` over all `PenteVariant` cases with **no `default`**, so adding `.renju` won't compile until you add a case. Add `case .renju: return UIColor(red: 0.851, green: 0.533, blue: 0.502, alpha: 1)` — the canonical Renju board colour **#D98880** (§9.0), distinct from the `.gomoku` case. (`variant(forGameType:)` at :8-28 has a `.pente` fallback so it won't break the build; add a Renju gameType branch there only if the server emits a Renju game-type string.)
+3. **`test1/PenteEngine/RuleSet.swift`**
+   - `OpeningMask` (:7): add a Renju kind (e.g. `case renju` or a parametric radius mask) for the 3×3/5×5/7×7/9×9 central squares by move number.
+   - Add a `RenjuRules` struct: **Gomoku-like** (no captures), win = black-exact-5 / white-5+ (display only — server is authority), **black-first cadence**, `opening = .renju`. Add `case .renju: return RenjuRules()` to `ruleSet(for:)` (:114-126).
+   - Cadence: add a black-first cadence consumed by `colorForMove` (step 4) so move 0 → value 2.
+4. **`test1/PenteEngine/PenteGame.swift`**
+   - Replace the literal `19` divisor with a `boardSize` (15 for Renju) in `stone(at:)` (:31), `play(_:)` (:45), `apply(removed)` (:106), and board init (:15/:20).
+   - `colorForMove(_:)` (:94): handle the new black-first cadence → `2 - (index % 2)` (move 0 = value 2 = black).
+   - Add a `maskRenjuOpening(moveNumber:)` (analogous to `maskTournamentOpening:145`) that masks everything **outside** the N×N central square about center index 112 for the current opening move (radii 1/2/3/4 → 3×3/5×5/7×7/9×9), and wire it into `applyOpeningMask()` (:127). (The center stone is server-auto-placed; the client only renders it.)
+5. **`test1/LiveBoard.swift`**
+   - `gridSize` (:23) + `draw(_:)` star points (:80-151): for Renju use `gridSize = 15` and the 9 star points at {3,7,11} → indices `[48,52,56,108,112,116,168,172,176]` (index `= col + row·15`, center 112); do **not** reuse the 19-specific 5-point set.
+   - Add a **central-box highlight** overlay (new rect/dashed layer) for the legal N×N region during `MOVE` and the decline-and-place action (§9.6).
+   - Reuse the `alpha = 0.7` `whiteStone`/`blackStone` (:30-35) to render up to 10 translucent candidates.
+6. **`test1/PenteLiveSocket.swift`** — `processEvent` (:105-174): add three else-arms mirroring the `dsgSwap2PassTableEvent` arm (:170):
+   ```swift
+   } else if let content = event?["dsgRenjuTaraguchiSwapTableEvent"] {
+       room.renjuSwapTableEvent(event: content as! [String: Any])
+   } else if let content = event?["dsgRenjuTaraguchiOffer10TableEvent"] {
+       room.renjuOffer10TableEvent(event: content as! [String: Any])
+   } else if let content = event?["dsgRenjuTaraguchi10Select1TableEvent"] {
+       room.renjuSelect1TableEvent(event: content as! [String: Any])
+   }
+   ```
+   (Outbound `sendEvent(eventDictionary:)` at :225 is generic — no change.)
+7. **`test1/RoomViewController.swift`** — add `renjuSwapTableEvent` / `renjuOffer10TableEvent` / `renjuSelect1TableEvent` (mirror `swap2PassTableEvent:760` / `swapSeatsTableEvent:745`): on the main queue extract `table`/fields, call the `playersAndTables` Renju mutators (step 1), then `stateChanged()`. Consider a **non-dismissible** variant of `systemMessageTableEvent` (:894) for the Branch-B selector prompt.
+8. **`test1/TableViewController.swift`**
+   - Add send methods mirroring `sendMove(move:)` (:547): `sendRenjuSwap(swap:move:)`, `sendRenjuOffer10(_:)`, `sendRenjuSelect1(move:)` — hand-build the dicts (§9.4) and call `socket.sendEvent(eventDictionary:)`. Include `"time": 0` explicitly (no auto-stamp).
+   - `stateChanged()` (:552): add a Renju block gated off the derived phase (§9.2), mirroring the dPente/swap2 action-sheet blocks (:593/:611/:632) — but routing to the **new board-interaction UI** (§9.6), not a yes/no sheet: swap windows → “Swap (take over)” / “Don’t swap (place next stone)”; move-4 → “Swap” or branch-by-stone-count; selection → pick.
+9. **New Swift files** under `test1/` — the Renju opening UI (§9.6): central-box overlay, 10-pick multi-select, translucent-candidate rendering, and the white selection screen. No existing component is more than a yes/no sheet, so these are new.
+10. **(Deferred, read-only viewer)** `test1/BoardViewController.m/.h`, `BoardView.m/.h`: size `abstractBoard[19][19]` (`BoardViewController.h:36`) and the `drawRect:` index decode (`BoardView.m:219-220`) to the game’s grid; and to render the historic opening, read `renjuPhase`/`renjuOffers`/`renjuSwaps` from `game.jsp` (the §2.6/§4 fields the parser at :1453-1503 ignores today). Only needed if historic Renju replay must show the opening — **not required for live play**.
+
+### 9.4 Wire examples (verified keys + fields)
+Outbound is a hand-built `[String: Any]` (no `Commands` facade, no `time` auto-stamp — include
+`"time": 0` yourself, as `sendMove` does), serialized by `socket.sendEvent(eventDictionary:)`.
+Inbound is the same single-key shape parsed into `[String: Any]`, with a **server-stamped
+non-zero `time`** (epoch ms). Keys verified against the backend wrapper (`DSGEventWrapper` →
+`dsgRenjuTaraguchiSwapTableEvent` / `…Offer10…` / `…Select1…`; inherited `player`/`table`/`time`).
+One literal per event (table 5, center 112, 15×15):
+
+**Swap event** — take-over, decline+place, or Branch-A move 5 (all three use this event):
+```swift
+// outbound: decline window-1 swap + place move 2 at col8,row7 (=113, in 3×3)
+let e1: [String: Any] = ["dsgRenjuTaraguchiSwapTableEvent":
+    ["swap": false, "move": 113, "player": me, "table": table.table, "time": 0]]
+socket.sendEvent(eventDictionary: e1)
+
+// outbound: take over the side (no stone). Send move 0 — the server ignores `move` on swap=true
+// (ServerTable.handleRenjuSwap reads getMove() but never uses it for placement on a take-over).
+["dsgRenjuTaraguchiSwapTableEvent": ["swap": true, "move": 0, "player": me, "table": table.table, "time": 0]]
+```
+```json
+// inbound echo (server time stamped); the stone, if any, arrives separately as dsgMoveTableEvent
+{ "dsgRenjuTaraguchiSwapTableEvent": { "swap": false, "move": 113, "player": "alice", "table": 5, "time": 1718400000123 } }
+```
+**Offer 10** (Branch B — black offers ten 5th-move candidates). The ten must have no two
+D4-symmetric duplicates (§9.5); this example uses offsets `(1,0)(2,0)(3,0)(4,0)(1,1)(2,1)(3,1)(4,1)(2,2)(3,2)`
+about centre 112 → **10 distinct {|dx|,|dy|} orbits**, all in-bounds, none = centre:
+```swift
+["dsgRenjuTaraguchiOffer10TableEvent":
+    ["moves": [113, 114, 115, 116, 128, 129, 130, 131, 144, 145], "player": me, "table": table.table, "time": 0]]
+```
+**Select 1** (white picks one of the ten → becomes move 5; placed via a following `dsgMoveTableEvent`):
+```swift
+["dsgRenjuTaraguchi10Select1TableEvent": ["move": 130, "player": me, "table": table.table, "time": 0]]
+```
+**Contract reminders (from §7), enforced in the reducers (step 1):** never place stones from these
+three echoes — stones ride `dsgMoveTableEvent` (the `addMove`/`moveTableEvent` path). On (re)join,
+the server sends authoritative seats (`sendPlayingPlayers`) plus **exactly one**
+current-decision-point signal (§7 / §9.2): *nothing*, a **silent** `dsgSwapSeatsTableEvent`
+(window resolved; its `swap` bit is the **current window’s** decision, **not** net orientation —
+seats are **not** re-applied), an **offer10** frame (Branch-B selection pending), or a replayed
+**select1** frame (Branch-B move 5 chosen). Reconstruct via `RenjuRejoin.decode(numMoves, signal)`.
+
+### 9.5 Offer symmetry dedup (client-side, UX nicety)
+The ten Branch-B offers must contain no two D4-symmetric duplicates. The server already rejects
+violations via `RenjuState.offerFifthMoves` (→ `offerFifthMove`), so client-side checking is a
+**UX nicety** (instant feedback vs a round-trip error) — recommended, not required. iOS has **no**
+existing port (unlike the JSP `renjuRotate`/`renjuStabilizer`/`renjuIsSymmetricDup`), so port the
+algorithm into Swift — or simply let the server reject and surface the error.
+
+**The ten offers are NOT box-constrained.** Any in-bounds, empty, non-D4-symmetric point is legal
+— corner offers included (confirmed by the 2026-06-15 round-trip). Only the **Branch-A** move 5 is
+restricted to the 9×9 box. So the 10-pick multi-select must allow the **whole board** (minus
+occupied + symmetric-duplicate cells), **not** a central square.
+
+Algorithm for the 15×15 board (center `(7,7)`):
+- For move `m`: `x = m % 15`, `y = m / 15`, `dx = x − 7`, `dy = y − 7`.
+- The **8 D4 images** of `(dx,dy)`: rotations `(dx,dy)`,`(−dy,dx)`,`(−dx,−dy)`,`(dy,−dx)` and
+  reflections `(−dx,dy)`,`(dx,−dy)`,`(dy,dx)`,`(−dy,−dx)`. Map each back: `m' = (tx+7) + (ty+7)·15`.
+- Reject an offer if **any** of its 8 images equals an already-accepted offer. Maintain a running
+  `Set<Int>` of all images of accepted offers and test membership.
+
+Mirror the server logic exactly: the canonical reference is the JSP port (`renjuRotate` /
+`renjuStabilizer` / `renjuIsSymmetricDup` in `gameServer/tb/mobileGame.jsp`), itself a JS port of
+`SimpleGridState.rotateMove` + the position stabilizer (§3). Translate that to Swift verbatim so
+the client agrees with `offerFifthMove`.
+
+### 9.6 New UI primitives (no iOS precedent)
+The swap2/dPente UI is a plain `UIAlertController` action-sheet (§9.1) — the Renju opening needs
+board-level interaction with **no existing analogue** in this client (`KOTHTableViewController`
+uses a `UIPickerView` for a single pick, which is **not** a multi-select):
+- **Central-box highlight** — render a colored/dashed rectangle marking only the legal cells inside
+  the N×N square about center 112 for the current opening move: **moves 2/3/4/5 → 3×3 / 5×5 / 7×7 /
+  9×9** (radius 1/2/3/4). Applies during the `MOVE`/placement phase **and** the decline-and-place
+  action of a `SWAP` window (the bundled stone is constrained to the same square). This box covers
+  **only the single-stone placements (moves 2–5, incl. Branch-A move 5)** — the ten Branch-B offers
+  are **not** box-constrained (§9.5), so do **not** draw a box for the offer-10 picker. No precedent
+  in `LiveBoard.draw`’s star-points logic → likely a new overlay/`CALayer` or extra `draw` pass.
+- **Translucent “dead-stone” candidates** — render the 10 Branch-B offers (and, during `SELECTION`,
+  the non-picked nine) as translucent black, with an optional pick-order label (1–10). Reuse
+  `LiveBoard`’s `alpha = 0.7` `blackStone` (:32-35) — the closest existing primitive; rendering
+  **10 simultaneously and clearing on interaction is untested**. **(verify the array render/clear.)**
+- **10-pick multi-select + submit** — tap to add a candidate, tap again to remove, with a
+  `Pick n of 10` counter; **auto-send** on the 10th pick (emit `dsgRenjuTaraguchiOffer10TableEvent`
+  without a separate Confirm button). Validation before send: exactly **1** stone inside the 9×9
+  for Branch A, or exactly **10** distinct, non-D4-duplicate (§9.5) stones placed **anywhere on the
+  board** for Branch B; alert otherwise. Branch is inferred from the count (1 = continue / 10 =
+  offer), matching the `ServerTable`/`MoveServlet` contract.
+- **White selection screen** — a full-screen or modal view for white to choose 1 of the 10 offered
+  moves (like the swap prompt, but 10 board cells/buttons instead of 2–3). On pick, emit
+  `dsgRenjuTaraguchi10Select1TableEvent` (§9.4). **(verify: separate `UIViewController` vs an
+  in-`TableViewController` overlay.)**
+- **Non-dismissible selection prompt** — the server prompts the selector via
+  `dsgSystemMessageTableEvent` (today display-only via `addText`, §9.1). For Renju the prompt must
+  be **action-forcing** (non-dismissible) until a selection is sent, not a passive text-log line.
+  **(verify the server actually sends this for Renju selection.)**
+
+Visual reference (different framework, do not copy code): `gameServer/tb/mobileGame.jsp` and its
+board JS — `drawDeadStone`, the central-square hinting by move number, and the multi-pick picker.
+
+**Could NOT confirm from code (carry forward; treat as "verify"):**
+- Whether a per-variant `currentPlayer()` opening branch is strictly required for correct
+  `isMyTurn` during the Renju opening (a `renjuOpeningPlayer` mirroring the swap2 arm is the safe
+  move). **(verify)**
+- Whether the iOS app supports **any** turn-based move POST (e.g. `renjuAction`/`MoveServlet`), or
+  is strictly live-WS for sending; the `game.jsp` GET is read-only load. Assumed live-only.
+  **(verify)**
+- How the historic `game.jsp` endpoint behaves when handed a Renju id 31/32/81 — does it ship
+  `renjuPhase`/`renjuOffers`/`renjuSwaps` (the parser ignores them) or a malformed response?
+  **(verify)**
+- How live games assign player 1 vs player 2 (is P1 always white, or rotation/negotiation?), and
+  how iOS initiates/joins a Renju game (lobby/creation UI vs live room only). **(verify)**
+- Whether coordinate axis labels (A–P, 1–15) are rendered anywhere beyond `LiveBoard`/`BoardView`
+  (none found in their `draw` code). **(verify)**
+- The `playersAndTables.swapSeats` / `swap2Pass` method bodies in the `TablesAndPlayer` class
+  (≈`HelperClasses.swift:685`) — referenced by the room handlers but their definitions were not
+  inspected; the new Renju mutators must follow the same internal pattern. **(verify)**
+- Whether the central-box highlight is achievable in the current `LiveBoard.draw` architecture or
+  needs a new overlay/view; the exact multi-select gesture (long-press / tap-count / explicit
+  buttons); and efficient render/clear of 10 simultaneous translucent candidates. **(verify)**
+- Client-side forbidden-point validation (overline / double-four / double-three) is **expected to
+  be NONE** (server-enforced per the contract); do **not** port the finder. If marking is ever
+  added, fetch `getForbiddenPoints` from the server. **(verify the server-only assumption.)**
+
+*Resolved while grounding (no longer open):* the stone-color convention **is** confirmed from code
+— `abstractBoard` values 1 = white / 2 = black (with `−1` masked), and engine
+`colorForMove → (index % 2) + 1` is white-first; so Renju black-first ⇒ first stone value 2 via a
+new black-first cadence (§9.0).
+
+---
+
+## 10. Sub-project 5 — Android (`pentelive-android`) Taraguchi-10 handoff
+
+Zero-context handoff for a fresh agent wiring the Renju (Taraguchi-10) opening into the
+`pentelive-android` app. **iOS and Android have no Renju support today**; this section (Android)
+and §9 (iOS) are their from-scratch handoffs. Every anchor below was grep-verified against the
+submodule on this branch; line numbers are as-of-now and may drift, so grep the symbol.
+
+**TRANSPORT VERDICT — Android plays BOTH.** Unlike the React reference (live-only WebSocket),
+Android has two live-game *and* turn-based code paths:
+- **LIVE** — raw **SSL TCP** socket (NOT WebSocket) speaking the `dsg*TableEvent` JSON protocol,
+  byte-`255` frame delimited (`SocketDSGEventHandler.run:44-84`), dispatched by an if-else chain
+  in `LiveGameRoomActivity.eventOccurred:231-420`. The live server sends **NO `renjuPhase`**
+  (§2.6 / §4) — the live client must **DERIVE** the opening phase from tracked echo state, exactly
+  like React §8.2 (see §10.2a).
+- **JSON / turn-based** — HTTP `GET gameServer/mobile/json/game.jsp` → Gson `GameResponse`
+  (`Game.java:432`), moves sent as an HTTP **GET** with query params (`OkHttpPenteApi.submitMove`
+  uses `get(url)` at `:174`). Here the server **ships the derived phase** in `renjuPhase` (§2.6) —
+  read it directly (see §10.2b).
+
+So Android needs **both shapes**. **Recommended order: do LIVE first** (it mirrors the React
+reference port, and all of Android's existing opening UI lives in the live path). The turn-based
+path has **no opening UI at all today** (the offline `Game.java`/`BoardView.java` screen only
+places ordinary moves), so TB Renju opening is a larger from-scratch build and can be deferred —
+but still add the read-side fields (`GameResponse`) and the `renjuAction` param so historic
+viewers and TB reads don't break.
+
+**Where Android genuinely differs from React (do not force the React shape):**
+- **Language/UI:** Java + Android `Canvas` drawing + `AlertDialog`, not JSX/MUI.
+- **No Protocol abstraction.** React has a `protocol/` module (decode + `MESSAGES` registry +
+  `Commands` facade). Android has **none of that**: inbound is a raw `if (jsonEvent.get("dsgXEvent")!=null)`
+  chain over a `Map<String,Object>` (from `jsonToMap`), and **outbound events are built by raw
+  JSON string concatenation** (`LiveBoardView:156`, `LiveTableFragment.sendSwap2Choice`). There is
+  **no Gson serialization on the live send path** and no `Commands.<cmd>(...)` — you add three
+  `else if` arms + three handler methods + three string builders.
+- **Two board views, two screens.** Offline/TB = `Game.java` + `BoardView.java`; live =
+  `LiveGameRoomActivity` + `LiveTableFragment` + `LiveBoardView.java`. Both board views hardcode
+  19×19 star points; fix **both**.
+- **The `rules/` module is a lightweight variant registry**
+  (`Variant`/`Variants`/`BoardState`), **NOT** a copy of the server `org.pente.game` engine. So
+  like React, **derive the phase from echoes — do not run a client-side engine** (there isn't one).
+- **Stone-color convention is already black-capable.** `BoardState.java:6` encodes `0=empty,
+  1=white, 2=black, -1=forbidden`. The `currentColor()` Go (PLAY) arm (`Table.java:282`,
+  `2 - moves.size()%2`, inside `if (isGo())` → `goState==PLAY`) is already black-first — Renju
+  reuses that formula. Do **not** copy the Connect6 else-branch formula at `:288-293`
+  (`2 - (((moves.size()-1)/2)%2)`, 2-stones-per-turn) — it is wrong for single-stone Renju.
+
+### 10.0 Board basics (restated for this client)
+- Board **15×15**, game ids **31 (Renju) / 32 (Speed Renju) / 81 (TB Renju)**. Move encoding
+  `x + y·15`; **center = 112** (`7 + 7·15`); the **server auto-places** it as move 1 — the live
+  client receives it as an ordinary `dsgMoveTableEvent`, it must **not** place the center itself.
+- **Board background colour = `#D98880` (dusty rose)** — the canonical Renju board colour, **distinct
+  from gomoku's `#A3FDEB`**. Matches the web (`renjuColor`, `gameServer/tb/gameScript.js:14`) and
+  react_live_game_room (`.renju` / `VARIANT_COLORS['renju']`). Android selects the board colour by id
+  in `Table.getGameColor:904-932`; set ids 31/32 to this value (see §10.3 step 3).
+- **Black plays first.** Android board values: `1 = white`, `2 = black` (`BoardState.java:6`;
+  confirmed in `LiveBoardView.drawStone` — `stoneColor==2` renders black). So "black first" ⇒ the
+  first stone must carry board **value 2**. Today the default `currentColor()` arm
+  (`Table.java:287`) returns `1 + (moves.size()%2)` → first stone = value 1 = **WHITE** (inverted
+  for Renju). The fix is a Renju arm = `2 - moves.size()%2` (black-first), identical to the
+  existing Go (PLAY) arm at line 282 (inside `if (isGo())` → `goState==PLAY`). Do **not** copy the
+  Connect6 else-branch formula at `:288-293` (`2 - (((moves.size()-1)/2)%2)`, 2-stones-per-turn) — it
+  is wrong for single-stone Renju.
+- Move encoding parity: `LiveBoardView:147` already computes `playedMove = gridSize*stoneI + stoneJ`
+  = `x + y·gridSize` (correct once `gridSize=15`). The bug is **decode**: `Table.addMove:199-200`
+  hardcodes `/19` and `%19`.
+- Phase source depends on transport (see §10.2): **LIVE derives**, **TB reads `renjuPhase`**.
+
+### 10.1 Confirmed anchors (file : symbol)
+All grep-verified in the submodule. **(WRONG today)** = breaks for Renju as-is; **(OK)** = already
+correct / reusable as precedent; **(verify)** = could not fully confirm from code.
+
+| Area | File | Symbol / fact |
+|---|---|---|
+| variant enum | `rules/.../pente/rules/Variant.java` | `enum Variant:13-29` — entries `(canonicalGameId, gridSize, CaptureRule, stonesPerTurn)`; live ids 1–29 (+ even speed doubles); `GO_13(23,13,NONE,1)`, `GO_19(19,19,NONE,1)`; predicates `isDPente`/`isSwap2`/`isGo` (no `isRenju`). **No 31/32/81.** **(WRONG today)** |
+| variant by id | `rules/.../Variants.java` | `fromGameId:87-89` → `BY_CANONICAL_ID.get(canonical)` (odd canonical, even = id-1). `31/32/81` → **null** → NPE / silent default. **(WRONG today)** |
+| variant by name | `rules/.../Variants.java` | `fromGameType:33` — substring match on `gameName`; `"Renju"` not handled → null (the TB/offline lookup path). **(WRONG today)** |
+| live game names | `app/.../liveGameRoom/Table.java` | static `gameNames` map `:54-86` — ids 1→30 only (ends `30→"Speed Swap2-Keryo"`); `getGameName()` returns null for 31/32. **(WRONG today)** |
+| live grid size | `Table.java` | `setGame:1090-1102` sets `gridSize` by id (`==21/22→9`, `==23/24→13`, **else 19**); no 31/32 → 19. Default `gridSize=19` (`:102`); `setGridSize:98-99` exists. **(WRONG today)** |
+| live move decode | `Table.java` | `addMove:199-200` — `move_i = move/19; move_j = move%19` (hardcoded 19). For Renju, `112` decodes to `board[5][17]` (off-center). NOTE: the capture helpers (`:537+`) already use `gridSize`. **(WRONG today)** |
+| live move encode | `app/.../liveGameRoom/LiveBoardView.java` | `onTouchEvent:142-156` — `stoneI = gridSize*stoneY/size`, `playedMove = gridSize*stoneI + stoneJ` = `x + y·gridSize` (matches contract once `gridSize=15`); emits move JSON at `:156`. **(OK)** |
+| live render decode | `LiveBoardView.java` | `drawBoard:216-222` — `movei = move/gridSize; movej = move%gridSize`. **(OK)** |
+| stone-color encoding | `rules/.../BoardState.java` | `:6` — `0 empty / 1 white / 2 black / -1 forbidden` (authoritative). **(OK)** |
+| first-stone color | `Table.java` | `currentColor:279-294` — default arm `:287` `1 + (moves.size()%2)` → move 0 = value 1 = **WHITE** (inverted for Renju). The black-first pattern Renju needs is the Go (PLAY) arm `:282` `2 - moves.size()%2` (inside `if (isGo())` → `goState==PLAY`) — **NOT** the Connect6 else-branch `:288-293` (`2 - (((moves.size()-1)/2)%2)`, 2-stones-per-turn, wrong for single-stone Renju). **(WRONG today)** |
+| opening-player FSM | `Table.java` | `currentPlayer:300-342` — derives to-move seat for dPente/swap2 from move count + state enums (arms `1 + moves.size()%2` at `:309,:335`); no Renju branch. **(needs Renju arm)** |
+| swap-state enums | `app/.../liveGameRoom/DPenteState.java`, `Swap2State.java` | `DPenteState:4 = {NOCHOICE, SWAPPED, NOTSWAPPED}`; `Swap2State:4 = {NOCHOICE, SWAP2PASS, SWAPPED, NOTSWAPPED}`. Pattern for a new `RenjuState` enum. **(OK precedent)** |
+| opening-phase tracking | `app/.../liveGameRoom/GameState.java` | `:8-12` — fields `state`, `dPenteState`, `swap2State`, `goState`; **no `renjuState`**. **(WRONG today / missing)** |
+| live event dispatch | `app/.../liveGameRoom/LiveGameRoomActivity.java` | `eventOccurred:231-420` — if-else chain on `jsonEvent.get("dsg…Event")`; has `dsgMoveTableEvent:345→updateTableMove:491`, `dsgSwapSeatsTableEvent:363→swapSeats:571`, `dsgSwap2PassTableEvent:366→swap2Pass:591`, `dsgSystemMessageTableEvent:409→addTableMessage:481`. **No `dsgRenju*`.** This is the dispatch seam. **(WRONG today / missing)** |
+| live transport frame | `app/.../org/pente/gameServer/event/SocketDSGEventHandler.java` | `run:44-84` — raw SSL TCP; reads bytes until `255` (`:56`), UTF-8 string (`:59`) → `notifyListeners(String)` (`:69`); outbound writes terminator `255` (`:110`). **NOT WebSocket.** **(OK)** |
+| outbound build (live) | `LiveBoardView.java:156` / `LiveTableFragment.sendSwap2Choice` | raw JSON **string concatenation** via `fragment.getListener().sendEvent("{…}")`; no Gson/Commands facade on send. **(OK pattern)** |
+| swap dialog precedent | `app/.../liveGameRoom/LiveTableFragment.java` | `showDPenteChoice:1017` / `showSwap2Choice:1049` — `AlertDialog.Builder` + `setItems(options, cb)`, `Gravity.BOTTOM` (`:565+,:973`); send `dsgSwapSeatsTableEvent`. **Yes/no only, no board interaction.** **(OK pattern)** |
+| dialog trigger | `LiveTableFragment.java` | `addMove:452-510` — after `table.addMove(move)` checks `isDPente()&&moves==4&&NOCHOICE` etc. → shows the modal. Renju gates here off the derived phase. **(OK pattern)** |
+| translucent stones | `LiveBoardView.java` | `drawStone:243-278` — Go dead stones (`stoneColor==3/4`) use `stonePaint.setAlpha(180)` (`:264,:268`). Reusable for translucent candidates. **(OK)** |
+| board-tap legality | `LiveBoardView.java` | `onTouchEvent:142-153` — only checks the cell is empty (`abstractBoard[i][j]!=0`); no central-square / forbidden checks (server-side). **(OK)** |
+| system-message handler | `LiveGameRoomActivity.java` | `dsgSystemMessageTableEvent:409-413` — `data.get("message")` → `addTableMessage(tableId, "* "+msg)`. The Branch-B selector prompt (server→white) routes here; gating the picker on it is new UI. **(OK, repurpose)** |
+| TB JSON model | `app/.../JsonModels.java` | `GameResponse:121-154` — fields `gameName:125`, `moves`, `state:136`, `goState:137`, `dPenteState:142`, `swap2pass:143`. **No `renjuPhase`/`renjuOffers`/`renjuSwaps`.** **(WRONG today / missing)** |
+| TB move submit | `app/.../net/OkHttpPenteApi.java` | `submitMove:163-176` — query params `command=move`, `gid`, `moves` (`, message`). **No `renjuAction`.** Cannot speak the §2.4 opening contract. **(WRONG today / missing)** |
+| TB game load | `app/.../Game.java` | `RetrieveGame.doInBackground:432` — HTTP GET `game.jsp?gid=` → Gson `GameResponse`. **(OK)** |
+| offline board size | `Game.java` | `parseGame:998-1007` — `gameType.contains("(9x9)")→9`, `("(13x13)")→13`, **else 19**; no `"Renju"` → 19. **(WRONG today)** |
+| offline star points | `app/.../BoardView.java` | `drawBoard:483-487` — hardcoded index `6` (`margin+6*step`), 4 corners + center; correct for 19×19, wrong for 15×15. Live twin: `LiveBoardView.drawBoard:200-204` same. **(WRONG today)** |
+| offline coord labels | `BoardView.java` | `onTouchEvent:364-406` — modulo 19 (`coordinateLetters[m%19]`, `19-(m/19)`); `coordinateLetters` (`:71`) = 19 letters A–T skip I. Renju needs first 15 (A–P skip I) and `% gridSize`. **(WRONG today)** |
+| server wrapper keys | backend `…/event/DSGEventWrapper.java` (reference) | The three live frames use exact top-level keys **`dsgRenjuTaraguchiSwapTableEvent`**, **`dsgRenjuTaraguchiOffer10TableEvent`**, **`dsgRenjuTaraguchi10Select1TableEvent`** (one top-level key per frame). Android's `eventOccurred` keys + outbound strings **must** match these byte-for-byte. **(server contract)** |
+| server event fields | backend `…/event/DSGRenjuTaraguchi*.java` (reference) | `…Swap`: `boolean swap`, `int move`. `…Offer10`: `int[] moves`. `…Select1`: `int move`. All extend `AbstractDSGTableEvent` → inherited `String player`, `int table`; `AbstractDSGEvent` → `long time`. Each inner object carries `player`/`table`/`time` plus its own fields. **(server contract)** |
+
+**Resolve before coding (table-specific verify):** the survey's *protocol* pass claimed
+`currentColor()` returns black (value 2) on the first move; that is **wrong** — `BoardState.java:6`
+(`1=white, 2=black`) plus `currentColor:287` (`1 + moves%2` → first = value 1 = white) confirm the
+first stone renders **white** today. The black-first fix (a `2 - moves%2` Renju arm) is therefore
+**required**, not optional. Confirm by rendering a live Renju move 1 after the fix.
+
+### 10.2 Two phase sources (LIVE derives · TB reads `renjuPhase`)
+
+Heading adapted because Android is **BOTH**. The live path mirrors React §8.2; the TB path mirrors
+the §2.6/§4 read.
+
+#### 10.2a LIVE phase derivation (mirror React §8.2)
+The live server sends **no `renjuPhase`**; the engine is server-side only. The Android live client
+**accumulates** a tracked opening record **from the echo events** (§10.4) and derives the phase
+from it + the move count — exactly the React approach. Add a new `RenjuState` enum (mirror
+`DPenteState`/`Swap2State`) **plus** a tracked object on `GameState`:
+
+```
+renjuState = {
+  swapWindowOpen,   // bool — is the current swap window still undecided?
+  branch,           // null | 'A' | 'B' — set by the move-4 decision echoes
+  offers,           // int[] | null — the 10 Branch-B candidates (offer10 echo)
+  selection,        // int | null — white's pick (select1 echo)
+}
+// NO net-swap/orientation field. Who-owns-black comes from table.seats (the visual seat
+// swap that rides dsgSwapSeatsTableEvent on a take-over, and sendPlayingPlayers on rejoin) —
+// NEVER from the silent rejoin swap event (its swap bit is the current window's decision,
+// not net orientation).
+```
+
+`movesLength` = stones on board (incl. the auto-center = move 1). Add a pure
+`renjuPhase(movesLength, renjuState)` helper (Android has no `openingPhase.js` analogue — the
+dPente/swap2 logic lives inline in `Table.currentPlayer`/`currentColor` + `LiveTableFragment.addMove`,
+so put the helper on `Table`/a small `RenjuPhase` class):
+
+| movesLength | tracked state | phase | to-move acts |
+|---|---|---|---|
+| 1 | swapWindowOpen | `SWAP` (window 1) | Swap, **or** decline + place move 2 ∈ 3×3 |
+| 2 | swapWindowOpen | `SWAP` (window 2) | Swap, **or** decline + place move 3 ∈ 5×5 |
+| 3 | swapWindowOpen | `SWAP` (window 3) | Swap, **or** decline + place move 4 ∈ 7×7 |
+| **4** | **swapWindowOpen** | **`SWAP`** (window 4) | THREE actions: `swap=true` take-over → `BRANCH` (no stone) · `swap=false` **bundled with move 5 ∈ 9×9** → Branch A · `Offer10` → Branch B |
+| **4** | swap decided, `branch===null` | **`BRANCH`** | Branch A: place move 5 ∈ 9×9 · Branch B: offer 10 |
+| **4** | `branch==='B'`, offers present | **`SELECTION`** | white picks 1 of the 10 → becomes move 5 |
+| **5** | `branch==='A'`, swap-5 undecided | **`SWAP`** (window 5) | Swap, **or** decline → then move 6 |
+| **5** | `branch==='A'`, swap-5 decided | `NORMAL` (move 6 anywhere) | place move 6 |
+| **5** | `branch==='B'` (selection done) | `NORMAL` (move 6 anywhere) | place move 6 — **no swap-5 window in Branch B** |
+| ≥6 | — | `COMPLETE` / `NORMAL` | plain alternation; black forbidden points **server-enforced** |
+
+> **Naming reconciliation (docs only, no code impact).** This live-derived table uses `NORMAL` and
+> folds the Branch-B offer step into `BRANCH`; §10.2b and the backend enum use `MOVE` and a distinct
+> `OFFERS`. Map them: live-derived `NORMAL` == server `MOVE`; the server `OFFERS` phase is represented
+> inside the live `BRANCH` state (movesLength 4, `branch == null`).
+
+**Move-4 model (live).** Three wire actions at the move-4 window: (a) `swap=true` take-over →
+standalone `BRANCH` (no stone); (b) `swap=false` **bundled with move 5 in the 9×9** = Branch A
+(advances to 5 moves — there is **no** stoneless move-4 decline); (c) `Offer10` = Branch B. The
+standalone `BRANCH` state arises **only** after a take-over. Branch-A move 5 always arrives as a
+**swap event** (`swap=false`, with the move), not a branch event.
+
+**Rejoin / spectate (§7 current-decision-point signal).** On (re)join the server sends the
+authoritative seats (`sendPlayingPlayers`) **plus exactly one** signal keyed by `numMoves`:
+*nothing* (window open / opening complete), a **silent** `dsgSwapSeatsTableEvent` (window resolved
+→ `MOVE`/`BRANCH`), an **offer10** frame (Branch-B selection pending), or a replayed **select1**
+frame (Branch-B move 5 chosen). Android's `swapSeats:571` handler must learn the silent branch for
+Renju: **advance the tracked phase for the current window only; do NOT re-swap seats** (seats are
+already current from `sendPlayingPlayers`; its `swap` bit is the current window's decision, not net
+orientation) — the same contract Android already honours for the dPente silent swap.
+
+**Do not** port `RenjuState`'s server-side Taraguchi-10 engine into Android — it drags the
+forbidden-point finder with it. Track the four decision variables the echoes carry; that is enough.
+
+#### 10.2b TB phase (read `renjuPhase` from `GameResponse`, §2.6 / §4)
+For turn-based Renju (`TB_RENJU=81`) the server **already ships** the derived phase. Add the three
+fields to `GameResponse` and **read** them — no derivation:
+`renjuPhase ∈ {SWAP, BRANCH, OFFERS, SELECTION, MOVE, COMPLETE}` plus `renjuOffers` (the persisted
+Branch-B candidates) and `renjuSwaps` (packed decisions). **Caveat:** the offline/TB screen
+(`Game.java`/`BoardView.java`) has **no opening UI today** — all opening dialogs/pickers live in
+the live `LiveTableFragment`. So the TB opening flow (swap windows, branch, 10-pick, selection) is
+a from-scratch build on the offline screen and is **recommended deferred**; add the fields +
+`renjuAction` param now so the *read* side and historic viewers work, then build the TB opening UI
+as a follow-up (or reuse the live pickers if the screens are unified).
+
+### 10.3 File-by-file map (the real work)
+Live-first ordering. **(L)** = live path, **(TB)** = turn-based/offline, **(both)** = shared rules.
+
+1. **`rules/.../pente/rules/Variant.java`** *(both)* — add `RENJU(31, 15, CaptureRule.NONE, 1)`
+   (captures NONE — Renju has no captures; forbidden points are server-enforced). `SPEED_RENJU`
+   reuses this entry via canonical id 31 (the enum lists only odd canonicals). Add an
+   `isRenju()` predicate (`this == RENJU`) alongside `isDPente()/isSwap2()/isGo()`. **`TB_RENJU=81`
+   has no canonical entry** (existing TB games aren't in this enum either) — resolve via the
+   `fromGameType` string path below, or add an explicit `81→RENJU` mapping **(verify which path the
+   TB code hits)**.
+2. **`rules/.../Variants.java`** *(both)* — `fromGameId:87-89`: ensure `31→RENJU`, `32→`(canonical
+   31)`→RENJU`; add `81→RENJU` if the TB path calls `fromGameId(81)`. `fromGameType:33`: add a
+   `"Renju"` / `"Speed Renju"` / `"TB Renju"` substring arm → `RENJU` (the string the server puts
+   in `GameResponse.gameName` — **verify the exact value**).
+3. **`app/.../liveGameRoom/Table.java`** *(L)* —
+   - `gameNames:54-86`: `put(31, "Renju"); put(32, "Speed Renju");` (81 is TB, not a live table id
+     — confirm live never sees 81).
+   - `setGame:1090-1102`: add `else if (game==31 || game==32) gridSize = 15;` **before** the
+     `else gridSize=19`.
+   - `addMove:199-200`: replace `move/19`,`move%19` with `move/gridSize`,`move%gridSize` (also fixes
+     Go 9/13 live). This is the **game-breaking** decode bug.
+   - `currentColor:279-294`: add a Renju arm returning `2 - moves.size()%2` (black-first), mirroring
+     the Go (PLAY) arm at `:282` (inside `if (isGo())` → `goState==PLAY`) — **not** the Connect6
+     else-branch at `:288-293` (`2 - (((moves.size()-1)/2)%2)`, 2-stones-per-turn, wrong for Renju).
+     Without it the first stone renders white.
+   - `currentPlayer:300-342`: add a Renju opening branch (mirror the `isDPente`/`isSwap2` arms) that
+     calls a new `renjuOpeningPlayer(moves.size(), renjuState)` so `isMyTurn` is right during the
+     opening **(verify exact need)**.
+   - `getGameColor:904-932`: add `31/32` → a new `renjuColor = 0xFFD98880` constant (dusty rose, the
+     canonical Renju board colour, §10.0; today ids 31/32 fall through to `swap2KeryoColor` = wrong).
+   - add `isRenju()` (mirror `isDPente:269` / `isSwap2:274`).
+4. **`app/.../liveGameRoom/LiveBoardView.java`** *(L)* — `drawBoard:200-204`: add a Renju
+   star-point branch. Match §4's `{3,7,11}` (center 7). The existing renderer draws a **5-point**
+   set (4 corners + center) — for Renju that is indices **`[48, 56, 168, 176, 112]`**
+   (`(3,3)/(11,3)/(3,11)/(11,11)/(7,7)`, index `= col + row·15`); or switch to the full Go-style
+   9-dot set like React §8.3 (`[48,52,56,108,112,116,168,172,176]`). Encode/decode already
+   `gridSize`-correct; `setGridSize:44-46` flows from `LiveTableFragment.updateTable:395`
+   (`board.setGridSize(table.getGridSize())`). Reuse `drawStone` `setAlpha(180)` (`:264,:268`) for
+   translucent candidates (§10.6).
+5. **`app/.../liveGameRoom/GameState.java`** *(L)* — add a `RenjuState renjuState` field (new enum)
+   **and/or** the tracked `renjuState` object of §10.2a. Initialize it where `dPenteState`/`swap2State`
+   are reset.
+6. **`app/.../liveGameRoom/LiveGameRoomActivity.java`** *(L)* — in `eventOccurred:231-420` add three
+   `else if` arms (keys **must** equal the wrapper keys in §10.1):
+   ```java
+   } else if (jsonEvent.get("dsgRenjuTaraguchiSwapTableEvent") != null) {
+       handleRenjuSwap((Map<String,Object>) jsonEvent.get("dsgRenjuTaraguchiSwapTableEvent"));
+   } else if (jsonEvent.get("dsgRenjuTaraguchiOffer10TableEvent") != null) {
+       handleRenjuOffer10((Map<String,Object>) jsonEvent.get("dsgRenjuTaraguchiOffer10TableEvent"));
+   } else if (jsonEvent.get("dsgRenjuTaraguchi10Select1TableEvent") != null) {
+       handleRenjuSelect1((Map<String,Object>) jsonEvent.get("dsgRenjuTaraguchi10Select1TableEvent"));
+   }
+   ```
+   Add the three handler methods (mirror `updateTableMove:491` / `swapSeats:571` / `swap2Pass:591`).
+   They **update opening-tracking state ONLY and place NO stones** — stones ride
+   `dsgMoveTableEvent → updateTableMove`:
+   - `handleRenjuSwap`: mark the current window decided; at `movesLength==4`, **any** `swap=false`
+     echo carrying a valid stone ⇒ `branch='A'`. The take-over visual seat swap rides a separate
+     `dsgSwapSeatsTableEvent` (already handled by `swapSeats`).
+   - `handleRenjuOffer10`: `branch='B'`, `offers = (List) data.get("moves")`.
+   - `handleRenjuSelect1`: `selection = data.get("move")`.
+   Also extend `swapSeats:571`: in the **silent** branch for Renju, advance the tracked phase for
+   the current window (do not re-swap). Repurpose `dsgSystemMessageTableEvent:409` to gate the
+   Branch-B selection UI (the server→white prompt arrives here).
+   Note: `jsonToMap` yields JSON numbers as `Double`/`Long` and arrays as `List` — cast `move`/`moves`
+   exactly as `updateTableMove:491-507` already does.
+7. **`app/.../liveGameRoom/LiveTableFragment.java`** *(L)* — the opening UI. After `table.addMove`
+   (the existing `addMove:452-510` dispatch point) read the derived phase and show the right control,
+   reusing the `showSwap2Choice:1049`/`showDPenteChoice:1017` pattern (`AlertDialog.Builder.setItems`,
+   `Gravity.BOTTOM`) for the yes/no cases and `sendSwap2Choice:1092` (raw JSON string →
+   `mListener.sendEvent(...)`) for sending:
+   - **SWAP windows 1–3:** "Swap (take over)" / "Don't swap" — decline **bundles** the next opening
+     stone (constrained to the move's central square).
+   - **move-4 SWAP window:** three choices — take-over, Branch A (decline + place move 5 ∈ 9×9),
+     Branch B (offer 10).
+   - **BRANCH** (after take-over): place move 5 ∈ 9×9, or offer 10.
+   - **SELECTION:** white picks one of the 10.
+   The board interaction (central-box highlight, 10-pick multi-select, translucent candidates,
+   selection screen) is **new** — see §10.6.
+8. **`app/.../JsonModels.java`** *(TB)* — add to `GameResponse:121-154`:
+   `public String renjuPhase; public String renjuOffers; public Integer renjuSwaps;`
+   These match the backend `GameResponse.java:45-47` exactly (confirmed): `renjuPhase` (`String`,
+   one of `SWAP|BRANCH|OFFERS|SELECTION|MOVE|COMPLETE`, else null), `renjuOffers` (`String`,
+   comma-separated offered moves, else null), `renjuSwaps` (`Integer`, packed opening word, else
+   null). The String/String/Integer POJO is correct. Gson tolerates missing fields, so this is
+   backward-safe.
+9. **`app/.../net/OkHttpPenteApi.java`** *(TB)* — `submitMove:163-176`: add a `renjuAction` query
+   param (overload `submitMove(gid, moves, message, renjuAction)` →
+   `.addQueryParameter("renjuAction", …)`) to speak the §2.4 contract (`swap` / `move4` / `select`).
+10. **`app/.../Game.java` + `app/.../BoardView.java`** *(TB, deferrable)* —
+    `Game.parseGame:998-1007`: add `"Renju"` → `gridSize=15`. `BoardView.drawBoard:483-487`: Renju
+    star points (same set as step 4). `BoardView.onTouchEvent:364-406` + `coordinateLetters:71`: use
+    `% gridSize` and the first-15 label set **A–P skipping I** (instead of `%19` / 19 letters). The
+    TB opening UI itself (no precedent on this screen) is the deferred follow-up.
+
+### 10.4 Wire examples (verified keys + fields)
+**Live (raw JSON strings).** Android builds outbound frames by **string concatenation** (no
+`Commands` facade) — e.g. existing moves: `sendEvent("{\"dsgMoveTableEvent\":{\"move\":" + m +
+",\"moves\":[" + m + "],\"player\":\"" + me + "\",\"table\":" + table + ",\"time\":0}}")`
+(`LiveBoardView:156`). Inbound arrives as a `Map<String,Object>` via `jsonToMap` with a
+**server-stamped non-zero `time`**. One literal per event (table 5, center 112, 15×15):
+
+**Swap event** — take-over, decline+place, or Branch-A move 5 (all share this event):
+```json
+// outbound: decline window-1 swap + place move 2 at col8,row7 (=113, in 3×3)
+{ "dsgRenjuTaraguchiSwapTableEvent": { "swap": false, "move": 113, "player": "alice", "table": 5, "time": 0 } }
+// outbound: take over the side (no stone; move ignored on swap=true — verify sentinel, send 0)
+{ "dsgRenjuTaraguchiSwapTableEvent": { "swap": true,  "move": 0,   "player": "bob",   "table": 5, "time": 0 } }
+// inbound echo (server time stamped); the stone, if any, arrives separately as dsgMoveTableEvent
+{ "dsgRenjuTaraguchiSwapTableEvent": { "swap": false, "move": 113, "player": "alice", "table": 5, "time": 1718400000123 } }
+```
+**Offer 10** (Branch B — black offers ten 5th-move candidates, no two D4-symmetric — offsets
+`(1,0)(2,0)(3,0)(4,0)(1,1)(2,1)(3,1)(4,1)(2,2)(3,2)` about centre 112 → **10 distinct {|dx|,|dy|} orbits**):
+```json
+{ "dsgRenjuTaraguchiOffer10TableEvent": { "moves": [113,114,115,116,128,129,130,131,144,145], "player": "alice", "table": 5, "time": 0 } }
+```
+**Select 1** (white picks one of the ten → becomes move 5; the stone follows as a `dsgMoveTableEvent`):
+```json
+{ "dsgRenjuTaraguchi10Select1TableEvent": { "move": 130, "player": "bob", "table": 5, "time": 0 } }
+```
+**Stone (always separate):** `{ "dsgMoveTableEvent": { "move": 113, "moves": [113], "player": "alice", "table": 5, "time": 0 } }` — the §10.1 `LiveBoardView:156` format.
+
+**Turn-based (HTTP query params, §2.4).** `OkHttpPenteApi.submitMove` builds
+`gameServer/tb/game?command=move&gid=<gid>&moves=<payload>&renjuAction=<action>`:
+
+| `renjuAction` | `moves` payload | meaning |
+|---|---|---|
+| `swap` | `1` | take over opponent's side (no stone) |
+| `swap` | `0,<move>` | decline + play the next opening stone (move-1..3 windows) |
+| `move4` | `<d>,<s1>[,…,s10]` | move-4 decision. `d`=1 declining swap (SWAP phase), 0 if swap already taken (BRANCH). Then **1 stone = Branch A** (move 5, must be 9×9) or **10 stones = Branch B offers** |
+| `select` | `<move>` | white picks one of the 10 offered moves (becomes move 5) |
+
+Concrete: decline window-1 + place 113 → `…&moves=0,113&renjuAction=swap`; offer ten →
+`…&moves=1,113,114,115,116,128,129,130,131,144,145&renjuAction=move4`; select → `…&moves=130&renjuAction=select`.
+
+**Contract reminders (§7):** never place stones from the three echoes — stones ride
+`dsgMoveTableEvent`. On (re)join, take seats from `sendPlayingPlayers`; the rejoin signal is
+exactly one of {*nothing* / silent `dsgSwapSeatsTableEvent` / `offer10` / `select1`} — its silent
+swap `swap` bit is the **current window's** decision, **not** net orientation. **Recovery:** if a
+declined-swap's bundled stone is rejected, the decline is already committed → recover by re-sending
+the stone as a plain `dsgMoveTableEvent`; if the ten offers are rejected, the move-4 decline +
+Branch B are already committed → recover by re-sending a corrected ten.
+
+### 10.5 Offer symmetry dedup (client-side, UX nicety)
+The ten Branch-B offers must contain no two D4-symmetric duplicates. The server already rejects
+violations (`RenjuState.offerFifthMoves` → `offerFifthMove`), so client-side checking is a **UX
+nicety** (instant feedback vs a round-trip error) — recommended, not required. **The ten offers are
+NOT box-constrained** — any in-bounds, empty, non-D4-symmetric point is legal (corners included);
+only the **Branch-A** move 5 is restricted to the 9×9. So the 10-pick picker must allow the **whole
+board** (minus occupied + symmetric-duplicate cells).
+
+Port the algorithm to Java (15×15, center `(7,7)`):
+- For move `m`: `x = m % 15`, `y = m / 15`, `dx = x - 7`, `dy = y - 7`.
+- The **8 D4 images** of `(dx,dy)`: rotations `(dx,dy)`, `(-dy,dx)`, `(-dx,-dy)`, `(dy,-dx)` and
+  reflections `(-dx,dy)`, `(dx,-dy)`, `(dy,dx)`, `(-dy,-dx)`. Map each back:
+  `m' = (tx + 7) + (ty + 7)·15`.
+- Reject an offer if **any** of its 8 images equals an already-accepted offer. Maintain a running
+  set of all images of accepted offers and test membership (`n/10` counter, §10.6).
+
+Mirror the proven reference so the client agrees with the server exactly: the JSP port
+`renjuRotate` / `renjuStabilizer` / `renjuIsSymmetricDup` in `gameServer/tb/mobileGame.jsp` (itself
+a JS port of `SimpleGridState.rotateMove` + the position stabilizer, §3).
+
+### 10.6 New UI primitives (no Android precedent)
+The swap2/dPente dialogs are plain yes/no (`AlertDialog` + `setItems`, §10.1) — the Renju opening
+needs board-level interaction with **no analogue** in this client. Single-tap placement
+(`LiveBoardView.onTouchEvent:142-153`) is the only existing board interaction; there is **no**
+multi-select, **no** zone highlight (`drawBoard:171-241` draws only lines + star points).
+- **Central-box highlight** — a new `Canvas` draw layer in `LiveBoardView.drawBoard` highlighting
+  the legal cells of the N×N square about center 112 for the current opening move:
+  **moves 2/3/4/5 → 3×3 / 5×5 / 7×7 / 9×9** (radius 1/2/3/4). Applies during the placement phase and
+  the **decline-and-place** action of a SWAP window. **Only single-stone placements (moves 2–5,
+  incl. Branch-A move 5) are box-constrained** — do **not** draw a box for the Branch-B offer-10
+  picker (§10.5).
+- **Translucent "dead-stone" candidates** — render the 10 Branch-B offers (and, during SELECTION,
+  the non-picked nine) as translucent black. **Reuse the existing primitive:** `drawStone:243-278`
+  already applies `stonePaint.setAlpha(180)` for Go dead stones (`:264,:268`) — draw candidates with
+  the same alpha (value 2 + alpha) rather than adding a new path.
+- **10-pick multi-select + submit** — tap to add a candidate, tap again to remove, `n/10` counter,
+  submit button (a new dialog/overlay; the `Gravity.BOTTOM` dialog chrome from
+  `showSwap2Choice:973+` is the styling precedent). **Validation before send:** exactly **1** stone
+  (and inside the 9×9) for Branch A, or exactly **10** distinct, non-D4-duplicate (§10.5) stones
+  **anywhere on the board** for Branch B; alert otherwise. Branch is inferred from the count
+  (1 = continue / 10 = offer), matching the `ServerTable`/`MoveServlet` contract.
+- **White selection screen** — gate on the `dsgSystemMessageTableEvent` prompt (`:409`); show the
+  ten offered candidates and let white tap one → send `dsgRenjuTaraguchi10Select1TableEvent`. The
+  picked candidate renders solid (value 2), the rest translucent.
+
+Visual reference (different framework — do not copy code): `gameServer/tb/mobileGame.jsp` and its
+board JS — `drawDeadStone`, the central-square hinting by move number, the multi-pick picker.
+
+### Could NOT confirm (carry into QA / verify before relying on)
+- **Stone-color contradiction (resolved, confirm visually):** the *protocol* survey pass said
+  `currentColor` is already black-first; the *board* pass + verified `BoardState.java:6` +
+  `currentColor:287` say the first stone is **white** today. The §10.0/§10.3 black-first fix
+  (`2 - moves%2`) is required — confirm by rendering a live Renju move 1.
+- **`swap=true` take-over `move` sentinel** — the field is ignored server-side; send `0` and verify
+  against `ServerTable.handleRenjuSwap`.
+- **`renjuOpeningPlayer` need** — whether a Renju arm in `Table.currentPlayer` is strictly required
+  for correct `isMyTurn` during the opening (mirror `swap2OpeningPlayer`; the safe move). **(verify)**
+- **`TB_RENJU=81` resolution** — does the TB/offline path call `Variants.fromGameId(81)` (needs a
+  canonical `81→31` mapping) or `Variants.fromGameType(gameName)` (string)? And **what string** does
+  the server put in `GameResponse.gameName` / the live `gameNames` for Renju? **(verify)**
+- **`GameResponse` JSON types (CONFIRMED — was a verify item):** matched against backend
+  `GameResponse.java:45-47` — `renjuPhase` (`String`), `renjuOffers` (`String`, comma-separated), and
+  `renjuSwaps` (`Integer`). The String/String/Integer POJO in §10.3 step 8 is correct; no further verify.
+- **Server auto-center on the live socket** — the contract says the server auto-places move 1 (112);
+  confirm Android receives it as an ordinary `dsgMoveTableEvent` (and `movesLength` includes it), so
+  the client never places the center. **(verify)**
+- **`dsgSystemMessageTableEvent` for the Branch-B selector** — confirm the server actually emits it
+  to the Android selector and that it is sufficient to gate the picker (vs needing a dedicated signal). **(verify)**
+- **Index parity end-to-end** — contract is `x + y·15` (x = low component, `move%15`). Android
+  encodes `gridSize*row + col` = `x + y·gridSize` (`LiveBoardView:147`), consistent; confirm after
+  the `addMove:199-200` `/gridSize` fix. (This closes the survey's open "col+row·15 vs row·15+col"
+  question → it is `x + y·15`.) **(verify)**
+- **`gameHasCaptures` (`Table.java:~900`)** — current `game != 5,6,13,14` would let Renju **detect**
+  captures; confirm Renju (ids 31/32) is excluded (it has none). **(verify)**
+- **Other hardcoded-19 assumptions** — undo, resignation, message formatting on either board view. **(verify)**
+- **Arena mode** — `isArenaTable` Renju opening behavior is unspecified. **(verify)**
+- **`Canvas` layer / z-order** — for the central-box highlight + translucent candidates relative to
+  stones; drawing order not specified. **(verify)**
+- **TB opening UI scope** — there is **no** turn-based opening UI on the offline `Game`/`BoardView`
+  screen today (all opening UI is live-only). Confirm whether TB Renju opening is required now or
+  deferred (this handoff recommends live-first; wire only the TB **read** side + `renjuAction`
+  initially). **(verify)**
