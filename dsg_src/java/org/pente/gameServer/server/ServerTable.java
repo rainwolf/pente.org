@@ -1508,6 +1508,11 @@ public class ServerTable {
                         broadCastPlayerTimer(selector);
                     }
                     broadcastMainRoom(offerEvent);
+                    // prompt the selecting player (white) to choose one of the ten offered stones
+                    dsgEventRouter.routeEvent(
+                            new DSGSystemMessageTableEvent(tableNum,
+                                    "Your opponent offered 10 fifth moves — pick one to play as move 5."),
+                            playingPlayers[gridState.getCurrentPlayer()].getName());
                 }
             }
         }
