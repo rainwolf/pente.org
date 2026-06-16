@@ -1361,7 +1361,11 @@ public class ServerTable {
                         timers[gridState.getCurrentPlayer()].go();
                     }
 
-                    broadcastMainRoom(swapEvent);
+                    // Emit the seat swap as a (non-silent) DSGSwapSeatsTableEvent, exactly like
+                    // handleSwap does for swap2/dPente, so EVERY client (web + mobile) applies the
+                    // visual seat swap through its existing swap-seats handler. The renju swap event
+                    // stays a decision-only echo (used for swap=false declines + Branch A move 5).
+                    broadcastMainRoom(new DSGSwapSeatsTableEvent(actor, tableNum, true, false));
 
                 } else if (rs.isAwaitingSwapDecision()) {
                     // swap=false at an OPEN swap window (windows 1-5): unchanged.
