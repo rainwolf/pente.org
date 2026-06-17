@@ -433,7 +433,8 @@ public class MoveServlet extends HttpServlet {
                         case BRANCH_A:
                             if (decision.declineSwap) tbGameStorer.renjuSwap(game, false);
                             tbGameStorer.renjuBranch(game, false);
-                            // move 5 — storeNewMove validates the 9x9 restriction
+                            // move 5 — resolver already enforced the 9x9 restriction
+                            // (wouldAcceptDeclinedOpeningMove); this just persists it
                             tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(), decision.stones[0]);
                             storedStone = true;
                             break;
