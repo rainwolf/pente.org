@@ -33,4 +33,73 @@ public final class RenjuTbContract {
             this.kind = kind; this.declineSwap = declineSwap; this.stones = stones;
         }
     }
+
+    /**
+     * Resolve a TB Renju opening request. Validates the action against the
+     * pending phase and the payload against the engine's rules, WITHOUT
+     * mutating anything. Throws RenjuContractException (message = user error)
+     * on any violation; otherwise returns the plan of mutations.
+     */
+    public static Decision resolve(String action, int[] moves, RenjuState pending)
+            throws RenjuContractException {
+
+        if ("swap".equals(action)) {
+            if (!pending.isAwaitingSwapDecision()) {
+                throw new RenjuContractException("Renju action does not match the pending decision.");
+            }
+            return new Decision(Kind.TAKE_OVER, false, new int[0]);
+        }
+
+        if ("select".equals(action)) {
+            if (!pending.isAwaitingFifthSelection()) {
+                throw new RenjuContractException("Renju action does not match the pending decision.");
+            }
+            if (moves == null || moves.length != 2) {
+                throw new RenjuContractException("Select requires the chosen 5th move and your 6th move.");
+            }
+            int m5 = moves[0], m6 = moves[1];
+            if (!pending.getOfferedFifthMoves().contains(Integer.valueOf(m5))) {
+                throw new RenjuContractException("Selected move was not offered.");
+            }
+            // move 6 (white): empty, in bounds, distinct from move 5. White has
+            // no forbidden points, so no further restriction. Checked on the
+            // 4-stone board (offers are not placed); the 9 unchosen offers are
+            // discarded, so m6 may legally land on a former offer != m5.
+            if (m6 == m5 || pending.outOfBoundsPublic(m6) || pending.getPosition(m6) != 0) {
+                throw new RenjuContractException("Invalid selection or 6th move.");
+            }
+            return new Decision(Kind.SELECT, false, new int[]{ m5, m6 });
+        }
+
+        if ("move".equals(action)) {
+            if (pending.isOpeningComplete() || pending.isAwaitingFifthSelection()) {
+                throw new RenjuContractException("Renju action does not match the pending decision.");
+            }
+            boolean declineSwap = pending.isAwaitingSwapDecision();
+            boolean branchPoint = pending.getNumMoves() == 4 && !pending.isBranchChosen();
+            int n = (moves == null) ? 0 : moves.length;
+
+            if (branchPoint) {
+                if (n == 1) {
+                    return new Decision(Kind.BRANCH_A, declineSwap, new int[]{ moves[0] });
+                } else if (n == 10) {
+                    if (!pending.wouldAcceptFifthOffers(moves)) {
+                        throw new RenjuContractException("Invalid 5th-move offer.");
+                    }
+                    int[] offers = new int[10];
+                    System.arraycopy(moves, 0, offers, 0, 10);
+                    return new Decision(Kind.BRANCH_B, declineSwap, offers);
+                }
+                throw new RenjuContractException(
+                        "At the branch point place 1 stone (Branch A) or 10 (Branch B).");
+            } else {
+                if (n != 1) {
+                    throw new RenjuContractException("Expected a single move.");
+                }
+                return new Decision(Kind.PLACE, declineSwap, new int[]{ moves[0] });
+            }
+        }
+
+        throw new RenjuContractException("Unknown renju action.");
+    }
 }

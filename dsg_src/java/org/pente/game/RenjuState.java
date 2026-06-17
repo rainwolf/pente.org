@@ -220,6 +220,11 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
                 || c.y < 0 || c.y >= gridState.getGridSizeY();
     }
 
+    /** Public bounds check for callers validating a candidate point. */
+    public boolean outOfBoundsPublic(int move) {
+        return outOfBounds(move);
+    }
+
     /**
      * Black forbidden points on the current board (for UI).
      */
@@ -492,6 +497,11 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
     /** True once Branch B (the ten-offer branch) has been chosen. */
     public boolean isBranchOffer() {
         return tenOffer;
+    }
+
+    /** True once the post-move-4 branch (A or B) has been chosen. */
+    public boolean isBranchChosen() {
+        return branchChosen;
     }
 
     /**
