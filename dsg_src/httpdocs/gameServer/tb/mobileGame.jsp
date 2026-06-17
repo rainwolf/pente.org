@@ -312,7 +312,6 @@
                         String renjuPh = game.getRenjuPhase();
                         renjuDecision = TBGame.RENJU_SWAP.equals(renjuPh)
                                      || TBGame.RENJU_BRANCH.equals(renjuPh)
-                                     || TBGame.RENJU_OFFERS.equals(renjuPh)
                                      || TBGame.RENJU_SELECTION.equals(renjuPh);
                      }
                   %>
@@ -375,8 +374,8 @@
                      <a class="boldbuttons" href="javascript:renjuSwapYes();"
                         style="margin-right:5px;"><span>Swap (take over)</span></a>
                      <span id="renjuOfferCount" style="margin-right:5px;">0/10</span>
-                     <a class="boldbuttons" href="javascript:renjuMoveFour(true);"
-                        style="margin-right:5px;"><span>Don't swap or place 10</span></a>
+                     <a class="boldbuttons" href="javascript:renjuMoveBranch();"
+                        style="margin-right:5px;"><span>Don't swap — place 1 or 10</span></a>
                      <% } else if (TBGame.RENJU_SWAP.equals(renjuPh)) { %>
                      <a class="boldbuttons" href="javascript:renjuSwapYes();"
                         style="margin-right:5px;"><span>Swap (take over)</span></a>
@@ -384,15 +383,11 @@
                         style="margin-right:5px;"><span>Don't swap</span></a>
                      <% } else if (TBGame.RENJU_BRANCH.equals(renjuPh)) { %>
                      <span id="renjuOfferCount" style="margin-right:5px;">0/10</span>
-                     <a class="boldbuttons" href="javascript:renjuMoveFour(false);"
-                        style="margin-right:5px;"><span>Place 5th: 1 to continue, 10 to offer</span></a>
-                     <% } else if (TBGame.RENJU_OFFERS.equals(renjuPh)) { %>
-                     <span id="renjuOfferCount" style="margin-right:5px;">0/10</span>
-                     <a class="boldbuttons" href="javascript:renjuSubmitOffers();"
-                        style="margin-right:5px;"><span>Submit 10 offers</span></a>
+                     <a class="boldbuttons" href="javascript:renjuMoveBranch();"
+                        style="margin-right:5px;"><span>Place 1 or offer 10</span></a>
                      <% } else if (TBGame.RENJU_SELECTION.equals(renjuPh)) { %>
                      <a class="boldbuttons" href="javascript:renjuSelect();"
-                        style="margin-right:5px;"><span>Choose this 5th move</span></a>
+                        style="margin-right:5px;"><span>Place black's 5th + your 6th</span></a>
                      <% } } %>
                      <a class="boldbuttons" href="javascript:resign();"
                         style="margin-left:100px;"><span>Resign</span></a>
@@ -655,7 +650,8 @@
    var isRenju = game === <%= GridStateFactory.TB_RENJU %>;
    var renjuPhase = "<%=renjuPhaseStr%>";
    var renjuOfferedMoves = [<%=renjuOffersJs%>];  // persisted offers (for SELECTION)
-   var renjuOfferList = [];                         // client picks (Branch B OFFERS)
+   var renjuOfferList = [];                         // client picks (move-4 / BRANCH: 1=Branch A, up to 10=Branch B)
+   var renjuSel = [];                               // SELECTION pick pair: [offered black 5th, white 6th]
    var boardCanvas = document.getElementById("board");
    var boardContext = boardCanvas.getContext("2d");
    var indentWidth = (boardCanvas.width / (gridSize + 3)) / 2;
@@ -846,16 +842,17 @@
 
       if (i >= 0 && i < gridSize && j >= 0 && j < gridSize) {
          playedMove = j * gridSize + i;
-         if (isRenju && (renjuPhase === "OFFERS" || renjuPhase === "SELECTION"
-               || (renjuPhase === "SWAP" && moves.length === 4) || renjuPhase === "BRANCH")) {
+         if (isRenju && (renjuPhase === "SELECTION" || renjuPhase === "BRANCH"
+               || (renjuPhase === "SWAP" && moves.length === 4))) {
             var rMove = j * gridSize + i;
             if (renjuPhase !== "SELECTION") {
+               // move-4 / BRANCH: collect 1 (Branch A) or up to 10 (Branch B) candidate stones
                if (abstractBoard[i][j] !== 0) return;       // only empty points
                var oi = renjuOfferList.indexOf(rMove);
                if (oi >= 0) {
                   renjuOfferList.splice(oi, 1);             // tap again removes
                } else if (renjuOfferList.length < 10) {
-                  if (renjuIsSymmetricDup(rMove)) {
+                  if (renjuOfferList.length >= 1 && renjuIsSymmetricDup(rMove)) {
                      alert("That move is symmetric to one you've already offered.");
                      return;
                   }
@@ -863,9 +860,17 @@
                }
                renjuRenderOffers();
                return;
-            } else { // SELECTION
-               if (renjuOfferedMoves.indexOf(rMove) < 0) return; // only offered points
-               playedMove = rMove;
+            } else { // SELECTION: tap 1 = offered black 5th; tap 2 = empty white 6th
+               if (renjuSel.length === 0) {
+                  if (renjuOfferedMoves.indexOf(rMove) < 0) return; // 1st must be offered
+                  renjuSel.push(rMove);
+               } else if (renjuSel.length === 1) {
+                  if (abstractBoard[i][j] !== 0 || rMove === renjuSel[0]) return; // 2nd empty & distinct
+                  renjuSel.push(rMove);
+               } else {
+                  renjuSel = [];                            // 3rd tap resets the pair
+                  if (renjuOfferedMoves.indexOf(rMove) >= 0) renjuSel.push(rMove);
+               }
                renjuRenderSelection();
                return;
             }
@@ -1050,14 +1055,22 @@
    }
    function renjuRenderSelection() {
       renjuRedrawBoard();
+      // dim every offered candidate, then highlight the chosen pair
       for (var k = 0; k < renjuOfferedMoves.length; k++) {
          var m = renjuOfferedMoves[k];
-         if (m === playedMove) {
-            // the candidate white has picked -> solid black
-            drawStone(m % gridSize, Math.floor(m / gridSize), 2);
-         } else {
+         if (m !== renjuSel[0]) {
             drawDeadStone(m, 2); // unpicked candidates -> translucent black
          }
+      }
+      if (renjuSel.length >= 1) {
+         // chosen black 5th -> solid black
+         var m5 = renjuSel[0];
+         drawStone(m5 % gridSize, Math.floor(m5 / gridSize), 2);
+      }
+      if (renjuSel.length >= 2) {
+         // your white 6th -> solid white
+         var m6 = renjuSel[1];
+         drawStone(m6 % gridSize, Math.floor(m6 / gridSize), 1);
       }
    }
 
@@ -1094,16 +1107,17 @@
          }
          playedMove = j * gridSize + i;
          // alert("" + i + " and " + j + " and gridsize " + gridSize);
-         if (isRenju && (renjuPhase === "OFFERS" || renjuPhase === "SELECTION"
-               || (renjuPhase === "SWAP" && moves.length === 4) || renjuPhase === "BRANCH")) {
+         if (isRenju && (renjuPhase === "SELECTION" || renjuPhase === "BRANCH"
+               || (renjuPhase === "SWAP" && moves.length === 4))) {
             var rMove = j * gridSize + i;
             if (renjuPhase !== "SELECTION") {
+               // move-4 / BRANCH: collect 1 (Branch A) or up to 10 (Branch B) candidate stones
                if (abstractBoard[i][j] !== 0) return;       // only empty points
                var oi = renjuOfferList.indexOf(rMove);
                if (oi >= 0) {
                   renjuOfferList.splice(oi, 1);             // click again removes
                } else if (renjuOfferList.length < 10) {
-                  if (renjuIsSymmetricDup(rMove)) {
+                  if (renjuOfferList.length >= 1 && renjuIsSymmetricDup(rMove)) {
                      alert("That move is symmetric to one you've already offered.");
                      return;
                   }
@@ -1111,9 +1125,17 @@
                }
                renjuRenderOffers();
                return;
-            } else { // SELECTION
-               if (renjuOfferedMoves.indexOf(rMove) < 0) return; // only offered points
-               playedMove = rMove;
+            } else { // SELECTION: tap 1 = offered black 5th; tap 2 = empty white 6th
+               if (renjuSel.length === 0) {
+                  if (renjuOfferedMoves.indexOf(rMove) < 0) return; // 1st must be offered
+                  renjuSel.push(rMove);
+               } else if (renjuSel.length === 1) {
+                  if (abstractBoard[i][j] !== 0 || rMove === renjuSel[0]) return; // 2nd empty & distinct
+                  renjuSel.push(rMove);
+               } else {
+                  renjuSel = [];                            // 3rd tap resets the pair
+                  if (renjuOfferedMoves.indexOf(rMove) >= 0) renjuSel.push(rMove);
+               }
                renjuRenderSelection();
                return;
             }
@@ -1450,18 +1472,17 @@
       renjuPost("swap", "1");
    }
    function renjuSwapNo()  {
-      // Declining means you play your own next stone — submit the decision and
-      // the move together. (Move 4 uses renjuMoveFour instead of this button.)
+      // Decline the swap and play your own next opening stone (one request).
       if (!(playedMove >= 0)) {
          alert("Place your next move before choosing not to swap.");
          return;
       }
-      renjuPost("swap", "0," + playedMove);
+      renjuPost("move", "" + playedMove);
    }
-   // Move-4 branch decision: place 1 stone (continue = Branch A move 5) or 10
-   // stones (offer = Branch B). The branch is inferred from the count. declineSwap
-   // is true from the swap window (SWAP phase), false after a swap (BRANCH phase).
-   function renjuMoveFour(declineSwap) {
+   // Branch decision (move 4 / post-take-over BRANCH): place 1 stone (continue =
+   // Branch A move 5, inside the 9×9 center) or 10 stones (offer = Branch B). The
+   // server infers the branch from the count and the swap-decline from the phase.
+   function renjuMoveBranch() {
       var n = renjuOfferList.length;
       if (n === 1) {
          var c = Math.floor(gridSize / 2);
@@ -1474,21 +1495,14 @@
          alert("Place 1 stone to continue, or 10 stones to offer (currently " + n + ").");
          return;
       }
-      renjuPost("move4", (declineSwap ? "1" : "0") + "," + renjuOfferList.join(","));
-   }
-   function renjuSubmitOffers() {
-      if (renjuOfferList.length !== 10) {
-         alert("Pick exactly 10 offered moves (currently " + renjuOfferList.length + ").");
-         return;
-      }
-      renjuPost("offer", renjuOfferList.join(","));
+      renjuPost("move", renjuOfferList.join(","));
    }
    function renjuSelect() {
-      if (playedMove < 0 || renjuOfferedMoves.indexOf(playedMove) < 0) {
-         alert("Tap one of the highlighted offered points first.");
+      if (renjuSel.length !== 2) {
+         alert("Tap the offered black 5th move, then tap an empty point for your white 6th.");
          return;
       }
-      renjuPost("select", "" + playedMove);
+      renjuPost("select", renjuSel[0] + "," + renjuSel[1]);
    }
 
    function resign() {
