@@ -846,6 +846,7 @@
                || (renjuPhase === "SWAP" && moves.length === 4))) {
             var rMove = j * gridSize + i;
             if (renjuPhase !== "SELECTION") {
+               playedMove = -1;                            // offer pick, not a played move
                // move-4 / BRANCH: collect 1 (Branch A) or up to 10 (Branch B) candidate stones
                if (abstractBoard[i][j] !== 0) return;       // only empty points
                var oi = renjuOfferList.indexOf(rMove);
@@ -1111,6 +1112,7 @@
                || (renjuPhase === "SWAP" && moves.length === 4))) {
             var rMove = j * gridSize + i;
             if (renjuPhase !== "SELECTION") {
+               playedMove = -1;                            // offer pick, not a played move
                // move-4 / BRANCH: collect 1 (Branch A) or up to 10 (Branch B) candidate stones
                if (abstractBoard[i][j] !== 0) return;       // only empty points
                var oi = renjuOfferList.indexOf(rMove);
