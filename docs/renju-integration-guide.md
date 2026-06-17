@@ -64,18 +64,16 @@ IDs follow the convention **odd = normal, even = speed (+1), turn-based = +50**:
 ### 2.4 Move-submission protocol — `MoveServlet` (THE wire contract clients must speak)
 Request param **`renjuAction`** (alongside `command=move&gid=…&moves=…`). The server derives the pending decision from `RenjuState.reconstruct` and guards each action against it:
 
-The full action set is **five** (`MoveServlet.java:422-426`); a **phase-driven** client (reading `renjuPhase`, §2.6) submits the one matching the current phase, while `move4` is an optional **fold** for the move-4 window (used by the web JSP):
+The full action set is **three** — `swap` / `move` / `select`; a **phase-driven** client (reading `renjuPhase`, §2.6) submits the one matching the current phase. **Branch A vs Branch B is inferred from the `move` stone count** (1 stone = Branch A, 10 stones = Branch B) — there is no separate branch or offer request:
 
-| `renjuAction` | matching phase | `moves` payload | meaning |
+| `renjuAction` | phase | `moves` payload | server behavior |
 |---|---|---|---|
-| `swap` | SWAP | `1` | take over opponent's side (no stone) |
-| `swap` | SWAP | `0,<move>` | decline + play the next opening stone (bundled) — **move-1..3 windows only** (at move 4 a decline carries no stone) |
-| `branch` | BRANCH | `1` / `2` | move-4 branch choice (standalone): `1` = Branch A, `2` = Branch B (open the 10-offer) |
-| `offer` | OFFERS | `<s1>,…,<s10>` | the ten Branch-B 5th-move candidates (exactly 10, distinct, non-symmetric) |
-| `select` | SELECTION | `<move>` | white picks one of the 10 offered moves (becomes move 5) |
-| `move4` | SWAP‖BRANCH @4 | `<d>,<s1>[,…,s10]` | **optional fold**: `d`=1 declining the swap / 0 if swap already taken; then **1 stone = Branch A (move 5, 9×9)** or **10 stones = Branch B offers** — bundles decline+branch+place/offer in one request |
+| `swap` | SWAP | none (`moves` ignored) | Take over the opponent's side at the open swap window — seats swap, **no stone** placed. The next decision (branch / next stone) arrives as a subsequent `move`. |
+| `move` | SWAP / BRANCH / MOVE | `<m>` (1 stone) | Auto-declines a pending swap first (if `isAwaitingSwapDecision`), then places one stone — windows 1–3 → the next opening stone; **at the branch point** (move 4, branch unchosen; fresh-decline *or* post-take-over) → Branch A move 5 (restricted to the 9×9 centre); MOVE phase → a plain opening stone. |
+| `move` | SWAP@4 / BRANCH | `<s1>,…,<s10>` (10 stones) | Auto-declines a pending swap, then Branch B: take the ten-offer branch and validate + persist the ten 5th-move offers, **atomically** (pre-validated; nothing persists if any offer is illegal). Only valid at the branch point. |
+| `select` | SELECTION | `<m5>,<m6>` (2 stones) | **Atomic**: commit one of the ten offered moves as **move 5 (black)** *and* place **move 6 (white)** in one request → opening complete. Stores neither stone unless both are legal (m5 was offered; m6 empty, in bounds, ≠ m5). |
 
-Notes: the server **guards each action against the pending phase** (`matchesPending`, `MoveServlet:430-435`): a mismatch returns a phase-specific error (e.g. "Renju action does not match the pending decision.", "Expected 10 offered moves.", "Selected move was not offered."), not always the generic "Invalid move". MOVE/COMPLETE phases take a **plain move** (no `renjuAction`). Declining the swap **after move 4** does NOT bundle a stone (the branch choice comes next). The server validates everything authoritatively (central squares, forbidden points, offer symmetry/distinctness via `offerFifthMove`); client checks are UX only.
+Notes: **Branch A vs Branch B is inferred from the `move` stone count alone** (1 = A, 10 = B) — there is no separate branch or offer request. **`swap` is always a take-over** (no stone; it never carries a `0`); **declining a swap is now implicit in sending a `move`** — a windows-1–3 decline is a one-stone `move`, not a `swap "0,m"`. The server **pre-validates** the Branch-B ten offers and the 2-stone `select` before any mutation, so there is **no half-applied opening** (nothing persists if any offer is illegal, or if either `select` stone is illegal). The server still **guards each action against the pending phase** (`matchesPending`): a mismatch returns a phase-specific error (e.g. "Renju action does not match the pending decision.", "Selected move was not offered."), not always the generic "Invalid move". **MOVE / COMPLETE (non-opening) moves take a plain `move` with NO `renjuAction`.** The server validates everything authoritatively (central squares, forbidden points, offer symmetry/distinctness via `offerFifthMove`); client checks are UX only. (The removed actions — `branch`, `offer`, `move4`, the `moves[0]` decline/take-over sentinel, and the standalone `swap "0,<move>"` decline — no longer exist.)
 
 ### 2.5 The hardcoded-`180` gotcha (board-aware center)
 Every game's auto-placed opening center stone was historically the literal `180` (= 19×19 center, `9 + 9·19`). Every forced-center game was 19×19, so it was always right — until Renju (15×15, center `112 = 7 + 7·15`). Fixed by routing all of them through `GridStateFactory.getCenterMove(game)`:
@@ -100,7 +98,7 @@ Board rendering is shared across the canvas viewers via two files; teach them ab
 - **`gameServer/tb/mobileGame.jsp`** (turn-based play — the full opening UI):
   - `gridSize = 15` for `TB_RENJU`.
   - Expose to JS: `isRenju`, `renjuPhase` (`game.getRenjuPhase()`), `renjuOfferedMoves` (persisted offers), `renjuOfferList` (client picks).
-  - Phase-driven controls (mirrors the dPente/swap2 button block): swap windows → "Swap (take over)" / "Don't swap" (decline bundles the next stone); **move 4** → "Swap" or **"Don't swap or place 10"** (branch inferred from stone count: 1 = continue, 10 = offer; alert if neither, or if a lone continue stone is outside 9×9); selection → "Choose this 5th move".
+  - Phase-driven controls (mirrors the dPente/swap2 button block) over the three actions (§2.4): swap windows → "Swap (take over)" (a `swap`) / "Don't swap" (decline+place is a one-stone `move`); **move 4** → "Swap (take over)" or place **1 stone** (Branch A) / **10 stones** (Branch B) — branch inferred from the `move` stone count (alert if neither, or if a lone Branch-A stone is outside 9×9); selection → pick a 5th-move offer **and** your own move 6 → one atomic 2-stone `select`. No separate OFFERS/BRANCH steps.
   - **Central-square hinting** during `MOVE` *and* `SWAP` phases (the bundled decline-stone is placed in SWAP phase); radius by move number (0/1/2/3/4).
   - **Multi-pick** picker for the move-4 / offers (tap to add up to 10, tap again to remove, counter `n/10`).
   - **Symmetry dedup of offers, client-side** — JS port of `SimpleGridState.rotateMove` + the position stabilizer (`renjuRotate`/`renjuStabilizer`/`renjuIsSymmetricDup`); must agree exactly with the server's `offerFifthMove`.
@@ -127,13 +125,13 @@ The server is authoritative; clients render + drive the opening. Each client nee
 
 The phase, however obtained, gates the same controls:
 - [ ] Central-square limits: move 1 center, 2 ∈ 3×3, 3 ∈ 5×5, 4 ∈ 7×7, Branch-A move 5 ∈ 9×9 (radii 0/1/2/3/4 from center).
-- [ ] Swap windows after moves 1–4: **swap** (no stone) or **decline + play next stone** (bundled). Declining after move 4 → branch step (no stone) (TB servlet path; the live client bundles the move-5 stone with the decline — see §8.2).
-- [ ] Move-4 branch by **stone count**: 1 = continue (Branch A move 5, 9×9), 10 = offer (Branch B). Reject counts ≠ {1,10}.
+- [ ] Swap windows after moves 1–4: a **`swap`** (take over, no stone) or **decline + place the next stone** as a one-stone **`move`** (declining is implicit in the `move`). At move 4 the `move` *is* the branch (see next bullet); the live client bundles the move-5 stone with the decline — see §8.2.
+- [ ] Move-4 branch by the **`move` stone count**: 1 stone = Branch A move 5 (9×9), 10 stones = Branch B offers (atomic). Reject counts ≠ {1,10}. There is no separate branch/offer request.
 - [ ] 10-offer picker with **symmetry dedup** (port `rotateMove` + position stabilizer; or just let the server reject and surface the error).
-- [ ] Selection screen for white to pick one of the 10 offered moves.
+- [ ] Selection screen: white picks one of the 10 offered moves **and** places its own move 6 → one atomic 2-stone **`select`** (`<m5>,<m6>`) that completes the opening.
 
 **Protocol**
-- [ ] Speak the §2.4 contract (the `renjuAction` values + `moves` payloads) to `MoveServlet` / the live server. The JSON read endpoint is `gameServer/mobile/json/game.jsp` (`GameResponse`); moves POST to `/gameServer/tb/game`.
+- [ ] Speak the §2.4 contract: the THREE `renjuAction` values (`swap`/`move`/`select`) + their `moves` payloads, to `MoveServlet` / the live server. The JSON read endpoint is `gameServer/mobile/json/game.jsp` (`GameResponse`); moves POST to `/gameServer/tb/game`.
 - [ ] Handle the server's **"Invalid move"** vs other errors.
 
 **Win / forbidden**
@@ -1075,8 +1073,9 @@ Live-first ordering. **(L)** = live path, **(TB)** = turn-based/offline, **(both
    backward-safe.
 9. **`app/.../net/OkHttpPenteApi.java`** *(TB)* — `submitMove:163-176`: add a `renjuAction` query
    param (overload `submitMove(gid, moves, message, renjuAction)` →
-   `.addQueryParameter("renjuAction", …)`) to speak the §2.4 contract — the five actions
-   `swap`/`branch`/`offer`/`select` (phase-matched) plus the optional `move4` fold (§2.4 / §12).
+   `.addQueryParameter("renjuAction", …)`) to speak the §2.4 contract — the three actions
+   `swap` (take over) / `move` (1 stone = decline+place / Branch A; 10 stones = Branch B) / `select`
+   (2 stones = chosen 5th + move 6), phase-matched (§2.4 / §12).
 10. **`app/.../Game.java` + `app/.../BoardView.java`** *(TB, deferrable)* —
     `Game.parseGame:998-1007`: add `"Renju"` → `gridSize=15`. `BoardView.drawBoard:483-487`: Renju
     star points (same set as step 4). `BoardView.onTouchEvent:364-406` + `coordinateLetters:71`: use
@@ -1113,18 +1112,22 @@ Live-first ordering. **(L)** = live path, **(TB)** = turn-based/offline, **(both
 
 **Turn-based (HTTP query params).** `OkHttpPenteApi.submitMove` builds
 `gameServer/tb/game?command=move&gid=<gid>&moves=<payload>&renjuAction=<action>`. **Full
-phase-driven contract: §2.4 and §12** — the five actions, each matching the server-shipped phase:
+phase-driven contract: §2.4 and §12** — the three actions, each matching the server-shipped phase:
 
-| `renjuAction` | phase | `moves` payload | meaning |
+| `renjuPhase` (read) | `renjuAction` | `moves` payload | meaning |
 |---|---|---|---|
-| `swap` | SWAP | `1` / `0,<move>` | take over / decline + play next stone (move-1..3 windows) |
-| `branch` | BRANCH | `1` / `2` | move-4 branch choice: 1 = Branch A, 2 = Branch B |
-| `offer` | OFFERS | `<s1>,…,<s10>` | the ten Branch-B 5th-move candidates |
-| `select` | SELECTION | `<move>` | white picks one of the ten (becomes move 5) |
-| `move4` | SWAP‖BRANCH@4 | `<d>,<s1>[,…,s10]` | **optional fold**: `d`=1 declining swap / 0 if taken; 1 stone = Branch A (9×9) or 10 = Branch B offers |
+| SWAP | `swap` | none | take over opponent's side (no stone) |
+| SWAP | `move` | `<m>` (1 stone) | decline + place the next opening stone (windows 1–3); at the move-4 window 1 stone = Branch A move 5 (9×9) |
+| SWAP@4 / BRANCH | `move` | `<s1>,…,<s10>` (10 stones) | Branch B: the ten 5th-move offers (atomic — branch inferred from the stone count) |
+| BRANCH | `move` | `<m>` (1 stone) | Branch A move 5 (9×9) after a take-over |
+| SELECTION | `select` | `<m5>,<m6>` (2 stones) | commit the chosen 5th (black) + place move 6 (white) → opening complete |
+| MOVE / COMPLETE | *(none)* | `<m>` | plain move, no `renjuAction` |
 
-Concrete (granular, one action per phase): decline window-1 + place 113 → `…&moves=0,113&renjuAction=swap`; offer ten →
-`…&moves=113,114,115,116,128,129,130,131,144,145&renjuAction=offer`; select → `…&moves=130&renjuAction=select`. (Or the fold: `…&moves=1,113,…,145&renjuAction=move4`.)
+Concrete (one action per phase): decline window-1 + place 113 → `…&moves=113&renjuAction=move`; take over →
+`…&renjuAction=swap` (no `moves`); Branch B offers →
+`…&moves=113,114,115,116,128,129,130,131,144,145&renjuAction=move` (10 stones); select →
+`…&moves=130,131&renjuAction=select` (chosen 5th + move 6). Branch A vs B is inferred from the
+`move` stone count (1 vs 10); there is no separate branch/offer request.
 
 **Contract reminders (§7):** never place stones from the three echoes — stones ride
 `dsgMoveTableEvent`. On (re)join, take seats from `sendPlayingPlayers`; the rejoin signal is
@@ -1240,7 +1243,7 @@ All grep-verified in the submodule on this branch. **(WRONG today)** = the path 
 | game load (read) | `test1/BoardViewController.m` | `replayGame` **:1380** → `GET …/gameServer/mobile/json/game.jsp?gid=%@` **:1422** (prod) / **:1427** (localhost); `NSJSONSerialization` **:1453**. **(OK)** |
 | JSON parse fields | `test1/BoardViewController.m` | `replayGame` parse block **:1465-1522** reads `canHide`/`canUnHide`(:1465-66), `player1`/`player2`(:1473-74), `currentPlayer`(:1475), `undoRequested`(:1476), `sid`(:1477), `moves`(:1478-81, a comma-separated `String` split via `componentsSeparatedByString:@","`), `rated`(:1485), `privateGame`(:1486), `gameName`(:1488), `messageNums`(:1509), `messages`(:1512), `cancel`(:1516). **Opening-state precedent: `dPenteState` IS parsed at :1767-1768.** **No `renjuPhase`/`renjuOffers`/`renjuSwaps`.** **(WRONG today)** |
 | move submit (URL) | `test1/BoardViewController.m` | `submitMoveToServer` **:1216-1331**; builds the URL inline (**:1271-1299** — **:1275/:1281** no-message variant, **:1288/:1295** with-message) and dispatches it via **GET** (`setHTTPMethod:@"GET"` **:1302**) to `gameServer/tb/game`. (The `:2181/:2185` POST is `requestUndo`'s, not this submit.) **No `renjuAction` param.** **(WRONG today)** |
-| move-string build | `test1/BoardViewController.m` | `submitMoveToServer` move-string construction **:1219-1253** (Connect6 / D-Pente / Swap2 via `finalMove`, `dPenteMove1-4`, `swap2Move1-3`). **No renju swap/branch/offer/select payload formats.** **(WRONG today)** |
+| move-string build | `test1/BoardViewController.m` | `submitMoveToServer` move-string construction **:1219-1253** (Connect6 / D-Pente / Swap2 via `finalMove`, `dPenteMove1-4`, `swap2Move1-3`). **No renju swap/move/select payload formats.** **(WRONG today)** |
 | board tap (placement) | `test1/BoardViewController.m` | `boardTap:` impl **:644**; computes move index, checks the empty cell, stores `finalMove`, updates preview stone **:694-755**. Ordinary single-stone placement only; **no opening dialog** beyond dPente/swap2. Reusable; needs a central-box gate for Renju. **(OK)** |
 | opening-UI precedent | `test1/BoardViewController.m` | `swap2Opening`/`swap2Choice` flags **:84-85**, `dPenteChoiceLabel` `@synthesize :52` / header `UILabel BoardViewController.h:59`, show/hide **:1824-1876**; D-Pente/Swap2 show `player1Button`/`player2Button`; Swap2 adds `passButton :1862`. **Yes/no/pass only — no board interaction, no Renju.** **(WRONG today for Renju)** |
 | game registration | `test1/SocialViewController.swift` (Swift) | `gameNames` dict **:28-35** (TB ids `51…75`); `gameNamesArray` **:36-43** (the game-picker list). **`Renju`(31)/`Speed Renju`(32)/`Turn-based Renju`(81) absent** from both → no name, not pickable. **(WRONG today)** |
@@ -1261,22 +1264,20 @@ All grep-verified in the submodule on this branch. **(WRONG today)** = the path 
 - **`renjuOffers`** — `String`, **comma-separated** offered move indices, else `null`.
 - **`renjuSwaps`** — `Integer` (packed opening word), else `null`.
 
-The six phases map directly to the §11.5 UI: `SWAP` → swap window (windows 1–4); `BRANCH` → Branch A/B choice (after the move-4 swap decision); `OFFERS` → black builds the 10-pick; `SELECTION` → white picks one of the ten; `MOVE` → constrained central-square placement (moves 2–5, incl. Branch-A move 5); `COMPLETE` → ordinary alternating play (black forbidden-points server-enforced).
+The read phases map to the §11.5 UI: `SWAP` → swap window (take over, or decline+place a one-stone `move`; at move 4 the `move` is the branch — 1 stone = Branch A, 10 = Branch B); `BRANCH` (only after a take-over) → place a one-stone `move` (Branch A) or a 10-stone `move` (Branch B offers); `SELECTION` → white commits a chosen 5th-move offer **and** its own move 6 in one atomic 2-stone `select`; `MOVE` → constrained central-square placement (moves 2–5, incl. Branch-A move 5) sent as a plain move; `COMPLETE` → ordinary alternating play (black forbidden-points server-enforced). Under the single-request contract Branch B and its ten offers travel as that one branch-point `move`, so the client never has to act on a standalone `OFFERS` phase.
 
 **Submit path — the §2.4 `MoveServlet` contract over the existing `submitMoveToServer` HTTP request.** Today `submitMoveToServer` (`:1216`) builds the URL inline (`:1271-1299`) — `gameServer/tb/game?command=move&mobile=&gid=<gid>&moves=<payload>&message=<msg>` — and dispatches it via **GET** (`setHTTPMethod:@"GET"`, `:1302`). For Renju the client **reads `renjuPhase`** (above) and **appends `&renjuAction=<action>` to that GET query string**, with a renju-shaped `moves` payload. The contract is **phase-driven** — submit the action that matches the phase the server shipped (verified `MoveServlet.java:422-544`; identical to Android's TB table, §10.4):
 
 | `renjuPhase` (read) | `renjuAction` | `moves` payload | meaning |
 |---|---|---|---|
-| `SWAP` | `swap` | `1` | take over opponent's side (no stone) |
-| `SWAP` | `swap` | `0,<move>` | decline + play the next opening stone — **windows 1–3 only** |
-| `SWAP` (move 4) | `swap` | `0` | decline the move-4 swap — **no bundled stone**; the branch choice is the next action |
-| `BRANCH` | `branch` | `1` | choose **Branch A** |
-| `BRANCH` | `branch` | `2` | choose **Branch B** (10-offer) |
-| `OFFERS` | `offer` | `<s1>,…,<s10>` | black offers **exactly 10** fifth-move candidates (branch already B, `numMoves==4`) |
-| `SELECTION` | `select` | `<move>` | white picks one of the ten (must be one offered; becomes move 5) |
+| `SWAP` | `swap` | none (`moves` ignored) | take over opponent's side (no stone) |
+| `SWAP` | `move` | `<m>` (1 stone) | decline + place the next opening stone (windows 1–3); at the move-4 window, 1 stone = **Branch A** move 5 (9×9) |
+| `SWAP` (move 4) / `BRANCH` | `move` | `<s1>,…,<s10>` (10 stones) | **Branch B**: the ten 5th-move offers, atomic (branch inferred from the stone count) |
+| `BRANCH` | `move` | `<m>` (1 stone) | **Branch A** move 5 (9×9) after a take-over |
+| `SELECTION` | `select` | `<m5>,<m6>` (2 stones) | commit the chosen 5th-move offer (black) **and** place move 6 (white) → opening complete |
 | `MOVE` / `COMPLETE` | *(none)* | `<move>` | a **plain** `command=move`, **no `renjuAction`** |
 
-**Optional `move4` fold.** A single `renjuAction=move4`, `moves=<d>,<s1>[,…,s10]` collapses the whole move-4 decision into one request — `d`=1 declines the move-4 swap (SWAP phase) / `0` if the swap was already taken (BRANCH); then **1 stone = Branch A** (move 5, must be 9×9) or **10 stones = Branch B** offers. It is accepted **only** when `isAwaitingSwapDecision || isAwaitingBranchChoice` (`MoveServlet.java:435`). A phase-driven client can **ignore `move4` entirely** and use the granular `swap`/`branch`/`offer`/`select` actions above.
+**Branch inferred from the `move` stone count.** There is no separate branch or offer request: at the move-4 window (`SWAP` at move 4) or after a take-over (`BRANCH`), a one-stone `move` takes Branch A (move 5, restricted to the 9×9) and a ten-stone `move` takes Branch B (the ten offers, validated and persisted atomically). Declining the move-4 swap is implicit in sending that `move` — there is no stoneless decline. `swap` is always a take-over (no stone, no `0` sentinel).
 
 The server validates everything authoritatively (central squares, forbidden points, offer symmetry/distinctness). A `renjuAction` that does **not** match the pending phase is rejected with **"Renju action does not match the pending decision."** (`:438`); other rejections carry **distinct, often phase-specific** messages (e.g. "Expected 10 offered moves.", "Selected move was not offered.", "Expected a move when declining to swap.") that the client should **surface verbatim**, distinct from a transport/DB error. Client-side checks are UX only.
 
@@ -1288,7 +1289,7 @@ Renju ids 31/32/81 resolve **WRONG** today across the ObjC TB stack (§11.1). Th
 3. **`test1/BoardViewController.m` — board sizing** *(15×15)* — after the `replayGame` reset `gridSize = 19` (**:1383**) add a Renju branch setting **`gridSize = 15`** for ids 31/32/81 (parallel to the Go `9`/`13` branches at **:1888/:1891**). Then make every hardcoded `/19`,`%19` **`gridSize`-aware** (**:564,:574,:590,:605,:620,:746,:831-833**) — `BoardView.m` already decodes with `/gridSize`,`%gridSize` (**:219-280**), so the controller must match it or the two disagree. The `abstractBoard[19][19]` array (`.h:36`) **physically fits** a 15×15 board (15<19), so no reallocation is strictly required — but the index math and the iteration bounds (any `0..<19` / `< gridSize` loops, e.g. the sync loops) **must** use `gridSize`. (This is the survey's "most dangerous" item, framed precisely: it is the decode math, not the array capacity.)
 4. **`test1/BoardViewController.m` — coordinate labels** — `coordinateLetters[19]` (A–T skipping I, **:93-94**) accessed via `% 19` / `19 - (move/19)` (**:831/:833**) must use the **first 15 labels A–P skipping I** and `% gridSize` / `gridSize - 1 - (move/gridSize)`.
 5. **`test1/BoardView.m` — star points** — the 5 hardcoded 19×19 circles (`drawRect` **:150-176**) are wrong for 15×15. Use the Renju star points at cols/rows **{3,7,11}** → indices **`[48,52,56,108,112,116,168,172,176]`** (index `= col + row·15`, center 112), matching §4 / §8.3 / §9.3. (`drawRect`'s stone decode at **:219-280** is already `gridSize`-aware — leave it.) Renju forbids black stones on these points anyway, so they are purely visual.
-6. **`test1/BoardViewController.m` — `submitMoveToServer`** *(send `renjuAction`)* — extend the move-string construction (**:1219-1253**, alongside the Connect6/D-Pente/Swap2 cases) with the Renju payload formats (§11.2 table): `swap` (`1` or `0,<move>` / `0` at move 4), `branch` (`1`/`2`), `offer` (`<s1>,…,<s10>`), `select` (`<move>`) — and optionally the `move4` fold (`<d>,<s1>[,…,s10]`); then extend the URL builders (**:1275/:1281/:1288/:1295**) to append **`&renjuAction=<action>`** to the GET query string when the game is Renju (and send **no** `renjuAction` for plain `MOVE`/`COMPLETE` placements). Surface the server's rejection message **verbatim** (often phase-specific — §11.2), distinct from a transport error.
+6. **`test1/BoardViewController.m` — `submitMoveToServer`** *(send `renjuAction`)* — extend the move-string construction (**:1219-1253**, alongside the Connect6/D-Pente/Swap2 cases) with the three Renju payload formats (§11.2 table): `swap` (no `moves` payload — take over), `move` (`<m>` for a 1-stone decline+place / Branch A, or `<s1>,…,<s10>` for the 10-stone Branch B), and `select` (`<m5>,<m6>` — chosen 5th + move 6); then extend the URL builders (**:1275/:1281/:1288/:1295**) to append **`&renjuAction=<action>`** to the GET query string when the game is Renju (and send **no** `renjuAction` for plain `MOVE`/`COMPLETE` placements). Surface the server's rejection message **verbatim** (often phase-specific — §11.2), distinct from a transport error.
 7. **Shared Swift variant/colour (cross-ref §9.3 steps 2/2a/4)** — `PenteVariant.swift` `case renju = 11` and `BoardVariantMapping.swift` `.renju` → `#D98880` are **shared** with the live stack and specified in §9; do not re-spec them. For the TB board, only **confirm** the ObjC board actually consumes the `@objc` colour bridge (§11.1 last row) and that the `gameName` string the TB endpoint emits for Renju maps to `.renju` in `variant(forGameType:)`.
 8. **Opening UI** *(from scratch — §11.5)* — the existing TB opening UI (`dPenteChoiceLabel`/`swap2`, **:1824-1876**) is yes/no/pass buttons only. Renju needs board-level interaction (central-box highlight, 10-pick multi-select, translucent candidates, white selection), driven by the **read** `renjuPhase` and submitted via `renjuAction`. Reuse `boardTap:` (**:644**) for placement and picking; reuse the dPente/swap2 button block (**:1824-1876**) as the dispatch precedent.
 
@@ -1308,49 +1309,35 @@ Renju ids 31/32/81 resolve **WRONG** today across the ObjC TB stack (§11.1). Th
 ```
 - `moves` is itself a **comma-separated `String`**, not a JSON array — iOS splits it with `componentsSeparatedByString:@","` (`BoardViewController.m:1478-1481`). `renjuPhase` is read **as-is** (no derivation). `renjuOffers` is the **same comma-separated `String`** shape — split to `int[]` (here the ten Branch-B candidates). `renjuSwaps` is the packed opening word (Integer; treat as opaque for UI — the phase already tells you what to show). For a non-Renju game all three are `null` (Gson tolerates missing fields).
 
-**Submit (client→server)** — the existing `submitMoveToServer` **GET** with `&renjuAction=` appended to the query string (base `gameServer/tb/game?command=move&mobile=&gid=<gid>&moves=<payload>&message=<msg>`, built `:1271-1299`, dispatched `setHTTPMethod:@"GET"` `:1302`). Concrete (gid `4242`, center 112, 15×15) — **granular, one action per phase**:
+**Submit (client→server)** — the existing `submitMoveToServer` **GET** with `&renjuAction=` appended to the query string (base `gameServer/tb/game?command=move&mobile=&gid=<gid>&moves=<payload>&message=<msg>`, built `:1271-1299`, dispatched `setHTTPMethod:@"GET"` `:1302`). Concrete (gid `4242`, center 112, 15×15) — **one action per phase**:
 ```
-# SWAP (window 1): decline + place move 2 at col8,row7 (=113, inside the 3×3)
-…/gameServer/tb/game?command=move&mobile=&gid=4242&moves=0,113&message=&renjuAction=swap
+# SWAP (window 1): decline + place move 2 at col8,row7 (=113, inside the 3×3) — a one-stone move
+…/gameServer/tb/game?command=move&mobile=&gid=4242&moves=113&message=&renjuAction=move
 
-# SWAP: take over opponent's side (no stone) — any swap window
-…/gameServer/tb/game?command=move&mobile=&gid=4242&moves=1&message=&renjuAction=swap
+# SWAP: take over opponent's side (no stone) — any swap window; no moves payload
+…/gameServer/tb/game?command=move&mobile=&gid=4242&message=&renjuAction=swap
 
-# SWAP (move 4): decline the move-4 swap — NO bundled stone (BRANCH phase follows)
-…/gameServer/tb/game?command=move&mobile=&gid=4242&moves=0&message=&renjuAction=swap
+# SWAP@4 or BRANCH: Branch A — place move 5 at 130 (9×9) as a one-stone move
+…/gameServer/tb/game?command=move&mobile=&gid=4242&moves=130&message=&renjuAction=move
 
-# BRANCH: choose Branch A (server then ships renjuPhase=MOVE to place move 5 in the 9×9)
-…/gameServer/tb/game?command=move&mobile=&gid=4242&moves=1&message=&renjuAction=branch
+# SWAP@4 or BRANCH: Branch B — the ten 5th-move offers (10 stones = Branch B, atomic; no two D4-symmetric)
+…/gameServer/tb/game?command=move&mobile=&gid=4242&moves=113,114,115,116,128,129,130,131,144,145&message=&renjuAction=move
 
-# BRANCH: choose Branch B (server then ships renjuPhase=OFFERS for the 10-pick)
-…/gameServer/tb/game?command=move&mobile=&gid=4242&moves=2&message=&renjuAction=branch
+# SELECTION: white commits the chosen 5th-move offer (130) + its own move 6 (131) → opening complete
+…/gameServer/tb/game?command=move&mobile=&gid=4242&moves=130,131&message=&renjuAction=select
 
-# OFFERS: black offers ten 5th-move candidates (no two D4-symmetric)
-…/gameServer/tb/game?command=move&mobile=&gid=4242&moves=113,114,115,116,128,129,130,131,144,145&message=&renjuAction=offer
-
-# SELECTION: white picks one of the ten → becomes move 5
-…/gameServer/tb/game?command=move&mobile=&gid=4242&moves=130&message=&renjuAction=select
-
-# MOVE (Branch-A move 5) / COMPLETE: a plain move — NO renjuAction
+# MOVE / COMPLETE: a plain move — NO renjuAction
 …/gameServer/tb/game?command=move&mobile=&gid=4242&moves=130&message=
 ```
-**Optional `move4` fold** (a phase-driven client can skip this and use the granular actions above):
-```
-# move-4, Branch A: decline swap (d=1) + place move 5 at 130 (must be inside the 9×9)
-…/gameServer/tb/game?command=move&mobile=&gid=4242&moves=1,130&message=&renjuAction=move4
-
-# move-4, Branch B: decline swap (d=1) + offer ten 5th-move candidates (no two D4-symmetric)
-…/gameServer/tb/game?command=move&mobile=&gid=4242&moves=1,113,114,115,116,128,129,130,131,144,145&message=&renjuAction=move4
-```
-Notes (from §2.4 / `MoveServlet.java:443-549`): in the `move4` fold the payload leads with `d` (`1`=declining the swap in the SWAP phase, `0` if the swap was already taken so you are in the BRANCH phase), then **1 stone = Branch A** (the 9×9-constrained move 5) or **10 stones = Branch B** offers. Declining a swap **after move 4** does **not** bundle a stone — with the granular actions that is the `moves=0` `swap` submit above, and the `branch` choice is a **separate** action. The ten Branch-B offers are **not** box-constrained (anywhere on the board, minus occupied + D4-symmetric duplicates, §11.5); only the **Branch-A** move 5 is restricted to the 9×9.
+Notes (from §2.4): **Branch A vs Branch B is inferred from the `move` stone count alone** (1 = Branch A move 5 in the 9×9; 10 = Branch B offers, validated + persisted atomically) — there is no separate branch or offer request. **Declining a swap is implicit in sending a `move`** (windows 1–3 decline is the one-stone `move` above, not a `swap "0,m"`); `swap` is always a take-over and carries no `moves` payload. The 2-stone `select` (`<m5>,<m6>`) is pre-validated before any mutation — neither stone persists unless m5 was offered and m6 is empty, in bounds, and ≠ m5. The ten Branch-B offers are **not** box-constrained (anywhere on the board, minus occupied + D4-symmetric duplicates, §11.5); only the **Branch-A** move 5 is restricted to the 9×9.
 
 ### 11.5 Opening UI on the TB board (driven by the read `renjuPhase`)
 The TB board has **no opening UI today** other than the dPente/swap2 yes/no/pass buttons (`:1824-1876`); the Renju opening is a **from-scratch build** on the existing TB board (reusing `boardTap:` for placement/picking and the dPente/swap2 button block as the dispatch precedent). Unlike §9.6 (live, phase **derived**), here every control is gated by the **server-provided `renjuPhase`** (§11.2) and submitted via `renjuAction` (§11.4). No state machine to track — just `switch(renjuPhase)`:
-- **`SWAP` (swap windows) — swap prompt.** Show two controls (mirror the `player1Button`/`player2Button` block): **"Swap (take over)"** → `renjuAction=swap`, `moves=1`; **"Don't swap (place next stone)"** → place the next opening stone inside its central square and send `renjuAction=swap`, `moves=0,<move>` (**windows 1–3**). At the **move-4 swap window**, declining sends `renjuAction=swap`, `moves=0` with **no bundled stone** — the server then ships `renjuPhase=BRANCH` and the branch choice is the **next** submission. The decline-and-place stone is **central-box constrained** (see below).
-- **Central-box placement (`MOVE`, and the decline-stone of a `SWAP` window).** Constrain `boardTap:` to the legal N×N square about center 112 for the current opening move: **moves 2/3/4/5 → 3×3 / 5×5 / 7×7 / 9×9** (radius 1/2/3/4). Highlight that square (a new overlay/`CALayer` or extra `drawRect` pass — the TB board has no zone-highlight precedent). This box covers **only** single-stone placements (moves 2–5, incl. Branch-A move 5) — **not** the Branch-B 10-pick. A `MOVE`-phase placement submits as a **plain** `command=move` (no `renjuAction`); the decline-stone of a `SWAP` window rides on `renjuAction=swap`, `moves=0,<move>`.
-- **`BRANCH` (after the swap decision).** Two choices, each a `renjuAction=branch` submit: **Branch A** → `moves=1` (the server then ships `renjuPhase=MOVE` to place move 5 in the 9×9); **Branch B** → `moves=2` (the server then ships `renjuPhase=OFFERS` to open the 10-pick).
-- **`OFFERS` — 10-pick multi-select.** Tap to add a candidate, tap again to remove, with an `n/10` counter; render placed picks as **translucent black** (reuse the `BoardView` stone-fill at lower opacity / the Go dead-stone look). Picks are allowed **anywhere on the board** (in-bounds + empty, minus D4-symmetric duplicates — §11.5 dedup, a UX nicety; the server rejects violations via `offerFifthMove`). On submit send **`renjuAction=offer`** with `moves=<s1>,…,<s10>` (**exactly ten**).
-- **`SELECTION` — white selection screen.** Present the ten `renjuOffers` candidates (parsed from the comma-separated JSON) as translucent black; white taps one → solid, the rest cleared → `renjuAction=select`, `moves=<move>` (must be one of the offered). A non-dismissible prompt (vs the passive text-log line the existing message handler shows) is the right affordance.
+- **`SWAP` (swap windows) — swap prompt.** Show two controls (mirror the `player1Button`/`player2Button` block): **"Swap (take over)"** → `renjuAction=swap` with **no `moves` payload**; **"Don't swap (place next stone)"** → place the next opening stone inside its central square and send it as a one-stone `renjuAction=move`, `moves=<move>` (**windows 1–3**). At the **move-4 swap window** the "Don't swap" path *is* the branch (see `BRANCH` below): place **1 stone** (Branch A move 5, 9×9) or **10 stones** (Branch B offers) as a single `renjuAction=move`. The decline-and-place stone is **central-box constrained** (see below).
+- **Central-box placement (`MOVE`, and the decline-stone of a `SWAP` window).** Constrain `boardTap:` to the legal N×N square about center 112 for the current opening move: **moves 2/3/4/5 → 3×3 / 5×5 / 7×7 / 9×9** (radius 1/2/3/4). Highlight that square (a new overlay/`CALayer` or extra `drawRect` pass — the TB board has no zone-highlight precedent). This box covers **only** single-stone placements (moves 2–5, incl. Branch-A move 5) — **not** the Branch-B 10-pick. A `MOVE`-phase placement submits as a **plain** `command=move` (no `renjuAction`); the decline-stone of a windows-1–3 `SWAP` rides on a one-stone `renjuAction=move`.
+- **`BRANCH` (only after a take-over).** Branch is chosen by the **stone count of a single `renjuAction=move`**: **Branch A** → place move 5 in the 9×9 as a one-stone `move`; **Branch B** → send the **ten** 5th-move offers as a ten-stone `move` (atomic). There is no separate branch request and no standalone `OFFERS` step — the offers ride this one `move`.
+- **Branch-B 10-pick multi-select (at the move-4 `SWAP`/`BRANCH` point).** Tap to add a candidate, tap again to remove, with an `n/10` counter; render placed picks as **translucent black** (reuse the `BoardView` stone-fill at lower opacity / the Go dead-stone look). Picks are allowed **anywhere on the board** (in-bounds + empty, minus D4-symmetric duplicates — §11.5 dedup, a UX nicety; the server rejects violations via `offerFifthMove`). On submit send the ten as a single **`renjuAction=move`** with `moves=<s1>,…,<s10>` (**exactly ten** = Branch B, validated atomically).
+- **`SELECTION` — white selection screen.** Present the ten `renjuOffers` candidates (parsed from the comma-separated JSON) as translucent black; white taps one to choose move 5 (it goes solid, the rest clear) **and then places its own move 6** anywhere legal → submit both as one atomic `renjuAction=select`, `moves=<m5>,<m6>` (m5 must be one of the offered; m6 empty, in bounds, ≠ m5) — this completes the opening. A non-dismissible prompt (vs the passive text-log line the existing message handler shows) is the right affordance.
 - **`COMPLETE` — ordinary placement.** Plain `boardTap:` + a normal `command=move` (no `renjuAction`); black forbidden-points are server-enforced (rejected on submit with a **phase-specific message** the client surfaces verbatim).
 
 Offer symmetry dedup (15×15, center `(7,7)`): for move `m`, `x=m%15`, `y=m/15`, `dx=x-7`, `dy=y-7`; the 8 D4 images are rotations `(dx,dy),(-dy,dx),(-dx,-dy),(dy,-dx)` + reflections `(-dx,dy),(dx,-dy),(dy,dx),(-dy,-dx)`, mapped back `m'=(tx+7)+(ty+7)·15`; reject an offer if any image is already accepted. Mirror the JSP `renjuRotate` (`mobileGame.jsp:998`) / `renjuStabilizer` (`:1008`) / `renjuIsSymmetricDup` (`:1027`) exactly so the client agrees with the server. Visual reference (different framework — do not copy code): `gameServer/tb/mobileGame.jsp` — central-square hinting by move number and the multi-pick picker; the translucent dead/candidate stone is drawn by `drawDeadStone` in **`gameServer/tb/gameScript.js:722`** (mobileGame.jsp only *calls* it, e.g. `:1045`/`:1059`).
@@ -1407,7 +1394,7 @@ All grep-verified in the submodule on this branch (line numbers as-of-now; grep 
 | load entry | `BoardActivity.java` | `onCreate` **:79** calls `game.parseGame(board)` immediately → triggers `RetrieveGame`. **(OK)** |
 | game list → Game | `app/.../PentePlayer.java` | `populateFromJson` **:174** — only `IndexResponse.activeGamesMyTurn` (`:257-269`) builds `mActiveGames` (`this.mActiveGames = newActive` **:269**); `activeGamesOpponentTurn` (`:273-285`) feeds a **separate** non-active list `mNonActiveGames` (`:285`), **not** `mActiveGames`. Both call `new Game(String.valueOf(entry.gid), null, entry.gameName, …)`. **No game-type filter** → Renju games already list. The `entry.gameName` string flows into `Game.mGameType`. **(OK)** |
 | player colour hint | `Game.java` | `mMyColor` field **:53** (ctor `:124`, getter `:163`); used `:1281` `mMyColor.contains("white") ? 1 : 2` and `:1290` `2 - mMovesList.size()%2`. Server tells the client which side it plays. **(OK / context)** |
-| renjuAction wire | backend `MoveServlet.java:422-544` (reference, §2.4) | TB opening actions = a `renjuAction` query param alongside `command=move`: **`swap` / `branch` / `offer` / `select`** (FIVE total, incl. the optional **`move4`** fold) with the §2.4 `moves` payloads; the `matchesPending` guard (`:430-435`) gates each action to its phase (`swap`→AwaitingSwapDecision, `branch`→AwaitingBranchChoice, `offer`→AwaitingFifthOffers, `select`→AwaitingFifthSelection, `move4`→swap-or-branch). Server validates and throws `InvalidMoveException` → page shows **"Invalid move"**. **(server contract)** |
+| renjuAction wire | backend `MoveServlet.java` / `RenjuTbContract.resolve` (reference, §2.4) | TB opening actions = a `renjuAction` query param alongside `command=move`: **`swap`** (take over, no stone) / **`move`** (1 stone = decline+place / Branch A move 5; 10 stones = Branch B offers, atomic) / **`select`** (2 stones = chosen 5th + move 6) — **three total**, with the §2.4 `moves` payloads; the phase guard gates each action to its pending decision. Branch A vs B is inferred from the `move` stone count. Server validates and throws `InvalidMoveException` → page shows **"Invalid move"**. **(server contract)** |
 | GameResponse renju fields | backend `GameResponse.java:45-47` (reference) | `renjuPhase` (`String`, one of `SWAP|BRANCH|OFFERS|SELECTION|MOVE|COMPLETE`, else null), `renjuOffers` (`String`, comma-separated offered move indices, else null), `renjuSwaps` (`Integer`, packed opening word, else null). The Android POJO types must be `String/String/Integer`. **(server contract)** |
 
 ### 12.2 TB phase + transport (the server SHIPS `renjuPhase` — read it, do NOT derive)
@@ -1417,14 +1404,13 @@ Unlike the live path (§10.2a, which **derives** the phase from `dsgRenjuTaraguc
 
 | `renjuPhase` (read) | meaning | client control | `renjuAction` + `moves` (§2.4) |
 |---|---|---|---|
-| `SWAP` | swap window open (after moves 1–4) | "Swap (take over)" / "Don't swap" — windows 1–3 decline **bundles** the next central-square stone; move-4 decline carries **no** stone (→ `BRANCH`) | take-over → `swap` / `1` · windows 1–3 decline+place → `swap` / `0,<move>` · move-4 decline → `swap` / `0` |
+| `SWAP` | swap window open (after moves 1–4) | "Swap (take over)" / "Don't swap" — windows 1–3 decline+place is a one-stone `move`; at move 4 the `move` *is* the branch (1 = A, 10 = B) | take-over → `swap` (no `moves`) · windows 1–3 decline+place → `move` / `<m>` · move-4 Branch A → `move` / `<m5>` (1 stone) · move-4 Branch B → `move` / `<s1>,…,<s10>` (10 stones) |
 | `MOVE` | place the next central-square opening stone (incl. Branch-A move 5), no decision pending (radius by move #) | constrained placement | **plain move** — `command=move&moves=<move>`, **no `renjuAction`** |
-| `BRANCH` | move-4 swap was **taken**; brancher chooses A vs B | Branch A (then place move 5 ∈ 9×9) **or** Branch B (offer 10) | `branch` / `1` (Branch A) or `branch` / `2` (Branch B) |
-| `OFFERS` | Branch B; the ten 5th-move offers pending | 10-pick multi-select (whole board) | `offer` / `<s1>,…,<s10>` (**exactly 10**) |
-| `SELECTION` | white picks one of the ten | tap one of `renjuOffers` | `select` / `<move>` |
+| `BRANCH` | move-4 swap was **taken**; brancher chooses A vs B by stone count | Branch A (place move 5 ∈ 9×9) **or** Branch B (the ten offers) | Branch A → `move` / `<m5>` (1 stone) · Branch B → `move` / `<s1>,…,<s10>` (10 stones, atomic) |
+| `SELECTION` | white commits a chosen 5th-move offer **and** its own move 6 | tap one of `renjuOffers`, then place move 6 | `select` / `<m5>,<m6>` (2 stones) → opening complete |
 | `COMPLETE` | opening done | normal play | **plain move** (no `renjuAction`); black forbidden points server-enforced |
 
-A phase-driven client **prefers the granular per-phase actions** above (`swap`/`branch`/`offer`/`select` + plain `MOVE`). The optional **`move4` fold** bundles the whole move-4 decision+branch+place/offer in one submission — `moves="<d>,<s1>[,…,s10]"` where **`d=1`** declines the still-open move-4 swap (`SWAP` at move 4) / **`d=0`** when the swap was already taken (`BRANCH`), and **1 stone = Branch A** / **10 stones = Branch B**; the server (`MoveServlet.java:514-544`) accepts it only at the move-4 decision point. `renjuOffers` (comma-separated indices) is the SELECTION render source. `renjuSwaps` (the §2.1 base-3 `RenjuOpeningState` word) the client does **not** decode — the server already shipped the resolved `renjuPhase`; `renjuSwaps` is only needed for archival/opening-replay rendering (deferred).
+The client submits exactly one of the three actions per phase (`swap` / `move` / `select` + plain `MOVE`/`COMPLETE`). **Branch A vs Branch B is inferred from the `move` stone count alone** (1 = Branch A move 5 in the 9×9; 10 = Branch B offers, validated and persisted atomically) — there is no separate branch or offer request, and declining the move-4 swap is implicit in sending the `move`. Under the single-request contract Branch B and its ten offers travel as that one branch-point `move`, so the client never has to act on a standalone `OFFERS` phase. `renjuOffers` (comma-separated indices) is the `SELECTION` render source. `renjuSwaps` (the §2.1 base-3 `RenjuOpeningState` word) the client does **not** decode — the server already shipped the resolved `renjuPhase`; `renjuSwaps` is only needed for archival/opening-replay rendering (deferred).
 
 ### 12.3 File-by-file map (the real work)
 **(TB)** = turn-based/offline screen; **(both)** = shared `rules/` registry (already covered for live by §10.3 steps 1–2 — reuse, don't duplicate).
@@ -1437,7 +1423,7 @@ A phase-driven client **prefers the granular per-phase actions** above (`swap`/`
    - **Replay + colour dispatch** `:1320-1362` **and** `:1480-1503`: add a `"Renju"`/`"Speed Renju"` arm in **both** → `boardView.setBackgroundColor(boardView.renjuColor)` + a new **black-first** `replayRenjuGame(…)`.
    - **`replayRenjuGame`** — a black-first clone of `replayGomokuGame`: `color = 2 - (i % 2)` (i=0 → value 2 = black) and `move / gridSize`, `move % gridSize` (**not** `/19`,`%19`).
    - **Fix the decode bug:** replace hardcoded `/19`,`%19` with `/gridSize`,`%gridSize` at the 13+ sites (`:1380,1532,1541,1571,1593,1619,1639,1661,1680,1695,1704,1737,2316`); allocate `abstractBoard` (`:97+`) from `gridSize` instead of the literal 19×19.
-   - **`submitMove` + `SubmitMoveTask`** (`:915`, `:530-538`): overload to carry `renjuAction` and append `&renjuAction=<swap|branch|offer|select|move4>` to the `tb/game` URL (omit it entirely for plain `MOVE`/`COMPLETE` moves).
+   - **`submitMove` + `SubmitMoveTask`** (`:915`, `:530-538`): overload to carry `renjuAction` and append `&renjuAction=<swap|move|select>` to the `tb/game` URL (omit it entirely for plain `MOVE`/`COMPLETE` moves).
 4. **`app/.../net/OkHttpPenteApi.java`** *(TB)* — `submitMove:163-176`: overload `submitMove(gid, moves, message, renjuAction)` → `.addQueryParameter("renjuAction", action)`. **Resolve first** which submit path `BoardActivity` actually uses (`Game.SubmitMoveTask` vs `OkHttpPenteApi`) and wire `renjuAction` into that one (verify).
 5. **`app/.../BoardView.java`** *(TB)* —
    - `:37-43`: add `renjuColor = Color.parseColor("#D98880")`.
@@ -1463,27 +1449,23 @@ A normal mid-opening read (white's swap window after black's move 2): `"renjuPha
 
 | intent | `moves` | `renjuAction` | resulting query tail |
 |---|---|---|---|
-| take over opponent's side (no stone) | `1` | `swap` | `…&moves=1&renjuAction=swap` |
-| decline window 1–3 + place next opening stone (e.g. move 2 @113) | `0,113` | `swap` | `…&moves=0,113&renjuAction=swap` |
-| decline the move-4 swap (no bundled stone) | `0` | `swap` | `…&moves=0&renjuAction=swap` |
-| choose Branch A (then place move 5 as a plain move) | `1` | `branch` | `…&moves=1&renjuAction=branch` |
-| choose Branch B (then send the 10 offers) | `2` | `branch` | `…&moves=2&renjuAction=branch` |
-| Branch B: the ten 5th-move offers (exactly 10) | `113,114,115,116,128,129,130,131,144,145` | `offer` | `…&moves=113,…,145&renjuAction=offer` |
-| white selects 5th move @130 | `130` | `select` | `…&moves=130&renjuAction=select` |
-| Branch-A move 5 @130 (after Branch A chosen) | `130` | _(none)_ | `…&command=move&moves=130` |
-| _(fold)_ move-4 decline + Branch A move 5 @130 in one shot (`d=1`) | `1,130` | `move4` | `…&moves=1,130&renjuAction=move4` |
-| _(fold)_ move-4 decline + Branch B 10 offers in one shot (`d=1`) | `1,113,114,115,116,128,129,130,131,144,145` | `move4` | `…&moves=1,113,…,145&renjuAction=move4` |
+| take over opponent's side (no stone) | _(none)_ | `swap` | `…&renjuAction=swap` |
+| decline window 1–3 + place next opening stone (e.g. move 2 @113) | `113` | `move` | `…&moves=113&renjuAction=move` |
+| move-4 Branch A: place move 5 @130 (9×9) | `130` | `move` | `…&moves=130&renjuAction=move` |
+| move-4 Branch B: the ten 5th-move offers (10 stones, atomic) | `113,114,115,116,128,129,130,131,144,145` | `move` | `…&moves=113,…,145&renjuAction=move` |
+| white commits chosen 5th @130 + own move 6 @131 | `130,131` | `select` | `…&moves=130,131&renjuAction=select` |
+| Branch-A move 5 @130 (server-shipped `MOVE` phase) / any `COMPLETE` move | `130` | _(none)_ | `…&command=move&moves=130` |
 
-The server validates authoritatively (central squares, forbidden points, offer distinctness/D4-symmetry) and throws `InvalidMoveException` → the page shows **"Invalid move"**; client-side checks are UX only. The ten Branch-B offers are **NOT** box-constrained (any in-bounds, empty, non-D4-symmetric point — corners legal); only the **Branch-A move 5** is restricted to the 9×9 (§10.5 has the client-side D4 dedup algorithm if you want instant feedback).
+**Branch A vs B is inferred from the `move` stone count** (1 vs 10); declining a swap is implicit in sending a `move`, and `swap` is always a take-over with no `moves` payload. The 2-stone `select` and the 10-stone Branch-B `move` are both pre-validated before any mutation (no half-applied opening). The server validates authoritatively (central squares, forbidden points, offer distinctness/D4-symmetry) and throws `InvalidMoveException` → the page shows **"Invalid move"**; client-side checks are UX only. The ten Branch-B offers are **NOT** box-constrained (any in-bounds, empty, non-D4-symmetric point — corners legal); only the **Branch-A move 5** is restricted to the 9×9 (§10.5 has the client-side D4 dedup algorithm if you want instant feedback).
 
 ### 12.5 Opening UI on the TB board (driven by the read `renjuPhase`)
 **There IS a precedent** (correcting §10.2b): the TB screen already reads an opening-state field (`dPenteState`, `Game.java:1021`) and shows yes/no opening controls (`R.id.dPenteLayout` two-button choice + `R.id.swap2PassButton`, `BoardActivity:96-127`), submitting via `game.submitMove(...)`. Renju reuses that exact shape — read `renjuPhase` → show control → `submitMove` with `renjuAction`. The **swap windows are essentially the existing pattern**; only the branch/offer/selection board-interaction is genuinely new (no multi-select / zone-highlight precedent on this screen).
 
 - **Central-box placement highlight** (new `Canvas` layer in `BoardView.drawBoard`) — highlight only the legal cells of the N×N square about center 112 for the current opening move: **moves 2/3/4/5 → 3×3 / 5×5 / 7×7 / 9×9** (radius 1/2/3/4). Applies during `MOVE` placement **and** the decline-and-place action of a `SWAP` window (the bundled stone is constrained to the same square). **Only single-stone placements (moves 2–5, incl. Branch-A move 5) are box-constrained** — do **not** box the Branch-B offer picker.
-- **Swap prompt** (`SWAP` phase) — mirror `dPenteLayout`/`swap2PassButton` (`AlertDialog`/bottom-gravity buttons): "Swap (take over)" → submit `swap`/`1`; "Don't swap" → in windows 1–3, tap the highlighted square to place the bundled stone → `swap`/`0,<move>`; at move 4 a decline carries **no** stone → `swap`/`0` (server advances to `BRANCH`).
-- **Branch choice** (`BRANCH` phase, after a take-over) — a two-option control: "Continue (place 5th move)" → submit `branch`/`1` (Branch A), then the next read phase is `MOVE` → place move 5 in the 9×9 as a **plain move**; "Offer 10" → submit `branch`/`2` (Branch B), then the next phase is `OFFERS` → enter the offer picker.
-- **10-pick multi-select** (`OFFERS` phase) — tap to add a candidate (move 5 is **black**, so render it translucent via `drawStone` **value 4** / `setAlpha(180)`), tap again to remove, `n/10` counter, submit button (exactly 10). Whole board allowed (minus occupied + D4-duplicate). Submit `offer`/`<s1>,…,<s10>`.
-- **White selection** (`SELECTION` phase) — render the `renjuOffers` indices as translucent-black candidates (**value 4**); white taps one → solidify it to value **2** (black), the rest stay translucent → submit `select`/`<move>`.
+- **Swap prompt** (`SWAP` phase) — mirror `dPenteLayout`/`swap2PassButton` (`AlertDialog`/bottom-gravity buttons): "Swap (take over)" → submit `renjuAction=swap` with **no `moves` payload**; "Don't swap" → in windows 1–3, tap the highlighted square to place the next stone → a one-stone `renjuAction=move`. At move 4 the "Don't swap" path *is* the branch: place 1 stone (Branch A move 5, 9×9) or 10 stones (Branch B offers) as a single `renjuAction=move` (see Branch choice below).
+- **Branch choice** (`SWAP` at move 4, or `BRANCH` after a take-over) — branch is chosen by the **stone count of one `renjuAction=move`**: "Continue (place 5th move)" → place move 5 in the 9×9 as a one-stone `move` (Branch A); "Offer 10" → open the 10-pick and send the ten as a ten-stone `move` (Branch B, atomic). There is no separate branch request and no standalone `OFFERS` phase to wait on.
+- **Branch-B 10-pick multi-select** (the move-4 branch point) — tap to add a candidate (move 5 is **black**, so render it translucent via `drawStone` **value 4** / `setAlpha(180)`), tap again to remove, `n/10` counter, submit button (exactly 10). Whole board allowed (minus occupied + D4-duplicate). Submit the ten as a single `renjuAction=move`, `moves=<s1>,…,<s10>` (10 stones = Branch B, validated atomically).
+- **White selection** (`SELECTION` phase) — render the `renjuOffers` indices as translucent-black candidates (**value 4**); white taps one to choose move 5 → solidify it to value **2** (black), the rest clear, **then places its own move 6** anywhere legal → submit both as one atomic `renjuAction=select`, `moves=<m5>,<m6>` → opening complete.
 
 ### Could NOT confirm (carry into QA / verify before relying on)
 - **Exact `gameName` string for Renju ids 31/32/81** — **RESOLVED:** the server ships `gameName="Renju"` for **both** 31 and 81 and `"Speed Renju"` for 32 (`GridStateFactory.java:135-137`). `parseGame` board-sizing and the replay/colour dispatch (`:1320-1362`, `:1480-1503`) match those exact `mGameType` strings; there is **no "TB Renju"** string. **(confirmed)**
