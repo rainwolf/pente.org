@@ -1,7 +1,6 @@
 package org.pente.turnBased.web;
 
 import org.pente.game.RenjuState;
-import org.pente.game.RenjuOpeningState;
 
 /**
  * Pure (no I/O) resolver for the turn-based Renju opening wire contract.

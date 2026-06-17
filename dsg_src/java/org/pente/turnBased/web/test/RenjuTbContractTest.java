@@ -135,6 +135,15 @@ public class RenjuTbContractTest extends TestCase {
         } catch (RenjuContractException e) { /* ok */ }
     }
 
+    public void testMoveRejectedWhenComplete() {
+        RenjuState s = swapWindow(4);
+        s.forceOpeningComplete();
+        try {
+            RenjuTbContract.resolve("move", new int[]{ 130 }, s);
+            fail("expected rejection: opening complete");
+        } catch (RenjuContractException e) { /* ok */ }
+    }
+
     // --- select: atomic 2-stone ---
 
     public void testSelectCommitsTwoStones() throws Exception {
@@ -169,6 +178,13 @@ public class RenjuTbContractTest extends TestCase {
         try {
             RenjuTbContract.resolve("select", new int[]{130}, selection());
             fail("expected rejection: select needs 2 stones");
+        } catch (RenjuContractException e) { /* ok */ }
+    }
+
+    public void testSelectRejectedWhenNotSelecting() {
+        try {
+            RenjuTbContract.resolve("select", new int[]{ 130, 200 }, swapWindow(2));
+            fail("expected rejection: not awaiting selection");
         } catch (RenjuContractException e) { /* ok */ }
     }
 
