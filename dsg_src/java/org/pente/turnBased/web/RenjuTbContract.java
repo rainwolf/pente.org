@@ -16,6 +16,7 @@ public final class RenjuTbContract {
 
     /** A contract violation; the message is surfaced verbatim via handleError. */
     public static final class RenjuContractException extends Exception {
+        private static final long serialVersionUID = 1L;
         public RenjuContractException(String message) { super(message); }
     }
 
@@ -64,8 +65,9 @@ public final class RenjuTbContract {
             // no forbidden points, so no further restriction. Checked on the
             // 4-stone board (offers are not placed); the 9 unchosen offers are
             // discarded, so m6 may legally land on a former offer != m5.
-            if (m6 == m5 || pending.outOfBoundsPublic(m6) || pending.getPosition(m6) != 0) {
-                throw new RenjuContractException("Invalid selection or 6th move.");
+            if (m6 == m5 || pending.isOutOfBounds(m6) || pending.getPosition(m6) != 0) {
+                throw new RenjuContractException(
+                        "Your 6th move must be an empty board point different from your 5th.");
             }
             return new Decision(Kind.SELECT, false, new int[]{ m5, m6 });
         }
@@ -80,6 +82,15 @@ public final class RenjuTbContract {
 
             if (branchPoint) {
                 if (n == 1) {
+                    // Pre-validate the bundled move 5 read-only (no mutation on
+                    // rejection): wouldAcceptDeclinedOpeningMove checks in-bounds,
+                    // empty, current player, and the 9x9 central-square restriction
+                    // for BOTH the fresh-decline (swap pending) and post-take-over
+                    // (branch pending) states. Mirrors Branch B's wouldAcceptFifthOffers.
+                    if (!pending.wouldAcceptDeclinedOpeningMove(moves[0])) {
+                        throw new RenjuContractException(
+                                "Branch A move 5 must be an empty point inside the 9x9 center.");
+                    }
                     return new Decision(Kind.BRANCH_A, declineSwap, new int[]{ moves[0] });
                 } else if (n == 10) {
                     if (!pending.wouldAcceptFifthOffers(moves)) {

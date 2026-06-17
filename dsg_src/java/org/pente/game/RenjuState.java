@@ -221,7 +221,7 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
     }
 
     /** Public bounds check for callers validating a candidate point. */
-    public boolean outOfBoundsPublic(int move) {
+    public boolean isOutOfBounds(int move) {
         return outOfBounds(move);
     }
 

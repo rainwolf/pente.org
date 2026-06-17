@@ -105,6 +105,16 @@ public class RenjuTbContractTest extends TestCase {
         assertTrue(!d.declineSwap); // junit-3.7 has no assertFalse
     }
 
+    // --- move: branch A rejects a move 5 outside the 9x9 center ---
+
+    public void testBranchARejectsStoneOutsideCenter() {
+        try {
+            // 0 = (0,0): a far corner, well outside the 9x9 central square.
+            RenjuTbContract.resolve("move", new int[]{ 0 }, swapWindow(4));
+            fail("expected rejection: branch A move 5 outside the 9x9 center");
+        } catch (RenjuContractException e) { /* ok */ }
+    }
+
     // --- move: branch B (10 stones) ---
 
     public void testMoveBranchBTenOffers() throws Exception {
