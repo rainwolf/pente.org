@@ -1056,22 +1056,20 @@
    }
    function renjuRenderSelection() {
       renjuRedrawBoard();
-      // dim every offered candidate, then highlight the chosen pair
-      for (var k = 0; k < renjuOfferedMoves.length; k++) {
-         var m = renjuOfferedMoves[k];
-         if (m !== renjuSel[0]) {
-            drawDeadStone(m, 2); // unpicked candidates -> translucent black
+      if (renjuSel.length === 0) {
+         // nothing picked yet -> show all 10 offered candidates as translucent black
+         for (var k = 0; k < renjuOfferedMoves.length; k++) {
+            drawDeadStone(renjuOfferedMoves[k], 2);
          }
-      }
-      if (renjuSel.length >= 1) {
-         // chosen black 5th -> solid black
+      } else {
+         // a black 5th is chosen -> hide the 9 unchosen offers; draw only the pick(s)
          var m5 = renjuSel[0];
-         drawStone(m5 % gridSize, Math.floor(m5 / gridSize), 2);
-      }
-      if (renjuSel.length >= 2) {
-         // your white 6th -> solid white
-         var m6 = renjuSel[1];
-         drawStone(m6 % gridSize, Math.floor(m6 / gridSize), 1);
+         drawStone(m5 % gridSize, Math.floor(m5 / gridSize), 2); // chosen black 5th -> solid black
+         if (renjuSel.length >= 2) {
+            // your white 6th -> solid white
+            var m6 = renjuSel[1];
+            drawStone(m6 % gridSize, Math.floor(m6 / gridSize), 1);
+         }
       }
    }
 
