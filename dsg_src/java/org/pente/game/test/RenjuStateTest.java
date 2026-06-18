@@ -30,6 +30,18 @@ public class RenjuStateTest extends TestCase {
         for (int m : moves) s.addMove(m);
     }
 
+    // Raw 15x15 move encoding (no RenjuState needed), for building reconstruct move lists.
+    private int xy(int x, int y) {
+        return x + y * 15;
+    }
+
+    // A MoveData move list (used by RenjuState.reconstruct) built from raw moves.
+    private SimpleGridState movesData(int... mv) {
+        SimpleGridState s = new SimpleGridState(15, 15);
+        for (int m : mv) s.addMove(m);
+        return s;
+    }
+
     // Black plays color 1 (even move indices), white color 2 (odd).
     // Interleave with throwaway white stones far from the action.
     public void testBlackExactFiveWins() {
@@ -47,7 +59,8 @@ public class RenjuStateTest extends TestCase {
 
     public void testBlackOverlineNotWin() {
         RenjuState s = newState();
-        // black 6 in a row (3..8,7) — not a win for black
+        // black 6 in a row (3..8,7) — NOT a win for black. Under Renju an overline is a
+        // forbidden point, so completing it ends the game with WHITE the winner.
         add(s,
             xy(s, 3, 7), xy(s, 0, 0),
             xy(s, 4, 7), xy(s, 1, 0),
@@ -55,7 +68,8 @@ public class RenjuStateTest extends TestCase {
             xy(s, 6, 7), xy(s, 3, 0),
             xy(s, 7, 7), xy(s, 4, 0),
             xy(s, 8, 7));
-        assertTrue(!s.isGameOver());
+        assertTrue(s.isGameOver());
+        assertEquals(2, s.getWinner()); // overline is a black loss, not a black win
     }
 
     public void testWhiteFiveWins() {
@@ -85,12 +99,12 @@ public class RenjuStateTest extends TestCase {
         assertEquals(2, s.getWinner());
     }
 
-    // After enough moves to be "post-opening", black may not play a double-three.
-    public void testForbiddenMoveBlockedForBlack() {
+    // Post-opening, a black double-three is now a LEGAL (but losing) move: black may
+    // play it, and doing so immediately ends the game with white the winner.
+    public void testForbiddenMoveLosesForBlack() {
         RenjuState s = newState();
-        // Build a black double-three around (7,7) with interleaved harmless white moves,
-        // then assert black cannot play (7,7). Black stones: (5,7),(6,7),(7,5),(7,6).
-        // Sequence so that it is black's turn (color 1) to play (7,7).
+        // Build a black double-three around (7,7) with interleaved harmless white moves.
+        // Black stones: (5,7),(6,7),(7,5),(7,6). Sequence so it is black's turn at (7,7).
         add(s,
             xy(s, 5, 7), xy(s, 0, 0),   // b, w
             xy(s, 6, 7), xy(s, 0, 1),   // b, w
@@ -98,9 +112,31 @@ public class RenjuStateTest extends TestCase {
             xy(s, 7, 6), xy(s, 0, 3));  // b, w  -> 8 moves, next is black (color 1)
         s.forceOpeningComplete(); // test hook (see implementation)
         int forbidden = xy(s, 7, 7);
-        assertTrue(!s.isValidMove(forbidden, 1));
-        // a normal empty non-forbidden point is fine for black
+        assertTrue(s.isValidMove(forbidden, 1));      // forbidden point is now a legal move
+        // a normal empty non-forbidden point is also fine for black
         assertTrue(s.isValidMove(xy(s, 12, 12), 1));
+        s.addMove(forbidden);                          // black plays the double-three
+        assertTrue(s.isGameOver());                    // immediate game over
+        assertEquals(2, s.getWinner());                // white wins
+    }
+
+    // A black OVERLINE (six in a row) is also a forbidden point and an immediate loss.
+    public void testOverlineMoveLosesForBlack() {
+        RenjuState s = newState();
+        // Black stones (3,7),(4,7),(5,7),(7,7),(8,7); playing (6,7) makes six in a row.
+        // White fillers spaced in column 0 so they never make five themselves.
+        add(s,
+            xy(s, 3, 7), xy(s, 0, 0),   // b, w
+            xy(s, 4, 7), xy(s, 0, 2),   // b, w
+            xy(s, 5, 7), xy(s, 0, 4),   // b, w
+            xy(s, 7, 7), xy(s, 0, 6),   // b, w
+            xy(s, 8, 7), xy(s, 0, 8));  // b, w  -> 10 moves, next is black (color 1)
+        s.forceOpeningComplete();
+        int overline = xy(s, 6, 7);
+        assertTrue(s.isValidMove(overline, 1));        // overline point is a legal move
+        s.addMove(overline);                           // black makes six in a row
+        assertTrue(s.isGameOver());
+        assertEquals(2, s.getWinner());                // white wins (overline is forbidden)
     }
 
     public void testForbiddenPointNotBlockedForWhite() {
@@ -299,9 +335,10 @@ public class RenjuStateTest extends TestCase {
     // End-to-end: a full legal Taraguchi-10 Branch A opening with NO forceOpeningComplete.
     // Center, then 3x3/5x5/7x7 moves each followed by a declined swap, chooseBranch(false),
     // a 9x9 move 5, a declined swap, and move 6 anywhere -> opening naturally completes.
-    // Afterwards the post-opening forbidden switch must be live: a black double-three point
-    // (built far from the opening with extra post-opening stones) is rejected by isValidMove.
-    public void testNaturalOpeningThenForbiddenSwitchesOn() {
+    // Afterwards the post-opening forbidden rule must be live: a black double-three point
+    // (built far from the opening with extra post-opening stones) is a legal but losing
+    // move -- playing it ends the game with white the winner.
+    public void testNaturalOpeningThenForbiddenLoses() {
         RenjuState s = newState();
         s.addMove(xy(s, 7, 7)); s.renjuSwapDecisionMade(false); // 1 black (center)
         s.addMove(xy(s, 8, 8)); s.renjuSwapDecisionMade(false); // 2 white (3x3)
@@ -321,8 +358,38 @@ public class RenjuStateTest extends TestCase {
         s.addMove(xy(s, 3, 2));  s.addMove(xy(s, 14, 3)); // b,w
         assertEquals(1, s.getCurrentColor());             // black to move
 
-        assertTrue(!s.isValidMove(xy(s, 3, 3), 1));       // double-three now forbidden
-        assertTrue(s.isValidMove(xy(s, 12, 12), 1));      // ordinary empty point is fine
+        assertTrue(s.isValidMove(xy(s, 3, 3), 1));        // double-three is a legal (losing) move
+        assertTrue(s.isValidMove(xy(s, 12, 12), 1));      // ordinary empty point is fine too
+        s.addMove(xy(s, 3, 3));                            // black plays the forbidden point
+        assertTrue(s.isGameOver());                       // immediate loss
+        assertEquals(2, s.getWinner());                   // white wins
+    }
+
+    // Reconstruct a stored game whose LAST move is a black forbidden point: a full Branch A
+    // opening (swaps declined) followed by post-opening play ending in a black double-three
+    // at (3,3). RenjuState.reconstruct replays the moves; the rebuilt state must report the
+    // game over with white the winner (the forbidden-loss verdict survives persistence).
+    public void testReconstructBlackForbiddenLastMoveWhiteWins() {
+        SimpleGridState md = movesData(
+            xy(7, 7), xy(8, 8), xy(9, 7), xy(6, 8), xy(11, 7), xy(13, 13), // opening 1-6
+            xy(1, 3), xy(14, 0),    // 7 black, 8 white
+            xy(2, 3), xy(14, 1),    // 9 black, 10 white
+            xy(3, 1), xy(14, 2),    // 11 black, 12 white
+            xy(3, 2), xy(14, 3),    // 13 black, 14 white
+            xy(3, 3));              // 15 black -> forbidden double-three
+        RenjuOpeningState st = new RenjuOpeningState();
+        st.swap1 = RenjuOpeningState.NO;
+        st.swap2 = RenjuOpeningState.NO;
+        st.swap3 = RenjuOpeningState.NO;
+        st.swap4 = RenjuOpeningState.NO;
+        st.branch = RenjuOpeningState.NO;   // Branch A
+        st.swap5 = RenjuOpeningState.NO;
+        RenjuState s = RenjuState.reconstruct(md, st.encode(), null);
+
+        assertEquals(15, s.getNumMoves());
+        assertTrue(s.isOpeningComplete());
+        assertTrue(s.isGameOver());
+        assertEquals(2, s.getWinner());     // white wins
     }
 
     // selectFifthMove with a move that was never offered -> IllegalArgumentException.

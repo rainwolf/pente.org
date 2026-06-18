@@ -7,7 +7,8 @@ import java.util.List;
 /**
  * Renju rules + Taraguchi-10 opening, as a decorator over a SimpleGomokuState.
  * Black (color 1) wins only on exactly five; white (color 2) wins on five or more.
- * Black may not play a forbidden point (overline / double-four / double-three).
+ * Black playing a forbidden point (overline / double-four / double-three) is a legal
+ * but immediately losing move: the game ends at once with white the winner.
  */
 public class RenjuState extends GridStateDecorator implements GomokuState, HashCalculator {
 
@@ -186,12 +187,16 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
         int lastColor = getColor(n - 1); // 1 = black, 2 = white
 
         // Re-evaluate the last move as if just placed: temporarily clear it in the finder.
+        // isForbidden/isFive only inspect EMPTY points (they set/clear the stone
+        // themselves), so the stone must be cleared for the duration of this window.
         finder.setStone(c.x, c.y, RenjuForbiddenPointFinder.EMPTY);
+        boolean forbidden = (lastColor == 1) && finder.isForbidden(c.x, c.y);
         boolean five = finder.isFive(c.x, c.y, lastColor == 1 ? 0 : 1);
         // restore
         finder.setStone(c.x, c.y,
                 lastColor == 1 ? RenjuForbiddenPointFinder.BLACK : RenjuForbiddenPointFinder.WHITE);
 
+        if (forbidden) return true; // black played a forbidden point -> game over (white wins)
         if (five) return true;
         return drawCheck(n);
     }
@@ -208,9 +213,11 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
         Coord c = convertMove(lastMove);
         int lastColor = getColor(n - 1);
         finder.setStone(c.x, c.y, RenjuForbiddenPointFinder.EMPTY);
+        boolean forbidden = (lastColor == 1) && finder.isForbidden(c.x, c.y);
         boolean five = finder.isFive(c.x, c.y, lastColor == 1 ? 0 : 1);
         finder.setStone(c.x, c.y,
                 lastColor == 1 ? RenjuForbiddenPointFinder.BLACK : RenjuForbiddenPointFinder.WHITE);
+        if (forbidden) return 2; // black played a forbidden point -> white wins
         return five ? lastColor : 0;
     }
 
@@ -554,11 +561,10 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
             return withinOpeningSquare(move, n);
         }
 
-        // post-opening: block black forbidden points
-        if (getCurrentColor() == 1) {
-            Coord c = convertMove(move);
-            return !finder.isForbidden(c.x, c.y);
-        }
+        // Post-opening: any empty in-bounds point is legal. A black forbidden point
+        // (overline / double-four / double-three) is NOT rejected here -- under Renju
+        // rules black is allowed to play it, and doing so is an immediate loss. The
+        // game-over / winner verdict is reported by isGameOver()/getWinner().
         return true;
     }
 
