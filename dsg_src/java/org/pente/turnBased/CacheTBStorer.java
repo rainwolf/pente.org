@@ -938,15 +938,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                     double k = (game.getGame() == GridStateFactory.TB_GO ||
                             game.getGame() == GridStateFactory.TB_GO13 ||
                             game.getGame() == GridStateFactory.TB_GO9 ||
-                            game.getGame() == GridStateFactory.TB_SWAP2PENTE ||
-                            game.getGame() == GridStateFactory.TB_SWAP2KERYO) ? 32 : 64;
-                    if (game.getGame() == GridStateFactory.TB_SWAP2PENTE) {
-                        if (set.getGame2() == null) {
-                            k = 32;
-                        } else {
-                            k = 64;
-                        }
-                    }
+                            game.getGame() == GridStateFactory.TB_RENJU) ? 32 : 64;
                     GameOverUtilities.updateGameData(dsgPlayerStorer, winnerData,
                             winnerData.getPlayerGameData(game.getGame(), false),
                             loserData,

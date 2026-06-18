@@ -2672,7 +2672,8 @@ public class ServerTable {
 
         boolean single_game = (game.getId() == GridStateFactory.GO || game.getId() == GridStateFactory.SPEED_GO
                 || game.getId() == GridStateFactory.GO9 || game.getId() == GridStateFactory.SPEED_GO9
-                || game.getId() == GridStateFactory.GO13 || game.getId() == GridStateFactory.SPEED_GO13);
+                || game.getId() == GridStateFactory.GO13 || game.getId() == GridStateFactory.SPEED_GO13
+                || game.getId() == GridStateFactory.RENJU || game.getId() == GridStateFactory.SPEED_RENJU);
 
         if (rated && set != null) {
             if (set.getG1Gid() == 0 && !single_game) {
@@ -3531,13 +3532,14 @@ public class ServerTable {
         }
 
         boolean updateRatings = isComputerGame;
-        boolean isGo = game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO
+        boolean k32Game = game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO
                 || game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9
-                || game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13;
+                || game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13
+                || game == GridStateFactory.RENJU || game == GridStateFactory.SPEED_RENJU;
         if (gameData.getRated() && localSet != null) {
             if (localSet.getG1Gid() == 0) {
                 localSet.setG1(gameData);
-                if (isGo) {
+                if (k32Game) {
                     updateRatings = true;
                 }
             } else {
@@ -3598,7 +3600,7 @@ public class ServerTable {
                         loserPlayerData.getPlayerGameData(game, true);
 
                 try {
-                    double k = isGo ? 32 : 64;
+                    double k = k32Game ? 32 : 64;
                     GameOverUtilities.updateGameData(
                             dsgPlayerStorer,
                             winnerPlayerData, winnerPlayerGameData,
@@ -3618,7 +3620,7 @@ public class ServerTable {
                 double loserRatingBefore = loserPlayerGameData.getRating();
 
                 try {
-                    double k = isGo ? 32 : 64;
+                    double k = k32Game ? 32 : 64;
                     GameOverUtilities.updateGameData(
                             dsgPlayerStorer,
                             winnerPlayerData, winnerPlayerGameData,
@@ -3711,7 +3713,7 @@ public class ServerTable {
                         loserPlayerData.getPlayerGameData(game, true);
 
                 try {
-                    double k = isGo ? 32 : 64;
+                    double k = k32Game ? 32 : 64;
                     GameOverUtilities.updateGameData(
                             dsgPlayerStorer,
                             winnerPlayerData, winnerPlayerGameData,
