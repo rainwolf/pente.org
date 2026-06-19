@@ -21,6 +21,8 @@
       <li><a href="#go"><b>Go Rules</b></a></li>
       <li><a href="#opente"><b>O-Pente Rules</b></a></li>
       <li><a href="#swap2pente"><b>Swap2-Pente Rules</b></a></li>
+      <li><a href="#swap2keryo"><b>Swap2 Keryo-Pente Rules</b></a></li>
+      <li><a href="#renju"><b>Renju (Taraguchi-10) Rules</b></a></li>
       <li><a href="#speed"><b>Speed Games</b></a></li>
    </ul>
    <br>
@@ -174,6 +176,19 @@
       <li>play as player 2, or,</li>
       <li>plays 2 more stones and lets player 1 decide to play as player 1 or 2.</li>
    </ul>
+   <br>
+   <br>
+   <a name="swap2keryo"><u>Swap2 Keryo-Pente</u></a>
+   Swap2 Keryo-Pente is Keryo-Pente with swap2 opening rules.
+   <br>
+   <br>
+   <a name="renju"><u>Renju (Taraguchi-10)</u></a><br>
+   Renju is a variation of Gomoku that was invented in Japan.
+   The rules are similar to Gomoku, but there are some restrictions on player 1's moves.
+   Player 1 is not allowed to make certain moves that would give them an unfair advantage.
+   The game is played on a 15x15 board, and the first player to get 5 in a row wins.
+   Here's <a href="https://www.renju.net/rules/"> more detailed overview of the rules</a> as well
+   as a description of <a href="https://www.renju.net/rule/25/">Taraguchi-10</a>.
    The game is not played in a set, a single game decides the winner.
 
    <br>
