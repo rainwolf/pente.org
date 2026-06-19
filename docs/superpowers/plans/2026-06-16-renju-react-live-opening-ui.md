@@ -330,8 +330,15 @@ git commit -m "feat(renju): pure renjuPhase classifier + opening-player + modal-
 ## Task 3: `boardGeometry.js` — register ids 31/32/81
 
 **Files:**
-- Modify: `src/game/boardGeometry.js`
-- Test: `src/game/__tests__/boardGeometry.test.js` (extend existing)
+- Modify: `src/game/boardGeometry.js`, `src/Classes/Utils.js` (VARIANT_NAMES), `src/App.css` (`.renju` class)
+- Test: `src/game/__tests__/boardGeometry.test.js` (extend + **update** the obsolete `STANDARD_GAME_IDS` assertions)
+
+> **Plan correction (found during execution):** registering id 31 in the picker is not just a one-liner. Three existing things pin the old `STANDARD_GAME_IDS`/names and must be reconciled, or the picker shows a blank name:
+> 1. `boardGeometry.test.js` asserts `STANDARD_GAME_IDS` `toEqual([1..29])`, `toHaveLength(15)`, `.not.toContain(31)`, and `new Set(map(variantKey)).size === 13` → update to length **16**, contains **31**, distinct keys **14**.
+> 2. `src/Classes/Utils.js` `VARIANT_NAMES` has no `'renju'` key → `game_name(31)`/`game_name(32)` produce `undefined`/`'Speed undefined'`. Add `'renju': 'Renju'`.
+> 3. `utils.test.js` loops `STANDARD_GAME_IDS` asserting `game_name(id)`/`game_name(id+1)` are `'undefined'`-free strings — passes once (2) is done (no edit needed).
+> 4. `src/Classes/TableClass.js` `VARIANT_COLORS` (per-variantKey lobby-card colour) has the SAME failure mode — `tableClass.test.js` loops `g=1..32` asserting `table_color()` is a string. Add `'renju': '<color>'` matching the `.renju` fill. (Done in execution as `#D98880`. Note the file is git-tracked lowercase as `src/Classes/utils.js`.)
+> The live picker (`SettingsModal.js`, `CreateArenaTableModal.js`) renders `game_name` per id, so (2) is required for renju to be creatable. Edits (c)+(f) below cover this.
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -393,6 +400,9 @@ In `src/game/boardGeometry.js`:
 ```js
 export const STANDARD_GAME_IDS = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31];
 ```
+…and **update the now-obsolete assertions** in `boardGeometry.test.js`: the `STANDARD_GAME_IDS` `toEqual([...])` / `toHaveLength(15)` / `.not.toContain(31)` and the `new Set(STANDARD_GAME_IDS.map(variantKey)).size` `toBe(13)` → length **16**, include **31**, distinct keys **14**.
+
+(f) `src/Classes/Utils.js` — add a `'renju'` display name so `game_name(31)`/`game_name(32)` resolve (the picker renders these): add `'renju': 'Renju',` to the `VARIANT_NAMES` map (keyed by `variantKey`).
 
 (d) `boardSpecialPoints` — add a renju branch at the top:
 ```js
@@ -422,10 +432,8 @@ Expected: PASS (renju + unchanged-variant tests).
 
 - [ ] **Step 5: Commit**
 ```bash
-git add src/game/boardGeometry.js src/game/__tests__/boardGeometry.test.js
-# include the CSS file if edited:
-# git add <the matched .css/.scss file>
-git commit -m "feat(renju): board geometry + picker + star points for ids 31/32/81"
+git add src/game/boardGeometry.js src/game/__tests__/boardGeometry.test.js src/Classes/Utils.js src/App.css
+git commit -m "feat(renju): board geometry + picker name + star points for ids 31/32/81"
 ```
 
 ---
