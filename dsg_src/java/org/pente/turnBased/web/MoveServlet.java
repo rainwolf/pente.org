@@ -380,6 +380,8 @@ public class MoveServlet extends HttpServlet {
                     return;
                 }
 
+                String renjuAction = request.getParameter("renjuAction");
+
                 String msg = request.getParameter("message");
                 TBMessage message = null;
                 if (msg != null && !msg.trim().equals("")) {
@@ -404,6 +406,64 @@ public class MoveServlet extends HttpServlet {
                     }
                 }
 
+                if (game.getGame() == GridStateFactory.TB_RENJU && renjuAction != null) {
+                    RenjuState pending = RenjuState.reconstruct(
+                            game, game.getRenjuSwaps(), game.getRenjuOffers());
+
+                    RenjuTbContract.Decision decision;
+                    try {
+                        decision = RenjuTbContract.resolve(renjuAction, moves, pending);
+                    } catch (RenjuTbContract.RenjuContractException bad) {
+                        handleError(request, response, bad.getMessage());
+                        return;
+                    }
+
+                    boolean storedStone = false;
+                    switch (decision.kind) {
+                        case TAKE_OVER:
+                            tbGameStorer.renjuSwap(game, true);
+                            break;
+
+                        case PLACE:
+                            if (decision.declineSwap) tbGameStorer.renjuSwap(game, false);
+                            tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(), decision.stones[0]);
+                            storedStone = true;
+                            break;
+
+                        case BRANCH_A:
+                            if (decision.declineSwap) tbGameStorer.renjuSwap(game, false);
+                            tbGameStorer.renjuBranch(game, false);
+                            // move 5 — resolver already enforced the 9x9 restriction
+                            // (wouldAcceptDeclinedOpeningMove); this just persists it
+                            tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(), decision.stones[0]);
+                            storedStone = true;
+                            break;
+
+                        case BRANCH_B:
+                            if (decision.declineSwap) tbGameStorer.renjuSwap(game, false);
+                            tbGameStorer.renjuBranch(game, true);
+                            // offers already pre-validated by the resolver (no mutation on bad sets)
+                            TBGame fresh = tbGameStorer.loadGame(game.getGid());
+                            fresh.setRenjuOffers(decision.stones);
+                            tbGameStorer.renjuOffers(fresh);
+                            break;
+
+                        case SELECT:
+                            // atomic: move 5 (black, selected) then move 6 (white).
+                            // dpente-start indexing: pass numMoves then numMoves+1
+                            // (Cache reloads & ignores it; MySQL uses it directly).
+                            tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(),     decision.stones[0]);
+                            tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves() + 1, decision.stones[1]);
+                            storedStone = true;
+                            break;
+                    }
+
+                    if (storedStone && message != null) {
+                        message.setMoveNum(game.getNumMoves() + 1);
+                        tbGameStorer.storeNewMessage(game.getGid(), message);
+                    }
+
+                } else
                 // handle dpente separately
                 if ((game.getGame() == GridStateFactory.TB_DPENTE || game.getGame() == GridStateFactory.TB_DKERYO) &&
                         game.getDPenteState() != TBGame.DPENTE_STATE_DECIDED) {
@@ -683,6 +743,9 @@ public class MoveServlet extends HttpServlet {
                 }
             }
 
+        } catch (InvalidMoveException ime) {
+            log4j.debug("MoveServlet: invalid move, " + gid + ": " + ime.getMessage());
+            handleError(request, response, "Invalid move.");
         } catch (TBStoreException tbe) {
             log4j.error("MoveServlet: " + gid, tbe);
             handleError(request, response, "Database error, please try again later.");

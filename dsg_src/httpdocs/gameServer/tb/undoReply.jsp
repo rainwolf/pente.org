@@ -28,6 +28,8 @@
       gridSize = 9;
    } else if (game.getGame() == GridStateFactory.TB_GO13) {
       gridSize = 13;
+   } else if (game.getGame() == GridStateFactory.TB_RENJU) {
+      gridSize = 15;
    }
 
    DSGPlayerData meData = dsgPlayerStorer.loadPlayer(me);

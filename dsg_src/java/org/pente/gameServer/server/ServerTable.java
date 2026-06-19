@@ -539,6 +539,46 @@ public class ServerTable {
                         player);
             }
 
+            // Renju: tell a (re)joining client the CURRENT opening decision point with
+            // exactly one signal. Seats are already authoritative via sendPlayingPlayers;
+            // this only conveys the phase (the client reconstructs it via
+            // RenjuRejoin.decode(numMoves, signal)). Reaching numMoves=N implies windows
+            // 1..N-1 are already resolved, so only the current window is signalled:
+            //   NONE        -> nothing (swap window still open, or opening complete)
+            //   SILENT_SWAP -> silent DSGSwapSeatsTableEvent (window resolved -> MOVE/BRANCH)
+            //   OFFERS      -> the ten Branch-B offers (selection pending)
+            //   SELECT1     -> the chosen Branch-B move 5 (already selected)
+            // The silent swap-seats event is a PHASE MARKER: its swap bit is the
+            // CURRENT window's resolved decision (NOT net seat orientation -- seats come
+            // from sendPlayingPlayers). It is suppressed when no window has resolved yet
+            // (numMoves==0), mirroring the dPente wasDPenteSwapDecisionMade() guard, to
+            // avoid a meaningless swap=false event on a fresh board. (numMoves==0 is not
+            // a live rejoin state anyway: the centre is auto-placed as move 1.)
+            if (gridState instanceof RenjuState) {
+                RenjuState rs = (RenjuState) gridState;
+                RenjuRejoin.RejoinSignal sig = RenjuRejoin.encode(rs);
+                switch (sig.kind) {
+                    case SILENT_SWAP:
+                        if (rs.isSwapResolvedAt(rs.getNumMoves())) {
+                            dsgEventRouter.routeEvent(
+                                    new DSGSwapSeatsTableEvent(null, tableNum, sig.swapValue, true),
+                                    player);
+                        }
+                        break;
+                    case OFFERS:
+                        sendRenjuBranchBOffers(player);
+                        break;
+                    case SELECT1:
+                        dsgEventRouter.routeEvent(
+                                new DSGRenjuTaraguchi10Select1TableEvent(null, tableNum, sig.move),
+                                player);
+                        break;
+                    case NONE:
+                    default:
+                        break;
+                }
+            }
+
             sendMoves(player);
 
             if (timed && (state == DSGGameStateTableEvent.GAME_IN_PROGRESS ||
@@ -577,6 +617,22 @@ public class ServerTable {
             dsgEventRouter.routeEvent(
                     new DSGMoveTableEvent(tableNum, gridState.getMoves()),
                     toPlayer);
+        }
+    }
+
+    private void sendRenjuBranchBOffers(String player) {
+        if (gridState instanceof RenjuState) {
+            RenjuState rs = (RenjuState) gridState;
+            if (rs.isAwaitingFifthSelection()) {
+                java.util.List<Integer> offers = rs.getOfferedFifthMoves();
+                int[] arr = new int[offers.size()];
+                for (int i = 0; i < arr.length; i++) {
+                    arr[i] = offers.get(i);
+                }
+                dsgEventRouter.routeEvent(
+                        new DSGRenjuTaraguchiOffer10TableEvent(null, tableNum, arr),
+                        player);
+            }
         }
     }
 
@@ -1237,6 +1293,384 @@ public class ServerTable {
         }
     }
 
+    public void handleRenjuSwap(DSGRenjuTaraguchiSwapTableEvent swapEvent) {
+
+        String actor = swapEvent.getPlayer();
+        int move = swapEvent.getMove();
+        int error = NO_ERROR;
+
+        if (!isPlayerInTable(actor)) {
+            error = DSGTableErrorEvent.NOT_IN_TABLE;
+        } else if (!(gridState instanceof RenjuState)) {
+            error = DSGTableErrorEvent.UNKNOWN;
+        } else {
+            int seat = getPlayerSeat(actor);
+            RenjuState rs = (RenjuState) gridState;
+            if (seat == NOT_SITTING) {
+                error = DSGTableErrorEvent.NOT_SITTING;
+            } else if (state != DSGGameStateTableEvent.GAME_IN_PROGRESS) {
+                error = DSGTableErrorEvent.NO_GAME_IN_PROGRESS;
+            } else if (!rs.isAwaitingSwapDecision() && !rs.isAwaitingBranchChoice()) {
+                error = DSGTableErrorEvent.INVALID_MOVE;   // not at a swap/branch window
+            } else if (gridState.getCurrentPlayer() != seat) {
+                error = DSGTableErrorEvent.NOT_TURN;
+            } else if (swapEvent.isSwap() && !rs.isAwaitingSwapDecision()) {
+                // swap=true is valid ONLY while the swap window is open. In the
+                // post-swap branch-choice state the window is already closed, so a
+                // swap request here is illegal: reject with no mutation/broadcast.
+                error = DSGTableErrorEvent.INVALID_MOVE;
+            } else {
+
+                // decision is final; cancel any pending undo (mirror handleSwap)
+                undoRequested = false;
+
+                if (swapEvent.isSwap()) {
+                    // guaranteed isAwaitingSwapDecision() here (guarded above)
+
+                    // take the other side: swap both seat arrays exactly like handleSwap
+                    DSGPlayerData tmp = playingPlayers[1];
+                    playingPlayers[1] = playingPlayers[2];
+                    playingPlayers[2] = tmp;
+                    sittingPlayers[1] = sittingPlayers[2];
+                    sittingPlayers[2] = tmp;
+
+                    // update timers after the swap decision (mirror handleSwap)
+                    if (timed) {
+                        timers[gridState.getCurrentPlayer()].stop();
+                        if (initialMinutes == 0) {
+                            timers[gridState.getCurrentPlayer()].reset();
+                        }
+                        timers[gridState.getCurrentPlayer()].incrementMillis(
+                                (int) pingManager.getPingTime(actor));
+                        int s1 = timers[1].getSeconds();
+                        int m1 = timers[1].getMinutes();
+                        int s2 = timers[2].getSeconds();
+                        int m2 = timers[2].getMinutes();
+                        timers[1].adjust(m2, s2);
+                        timers[2].adjust(m1, s1);
+                    }
+
+                    rs.renjuSwapDecisionMade(true);
+
+                    if (timed) {
+                        if (initialMinutes == 0) {
+                            timers[gridState.getCurrentPlayer()].reset();
+                        }
+                        broadCastPlayerTimer(1);
+                        broadCastPlayerTimer(2);
+                        timers[gridState.getCurrentPlayer()].go();
+                    }
+
+                    // Emit the seat swap as a (non-silent) DSGSwapSeatsTableEvent, exactly like
+                    // handleSwap does for swap2/dPente, so EVERY client (web + mobile) applies the
+                    // visual seat swap through its existing swap-seats handler. The renju swap event
+                    // stays a decision-only echo (used for swap=false declines + Branch A move 5).
+                    broadcastMainRoom(new DSGSwapSeatsTableEvent(actor, tableNum, true, false));
+
+                } else if (rs.isAwaitingSwapDecision()) {
+                    // swap=false at an OPEN swap window (windows 1-5): unchanged.
+
+                    int n = gridState.getNumMoves();
+                    if (n <= 4) {
+                        // bundled-stone windows (move-2/3/4 declines, and the move-4
+                        // decline that continues Branch A): the decline carries the
+                        // next opening stone. Pre-validate that stone BEFORE committing
+                        // anything -- RenjuState.isValidMove() returns false while
+                        // awaitingSwap, so use the pure pre-check. If it fails, reject
+                        // cleanly (nothing committed, nothing broadcast); only on
+                        // success do we commit the decision, choose Branch A at move 4,
+                        // echo the decision, then place the stone via handleMove.
+                        if (!rs.wouldAcceptDeclinedOpeningMove(move)) {
+                            error = DSGTableErrorEvent.INVALID_MOVE;
+                        } else {
+                            rs.renjuSwapDecisionMade(false);
+                            if (n == 4) {
+                                // move-4 window declined -> Branch A
+                                rs.chooseBranch(false);
+                            }
+                            // decision echo (decision-only on the client; the stone
+                            // arrives via the DSGMoveTableEvent that handleMove broadcasts)
+                            broadcastMainRoom(swapEvent);
+                            handleMove(actor, move);
+                        }
+                    } else {
+                        // move-5 window: white declines swap5 and continues to play
+                        // move 6 itself, so getCurrentPlayer() is unchanged (next ==
+                        // seat == white). No bundled stone and no handoff to the other
+                        // player; white's own clock is simply reset/continued. Move 6
+                        // then arrives later as a normal DSGMoveTableEvent.
+                        rs.renjuSwapDecisionMade(false);
+                        broadcastMainRoom(swapEvent);
+                        if (timed) {
+                            timers[seat].stop();
+                            if (initialMinutes == 0) {
+                                timers[seat].reset();
+                            }
+                            timers[seat].incrementMillis((int) pingManager.getPingTime(actor));
+                            int next = gridState.getCurrentPlayer();
+                            if (initialMinutes == 0) {
+                                timers[next].reset();
+                            }
+                            timers[next].go();
+                            // seat == next here (both white, seat 2): broadcast the
+                            // current player's timer once, matching handleSwap2Pass.
+                            broadCastPlayerTimer(next);
+                        }
+                    }
+                } else {
+                    // swap=false in the post-swap branch-choice state (n == 4): the
+                    // move-4 swap was already accepted, so the to-move side (black)
+                    // declines Branch B and continues Branch A by playing move 5 in
+                    // the 9x9. The swap is already resolved -- do NOT call
+                    // renjuSwapDecisionMade, only chooseBranch(false). Pre-validate the
+                    // bundled move 5 BEFORE committing/broadcasting, so a rejected move
+                    // leaves nothing committed and emits no phantom broadcast (same
+                    // no-partial-mutation property as the decline path above). On
+                    // success: choose Branch A, echo the decision, then place move 5
+                    // (which arrives via the DSGMoveTableEvent that handleMove broadcasts).
+                    if (!rs.wouldAcceptDeclinedOpeningMove(move)) {
+                        error = DSGTableErrorEvent.INVALID_MOVE;
+                    } else {
+                        rs.chooseBranch(false);
+                        broadcastMainRoom(swapEvent);
+                        handleMove(actor, move);
+                    }
+                }
+            }
+        }
+
+        if (error != NO_ERROR) {
+            dsgEventRouter.routeEvent(
+                    new DSGMoveTableErrorEvent(actor, tableNum, move, error),
+                    actor);
+        }
+    }
+
+    public void handleRenjuOffer10(DSGRenjuTaraguchiOffer10TableEvent offerEvent) {
+
+        String actor = offerEvent.getPlayer();
+        int[] moves = offerEvent.getMoves();
+        int error = NO_ERROR;
+
+        if (!isPlayerInTable(actor)) {
+            error = DSGTableErrorEvent.NOT_IN_TABLE;
+        } else if (!(gridState instanceof RenjuState)) {
+            error = DSGTableErrorEvent.UNKNOWN;
+        } else {
+            int seat = getPlayerSeat(actor);
+            RenjuState rs = (RenjuState) gridState;
+            boolean atMove4 = !rs.isOpeningComplete() && gridState.getNumMoves() == 4 &&
+                    (rs.isAwaitingSwapDecision() || rs.isAwaitingBranchChoice()
+                            || rs.isAwaitingFifthOffers());
+            if (seat == NOT_SITTING) {
+                error = DSGTableErrorEvent.NOT_SITTING;
+            } else if (state != DSGGameStateTableEvent.GAME_IN_PROGRESS) {
+                error = DSGTableErrorEvent.NO_GAME_IN_PROGRESS;
+            } else if (!atMove4) {
+                error = DSGTableErrorEvent.INVALID_MOVE;   // not at the post-move-4 decision
+            } else if (gridState.getCurrentPlayer() != seat) {
+                error = DSGTableErrorEvent.NOT_TURN;
+            } else if (moves == null || moves.length != 10) {
+                error = DSGTableErrorEvent.INVALID_MOVE;
+            } else {
+
+                undoRequested = false;
+                int offererSeat = gridState.getCurrentPlayer();   // black, the offerer
+
+                if (!rs.wouldAcceptFifthOffers(moves)) {
+                    // Pure pre-check: reject before mutating the swap/branch
+                    // flags, so a bad offer can't leave the player committed to
+                    // Branch B with zero offers (and locked out of Branch A).
+                    error = DSGTableErrorEvent.INVALID_MOVE;
+                } else {
+                    try {
+                        if (rs.isAwaitingSwapDecision()) {
+                            rs.renjuSwapDecisionMade(false);   // decline the move-4 swap
+                        }
+                        if (rs.isAwaitingBranchChoice()) {
+                            rs.chooseBranch(true);             // Branch B
+                        }
+                        rs.offerFifthMoves(moves);             // atomic; throws -> INVALID_MOVE
+                    } catch (RuntimeException ex) {
+                        log4j.info(psid() + "Renju offer10 rejected: " + ex.getMessage());
+                        error = DSGTableErrorEvent.INVALID_MOVE;
+                    }
+                }
+
+                if (error == NO_ERROR) {
+                    // turn + timer pass to the selector (white), mirror handleSwap2Pass
+                    if (timed) {
+                        timers[offererSeat].stop();
+                        if (initialMinutes == 0) {
+                            timers[offererSeat].reset();
+                        }
+                        timers[offererSeat].incrementMillis(
+                                (int) pingManager.getPingTime(actor));
+                        int selector = gridState.getCurrentPlayer();   // white selecting
+                        if (initialMinutes == 0) {
+                            timers[selector].reset();
+                        }
+                        timers[selector].go();
+                        broadCastPlayerTimer(offererSeat);
+                        broadCastPlayerTimer(selector);
+                    }
+                    broadcastMainRoom(offerEvent);
+                    // prompt the selecting player (white) to choose one of the ten offered stones
+                    dsgEventRouter.routeEvent(
+                            new DSGSystemMessageTableEvent(tableNum,
+                                    "Your opponent offered 10 fifth moves — pick one to play as move 5."),
+                            playingPlayers[gridState.getCurrentPlayer()].getName());
+                }
+            }
+        }
+
+        if (error != NO_ERROR) {
+            // The ten-offer commit is atomic (validate-all / commit-none via
+            // offerFifthMoves), so on rejection NO candidate was applied and there is
+            // no single "offending move" the way handleMove has one. We therefore
+            // report move = -1; the client re-sends a corrected ten. (Spec alignment:
+            // Task 7 updates the spec's Error-handling section to state that the
+            // offer10 handler reports -1 for batch rejections, superseding its earlier
+            // "the offending move" wording, which assumed an incremental commit.)
+            dsgEventRouter.routeEvent(
+                    new DSGMoveTableErrorEvent(actor, tableNum, -1, error),
+                    actor);
+        }
+    }
+
+    public void handleRenjuSelect1(DSGRenjuTaraguchi10Select1TableEvent selectEvent) {
+
+        String actor = selectEvent.getPlayer();
+        int move = selectEvent.getMove();
+        int error = NO_ERROR;
+
+        if (!isPlayerInTable(actor)) {
+            error = DSGTableErrorEvent.NOT_IN_TABLE;
+        } else if (!(gridState instanceof RenjuState)) {
+            error = DSGTableErrorEvent.UNKNOWN;
+        } else {
+            int seat = getPlayerSeat(actor);
+            RenjuState rs = (RenjuState) gridState;
+            if (seat == NOT_SITTING) {
+                error = DSGTableErrorEvent.NOT_SITTING;
+            } else if (state != DSGGameStateTableEvent.GAME_IN_PROGRESS) {
+                error = DSGTableErrorEvent.NO_GAME_IN_PROGRESS;
+            } else if (!rs.isAwaitingFifthSelection()) {
+                error = DSGTableErrorEvent.INVALID_MOVE;   // not awaiting a selection
+            } else if (gridState.getCurrentPlayer() != seat) {
+                error = DSGTableErrorEvent.NOT_TURN;
+            } else if (!rs.getOfferedFifthMoves().contains(move)) {
+                error = DSGTableErrorEvent.INVALID_MOVE;    // not one of the ten
+            } else {
+
+                // Do NOT pre-clear undoRequested here. Unlike the swap handlers (which
+                // mirror handleSwap and set undoRequested=false directly), this path
+                // places a stone via the handleMove tail, so broadcastRenjuFifthMove
+                // performs the undo/cancel reset exactly as handleMove does (it
+                // broadcasts the decline replies before clearing the flags).
+                int oldCurrentPlayer = gridState.getCurrentPlayer();   // white, selecting
+                rs.selectFifthMove(move);          // engine addMove's the chosen candidate as move 5 (opening completes at move 6)
+
+                // decision echo: which offer became move 5 (clears the other nine)
+                broadcastMainRoom(selectEvent);
+                // sole stone placement + timer accounting + game-over (handleMove tail)
+                broadcastRenjuFifthMove(actor, move, oldCurrentPlayer);
+            }
+        }
+
+        if (error != NO_ERROR) {
+            dsgEventRouter.routeEvent(
+                    new DSGMoveTableErrorEvent(actor, tableNum, move, error),
+                    actor);
+        }
+    }
+
+    /**
+     * Post-commit tail for the Branch-B 5th move. selectFifthMove() already did
+     * addMove(), so this does exactly what handleMove does AFTER its own addMove:
+     * the timer + moveTimes accounting (BOTH the player-changed and the same-player
+     * branch), the undo/cancel decline replies, the single DSGMoveTableEvent
+     * placement broadcast, activity logging, and the game-over / final-go() check.
+     *
+     * In Branch B oldCurrentPlayer == newCurrentPlayer (white selects move 5 and
+     * also plays move 6), so handleMove's same-player branch is the one that fires;
+     * both branches are reproduced verbatim so the per-move time list and the
+     * Fischer/byo-yomi clocks stay consistent with every stone placed via
+     * handleMove. oldCurrentPlayer was captured BEFORE selectFifthMove().
+     */
+    private void broadcastRenjuFifthMove(String player, int move, int oldCurrentPlayer) {
+        int newCurrentPlayer = gridState.getCurrentPlayer();
+        synchronized (this) {
+
+            if (timed) {
+                if (oldCurrentPlayer != newCurrentPlayer) {
+                    timers[oldCurrentPlayer].stop();
+                    if (shouldTimerRun()) {
+                        if (initialMinutes == 0) {
+                            timers[oldCurrentPlayer].reset();
+                        } else {
+                            timers[oldCurrentPlayer].increment(incrementalSeconds);
+                            timers[oldCurrentPlayer].incrementMillis(
+                                    (int) pingManager.getPingTime(player));
+                        }
+                    }
+                    moveTimes.add(new Time(timers[oldCurrentPlayer].getMinutes(),
+                            timers[oldCurrentPlayer].getSeconds()));
+                } else {  // same player (Branch B: white selected move 5 and plays move 6)
+                    if (shouldTimerRun()) {
+                        if (initialMinutes == 0) {
+                            timers[oldCurrentPlayer].stop();
+                            timers[oldCurrentPlayer].reset();
+                        } else {
+                            timers[oldCurrentPlayer].increment(incrementalSeconds);
+                            timers[oldCurrentPlayer].incrementMillis(
+                                    (int) pingManager.getPingTime(player));
+                        }
+                    }
+                    moveTimes.add(new Time(timers[oldCurrentPlayer].getMinutes(),
+                            timers[oldCurrentPlayer].getSeconds()));
+                }
+            }
+
+            // undo/cancel reset, mirroring handleMove (≈1651-1659)
+            if (undoRequested) {
+                broadcastTable(new DSGUndoReplyTableEvent(player, tableNum, false));
+                undoRequested = false;
+            }
+            if (cancelRequested) {
+                broadcastTable(new DSGCancelReplyTableEvent(player, tableNum, false));
+                cancelRequested = false;
+                cancelRequestedBy = null;
+            }
+
+            broadcastTable(new DSGMoveTableEvent(player, tableNum, move));
+
+            if (shouldTimerRun() && timed) {
+                broadCastPlayerTimer(oldCurrentPlayer);
+            }
+
+            activityLogger.updateGameState(sid, tableNum, gridState.getHash(),
+                    gridState.getMoves());
+
+            if (gridState.isGameOver()) {
+                String winner;
+                String loser;
+                if (gridState.getWinner() == 0) {
+                    winner = playingPlayers[1].getName();
+                    loser = playingPlayers[2].getName();
+                } else {
+                    winner = playingPlayers[gridState.getWinner()].getName();
+                    loser = playingPlayers[3 - gridState.getWinner()].getName();
+                }
+                gameOver(gridState.getWinner() == 0, winner, loser, false, false, false);
+            } else if (timed) {
+                if (oldCurrentPlayer != newCurrentPlayer || initialMinutes == 0) {
+                    timers[newCurrentPlayer].go();
+                }
+            }
+        }
+    }
+
     protected void copySittingPlayersToPlayingPlayers() {
         for (int i = 1; i < playingPlayers.length; i++) {
             playingPlayers[i] = sittingPlayers[i];
@@ -1487,7 +1921,7 @@ public class ServerTable {
                 game != GridStateFactory.GO13_GAME && game != GridStateFactory.SPEED_GO13_GAME &&
                 game != GridStateFactory.SWAP2PENTE_GAME && game != GridStateFactory.SPEED_SWAP2PENTE_GAME &&
                 game != GridStateFactory.SWAP2KERYO_GAME && game != GridStateFactory.SPEED_SWAP2KERYO_GAME) {
-            handleMove(playingPlayers[1].getName(), 180);
+            handleMove(playingPlayers[1].getName(), GridStateFactory.getCenterMove(game.getId()));
         } else if (timed) {
             timers[gridState.getCurrentPlayer()].go();
         }
@@ -2238,7 +2672,8 @@ public class ServerTable {
 
         boolean single_game = (game.getId() == GridStateFactory.GO || game.getId() == GridStateFactory.SPEED_GO
                 || game.getId() == GridStateFactory.GO9 || game.getId() == GridStateFactory.SPEED_GO9
-                || game.getId() == GridStateFactory.GO13 || game.getId() == GridStateFactory.SPEED_GO13);
+                || game.getId() == GridStateFactory.GO13 || game.getId() == GridStateFactory.SPEED_GO13
+                || game.getId() == GridStateFactory.RENJU || game.getId() == GridStateFactory.SPEED_RENJU);
 
         if (rated && set != null) {
             if (set.getG1Gid() == 0 && !single_game) {
@@ -2861,6 +3296,19 @@ public class ServerTable {
                 gameData.setSwap2Pass(((PenteState) gridState).didSwap2Pass());
             }
 
+            if (gridState instanceof RenjuState) {
+                RenjuState rs = (RenjuState) gridState;
+                gameData.setRenjuSwaps(rs.getRenjuSwapsPacked());
+                java.util.List<Integer> offers = rs.getOfferedFifthMoves();
+                if (offers != null && !offers.isEmpty()) {
+                    int[] arr = new int[offers.size()];
+                    for (int i = 0; i < arr.length; i++) {
+                        arr[i] = offers.get(i);
+                    }
+                    gameData.setRenjuOffers(arr);
+                }
+            }
+
             gameData.setStatus(status);
 
             for (int i = 0; i < gridState.getNumMoves(); i++) {
@@ -3084,13 +3532,14 @@ public class ServerTable {
         }
 
         boolean updateRatings = isComputerGame;
-        boolean isGo = game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO
+        boolean k32Game = game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO
                 || game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9
-                || game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13;
+                || game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13
+                || game == GridStateFactory.RENJU || game == GridStateFactory.SPEED_RENJU;
         if (gameData.getRated() && localSet != null) {
             if (localSet.getG1Gid() == 0) {
                 localSet.setG1(gameData);
-                if (isGo) {
+                if (k32Game) {
                     updateRatings = true;
                 }
             } else {
@@ -3151,7 +3600,7 @@ public class ServerTable {
                         loserPlayerData.getPlayerGameData(game, true);
 
                 try {
-                    double k = isGo ? 32 : 64;
+                    double k = k32Game ? 32 : 64;
                     GameOverUtilities.updateGameData(
                             dsgPlayerStorer,
                             winnerPlayerData, winnerPlayerGameData,
@@ -3171,7 +3620,7 @@ public class ServerTable {
                 double loserRatingBefore = loserPlayerGameData.getRating();
 
                 try {
-                    double k = isGo ? 32 : 64;
+                    double k = k32Game ? 32 : 64;
                     GameOverUtilities.updateGameData(
                             dsgPlayerStorer,
                             winnerPlayerData, winnerPlayerGameData,
@@ -3264,7 +3713,7 @@ public class ServerTable {
                         loserPlayerData.getPlayerGameData(game, true);
 
                 try {
-                    double k = isGo ? 32 : 64;
+                    double k = k32Game ? 32 : 64;
                     GameOverUtilities.updateGameData(
                             dsgPlayerStorer,
                             winnerPlayerData, winnerPlayerGameData,

@@ -81,6 +81,9 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 
     private boolean swap2Pass = false;
 
+    private int renjuSwaps = 0;       // RenjuOpeningState packed word (0 = fresh / non-Renju)
+    private int[] renjuOffers = null; // Branch B: the 10 offered 5th moves, or null
+
 
     public int containsDoublePass() {
         boolean hasPass = false;
@@ -321,6 +324,26 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
             }
         } else if (game == GridStateFactory.TB_CONNECT6) {
             cp = ((moves.size() + 1) / 2) % 2 + 1;
+        } else if (game == GridStateFactory.TB_RENJU) {
+            // Taraguchi-10 Branch B: at numMoves==4 the offer sub-phase (black,
+            // seat 1) and the select sub-phase (white, seat 2) share the same
+            // move count with no move stored between them. Plain parity would
+            // return seat 1 for BOTH, so the unconditional turn gate would block
+            // the selecting player (white) and let the offerer pick their own
+            // candidate. Once the 10 offers are persisted, the 5th-move
+            // selection belongs to white (seat 2); mirror dPente/swap2 by
+            // flipping the seat for this one phase. Every other Renju window
+            // (swaps 1-4, branch choice, Branch-A swap 5, post-opening) is
+            // parity-consistent and falls through unchanged.
+            org.pente.game.RenjuOpeningState rst =
+                    org.pente.game.RenjuOpeningState.decode(renjuSwaps);
+            if (rst.branch == org.pente.game.RenjuOpeningState.YES
+                    && moves.size() == 4
+                    && renjuOffers != null && renjuOffers.length == 10) {
+                cp = 2;
+            } else {
+                cp = moves.size() % 2 + 1;
+            }
         } else {
             cp = moves.size() % 2 + 1;
         }
@@ -498,6 +521,85 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
         this.swap2Pass = swap2PentePass;
     }
 
+    public int getRenjuSwaps() {
+        return renjuSwaps;
+    }
+
+    public void setRenjuSwaps(int renjuSwaps) {
+        this.renjuSwaps = renjuSwaps;
+    }
+
+    public int[] getRenjuOffers() {
+        return renjuOffers;
+    }
+
+    public void setRenjuOffers(int[] renjuOffers) {
+        this.renjuOffers = renjuOffers;
+    }
+
+    public static final String RENJU_SWAP = "SWAP";
+    public static final String RENJU_BRANCH = "BRANCH";
+    public static final String RENJU_OFFERS = "OFFERS";
+    public static final String RENJU_SELECTION = "SELECTION";
+    public static final String RENJU_MOVE = "MOVE";
+    public static final String RENJU_COMPLETE = "COMPLETE";
+
+    /**
+     * Derived Taraguchi-10 opening phase for the mobile/JSON views. Returns null
+     * for non-Renju games. Reconstructs the engine once from the persisted
+     * (moves + renjuSwaps + renjuOffers) and maps its pending decision to a
+     * phase string. Not serialized; computed on demand (no cost for non-Renju).
+     */
+    public String getRenjuPhase() {
+        if (game != GridStateFactory.TB_RENJU) {
+            return null;
+        }
+        org.pente.game.RenjuState rs =
+                org.pente.game.RenjuState.reconstruct(this, renjuSwaps, renjuOffers);
+        if (rs.isAwaitingSwapDecision())   return RENJU_SWAP;
+        if (rs.isAwaitingBranchChoice())   return RENJU_BRANCH;
+        if (rs.isAwaitingFifthOffers())    return RENJU_OFFERS;
+        if (rs.isAwaitingFifthSelection()) return RENJU_SELECTION;
+        if (rs.isOpeningComplete())        return RENJU_COMPLETE;
+        return RENJU_MOVE;
+    }
+
+    /**
+     * Resolve the currently-pending Taraguchi swap window (identified by the
+     * number of stones played) and, on a swap, hand the just-played side to the
+     * other seat by swapping pids -- mirrors dPenteSwap(boolean).
+     */
+    public void renjuSwap(boolean swap) {
+        org.pente.game.RenjuOpeningState st =
+                org.pente.game.RenjuOpeningState.decode(renjuSwaps);
+        int v = swap ? org.pente.game.RenjuOpeningState.YES
+                     : org.pente.game.RenjuOpeningState.NO;
+        int n = getNumMoves();
+        if (n == 1) st.swap1 = v;
+        else if (n == 2) st.swap2 = v;
+        else if (n == 3) st.swap3 = v;
+        else if (n == 4) st.swap4 = v;
+        else if (n == 5) st.swap5 = v;
+        renjuSwaps = st.encode();
+
+        if (swap) {
+            long tmp = getPlayer1Pid();
+            setPlayer1Pid(getPlayer2Pid());
+            setPlayer2Pid(tmp);
+        }
+        lastMoveDate = new Date();
+    }
+
+    /** Record the post-move-4 branch choice (false = Branch A, true = Branch B / 10-offer). */
+    public void renjuBranch(boolean tenOffer) {
+        org.pente.game.RenjuOpeningState st =
+                org.pente.game.RenjuOpeningState.decode(renjuSwaps);
+        st.branch = tenOffer ? org.pente.game.RenjuOpeningState.YES
+                             : org.pente.game.RenjuOpeningState.NO;
+        renjuSwaps = st.encode();
+        lastMoveDate = new Date();
+    }
+
 
     public boolean isUndoRequested() {
         return undoRequested;
@@ -597,6 +699,10 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
         }
         if (getGame() == GridStateFactory.TB_SWAP2PENTE || getGame() == GridStateFactory.TB_SWAP2KERYO) {
             gameData.setSwap2Pass(swap2Pass);
+        }
+        if (getGame() == GridStateFactory.TB_RENJU) {
+            gameData.setRenjuSwaps(renjuSwaps);
+            gameData.setRenjuOffers(renjuOffers);
         }
 
         for (int i = 0; i < getNumMoves(); i++) {

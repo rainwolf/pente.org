@@ -1,7 +1,7 @@
 // Shared board-viewer helpers. Single source for board color + replay dispatch.
 // Depends on globals defined elsewhere and loaded FIRST:
 //   - GAME            : game-id constants, emitted by gameConstants.jspf
-//   - color vars      : penteColor, keryoPenteColor, ... swap2KeryoColor  (tb/gameScript.js)
+//   - color vars      : penteColor, keryoPenteColor, ... swap2KeryoColor, renjuColor  (tb/gameScript.js)
 //   - replay*Game     : replayPenteGame, ... replayOPenteGame             (tb/gameScript.js)
 //   - whiteCaptures / blackCaptures / game : page-level globals on each viewer page
 // Unknown game ids throw on purpose, so a mis-set id fails loudly in the console.
@@ -14,6 +14,8 @@ function getBoardColor(game) {
          return keryoPenteColor;
       case GAME.GOMOKU: case GAME.SPEED_GOMOKU: case GAME.TB_GOMOKU:
          return gomokuColor;
+      case GAME.RENJU: case GAME.SPEED_RENJU: case GAME.TB_RENJU:
+         return renjuColor;
       case GAME.DPENTE: case GAME.SPEED_DPENTE: case GAME.TB_DPENTE:
          return dPenteColor;
       case GAME.GPENTE: case GAME.SPEED_GPENTE: case GAME.TB_GPENTE:
@@ -61,6 +63,8 @@ function replayMoves(abstractBoard, movesList, until) {
          replayKeryoPenteGame(abstractBoard, movesList, until); break;
       case GAME.GOMOKU: case GAME.SPEED_GOMOKU: case GAME.TB_GOMOKU:
          replayGomokuGame(abstractBoard, movesList, until); break;
+      case GAME.RENJU: case GAME.SPEED_RENJU: case GAME.TB_RENJU:
+         replayRenjuGame(abstractBoard, movesList, until); break;
       case GAME.GPENTE: case GAME.SPEED_GPENTE: case GAME.TB_GPENTE:
          replayGPenteGame(abstractBoard, movesList, until); break;
       case GAME.POOF_PENTE: case GAME.SPEED_POOF_PENTE: case GAME.TB_POOF_PENTE:

@@ -109,6 +109,8 @@
       gridSize = 9;
    } else if (gameId == GridStateFactory.TB_GO13) {
       gridSize = 13;
+   } else if (gameId == GridStateFactory.TB_RENJU) {
+      gridSize = 15;
    }
 
 

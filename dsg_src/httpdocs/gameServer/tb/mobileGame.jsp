@@ -122,6 +122,25 @@
       gridSize = 9;
    } else if (game.getGame() == GridStateFactory.TB_GO13) {
       gridSize = 13;
+   } else if (game.getGame() == GridStateFactory.TB_RENJU) {
+      gridSize = 15;
+   }
+
+   // Renju opening state exposed to the client script (empty/blank for non-Renju)
+   String renjuPhaseStr = "";
+   String renjuOffersJs = "";
+   if (game.getGame() == GridStateFactory.TB_RENJU) {
+      String ph = game.getRenjuPhase();
+      renjuPhaseStr = ph == null ? "" : ph;
+      if (game.getRenjuOffers() != null) {
+         StringBuilder sb = new StringBuilder();
+         int[] ro = game.getRenjuOffers();
+         for (int k = 0; k < ro.length; k++) {
+            if (k > 0) sb.append(',');
+            sb.append(ro[k]);
+         }
+         renjuOffersJs = sb.toString();
+      }
    }
 
 %>
@@ -286,6 +305,16 @@
                   <br>
 
 
+                  <%
+                     // Renju Taraguchi-10 opening decision pending? (gates Submit + opening buttons)
+                     boolean renjuDecision = false;
+                     if (game.getGame() == GridStateFactory.TB_RENJU && !"false".equals(myTurn)) {
+                        String renjuPh = game.getRenjuPhase();
+                        renjuDecision = TBGame.RENJU_SWAP.equals(renjuPh)
+                                     || TBGame.RENJU_BRANCH.equals(renjuPh)
+                                     || TBGame.RENJU_SELECTION.equals(renjuPh);
+                     }
+                  %>
                   <div class="buttonwrapper" style="margin-top:5px; width:500px;">
                      <% if ("false".equals(myTurn) && isGo) { %>
                      <a class="boldbuttons" href="javascript:drawTerritories();"
@@ -293,8 +322,10 @@
 
                      <% }%>
                      <% if (!"false".equals(myTurn) && (game.getDPenteState() != 2)) { %>
+                     <% if (!renjuDecision) { %>
                      <a class="boldbuttons" href="javascript:submit();"
                         style="margin-right:5px;"><span>Submit</span></a>
+                     <% } %>
                      <% if (isGo) { %>
                      <a class="boldbuttons" href="javascript:submitPass();"
                         style="margin-right:5px;"><span>Pass</span></a>
@@ -337,6 +368,27 @@
                         style="margin-left:5px;"><span>Cancel Set</span></a>
                      <%
                      } else if (!"false".equals(myTurn)) { %>
+                     <% if (game.getGame() == GridStateFactory.TB_RENJU) {
+                        String renjuPh = game.getRenjuPhase();
+                        if (TBGame.RENJU_SWAP.equals(renjuPh) && game.getNumMoves() == 4) { %>
+                     <a class="boldbuttons" href="javascript:renjuSwapYes();"
+                        style="margin-right:5px;"><span>Swap (take over)</span></a>
+                     <span id="renjuOfferCount" style="margin-right:5px;">0/10</span>
+                     <a class="boldbuttons" href="javascript:renjuMoveBranch();"
+                        style="margin-right:5px;"><span>Don't swap — place 1 or 10</span></a>
+                     <% } else if (TBGame.RENJU_SWAP.equals(renjuPh)) { %>
+                     <a class="boldbuttons" href="javascript:renjuSwapYes();"
+                        style="margin-right:5px;"><span>Swap (take over)</span></a>
+                     <a class="boldbuttons" href="javascript:renjuSwapNo();"
+                        style="margin-right:5px;"><span>Don't swap</span></a>
+                     <% } else if (TBGame.RENJU_BRANCH.equals(renjuPh)) { %>
+                     <span id="renjuOfferCount" style="margin-right:5px;">0/10</span>
+                     <a class="boldbuttons" href="javascript:renjuMoveBranch();"
+                        style="margin-right:5px;"><span>Place 1 or offer 10</span></a>
+                     <% } else if (TBGame.RENJU_SELECTION.equals(renjuPh)) { %>
+                     <a class="boldbuttons" href="javascript:renjuSelect();"
+                        style="margin-right:5px;"><span>Place black's 5th + your 6th</span></a>
+                     <% } } %>
                      <a class="boldbuttons" href="javascript:resign();"
                         style="margin-left:100px;"><span>Resign</span></a>
                      <a class="boldbuttons" href="javascript:requestCancel();"
@@ -595,6 +647,11 @@
    // var boardSize = 500;
 
    var gridSize = <%=gridSize%>;
+   var isRenju = game === <%= GridStateFactory.TB_RENJU %>;
+   var renjuPhase = "<%=renjuPhaseStr%>";
+   var renjuOfferedMoves = [<%=renjuOffersJs%>];  // persisted offers (for SELECTION)
+   var renjuOfferList = [];                         // client picks (move-4 / BRANCH: 1=Branch A, up to 10=Branch B)
+   var renjuSel = [];                               // SELECTION pick pair: [offered black 5th, white 6th]
    var boardCanvas = document.getElementById("board");
    var boardContext = boardCanvas.getContext("2d");
    var indentWidth = (boardCanvas.width / (gridSize + 3)) / 2;
@@ -785,6 +842,48 @@
 
       if (i >= 0 && i < gridSize && j >= 0 && j < gridSize) {
          playedMove = j * gridSize + i;
+         if (isRenju && (renjuPhase === "SELECTION" || renjuPhase === "BRANCH"
+               || (renjuPhase === "SWAP" && moves.length === 4))) {
+            var rMove = j * gridSize + i;
+            if (renjuPhase !== "SELECTION") {
+               playedMove = -1;                            // offer pick, not a played move
+               // move-4 / BRANCH: collect 1 (Branch A) or up to 10 (Branch B) candidate stones
+               if (abstractBoard[i][j] !== 0) return;       // only empty points
+               var oi = renjuOfferList.indexOf(rMove);
+               if (oi >= 0) {
+                  renjuOfferList.splice(oi, 1);             // tap again removes
+               } else if (renjuOfferList.length < 10) {
+                  if (renjuOfferList.length >= 1 && renjuIsSymmetricDup(rMove)) {
+                     alert("That move is symmetric to one you've already offered.");
+                     return;
+                  }
+                  renjuOfferList.push(rMove);
+               }
+               renjuRenderOffers();
+               return;
+            } else { // SELECTION: tap 1 = offered black 5th; tap 2 = empty white 6th
+               if (renjuSel.length === 0) {
+                  if (renjuOfferedMoves.indexOf(rMove) < 0) return; // 1st must be offered
+                  renjuSel.push(rMove);
+               } else if (renjuSel.length === 1) {
+                  if (abstractBoard[i][j] !== 0 || rMove === renjuSel[0]) return; // 2nd empty & distinct
+                  renjuSel.push(rMove);
+               } else {
+                  renjuSel = [];                            // 3rd tap resets the pair
+                  if (renjuOfferedMoves.indexOf(rMove) >= 0) renjuSel.push(rMove);
+               }
+               renjuRenderSelection();
+               return;
+            }
+         }
+         if (isRenju && (renjuPhase === "MOVE" || renjuPhase === "SWAP")) {
+            var rCenter = Math.floor(gridSize / 2);
+            var rRadius = renjuMoveRadius(moves.length);
+            if (rRadius >= 0 &&
+                (Math.abs(i - rCenter) > rRadius || Math.abs(j - rCenter) > rRadius)) {
+               return; // outside the allowed central square for this opening move
+            }
+         }
          if (abstractBoard[i][j] === 0 && active === true && playedMove !== koMove) {
             let newMoves = moves.slice(0);
             if (game === 63) {
@@ -879,6 +978,101 @@
 
    }
 
+   function renjuMoveRadius(n) {
+      // half-width of the allowed central square by opening move number
+      if (n === 0) return 0;   // move 1: center only
+      if (n === 1) return 1;   // move 2: 3x3
+      if (n === 2) return 2;   // move 3: 5x5
+      if (n === 3) return 3;   // move 4: 7x7
+      if (n === 4) return 4;   // move 5 (Branch A): 9x9
+      return -1;               // move 6+: unrestricted
+   }
+   function renjuRedrawBoard() {
+      resetAbstractBoard(abstractBoard);
+      drawUntilMove = moves.length;
+      replayGame(abstractBoard, moves, drawUntilMove);
+      boardContext.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
+      boardContext.fill();
+      drawGrid(boardContext, boardColor, gridSize, true);
+      drawGame();
+   }
+   // D4 board symmetries — mirror of SimpleGridState.rotateMove so the client
+   // rejects symmetric 5th-move offers exactly as the server (offerFifthMove) does.
+   var RENJU_ROTX = [1, 1, 1, 1, -1, -1, -1, -1];
+   var RENJU_ROTY = [1, 1, -1, -1, -1, -1, 1, 1];
+   var RENJU_ROTF = [0, 1, 0, 1, 0, 1, 0, 1];
+   function renjuRotate(move, r) {
+      var off = Math.floor(gridSize / 2);
+      var x = (move % gridSize) - off;
+      var y = Math.floor(move / gridSize) - off;
+      var x1 = x * RENJU_ROTX[r];
+      var y1 = y * RENJU_ROTY[r];
+      if (RENJU_ROTF[r]) { var t = x1; x1 = y1; y1 = t; }
+      return (x1 + off) + (y1 + off) * gridSize;
+   }
+   // Rotations that map the current placed position onto itself (its stabilizer).
+   function renjuStabilizer() {
+      var stab = [];
+      for (var r = 0; r < 8; r++) {
+         var inv = true;
+         for (var i = 0; i < gridSize && inv; i++) {
+            for (var j = 0; j < gridSize && inv; j++) {
+               if (abstractBoard[i][j] > 0) {
+                  var dst = renjuRotate(i + j * gridSize, r);
+                  if (abstractBoard[dst % gridSize][Math.floor(dst / gridSize)] !== abstractBoard[i][j]) {
+                     inv = false;
+                  }
+               }
+            }
+         }
+         if (inv) stab.push(r);
+      }
+      return stab;
+   }
+   // True if `move` is symmetric (under the position's stabilizer) to an offer already placed.
+   function renjuIsSymmetricDup(move) {
+      var stab = renjuStabilizer();
+      for (var s = 0; s < stab.length; s++) {
+         if (renjuOfferList.indexOf(renjuRotate(move, stab[s])) >= 0) {
+            return true;
+         }
+      }
+      return false;
+   }
+   function renjuRenderOffers() {
+      renjuRedrawBoard();
+      if (renjuOfferList.length === 1) {
+         // a lone stone is the real move 5 (Branch A) -> solid black
+         var m = renjuOfferList[0];
+         drawStone(m % gridSize, Math.floor(m / gridSize), 2);
+      } else {
+         // 2+ are the Branch B offer candidates -> translucent black (like Go dead stones)
+         for (var k = 0; k < renjuOfferList.length; k++) {
+            drawDeadStone(renjuOfferList[k], 2);
+         }
+      }
+      var cnt = document.getElementById('renjuOfferCount');
+      if (cnt) cnt.innerText = renjuOfferList.length + "/10";
+   }
+   function renjuRenderSelection() {
+      renjuRedrawBoard();
+      if (renjuSel.length === 0) {
+         // nothing picked yet -> show all 10 offered candidates as translucent black
+         for (var k = 0; k < renjuOfferedMoves.length; k++) {
+            drawDeadStone(renjuOfferedMoves[k], 2);
+         }
+      } else {
+         // a black 5th is chosen -> hide the 9 unchosen offers; draw only the pick(s)
+         var m5 = renjuSel[0];
+         drawStone(m5 % gridSize, Math.floor(m5 / gridSize), 2); // chosen black 5th -> solid black
+         if (renjuSel.length >= 2) {
+            // your white 6th -> solid white
+            var m6 = renjuSel[1];
+            drawStone(m6 % gridSize, Math.floor(m6 / gridSize), 1);
+         }
+      }
+   }
+
    function boardClick(e) {
       if (touching) {
          return;
@@ -912,6 +1106,48 @@
          }
          playedMove = j * gridSize + i;
          // alert("" + i + " and " + j + " and gridsize " + gridSize);
+         if (isRenju && (renjuPhase === "SELECTION" || renjuPhase === "BRANCH"
+               || (renjuPhase === "SWAP" && moves.length === 4))) {
+            var rMove = j * gridSize + i;
+            if (renjuPhase !== "SELECTION") {
+               playedMove = -1;                            // offer pick, not a played move
+               // move-4 / BRANCH: collect 1 (Branch A) or up to 10 (Branch B) candidate stones
+               if (abstractBoard[i][j] !== 0) return;       // only empty points
+               var oi = renjuOfferList.indexOf(rMove);
+               if (oi >= 0) {
+                  renjuOfferList.splice(oi, 1);             // click again removes
+               } else if (renjuOfferList.length < 10) {
+                  if (renjuOfferList.length >= 1 && renjuIsSymmetricDup(rMove)) {
+                     alert("That move is symmetric to one you've already offered.");
+                     return;
+                  }
+                  renjuOfferList.push(rMove);
+               }
+               renjuRenderOffers();
+               return;
+            } else { // SELECTION: tap 1 = offered black 5th; tap 2 = empty white 6th
+               if (renjuSel.length === 0) {
+                  if (renjuOfferedMoves.indexOf(rMove) < 0) return; // 1st must be offered
+                  renjuSel.push(rMove);
+               } else if (renjuSel.length === 1) {
+                  if (abstractBoard[i][j] !== 0 || rMove === renjuSel[0]) return; // 2nd empty & distinct
+                  renjuSel.push(rMove);
+               } else {
+                  renjuSel = [];                            // 3rd tap resets the pair
+                  if (renjuOfferedMoves.indexOf(rMove) >= 0) renjuSel.push(rMove);
+               }
+               renjuRenderSelection();
+               return;
+            }
+         }
+         if (isRenju && (renjuPhase === "MOVE" || renjuPhase === "SWAP")) {
+            var rCenter = Math.floor(gridSize / 2);
+            var rRadius = renjuMoveRadius(moves.length);
+            if (rRadius >= 0 &&
+                (Math.abs(i - rCenter) > rRadius || Math.abs(j - rCenter) > rRadius)) {
+               return; // outside the allowed central square for this opening move
+            }
+         }
          if (abstractBoard[i][j] === 0 && active === true && playedMove !== dPenteMove1 && playedMove !== dPenteMove2 && playedMove !== dPenteMove3 && playedMove !== dPenteMove4) {
             let newMoves = moves.slice(0);
             if (game === 63) {
@@ -1220,6 +1456,55 @@
       }
    }
 
+   function renjuPost(action, moveStr) {
+      window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+
+      cycleStr + hideStr + "&renjuAction=" + action + "&moves=" + moveStr +
+      "&message=" + encodeURIComponent(document.getElementById('message').value), "_self"
+   )
+      ;
+   }
+   function renjuSwapYes() {
+      // Swapping takes over your opponent's side — you do NOT place any stone.
+      if (playedMove >= 0 || renjuOfferList.length > 0) {
+         alert("Don't place a stone when swapping — clear it first.");
+         return;
+      }
+      renjuPost("swap", "1");
+   }
+   function renjuSwapNo()  {
+      // Decline the swap and play your own next opening stone (one request).
+      if (!(playedMove >= 0)) {
+         alert("Place your next move before choosing not to swap.");
+         return;
+      }
+      renjuPost("move", "" + playedMove);
+   }
+   // Branch decision (move 4 / post-take-over BRANCH): place 1 stone (continue =
+   // Branch A move 5, inside the 9×9 center) or 10 stones (offer = Branch B). The
+   // server infers the branch from the count and the swap-decline from the phase.
+   function renjuMoveBranch() {
+      var n = renjuOfferList.length;
+      if (n === 1) {
+         var c = Math.floor(gridSize / 2);
+         var x = renjuOfferList[0] % gridSize, y = Math.floor(renjuOfferList[0] / gridSize);
+         if (Math.abs(x - c) > 4 || Math.abs(y - c) > 4) {
+            alert("A single (continue) stone must be inside the 9×9 center.");
+            return;
+         }
+      } else if (n !== 10) {
+         alert("Place 1 stone to continue, or 10 stones to offer (currently " + n + ").");
+         return;
+      }
+      renjuPost("move", renjuOfferList.join(","));
+   }
+   function renjuSelect() {
+      if (renjuSel.length !== 2) {
+         alert("Tap the offered black 5th move, then tap an empty point for your white 6th.");
+         return;
+      }
+      renjuPost("select", renjuSel[0] + "," + renjuSel[1]);
+   }
+
    function resign() {
       window.open("/gameServer/tb/resign?command=confirm&gid=" +<%=game.getGid()%>, "_self");
    }
@@ -1249,6 +1534,9 @@
       selectMove(drawUntilMove - 1);
    }
    document.getElementById("movesTable").scrollTop = document.getElementById("movesTable").scrollHeight;
+   if (isRenju && renjuPhase === "SELECTION") {
+      renjuRenderSelection();
+   }
 </script>
 
 

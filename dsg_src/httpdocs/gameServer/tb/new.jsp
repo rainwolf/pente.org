@@ -76,15 +76,46 @@
    var ie4 = (document.all) ? true : false;
    var ns6 = ((navigator.vendor) && (navigator.vendor.indexOf("Netscape6"))) != -1;
 
-   function changeRated(rated) {
+   // Single-game, color-asymmetric games where you may pick your color even when RATED.
+   // Mirrors NewGameServlet (TB_GO / TB_GO9 / TB_GO13 / TB_RENJU).
+   var colorChoiceWhenRated = [
+      <%= GridStateFactory.TB_GO %>,
+      <%= GridStateFactory.TB_GO9 %>,
+      <%= GridStateFactory.TB_GO13 %>,
+      <%= GridStateFactory.TB_RENJU %>
+   ];
 
-      if (rated == 'Y') {
-         hide('unrated');
-      } else {
-         show('unrated');
+   function gameAllowsColorWhenRated() {
+      var g = document.getElementById('game');
+      if (!g) { return false; }
+      var gameId = parseInt(g.options[g.selectedIndex].value, 10);
+      for (var i = 0; i < colorChoiceWhenRated.length; i++) {
+         if (colorChoiceWhenRated[i] == gameId) { return true; }
       }
+      return false;
+   }
 
+   function updateOptions() {
+      var r = document.new_game_form.rated;
+      var rated = r.options[r.selectedIndex].value;
+      if (rated == 'Y') {
+         // Rated: color choice only for Go/renju; private game stays unrated-only.
+         if (gameAllowsColorWhenRated()) {
+            show('unrated');
+         } else {
+            hide('unrated');
+         }
+         hide('privateRow');
+      } else {
+         // Unrated: both color and private available (unchanged).
+         show('unrated');
+         show('privateRow');
+      }
       return true;
+   }
+
+   function changeRated(rated) {
+      return updateOptions();
    }
 
    function hide(id) {
@@ -220,7 +251,7 @@
                   </td>
                   <td>
                      <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
-                        <select size="1" id="game" name="game">
+                        <select size="1" id="game" name="game" onchange="javascript:updateOptions();">
                               <% Game games[] = GridStateFactory.getTbGames();
             for (int i = 0; i < games.length; i++) { %>
                            <option <%=(tbGame == games[i].getId() ? "selected" : "")%>
@@ -308,7 +339,7 @@
                                  </select>
                               </td>
                            </tr>
-                           <tr>
+                           <tr id="privateRow">
                               <td>
                                  <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
                                     Private game:
@@ -332,6 +363,7 @@
                   </td>
                </tr>
             </table>
+            <script type="text/javascript">updateOptions();</script>
             <br>
 
             Message (Optional, 255 character max):<br>

@@ -886,6 +886,10 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                         game.getGame() == GridStateFactory.TB_SWAP2KERYO) {
                     gameData.setSwap2Pass(game.didSwap2Pass());
                 }
+                if (game.getGame() == GridStateFactory.TB_RENJU) {
+                    gameData.setRenjuSwaps(game.getRenjuSwaps());
+                    gameData.setRenjuOffers(game.getRenjuOffers());
+                }
 
                 for (int i = 0; i < game.getNumMoves(); i++) {
                     gameData.addMove(game.getMove(i));
@@ -934,15 +938,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                     double k = (game.getGame() == GridStateFactory.TB_GO ||
                             game.getGame() == GridStateFactory.TB_GO13 ||
                             game.getGame() == GridStateFactory.TB_GO9 ||
-                            game.getGame() == GridStateFactory.TB_SWAP2PENTE ||
-                            game.getGame() == GridStateFactory.TB_SWAP2KERYO) ? 32 : 64;
-                    if (game.getGame() == GridStateFactory.TB_SWAP2PENTE) {
-                        if (set.getGame2() == null) {
-                            k = 32;
-                        } else {
-                            k = 64;
-                        }
-                    }
+                            game.getGame() == GridStateFactory.TB_RENJU) ? 32 : 64;
                     GameOverUtilities.updateGameData(dsgPlayerStorer, winnerData,
                             winnerData.getPlayerGameData(game.getGame(), false),
                             loserData,
@@ -1251,7 +1247,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                     baseStorer.updateGameAfterMove(game);
                     continue;
                 }
-                storeNewMove(game.getGid(), 0, 180);
+                storeNewMove(game.getGid(), 0, GridStateFactory.getCenterMove(game.getGame()));
 
             }
         }
@@ -1406,6 +1402,41 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
         // check that it is a valid move
         //TODO performance might show keeping state around a good idea
+        boolean valid;
+        if (game.getGame() == GridStateFactory.TB_RENJU) {
+            RenjuState rs = RenjuState.reconstruct(
+                    game, game.getRenjuSwaps(), game.getRenjuOffers());
+            if (rs.isAwaitingFifthSelection()) {
+                // the 5th move is chosen from the 10 offered moves, not placed freely
+                valid = false;
+                int[] offs = game.getRenjuOffers();
+                if (offs != null) {
+                    for (int o : offs) {
+                        if (o == move) { valid = true; break; }
+                    }
+                }
+            } else {
+                valid = rs.isValidMove(move, rs.getCurrentPlayer());
+            }
+        } else {
+            GridState state = GridStateFactory.createGridState(
+                    game.getGame(), game);
+            if (game.getGame() == GridStateFactory.TB_PENTE ||
+                    game.getGame() == GridStateFactory.TB_KERYO ||
+                    game.getGame() == GridStateFactory.TB_BOAT_PENTE ||
+                    game.getGame() == GridStateFactory.TB_POOF_PENTE ||
+                    game.getGame() == GridStateFactory.TB_OPENTE) {
+                ((PenteState) state).setTournamentRule(game.isRated());
+            }
+            valid = state.isValidMove(move, state.getCurrentPlayer());
+        }
+        if (!valid) {
+            throw new InvalidMoveException("Invalid move [" + move + "] for " +
+                    GridStateFactory.getGameName(game.getGame()) + " game: " +
+                    game.getGid());
+        }
+
+        // engine used below for move application + game-over detection
         GridState state = GridStateFactory.createGridState(
                 game.getGame(), game);
         if (game.getGame() == GridStateFactory.TB_PENTE ||
@@ -1414,10 +1445,6 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                 game.getGame() == GridStateFactory.TB_POOF_PENTE ||
                 game.getGame() == GridStateFactory.TB_OPENTE) {
             ((PenteState) state).setTournamentRule(game.isRated());
-        }
-        if (!state.isValidMove(move, state.getCurrentPlayer())) {
-            throw new TBStoreException("Invalid move [" + move + "] for " + GridStateFactory.getGameName(game.getGame()) + " game: " +
-                    game.getGid());
         }
 
         // Derive the move index from the freshly-loaded game, NOT from the
@@ -1561,7 +1588,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                         && game.getGame() != GridStateFactory.TB_GO13
                         && game.getGame() != GridStateFactory.TB_SWAP2PENTE
                         && game.getGame() != GridStateFactory.TB_SWAP2KERYO) {
-                    game.addMove(180);
+                    game.addMove(GridStateFactory.getCenterMove(game.getGame()));
                 }
             }
         }
@@ -1599,7 +1626,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                     && game.getGame() != GridStateFactory.TB_GO13
                     && game.getGame() != GridStateFactory.TB_SWAP2PENTE
                     && game.getGame() != GridStateFactory.TB_SWAP2KERYO) {
-                baseStorer.storeNewMove(game.getGid(), 0, 180);
+                baseStorer.storeNewMove(game.getGid(), 0, GridStateFactory.getCenterMove(game.getGame()));
             }
         }
     }
@@ -1747,6 +1774,48 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
             persistSet(game.getTbSet());
         }
         baseStorer.swap2Pass(game);
+    }
+
+    public void renjuSwap(TBGame g, boolean swap) throws TBStoreException {
+        log4j.debug("CacheTBStorer.renjuSwap(" + g.getGid() + ", " + swap + ")");
+        TBGame game = loadGame(g.getGid());
+
+        synchronized (cacheTbLock) {
+            game.renjuSwap(swap);
+        }
+        long newTimeout = Utilities.calculateNewTimeout(game, dsgPlayerStorer);
+        synchronized (cacheTbLock) {
+            game.setTimeoutDate(new Date(newTimeout));
+            persistSet(game.getTbSet());
+        }
+        baseStorer.renjuSwap(game, swap);
+    }
+
+    public void renjuBranch(TBGame g, boolean tenOffer) throws TBStoreException {
+        log4j.debug("CacheTBStorer.renjuBranch(" + g.getGid() + ", " + tenOffer + ")");
+        TBGame game = loadGame(g.getGid());
+
+        synchronized (cacheTbLock) {
+            game.renjuBranch(tenOffer);
+            persistSet(game.getTbSet());
+        }
+        baseStorer.renjuBranch(game, tenOffer);
+    }
+
+    public void renjuOffers(TBGame g) throws TBStoreException {
+        log4j.debug("CacheTBStorer.renjuOffers(" + g.getGid() + ")");
+        TBGame game = loadGame(g.getGid());
+
+        synchronized (cacheTbLock) {
+            game.setRenjuOffers(g.getRenjuOffers());
+            game.setLastMoveDate(new Date());
+        }
+        long newTimeout = Utilities.calculateNewTimeout(game, dsgPlayerStorer);
+        synchronized (cacheTbLock) {
+            game.setTimeoutDate(new Date(newTimeout));
+            persistSet(game.getTbSet());
+        }
+        baseStorer.renjuOffers(game);
     }
 
 

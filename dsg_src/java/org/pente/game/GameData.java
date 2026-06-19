@@ -232,6 +232,16 @@ public interface GameData extends MoveData {
 
     public void setSwap2Pass(boolean swap2pass);
 
+    /** Renju opening state (null/none for non-Renju games). Default methods so
+     *  non-DefaultGameData implementors keep compiling. */
+    default Integer getRenjuSwaps() { return null; }
+
+    default void setRenjuSwaps(Integer renjuSwaps) { }
+
+    default int[] getRenjuOffers() { return null; }
+
+    default void setRenjuOffers(int[] renjuOffers) { }
+
 
     public boolean isPrivateGame();
 

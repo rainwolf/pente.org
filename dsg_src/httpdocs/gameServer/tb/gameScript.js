@@ -11,6 +11,7 @@ var goColor = "#FAC832";
 var oPenteColor = '#52BE80';
 var swap2PenteColor = "#E5AA70";
 var swap2KeryoColor = "#50C878";
+var renjuColor = "#D98880";
 
 var abstractBoard = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -573,7 +574,9 @@ function drawGrid(boardContext, boardColor, gridSize, drawAxis) {
    // boardContext.strokeStyle = "#FFFFFF";
    boardContext.stroke();
    boardContext.closePath();
-   if (game < 69 || game > 74) {
+   if ((game < 69 || game > 74) && game !== 31 && game !== 32 && game !== 81) {
+      // 19x19 star points (Pente/Gomoku family). Renju (31/32/81) is 15x15 and
+      // uses the gridSize-aware branch below.
       boardContext.beginPath();
       boardContext.arc(indentWidth + 3 * stepX / 2 + 9 * stepX, indentHeight + 3 * stepY / 2 + 9 * stepY, stepX / 5, 0, Math.PI * 2, true);
       boardContext.stroke();
@@ -594,7 +597,9 @@ function drawGrid(boardContext, boardColor, gridSize, drawAxis) {
       boardContext.arc(indentWidth + 3 * stepX / 2 + 12 * stepX, indentHeight + 3 * stepY / 2 + 12 * stepY, stepX / 5, 0, Math.PI * 2, true);
       boardContext.stroke();
       boardContext.closePath();
-   } else if (game === 69 || game === 73) {
+   } else if (game === 69 || game === 73 || game === 31 || game === 32 || game === 81) {
+      // 9-point star pattern derived from gridSize: Go 19/13 and Renju 15x15
+      // (-> points at 3/7/11 with center 7).
       let rd = stepX / 8;
       let c = Math.floor(gridSize / 2);
       let l = 3, r = gridSize - 1 - l;
@@ -1503,9 +1508,22 @@ function resetAbstractBoard(abstractBoard) {
 
 function replayGomokuGame(abstractBoard, movesList, until) {
    resetAbstractBoard(abstractBoard);
+   // Use gridSize (15 for Renju, 19 for Gomoku) — a hardcoded 19 places a 15x15
+   // move outside the 0..gridSize-1 range that drawGame() iterates, so the stone
+   // never draws.
    for (let i = 0; i < Math.min(movesList.length, until); i++) {
       let color = 1 + (i % 2);
-      abstractBoard[movesList[i] % 19][Math.floor(movesList[i] / 19)] = color;
+      abstractBoard[movesList[i] % gridSize][Math.floor(movesList[i] / gridSize)] = color;
+   }
+}
+
+function replayRenjuGame(abstractBoard, movesList, until) {
+   resetAbstractBoard(abstractBoard);
+   // Renju: black plays first. drawStone() renders value 2 as black, 1 as white,
+   // so move 0 must be color 2 (black), then strict alternation. gridSize-aware.
+   for (let i = 0; i < Math.min(movesList.length, until); i++) {
+      let color = 2 - (i % 2);
+      abstractBoard[movesList[i] % gridSize][Math.floor(movesList[i] / gridSize)] = color;
    }
 }
 

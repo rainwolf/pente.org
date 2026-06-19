@@ -266,7 +266,8 @@ public class ReplyInvitationServlet extends HttpServlet {
                                                 game, daysPerMove, true);
                                         if (game != GridStateFactory.TB_GO
                                                 && game != GridStateFactory.TB_GO9
-                                                && game != GridStateFactory.GO13) {
+                                                && game != GridStateFactory.TB_GO13
+                                                && game != GridStateFactory.TB_RENJU) {
                                             beginnerGame2 = createGame(2, invitee, null,
                                                     game, daysPerMove, true);
                                         }
