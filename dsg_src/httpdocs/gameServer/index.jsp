@@ -744,21 +744,24 @@
             </tr>
             <% for (TBSet s : invitesTo) {
                String color = null;
-               boolean isGo = s.getGame1().getGame() == GridStateFactory.TB_GO ||
+               // Go and renju are black-first: player 1 plays black. The pente
+               // variants give player 1 white, so coloring keys off this flag.
+               boolean p1Black = s.getGame1().getGame() == GridStateFactory.TB_GO ||
                   s.getGame1().getGame() == GridStateFactory.TB_GO9 ||
-                  s.getGame1().getGame() == GridStateFactory.TB_GO13;
+                  s.getGame1().getGame() == GridStateFactory.TB_GO13 ||
+                  s.getGame1().getGame() == GridStateFactory.TB_RENJU;
                if (s.isTwoGameSet()) {
                   color = "white,black (2 game set)";
-               } else if ((myPID == s.getPlayer1Pid() && !isGo) ||
-                  (myPID == s.getPlayer2Pid() && isGo)) {
+               } else if ((myPID == s.getPlayer1Pid() && !p1Black) ||
+                  (myPID == s.getPlayer2Pid() && p1Black)) {
                   color = "white";
                } else {
                   color = "black";
                }
                if ("white".equals(color)) {
-                  color += (!isGo ? " (p1)" : " (p2)");
+                  color += (!p1Black ? " (p1)" : " (p2)");
                } else if ("black".equals(color)) {
-                  color += (isGo ? " (p1)" : " (p2)");
+                  color += (p1Black ? " (p1)" : " (p2)");
                }
                TBGame g = s.getGame1();
                boolean koth = g.getEventId() == kothStorer.getEventId(g.getGame());
@@ -817,21 +820,24 @@
             </tr>
             <% for (TBSet s : invitesFrom) {
                String color = null;
-               boolean isGo = s.getGame1().getGame() == GridStateFactory.TB_GO ||
+               // Go and renju are black-first: player 1 plays black. The pente
+               // variants give player 1 white, so coloring keys off this flag.
+               boolean p1Black = s.getGame1().getGame() == GridStateFactory.TB_GO ||
                   s.getGame1().getGame() == GridStateFactory.TB_GO9 ||
-                  s.getGame1().getGame() == GridStateFactory.TB_GO13;
+                  s.getGame1().getGame() == GridStateFactory.TB_GO13 ||
+                  s.getGame1().getGame() == GridStateFactory.TB_RENJU;
                if (s.isTwoGameSet()) {
                   color = "white,black (2 game set)";
-               } else if ((myPID == s.getPlayer1Pid() && !isGo) ||
-                  (myPID == s.getPlayer2Pid() && isGo)) {
+               } else if ((myPID == s.getPlayer1Pid() && !p1Black) ||
+                  (myPID == s.getPlayer2Pid() && p1Black)) {
                   color = "white";
                } else {
                   color = "black";
                }
                if ("white".equals(color)) {
-                  color += (!isGo ? " (p1)" : " (p2)");
+                  color += (!p1Black ? " (p1)" : " (p2)");
                } else if ("black".equals(color)) {
-                  color += (isGo ? " (p1)" : " (p2)");
+                  color += (p1Black ? " (p1)" : " (p2)");
                }
                long pid = s.getInviteePid();
                DSGPlayerGameData dsgPlayerGameData = null;
@@ -918,16 +924,19 @@
                <td><b>Rated</b></td>
             </tr>
             <% for (TBGame g : myTurn) {
-               boolean isGo = g.getGame() == GridStateFactory.TB_GO ||
+               // Go and renju are black-first: player 1 plays black. The pente
+               // variants give player 1 white, so coloring keys off this flag.
+               boolean p1Black = g.getGame() == GridStateFactory.TB_GO ||
                   g.getGame() == GridStateFactory.TB_GO9 ||
-                  g.getGame() == GridStateFactory.TB_GO13;
-               String color = ((myPID == g.getPlayer1Pid() && !isGo) ||
-                  (myPID == g.getPlayer2Pid() && isGo)) ?
+                  g.getGame() == GridStateFactory.TB_GO13 ||
+                  g.getGame() == GridStateFactory.TB_RENJU;
+               String color = ((myPID == g.getPlayer1Pid() && !p1Black) ||
+                  (myPID == g.getPlayer2Pid() && p1Black)) ?
                   "white" : "black";
                if ("white".equals(color)) {
-                  color += (!isGo ? " (p1)" : " (p2)");
+                  color += (!p1Black ? " (p1)" : " (p2)");
                } else {
-                  color += (isGo ? " (p1)" : " (p2)");
+                  color += (p1Black ? " (p1)" : " (p2)");
                }
                long oppPid = dsgPlayerData.getPlayerID() == g.getPlayer1Pid() ?
                   g.getPlayer2Pid() : g.getPlayer1Pid();
@@ -999,16 +1008,19 @@
                <td><b>Rated</b></td>
             </tr>
             <% for (TBGame g : oppTurn) {
-               boolean isGo = g.getGame() == GridStateFactory.TB_GO ||
+               // Go and renju are black-first: player 1 plays black. The pente
+               // variants give player 1 white, so coloring keys off this flag.
+               boolean p1Black = g.getGame() == GridStateFactory.TB_GO ||
                   g.getGame() == GridStateFactory.TB_GO9 ||
-                  g.getGame() == GridStateFactory.TB_GO13;
-               String color = ((myPID == g.getPlayer1Pid() && !isGo) ||
-                  (myPID == g.getPlayer2Pid() && isGo)) ?
+                  g.getGame() == GridStateFactory.TB_GO13 ||
+                  g.getGame() == GridStateFactory.TB_RENJU;
+               String color = ((myPID == g.getPlayer1Pid() && !p1Black) ||
+                  (myPID == g.getPlayer2Pid() && p1Black)) ?
                   "white" : "black";
                if ("white".equals(color)) {
-                  color += (!isGo ? " (p1)" : " (p2)");
+                  color += (!p1Black ? " (p1)" : " (p2)");
                } else {
-                  color += (isGo ? " (p1)" : " (p2)");
+                  color += (p1Black ? " (p1)" : " (p2)");
                }
                long oppPid = dsgPlayerData.getPlayerID() == g.getPlayer1Pid() ?
                   g.getPlayer2Pid() : g.getPlayer1Pid();

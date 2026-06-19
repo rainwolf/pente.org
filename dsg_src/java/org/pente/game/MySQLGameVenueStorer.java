@@ -70,6 +70,13 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
         //System.out.println(jsFormat.format(storer.getSiteTree()).toString());
     }
 
+    // Test seam: wrap a prebuilt venue tree without touching the database, so the
+    // venue-lookup logic (e.g. the turn-based -> base id translation in
+    // findGameTreeData) can be unit tested without a live DB.
+    public MySQLGameVenueStorer(Vector<GameTreeData> tree) {
+        this.tree = tree;
+    }
+
     public MySQLGameVenueStorer(DBHandler dbHandler) {
 
         this.dbHandler = dbHandler;
@@ -434,10 +441,17 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
     // Find the tree node for a game by its id.  The tree is no longer guaranteed
     // to be densely packed by game id (that only held when every live game had
     // pente_game rows), so look the node up by getID() instead of by position.
+    //
+    // Turn-based ids are base + 50 (GridStateFactory.TB_START) and share their
+    // base game's venue node — the venue tree only holds base (live) ids.  The
+    // old positional lookup translated turn-based ids with tree.get(game - 1 - 50);
+    // restore that translation here so turn-based lookups (e.g. creating a
+    // tournament, whose game id is turn-based) resolve instead of returning null.
     private GameTreeData findGameTreeData(int game) {
+        int baseGame = game > 50 ? game - 50 : game;
         for (int i = 0; i < tree.size(); i++) {
             GameTreeData gameTreeData = (GameTreeData) tree.get(i);
-            if (gameTreeData != null && gameTreeData.getID() == game) {
+            if (gameTreeData != null && gameTreeData.getID() == baseGame) {
                 return gameTreeData;
             }
         }

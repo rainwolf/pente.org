@@ -197,6 +197,13 @@ public class NewGameServlet extends HttpServlet {
             error = "You must select a game to play.";
         }
 
+        // The colour dropdown sends 1 = White, 2 = Black.  Translate it to the
+        // player slot the inviter takes.  Player 1 is white in the pente variants
+        // but BLACK in Go and renju, so for those games choosing Black means
+        // playing as player 1 (the colour -> slot mapping inverts).
+        boolean blackFirst = isBlackFirst(game);
+        playAs = inviterSlot(game, playAs);
+
         if (daysPerMoveStr != null) {
             try {
                 daysPerMove = Integer.parseInt(daysPerMoveStr);
@@ -332,12 +339,16 @@ public class NewGameServlet extends HttpServlet {
                         pid2 = inviteePlayerData.getPlayerID();
                     }
 
-                    if (game == GridStateFactory.TB_GO ||
-                            game == GridStateFactory.TB_GO9 ||
-                            game == GridStateFactory.TB_GO13 ||
-                            game == GridStateFactory.TB_RENJU) {
+                    if (blackFirst) {
+                        // Colour-asymmetric games (Go, renju) are a single game,
+                        // not a two-game set: the inviter takes the slot chosen
+                        // above.  Keep the recorded player1/player2 pids aligned
+                        // with that slot so listings show the right colour.
                         if (playAs == 2) {
                             tbg = tbg2;
+                            long tmp = pid1;
+                            pid1 = pid2;
+                            pid2 = tmp;
                         }
                         tbg2 = null;
                     }
@@ -443,6 +454,27 @@ public class NewGameServlet extends HttpServlet {
         }
     }
 
+
+    /**
+     * Whether player 1 plays black for this turn-based game.  Player 1 is white in
+     * the pente variants but black in Go and renju, so the invitation colour
+     * choice maps to a different player slot for these games.
+     */
+    public static boolean isBlackFirst(int game) {
+        return game == GridStateFactory.TB_GO ||
+                game == GridStateFactory.TB_GO9 ||
+                game == GridStateFactory.TB_GO13 ||
+                game == GridStateFactory.TB_RENJU;
+    }
+
+    /**
+     * Map the colour the inviter picked (1 = White, 2 = Black) to the player slot
+     * they take (1 = player 1, 2 = player 2).  For black-first games (Go, renju)
+     * the mapping inverts, so choosing Black means playing as player 1.
+     */
+    public static int inviterSlot(int game, int colorChoice) {
+        return isBlackFirst(game) ? (3 - colorChoice) : colorChoice;
+    }
 
     private TBGame createGame(int player, DSGPlayerData invitePlayer,
                               DSGPlayerData inviteePlayer, int game, int daysPerMove, boolean rated) throws Throwable {

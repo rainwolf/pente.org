@@ -146,7 +146,9 @@
       color = "#ffffff";
    }
 
-   boolean isGo = gameId == GridStateFactory.TB_GO || gameId == GridStateFactory.TB_GO9 || gameId == GridStateFactory.TB_GO13;
+   // Go and renju are black-first: player 1 plays black (pente variants give
+   // player 1 white), so the name cells below key their colors off this flag.
+   boolean p1Black = gameId == GridStateFactory.TB_GO || gameId == GridStateFactory.TB_GO9 || gameId == GridStateFactory.TB_GO13 || gameId == GridStateFactory.TB_RENJU;
    int gridSize = 19;
    if (gameId == GridStateFactory.TB_GO9) {
       gridSize = 9;
@@ -246,15 +248,15 @@
                               </tr>
                               <tr>
                                  <td width="10%"></td>
-                                 <td width="45%" align="center" bgcolor="#<%=(!isGo?"FFFFFF":"000000")%>">
+                                 <td width="45%" align="center" bgcolor="#<%=(!p1Black?"FFFFFF":"000000")%>">
                                     <b><font
-                                       color="<%=(!isGo?"black":"white")%>"><%=game.getPlayer1Data().getUserIDName()%>
+                                       color="<%=(!p1Black?"black":"white")%>"><%=game.getPlayer1Data().getUserIDName()%>
                                     </font>
                                     </b>
                                  </td>
-                                 <td align="center" bgcolor="#<%=(isGo?"FFFFFF":"000000")%>">
+                                 <td align="center" bgcolor="#<%=(p1Black?"FFFFFF":"000000")%>">
                                     <b><font
-                                       color="<%=(isGo?"black":"white")%>"><%=game.getPlayer2Data().getUserIDName()%>
+                                       color="<%=(p1Black?"black":"white")%>"><%=game.getPlayer2Data().getUserIDName()%>
                                     </font>
                                     </b>
                                  </td>
