@@ -39,7 +39,7 @@ public class CacheDSGFollowerStorer implements DSGFollowerStorer {
         }
 
         ArrayList<Long> followingList = getFollowing(followerPid);
-        if (!followingList.contains(followerPid)) {
+        if (!followingList.contains(pid)) {
             followingList.add(pid);
             redisManager.hput(RedisConnectionManager.PID_TO_FOLLOWING, followerPid, followingList);
         }

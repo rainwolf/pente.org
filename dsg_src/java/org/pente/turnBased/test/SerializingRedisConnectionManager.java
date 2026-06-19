@@ -28,13 +28,27 @@ public class SerializingRedisConnectionManager extends RedisConnectionManager {
 
     private final Map<String, Map<String, byte[]>> store = new ConcurrentHashMap<String, Map<String, byte[]>>();
 
+    // When false, mimics a Redis outage: writes are dropped and reads return
+    // null/empty (exactly how the production manager behaves when redisAvailable
+    // is false), so callers must fall back to the DB.
+    private volatile boolean available = true;
+
     public SerializingRedisConnectionManager() {
         super();
     }
 
+    public void setAvailable(boolean available) {
+        this.available = available;
+    }
+
+    @Override
+    public boolean isAvailable() {
+        return available;
+    }
+
     @Override
     public <T extends Serializable> void hput(String namespace, String field, T value) {
-        if (value == null) return;
+        if (!available || value == null) return;
         store.computeIfAbsent(namespace, k -> new ConcurrentHashMap<String, byte[]>())
              .put(String.valueOf(field), RedisConnectionManager.serialize(value));
     }
@@ -42,6 +56,7 @@ public class SerializingRedisConnectionManager extends RedisConnectionManager {
     @Override
     @SuppressWarnings("unchecked")
     public <T> T hget(String namespace, String field) {
+        if (!available) return null;
         Map<String, byte[]> map = store.get(namespace);
         if (map == null) return null;
         byte[] bytes = map.get(String.valueOf(field));
@@ -51,12 +66,14 @@ public class SerializingRedisConnectionManager extends RedisConnectionManager {
 
     @Override
     public boolean hexists(String namespace, String field) {
+        if (!available) return false;
         Map<String, byte[]> map = store.get(namespace);
         return map != null && map.containsKey(String.valueOf(field));
     }
 
     @Override
     public void hremove(String namespace, String field) {
+        if (!available) return;
         Map<String, byte[]> map = store.get(namespace);
         if (map != null) {
             map.remove(String.valueOf(field));
@@ -65,12 +82,14 @@ public class SerializingRedisConnectionManager extends RedisConnectionManager {
 
     @Override
     public void invalidate(String namespace) {
+        if (!available) return;
         store.remove(namespace);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T> List<T> hgetAllValues(String namespace) {
+        if (!available) return new ArrayList<T>();
         Map<String, byte[]> map = store.get(namespace);
         if (map == null) return new ArrayList<T>();
         List<T> result = new ArrayList<T>(map.size());
@@ -83,6 +102,7 @@ public class SerializingRedisConnectionManager extends RedisConnectionManager {
 
     @Override
     public List<String> hgetAllFields(String namespace) {
+        if (!available) return new ArrayList<String>();
         Map<String, byte[]> map = store.get(namespace);
         if (map == null) return new ArrayList<String>();
         List<String> fields = new ArrayList<String>(map.keySet());

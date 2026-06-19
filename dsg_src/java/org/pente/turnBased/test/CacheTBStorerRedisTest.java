@@ -26,6 +26,7 @@ public class CacheTBStorerRedisTest extends TestCase {
 
     private InMemoryTBGameStorer base;
     private CacheTBStorer cache;
+    private SerializingRedisConnectionManager redis;
 
     public CacheTBStorerRedisTest(String name) {
         super(name);
@@ -37,7 +38,8 @@ public class CacheTBStorerRedisTest extends TestCase {
         // serializes on put and deserializes on get so reads return independent
         // copies, faithfully mimicking real Redis (unlike the raw-reference
         // production fallback, which makes divergence tests toothless).
-        RedisConnectionManager.setInstance(new SerializingRedisConnectionManager());
+        redis = new SerializingRedisConnectionManager();
+        RedisConnectionManager.setInstance(redis);
         RedisConnectionManager.getInstance().invalidate(
                 RedisConnectionManager.SID_TO_TB_SET);
 
@@ -320,6 +322,195 @@ public class CacheTBStorerRedisTest extends TestCase {
         } finally {
             cache2.destroy();
         }
+    }
+
+    /**
+     * Stranding regression — the "all my turn-based games vanished except one
+     * or two" report. PID_TO_TB_SET_IDS == null is CacheTBStorer's "this player
+     * has never been loaded this cache epoch" signal; loadSets() reads the DB
+     * only while it is null. createSet side-indexes a freshly created set for
+     * BOTH seats, so when an opponent starts a game against a player who has not
+     * been loaded, indexSetForPlayer used to seed that player a one-element
+     * index — making their next getSetsByPid look complete and return ONLY that
+     * set. The side index must never be seeded for an unloaded player; the set
+     * is in the DB and is picked up when the player is first loaded.
+     */
+    public void testCreateSetDoesNotStrandOpponentsOtherGames() throws Exception {
+        // Victim 1002 already has two games in the DB (one as each seat),
+        // never loaded into the cache.
+        base.createSet(activeSet(301L, 1002L, 5001L));
+        base.createSet(activeSet(302L, 5002L, 1002L));
+
+        // An opponent starts a brand-new game against 1002 through the cache.
+        cache.createSet(activeSet(303L, 1002L, 5003L));
+
+        // 1002 opens their games list for the first time: must see all three,
+        // not just the side-indexed 303.
+        java.util.Set<Long> ids = setIds(cache.getSetsByPid(1002L));
+        assertEquals("opponent's full game list must load from the DB",
+                3, ids.size());
+        assertTrue("the player's pre-existing games must not be stranded",
+                ids.containsAll(java.util.Arrays.asList(301L, 302L, 303L)));
+    }
+
+    /**
+     * Same stranding bug via the accept path: acceptInvite side-indexes the
+     * accepted set for the accepter. If the accepter has not been loaded this
+     * cache epoch, seeding their index strands the rest of their games.
+     */
+    public void testAcceptInviteDoesNotStrandAccepterOtherGames() throws Exception {
+        // Accepter 1002 already has two games in the DB, never loaded into cache.
+        base.createSet(activeSet(311L, 1002L, 6001L));
+        base.createSet(activeSet(312L, 6002L, 1002L));
+
+        // A public waiting invite that 1002 accepts through the cache.
+        TBSet invite = waitingInvite(313L, 7001L);
+        cache.createSet(invite);
+        cache.acceptInvite(invite, 1002L);
+
+        java.util.Set<Long> ids = setIds(cache.getSetsByPid(1002L));
+        assertEquals("accepter's full game list must load from the DB",
+                3, ids.size());
+        assertTrue("the accepter's pre-existing games must not be stranded",
+                ids.containsAll(java.util.Arrays.asList(311L, 312L, 313L)));
+    }
+
+    /**
+     * Regression guard for the DB-before-index reorder in acceptInvite: an
+     * already-loaded ("online") accepter must still see the accepted set in
+     * their cached list immediately after accepting. The guarded index update
+     * now runs after the DB commit, so this proves the live-update path stays
+     * intact for loaded players.
+     */
+    public void testAcceptInviteAddsSetForAlreadyLoadedAccepter() throws Exception {
+        // Force-load 1003 so their index is non-null (empty) -- i.e. online.
+        assertTrue("precondition: accepter starts with no games",
+                cache.getSetsByPid(1003L).isEmpty());
+
+        TBSet invite = waitingInvite(320L, 7200L);
+        cache.createSet(invite);
+        cache.acceptInvite(invite, 1003L);
+
+        java.util.Set<Long> ids = setIds(cache.getSetsByPid(1003L));
+        assertTrue("loaded accepter must see the accepted set live",
+                ids.contains(320L));
+    }
+
+    /**
+     * Race regression: a set committed (via createSet) DURING a player's
+     * first-load DB read must not be lost from their cached index. Without
+     * bootstrap/side-add coordination, the side-add saw a null index and skipped
+     * while the bootstrap overwrote the index with its pre-commit snapshot -> the
+     * new game was stranded until the next cache epoch (a rare recurrence of the
+     * original stranding bug).
+     */
+    public void testFirstLoadDoesNotLoseSetCommittedDuringDbRead() throws Exception {
+        final long victim = 1004L;
+        // Victim has one pre-existing game in the DB, never loaded into cache.
+        base.createSet(activeSet(401L, victim, 8001L));
+
+        // While the victim's first-load reads the DB, an opponent starts a NEW
+        // game against them through the cache (commits to the DB + tries to index).
+        base.runOnceDuringLoadSets(victim, new Runnable() {
+            public void run() {
+                try {
+                    cache.createSet(activeSet(402L, victim, 8002L));
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+
+        java.util.Set<Long> ids = setIds(cache.getSetsByPid(victim));
+        assertTrue("a set committed during the first-load DB read must not be lost",
+                ids.contains(402L));
+        assertTrue(ids.contains(401L));
+        assertEquals(2, ids.size());
+    }
+
+    /**
+     * Redis outage: loadSets must serve from the DB, not an empty cached view.
+     * Building the result via buildSetsFromIndex would hget every sid and get
+     * null while Redis is down -> an empty list; loadWaitingSets already guards
+     * this exact case and loadSets must too.
+     */
+    public void testLoadSetsServesFromDbDuringRedisOutage() throws Exception {
+        base.createSet(activeSet(601L, 1005L, 9101L));
+        base.createSet(activeSet(602L, 9102L, 1005L));
+
+        redis.setAvailable(false);
+
+        java.util.Set<Long> ids = setIds(cache.getSetsByPid(1005L));
+        assertEquals("during a Redis outage loadSets must serve from the DB",
+                2, ids.size());
+        assertTrue(ids.containsAll(java.util.Arrays.asList(601L, 602L)));
+    }
+
+    /**
+     * An invalidation (uncache) that fires DURING a first-load DB read must win:
+     * the in-flight bootstrap must not republish its pre-invalidation snapshot
+     * and pin a stale index. A later load must re-bootstrap fresh from the DB.
+     */
+    public void testInvalidationDuringLoadDoesNotPinStaleIndex() throws Exception {
+        final long victim = 1006L;
+        base.createSet(activeSet(701L, victim, 9201L));
+
+        base.runOnceDuringLoadSets(victim, new Runnable() {
+            public void run() {
+                cache.uncacheGamesForPlayer(victim);
+            }
+        });
+        cache.getSetsByPid(victim); // first load is invalidated mid-flight
+
+        // The DB changes after that load; a re-bootstrap must reflect it (it
+        // would not if the stale snapshot had been pinned into the index).
+        base.createSet(activeSet(702L, victim, 9202L));
+        java.util.Set<Long> ids = setIds(cache.getSetsByPid(victim));
+        assertTrue("invalidation during load must not pin a stale index",
+                ids.contains(701L));
+        assertTrue(ids.contains(702L));
+        assertEquals(2, ids.size());
+    }
+
+    /** A public, not-started waiting invite (open seat 2) from inviterPid. */
+    private static TBSet waitingInvite(long sid, long inviterPid) {
+        TBGame g = new TBGame();
+        g.setGame(GridStateFactory.TB_PENTE);
+        g.setState(TBGame.STATE_NOT_STARTED);
+        g.setPlayer1Pid(inviterPid);
+        g.setPlayer2Pid(0L);
+        g.setDaysPerMove(3);
+        g.setCreationDate(new Date());
+        g.setLastMoveDate(new Date());
+        TBSet set = new TBSet(sid, g, null);
+        set.setState(TBSet.STATE_NOT_STARTED);
+        set.setPlayer1Pid(inviterPid);
+        set.setPlayer2Pid(0L);
+        set.setInviterPid(inviterPid);
+        return set;
+    }
+
+    private static TBSet activeSet(long sid, long p1, long p2) {
+        TBGame g = new TBGame();
+        g.setGame(GridStateFactory.TB_PENTE);
+        g.setState(TBGame.STATE_ACTIVE);
+        g.setPlayer1Pid(p1);
+        g.setPlayer2Pid(p2);
+        g.setDaysPerMove(3);
+        g.setLastMoveDate(new Date());
+        TBSet set = new TBSet(sid, g, null);
+        set.setState(TBSet.STATE_ACTIVE);
+        set.setPlayer1Pid(p1);
+        set.setPlayer2Pid(p2);
+        return set;
+    }
+
+    private static java.util.Set<Long> setIds(java.util.List<TBSet> sets) {
+        java.util.Set<Long> ids = new java.util.HashSet<Long>();
+        for (TBSet s : sets) {
+            ids.add(s.getSetId());
+        }
+        return ids;
     }
 
     private static boolean containsSid(java.util.List<TBSet> sets, long sid) {

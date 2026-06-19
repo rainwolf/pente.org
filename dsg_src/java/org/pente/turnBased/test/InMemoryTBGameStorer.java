@@ -97,8 +97,38 @@ public class InMemoryTBGameStorer implements TBGameStorer {
         return 0;
     }
 
+    private Runnable loadSetsHook;
+    private long loadSetsHookPid = Long.MIN_VALUE;
+
+    /**
+     * Test hook: run {@code r} exactly once during loadSets(pid), after the
+     * result snapshot is computed but before it is returned — simulates a
+     * concurrent commit landing in the middle of a player's first-load DB read.
+     */
+    public void runOnceDuringLoadSets(long pid, Runnable r) {
+        this.loadSetsHookPid = pid;
+        this.loadSetsHook = r;
+    }
+
     public List<TBSet> loadSets(long pid) throws TBStoreException {
-        return new ArrayList<TBSet>();
+        // Returns every set the player is a seat of, regardless of whether the
+        // cache has ever indexed them -- enough to exercise the load/strand
+        // paths. (Unlike MySQLTBGameStorer.loadSets this does NOT filter by game
+        // state; the stranding tests assert set-id membership only.) Deep-copied
+        // so callers get independent instances (mirrors Redis deserialization).
+        List<TBSet> out = new ArrayList<TBSet>();
+        for (TBSet s : setsById.values()) {
+            if (s != null
+                    && (s.getPlayer1Pid() == pid || s.getPlayer2Pid() == pid)) {
+                out.add(copy(s));
+            }
+        }
+        if (loadSetsHook != null && pid == loadSetsHookPid) {
+            Runnable r = loadSetsHook;
+            loadSetsHook = null;
+            r.run();
+        }
+        return out;
     }
 
     public synchronized void storeNewMove(long gid, int moveNum, int move)
@@ -145,7 +175,12 @@ public class InMemoryTBGameStorer implements TBGameStorer {
     }
 
     public void acceptInvite(TBSet set, long pid) throws TBStoreException {
-        // no-op
+        // Mirror the real DB: CacheTBStorer fills the open seat on the passed
+        // set before calling us, so persist that filled copy. A later
+        // loadSets(pid) must then return this set as one of pid's games.
+        if (setsById.containsKey(set.getSetId())) {
+            setsById.put(set.getSetId(), copy(set));
+        }
     }
 
     public void cancelSet(TBSet set) throws TBStoreException {

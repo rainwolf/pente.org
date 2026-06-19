@@ -54,6 +54,22 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
     };
     private final Object cacheTbLock = new Object();
 
+    // Per-pid bootstrap coordination for the PID_TO_TB_SET_IDS index. A pid sits
+    // in pidsLoading while loadSets() is reading that player's rows from the DB
+    // (deliberately outside cacheTbLock). A concurrent createSet/acceptInvite for
+    // a loading pid records the new sid into pendingPlayerIndexAdds instead of the
+    // not-yet-published index; the bootstrap unions those in before it writes, so
+    // a set that commits mid-load is never dropped. Both are in-memory and guarded
+    // by cacheTbLock — a crash clears them and the index re-bootstraps cleanly
+    // (nothing partial is ever persisted to Redis).
+    private final HashSet<Long> pidsLoading = new HashSet<Long>();
+    private final HashMap<Long, HashSet<Long>> pendingPlayerIndexAdds =
+            new HashMap<Long, HashSet<Long>>();
+    // Bumped (under cacheTbLock) whenever a removal/invalidation touches a pid
+    // that is mid-bootstrap, so loadSets can detect that its lock-free DB snapshot
+    // was invalidated during the read and decline to publish a stale index.
+    private long indexLoadGeneration = 0L;
+
     private Timer loadExpireSoonTimer;
     private Timer checkTimeoutTimer;
     private Timer stalePlayerTimer;
@@ -146,6 +162,12 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
     public void uncacheGamesForPlayer(long pid) {
         synchronized (cacheTbLock) {
             pente_cache.hremove(RedisConnectionManager.PID_TO_TB_SET_IDS, pid);
+            // The in-memory bootstrap state is part of this player's cache; drop
+            // it, and bump the generation so an in-flight bootstrap for this pid
+            // declines to publish its now-stale snapshot.
+            if (pidsLoading.contains(pid)) indexLoadGeneration++;
+            pidsLoading.remove(pid);
+            pendingPlayerIndexAdds.remove(pid);
         }
     }
 
@@ -160,6 +182,12 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
             pente_cache.invalidate(RedisConnectionManager.TB_WAITING_SET_IDS);
             pente_cache.invalidate(RedisConnectionManager.EID_TO_TB_EID);
             pente_cache.invalidate(RedisConnectionManager.PID_TO_TB_VACATION);
+            // In-memory bootstrap state is part of the cache; clear it too, and
+            // bump the generation so any in-flight bootstrap declines to publish
+            // its now-stale snapshot into the wiped index.
+            if (!pidsLoading.isEmpty()) indexLoadGeneration++;
+            pidsLoading.clear();
+            pendingPlayerIndexAdds.clear();
             restartTasks();
         }
     }
@@ -1139,16 +1167,49 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         }
     }
 
-    /** Add a set's sid to a player's set-id index. */
-    private void indexSetForPlayer(TBSet set, long pid) {
+    /**
+     * Add a set to a player's index, but never seed a partial index for a player
+     * who has not been (and is not currently being) loaded.
+     *
+     * In loadSets(), a null PID_TO_TB_SET_IDS entry is the "this player has never
+     * been loaded this epoch" signal that triggers a full DB read. A side path
+     * that touches a co-party of this set (the opponent of a createSet, the
+     * accepter of an invite) must not turn that null into a one-element index, or
+     * loadSets() would treat the cache as complete and return only this set — the
+     * "all my games vanished except one or two" bug.
+     *
+     * Three cases, all under cacheTbLock:
+     *  - index already present -> add the sid (keep the loaded list current);
+     *  - a first-load is in flight for this pid (pidsLoading) -> buffer the sid in
+     *    pendingPlayerIndexAdds so the bootstrap unions it in (the set may have
+     *    committed after the bootstrap's DB snapshot was taken);
+     *  - otherwise (truly unloaded) -> skip; the set is write-through to the DB
+     *    and is picked up when the player is first loaded.
+     */
+    private void addSetToPlayerIndexIfLoaded(TBSet set, long pid) {
         if (pid == 0) return;
-        HashSet<Long> sids = pente_cache.hget(RedisConnectionManager.PID_TO_TB_SET_IDS, pid);
-        if (sids == null) sids = new HashSet<Long>();
-        sids.add(set.getSetId());
-        pente_cache.hput(RedisConnectionManager.PID_TO_TB_SET_IDS, pid, sids);
+        synchronized (cacheTbLock) {
+            HashSet<Long> sids = pente_cache.hget(RedisConnectionManager.PID_TO_TB_SET_IDS, pid);
+            if (sids != null) {
+                sids.add(set.getSetId());
+                pente_cache.hput(RedisConnectionManager.PID_TO_TB_SET_IDS, pid, sids);
+            } else if (pidsLoading.contains(pid)) {
+                HashSet<Long> pend = pendingPlayerIndexAdds.get(pid);
+                if (pend == null) {
+                    pend = new HashSet<Long>();
+                    pendingPlayerIndexAdds.put(pid, pend);
+                }
+                pend.add(set.getSetId());
+            }
+            // else: truly unloaded -> skip.
+        }
     }
 
-    /** Remove a set from Redis and from both players' indexes and the waiting set. */
+    /**
+     * Remove a set from Redis and from both players' indexes and the waiting set.
+     * Call under {@code synchronized (cacheTbLock)} so the plain hremoves and the
+     * (self-locking) index removes apply as one atomic eviction.
+     */
     private void evictSet(TBSet set) {
         pente_cache.hremove(RedisConnectionManager.SID_TO_TB_SET, set.getSetId());
         for (TBGame g : set.getGames()) {
@@ -1161,10 +1222,18 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
     private void removeSetFromPlayerIndex(long sid, long pid) {
         if (pid == 0) return;
-        HashSet<Long> sids = pente_cache.hget(RedisConnectionManager.PID_TO_TB_SET_IDS, pid);
-        if (sids != null) {
-            sids.remove(sid);
-            pente_cache.hput(RedisConnectionManager.PID_TO_TB_SET_IDS, pid, sids);
+        synchronized (cacheTbLock) {
+            HashSet<Long> sids = pente_cache.hget(RedisConnectionManager.PID_TO_TB_SET_IDS, pid);
+            if (sids != null) {
+                sids.remove(sid);
+                pente_cache.hput(RedisConnectionManager.PID_TO_TB_SET_IDS, pid, sids);
+            }
+            // Also drop it from any in-flight bootstrap buffer, and bump the
+            // generation so a bootstrap that snapshotted this set before the
+            // removal declines to publish it (no resurrection of a cancelled set).
+            HashSet<Long> pend = pendingPlayerIndexAdds.get(pid);
+            if (pend != null) pend.remove(sid);
+            if (pidsLoading.contains(pid)) indexLoadGeneration++;
         }
     }
 
@@ -1219,9 +1288,12 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
             pente_cache.hput(RedisConnectionManager.TB_WAITING_SET_IDS, set.getSetId(), set.getSetId());
         }
 
-        // if players involved in set already have cached sets, update caches
-        indexSetForPlayer(set, set.getPlayer1Pid());
-        indexSetForPlayer(set, set.getPlayer2Pid());
+        // Keep each player's index current if they are loaded (or buffer it if a
+        // first-load is in flight); never seed an unloaded player.
+        // addSetToPlayerIndexIfLoaded serializes the read-modify-write on
+        // cacheTbLock internally.
+        addSetToPlayerIndexIfLoaded(set, set.getPlayer1Pid());
+        addSetToPlayerIndexIfLoaded(set, set.getPlayer2Pid());
 
         // tourney games are started automatically
         if (set.getState() == TBSet.STATE_ACTIVE) {
@@ -1361,21 +1433,77 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
     public List<TBSet> loadSets(long pid) throws TBStoreException {
         log4j.debug("CacheTBGameStorer.loadSets(" + pid + ")");
+        // Redis down: building the result via buildSetsFromIndex would hget every
+        // sid and get null -> an empty list. Serve straight from the DB (the
+        // source of truth), mirroring loadWaitingSets.
+        if (!pente_cache.isAvailable()) {
+            return baseStorer.loadSets(pid);
+        }
         HashSet<Long> sids = pente_cache.hget(RedisConnectionManager.PID_TO_TB_SET_IDS, pid);
-        if (sids == null) {
-            List<TBSet> sets = baseStorer.loadSets(pid);
+        if (sids != null) {
+            cacheStats.incrementSetLoadsCached(sids.size());
+            return buildSetsFromIndex(sids);
+        }
+
+        // First load this epoch. Claim the bootstrap (so concurrent side-adds for
+        // this pid buffer into pendingPlayerIndexAdds rather than being dropped),
+        // capture the index generation, then read the DB WITHOUT holding cacheTbLock.
+        boolean claimed;
+        long genAtClaim;
+        synchronized (cacheTbLock) {
+            sids = pente_cache.hget(RedisConnectionManager.PID_TO_TB_SET_IDS, pid);
+            claimed = (sids == null) && pidsLoading.add(pid);
+            genAtClaim = indexLoadGeneration;
+        }
+        if (sids != null) {
+            // Another thread published the index while we were checking.
+            cacheStats.incrementSetLoadsCached(sids.size());
+            return buildSetsFromIndex(sids);
+        }
+        try {
+            List<TBSet> sets = baseStorer.loadSets(pid); // DB read, no lock held
             cacheStats.incrementSetLoads(sets.size());
-            if (sets.isEmpty()) {
-                pente_cache.hput(RedisConnectionManager.PID_TO_TB_SET_IDS, pid, new HashSet<Long>());
-            } else {
+            HashSet<Long> cur;
+            synchronized (cacheTbLock) {
+                // If a removal/invalidation for this pid landed during the
+                // lock-free DB read above, indexLoadGeneration changed and our
+                // snapshot may be stale: do NOT publish it. Leave the index null
+                // so the next call re-bootstraps from the DB; return the snapshot
+                // best-effort for this call (the buffer is dropped in the finally).
+                if (indexLoadGeneration != genAtClaim) {
+                    return new ArrayList<TBSet>(sets);
+                }
+                // Re-read + union under the lock: merge the DB snapshot with any
+                // set a side path recorded while we were reading the DB, never
+                // overwrite. (cur stays empty for a player with no games -> the
+                // existing "loaded but empty" sentinel.)
+                cur = pente_cache.hget(RedisConnectionManager.PID_TO_TB_SET_IDS, pid);
+                if (cur == null) cur = new HashSet<Long>();
                 for (TBSet s : sets) {
                     cacheSet(s);
-                    indexSetForPlayer(s, pid);
+                    cur.add(s.getSetId());
+                }
+                HashSet<Long> pend = pendingPlayerIndexAdds.get(pid);
+                if (pend != null) cur.addAll(pend);
+                pente_cache.hput(RedisConnectionManager.PID_TO_TB_SET_IDS, pid, cur);
+            }
+            // Return the published union, not the raw DB snapshot, so the caller
+            // sees a set that committed mid-load too.
+            return buildSetsFromIndex(cur);
+        } finally {
+            if (claimed) {
+                synchronized (cacheTbLock) {
+                    pidsLoading.remove(pid);
+                    // Always discard the buffer: it was merged into the index on
+                    // success above, and on a failed/invalidated load it is dropped
+                    // so it can never leak into a later epoch's bootstrap.
+                    pendingPlayerIndexAdds.remove(pid);
                 }
             }
-            return new ArrayList<TBSet>(sets);
         }
-        cacheStats.incrementSetLoadsCached(sids.size());
+    }
+
+    private List<TBSet> buildSetsFromIndex(HashSet<Long> sids) {
         List<TBSet> sets = new ArrayList<TBSet>(sids.size());
         for (Long sid : sids) {
             TBSet s = pente_cache.hget(RedisConnectionManager.SID_TO_TB_SET, sid);
@@ -1561,6 +1689,12 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
         loadWaitingSets(); // in case set is a waiting set
 
+        // Capture before set.acceptInvite() fills the open seat. The accepter's
+        // index is updated AFTER the DB commit at the tail of this method, so the
+        // index never points at a set the DB lacks (mirrors createSet's
+        // DB-before-index order).
+        boolean wasWaiting = false;
+
         synchronized (cacheTbLock) {
             TBSet canonical = loadSet(s.getSetId());
             if (canonical == null ||
@@ -1569,9 +1703,9 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                         "has changed. " + s.getSetId() + ", pid=" + pid);
             }
 
-            if (set.isWaitingSet()) {
+            wasWaiting = set.isWaitingSet();
+            if (wasWaiting) {
                 pente_cache.hremove(RedisConnectionManager.TB_WAITING_SET_IDS, set.getSetId());
-                indexSetForPlayer(set, pid);
             }
 
             set.acceptInvite(pid);
@@ -1628,6 +1762,18 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                     && game.getGame() != GridStateFactory.TB_SWAP2KERYO) {
                 baseStorer.storeNewMove(game.getGid(), 0, GridStateFactory.getCenterMove(game.getGame()));
             }
+        }
+
+        // The accept is now durably committed to the DB above. Update the
+        // accepter's cached set-id INDEX only if they are already loaded; for an
+        // unloaded player we skip (their full list, including this set, is read
+        // from the DB on first load). Running this after the DB commit means a
+        // crash leaves the index missing a set the DB has (reload heals it),
+        // never an index pointing at a set the DB lacks. (The set body and
+        // waiting-marker writes above still precede the DB commit -- that
+        // ordering is pre-existing and unchanged here.)
+        if (wasWaiting) {
+            addSetToPlayerIndexIfLoaded(set, pid);
         }
     }
 
