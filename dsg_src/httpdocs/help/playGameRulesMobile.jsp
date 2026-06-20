@@ -175,6 +175,7 @@
    <br>
    <br>
    <a name="swap2keryo"><u>Swap2 Keryo-Pente</u></a>
+   <br>
    Swap2 Keryo-Pente is Keryo-Pente with swap2 opening rules.
    <br>
    <br>
