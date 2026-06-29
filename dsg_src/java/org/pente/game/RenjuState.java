@@ -359,15 +359,18 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
         if (moves == null || moves.length != 10) {
             return false;
         }
-        List<Integer> stabilizer = positionStabilizer();
+        List<int[]> stabilizer = positionStabilizer();
         List<Integer> accepted = new ArrayList<Integer>(offeredFifth);
         for (int move : moves) {
             if (outOfBounds(move) || getPosition(move) != 0) {
                 return false;
             }
             boolean duplicate = false;
-            for (int rot : stabilizer) {
-                int image = rotateMove(move, rot);
+            for (int[] transform : stabilizer) {
+                int image = applyTransform(move, transform);
+                if (image < 0) {
+                    continue; // image off-board: cannot collide with any offer
+                }
                 for (Integer existing : accepted) {
                     if (existing.intValue() == image) {
                         duplicate = true;
@@ -398,12 +401,15 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
     }
 
     /**
-     * D4 symmetry dedup: a candidate is a duplicate if some board symmetry that maps the
-     * current placed-stone position onto itself also maps the candidate onto an existing offer.
+     * D4 symmetry dedup: a candidate is a duplicate if some symmetry that maps the
+     * current placed-stone shape onto itself also maps the candidate onto an existing offer.
      */
     private boolean isSymmetricDuplicate(int move) {
-        for (int rot : positionStabilizer()) {
-            int image = rotateMove(move, rot);
+        for (int[] transform : positionStabilizer()) {
+            int image = applyTransform(move, transform);
+            if (image < 0) {
+                continue; // image off-board: cannot equal any offered point
+            }
             for (Integer existing : offeredFifth) {
                 if (existing.intValue() == image) {
                     return true;
@@ -413,23 +419,130 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
         return false;
     }
 
+    // Linear D4 parts applied to ABSOLUTE board coords (no centre offset). Index
+    // table matches SimpleGridState.rotx/roty/rotf; kept local so the stabilizer's
+    // affine maps are computed directly in absolute coordinates.
+    private static final int[] LROTX = {1, 1, 1, 1, -1, -1, -1, -1};
+    private static final int[] LROTY = {1, 1, -1, -1, -1, -1, 1, 1};
+    private static final int[] LROTF = {0, 1, 0, 1, 0, 1, 0, 1};
+
+    /** Linear part of D4 op r in absolute coords: returns [x1, y1]. */
+    private int[] lin(int x, int y, int r) {
+        int x1 = x * LROTX[r];
+        int y1 = y * LROTY[r];
+        if (LROTF[r] != 0) {
+            int t = x1;
+            x1 = y1;
+            y1 = t;
+        }
+        return new int[]{x1, y1};
+    }
+
     /**
-     * Rotation indices (0..7) whose D4 operation leaves the current stones invariant.
+     * Apply an affine stabilizer transform (r, tx, ty) to a board point.
+     * g(p) = lin(p, r) + (tx, ty). BOUNDS GUARD: returns the board index if the
+     * image is on-board, else sentinel -1 (so row wraparound cannot create a false
+     * duplicate).
      */
-    private List<Integer> positionStabilizer() {
-        List<Integer> stab = new ArrayList<Integer>();
-        int n = gridState.getNumMoves();
-        for (int rot = 0; rot < 8; rot++) {
-            boolean invariant = true;
-            for (int m = 0; m < n && invariant; m++) {
-                int src = getMove(m);
-                if (outOfBounds(src)) continue;
-                int dst = rotateMove(src, rot);
-                if (getPosition(dst) != getPosition(src)) {
-                    invariant = false;
+    private int applyTransform(int move, int[] transform) {
+        Coord c = convertMove(move);
+        int[] l = lin(c.x, c.y, transform[0]);
+        int X = l[0] + transform[1];
+        int Y = l[1] + transform[2];
+        int sx = gridState.getGridSizeX();
+        int sy = gridState.getGridSizeY();
+        if (X >= 0 && X < sx && Y >= 0 && Y < sy) {
+            return convertMove(X, Y);
+        }
+        return -1;
+    }
+
+    /**
+     * Affine D4 symmetries (r, tx, ty) of the current placed-stone shape, computed
+     * in ABSOLUTE coordinates (not about the fixed board centre). A transform is a
+     * colour-preserving bijection of the placed set onto itself: g(p) = lin(p, r) +
+     * (tx, ty). The translation is solved from where the first stone must land, so
+     * symmetries about an off-centre point/axis are found (the centre-based version
+     * missed them, letting mirror-equivalent 5th-offer candidates pass as distinct).
+     * Always contains identity (0,0,0); for an asymmetric shape it is exactly that.
+     */
+    private List<int[]> positionStabilizer() {
+        int sx = gridState.getGridSizeX();
+        int sy = gridState.getGridSizeY();
+        // Collect placed stones with colours: {x, y, colour}. Walk the actual
+        // move list (~4 stones during the opening) instead of rescanning all
+        // sx*sy board cells on every offer. Colour is read from the board so it
+        // reflects any opening swaps, not the raw move parity.
+        List<int[]> placed = new ArrayList<int[]>();
+        int numMoves = gridState.getNumMoves();
+        for (int i = 0; i < numMoves; i++) {
+            int mv = gridState.getMove(i);
+            if (outOfBounds(mv)) {
+                continue;
+            }
+            Coord c = convertMove(mv);
+            int colour = gridState.getPosition(c.x, c.y);
+            if (colour != 0) {
+                placed.add(new int[]{c.x, c.y, colour});
+            }
+        }
+
+        List<int[]> stab = new ArrayList<int[]>();
+        if (placed.isEmpty()) {
+            stab.add(new int[]{0, 0, 0});
+            return stab;
+        }
+
+        int[] p0 = placed.get(0);
+        int c0 = p0[2];
+        for (int r = 0; r < 8; r++) {
+            int[] lp0 = lin(p0[0], p0[1], r);
+            // p0 must map to some placed stone of the same colour: that fixes (tx, ty).
+            for (int[] q : placed) {
+                if (q[2] != c0) {
+                    continue;
+                }
+                int tx = q[0] - lp0[0];
+                int ty = q[1] - lp0[1];
+                boolean ok = true;
+                for (int[] pi : placed) {
+                    int[] l = lin(pi[0], pi[1], r);
+                    int X = l[0] + tx;
+                    int Y = l[1] + ty;
+                    if (X < 0 || X >= sx || Y < 0 || Y >= sy) {
+                        ok = false;
+                        break;
+                    }
+                    if (gridState.getPosition(X, Y) != pi[2]) {
+                        ok = false;
+                        break;
+                    }
+                }
+                if (ok) {
+                    boolean dup = false;
+                    for (int[] t : stab) {
+                        if (t[0] == r && t[1] == tx && t[2] == ty) {
+                            dup = true;
+                            break;
+                        }
+                    }
+                    if (!dup) {
+                        stab.add(new int[]{r, tx, ty});
+                    }
                 }
             }
-            if (invariant) stab.add(rot);
+        }
+
+        // Identity is always a symmetry; guard in case it was not enumerated.
+        boolean hasId = false;
+        for (int[] t : stab) {
+            if (t[0] == 0 && t[1] == 0 && t[2] == 0) {
+                hasId = true;
+                break;
+            }
+        }
+        if (!hasId) {
+            stab.add(0, new int[]{0, 0, 0});
         }
         return stab;
     }

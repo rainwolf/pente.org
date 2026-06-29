@@ -998,42 +998,73 @@
    }
    // D4 board symmetries — mirror of SimpleGridState.rotateMove so the client
    // rejects symmetric 5th-move offers exactly as the server (offerFifthMove) does.
+   // Symmetries are computed in ABSOLUTE coords (no fixed-centre offset): a symmetry
+   // is an affine map g(p) = lin(p,r) + (tx,ty) that carries the placed-stone shape
+   // onto itself, so off-centre point/axis symmetries are found too.
    var RENJU_ROTX = [1, 1, 1, 1, -1, -1, -1, -1];
    var RENJU_ROTY = [1, 1, -1, -1, -1, -1, 1, 1];
    var RENJU_ROTF = [0, 1, 0, 1, 0, 1, 0, 1];
-   function renjuRotate(move, r) {
-      var off = Math.floor(gridSize / 2);
-      var x = (move % gridSize) - off;
-      var y = Math.floor(move / gridSize) - off;
+   // Linear D4 part applied to ABSOLUTE coords (no centre offset). Returns [x1, y1].
+   function renjuLin(x, y, r) {
       var x1 = x * RENJU_ROTX[r];
       var y1 = y * RENJU_ROTY[r];
       if (RENJU_ROTF[r]) { var t = x1; x1 = y1; y1 = t; }
-      return (x1 + off) + (y1 + off) * gridSize;
+      return [x1, y1];
    }
-   // Rotations that map the current placed position onto itself (its stabilizer).
+   // The position's stabilizer: every affine symmetry g(p)=lin(p,r)+(tx,ty) that maps
+   // the placed set onto itself colour-preservingly. Returns a list of [r,tx,ty] triples
+   // (always includes identity [0,0,0]). For an asymmetric shape it is just {identity}.
    function renjuStabilizer() {
+      var placed = [];
+      for (var x = 0; x < gridSize; x++) {
+         for (var y = 0; y < gridSize; y++) {
+            if (abstractBoard[x][y] > 0) placed.push([x, y, abstractBoard[x][y]]);
+         }
+      }
       var stab = [];
+      if (placed.length === 0) { stab.push([0, 0, 0]); return stab; }
+      var p0 = placed[0], c0 = p0[2];
       for (var r = 0; r < 8; r++) {
-         var inv = true;
-         for (var i = 0; i < gridSize && inv; i++) {
-            for (var j = 0; j < gridSize && inv; j++) {
-               if (abstractBoard[i][j] > 0) {
-                  var dst = renjuRotate(i + j * gridSize, r);
-                  if (abstractBoard[dst % gridSize][Math.floor(dst / gridSize)] !== abstractBoard[i][j]) {
-                     inv = false;
-                  }
+         var l0 = renjuLin(p0[0], p0[1], r);
+         for (var q = 0; q < placed.length; q++) {
+            if (placed[q][2] !== c0) continue;
+            // translation that sends lin(p0,r) onto a same-colour placed stone q
+            var tx = placed[q][0] - l0[0];
+            var ty = placed[q][1] - l0[1];
+            var ok = true;
+            for (var i = 0; i < placed.length && ok; i++) {
+               var li = renjuLin(placed[i][0], placed[i][1], r);
+               var X = li[0] + tx, Y = li[1] + ty;
+               if (X < 0 || X >= gridSize || Y < 0 || Y >= gridSize
+                     || abstractBoard[X][Y] !== placed[i][2]) {
+                  ok = false;
                }
             }
+            if (ok) {
+               var found = false;
+               for (var s = 0; s < stab.length; s++) {
+                  if (stab[s][0] === r && stab[s][1] === tx && stab[s][2] === ty) { found = true; break; }
+               }
+               if (!found) stab.push([r, tx, ty]);
+            }
          }
-         if (inv) stab.push(r);
       }
       return stab;
+   }
+   // Apply an affine transform [r,tx,ty] to a board index. Bounds guard: an image that
+   // leaves the board returns the sentinel -1 (prevents row wraparound false dups).
+   function renjuApplyTransform(move, t) {
+      var l = renjuLin(move % gridSize, Math.floor(move / gridSize), t[0]);
+      var X = l[0] + t[1], Y = l[1] + t[2];
+      if (X >= 0 && X < gridSize && Y >= 0 && Y < gridSize) return X + Y * gridSize;
+      return -1;
    }
    // True if `move` is symmetric (under the position's stabilizer) to an offer already placed.
    function renjuIsSymmetricDup(move) {
       var stab = renjuStabilizer();
       for (var s = 0; s < stab.length; s++) {
-         if (renjuOfferList.indexOf(renjuRotate(move, stab[s])) >= 0) {
+         var img = renjuApplyTransform(move, stab[s]);
+         if (img >= 0 && renjuOfferList.indexOf(img) >= 0) {
             return true;
          }
       }

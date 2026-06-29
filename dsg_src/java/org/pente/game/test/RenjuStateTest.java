@@ -300,6 +300,123 @@ public class RenjuStateTest extends TestCase {
         assertEquals(2, s.getOfferedFifthMoves().size());
     }
 
+    // ---------------------------------------------------------------------
+    // Regression: 5th-offer symmetry must use the placed-shape stabilizer in
+    // ABSOLUTE coordinates, not symmetries about the fixed board centre.
+    // Position (from the user's screenshot):
+    //   m1=(7,7) B, m2=(7,6) W, m3=(6,7) B, m4=(6,8) W
+    // BLACK={(7,7),(6,7)} WHITE={(7,6),(6,8)}.
+    // Ground-truth stabilizer = { identity, 180deg about (6.5,7): (x,y)->(13-x,14-y) }.
+    // The OLD centre-based code finds only {identity} here (it rejects r4 because
+    // about (7,7) it sends (6,7)->(8,7)=empty), so it offers mirror pairs as
+    // distinct -- THE BUG these tests pin.
+    // ---------------------------------------------------------------------
+    private RenjuState regressionPosition() {
+        RenjuState s = newState();
+        s.addMove(xy(s, 7, 7)); s.renjuSwapDecisionMade(false); // 1 black (tengen)
+        s.addMove(xy(s, 7, 6)); s.renjuSwapDecisionMade(false); // 2 white
+        s.addMove(xy(s, 6, 7)); s.renjuSwapDecisionMade(false); // 3 black
+        s.addMove(xy(s, 6, 8)); s.renjuSwapDecisionMade(false); // 4 white
+        return s;
+    }
+
+    // 1) Dedup now fires. Each mirror pair: offering the first must reject the
+    //    second under the off-centre 180deg symmetry. (Old code accepts both.)
+    public void testRegressionMirrorPairsRejected() {
+        int[][] pairs = {
+            {8, 4, 5, 10}, // idx 68 <-> 155
+            {6, 5, 7, 9},  // idx 81 <-> 142
+            {5, 6, 8, 8},  // idx 95 <-> 128
+            {9, 9, 4, 5},  // idx 144 <-> 79
+        };
+        for (int[] p : pairs) {
+            RenjuState s = regressionPosition();
+            s.chooseBranch(true);
+            s.offerFifthMove(xy(s, p[0], p[1]));
+            try {
+                s.offerFifthMove(xy(s, p[2], p[3]));
+                fail("expected symmetric-duplicate rejection for mirror of ("
+                        + p[0] + "," + p[1] + ") -> (" + p[2] + "," + p[3] + ")");
+            } catch (IllegalArgumentException expected) {
+            }
+        }
+    }
+
+    // 2) No over-collapse. Replace m4 with (5,8) so the shape is asymmetric ->
+    //    stabilizer == {identity} -> (8,4) then (5,10) are BOTH accepted.
+    public void testRegressionAsymmetricNoOverCollapse() {
+        RenjuState s = newState();
+        s.addMove(xy(s, 7, 7)); s.renjuSwapDecisionMade(false);
+        s.addMove(xy(s, 7, 6)); s.renjuSwapDecisionMade(false);
+        s.addMove(xy(s, 6, 7)); s.renjuSwapDecisionMade(false);
+        s.addMove(xy(s, 5, 8)); s.renjuSwapDecisionMade(false); // asymmetric m4
+        s.chooseBranch(true);
+        s.offerFifthMove(xy(s, 8, 4));
+        s.offerFifthMove(xy(s, 5, 10)); // NOT a duplicate when shape is asymmetric
+        assertEquals(2, s.getOfferedFifthMoves().size());
+    }
+
+    // 3) Bounds guard. (14,14) under (r=4,tx=13,ty=14) -> (-1,0) off-board ->
+    //    sentinel, so it must NOT be flagged as a duplicate of any prior offer.
+    public void testRegressionBoundsGuardNoWraparound() {
+        RenjuState s = regressionPosition();
+        s.chooseBranch(true);
+        s.offerFifthMove(xy(s, 8, 4));    // unrelated prior offer
+        s.offerFifthMove(xy(s, 14, 14));  // image leaves the board -> accepted
+        assertEquals(2, s.getOfferedFifthMoves().size());
+
+        // Load-bearing per-axis bounds guard: a TRUE row-wraparound case.
+        // The (14,14) case above only exercises the `image < 0` sentinel
+        // (its image is (-1,0) -> flat -1), so it does NOT prove the per-axis
+        // X/Y guard does anything. Here the naive flat index is a VALID cell:
+        //   offer (14,13) = idx 209 (empty).
+        //   candidate (14,0) = idx 14 (empty).
+        //   non-identity stabilizer op (r=4,tx=13,ty=14): lin_r4(14,0)=(-14,0);
+        //   +(13,14) = (-1,14). X=-1 is off-board so the per-axis guard returns
+        //   the sentinel (-1) -> NOT a duplicate -> (14,0) ACCEPTED.
+        // WITHOUT the per-axis guard the naive flat index is (-1)+(14*15)=209,
+        // a valid prior-row cell == the (14,13) offer, so (14,0) would be
+        // FALSELY rejected. This assertion fails if the guard is removed.
+        RenjuState s2 = regressionPosition();
+        s2.chooseBranch(true);
+        s2.offerFifthMove(xy(s2, 14, 13)); // idx 209
+        s2.offerFifthMove(xy(s2, 14, 0));  // idx 14, image off-board -> accepted
+        assertEquals(2, s2.getOfferedFifthMoves().size());
+    }
+
+    // 4) Valid full set: 10 candidates, no two related by any stabilizer
+    //    transform (one per orbit), all accepted.
+    public void testRegressionValidFullSetAccepted() {
+        RenjuState s = regressionPosition();
+        s.chooseBranch(true);
+        int[][] offers = {
+            {0,0},{1,0},{2,0},{3,0},{4,0},{5,0},{0,1},{1,1},{2,1},{3,1}
+        };
+        for (int[] o : offers) s.offerFifthMove(xy(s, o[0], o[1]));
+        assertEquals(10, s.getOfferedFifthMoves().size());
+        assertTrue(s.isAwaitingFifthSelection());
+        // The pure pre-check agrees with the committing path.
+        RenjuState s2 = regressionPosition();
+        s2.chooseBranch(true);
+        int[] flat = new int[10];
+        for (int i = 0; i < 10; i++) flat[i] = xy(s2, offers[i][0], offers[i][1]);
+        assertTrue(s2.wouldAcceptFifthOffers(flat));
+    }
+
+    // wouldAcceptFifthOffers must use the same off-centre stabilizer: a set
+    // containing a mirror pair is rejected without mutating state.
+    public void testRegressionWouldAcceptRejectsMirrorPair() {
+        RenjuState s = regressionPosition();
+        s.chooseBranch(true);
+        int[] withMirror = {
+            xy(s,8,4), xy(s,5,10), // mirror pair -> must be rejected
+            xy(s,1,0), xy(s,2,0), xy(s,3,0), xy(s,4,0),
+            xy(s,0,1), xy(s,1,1), xy(s,2,1), xy(s,3,1)
+        };
+        assertTrue(!s.wouldAcceptFifthOffers(withMirror));
+        assertEquals(0, s.getOfferedFifthMoves().size()); // no mutation
+    }
+
     public void testNoUndoWhileSwapPending() {
         RenjuState s = newState();
         s.addMove(xy(s, 7, 7)); // swap window open
