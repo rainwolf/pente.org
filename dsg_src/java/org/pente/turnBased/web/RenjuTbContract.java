@@ -84,9 +84,11 @@ public final class RenjuTbContract {
                 if (n == 1) {
                     // Pre-validate the bundled move 5 read-only (no mutation on
                     // rejection): wouldAcceptDeclinedOpeningMove checks in-bounds,
-                    // empty, current player, and the 9x9 central-square restriction
-                    // for BOTH the fresh-decline (swap pending) and post-take-over
-                    // (branch pending) states. Mirrors Branch B's wouldAcceptFifthOffers.
+                    // empty, current player, and the 9x9 central-square restriction.
+                    // branchPoint is now the fresh-decline (swap pending) case only:
+                    // a move-4 take-over auto-commits Branch A, so move 5 after a
+                    // take-over is a plain PLACE (else-branch below), not a branch
+                    // point. Mirrors Branch B's wouldAcceptFifthOffers.
                     if (!pending.wouldAcceptDeclinedOpeningMove(moves[0])) {
                         throw new RenjuContractException(
                                 "Branch A move 5 must be an empty point inside the 9x9 center.");

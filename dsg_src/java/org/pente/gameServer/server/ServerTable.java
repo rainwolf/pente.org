@@ -1418,23 +1418,15 @@ public class ServerTable {
                         }
                     }
                 } else {
-                    // swap=false in the post-swap branch-choice state (n == 4): the
-                    // move-4 swap was already accepted, so the to-move side (black)
-                    // declines Branch B and continues Branch A by playing move 5 in
-                    // the 9x9. The swap is already resolved -- do NOT call
-                    // renjuSwapDecisionMade, only chooseBranch(false). Pre-validate the
-                    // bundled move 5 BEFORE committing/broadcasting, so a rejected move
-                    // leaves nothing committed and emits no phantom broadcast (same
-                    // no-partial-mutation property as the decline path above). On
-                    // success: choose Branch A, echo the decision, then place move 5
-                    // (which arrives via the DSGMoveTableEvent that handleMove broadcasts).
-                    if (!rs.wouldAcceptDeclinedOpeningMove(move)) {
-                        error = DSGTableErrorEvent.INVALID_MOVE;
-                    } else {
-                        rs.chooseBranch(false);
-                        broadcastMainRoom(swapEvent);
-                        handleMove(actor, move);
-                    }
+                    // No swap window is open and this is not a take-over. With a move-4
+                    // take-over now auto-committing Branch A (RenjuState.
+                    // renjuSwapDecisionMade), the old standalone "post-swap branch-choice"
+                    // state no longer exists: after a take-over the swapped-in side plays
+                    // move 5 as an ordinary DSGMoveTableEvent (branchChosen is already set,
+                    // so isValidMove accepts it) -- it does not arrive through this swap
+                    // handler. A swap=false decision reaching this point is therefore
+                    // stale/invalid; reject it cleanly, mutating and broadcasting nothing.
+                    error = DSGTableErrorEvent.INVALID_MOVE;
                 }
             }
         }

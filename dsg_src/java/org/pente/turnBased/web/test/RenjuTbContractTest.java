@@ -47,11 +47,15 @@ public class RenjuTbContractTest extends TestCase {
         return s;
     }
 
-    /** Post-take-over BRANCH state: 4 stones, swap4 resolved, branch pending. */
-    private RenjuState branchAfterTakeover() {
+    /** Post-take-over state: 4 stones, swap4 taken -> Branch A auto-committed (no
+     *  standalone branch-choice; the swapped-in side just plays move 5). */
+    private RenjuState afterTakeover() {
         RenjuState s = swapWindow(4);
-        s.renjuSwapDecisionMade(true); // take over -> awaitingSwap=false, branch pending
-        assertTrue(s.isAwaitingBranchChoice());
+        s.renjuSwapDecisionMade(true); // take over at move 4 -> Branch A committed
+        assertTrue(!s.isAwaitingSwapDecision());
+        assertTrue(!s.isAwaitingBranchChoice()); // NOT re-presented (the fixed bug)
+        assertTrue(s.isBranchChosen());
+        assertTrue(!s.isBranchOffer());
         return s;
     }
 
@@ -74,7 +78,7 @@ public class RenjuTbContractTest extends TestCase {
 
     public void testSwapRejectedWhenNoWindow() {
         try {
-            RenjuTbContract.resolve("swap", null, branchAfterTakeover());
+            RenjuTbContract.resolve("swap", null, afterTakeover());
             fail("expected rejection");
         } catch (RenjuContractException e) { /* ok */ }
     }
@@ -97,12 +101,15 @@ public class RenjuTbContractTest extends TestCase {
         assertEquals(C + 2, d.stones[0]);
     }
 
-    // --- move: branch A after take-over (no swap to decline) ---
+    // --- move: after take-over, move 5 is an ordinary Branch-A placement ---
+    // (the swap already committed Branch A, so it is NOT a branch-point decision;
+    // the 9x9 restriction is enforced downstream by isValidMove, as for any PLACE)
 
-    public void testMoveBranchAAfterTakeover() throws Exception {
-        Decision d = RenjuTbContract.resolve("move", new int[]{ C + 2 }, branchAfterTakeover());
-        assertEquals(Kind.BRANCH_A, d.kind);
-        assertTrue(!d.declineSwap); // junit-3.7 has no assertFalse
+    public void testMovePlaceAfterTakeover() throws Exception {
+        Decision d = RenjuTbContract.resolve("move", new int[]{ C + 2 }, afterTakeover());
+        assertEquals(Kind.PLACE, d.kind);
+        assertTrue(!d.declineSwap); // nothing to decline; junit-3.7 has no assertFalse
+        assertEquals(C + 2, d.stones[0]);
     }
 
     // --- move: branch A rejects a move 5 outside the 9x9 center ---

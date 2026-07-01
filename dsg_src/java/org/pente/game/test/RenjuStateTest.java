@@ -204,13 +204,19 @@ public class RenjuStateTest extends TestCase {
         assertTrue(s.didSwapAt(1)); // swap recorded for the window after stone 1
     }
 
-    private RenjuState openedToFour() {
+    // Plays the shared four-move opening (windows 1-3 declined); the move-4 swap
+    // window is resolved with `swap4` (false = decline, true = take over).
+    private RenjuState openedToFour(boolean swap4) {
         RenjuState s = newState();
         s.addMove(xy(s, 7, 7)); s.renjuSwapDecisionMade(false);  // 1 black
         s.addMove(xy(s, 8, 8)); s.renjuSwapDecisionMade(false);  // 2 white
         s.addMove(xy(s, 9, 7)); s.renjuSwapDecisionMade(false);  // 3 black
-        s.addMove(xy(s, 6, 8)); s.renjuSwapDecisionMade(false);  // 4 white
+        s.addMove(xy(s, 6, 8)); s.renjuSwapDecisionMade(swap4);  // 4 white
         return s;
+    }
+
+    private RenjuState openedToFour() {
+        return openedToFour(false);
     }
 
     public void testBranchChoiceRequiredAfterMove4() {
@@ -218,6 +224,90 @@ public class RenjuStateTest extends TestCase {
         assertTrue(s.isAwaitingBranchChoice());
         assertEquals(1, s.getCurrentPlayer());               // black chooses
         assertTrue(!s.isValidMove(xy(s, 5, 5), 1));          // blocked until chosen
+    }
+
+    // Same shared opening as openedToFour(), but the move-4 swap window is TAKEN.
+    private RenjuState openedToFourSwappingAt4() {
+        return openedToFour(true);
+    }
+
+    // Taking the swap at move 4 commits Branch A: the branch/offer-10 choice
+    // must NOT be re-presented (the reported bug re-offered it to the
+    // swapped-in player, and even let them reach Branch B).
+    public void testMove4SwapCommitsBranchA() {
+        RenjuState s = openedToFourSwappingAt4();
+        assertTrue(s.didSwapAt(4));
+        assertTrue(!s.isAwaitingSwapDecision());
+        assertTrue(!s.isAwaitingBranchChoice());             // was true (the bug)
+        assertTrue(s.isBranchChosen());
+        assertTrue(!s.isBranchOffer());                      // Branch A, not ten-offer
+        assertEquals(RenjuOpeningPhase.MOVE, s.getOpeningPhase()); // not BRANCH
+        // Branch B (offer 10) is unreachable after a swap.
+        try {
+            s.chooseBranch(true);
+            fail("branch choice must not be pending after a move-4 swap");
+        } catch (IllegalStateException expected) {
+        }
+        // Packed opening word records Branch A (NO), not PENDING.
+        RenjuOpeningState st = RenjuOpeningState.decode(s.getRenjuSwapsPacked());
+        assertEquals(RenjuOpeningState.YES, st.swap4);
+        assertEquals(RenjuOpeningState.NO, st.branch);
+        // Swapped-in player simply places move 5 (Branch A, black to move).
+        assertEquals(1, s.getCurrentPlayer());
+        assertTrue(s.isValidMove(xy(s, 5, 5), 1));
+    }
+
+    // Regression guard: DECLINING the move-4 swap is UNCHANGED — the A-vs-B
+    // (offer-ten) choice is still presented, and Branch B is still reachable.
+    public void testMove4DeclineStillOffersBranchChoice() {
+        RenjuState s = openedToFour();                        // declines all four windows
+        assertTrue(!s.didSwapAt(4));
+        assertTrue(s.isAwaitingBranchChoice());
+        assertEquals(RenjuOpeningPhase.BRANCH, s.getOpeningPhase());
+        s.chooseBranch(true);                                 // Branch B still reachable
+        assertTrue(s.isBranchOffer());
+    }
+
+    // reconstruct() must replay a move-4 swap without throwing: the swap
+    // auto-commits Branch A, so the persisted branch digit (NO) must not be
+    // re-applied via chooseBranch (which would throw "not pending").
+    public void testReconstructMove4SwapCommitsBranchA() {
+        SimpleGridState md = movesData(
+                xy(7, 7), xy(8, 8), xy(9, 7), xy(6, 8), xy(11, 7)); // + Branch-A move 5
+        RenjuOpeningState st = new RenjuOpeningState();
+        st.swap1 = RenjuOpeningState.NO;
+        st.swap2 = RenjuOpeningState.NO;
+        st.swap3 = RenjuOpeningState.NO;
+        st.swap4 = RenjuOpeningState.YES;                     // swap taken at move 4
+        st.branch = RenjuOpeningState.NO;                     // Branch A (what the fix persists)
+        st.swap5 = RenjuOpeningState.PENDING;
+        RenjuState r = RenjuState.reconstruct(md, st.encode(), null); // must not throw
+        assertEquals(5, r.getNumMoves());
+        assertTrue(r.didSwapAt(4));
+        assertTrue(r.isBranchChosen());
+        assertTrue(!r.isBranchOffer());
+    }
+
+    // Turn-based take-over: TBGame persists swap4=YES but leaves the branch digit
+    // PENDING (move 5 resolves as a plain PLACE that never writes it). reconstruct()
+    // must still commit Branch A from the swap and REPLAY move 5 -- the pre-fix code
+    // hit `if (st.branch == PENDING) return s;` and truncated the board to 4 stones,
+    // freezing correspondence games.
+    public void testReconstructMove4SwapBranchPendingKeepsMove5() {
+        SimpleGridState md = movesData(
+                xy(7, 7), xy(8, 8), xy(9, 7), xy(6, 8), xy(11, 7)); // + Branch-A move 5
+        RenjuOpeningState st = new RenjuOpeningState();
+        st.swap1 = RenjuOpeningState.NO;
+        st.swap2 = RenjuOpeningState.NO;
+        st.swap3 = RenjuOpeningState.NO;
+        st.swap4 = RenjuOpeningState.YES;                    // take-over at move 4
+        st.branch = RenjuOpeningState.PENDING;               // TB never persists the digit
+        st.swap5 = RenjuOpeningState.PENDING;
+        RenjuState r = RenjuState.reconstruct(md, st.encode(), null);
+        assertEquals(5, r.getNumMoves());                    // move 5 retained (bug truncated to 4)
+        assertTrue(r.didSwapAt(4));
+        assertTrue(r.isBranchChosen());
+        assertTrue(!r.isBranchOffer());                      // Branch A
     }
 
     public void testBranchAFullSequence() {
