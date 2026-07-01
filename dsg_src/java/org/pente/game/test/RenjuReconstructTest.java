@@ -74,6 +74,29 @@ public class RenjuReconstructTest extends TestCase {
         assertTrue(s.isOpeningComplete());
     }
 
+    public void testReconstructLegacyBranchBAfterMove4Swap() {
+        // Legacy state only creatable by the pre-fix bug: the swapped-in player
+        // reached Branch B after TAKING the move-4 swap. reconstruct() must replay
+        // it FAITHFULLY as Branch B (offers + selection), NOT silently force
+        // Branch A (which would drop the offers and mis-render the game).
+        int[] offers = {xy(0,0), xy(0,2), xy(0,4), xy(0,6), xy(0,8),
+                        xy(0,10), xy(0,12), xy(0,14), xy(2,0), xy(4,0)};
+        SimpleGridState md = moves(
+                xy(7, 7), xy(8, 8), xy(9, 7), xy(6, 8), offers[3], xy(14, 14));
+        RenjuOpeningState st = new RenjuOpeningState();
+        st.swap1 = RenjuOpeningState.NO;
+        st.swap2 = RenjuOpeningState.NO;
+        st.swap3 = RenjuOpeningState.NO;
+        st.swap4 = RenjuOpeningState.YES;  // TOOK the move-4 swap...
+        st.branch = RenjuOpeningState.YES; // ...yet reached Branch B (the old bug)
+        RenjuState s = RenjuState.reconstruct(md, st.encode(), offers);
+
+        assertEquals(6, s.getNumMoves());  // selected 5th + move 6 retained
+        assertTrue(s.didSwapAt(4));
+        assertTrue(s.isBranchOffer());     // faithfully Branch B, not forced Branch A
+        assertTrue(s.isOpeningComplete());
+    }
+
     public void testReconstructBranchB_awaitingSelection() {
         int[] offers = {xy(0,0), xy(0,2), xy(0,4), xy(0,6), xy(0,8),
                         xy(0,10), xy(0,12), xy(0,14), xy(2,0), xy(4,0)};
@@ -144,26 +167,33 @@ public class RenjuReconstructTest extends TestCase {
         assertEquals(4, s.getNumMoves());
     }
 
-    public void testWouldAcceptDeclinedOpeningMove_postSwapBranchChoice_branchA() {
-        // Drive to the move-4 swap window, then ACCEPT the swap. The engine clears the
-        // swap window and enters the branch-choice state (n == 4, awaitingSwap = false):
-        // the to-move side (black) must now pick Branch A by playing move 5 in the 9x9.
+    public void testWouldAcceptOpeningMove_afterMove4Takeover_branchA() {
+        // Drive to the move-4 swap window, then ACCEPT the swap. Taking the swap IS
+        // one of the two Branch-A outcomes, so the engine auto-commits Branch A
+        // (n == 4, awaitingSwap = false, branchChosen = true): the swapped-in side
+        // just plays move 5 in the 9x9 -- it is NOT re-offered the branch choice.
         RenjuState s = new RenjuState(15, 15);
         s.addMove(xy(7, 7)); s.renjuSwapDecisionMade(false);
         s.addMove(xy(8, 8)); s.renjuSwapDecisionMade(false);
         s.addMove(xy(9, 7)); s.renjuSwapDecisionMade(false);
         s.addMove(xy(6, 8));                 // n == 4, swap-4 window open
-        s.renjuSwapDecisionMade(true);       // ACCEPT the swap -> branch-choice state
+        s.renjuSwapDecisionMade(true);       // ACCEPT the swap -> Branch A committed
         assertTrue(!s.isAwaitingSwapDecision());
-        assertTrue(s.isAwaitingBranchChoice());
+        assertTrue(!s.isAwaitingBranchChoice()); // NOT re-presented (was the bug)
+        assertTrue(s.isBranchChosen());
+        assertTrue(!s.isBranchOffer());          // Branch A, not the ten-offer branch
 
-        // A legal Branch-A move 5 (within the 9x9) accepts; an occupied point rejects.
-        assertTrue(s.wouldAcceptDeclinedOpeningMove(xy(11, 7)));
-        assertTrue(!s.wouldAcceptDeclinedOpeningMove(xy(7, 7))); // occupied
+        // Branch A is live: the swapped-in side places move 5 via the normal move
+        // path (a legal 9x9 point accepts; an occupied point rejects). The
+        // decline-only pre-check wouldAcceptDeclinedOpeningMove no longer applies
+        // once the branch is committed, so it returns false here by design.
+        assertTrue(!s.wouldAcceptDeclinedOpeningMove(xy(11, 7)));
+        assertTrue(s.isValidMove(xy(11, 7), s.getCurrentPlayer()));
+        assertTrue(!s.isValidMove(xy(7, 7), s.getCurrentPlayer())); // occupied
 
-        // Pure check: nothing mutated -- still awaiting the branch choice, no stone
-        // committed, branch not actually chosen.
-        assertTrue(s.isAwaitingBranchChoice());
+        // Pure check: nothing mutated -- Branch A stays committed, no stone yet.
+        assertTrue(s.isBranchChosen());
+        assertTrue(!s.isAwaitingBranchChoice());
         assertEquals(4, s.getNumMoves());
     }
 
@@ -306,14 +336,14 @@ public class RenjuReconstructTest extends TestCase {
         }
     }
 
-    public void testReconstruct_window4Resolved_isBranch_declineAndTakeover() {
+    public void testReconstruct_window4Resolved_declineIsBranch_takeoverIsMove() {
         RenjuState decline = swapWindowOpen(4);
-        decline.renjuSwapDecisionMade(false);       // window 4 declined -> branch choice
+        decline.renjuSwapDecisionMade(false);       // window 4 declined -> A-vs-B branch choice
         assertReconstructs(decline, RenjuOpeningPhase.BRANCH);
 
         RenjuState takeover = swapWindowOpen(4);
-        takeover.renjuSwapDecisionMade(true);        // window 4 take-over -> branch choice
-        assertReconstructs(takeover, RenjuOpeningPhase.BRANCH);
+        takeover.renjuSwapDecisionMade(true);        // window 4 take-over -> Branch A (move 5 next)
+        assertReconstructs(takeover, RenjuOpeningPhase.MOVE);
     }
 
     // Branch A: window 4 resolved, Branch A chosen, move 5 placed -> swap-5 window OPEN.

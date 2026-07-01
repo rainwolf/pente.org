@@ -89,11 +89,22 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
             if (idx >= n) return s;
             s.addMove(moves.getMove(idx++));
             if (swaps[k] == RenjuOpeningState.PENDING) return s;
-            s.renjuSwapDecisionMade(swaps[k] == RenjuOpeningState.YES);
+            // Replay is authoritative from the persisted digits, so suppress the
+            // live move-4-swap auto-commit of Branch A -- the branch digit below
+            // drives it (and must be able to replay a legacy Branch-B-after-swap
+            // save faithfully rather than being overridden to Branch A).
+            s.renjuSwapDecisionMade(swaps[k] == RenjuOpeningState.YES, false);
         }
 
-        // branch choice
-        if (st.branch == RenjuOpeningState.PENDING) return s;
+        // branch choice -- authoritative from the persisted branch digit. A move-4
+        // take-over persists as branch=NO (live) or branch=PENDING+swap4=YES (turn-based,
+        // whose move 5 is a plain PLACE that never writes the digit); both mean Branch A.
+        // Only a genuine still-pending DECLINE (PENDING without a take-over) stops the
+        // replay here; otherwise NO -> Branch A and YES -> Branch B (incl. a legacy
+        // Branch-B-after-swap save, replayed faithfully rather than forced to Branch A).
+        if (st.branch == RenjuOpeningState.PENDING && st.swap4 != RenjuOpeningState.YES) {
+            return s;
+        }
         boolean tenOffer = st.branch == RenjuOpeningState.YES;
         s.chooseBranch(tenOffer);
 
@@ -567,12 +578,38 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
     }
 
     public void renjuSwapDecisionMade(boolean swap) {
+        renjuSwapDecisionMade(swap, true);
+    }
+
+    /**
+     * @param autoCommitBranchA when true (live play), taking the swap at the move-4
+     *   window auto-commits Branch A (see below). {@link #reconstruct} passes false:
+     *   a replay is authoritative from the persisted branch digit, which already
+     *   records the outcome (Branch A as NO, legacy Branch B as YES, turn-based
+     *   take-over as PENDING), so reconstruct drives the branch itself and must not
+     *   let a take-over silently override a persisted Branch-B save.
+     */
+    public void renjuSwapDecisionMade(boolean swap, boolean autoCommitBranchA) {
         if (!awaitingSwap) {
             throw new IllegalStateException("no swap decision pending");
         }
         swapDecision[gridState.getNumMoves()] = swap;
         swapResolved[gridState.getNumMoves()] = true;
         awaitingSwap = false;
+        // Taraguchi-10: taking the swap at the move-4 window IS one of the two
+        // "Branch A" outcomes, so it resolves the branch decision. Auto-commit
+        // Branch A here; otherwise the branch window stays open and the
+        // swapped-in player is wrongly re-presented the swap/Branch-B choice.
+        // The DECLINE path (swap == false) is unchanged: it still leaves the
+        // A-vs-B (offer-ten) choice open for the next decision.
+        if (autoCommitBranchA && swap && gridState.getNumMoves() == 4) {
+            // Canonical Branch-A commit -- the same chooseBranch path reconstruct()
+            // and every other caller use. At this point isAwaitingBranchChoice() is
+            // true (awaitingSwap just cleared, numMoves==4, branch unchosen), so it
+            // does not throw; routing through chooseBranch keeps the live and replay
+            // take-over commits from diverging.
+            chooseBranch(false);
+        }
     }
 
     /**
@@ -684,9 +721,13 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
     /**
      * Pure check: would the current player's bundled opening stone be legal as a
      * Branch-A continuation? Covers BOTH the move-4 swap window (decline the pending
-     * swap and play the bundled stone) AND the post-swap branch-choice state (the
-     * move-4 swap was accepted; black now chooses Branch A by playing move 5 in the
-     * 9x9). Mutates nothing. Returns false unless a swap decision OR a branch choice
+     * swap and play the bundled stone) AND the branch-choice state reached by
+     * DECLINING the move-4 window (black picks Branch A by playing move 5 in the
+     * 9x9). A move-4 TAKE-OVER no longer reaches this method: it auto-commits Branch A
+     * (renjuSwapDecisionMade), so its move 5 is placed like any ordinary move -- the
+     * live server validates it via isValidMove in handleMove, and the turn-based path
+     * via its move storer (CacheTBStorer). Mutates nothing. Returns false unless a
+     * swap decision OR a branch choice
      * is currently pending. Single-thread use only (table events are serialized by
      * SynchronizedServerTable).
      *

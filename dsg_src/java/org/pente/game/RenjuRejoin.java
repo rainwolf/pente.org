@@ -11,20 +11,26 @@ package org.pente.game;
  *
  * Signal table (numMoves -> signal -> client phase), with {@link RejoinKind}:
  *   n=1..3 : NONE        -> SWAP (window open)        ; SILENT_SWAP -> MOVE (window resolved)
- *   n=4    : NONE        -> SWAP (window 4 open)       ; SILENT_SWAP -> BRANCH (resolved)
- *                                                       ; OFFERS      -> SELECTION (Branch B)
+ *   n=4    : NONE        -> SWAP (window 4 open)
+ *            SILENT_SWAP -> swapValue ? MOVE (took over -> Branch A auto-committed)
+ *                                     : BRANCH (declined -> A-vs-B choice pending)
+ *            OFFERS      -> SELECTION (Branch B)
  *   n=5    : NONE        -> SWAP (Branch A swap-5)     ; SILENT_SWAP -> MOVE (Branch A resolved)
  *                                                       ; SELECT1     -> MOVE (Branch B selected)
  *   n>=6   : NONE        -> COMPLETE (normal play)
  *
- * Within each n the four kinds are distinct, so (n, signal) is injective and
+ * Within each n the kinds are distinct -- and at n=4 the SILENT_SWAP signal
+ * additionally carries swapValue -- so (n, signal) is injective and
  * {@link #decode} recovers exactly the {@link RenjuOpeningPhase} the server
  * holds for every REJOIN-reachable (persisted-between-events) opening state:
  * decode(numMoves, encode(state)) == state.getOpeningPhase().
  *
- * SCOPE -- rejoin-reachable states only. Two transient INTRA-handler states at
- * numMoves=4 report getOpeningPhase()==MOVE yet encode to SILENT_SWAP (which
- * decodes to BRANCH at n=4), so they do NOT round-trip:
+ * SCOPE -- rejoin-reachable states only. A taken swap at window 4 auto-commits
+ * Branch A (getOpeningPhase()==MOVE) and IS rejoin-observable (the swap-seats
+ * event is sent, then the swapped-in side must play move 5); it round-trips via
+ * SILENT_SWAP with swapValue==true. By contrast two transient INTRA-handler
+ * states on the DECLINE path at numMoves=4 report MOVE yet encode to SILENT_SWAP
+ * with swapValue==false (which decodes to BRANCH), so they do NOT round-trip:
  *   (a) Branch A chosen but move 5 not yet placed (chooseBranch(false) before
  *       its bundled addMove), and
  *   (b) Branch B chosen but the ten offers not yet complete (chooseBranch(true)
@@ -62,9 +68,11 @@ public final class RenjuRejoin {
         /**
          * Only meaningful for SILENT_SWAP: the CURRENT window's resolved swap
          * decision (true = the to-move side took over that window). This is a
-         * per-window phase-marker datum, NOT the net seat orientation: {@link
-         * RenjuRejoin#decode} does not consult it, and the client must NOT derive
-         * who-owns-black from it. Seats are authoritative only via sendPlayingPlayers.
+         * per-window phase-marker datum, NOT the net seat orientation. {@link
+         * RenjuRejoin#decode} consults it only at numMoves==4, to tell a Branch-A
+         * takeover (MOVE) from a declined window (BRANCH); the client must still
+         * NOT derive who-owns-black from it. Seats are authoritative only via
+         * sendPlayingPlayers.
          */
         public final boolean swapValue;
         /** Only meaningful for SELECT1: the board point selected as move 5. */
@@ -119,7 +127,9 @@ public final class RenjuRejoin {
      * (numMoves, signal). Mirrors {@link #encode}; pure.
      *
      *   NONE        -> SWAP if numMoves <= 5 (a window is still open), else COMPLETE
-     *   SILENT_SWAP -> BRANCH if numMoves == 4 (move-4 resolved), else MOVE
+     *   SILENT_SWAP -> at numMoves == 4: TAKEOVER (swapValue == true) auto-commits
+     *                  Branch A -> MOVE (place move 5); DECLINE -> BRANCH (A-vs-B
+     *                  choice pending). At other numMoves -> MOVE.
      *   OFFERS      -> SELECTION
      *   SELECT1     -> MOVE
      */
@@ -128,7 +138,13 @@ public final class RenjuRejoin {
             case NONE:
                 return numMoves <= 5 ? RenjuOpeningPhase.SWAP : RenjuOpeningPhase.COMPLETE;
             case SILENT_SWAP:
-                return numMoves == 4 ? RenjuOpeningPhase.BRANCH : RenjuOpeningPhase.MOVE;
+                if (numMoves == 4) {
+                    // A taken swap at move 4 IS one of the two Branch-A outcomes,
+                    // so it resolves the branch: next is move 5 (MOVE). A declined
+                    // window 4 leaves the A-vs-B (offer-ten) choice pending (BRANCH).
+                    return signal.swapValue ? RenjuOpeningPhase.MOVE : RenjuOpeningPhase.BRANCH;
+                }
+                return RenjuOpeningPhase.MOVE;
             case OFFERS:
                 return RenjuOpeningPhase.SELECTION;
             case SELECT1:
