@@ -600,6 +600,34 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
         lastMoveDate = new Date();
     }
 
+    /**
+     * True if current player1Pid/player2Pid flipped relative how
+     * game started, due opening swap. dpente-family games
+     * single swap opportunity (boolean); renju derives net parity from
+     * packed take-over decisions. Valid mid-game.
+     */
+    public boolean seatsSwapped() {
+        if (game == GridStateFactory.TB_DPENTE ||
+            game == GridStateFactory.TB_DKERYO ||
+            game == GridStateFactory.TB_SWAP2PENTE ||
+            game == GridStateFactory.TB_SWAP2KERYO) {
+            return dPenteSwapped;
+        }
+        if (game == GridStateFactory.TB_RENJU) {
+            return org.pente.game.RenjuOpeningState.netSwapped(renjuSwaps);
+        }
+        return false;
+    }
+
+    /** pid seated player 1 game started. */
+    public long getOriginalPlayer1Pid() {
+        return seatsSwapped() ? player2Pid : player1Pid;
+    }
+
+    /** pid seated player 2 game started. */
+    public long getOriginalPlayer2Pid() {
+        return seatsSwapped() ? player1Pid : player2Pid;
+    }
 
     public boolean isUndoRequested() {
         return undoRequested;
