@@ -44,6 +44,27 @@ public class RenjuOpeningState {
         return s;
     }
 
+    /**
+     * Net seat orientation: true iff an odd number of seat swaps happened —
+     * take-overs after moves 1-4 plus the Branch A 5th-move swap.
+     * The branch digit is a branch choice, not a swap. PENDING and NO digits
+     * count as no swap, so this is valid mid-game.
+     */
+    public boolean netSwapped() {
+        int yes = 0;
+        if (swap1 == YES) yes++;
+        if (swap2 == YES) yes++;
+        if (swap3 == YES) yes++;
+        if (swap4 == YES) yes++;
+        if (swap5 == YES) yes++;
+        return (yes & 1) == 1;
+    }
+
+    /** Net seat orientation straight from the packed word. */
+    public static boolean netSwapped(int packed) {
+        return decode(packed).netSwapped();
+    }
+
     /** Pack offered positions (0..224 each) into one byte each. */
     public static byte[] encodeOffers(int[] offers) {
         if (offers == null) {
