@@ -661,6 +661,16 @@ git commit -m "Tournament rejoin: seat by match role mirrored through in-progres
 
 ### Task 7: Tournament next-match lookup un-flips swapped seats (`updateDatabaseAfterGameOver`)
 
+> **EXECUTED THEN REVERTED (commit 8b72b04).** Execution analysis showed this
+> call site was already correct: `super.updateDatabaseAfterGameOver`'s nested
+> tournament block (`ServerTable.java:3715-3792`) runs first, resolves the
+> reversed-roles next match itself, and conditionally rotates seats
+> (`swapSeats()` at `:3765`) so that `sittingPlayers` order after super always
+> equals the next match's orientation — the physical mid-game swap doubles as
+> the set alternation. Un-flipping here produced wrong-orientation lookups for
+> swapped games. The real renju gap in the live tournament path is super's
+> `swapped` derivation — fixed in Task 8 below.
+
 **Files:**
 - Modify: `dsg_src/java/org/pente/gameServer/server/TournamentServerTable.java:314-333`
 
@@ -719,6 +729,71 @@ Expected: all PASS.
 ```bash
 git add dsg_src/java/org/pente/gameServer/server/TournamentServerTable.java
 git commit -m "Tournament game-over: un-flip swapped seats before unplayed-match lookup"
+```
+
+---
+
+### Task 8 (added during execution): `ServerTable` nested tournament block derives `swapped` via `seatsSwapped()`
+
+**Files:**
+- Modify: `dsg_src/java/org/pente/gameServer/server/ServerTable.java:3718-3733` (inside the `serverData.isTournament()` block of `updateDatabaseAfterGameOver`)
+
+**Interfaces:**
+- Consumes: `GridState.seatsSwapped()` (Task 3).
+- Produces: behavior fix only — live tournament renju games get the correct match-result winner flip, next-match orientation, and rotation skip.
+
+- [ ] **Step 1: Edit the `swapped` derivation**
+
+Current code (verbatim, `ServerTable.java:3718-3733`):
+
+```java
+                int localWinner2 = localWinner;
+                boolean swapped = false;
+                // for dpente games, don't swap player ids
+                // just record game as being won by correct id
+                if (game == GridStateFactory.DPENTE || game == GridStateFactory.SPEED_DPENTE ||
+                        game == GridStateFactory.DKERYO || game == GridStateFactory.SPEED_DKERYO ||
+                        game == GridStateFactory.SWAP2PENTE || game == GridStateFactory.SPEED_SWAP2PENTE ||
+                        game == GridStateFactory.SWAP2KERYO || game == GridStateFactory.SPEED_SWAP2KERYO) {
+
+                    if (((PenteState) gridState).didDPenteSwap()) {
+                        if (localWinner2 != 0) { //draw
+                            localWinner2 = 3 - localWinner;
+                        }
+                        swapped = true;
+                    }
+                }
+```
+
+Replace with:
+
+```java
+                int localWinner2 = localWinner;
+                // if an opening swap flipped the player ids mid-game, record
+                // the result from the match's original perspective. net
+                // parity via seatsSwapped() covers the dpente family and
+                // renju take-overs alike.
+                boolean swapped = gridState != null && gridState.seatsSwapped();
+                if (swapped && localWinner2 != 0) { //draw
+                    localWinner2 = 3 - localWinner;
+                }
+```
+
+Everything after (from `tourneyMatch.setGid(...)`) stays exactly as-is — the
+downstream un-flip of the reversed lookup pids and the `!swapped` →
+`swapSeats()` rotation already generalize once `swapped` is right.
+Behavior-identical for the dpente family; renju gains parity semantics.
+
+- [ ] **Step 2: Compile**
+
+Run: `./justCompile`
+Expected: BUILD SUCCESSFUL.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add dsg_src/java/org/pente/gameServer/server/ServerTable.java
+git commit -m "Live tournament game-over: derive swapped via net swap parity (adds renju)"
 ```
 
 ---
