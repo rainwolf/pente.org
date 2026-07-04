@@ -108,15 +108,7 @@ public class SingleEliminationFormat extends AbstractTourneyFormat implements Se
 
             // now add match with players swapped
 
-            if (tourney.getGame() != GridStateFactory.GO &&
-                    tourney.getGame() != GridStateFactory.GO9 &&
-                    tourney.getGame() != GridStateFactory.GO13 &&
-                    tourney.getGame() != GridStateFactory.SPEED_GO &&
-                    tourney.getGame() != GridStateFactory.SPEED_GO9 &&
-                    tourney.getGame() != GridStateFactory.SPEED_GO13 &&
-                    tourney.getGame() != GridStateFactory.TB_GO &&
-                    tourney.getGame() != GridStateFactory.TB_GO9 &&
-                    tourney.getGame() != GridStateFactory.TB_GO13) {
+            if (!GridStateFactory.isSingleGameSet(tourney.getGame())) {
                 m = new TourneyMatch();
                 m.setEvent(tourney.getEventID());
                 m.setRound(rnd);

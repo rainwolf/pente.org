@@ -468,8 +468,7 @@ public class CacheTourneyStorer implements TourneyStorer {
                 tourneyMatch.getPlayer2() != null &&
                 tourneyMatch.getPlayer2().getPlayerID() != 0 && ((
                 tourneyMatch.getPlayer1().getPlayerID() < tourneyMatch.getPlayer2().getPlayerID()) ||
-                t.getGame() == GridStateFactory.TB_GO || t.getGame() == GridStateFactory.TB_GO9 ||
-                t.getGame() == GridStateFactory.TB_GO13
+                GridStateFactory.isSingleGameSet(t.getGame())
         )) {
             this.tbStorer.createTournamentSet(t.getGame(), tourneyMatch.getPlayer1().getPlayerID(), tourneyMatch.getPlayer2().getPlayerID(),
                     t.getInitialTime(), t.getEventID());
@@ -528,15 +527,7 @@ public class CacheTourneyStorer implements TourneyStorer {
                 TourneyMatch more[] = f.createMoreMatchesAfterTie(tourneyMatch);
                 insertMatch(more[0]);
                 s.addMatch(more[0]);
-                if (t.getGame() != GridStateFactory.GO &&
-                        t.getGame() != GridStateFactory.GO9 &&
-                        t.getGame() != GridStateFactory.GO13 &&
-                        t.getGame() != GridStateFactory.SPEED_GO &&
-                        t.getGame() != GridStateFactory.SPEED_GO9 &&
-                        t.getGame() != GridStateFactory.SPEED_GO13 &&
-                        t.getGame() != GridStateFactory.TB_GO &&
-                        t.getGame() != GridStateFactory.TB_GO9 &&
-                        t.getGame() != GridStateFactory.TB_GO13) {
+                if (!GridStateFactory.isSingleGameSet(t.getGame())) {
                     insertMatch(more[1]);
                     s.addMatch(more[1]);
                 }
