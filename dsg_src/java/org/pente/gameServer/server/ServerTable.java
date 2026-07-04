@@ -3312,17 +3312,12 @@ public class ServerTable {
     }
 
     protected void swapSeats() {
-        boolean swap2 = game == GridStateFactory.SWAP2PENTE_GAME || game == GridStateFactory.SPEED_SWAP2PENTE_GAME ||
-                game == GridStateFactory.SWAP2KERYO_GAME || game == GridStateFactory.SPEED_SWAP2KERYO_GAME;
         // only swap if both players still sitting
         // (if forced resign, don't swap)
-        // (if d-pente and already swapped, don't swap back)
-        if (game == GridStateFactory.DPENTE_GAME || game == GridStateFactory.SPEED_DPENTE_GAME
-                || game == GridStateFactory.DKERYO_GAME || game == GridStateFactory.SPEED_DKERYO_GAME
-                || swap2) {
-            if (((PenteState) gridState).didDPenteSwap()) {
-                return; // already swapped seats
-            }
+        // (if an opening swap already flipped the seats, don't swap back --
+        //  net parity, so e.g. two renju take-overs cancel and we DO rotate)
+        if (gridState != null && gridState.seatsSwapped()) {
+            return; // already swapped seats
         }
 
         if (!anyComputersSitting() && allPlayersSitting()) {
