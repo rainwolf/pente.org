@@ -1128,7 +1128,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                     if (tourneyMatch != null) {
                         tourneyMatch.setGid(game.getGid());
                         int winner = game.getWinner();
-                        if (game.seatsSwapped()) {
+                        if (game.seatsSwapped() && winner != 0) { // != 0: not a draw
                             winner = 3 - winner;
                         }
                         tourneyMatch.setResult(winner);

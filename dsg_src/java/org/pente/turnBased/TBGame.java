@@ -601,10 +601,12 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
     }
 
     /**
-     * True if current player1Pid/player2Pid flipped relative how
-     * game started, due opening swap. dpente-family games
-     * single swap opportunity (boolean); renju derives net parity from
+     * True if the current player1Pid/player2Pid are flipped relative to how
+     * the game started, due to an opening swap. dpente-family games have a
+     * single swap opportunity (boolean); renju derives net parity from the
      * packed take-over decisions. Valid mid-game.
+     *
+     * @return true if the seats are currently flipped from the starting order
      */
     public boolean seatsSwapped() {
         if (game == GridStateFactory.TB_DPENTE ||
@@ -619,12 +621,12 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
         return false;
     }
 
-    /** pid seated player 1 game started. */
+    /** @return the pid seated as player 1 when the game started */
     public long getOriginalPlayer1Pid() {
         return seatsSwapped() ? player2Pid : player1Pid;
     }
 
-    /** pid seated player 2 game started. */
+    /** @return the pid seated as player 2 when the game started */
     public long getOriginalPlayer2Pid() {
         return seatsSwapped() ? player1Pid : player2Pid;
     }
