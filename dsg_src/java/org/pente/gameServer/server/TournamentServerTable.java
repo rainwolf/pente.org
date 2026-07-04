@@ -326,6 +326,14 @@ public class TournamentServerTable extends ServerTable {
             super.updateDatabaseAfterGameOver(gameData, fileGameData, winnerPlayer, loserPlayer, game, localWinner, localSet);
             long newPid1 = sittingPlayers[1].getPlayerID();
             long newPid2 = sittingPlayers[2].getPlayerID();
+            // an opening swap physically flipped sittingPlayers mid-game;
+            // restore the game-start seat order before the order-sensitive
+            // unplayed-match lookup
+            if (gridState != null && gridState.seatsSwapped()) {
+                long tmp = newPid1;
+                newPid1 = newPid2;
+                newPid2 = tmp;
+            }
             TourneyMatch newMatch = resources.getTourneyStorer().getUnplayedMatch(
                     newPid1, newPid2,
                     getGameEvent(game).getEventID());
