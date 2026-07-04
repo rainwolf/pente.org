@@ -798,6 +798,98 @@ git commit -m "Live tournament game-over: derive swapped via net swap parity (ad
 
 ---
 
+### Task 9 (added during execution): renju is a single-game set — wire tournament set creation like go
+
+Renju (Taraguchi-10) is played as a SINGLE-game set, not a two-game
+color-alternating set — the opening protocol balances the first move, like
+komi does for go (see `NewGameServlet.isBlackFirst`, commit 5884e49, which
+already treats renju invitations this way). Five tournament sites hard-code
+the go family as the only single-game games; renju must join them via one
+shared predicate.
+
+**Files:**
+- Modify: `dsg_src/java/org/pente/game/GridStateFactory.java` — add predicate
+- Create: `dsg_src/java/org/pente/game/test/GridStateFactorySingleGameSetTest.java`
+- Modify: `dsg_src/java/org/pente/gameServer/tourney/SingleEliminationFormat.java` (~line 110: swapped second match row)
+- Modify: `dsg_src/java/org/pente/gameServer/tourney/DoubleEliminationFormat.java` (~line 261: `boolean set = (...)`)
+- Modify: `dsg_src/java/org/pente/gameServer/tourney/CacheTourneyStorer.java` (two sites: `insertMatch` ~line 490 dedup exemption; `applyMatchTo` tie block ~line 550)
+- Modify: `dsg_src/java/org/pente/turnBased/CacheTBStorer.java` (`createTournamentSet` ~line 2059: skip reversed second game)
+
+**Interfaces:**
+- Produces: `public static boolean isSingleGameSet(int game)` on `GridStateFactory`.
+
+- [ ] **Step 1: Failing test** — new JUnit 3 class (same skeleton as sibling tests in `game/test/`; `assertTrue(!x)`, no `assertFalse`):
+
+```java
+    public void testGoFamilyIsSingleGameSet() {
+        int[] go = {GridStateFactory.GO, GridStateFactory.GO9, GridStateFactory.GO13,
+                GridStateFactory.SPEED_GO, GridStateFactory.SPEED_GO9, GridStateFactory.SPEED_GO13,
+                GridStateFactory.TB_GO, GridStateFactory.TB_GO9, GridStateFactory.TB_GO13};
+        for (int g : go) {
+            assertTrue("game " + g, GridStateFactory.isSingleGameSet(g));
+        }
+    }
+
+    public void testRenjuIsSingleGameSet() {
+        assertTrue(GridStateFactory.isSingleGameSet(GridStateFactory.RENJU));
+        assertTrue(GridStateFactory.isSingleGameSet(GridStateFactory.SPEED_RENJU));
+        assertTrue(GridStateFactory.isSingleGameSet(GridStateFactory.TB_RENJU));
+    }
+
+    public void testTwoGameSetGamesAreNot() {
+        int[] two = {GridStateFactory.PENTE, GridStateFactory.TB_PENTE,
+                GridStateFactory.DPENTE, GridStateFactory.TB_DPENTE,
+                GridStateFactory.SWAP2PENTE, GridStateFactory.TB_SWAP2PENTE,
+                GridStateFactory.KERYO, GridStateFactory.GOMOKU};
+        for (int g : two) {
+            assertTrue("game " + g, !GridStateFactory.isSingleGameSet(g));
+        }
+    }
+```
+
+- [ ] **Step 2: Implement predicate** in `GridStateFactory`:
+
+```java
+    /**
+     * Games played as a single-game set rather than a two-game
+     * (color-alternating) set: the go family, where komi balances the colors,
+     * and renju, where the Taraguchi-10 opening protocol balances the first
+     * move. Accepts live, speed and turn-based game ids.
+     */
+    public static boolean isSingleGameSet(int game) {
+        return game == GO || game == GO9 || game == GO13 ||
+                game == SPEED_GO || game == SPEED_GO9 || game == SPEED_GO13 ||
+                game == TB_GO || game == TB_GO9 || game == TB_GO13 ||
+                game == RENJU || game == SPEED_RENJU || game == TB_RENJU;
+    }
+```
+
+Run: `ant test-one -Dtest=org.pente.game.test.GridStateFactorySingleGameSetTest` → OK (3 tests).
+
+- [ ] **Step 3: Replace the five go-lists with the predicate** (each is a
+mechanical substitution; the surrounding logic must not change):
+
+1. `SingleEliminationFormat` — the 9-clause `if (tourney.getGame() != GridStateFactory.GO && ...)` guarding the "now add match with players swapped" block becomes `if (!GridStateFactory.isSingleGameSet(tourney.getGame()))`.
+2. `DoubleEliminationFormat` — `boolean set = (tourney.getGame() != GridStateFactory.GO && ...)` becomes `boolean set = !GridStateFactory.isSingleGameSet(tourney.getGame());`.
+3. `CacheTourneyStorer.insertMatch` — the `(( player1 < player2 ) || t.getGame() == GridStateFactory.TB_GO || ... TB_GO13 )` disjunct becomes `(( ...player1 < player2... ) || GridStateFactory.isSingleGameSet(t.getGame()))`.
+4. `CacheTourneyStorer.applyMatchTo` tie block — the 9-clause `if (t.getGame() != GridStateFactory.GO && ...)` guarding `insertMatch(more[1])` becomes `if (!GridStateFactory.isSingleGameSet(t.getGame()))`.
+5. `CacheTBStorer.createTournamentSet` — `if (game != GridStateFactory.TB_GO && game != GridStateFactory.TB_GO9 && game != GridStateFactory.TB_GO13)` guarding the `tbg2` creation becomes `if (!GridStateFactory.isSingleGameSet(game))`.
+
+- [ ] **Step 4: Compile + regression**
+
+Run: `./justCompile` → BUILD SUCCESSFUL, then the Task 7 six-test sweep plus the new test class.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add dsg_src/java/org/pente/game/GridStateFactory.java dsg_src/java/org/pente/game/test/GridStateFactorySingleGameSetTest.java dsg_src/java/org/pente/gameServer/tourney/SingleEliminationFormat.java dsg_src/java/org/pente/gameServer/tourney/DoubleEliminationFormat.java dsg_src/java/org/pente/gameServer/tourney/CacheTourneyStorer.java dsg_src/java/org/pente/turnBased/CacheTBStorer.java
+git commit -m "Tournaments: renju is a single-game set — shared isSingleGameSet predicate (go + renju)"
+```
+
+Out of scope, checked deliberately: `MySQLPenteGameStorer:545` (different predicate — swap-capable+go grouping), `MobileJsonHelper.isGoGame` (display), `NewGameServlet.isBlackFirst` (color-slot mapping; already renju-correct).
+
+---
+
 ## Notes for the implementer
 
 - `GridState` is an interface (`GridState.java:29`); the codebase compiles on a modern JDK (no `source=` pin in `build.xml`), so a `default` method is fine.
