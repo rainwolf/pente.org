@@ -53,6 +53,14 @@ public interface GridState extends MoveData {
      */
     public int getWinner();
 
+    /**
+     * True if the current seat order is flipped relative to game start by an
+     * opening swap (dpente family take-over, renju take-overs). Net parity:
+     * two renju take-overs cancel. Default: game has no swap mechanic.
+     */
+    default boolean seatsSwapped() {
+        return false;
+    }
 
     /** Clears the grid state */
     public void clear();

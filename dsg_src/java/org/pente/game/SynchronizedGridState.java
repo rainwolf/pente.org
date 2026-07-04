@@ -58,6 +58,10 @@ public class SynchronizedGridState implements GridState {
         return gridState.getWinner();
     }
 
+    public synchronized boolean seatsSwapped() {
+        return gridState.seatsSwapped();
+    }
+
     /** Clears the grid state */
     public synchronized void clear() {
         gridState.clear();

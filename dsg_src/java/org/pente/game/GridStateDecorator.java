@@ -73,6 +73,10 @@ public abstract class GridStateDecorator implements GridState {
         return gridState.getWinner();
     }
 
+    public boolean seatsSwapped() {
+        return gridState.seatsSwapped();
+    }
+
     /** Clears the grid state */
     public void clear() {
         gridState.clear();
