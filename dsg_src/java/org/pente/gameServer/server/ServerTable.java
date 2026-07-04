@@ -3721,7 +3721,7 @@ public class ServerTable {
                 // parity via seatsSwapped() covers the dpente family and
                 // renju take-overs alike.
                 boolean swapped = gridState != null && gridState.seatsSwapped();
-                if (swapped && localWinner2 != 0) { //draw
+                if (swapped && localWinner2 != 0) { // != 0: not a draw
                     localWinner2 = 3 - localWinner;
                 }
 

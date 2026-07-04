@@ -49,6 +49,7 @@ public class RenjuOpeningState {
      * take-overs after moves 1-4 plus the Branch A 5th-move swap.
      * The branch digit is a branch choice, not a swap. PENDING and NO digits
      * count as no swap, so this is valid mid-game.
+     * keep in sync with RenjuState.seatsSwapped() — same window classification
      */
     public boolean netSwapped() {
         int yes = 0;

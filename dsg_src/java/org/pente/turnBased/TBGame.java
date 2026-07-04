@@ -609,16 +609,21 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
      * @return true if the seats are currently flipped from the starting order
      */
     public boolean seatsSwapped() {
-        if (game == GridStateFactory.TB_DPENTE ||
-            game == GridStateFactory.TB_DKERYO ||
-            game == GridStateFactory.TB_SWAP2PENTE ||
-            game == GridStateFactory.TB_SWAP2KERYO) {
+        if (isDPenteFamily()) {
             return dPenteSwapped;
         }
         if (game == GridStateFactory.TB_RENJU) {
             return org.pente.game.RenjuOpeningState.netSwapped(renjuSwaps);
         }
         return false;
+    }
+
+    /** The variants sharing the d-pente single-swap opening (records into dPenteSwapped). */
+    private boolean isDPenteFamily() {
+        return game == GridStateFactory.TB_DPENTE ||
+                game == GridStateFactory.TB_DKERYO ||
+                game == GridStateFactory.TB_SWAP2PENTE ||
+                game == GridStateFactory.TB_SWAP2KERYO;
     }
 
     /** @return the pid seated as player 1 when the game started */
@@ -721,10 +726,7 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 
         gameData.setWinner(getWinner());
 
-        if (getGame() == GridStateFactory.TB_DPENTE ||
-                getGame() == GridStateFactory.TB_DKERYO ||
-                getGame() == GridStateFactory.TB_SWAP2PENTE ||
-                getGame() == GridStateFactory.TB_SWAP2KERYO) {
+        if (isDPenteFamily()) {
             gameData.setSwapped(didDPenteSwap());
         }
         if (getGame() == GridStateFactory.TB_SWAP2PENTE || getGame() == GridStateFactory.TB_SWAP2KERYO) {
