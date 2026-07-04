@@ -69,4 +69,54 @@ public class RenjuOpeningStateTest extends TestCase {
         assertNull(RenjuOpeningState.decodeOffers(null));
         assertEquals(0, RenjuOpeningState.decodeOffers(new byte[0]).length);
     }
+
+    public void testNetSwappedAllPendingFalse() {
+        RenjuOpeningState st = new RenjuOpeningState();
+        assertTrue(!st.netSwapped());
+        assertTrue(!RenjuOpeningState.netSwapped(st.encode()));
+    }
+
+    public void testNetSwappedEachSingleYesTrue() {
+        for (int i = 0; i < 5; i++) {
+            RenjuOpeningState st = new RenjuOpeningState();
+            if (i == 0) st.swap1 = RenjuOpeningState.YES;
+            if (i == 1) st.swap2 = RenjuOpeningState.YES;
+            if (i == 2) st.swap3 = RenjuOpeningState.YES;
+            if (i == 3) st.swap4 = RenjuOpeningState.YES;
+            if (i == 4) st.swap5 = RenjuOpeningState.YES;
+            assertTrue("digit " + i, st.netSwapped());
+            assertTrue("digit " + i, RenjuOpeningState.netSwapped(st.encode()));
+        }
+    }
+
+    public void testNetSwappedTwoYesCancel() {
+        RenjuOpeningState st = new RenjuOpeningState();
+        st.swap1 = RenjuOpeningState.YES;
+        st.swap3 = RenjuOpeningState.YES;
+        assertTrue(!st.netSwapped());
+    }
+
+    public void testNetSwappedThreeYesOdd() {
+        RenjuOpeningState st = new RenjuOpeningState();
+        st.swap1 = RenjuOpeningState.YES;
+        st.swap2 = RenjuOpeningState.YES;
+        st.swap5 = RenjuOpeningState.YES;
+        assertTrue(st.netSwapped());
+    }
+
+    public void testNetSwappedBranchDigitIgnored() {
+        RenjuOpeningState st = new RenjuOpeningState();
+        st.branch = RenjuOpeningState.YES; // Branch B chosen — not a swap
+        assertTrue(!st.netSwapped());
+        st.swap2 = RenjuOpeningState.YES;
+        assertTrue(st.netSwapped()); // branch still ignored on top of a swap
+    }
+
+    public void testNetSwappedNoDeclinesIgnored() {
+        RenjuOpeningState st = new RenjuOpeningState();
+        st.swap1 = RenjuOpeningState.NO;
+        st.swap2 = RenjuOpeningState.NO;
+        st.swap3 = RenjuOpeningState.NO;
+        assertTrue(!st.netSwapped());
+    }
 }

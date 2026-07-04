@@ -258,15 +258,7 @@ public class DoubleEliminationFormat extends SingleEliminationFormat implements 
             TourneyPlayerData p2 = (TourneyPlayerData) o2;
             return p1.getSeed() - p2.getSeed();
         };
-        boolean set = (tourney.getGame() != GridStateFactory.GO &&
-                tourney.getGame() != GridStateFactory.GO9 &&
-                tourney.getGame() != GridStateFactory.GO13 &&
-                tourney.getGame() != GridStateFactory.SPEED_GO &&
-                tourney.getGame() != GridStateFactory.SPEED_GO9 &&
-                tourney.getGame() != GridStateFactory.SPEED_GO13 &&
-                tourney.getGame() != GridStateFactory.TB_GO &&
-                tourney.getGame() != GridStateFactory.TB_GO9 &&
-                tourney.getGame() != GridStateFactory.TB_GO13);
+        boolean set = !GridStateFactory.isSingleGameSet(tourney.getGame());
 
         TourneyMatch byeMatch = null;
         if (!bracketPlayers0.isEmpty()) {

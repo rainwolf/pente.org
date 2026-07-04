@@ -577,6 +577,14 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
         return swapDecision[afterStone];
     }
 
+    /** Net parity of the recorded take-over decisions (windows 1-5). */
+    // keep in sync with RenjuOpeningState.netSwapped() — same window classification
+    @Override
+    public boolean seatsSwapped() {
+        return swapDecision[1] ^ swapDecision[2] ^ swapDecision[3]
+                ^ swapDecision[4] ^ swapDecision[5];
+    }
+
     public void renjuSwapDecisionMade(boolean swap) {
         renjuSwapDecisionMade(swap, true);
     }

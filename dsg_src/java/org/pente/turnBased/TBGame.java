@@ -600,6 +600,41 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
         lastMoveDate = new Date();
     }
 
+    /**
+     * True if the current player1Pid/player2Pid are flipped relative to how
+     * the game started, due to an opening swap. dpente-family games have a
+     * single swap opportunity (boolean); renju derives net parity from the
+     * packed take-over decisions. Valid mid-game.
+     *
+     * @return true if the seats are currently flipped from the starting order
+     */
+    public boolean seatsSwapped() {
+        if (isDPenteFamily()) {
+            return dPenteSwapped;
+        }
+        if (game == GridStateFactory.TB_RENJU) {
+            return org.pente.game.RenjuOpeningState.netSwapped(renjuSwaps);
+        }
+        return false;
+    }
+
+    /** The variants sharing the d-pente single-swap opening (records into dPenteSwapped). */
+    private boolean isDPenteFamily() {
+        return game == GridStateFactory.TB_DPENTE ||
+                game == GridStateFactory.TB_DKERYO ||
+                game == GridStateFactory.TB_SWAP2PENTE ||
+                game == GridStateFactory.TB_SWAP2KERYO;
+    }
+
+    /** @return the pid seated as player 1 when the game started */
+    public long getOriginalPlayer1Pid() {
+        return seatsSwapped() ? player2Pid : player1Pid;
+    }
+
+    /** @return the pid seated as player 2 when the game started */
+    public long getOriginalPlayer2Pid() {
+        return seatsSwapped() ? player1Pid : player2Pid;
+    }
 
     public boolean isUndoRequested() {
         return undoRequested;
@@ -691,10 +726,7 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 
         gameData.setWinner(getWinner());
 
-        if (getGame() == GridStateFactory.TB_DPENTE ||
-                getGame() == GridStateFactory.TB_DKERYO ||
-                getGame() == GridStateFactory.TB_SWAP2PENTE ||
-                getGame() == GridStateFactory.TB_SWAP2KERYO) {
+        if (isDPenteFamily()) {
             gameData.setSwapped(didDPenteSwap());
         }
         if (getGame() == GridStateFactory.TB_SWAP2PENTE || getGame() == GridStateFactory.TB_SWAP2KERYO) {

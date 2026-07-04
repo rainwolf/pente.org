@@ -246,6 +246,14 @@ public class TournamentServerTable extends ServerTable {
                 i = 2;
             }
             if (i > 0) {
+                // if an opening swap flipped the seats of the game in
+                // progress, the match roles are seated mirrored until it ends.
+                // key on the table's state, not gridState.isGameOver(): resign
+                // and timeout endings never mark the grid game-over
+                if (state == DSGGameStateTableEvent.GAME_IN_PROGRESS
+                        && gridState != null && gridState.seatsSwapped()) {
+                    i = 3 - i;
+                }
                 if (this.sittingPlayers[i] == null) {
                     sit(player, i);
                 } else if (!this.sittingPlayers[i].getName().equals(player)) {

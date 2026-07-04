@@ -492,4 +492,18 @@ public class GridStateFactory {
         int cy = gs.getGridSizeY() / 2;
         return gs.convertMove(cx, cy);
     }
+
+    /**
+     * True for games whose tournament sets are a single game rather than a
+     * two-game color-alternating pair. The go family balances first-move
+     * advantage via komi; renju (Taraguchi-10) balances it via the opening
+     * swap protocol. Both therefore play one game per tournament set.
+     */
+    public static boolean isSingleGameSet(int game) {
+        return game == GO || game == GO9 || game == GO13 ||
+                game == SPEED_GO || game == SPEED_GO9 || game == SPEED_GO13 ||
+                game == TB_GO || game == TB_GO9 || game == TB_GO13 ||
+                game == RENJU || game == SPEED_RENJU || game == TB_RENJU;
+    }
+
 }

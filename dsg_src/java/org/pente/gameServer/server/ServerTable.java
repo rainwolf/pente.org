@@ -3312,17 +3312,12 @@ public class ServerTable {
     }
 
     protected void swapSeats() {
-        boolean swap2 = game == GridStateFactory.SWAP2PENTE_GAME || game == GridStateFactory.SPEED_SWAP2PENTE_GAME ||
-                game == GridStateFactory.SWAP2KERYO_GAME || game == GridStateFactory.SPEED_SWAP2KERYO_GAME;
         // only swap if both players still sitting
         // (if forced resign, don't swap)
-        // (if d-pente and already swapped, don't swap back)
-        if (game == GridStateFactory.DPENTE_GAME || game == GridStateFactory.SPEED_DPENTE_GAME
-                || game == GridStateFactory.DKERYO_GAME || game == GridStateFactory.SPEED_DKERYO_GAME
-                || swap2) {
-            if (((PenteState) gridState).didDPenteSwap()) {
-                return; // already swapped seats
-            }
+        // (if an opening swap already flipped the seats, don't swap back --
+        //  net parity, so e.g. two renju take-overs cancel and we DO rotate)
+        if (gridState != null && gridState.seatsSwapped()) {
+            return; // already swapped seats
         }
 
         if (!anyComputersSitting() && allPlayersSitting()) {
@@ -3721,20 +3716,13 @@ public class ServerTable {
 
             try {
                 int localWinner2 = localWinner;
-                boolean swapped = false;
-                // for dpente games, don't swap player ids
-                // just record game as being won by correct id
-                if (game == GridStateFactory.DPENTE || game == GridStateFactory.SPEED_DPENTE ||
-                        game == GridStateFactory.DKERYO || game == GridStateFactory.SPEED_DKERYO ||
-                        game == GridStateFactory.SWAP2PENTE || game == GridStateFactory.SPEED_SWAP2PENTE ||
-                        game == GridStateFactory.SWAP2KERYO || game == GridStateFactory.SPEED_SWAP2KERYO) {
-
-                    if (((PenteState) gridState).didDPenteSwap()) {
-                        if (localWinner2 != 0) { //draw
-                            localWinner2 = 3 - localWinner;
-                        }
-                        swapped = true;
-                    }
+                // if an opening swap flipped the player ids mid-game, record
+                // the result from the match's original perspective. net
+                // parity via seatsSwapped() covers the dpente family and
+                // renju take-overs alike.
+                boolean swapped = gridState != null && gridState.seatsSwapped();
+                if (swapped && localWinner2 != 0) { // != 0: not a draw
+                    localWinner2 = 3 - localWinner;
                 }
 
                 tourneyMatch.setGid(gameData.getGameID());

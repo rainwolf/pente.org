@@ -5,11 +5,11 @@ import org.pente.game.GridStateFactory;
 import org.pente.gameServer.core.CacheDSGPlayerStorer;
 import org.pente.gameServer.core.DSGPlayerData;
 import org.pente.gameServer.core.DSGPlayerGameData;
+import org.pente.gameServer.server.RedisConnectionManager;
 import org.pente.gameServer.server.Resources;
 import org.pente.kingOfTheHill.CacheKOTHStorer;
 import org.pente.kingOfTheHill.KOTHStorer;
 import org.pente.notifications.NotificationServer;
-import org.pente.gameServer.server.RedisConnectionManager;
 import org.pente.turnBased.CacheTBStorer;
 
 import java.util.*;
@@ -33,31 +33,42 @@ public class CacheTourneyStorer implements TourneyStorer {
 
     private static final String LIST_FIELD = "list";
 
-    /** THE write primitive: persist a tourney as the single source of truth. */
+    /**
+     * THE write primitive: persist a tourney as the single source of truth.
+     */
     private void persistTourney(Tourney t) {
         if (t == null) return;
         pente_cache.hput(RedisConnectionManager.EID_TO_TOURNEY, t.getEventID(), t);
     }
 
-    /** Read an ordered eid list stored under a single fixed field in a namespace. */
+    /**
+     * Read an ordered eid list stored under a single fixed field in a namespace.
+     */
     @SuppressWarnings("unchecked")
     private java.util.List<Integer> readEidList(String namespace) {
         java.util.ArrayList<Integer> l = pente_cache.hget(namespace, LIST_FIELD);
         return l == null ? new java.util.ArrayList<Integer>() : l;
     }
 
-    /** Write an ordered eid list under a single fixed field in a namespace. */
+    /**
+     * Write an ordered eid list under a single fixed field in a namespace.
+     */
     private void writeEidList(String namespace, java.util.List<Integer> eids) {
         pente_cache.hput(namespace, LIST_FIELD, new java.util.ArrayList<Integer>(eids));
     }
 
-    /** Move an eid from one list namespace to another (dedup). */
+    /**
+     * Move an eid from one list namespace to another (dedup).
+     */
     private void moveEid(String fromNs, String toNs, int eid) {
         java.util.List<Integer> from = readEidList(fromNs);
         from.remove(Integer.valueOf(eid));
         writeEidList(fromNs, from);
         java.util.List<Integer> to = readEidList(toNs);
-        if (!to.contains(eid)) { to.add(eid); writeEidList(toNs, to); }
+        if (!to.contains(eid)) {
+            to.add(eid);
+            writeEidList(toNs, to);
+        }
     }
 
 
@@ -142,7 +153,10 @@ public class CacheTourneyStorer implements TourneyStorer {
         log4j.debug("insertTourney(" + tourney.getEventID() + "), cached");
         persistTourney(tourney);
         java.util.List<Integer> up = readEidList(RedisConnectionManager.TOURNEY_LIST_UPCOMING);
-        if (!up.contains(tourney.getEventID())) { up.add(tourney.getEventID()); writeEidList(RedisConnectionManager.TOURNEY_LIST_UPCOMING, up); }
+        if (!up.contains(tourney.getEventID())) {
+            up.add(tourney.getEventID());
+            writeEidList(RedisConnectionManager.TOURNEY_LIST_UPCOMING, up);
+        }
     }
 
     /**
@@ -168,7 +182,9 @@ public class CacheTourneyStorer implements TourneyStorer {
         if (!listLoaded(RedisConnectionManager.TOURNEY_LIST_UPCOMING)) {
             java.util.List<Tourney> backing = backingStorer.getUpcomingTournies();
             java.util.List<Integer> bootstrapEids = new java.util.ArrayList<Integer>();
-            for (Tourney bt : backing) { if (!bootstrapEids.contains(bt.getEventID())) bootstrapEids.add(bt.getEventID()); }
+            for (Tourney bt : backing) {
+                if (!bootstrapEids.contains(bt.getEventID())) bootstrapEids.add(bt.getEventID());
+            }
             writeEidList(RedisConnectionManager.TOURNEY_LIST_UPCOMING, bootstrapEids);
             markListLoaded(RedisConnectionManager.TOURNEY_LIST_UPCOMING);
         }
@@ -179,8 +195,11 @@ public class CacheTourneyStorer implements TourneyStorer {
         for (Integer eid : new java.util.ArrayList<Integer>(eids)) {
             Tourney t = getTourney(eid);
             if (t == null) continue;
-            if (t.getSignupEndDate().before(today)) { promote.add(eid); }
-            else { out.add(t); }
+            if (t.getSignupEndDate().before(today)) {
+                promote.add(eid);
+            } else {
+                out.add(t);
+            }
         }
         if (!promote.isEmpty()) {
             java.util.List<Integer> freshUp = readEidList(RedisConnectionManager.TOURNEY_LIST_UPCOMING);
@@ -201,7 +220,9 @@ public class CacheTourneyStorer implements TourneyStorer {
         if (!listLoaded(RedisConnectionManager.TOURNEY_LIST_CURRENT)) {
             java.util.List<Tourney> backing = backingStorer.getCurrentTournies();
             java.util.List<Integer> bootstrapEids = new java.util.ArrayList<Integer>();
-            for (Tourney bt : backing) { if (!bootstrapEids.contains(bt.getEventID())) bootstrapEids.add(bt.getEventID()); }
+            for (Tourney bt : backing) {
+                if (!bootstrapEids.contains(bt.getEventID())) bootstrapEids.add(bt.getEventID());
+            }
             writeEidList(RedisConnectionManager.TOURNEY_LIST_CURRENT, bootstrapEids);
             markListLoaded(RedisConnectionManager.TOURNEY_LIST_CURRENT);
         }
@@ -239,7 +260,9 @@ public class CacheTourneyStorer implements TourneyStorer {
         if (!listLoaded(RedisConnectionManager.TOURNEY_LIST_COMPLETED)) {
             java.util.List<Tourney> backing = backingStorer.getCompletedTournies();
             java.util.List<Integer> bootstrapEids = new java.util.ArrayList<Integer>();
-            for (Tourney bt : backing) { if (!bootstrapEids.contains(bt.getEventID())) bootstrapEids.add(bt.getEventID()); }
+            for (Tourney bt : backing) {
+                if (!bootstrapEids.contains(bt.getEventID())) bootstrapEids.add(bt.getEventID());
+            }
             writeEidList(RedisConnectionManager.TOURNEY_LIST_COMPLETED, bootstrapEids);
             markListLoaded(RedisConnectionManager.TOURNEY_LIST_COMPLETED);
         }
@@ -435,10 +458,8 @@ public class CacheTourneyStorer implements TourneyStorer {
         //backingStorer.insertRound(round, eid);
 
         int eid = -1;
-        for (Iterator sections = round.getSections().iterator(); sections.hasNext(); ) {
-            TourneySection s = (TourneySection) sections.next();
-            for (Iterator matches = s.getMatches().iterator(); matches.hasNext(); ) {
-                TourneyMatch m = (TourneyMatch) matches.next();
+        for (TourneySection s : round.getSections()) {
+            for (TourneyMatch m : s.getMatches()) {
                 insertMatch(m);
                 eid = m.getEvent();
             }
@@ -468,8 +489,7 @@ public class CacheTourneyStorer implements TourneyStorer {
                 tourneyMatch.getPlayer2() != null &&
                 tourneyMatch.getPlayer2().getPlayerID() != 0 && ((
                 tourneyMatch.getPlayer1().getPlayerID() < tourneyMatch.getPlayer2().getPlayerID()) ||
-                t.getGame() == GridStateFactory.TB_GO || t.getGame() == GridStateFactory.TB_GO9 ||
-                t.getGame() == GridStateFactory.TB_GO13
+                GridStateFactory.isSingleGameSet(t.getGame())
         )) {
             this.tbStorer.createTournamentSet(t.getGame(), tourneyMatch.getPlayer1().getPlayerID(), tourneyMatch.getPlayer2().getPlayerID(),
                     t.getInitialTime(), t.getEventID());
@@ -528,15 +548,7 @@ public class CacheTourneyStorer implements TourneyStorer {
                 TourneyMatch more[] = f.createMoreMatchesAfterTie(tourneyMatch);
                 insertMatch(more[0]);
                 s.addMatch(more[0]);
-                if (t.getGame() != GridStateFactory.GO &&
-                        t.getGame() != GridStateFactory.GO9 &&
-                        t.getGame() != GridStateFactory.GO13 &&
-                        t.getGame() != GridStateFactory.SPEED_GO &&
-                        t.getGame() != GridStateFactory.SPEED_GO9 &&
-                        t.getGame() != GridStateFactory.SPEED_GO13 &&
-                        t.getGame() != GridStateFactory.TB_GO &&
-                        t.getGame() != GridStateFactory.TB_GO9 &&
-                        t.getGame() != GridStateFactory.TB_GO13) {
+                if (!GridStateFactory.isSingleGameSet(t.getGame())) {
                     insertMatch(more[1]);
                     s.addMatch(more[1]);
                 }
@@ -547,7 +559,7 @@ public class CacheTourneyStorer implements TourneyStorer {
     /**
      * update a group of matches and then check if round needs to be updated
      * right now only called from admin management screen
-     *
+     * <p>
      * Operates on the CALLER'S passed tourney (so admin/manageTourney.jsp's
      * reads-after-write see the applied results) and persists it.
      */
