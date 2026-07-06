@@ -1,10 +1,13 @@
 package org.pente.gameServer.client.web;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 import jakarta.servlet.http.*;
+
+import org.pente.filter.CanonicalHostFilter;
 
 public class LoginCookieHandler {
 
@@ -100,41 +103,99 @@ public class LoginCookieHandler {
 //        response.addCookie(passwordCookie);
 //        response.addCookie(pluginCookie);
 
+        if (cookieDomain(request) != null) {
+            // a pre-domain-change host-only cookie would shadow the new
+            // Domain variant (browser send order for same-name cookies is
+            // undefined), so expire the host-only ones first
+            expireCookie(NAME_COOKIE, "/", null, request, response);
+            expireCookie(PASSWORD_COOKIE, "/", null, request, response);
+            expireCookie(PLUGIN_COOKIE, "/", null, request, response);
+        }
+
         writeCookie(nameCookie, request, response);
         writeCookie(passwordCookie, request, response);
         writeCookie(pluginCookie, request, response);
     }
 
-    private static final DateFormat df = new SimpleDateFormat("EEE, dd-MMM-yyyy HH:mm:ss");
+    private static final DateTimeFormatter EXPIRES_FORMAT = DateTimeFormatter
+            .ofPattern("EEE, dd-MMM-yyyy HH:mm:ss", Locale.US)
+            .withZone(ZoneOffset.UTC);
 
     private void writeCookie(Cookie cookie, HttpServletRequest request, HttpServletResponse response) {
+        // the header is assembled by hand, so a ';' etc. in a value would
+        // let it masquerade as extra cookie attributes — refuse instead
+        if (!cookieTokenSafe(cookie.getName()) || !cookieTokenSafe(cookie.getValue())) {
+            return;
+        }
         StringBuffer buf = new StringBuffer();
         buf.append(cookie.getName() + "=" + cookie.getValue() + "; Version=1; ");
-        buf.append("Expires=" + df.format(new Date(System.currentTimeMillis() + cookie.getMaxAge() * 1000L)) + " GMT; ");
+        buf.append("Expires=" + EXPIRES_FORMAT.format(Instant.ofEpochMilli(System.currentTimeMillis() + cookie.getMaxAge() * 1000L)) + " GMT; ");
+        String domain = cookieDomain(request);
+        if (domain != null) {
+            buf.append("Domain=" + domain + "; ");
+        }
         buf.append("Path=" + cookie.getPath());
         response.addHeader("Set-Cookie", buf.toString());
+    }
+
+    private static boolean cookieTokenSafe(String s) {
+        if (s == null) {
+            return false;
+        }
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c <= 0x20 || c >= 0x7f || c == ';' || c == ',' || c == '"' || c == '\\') {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Domain=pente.org makes the login shared between pente.org and
+     *  www.pente.org only — other subdomains must not receive the
+     *  credential cookie. null on any other host (dev/localhost) keeps the
+     *  cookie host-only so the browser doesn't reject it. */
+    private static String cookieDomain(HttpServletRequest request) {
+        String host = request.getServerName();
+        if (host != null) {
+            host = host.toLowerCase();
+            if (host.equals(CanonicalHostFilter.APEX_HOST)
+                    || host.equals(CanonicalHostFilter.CANONICAL_HOST)) {
+                return CanonicalHostFilter.APEX_HOST;
+            }
+        }
+        return null;
     }
 
     public void deleteCookie(
             HttpServletRequest request, HttpServletResponse response) {
 
-        Cookie nameCookie = new Cookie(NAME_COOKIE, "");
-        Cookie passwordCookie = new Cookie(PASSWORD_COOKIE, "");
+        expireCookie(NAME_COOKIE, "/", null, request, response);
+        expireCookie(PASSWORD_COOKIE, "/", null, request, response);
+        expireCookie(NAME_COOKIE, "/gameServer", null, request, response);
+        expireCookie(PASSWORD_COOKIE, "/gameServer", null, request, response);
 
-        deleteCookie(nameCookie, "/", request, response);
-        deleteCookie(passwordCookie, "/", request, response);
-        deleteCookie(nameCookie, "/gameServer", request, response);
-        deleteCookie(passwordCookie, "/gameServer", request, response);
+        // the Domain=pente.org variants only ever exist at Path=/
+        // (writeCookie), so one deletion per name covers them
+        String domain = cookieDomain(request);
+        if (domain != null) {
+            expireCookie(NAME_COOKIE, "/", domain, request, response);
+            expireCookie(PASSWORD_COOKIE, "/", domain, request, response);
+        }
 
         // don't delete plugin cookie, is probably shared across multiple users
         // of the same pc
     }
 
-    public void deleteCookie(Cookie cookie, String path,
-                             HttpServletRequest request, HttpServletResponse response) {
+    private void expireCookie(String name, String path, String domain,
+            HttpServletRequest request, HttpServletResponse response) {
 
+        Cookie cookie = new Cookie(name, "");
         cookie.setMaxAge(0);
         cookie.setPath(request.getContextPath() + path);
+        if (domain != null) {
+            cookie.setDomain(domain);
+        }
         response.addCookie(cookie);
     }
 }

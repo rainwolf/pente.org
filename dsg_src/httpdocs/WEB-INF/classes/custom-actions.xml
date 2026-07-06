@@ -41,17 +41,13 @@
         <view name="rejected">postform.jsp</view>
         <view name="spellcheck">spell!default.jspa</view>
         <view name="success-moderation">postform-success.jsp</view>
-        <view name="success-newreply">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}&amp;messageID={messageID}&amp;start={start}
-            &#{messageID}
-        </view>
+        <view name="success-newreply">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}&amp;messageID={messageID}&amp;start={start}&amp;#{messageID}</view>
         <view name="success-newthread">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}</view>
     </action>
     <action name="AttachAction" alias="attach">
         <view name="input">attachform.jsp</view>
         <view name="error">attachform.jsp</view>
-        <view name="success-newreply">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}&amp;messageID={messageID}&amp;start={start}
-            &#{messageID}
-        </view>
+        <view name="success-newreply">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}&amp;messageID={messageID}&amp;start={start}&amp;#{messageID}</view>
         <view name="success-newthread">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}</view>
         <view name="success-moderation">doRedirect.jspa?url=postModSuccess.jspa</view>
         <view name="cancel">post!default.jspa</view>
@@ -64,9 +60,7 @@
         <view name="success-edit">doRedirect.jspa?url=editattach!default.jspa?forumID={forumID}&amp;threadID={threadID}&amp;messageID={messageID}</view>
         <view name="goback">doRedirect.jspa?url={last}</view>
         <view name="unauth">error.jsp</view>
-        <view name="cancel">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}&amp;messageID={messageID}
-            &#{messageID}
-        </view>
+        <view name="cancel">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}&amp;messageID={messageID}&amp;#{messageID}</view>
     </action>
     <action name="SpellAction" alias="spell">
         <view name="input">spellform.jsp</view>
@@ -74,12 +68,8 @@
         <view name="error">spellform.jsp</view>
     </action>
     <action name="EditAction" alias="edit">
-        <view name="cancel">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}&amp;messageID={messageID}
-            &#{messageID}
-        </view>
-        <view name="success">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}&amp;messageID={messageID}
-            &#{messageID}
-        </view>
+        <view name="cancel">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}&amp;messageID={messageID}&amp;#{messageID}</view>
+        <view name="success">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}&amp;messageID={messageID}&amp;#{messageID}</view>
         <view name="error">error.jsp</view>
         <view name="input">editform.jsp</view>
     </action>
@@ -130,18 +120,13 @@
         <view name="error">error.jsp</view>
         <view name="input">delete.jsp</view>
         <view name="success">delete-success.jsp</view>
-        <view name="cancel-deletethread">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}
-        </view>
-        <view name="cancel-deletemessage">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}&amp;messageID={messageID}
-            &#{messageID}
-        </view>
+        <view name="cancel-deletethread">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}</view>
+        <view name="cancel-deletemessage">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}&amp;messageID={messageID}&amp;#{messageID}</view>
     </action>
     <action name="BranchAction" alias="branch">
         <view name="error">error.jsp</view>
         <view name="input">branch.jsp</view>
-        <view name="cancel">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}&amp;messageID={messageID}
-            &#{messageID}
-        </view>
+        <view name="cancel">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}&amp;messageID={messageID}&amp;#{messageID}</view>
         <view name="success">doRedirect.jspa?url=thread.jspa?forumID={forumID}&amp;threadID={threadID}</view>
     </action>
 
