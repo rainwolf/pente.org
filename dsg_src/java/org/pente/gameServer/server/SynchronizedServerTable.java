@@ -44,20 +44,7 @@ public class SynchronizedServerTable implements DSGEventListener {
                 pingManager, fileGameStorer, gameStorer, playerStorer,
                 serverStatsHandler, returnEmailStorer, mainRoomPlayers,
                 activityLogger, joinEvent);
-        synchronizedQueue = new SynchronizedQueue();
-
-        Runnable queueRunnable = () -> {
-            while (running) {
-                try {
-                    callServerTable((DSGEvent) synchronizedQueue.remove());
-                } catch (InterruptedException e) {
-                }
-            }
-        };
-
-        running = true;
-        queueThread = new Thread(queueRunnable, "SynchronizedServerTable " + newTableNum);
-        queueThread.start();
+        pump = new SerialEventPump("SynchronizedServerTable " + newTableNum, this::callServerTable);
     }
 
     public ServerTable getServerTable() {
@@ -65,10 +52,7 @@ public class SynchronizedServerTable implements DSGEventListener {
     }
 
     private ServerTable serverTable;
-    private SynchronizedQueue synchronizedQueue;
-
-    private Thread queueThread;
-    private volatile boolean running;
+    private SerialEventPump pump;
 
     public SynchronizedServerTable() {
     }
@@ -106,31 +90,16 @@ public class SynchronizedServerTable implements DSGEventListener {
                     activityLogger, joinEvent, kothStorer);
         }
 
-        synchronizedQueue = new SynchronizedQueue();
-
-        Runnable queueRunnable = () -> {
-            while (running) {
-                try {
-                    callServerTable((DSGEvent) synchronizedQueue.remove());
-                } catch (InterruptedException e) {
-                }
-            }
-        };
-
-        running = true;
-        queueThread = new Thread(queueRunnable, "SynchronizedServerTable " + table);
-        queueThread.start();
+        pump = new SerialEventPump("SynchronizedServerTable " + table, this::callServerTable);
     }
 
     public void eventOccurred(DSGEvent dsgEvent) {
-        synchronizedQueue.add(dsgEvent);
+        pump.submit(dsgEvent);
     }
 
     public void destroy() {
-        running = false;
-        if (queueThread != null) {
-            queueThread.interrupt();
-            queueThread = null;
+        if (pump != null) {
+            pump.stop();
         }
         serverTable.destroy();
     }
