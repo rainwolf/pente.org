@@ -1,3 +1,14 @@
+# --- mmai sidecar build stage (spec §7.2) ---------------------------------
+# Compiles the MMAI engine + shim; only the binary is copied into the final
+# image, so the runtime stays toolchain-free.
+FROM debian:bookworm-slim AS mmai_sidecar_build
+RUN apt-get update && apt-get install -y --no-install-recommends g++ \
+    && rm -rf /var/lib/apt/lists/*
+COPY dsg_src/mmai/ /build/mmai/
+RUN g++ -O2 -std=c++11 \
+    /build/mmai/engine/Ai.cpp /build/mmai/engine/CPoint.cpp /build/mmai/main.cpp \
+    -o /build/mmai_player
+
 FROM tomcat:11.0.11-jre21
 
 # - mount /etc/dsg/, /var/log/tomcat, /var/log/dsg outside of container, maybe /var/lib/dsg
@@ -66,3 +77,6 @@ COPY submanifolddomains/ /usr/local/tomcat/
 # copy the react components (make sure they're built)
 COPY ./react-live-game-room/build /usr/local/tomcat/webapps/ROOT/gameServer/live
 COPY ./react-mmai/build /usr/local/tomcat/webapps/ROOT/gameServer/mmai
+
+# mmai sidecar binary (MMAIPlayer spawns it; see dsg_src/mmai/)
+COPY --from=mmai_sidecar_build /build/mmai_player /usr/local/bin/mmai_player
