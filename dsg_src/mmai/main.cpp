@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
             continue;
         }
         int game, level, n;
-        if (!(in >> game >> level >> n) || game < 1 || n < 0 || n > 361) {
+        if (!(in >> game >> level >> n) || game < 1 || level < 1 || level > 8 || n < 0 || n > 361) {
             std::printf("ERR malformed MOVE header\n");
             continue;
         }
