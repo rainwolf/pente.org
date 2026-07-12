@@ -25,6 +25,7 @@ import org.pente.game.PlayerStorer;
 import org.pente.gameServer.core.*;
 import org.pente.gameServer.event.*;
 import org.pente.kingOfTheHill.CacheKOTHStorer;
+import org.pente.kingOfTheHill.KotHRanking;
 
 import java.util.Collection;
 
@@ -44,20 +45,7 @@ public class SynchronizedServerTable implements DSGEventListener {
                 pingManager, fileGameStorer, gameStorer, playerStorer,
                 serverStatsHandler, returnEmailStorer, mainRoomPlayers,
                 activityLogger, joinEvent);
-        synchronizedQueue = new SynchronizedQueue();
-
-        Runnable queueRunnable = () -> {
-            while (running) {
-                try {
-                    callServerTable((DSGEvent) synchronizedQueue.remove());
-                } catch (InterruptedException e) {
-                }
-            }
-        };
-
-        running = true;
-        queueThread = new Thread(queueRunnable, "SynchronizedServerTable " + newTableNum);
-        queueThread.start();
+        pump = new SerialEventPump("SynchronizedServerTable " + newTableNum, this::callServerTable);
     }
 
     public ServerTable getServerTable() {
@@ -65,10 +53,7 @@ public class SynchronizedServerTable implements DSGEventListener {
     }
 
     private ServerTable serverTable;
-    private SynchronizedQueue synchronizedQueue;
-
-    private Thread queueThread;
-    private volatile boolean running;
+    private SerialEventPump pump;
 
     public SynchronizedServerTable() {
     }
@@ -92,45 +77,31 @@ public class SynchronizedServerTable implements DSGEventListener {
             final CacheKOTHStorer kothStorer) throws Throwable {
 
         sid = server.getServerData().getServerId();
+        KotHRanking kothRanking = new KotHRanking(kothStorer, dsgPlayerStorer);
         if (server.getServerData().isTournament()) {
             serverTable = new TournamentServerTable(
                     server, resources, aiController, table, dsgEventRouter, this, dsgPlayerStorer,
                     pingManager, gameFileStorer, gameDbStorer, playerDbStorer,
                     serverStatsHandler, returnEmailStorer, playersInMainRoom,
-                    activityLogger, joinEvent, kothStorer);
+                    activityLogger, joinEvent, kothRanking);
         } else {
             serverTable = new ServerTable(
                     server, resources, aiController, table, dsgEventRouter, this, dsgPlayerStorer,
                     pingManager, gameFileStorer, gameDbStorer, playerDbStorer,
                     serverStatsHandler, returnEmailStorer, playersInMainRoom,
-                    activityLogger, joinEvent, kothStorer);
+                    activityLogger, joinEvent, kothRanking);
         }
 
-        synchronizedQueue = new SynchronizedQueue();
-
-        Runnable queueRunnable = () -> {
-            while (running) {
-                try {
-                    callServerTable((DSGEvent) synchronizedQueue.remove());
-                } catch (InterruptedException e) {
-                }
-            }
-        };
-
-        running = true;
-        queueThread = new Thread(queueRunnable, "SynchronizedServerTable " + table);
-        queueThread.start();
+        pump = new SerialEventPump("SynchronizedServerTable " + table, this::callServerTable);
     }
 
     public void eventOccurred(DSGEvent dsgEvent) {
-        synchronizedQueue.add(dsgEvent);
+        pump.submit(dsgEvent);
     }
 
     public void destroy() {
-        running = false;
-        if (queueThread != null) {
-            queueThread.interrupt();
-            queueThread = null;
+        if (pump != null) {
+            pump.stop();
         }
         serverTable.destroy();
     }

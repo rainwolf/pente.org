@@ -28,7 +28,7 @@ import org.pente.gameServer.core.LiveSet;
 import org.pente.gameServer.core.MySQLDSGReturnEmailStorer;
 import org.pente.gameServer.event.*;
 import org.pente.gameServer.tourney.TourneyMatch;
-import org.pente.kingOfTheHill.CacheKOTHStorer;
+import org.pente.kingOfTheHill.KotHRanking;
 
 import java.util.*;
 
@@ -63,9 +63,9 @@ public class TournamentServerTable extends ServerTable {
                                  final Collection<DSGPlayerData> namesInMainRoom,
                                  final ActivityLogger activityLogger,
                                  DSGJoinTableEvent joinEvent,
-                                 final CacheKOTHStorer kothStorer) throws Throwable {
+                                 final KotHRanking kothRanking) throws Throwable {
 
-        super(server, resources, aiController, tableNum, dsgEventRouter, synchronizedTableListener, dsgPlayerStorer, pingManager, gameFileStorer, gameDbStorer, playerDbStorer, serverStatsHandler, returnEmailStorer, namesInMainRoom, activityLogger, joinEvent, kothStorer);
+        super(server, resources, aiController, tableNum, dsgEventRouter, synchronizedTableListener, dsgPlayerStorer, pingManager, gameFileStorer, gameDbStorer, playerDbStorer, serverStatsHandler, returnEmailStorer, namesInMainRoom, activityLogger, joinEvent, kothRanking);
     }
 
 

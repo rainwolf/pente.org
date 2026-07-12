@@ -36,11 +36,9 @@ public class SynchronizedServerMainRoom
 
     private long sid;
     private ServerMainRoom serverMainRoom;
-    private SynchronizedQueue synchronizedQueue;
     private Resources resources;
 
-    private Thread queueThread;
-    private volatile boolean running;
+    private SerialEventPump pump;
 
     public SynchronizedServerMainRoom(
             Server server,
@@ -56,44 +54,30 @@ public class SynchronizedServerMainRoom
             serverMainRoom = new ServerMainRoom(server, resources, dsgEventRouter);
         }
 
+        pump = new SerialEventPump("SynchronizedServerMainRoom", this::callServerMainRoom);
+
         resources.getTourneyStorer().addTourneyListener(this);
-
-        synchronizedQueue = new SynchronizedQueue();
-
-        Runnable queueRunnable = () -> {
-            while (running) {
-                try {
-                    callServerMainRoom((DSGEvent) synchronizedQueue.remove());
-                } catch (InterruptedException e) {
-                }
-            }
-        };
-
-        running = true;
-        queueThread = new Thread(queueRunnable, "SynchronizedServerMainRoom");
-        queueThread.start();
     }
 
     public void eventOccurred(DSGEvent dsgEvent) {
-        synchronizedQueue.add(dsgEvent);
+        pump.submit(dsgEvent);
     }
 
     public void playerChanged(DSGPlayerData dsgPlayerData) {
-        synchronizedQueue.add(new DSGUpdatePlayerDataEvent(dsgPlayerData));
+        pump.submit(new DSGUpdatePlayerDataEvent(dsgPlayerData));
     }
 
     public void tourneyEventOccurred(TourneyEvent event) {
-        synchronizedQueue.add(event);
+        pump.submit(event);
     }
 
     public void ignoreDataChanged(long pid) {
-        synchronizedQueue.add(new DSGIgnoreEvent(pid, null));
+        pump.submit(new DSGIgnoreEvent(pid, null));
     }
 
     public void destroy() {
-        running = false;
-        if (queueThread != null) {
-            queueThread.interrupt();
+        if (pump != null) {
+            pump.stop();
         }
         if (resources.getTourneyStorer() != null) {
             resources.getTourneyStorer().removeTourneyListener(this);

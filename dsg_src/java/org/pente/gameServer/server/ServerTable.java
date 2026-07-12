@@ -27,8 +27,7 @@ import org.pente.gameServer.client.MilliSecondGameTimer;
 import org.pente.gameServer.core.*;
 import org.pente.gameServer.event.*;
 import org.pente.gameServer.tourney.*;
-import org.pente.kingOfTheHill.CacheKOTHStorer;
-import org.pente.kingOfTheHill.Hill;
+import org.pente.kingOfTheHill.KotHRanking;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -159,7 +158,7 @@ public class ServerTable {
 
     protected String creator;
 
-    protected CacheKOTHStorer kothStorer;
+    protected KotHRanking kothRanking;
 
     public ServerTable() {
     }
@@ -180,7 +179,7 @@ public class ServerTable {
                        final Collection<DSGPlayerData> namesInMainRoom,
                        final ActivityLogger activityLogger,
                        DSGJoinTableEvent joinEvent,
-                       final CacheKOTHStorer kothStorer) throws Throwable {
+                       final KotHRanking kothRanking) throws Throwable {
 
         this.server = server;
         this.serverData = server.getServerData();
@@ -200,7 +199,7 @@ public class ServerTable {
         this.activityLogger = activityLogger;
         this.creator = joinEvent.getPlayer();
 
-        this.kothStorer = kothStorer;
+        this.kothRanking = kothRanking;
 
         this.playersInMainRoom = new Vector<>();
         playersInMainRoom.addAll(namesInMainRoom);
@@ -3639,47 +3638,13 @@ public class ServerTable {
                         tableNum, loserString));
 
 
-                if (serverData.getName() != null &&
-                        serverData.getName().startsWith("King of the Hill") &&
-                        localSet.getWinner() != 0) {
-                    Hill hill = kothStorer.loadHill(game);
-                    long oldKingPid = (hill != null) ? hill.getKing() : 0;
-                    long winnerPid = winnerPlayerData.getPlayerID();
-                    long loserPid = loserPlayerData.getPlayerID();
-                    int stepsBetween = kothStorer.stepsBetween(game, winnerPid, loserPid);
-//                        if (stepsBetween*stepsBetween < 5) {
-                    kothStorer.addPlayer(game, winnerPid);
-                    kothStorer.addPlayer(game, loserPid);
-                    kothStorer.movePlayersUpDown(game, winnerPid, loserPid);
-                    if (hill == null) {
-                        hill = kothStorer.loadHill(game);
-                    }
-                    long kingPid = (hill != null) ? hill.getKing() : 0;
-                    if (kingPid != oldKingPid && kingPid != 0) {
-                        try {
-                            broadcastTable(new DSGSystemMessageTableEvent(
-                                    tableNum,
-                                    "KotH has been updated, all hail King " + dsgPlayerStorer.loadPlayer(kingPid).getName()));
-                        } catch (DSGPlayerStoreException e) {
-                            log4j.error("ServerTable: error getting King: " + e);
-                        }
-                    } else {
-                        broadcastTable(new DSGSystemMessageTableEvent(
-                                tableNum,
-                                "KotH has been updated"));
-                    }
-//                        } else {
-//                            broadcastTable(new DSGSystemMessageTableEvent(
-//                                tableNum,
-//                                "KotH has not been updated, players are too far apart"));
-//                        }
-                }
-//                }
-                if (serverData.getName() != null && serverData.getName().startsWith("King of the Hill")) {
-                    long winnerPid = winnerPlayerData.getPlayerID();
-                    long loserPid = loserPlayerData.getPlayerID();
-                    kothStorer.updatePlayerLastGameDate(game, winnerPid);
-                    kothStorer.updatePlayerLastGameDate(game, loserPid);
+                if (serverData.isKingOfTheHill()) {
+                    kothRanking.recordResult(
+                            game,
+                            winnerPlayerData.getPlayerID(),
+                            loserPlayerData.getPlayerID(),
+                            localSet.getWinner() != 0,
+                            msg -> broadcastTable(new DSGSystemMessageTableEvent(tableNum, msg)));
                 }
 
 

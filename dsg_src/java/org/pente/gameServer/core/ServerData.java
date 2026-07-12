@@ -1,6 +1,7 @@
 package org.pente.gameServer.core;
 
 import org.pente.game.GameEventData;
+import org.pente.game.MySQLGameVenueStorer;
 
 import java.io.Serializable;
 import java.util.Vector;
@@ -61,6 +62,10 @@ public class ServerData implements Serializable {
 
     public boolean isTournament() {
         return tournament;
+    }
+
+    public boolean isKingOfTheHill() {
+        return name != null && name.startsWith(MySQLGameVenueStorer.KOTH_EVENT);
     }
 
     public void setTournament(boolean tournament) {
