@@ -160,13 +160,23 @@ public class MMAIPlayer extends AbstractAIPlayer {
                 validateConfig();
                 spawn();
             }
+            // Capture the stream/process references once: stopThinking() on
+            // the controller thread nulls the fields concurrently, and that
+            // must surface as IOException -> fail() -> checkStopped() ->
+            // InterruptedException, never as a raw NullPointerException.
+            Process proc = process;
+            BufferedWriter out = toSidecar;
+            BufferedReader in = fromSidecar;
+            if (proc == null || out == null || in == null) {
+                throw new IOException("sidecar not running");
+            }
             String request =
                 MMAIProtocol.encodeMoveRequest(game, level, moves);
-            toSidecar.write(request);
-            toSidecar.newLine();
-            toSidecar.flush();
+            out.write(request);
+            out.newLine();
+            out.flush();
             sidecarRequests++;
-            String reply = readReplyLine();
+            String reply = readReplyLine(proc, in);
             int v = MMAIProtocol.parseOkReply(reply);
             if (v < 0) {
                 // defensive: shim already maps engine -1 to ERR (spec §5.2)
@@ -201,13 +211,17 @@ public class MMAIPlayer extends AbstractAIPlayer {
     /** Poll-read one reply line, guarded by moveTimeoutSeconds, process
      *  liveness, and checkStopped(). Polling keeps the read interruptible;
      *  the sidecar always writes complete flushed lines, so once ready()
-     *  is true readLine() returns promptly. */
-    private String readReplyLine() throws IOException, InterruptedException {
+     *  is true readLine() returns promptly. Operates on references captured
+     *  by getMove(): a concurrent stopThinking() closes the underlying
+     *  stream, so ready()/readLine() throw IOException instead of the
+     *  nulled fields causing a NullPointerException. */
+    private String readReplyLine(Process proc, BufferedReader in)
+            throws IOException, InterruptedException {
         long deadline =
             System.currentTimeMillis() + moveTimeoutSeconds * 1000L;
-        while (!fromSidecar.ready()) {
+        while (!in.ready()) {
             checkStopped();
-            if (!process.isAlive() && !fromSidecar.ready()) {
+            if (!proc.isAlive() && !in.ready()) {
                 throw new IOException("sidecar died (EOF before reply)");
             }
             if (System.currentTimeMillis() > deadline) {
@@ -216,7 +230,7 @@ public class MMAIPlayer extends AbstractAIPlayer {
             }
             Thread.sleep(25);
         }
-        String line = fromSidecar.readLine();
+        String line = in.readLine();
         if (line == null) {
             throw new IOException("sidecar closed stdout");
         }
