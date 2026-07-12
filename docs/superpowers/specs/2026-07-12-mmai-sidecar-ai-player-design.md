@@ -1,7 +1,7 @@
 # MMAI Sidecar AI Player — Design
 
 - **Date:** 2026-07-12
-- **Status:** Approved (design), pending implementation plan
+- **Status:** Implemented (mechanism) — see docs/superpowers/plans/2026-07-12-mmai-sidecar-ai-player.md; activation (arena seating + ai_config.xml) is future work
 
 ## 1. Overview & Goals
 
