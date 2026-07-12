@@ -25,6 +25,7 @@ import org.pente.game.PlayerStorer;
 import org.pente.gameServer.core.*;
 import org.pente.gameServer.event.*;
 import org.pente.kingOfTheHill.CacheKOTHStorer;
+import org.pente.kingOfTheHill.KotHRanking;
 
 import java.util.Collection;
 
@@ -76,18 +77,19 @@ public class SynchronizedServerTable implements DSGEventListener {
             final CacheKOTHStorer kothStorer) throws Throwable {
 
         sid = server.getServerData().getServerId();
+        KotHRanking kothRanking = new KotHRanking(kothStorer, dsgPlayerStorer);
         if (server.getServerData().isTournament()) {
             serverTable = new TournamentServerTable(
                     server, resources, aiController, table, dsgEventRouter, this, dsgPlayerStorer,
                     pingManager, gameFileStorer, gameDbStorer, playerDbStorer,
                     serverStatsHandler, returnEmailStorer, playersInMainRoom,
-                    activityLogger, joinEvent, kothStorer);
+                    activityLogger, joinEvent, kothRanking);
         } else {
             serverTable = new ServerTable(
                     server, resources, aiController, table, dsgEventRouter, this, dsgPlayerStorer,
                     pingManager, gameFileStorer, gameDbStorer, playerDbStorer,
                     serverStatsHandler, returnEmailStorer, playersInMainRoom,
-                    activityLogger, joinEvent, kothStorer);
+                    activityLogger, joinEvent, kothRanking);
         }
 
         pump = new SerialEventPump("SynchronizedServerTable " + table, this::callServerTable);
