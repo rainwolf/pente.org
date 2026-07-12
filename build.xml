@@ -88,4 +88,13 @@
             <arg value="${test}"/>
         </java>
     </target>
+
+    <!-- MMAI sidecar integration tests (spec 8.2). Requires the local binary:
+         run ./dsg_src/mmai/build.sh first. Deliberately not part of 'test'. -->
+    <target name="test-mmai-integration" depends="compile-tests">
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.server.test.MMAIPlayerIntegrationTest"/>
+        </java>
+    </target>
 </project>
