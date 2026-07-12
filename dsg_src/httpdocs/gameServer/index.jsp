@@ -666,7 +666,7 @@
                </div>
             </td>
             <td style="vertical-align:middle">
-               <font color="red"><b>(new)</b></font> Challenge the computer opponent with 12 levels
+               Challenge the computer opponent with 12 levels and 6 games
             </td>
          </tr>
          <%--         <tr>--%>
