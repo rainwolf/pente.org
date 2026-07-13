@@ -7,10 +7,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
+
+import org.pente.game.GridStateFactory;
 
 /** AIPlayer backed by the C++ MMAI engine (CAi) running as a per-game sidecar
  *  process (mmai_player, built from dsg_src/mmai/). One-line-each-way stdin/
@@ -25,7 +30,19 @@ import org.apache.log4j.Logger;
  *  the binaryPath / dataDirectory options — XMLAIConfigurator and
  *  AIPlayerFactory.getAIPlayerThreaded pick it up with zero code changes.
  *  Note the dataDirectory must exist inside the runtime container (the Docker
- *  image only ships the binary at /usr/local/bin/mmai_player).
+ *  image only ships the binary at /usr/local/bin/mmai_player). The engine-data
+ *  directory option is spelled "dataDirectory"; "configDirectory" is accepted
+ *  as an alias for parity with MarksAIPlayer's vocabulary.
+ *
+ *  Engine replay limit: the C++ engine replays the full move history into
+ *  fixed 362-entry arrays (engine/Ai.h), so at most 361 prior moves can be
+ *  encoded. getMove() throws a descriptive RuntimeException rather than
+ *  spawning an ERR/respawn loop if the history exceeds this hard limit.
+ *
+ *  Speed games: moveTimeoutSeconds (default 300) is a static per-config bound
+ *  with no linkage to the table's game clock. For a supported Speed game it
+ *  MUST be configured well below the clock (e.g. a few seconds), otherwise a
+ *  wedged sidecar burns the AI's entire clock before the timeout fires.
  *
  *  Threading (spec §6.5): all calls arrive from the controller thread and the
  *  single "AIPlayerThread" inside ThreadedAIPlayer. stopThinking() is the one
@@ -42,6 +59,26 @@ public class MMAIPlayer extends AbstractAIPlayer {
     private static final String[] REQUIRED_DATA_FILES =
         {"pente.tbl", "pente.scs", "opngbk.pen"};
     private static final long KILL_GRACE_MILLIS = 2000;
+
+    /** Engine replay arrays are fixed at 362 (engine/Ai.h), so at most 361
+     *  prior moves fit in a MOVE request. */
+    private static final int MAX_REPLAY_MOVES = 361;
+
+    /** Supported canonical game ids plus their even Speed twins (the shim
+     *  normalizes the twin to the canonical rules). Anything else is silently
+     *  remapped to plain Pente by the engine, so it is rejected up front. */
+    private static final Set<Integer> SUPPORTED_GAMES = new HashSet<Integer>(
+        Arrays.asList(
+            GridStateFactory.PENTE, GridStateFactory.SPEED_PENTE,
+            GridStateFactory.KERYO, GridStateFactory.SPEED_KERYO,
+            GridStateFactory.POOF_PENTE, GridStateFactory.SPEED_POOF_PENTE,
+            GridStateFactory.CONNECT6, GridStateFactory.SPEED_CONNECT6,
+            GridStateFactory.BOAT_PENTE, GridStateFactory.SPEED_BOAT_PENTE,
+            GridStateFactory.OPENTE, GridStateFactory.SPEED_OPENTE));
+
+    /** Engine level bound, mirroring the shim's 1..8 check (main.cpp). */
+    private static final int MIN_LEVEL = 1;
+    private static final int MAX_LEVEL = 8;
 
     /** Authoritative game state: every move, including our own echoed back
      *  by the controller (spec §6.2 addMove). */
@@ -61,8 +98,8 @@ public class MMAIPlayer extends AbstractAIPlayer {
     private Process process;
     private BufferedWriter toSidecar;
     private BufferedReader fromSidecar;
-    private boolean respawnNeeded;
     private int sidecarRequests;
+    private int spawns;
 
     public MMAIPlayer() {
     }
@@ -82,7 +119,10 @@ public class MMAIPlayer extends AbstractAIPlayer {
     public void setOption(String optionName, String optionValue) {
         if ("binaryPath".equals(optionName)) {
             binaryPath = optionValue;
-        } else if ("dataDirectory".equals(optionName)) {
+        } else if ("dataDirectory".equals(optionName)
+                || "configDirectory".equals(optionName)) {
+            // "configDirectory" is MarksAIPlayer's spelling for the same
+            // engine-data directory; accept it as an alias (spec §6.2).
             dataDirectory = optionValue;
         } else if ("moveTimeoutSeconds".equals(optionName)) {
             moveTimeoutSeconds = Integer.parseInt(optionValue);
@@ -91,9 +131,17 @@ public class MMAIPlayer extends AbstractAIPlayer {
     }
 
     /** Fail fast (spec §6.2): binary must be executable, all three engine
-     *  data files must exist. Then spawn the sidecar. */
-    public void init() {
+     *  data files must exist. Then spawn the sidecar.
+     *
+     *  Idempotent: AIPlayerFactory.getAIPlayerThreaded calls init() twice on
+     *  the activation path (once via getAIPlayer, once via the ThreadedAIPlayer
+     *  wrapper), so a live sidecar is left untouched rather than leaked by a
+     *  second respawn. */
+    public synchronized void init() {
         validateConfig();
+        if (process != null && process.isAlive()) {
+            return;
+        }
         try {
             spawn();
         } catch (IOException e) {
@@ -103,6 +151,17 @@ public class MMAIPlayer extends AbstractAIPlayer {
     }
 
     private void validateConfig() {
+        if (!SUPPORTED_GAMES.contains(Integer.valueOf(game))) {
+            throw new RuntimeException(
+                "MMAIPlayer unsupported game id: " + game
+                + " (supported: Pente/Keryo/Poof/Connect6/Boat/O-Pente and"
+                + " their Speed twins)");
+        }
+        if (level < MIN_LEVEL || level > MAX_LEVEL) {
+            throw new RuntimeException(
+                "MMAIPlayer level out of range: level=" + level
+                + " (must be " + MIN_LEVEL + ".." + MAX_LEVEL + ")");
+        }
         if (binaryPath == null || !new File(binaryPath).canExecute()) {
             throw new RuntimeException(
                 "MMAIPlayer binaryPath missing or not executable: " + binaryPath);
@@ -129,7 +188,7 @@ public class MMAIPlayer extends AbstractAIPlayer {
             new OutputStreamWriter(process.getOutputStream()));
         fromSidecar = new BufferedReader(
             new InputStreamReader(process.getInputStream()));
-        respawnNeeded = false;
+        spawns++;
     }
 
     /** Called for EVERY table move, including this AI's own moves echoed back
@@ -151,11 +210,29 @@ public class MMAIPlayer extends AbstractAIPlayer {
      *  cache without a sidecar round-trip. */
     public int getMove() throws InterruptedException {
         startThinking();
-        if (pendingMove.hasPending()) {
-            return pendingMove.consume();
+        int cached = pendingMove.consume();
+        if (cached >= 0) {
+            return cached;
         }
+        // Hard engine limit: the C++ side replays the history into fixed
+        // 362-entry arrays (engine/Ai.h), so more than 361 prior moves cannot
+        // be encoded. Fail loudly here rather than sending an oversized MOVE
+        // that the shim rejects with ERR, which would only trigger an
+        // identically-failing respawn loop.
+        if (moves.size() > MAX_REPLAY_MOVES) {
+            throw new RuntimeException(
+                "mmai engine replay limit (" + MAX_REPLAY_MOVES
+                + " moves) exceeded: history has " + moves.size() + " moves");
+        }
+        boolean requestWritten = false;
         try {
-            if (respawnNeeded || process == null || !process.isAlive()) {
+            // Respawn is derived purely from process liveness (no separate
+            // flag): a killed sidecar — from a stop, a failure, or the very
+            // first getMove() — is lazily restarted here. Capture the process
+            // reference before dereferencing so a concurrent stopThinking()
+            // null-write cannot surface as a raw NullPointerException.
+            Process current = process;
+            if (current == null || !current.isAlive()) {
                 killProcess();
                 validateConfig();
                 spawn();
@@ -175,6 +252,7 @@ public class MMAIPlayer extends AbstractAIPlayer {
             out.write(request);
             out.newLine();
             out.flush();
+            requestWritten = true;
             sidecarRequests++;
             String reply = readReplyLine(proc, in);
             int v = MMAIProtocol.parseOkReply(reply);
@@ -191,17 +269,27 @@ public class MMAIPlayer extends AbstractAIPlayer {
             return fail("sidecar I/O failure", e);
         } catch (MMAIProtocol.ProtocolException e) {
             return fail("sidecar protocol failure", e);
+        } catch (InterruptedException e) {
+            // A deliberate stop (from checkStopped()/sleep in readReplyLine)
+            // landed after the MOVE request was written: the sidecar is
+            // mid-search and its eventual reply is stale, so kill it now to
+            // guarantee no in-flight request survives the stop. Respawn happens
+            // lazily on the next getMove().
+            if (requestWritten) {
+                killProcess();
+            }
+            throw e;
         }
     }
 
-    /** Failure path (spec §6.4): log context, mark for respawn, kill the
-     *  half-dead process; deliberate stop surfaces InterruptedException,
-     *  anything else is a loud RuntimeException. Never fabricates a move. */
+    /** Failure path (spec §6.4): log context, kill the half-dead process (the
+     *  next getMove() respawns lazily off liveness); a deliberate stop surfaces
+     *  InterruptedException, anything else is a loud RuntimeException. Never
+     *  fabricates a move. */
     private int fail(String what, Exception cause) throws InterruptedException {
         log4j.error("MMAIPlayer failure [" + what + "] game=" + game
             + " level=" + level + " seat=" + seat
             + " moveCount=" + moves.size(), cause);
-        respawnNeeded = true;
         killProcess();
         checkStopped(); // throws InterruptedException if stopThinking() ran
         throw new RuntimeException("MMAIPlayer: " + what + ": "
@@ -244,17 +332,21 @@ public class MMAIPlayer extends AbstractAIPlayer {
     public synchronized void stopThinking() {
         super.stopThinking();
         pendingMove.clear();
-        respawnNeeded = true;
         killProcess();
     }
 
     /** Post-game cleanup: polite QUIT, then grace, then force (spec §6.2). */
     public void destroy() {
+        // Capture the fields into locals before dereferencing: a concurrent
+        // stopThinking()/killProcess() may null them, and that must not surface
+        // as a NullPointerException on the cleanup thread.
+        Process proc = process;
+        BufferedWriter out = toSidecar;
         try {
-            if (process != null && process.isAlive() && toSidecar != null) {
-                toSidecar.write("QUIT");
-                toSidecar.newLine();
-                toSidecar.flush();
+            if (proc != null && proc.isAlive() && out != null) {
+                out.write("QUIT");
+                out.newLine();
+                out.flush();
             }
         } catch (IOException ignored) {
             // already dying; killProcess() below handles it
@@ -263,18 +355,23 @@ public class MMAIPlayer extends AbstractAIPlayer {
     }
 
     /** destroy() the process (no-op after QUIT already exited it), wait the
-     *  grace period, escalate to destroyForcibly(), close streams. */
-    private void killProcess() {
-        if (process == null) {
+     *  grace period, escalate to destroyForcibly(), close streams.
+     *  Synchronized so the process/stream null-writes are atomic against the
+     *  concurrent stopThinking()/fail()/destroy() callers; the reader loop
+     *  never calls this while blocked, preserving the no-monitor-while-blocking
+     *  property. */
+    private synchronized void killProcess() {
+        Process proc = process;
+        if (proc == null) {
             return;
         }
         try {
-            process.destroy();
-            if (!process.waitFor(KILL_GRACE_MILLIS, TimeUnit.MILLISECONDS)) {
-                process.destroyForcibly();
+            proc.destroy();
+            if (!proc.waitFor(KILL_GRACE_MILLIS, TimeUnit.MILLISECONDS)) {
+                proc.destroyForcibly();
             }
         } catch (InterruptedException e) {
-            process.destroyForcibly();
+            proc.destroyForcibly();
             Thread.currentThread().interrupt();
         } finally {
             closeQuietly();
@@ -300,5 +397,12 @@ public class MMAIPlayer extends AbstractAIPlayer {
      *  second stone is served without a round-trip (spec §8.2). */
     public int getSidecarRequestCount() {
         return sidecarRequests;
+    }
+
+    /** Test observability only: number of times the sidecar process has been
+     *  spawned since construction. Lets tests prove init() is idempotent — a
+     *  second init() on an already-live process must not respawn (spec §6.5). */
+    public int getSpawnCount() {
+        return spawns;
     }
 }

@@ -2,6 +2,8 @@ package org.pente.gameServer.server;
 
 import java.util.List;
 
+import org.pente.game.GridStateFactory;
+
 /** Wire protocol helpers for the mmai_player sidecar (spec §5.2) plus the
  *  Connect6 second-stone cache used by {@link MMAIPlayer} (spec §6.3).
  *  Pure logic — no process, no I/O — so it is unit-testable in isolation. */
@@ -42,7 +44,24 @@ public class MMAIProtocol {
 
     /** Connect6 canonical id 13, Speed twin 14. */
     public static boolean isConnect6(int game) {
-        return game == 13 || game == 14;
+        return game == GridStateFactory.CONNECT6
+            || game == GridStateFactory.SPEED_CONNECT6;
+    }
+
+    /** Which player (1 or 2) plays the stone at 0-based index {@code moveNum}.
+     *  Standard games strictly alternate (P1, P2, P1, P2, ...); Connect6 places
+     *  one opening stone then two stones per turn, so ownership runs
+     *  P1, P2, P2, P1, P1, P2, P2, P1, P1, ... — the moveNum%4 in {0,3} => P1
+     *  pattern. ThreadedAIPlayer gates its turn on this so the Connect6 second
+     *  stone is requested during the AI's own turn instead of being blocked by
+     *  strict one-stone alternation (spec §6.3). For every non-Connect6 game
+     *  this is byte-identical to the legacy {@code moveNum % 2 + 1}. */
+    public static int moveOwner(int game, int moveNum) {
+        if (isConnect6(game)) {
+            int r = moveNum % 4;
+            return (r == 0 || r == 3) ? 1 : 2;
+        }
+        return moveNum % 2 + 1;
     }
 
     public static class ProtocolException extends Exception {
@@ -55,15 +74,19 @@ public class MMAIProtocol {
      *  packed base 362, but the AIPlayer contract returns one stone per
      *  getMove(). The second stone is cached here and served on the next
      *  getMove() without a sidecar round-trip. */
+    /** All methods are synchronized: the AIPlayerThread consumes/accepts while
+     *  the controller thread may clear() concurrently from stopThinking()/
+     *  undoMove() (spec §6.5). A single monitor makes consume() atomic so a
+     *  clear() cannot interleave between a read and the reset. */
     public static class PendingMove {
         private int pending = -1;
 
-        public boolean hasPending() {
+        public synchronized boolean hasPending() {
             return pending != -1;
         }
 
         /** Returns the cached stone (or -1 if none) and clears the cache. */
-        public int consume() {
+        public synchronized int consume() {
             int m = pending;
             pending = -1;
             return m;
@@ -71,7 +94,7 @@ public class MMAIProtocol {
 
         /** Decode a packed reply: cache m2 unless it is the single-stone
          *  sentinel, return m1. */
-        public int acceptPacked(int packed) {
+        public synchronized int acceptPacked(int packed) {
             int m1 = packed / C6_BASE;
             int m2 = packed % C6_BASE;
             if (m2 != C6_SINGLE_STONE) {
@@ -81,7 +104,7 @@ public class MMAIProtocol {
         }
 
         /** Stale after undoMove()/stopThinking() — drop it (spec §6.2). */
-        public void clear() {
+        public synchronized void clear() {
             pending = -1;
         }
     }
