@@ -4,6 +4,7 @@ import java.util.*;
 import java.sql.*;
 
 import org.pente.database.*;
+import org.pente.database.DBUtil;
 import org.pente.game.*;
 
 public class MySQLTourneyStorer implements TourneyStorer {
@@ -362,7 +363,7 @@ public class MySQLTourneyStorer implements TourneyStorer {
                         match.setPlayer2(player2);
                     }
 
-                    match.setResult(results.getInt(11));
+                    match.setResult(DBUtil.enumInt(results, 11));
                     match.setForfeit(results.getString(12).equals("Y"));
 
                     if (match.getRound() > currentRound.getRound()) {

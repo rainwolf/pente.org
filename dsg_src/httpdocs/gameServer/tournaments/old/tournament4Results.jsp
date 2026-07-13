@@ -1,6 +1,7 @@
 <%@ page import="java.sql.*,
                  java.util.*,
                  org.pente.database.*,
+                 org.pente.database.DBUtil,
                  jakarta.servlet.*,
                  jakarta.servlet.http.*,
                  org.apache.log4j.*" %>
@@ -302,7 +303,7 @@
 
                   d.round = results.getInt(3);
                   d.section = results.getInt(4);
-                  d.result = results.getInt(5);
+                  d.result = DBUtil.enumInt(results, 5);
                   d.forfeit = results.getString(6).equals("Y");
                   d.p1_wins = results.getInt(7);
                   d.p1_losses = results.getInt(8);
