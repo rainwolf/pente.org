@@ -14,6 +14,7 @@ import org.pente.notifications.NotificationServer;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
@@ -73,6 +74,17 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
     private Timer loadExpireSoonTimer;
     private Timer checkTimeoutTimer;
     private Timer stalePlayerTimer;
+    // Cooperative stop flag for the three background TimerTasks. Timer.cancel()
+    // does not stop a task that is already executing, so a task caught mid
+    // DB-query during a hot reload would linger (and log through the dying
+    // webapp classloader). Set false first in stopTasks() so in-flight tasks
+    // bail fast and skip shutdown-time logging.
+    private volatile boolean tasksRunning = false;
+    // Number of background TimerTasks currently executing. stopTasks() waits
+    // (bounded) for this to drain so a task blocked in an in-flight JDBC read
+    // finishes and its cancelled Timer thread goes idle before Tomcat's
+    // clearReferencesThreads check runs.
+    private final AtomicInteger activeTaskCount = new AtomicInteger(0);
     private Thread endGameThread;
     private EndGameRunnable endGameRunnable = new EndGameRunnable();
 
@@ -307,6 +319,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
     private void startTasks() {
 
+        tasksRunning = true;
         loadExpireSoonTimer = new Timer();
         loadExpireSoonTimer.scheduleAtFixedRate(
                 new LoadExpireSoonRunnable(), 5000, 58 * 60 * 1000);
@@ -322,7 +335,9 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
     }
 
     private void stopTasks() {
-        // not sure if cancel stops currently executing stuff, probably ok anyways
+        // Signal in-flight tasks to bail before cancelling; cancel() alone does
+        // not stop a task that is already executing.
+        tasksRunning = false;
         if (loadExpireSoonTimer != null) {
             loadExpireSoonTimer.cancel();
             loadExpireSoonTimer.purge();
@@ -337,6 +352,23 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
             stalePlayerTimer.cancel();
             stalePlayerTimer.purge();
             stalePlayerTimer = null;
+        }
+        // cancel() does not interrupt a task already blocked in a JDBC socket
+        // read (Connector/J 5.1 uses classic java.io streams, so Thread.interrupt()
+        // cannot unblock it either), so wait (bounded) for any in-flight task to
+        // finish. Once it returns, the already-cancelled Timer thread goes idle and
+        // dies before Tomcat's clearReferencesThreads check runs on hot reload.
+        // Exits immediately in the common case (no task running); we never block
+        // shutdown indefinitely. A rare expiry scan still blocked in a read past
+        // the bound may briefly linger as a Timer thread — accepted tradeoff.
+        long drainDeadline = System.currentTimeMillis() + 5000;
+        while (activeTaskCount.get() > 0 && System.currentTimeMillis() < drainDeadline) {
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                break;
+            }
         }
         if (endGameThread != null && endGameRunnable != null) {
             endGameRunnable.kill();
@@ -362,6 +394,11 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
         public void run() {
 
+            if (!tasksRunning) {
+                return;
+            }
+            activeTaskCount.incrementAndGet();
+            try {
             log4j.debug(getName() + " run");
             long now = System.currentTimeMillis();
             long oneWeekAgo = now -
@@ -388,6 +425,9 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                         }
                     }
                 }
+            }
+            } finally {
+                activeTaskCount.decrementAndGet();
             }
         }
     }
@@ -422,6 +462,11 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
         public void run() {
 
+            if (!tasksRunning) {
+                return;
+            }
+            activeTaskCount.incrementAndGet();
+            try {
             log4j.debug(getName() + " run");
             try {
                 long now = System.currentTimeMillis();
@@ -442,8 +487,16 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                 }
 
             } catch (TBStoreException tse) {
-                log4j.error("Error loading games to expire soon", tse);
+                // Suppress the error log during shutdown: logging here would run
+                // through the stopped webapp classloader (IllegalStateException)
+                // and keep this Timer thread alive past the reload.
+                if (tasksRunning) {
+                    log4j.error("Error loading games to expire soon", tse);
+                }
                 // try again soon, don't wait full hour?
+            }
+            } finally {
+                activeTaskCount.decrementAndGet();
             }
         }
     }
@@ -470,6 +523,11 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         }
 
         public void run() {
+            if (!tasksRunning) {
+                return;
+            }
+            activeTaskCount.incrementAndGet();
+            try {
             log4j.debug(getName() + " run");
 
             List<TBGame> gs = getGames();
@@ -483,6 +541,10 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
             for (TBGame t : gs) {
 
+                // stop issuing further DB queries once a reload has begun
+                if (!tasksRunning) {
+                    break;
+                }
                 if (t.getState() == TBGame.STATE_ACTIVE &&
                         t.getTimeoutDate() != null &&
                         t.getTimeoutDate().getTime() < now) {
@@ -628,6 +690,9 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                         log4j.error("TimeoutCheckRunnable: Error ending timed-out game " + t.getGid(), e);
                     }
                 }
+            }
+            } finally {
+                activeTaskCount.decrementAndGet();
             }
         }
     }
