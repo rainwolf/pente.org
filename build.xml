@@ -71,6 +71,14 @@
             <classpath refid="test-classpath"/>
             <arg value="org.pente.gameServer.core.test.SerialEventPumpTest"/>
         </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.server.test.MMAIProtocolTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.server.test.MMAIPlayerInitTest"/>
+        </java>
     </target>
 
     <!-- Run a single test class: ant test-one -Dtest=org.pente.gameServer.server.test.RedisConnectionManagerTest -->
@@ -78,6 +86,15 @@
         <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
             <classpath refid="test-classpath"/>
             <arg value="${test}"/>
+        </java>
+    </target>
+
+    <!-- MMAI sidecar integration tests (spec 8.2). Requires the local binary:
+         run ./dsg_src/mmai/build.sh first. Deliberately not part of 'test'. -->
+    <target name="test-mmai-integration" depends="compile-tests">
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.server.test.MMAIPlayerIntegrationTest"/>
         </java>
     </target>
 </project>
