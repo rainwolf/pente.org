@@ -55,6 +55,16 @@ public class MySQLTourneyStorer implements TourneyStorer {
         this.gameVenueStorer = gameVenueStorer;
     }
 
+    // Numeric-valued ENUM columns (e.g. dsg_tournament_match.result enum('1'-'4'))
+    // carry their values as strings on the wire, and some legacy rows store the
+    // invalid-enum sentinel '' meaning 0. MySQL Connector/J silently coerced
+    // getInt('')->0; MariaDB Connector/J throws. Read as string and map ''/NULL
+    // -> 0 to preserve the old driver's behavior.
+    private static int enumInt(ResultSet rs, int col) throws SQLException {
+        String v = rs.getString(col);
+        return (v == null || v.isEmpty()) ? 0 : Integer.parseInt(v.trim());
+    }
+
     public List<Tourney> getUpcomingTournies() throws Throwable {
         Connection con = null;
         PreparedStatement stmt = null;
@@ -362,7 +372,7 @@ public class MySQLTourneyStorer implements TourneyStorer {
                         match.setPlayer2(player2);
                     }
 
-                    match.setResult(results.getInt(11));
+                    match.setResult(enumInt(results, 11));
                     match.setForfeit(results.getString(12).equals("Y"));
 
                     if (match.getRound() > currentRound.getRound()) {

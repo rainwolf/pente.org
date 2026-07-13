@@ -302,7 +302,10 @@
 
                   d.round = results.getInt(3);
                   d.section = results.getInt(4);
-                  d.result = results.getInt(5);
+                  // numeric-valued ENUM result column: legacy '' sentinel means 0
+                  // (MariaDB Connector/J throws on getInt('') where MySQL returned 0)
+                  String resultVal = results.getString(5);
+                  d.result = (resultVal == null || resultVal.isEmpty()) ? 0 : Integer.parseInt(resultVal.trim());
                   d.forfeit = results.getString(6).equals("Y");
                   d.p1_wins = results.getInt(7);
                   d.p1_losses = results.getInt(8);

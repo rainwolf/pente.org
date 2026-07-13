@@ -916,6 +916,16 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
         return allGames;
     }
 
+    // Numeric-valued ENUM columns (e.g. tourney_winner enum('0'-'4')) carry
+    // their values as strings on the wire, and some legacy rows store the
+    // invalid-enum sentinel '' meaning 0. MySQL Connector/J silently coerced
+    // getInt('')->0; MariaDB Connector/J throws. Read as string and map
+    // ''/NULL -> 0 to preserve the old driver's behavior.
+    private static int enumInt(java.sql.ResultSet rs, int col) throws java.sql.SQLException {
+        String v = rs.getString(col);
+        return (v == null || v.isEmpty()) ? 0 : Integer.parseInt(v.trim());
+    }
+
     private DSGPlayerGameData fillDSGPlayerGameData(ResultSet result) throws java.sql.SQLException {
         DSGPlayerGameData dsgPlayerGameData = new SimpleDSGPlayerGameData();
 
@@ -929,7 +939,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
         Timestamp lastGameDate = result.getTimestamp(8);
         dsgPlayerGameData.setLastGameDate(new java.util.Date(lastGameDate.getTime()));
         dsgPlayerGameData.setComputer(result.getString(9).charAt(0));
-        dsgPlayerGameData.setTourneyWinner(result.getInt(10));
+        dsgPlayerGameData.setTourneyWinner(enumInt(result, 10));
 //        dsgPlayerGameData.setRatingFloor(result.getInt(11));
 
         return dsgPlayerGameData;
@@ -1024,7 +1034,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                     dsgPlayerGameData.setRating(result.getDouble(5));
                     dsgPlayerGameData.setStreak(result.getInt(6));
                     dsgPlayerData.setPlayerType(result.getString(7).charAt(0));
-                    dsgPlayerGameData.setTourneyWinner(result.getInt(8));
+                    dsgPlayerGameData.setTourneyWinner(enumInt(result, 8));
                     Timestamp lastGameDate = result.getTimestamp(9);
                     dsgPlayerGameData.setLastGameDate(new java.util.Date(lastGameDate.getTime()));
                     dsgPlayerData.setNameColorRGB(result.getInt(10));
