@@ -69,6 +69,26 @@ public class MMAIProtocolTest extends TestCase {
         assertTrue(!pm.hasPending());
     }
 
+    public void testMoveOwnerStandardAlternates() {
+        // Every non-Connect6 game must stay byte-identical to moveNum % 2 + 1.
+        int[] games = {1, 2, 3, 11, 15, 25};
+        for (int g : games) {
+            for (int m = 0; m < 8; m++) {
+                assertEquals(m % 2 + 1, MMAIProtocol.moveOwner(g, m));
+            }
+        }
+    }
+
+    public void testMoveOwnerConnect6TwoStonePattern() {
+        // P1 opens with one stone, then two stones per turn:
+        // owner = P1, P2, P2, P1, P1, P2, P2, P1, P1 ...
+        int[] expected = {1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1};
+        for (int m = 0; m < expected.length; m++) {
+            assertEquals(expected[m], MMAIProtocol.moveOwner(13, m));
+            assertEquals(expected[m], MMAIProtocol.moveOwner(14, m)); // Speed twin
+        }
+    }
+
     public void testPendingMoveClear() {
         // clear() is the undoMove()/stopThinking() path (spec §6.2)
         MMAIProtocol.PendingMove pm = new MMAIProtocol.PendingMove();
