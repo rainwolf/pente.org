@@ -13,8 +13,8 @@
               validationQueryTimeout="5" validationQuery="SELECT 1"
               removeAbandonedOnBorrow="true" removeAbandonedTimeout="30"
               username="${MYSQL_USER}" password="${MYSQL_PASSWORD}"
-              driverClassName="com.mysql.jdbc.Driver"
-              url="jdbc:mysql://main_db/${MYSQL_DATABASE}?useEncoding=true&amp;zeroDateTimeBehavior=convertToNull&amp;useServerPrepStmts=true"/>
+              driverClassName="org.mariadb.jdbc.Driver"
+              url="jdbc:mariadb://main_db/${MYSQL_DATABASE}?zeroDateTimeBehavior=convertToNull&amp;useServerPrepStmts=true"/>
     <Resource name="jdbc/dsg_ro"
               auth="Container"
               type="javax.sql.DataSource"
@@ -23,6 +23,6 @@
               validationQueryTimeout="5" validationQuery="SELECT 1"
               removeAbandonedOnBorrow="true" removeAbandonedTimeout="30"
               username="${MYSQL_RO_USER}" password="${MYSQL_RO_PASSWORD}"
-              driverClassName="com.mysql.jdbc.Driver"
-              url="jdbc:mysql://main_auto_ssh:${DSG_LOCAL_PORT}/${MYSQL_DATABASE}?useEncoding=true&amp;zeroDateTimeBehavior=convertToNull&amp;useServerPrepStmts=true"/>
+              driverClassName="org.mariadb.jdbc.Driver"
+              url="jdbc:mariadb://main_auto_ssh:${DSG_LOCAL_PORT}/${MYSQL_DATABASE}?zeroDateTimeBehavior=convertToNull&amp;useServerPrepStmts=true"/>
 </Context>

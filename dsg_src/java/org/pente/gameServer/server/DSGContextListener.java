@@ -54,6 +54,8 @@ import org.pente.turnBased.MySQLTBGameStorer;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.sql.Driver;
+import java.sql.DriverManager;
 import java.util.*;
 
 
@@ -428,5 +430,40 @@ public class DSGContextListener implements ServletContextListener {
             log4j.info("Destroying server " + s.getServerData() + ".");
             s.destroy();
         }
+
+        // --- JDBC / MariaDB Connector/J cleanup ---
+        // Runs LAST, after every storer/server/redis/timer has been destroyed,
+        // so no in-flight queries remain. Removes the classloader leak logged
+        // on hot reload: the org.mariadb.jdbc.Driver registration. Bundled
+        // driver is mariadb-java-client-3.5.9 (org.mariadb.jdbc namespace).
+        // MariaDB Connector/J spawns no AbandonedConnectionCleanupThread and no
+        // per-statement "Statement Cancellation Timer" threads, so there is
+        // nothing thread-wise to shut down here (unlike legacy MySQL C/J 5.1.x).
+
+        // Deregister only the JDBC drivers loaded by THIS webapp classloader,
+        // so a driver class held by Tomcat's classloader is left untouched.
+        try {
+            ClassLoader webappCl = this.getClass().getClassLoader();
+            for (Enumeration<Driver> drivers = DriverManager.getDrivers(); drivers.hasMoreElements(); ) {
+                Driver d = drivers.nextElement();
+                if (d.getClass().getClassLoader() == webappCl) {
+                    try {
+                        DriverManager.deregisterDriver(d);
+                        log4j.info("contextDestroyed(), deregistered JDBC driver " + d.getClass().getName());
+                    } catch (Throwable t) {
+                        log4j.error("Error deregistering JDBC driver " + d.getClass().getName() + ".", t);
+                    }
+                }
+            }
+        } catch (Throwable t) {
+            log4j.error("Error enumerating JDBC drivers for deregistration.", t);
+        }
+
+        // Known, out-of-scope third-party leaks that still warn on hot reload:
+        //  - Jive Forums task engine ("Task Engine Worker *", "Cache Timer")
+        //  - Netty InternalThreadLocalMap (pulled in transitively via
+        //    google-auth / grpc; logged as checkThreadLocalMapForLeaks)
+        // These are owned by third-party libraries we do not modify and are
+        // expected/harmless on a webapp reload.
     }
 }

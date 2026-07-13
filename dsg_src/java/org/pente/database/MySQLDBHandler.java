@@ -28,7 +28,7 @@ import javax.sql.*;
 import org.apache.log4j.*;
 import org.apache.commons.dbcp.*;
 
-import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
+import org.mariadb.jdbc.MariaDbDataSource;
 
 /** An implementation of a DBHandler that can connect to a mySQL database.
  *  @since 0.2
@@ -65,12 +65,10 @@ public class MySQLDBHandler implements DBHandler {
 
 //        dataSource = basicDataSource;
         log4j.info("MySQLDBHandler(" + user + "," + password + "," + db + "," + host);
-        MysqlDataSource ds = new MysqlDataSource();
+        MariaDbDataSource ds = new MariaDbDataSource();
+        ds.setUrl("jdbc:mariadb://" + host + "/" + db + "?useServerPrepStmts=true");
         ds.setUser(user);
         ds.setPassword(password);
-        ds.setDatabaseName(db);
-        ds.setUseServerPreparedStmts(true);
-        ds.setUrl("jdbc:mysql://" + host + "/" + db);
 
         dataSource = ds;
     }
