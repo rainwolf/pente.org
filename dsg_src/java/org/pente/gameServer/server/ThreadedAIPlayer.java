@@ -50,6 +50,7 @@ class ThreadedAIPlayer implements AIPlayer, Runnable {
 
     private int seat;
     private int moveNum;
+    private int game;
 
     private static final long MOVE_SLEEP_TIME = 5000;
 
@@ -72,6 +73,7 @@ class ThreadedAIPlayer implements AIPlayer, Runnable {
     }
 
     public void setGame(int game) {
+        this.game = game;
         aiPlayer.setGame(game);
     }
 
@@ -89,7 +91,13 @@ class ThreadedAIPlayer implements AIPlayer, Runnable {
     }
 
     private boolean isMyTurn() {
-        return (moveNum % 2 + 1) == seat;
+        // Connect6 places two stones per turn after the opening, so a strict
+        // one-stone alternation (moveNum % 2 + 1) would gate out the AI's
+        // second stone. MMAIProtocol.moveOwner encodes the P1,P2,P2,P1,P1,...
+        // pattern; for every other game it is byte-identical to the legacy
+        // formula. MarksAIPlayer never plays Connect6, so this is safe for the
+        // generic wrapper.
+        return MMAIProtocol.moveOwner(game, moveNum) == seat;
     }
 
     public synchronized void addMove(int move) {
