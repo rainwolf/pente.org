@@ -161,13 +161,14 @@ public class CacheNotificationServer implements NotificationServer {
     private void sendAndroidNotification(long pid, String token, String message) {
         Runnable runnable = () -> {
             String resp = "";
+            HttpURLConnection conn = null;
             try {
                 this.googleCredentials.refreshIfExpired();
                 AccessToken accessToken = this.googleCredentials.getAccessToken();
 
                 // Create connection to send GCM Message request.
                 URL url = new URI("https://fcm.googleapis.com/v1/projects/pente-live/messages:send").toURL();
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestProperty("Authorization", "Bearer " + accessToken.getTokenValue());
                 conn.setRequestProperty("Content-Type", "application/json");
                 conn.setRequestMethod("POST");
@@ -177,15 +178,34 @@ public class CacheNotificationServer implements NotificationServer {
                 OutputStream outputStream = conn.getOutputStream();
                 outputStream.write(message.getBytes("UTF-8"));
 
-                // Read GCM response.
-                InputStream inputStream = conn.getInputStream();
-                resp = IOUtils.toString(inputStream, "UTF-8");
-
-                if (resp.contains("InvalidRegistration") || resp.contains("NotRegistered")) {
-                    removeInvalidToken(pid, token, ANDROID);
+                // Flush the request body and obtain the FCM v1 response status BEFORE reading any stream.
+                int responseCode = conn.getResponseCode();
+                if (responseCode >= 200 && responseCode < 300) {
+                    // Strictly 2xx: accepted. The success body is only available via getInputStream() (may be null).
+                    try (InputStream is = conn.getInputStream()) {
+                        resp = is == null ? "" : IOUtils.toString(is, "UTF-8");
+                    }
+                    log4j.info("Android Push notification accepted.");
+                    log4j.info("==============" + resp);
+                } else {
+                    // Any non-2xx (incl. 1xx/3xx and >=400): error. The body is only available via
+                    // getErrorStream() (may be null).
+                    try (InputStream es = conn.getErrorStream()) {
+                        resp = es == null ? "" : IOUtils.toString(es, "UTF-8");
+                    }
+                    // Structured FCM v1 error parse. Only UNREGISTERED means the token is permanently invalid;
+                    // INVALID_ARGUMENT (and every other code) can stem from a malformed request field, so a
+                    // payload bug must NEVER mass-delete valid tokens.
+                    String fcmError = extractFcmErrorCode(resp);
+                    if ("UNREGISTERED".equals(fcmError)) {
+                        removeInvalidToken(pid, token, ANDROID);
+                        log4j.info("Removed unregistered Android token for " + pid);
+                    } else {
+                        log4j.error("Android Push notification failed: HTTP " + responseCode +
+                                (fcmError.isEmpty() ? "" : " " + fcmError) + " for " + pid +
+                                " with token " + token + ". Response: " + resp);
+                    }
                 }
-                log4j.info("Android Push notification accepted.");
-                log4j.info("==============" + resp);
             } catch (IOException e) {
                 log4j.error("Unable to send GCM message.");
                 log4j.error("Problem sending android notification for " + pid + " with token " + token);
@@ -196,9 +216,35 @@ public class CacheNotificationServer implements NotificationServer {
                 e.printStackTrace();
             } catch (URISyntaxException e) {
                 throw new RuntimeException(e);
+            } finally {
+                // Always release the socket, even if IOUtils.toString throws mid-read.
+                if (conn != null) {
+                    conn.disconnect();
+                }
             }
         };
         (new Thread(runnable)).start();
+    }
+
+    private String extractFcmErrorCode(String body) {
+        if (body == null || body.isEmpty()) return "";
+        try {
+            JSONObject error = new JSONObject(body).optJSONObject("error");
+            if (error == null) return "";
+            org.json.JSONArray details = error.optJSONArray("details");
+            if (details != null) {
+                for (int i = 0; i < details.length(); i++) {
+                    JSONObject d = details.optJSONObject(i);
+                    if (d != null && d.optString("@type", "").endsWith("FcmError")) {
+                        String c = d.optString("errorCode", "");
+                        if (!c.isEmpty()) return c;
+                    }
+                }
+            }
+            return error.optString("status", "");
+        } catch (JSONException e) {
+            return "";
+        }
     }
 
     private void sendiOSNotification(long pid, String token, String payload) {
