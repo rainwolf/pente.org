@@ -514,6 +514,8 @@ public class MySQLTBGameStorer implements TBGameStorer {
                 int move = result.getInt(1);
                 if (move == -1) {
                     game.setUndoRequested(true);
+                } else if (move == -2) {
+                    game.setDrawOffered(true);
                 } else {
                     moves.add(move);
                 }

@@ -258,6 +258,10 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
             try {
                 ((MySQLTBGameStorer) baseStorer).storeNewMove(gid, tbGame.getNumMoves(), -1);
                 tbGame.setUndoRequested(true);
+                // Mutual exclusion with draw offers: this -1 overwrites any pending
+                // -2 offer row at the same (gid, getNumMoves()) slot via ON DUPLICATE
+                // KEY, so clear the flag too (no explicit delete needed).
+                tbGame.setDrawOffered(false);
                 persistSet(tbGame.getTbSet());
 //				long newTimeout = Utilities.calculateNewTimeout(
 //						tbGame, dsgPlayerStorer);
@@ -267,6 +271,40 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                 baseStorer.updateGameAfterMove(tbGame);
             } catch (TBStoreException e) {
                 e.printStackTrace();
+            }
+        }
+    }
+
+    public void offerDraw(long gid) {
+        synchronized (cacheTbLock) {
+            TBGame tbGame = getGame(gid);
+            try {
+                // Draw-offer sentinel: -2 written to the next-free slot
+                // (getNumMoves()), exactly as requestUndo writes its -1. A later real
+                // move or a -1 undo request overwrites this row via ON DUPLICATE KEY;
+                // acceptDraw deletes it (it is the MAX(move_num) row while pending).
+                ((MySQLTBGameStorer) baseStorer).storeNewMove(gid, tbGame.getNumMoves(), -2);
+                tbGame.setDrawOffered(true);
+                persistSet(tbGame.getTbSet());
+                baseStorer.updateGameAfterMove(tbGame);
+            } catch (TBStoreException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void acceptDraw(long gid) {
+        synchronized (cacheTbLock) {
+            TBGame tbGame = getGame(gid);
+            if (tbGame.isDrawOffered() && tbGame.getState() == TBGame.STATE_ACTIVE) {
+                tbGame.setDrawOffered(false);
+                // The -2 offer row is the MAX(move_num) row while an offer is pending,
+                // so the MySQL MAX-delete removes exactly it (never a real move).
+                ((MySQLTBGameStorer) baseStorer).undoLastMove(gid);
+                tbGame.end();               // STATE_COMPLETED + completionDate
+                tbGame.setWinner(0);        // winner 0 in a 'C' state derives isDraw() (Task 8)
+                persistSet(tbGame.getTbSet());
+                endGameRunnable.endGame(tbGame, EndGameRunnable.Data.REASON_DRAW);
             }
         }
     }
@@ -668,8 +706,24 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                                     && fresh.getTimeoutDate().getTime() < nowCheck
                                     && pastFloor) {
                                 fresh.timeout();
-                                int seat = fresh.getPlayerSeat(fresh.getCurrentPlayer());
-                                fresh.setWinner(3 - seat);
+                                boolean timeoutDraw = false;
+                                if (fresh.getGame() == GridStateFactory.TB_RENJU) {
+                                    // Renju: a timeout is a draw when the beneficiary
+                                    // (opponent of the player who ran out of time) has no
+                                    // remaining winning chances (Task 4). reconstruct reads
+                                    // only placed stones; passes place none.
+                                    RenjuState rs = RenjuState.reconstruct(
+                                            fresh, fresh.getRenjuSwaps(), fresh.getRenjuOffers());
+                                    timeoutDraw = !RenjuTimeoutDrawEvaluator.opponentCanWin(
+                                            rs, 3 - rs.getCurrentPlayer());
+                                }
+                                if (timeoutDraw) {
+                                    fresh.setWinner(0);   // 'T' state + winner 0 derives isDraw() (Task 8)
+                                    fresh.setDraw(true);
+                                } else {
+                                    int seat = fresh.getPlayerSeat(fresh.getCurrentPlayer());
+                                    fresh.setWinner(3 - seat);
+                                }
                                 persistSet(fresh.getTbSet());
                                 doEnd = true;
                             } else if (fresh != null
@@ -781,6 +835,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
             public static final int REASON_WIN = 1;
             public static final int REASON_TO = 2;
             public static final int REASON_RESIGN = 3;
+            public static final int REASON_DRAW = 4;
             TBGame game;
             int reason;
 
@@ -1130,6 +1185,11 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                         lossText = m.getMessage() + "\n\n" + lossText;
                         drawGameLoseSetText = m.getMessage() + "\n\n" + drawGameLoseSetText;
                     }
+                } else if (data.reason == Data.REASON_DRAW) {
+                    // Mutually-agreed / double-pass / board-full draw: no win/loss/
+                    // timeout/resign suffix. The draw subject and body are already
+                    // selected via game.isDraw() below (winSubj/loseSubj and the
+                    // drawGameWinSetText/drawGameLoseSetText bodies).
                 }
 
                 if (game.isRated()) {
@@ -1619,15 +1679,24 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                     game.getGid());
         }
 
-        // engine used below for move application + game-over detection
-        GridState state = GridStateFactory.createGridState(
-                game.getGame(), game);
-        if (game.getGame() == GridStateFactory.TB_PENTE ||
-                game.getGame() == GridStateFactory.TB_KERYO ||
-                game.getGame() == GridStateFactory.TB_BOAT_PENTE ||
-                game.getGame() == GridStateFactory.TB_POOF_PENTE ||
-                game.getGame() == GridStateFactory.TB_OPENTE) {
-            ((PenteState) state).setTournamentRule(game.isRated());
+        // engine used below for move application + game-over detection.
+        // Renju must use reconstruct(...) so pass moves (225) are replayed and a
+        // double-pass draw is detectable (Task 1); plain createGridState does not
+        // apply renju swaps/offers or track passes. Non-renju behavior is unchanged.
+        GridState state;
+        if (game.getGame() == GridStateFactory.TB_RENJU) {
+            state = RenjuState.reconstruct(
+                    game, game.getRenjuSwaps(), game.getRenjuOffers());
+        } else {
+            state = GridStateFactory.createGridState(
+                    game.getGame(), game);
+            if (game.getGame() == GridStateFactory.TB_PENTE ||
+                    game.getGame() == GridStateFactory.TB_KERYO ||
+                    game.getGame() == GridStateFactory.TB_BOAT_PENTE ||
+                    game.getGame() == GridStateFactory.TB_POOF_PENTE ||
+                    game.getGame() == GridStateFactory.TB_OPENTE) {
+                ((PenteState) state).setTournamentRule(game.isRated());
+            }
         }
 
         // Derive the move index from the freshly-loaded game, NOT from the
@@ -1654,6 +1723,9 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         synchronized (cacheTbLock) {
             game.setTimeoutDate(new Date(newTimeout));
             game.setUndoRequested(false);   // folded in from MoveServlet:633
+            // Opponent's real move implicitly declines any pending draw offer; the
+            // move written at this same slot overwrites the -2 row (ON DUPLICATE KEY).
+            game.setDrawOffered(false);
             state.addMove(move);
             gameOver = state.isGameOver();
             if (gameOver) {
@@ -1665,7 +1737,12 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
         if (gameOver) {
             log4j.debug("CacheTbStorer.gameover, send to endGameRunnable");
-            endGameRunnable.endGame(game, EndGameRunnable.Data.REASON_WIN);
+            // winner 0 (renju double-pass, or any board-full draw) -> REASON_DRAW.
+            // game.setWinner(0) above already made game.isDraw() true (Task 8).
+            int reason = (game.getWinner() == 0)
+                    ? EndGameRunnable.Data.REASON_DRAW
+                    : EndGameRunnable.Data.REASON_WIN;
+            endGameRunnable.endGame(game, reason);
         }
 
         // do this in background thread for performance?
