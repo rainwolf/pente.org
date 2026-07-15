@@ -147,7 +147,8 @@ public class SynchronizedServerTable implements DSGEventListener {
                             serverTable.handleChangeState(dsgChangeStateTableEvent);
                     case DSGPlayTableEvent dsgPlayTableEvent -> serverTable.handleClickPlay(dsgPlayTableEvent);
                     case DSGMoveTableEvent dsgMoveTableEvent ->
-                            serverTable.handleMove(dsgMoveTableEvent.getPlayer(), dsgMoveTableEvent.getMove());
+                            serverTable.handleMove(dsgMoveTableEvent.getPlayer(), dsgMoveTableEvent.getMove(),
+                                    dsgMoveTableEvent.isDrawOffer());
                     case DSGTimeUpTableEvent dsgTimeUpTableEvent -> serverTable.handleTimeUp(dsgTimeUpTableEvent);
                     case DSGUndoRequestTableEvent dsgUndoRequestTableEvent ->
                             serverTable.handleUndoRequest(dsgUndoRequestTableEvent);
@@ -187,6 +188,10 @@ public class SynchronizedServerTable implements DSGEventListener {
                             serverTable.handleRenjuOffer10(dsgRenjuTaraguchiOffer10TableEvent);
                     case DSGRenjuTaraguchi10Select1TableEvent dsgRenjuTaraguchi10Select1TableEvent ->
                             serverTable.handleRenjuSelect1(dsgRenjuTaraguchi10Select1TableEvent);
+                    case DSGRenjuAcceptDrawTableEvent dsgRenjuAcceptDrawTableEvent ->
+                            serverTable.handleRenjuAcceptDraw(dsgRenjuAcceptDrawTableEvent);
+                    case DSGRenjuRejectDrawTableEvent dsgRenjuRejectDrawTableEvent ->
+                            serverTable.handleRenjuRejectDraw(dsgRenjuRejectDrawTableEvent);
                     default -> {
                     }
                 }

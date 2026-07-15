@@ -91,6 +91,9 @@ public class ServerTable {
     protected boolean cancelRequested;
     protected String cancelRequestedBy;
 
+    // seat (1|2) with a pending renju draw offer; 0 = none
+    protected int drawOfferedBySeat = 0;
+
     protected int tableNum;
 
     /**
@@ -606,9 +609,12 @@ public class ServerTable {
             stateMessage = txt + " in progress, waiting for player to return";
         }
 
-        dsgEventRouter.routeEvent(
-                new DSGGameStateTableEvent(toPlayer, tableNum, state, stateMessage, getGameInSet()),
-                toPlayer);
+        DSGGameStateTableEvent ev = new DSGGameStateTableEvent(
+                toPlayer, tableNum, state, stateMessage, getGameInSet());
+        if (drawOfferedBySeat != 0 && playingPlayers[drawOfferedBySeat] != null) {
+            ev.setDrawOfferedBy(playingPlayers[drawOfferedBySeat].getName());
+        }
+        dsgEventRouter.routeEvent(ev, toPlayer);
     }
 
     protected void sendMoves(String toPlayer) {
@@ -1055,6 +1061,11 @@ public class ServerTable {
         }
 
         return true;
+    }
+
+    protected boolean isSeatComputer(int seat) {
+        return playingPlayers[seat] != null &&
+                playingPlayers[seat].isComputer();
     }
 
     protected void sit(String player, int seat) {
@@ -1972,6 +1983,10 @@ public class ServerTable {
     }
 
     public void handleMove(String player, int move) {
+        handleMove(player, move, false);
+    }
+
+    public void handleMove(String player, int move, boolean drawOffer) {
 
         int error = NO_ERROR;
         if (!isPlayerInTable(player)) {
@@ -1989,6 +2004,16 @@ public class ServerTable {
             } else if (gridState.getCurrentPlayer() != seat) {
                 error = DSGTableErrorEvent.NOT_TURN;
             } else if (!gridState.isValidMove(move, seat)) {
+                error = DSGTableErrorEvent.INVALID_MOVE;
+            } else if (drawOffer &&
+                    (!(gridState instanceof RenjuState) ||
+                     !((RenjuState) gridState).isOpeningComplete() ||
+                     isSeatComputer(3 - seat))) {
+                error = DSGTableErrorEvent.INVALID_MOVE;
+            } else if (gridState instanceof RenjuState &&
+                    ((RenjuState) gridState).isPass(move) &&
+                    isSeatComputer(3 - seat)) {
+                // AI cannot answer passes in v1
                 error = DSGTableErrorEvent.INVALID_MOVE;
             } else {
 
@@ -2082,8 +2107,16 @@ public class ServerTable {
                         cancelRequested = false;
                         cancelRequestedBy = null;
                     }
+                    if (drawOfferedBySeat != 0 && drawOfferedBySeat != seat) {
+                        // opponent moved without answering: implicit decline
+                        broadcastTable(new DSGRenjuRejectDrawTableEvent(player, tableNum));
+                        drawOfferedBySeat = 0;
+                    }
+                    if (drawOffer) {
+                        drawOfferedBySeat = seat;
+                    }
 
-                    broadcastTable(new DSGMoveTableEvent(player, tableNum, move));
+                    broadcastTable(new DSGMoveTableEvent(player, tableNum, move, drawOffer));
 
                     if (shouldTimerRun() && timed // && (oldCurrentPlayer != newCurrentPlayer)
                     ) {
@@ -2153,6 +2186,12 @@ public class ServerTable {
                 error = DSGTableErrorEvent.UNDO_ALREADY_REQUESTED;
             } else {
                 undoRequested = true;
+                if (drawOfferedBySeat != 0) {
+                    // undo request and draw offer are mutually exclusive
+                    broadcastTable(new DSGRenjuRejectDrawTableEvent(
+                            undoRequestEvent.getPlayer(), tableNum));
+                    drawOfferedBySeat = 0;
+                }
 
                 broadcastTable(undoRequestEvent);
             }
@@ -2192,6 +2231,10 @@ public class ServerTable {
                 undoRequested = false;
 
                 if (undoReplyEvent.getAccepted()) {
+
+                    // defensive: draw offer should already be cleared via
+                    // mutual exclusion in handleUndoRequest
+                    drawOfferedBySeat = 0;
 
                     int oldCurrentPlayer = gridState.getCurrentPlayer();
                     gridState.undoMove();
@@ -2262,6 +2305,62 @@ public class ServerTable {
             dsgEventRouter.routeEvent(
                     new DSGUndoReplyTableErrorEvent(undoReplyEvent.getPlayer(), tableNum, undoReplyEvent.getAccepted(), error),
                     undoReplyEvent.getPlayer());
+        }
+    }
+
+    public void handleRenjuAcceptDraw(DSGRenjuAcceptDrawTableEvent event) {
+
+        int error = NO_ERROR;
+        if (!isPlayerInTable(event.getPlayer())) {
+            error = DSGTableErrorEvent.NOT_IN_TABLE;
+        } else {
+            int seat = getPlayerSeat(event.getPlayer());
+            if (seat == NOT_SITTING) {
+                error = DSGTableErrorEvent.NOT_SITTING;
+            } else if (state == DSGGameStateTableEvent.NO_GAME_IN_PROGRESS) {
+                error = DSGTableErrorEvent.NO_GAME_IN_PROGRESS;
+            } else if (state == DSGGameStateTableEvent.WAIT_GAME_TWO_OF_SET) {
+                error = DSGTableErrorEvent.WAIT_GAME_TWO_OF_SET;
+            } else if (state == DSGGameStateTableEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN) {
+                error = DSGTableErrorEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN;
+            } else if (drawOfferedBySeat == 0 || drawOfferedBySeat == seat) {
+                error = DSGTableErrorEvent.NO_DRAW_OFFERED;
+            } else {
+                drawOfferedBySeat = 0;
+                broadcastTable(event);
+                gameOver(true, playingPlayers[1].getName(),
+                        playingPlayers[2].getName(), false, false, false);
+            }
+        }
+
+        if (error != NO_ERROR) {
+            dsgEventRouter.routeEvent(
+                    new DSGRenjuDrawTableErrorEvent(event.getPlayer(), tableNum, error),
+                    event.getPlayer());
+        }
+    }
+
+    public void handleRenjuRejectDraw(DSGRenjuRejectDrawTableEvent event) {
+
+        int error = NO_ERROR;
+        if (!isPlayerInTable(event.getPlayer())) {
+            error = DSGTableErrorEvent.NOT_IN_TABLE;
+        } else {
+            int seat = getPlayerSeat(event.getPlayer());
+            if (seat == NOT_SITTING) {
+                error = DSGTableErrorEvent.NOT_SITTING;
+            } else if (drawOfferedBySeat == 0 || drawOfferedBySeat == seat) {
+                error = DSGTableErrorEvent.NO_DRAW_OFFERED;
+            } else {
+                drawOfferedBySeat = 0;
+                broadcastTable(event);
+            }
+        }
+
+        if (error != NO_ERROR) {
+            dsgEventRouter.routeEvent(
+                    new DSGRenjuDrawTableErrorEvent(event.getPlayer(), tableNum, error),
+                    event.getPlayer());
         }
     }
 
@@ -2336,6 +2435,7 @@ public class ServerTable {
                 cancelRequestedBy = null;
 
                 if (cancelReplyEvent.getAccepted()) {
+                    drawOfferedBySeat = 0;
                     cancelGame(LiveSet.STATUS_CANCELED);
                 } else {
                     broadcastTable(cancelReplyEvent);
@@ -2646,6 +2746,7 @@ public class ServerTable {
                             boolean forceResign) {
 
         resetTableGameOver();
+        drawOfferedBySeat = 0;
 
         int winner = getPlayingPlayerSeat(winnerPlayer);
 
