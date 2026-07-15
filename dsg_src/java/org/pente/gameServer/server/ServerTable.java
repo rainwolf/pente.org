@@ -2971,8 +2971,23 @@ public class ServerTable {
                 if (timers[seat].getMinutes() <= 0 &&
                         timers[seat].getSeconds() <= 0) {
 
-                    gameOver(false, playingPlayers[3 - seat].getName(),
-                            timeUpEvent.getPlayer(), false, true, false);
+                    boolean timeoutDraw = false;
+                    if (gridState instanceof RenjuState) {
+                        // The timed-out player is the player TO MOVE (live clocks
+                        // only run for the current player), so their board color is
+                        // gridState.getCurrentPlayer() — robust even if renju seat
+                        // swaps ever broke the seat==color assumption.
+                        timeoutDraw = !RenjuTimeoutDrawEvaluator.opponentCanWin(
+                                gridState, 3 - gridState.getCurrentPlayer());
+                    }
+
+                    if (timeoutDraw) {
+                        gameOver(true, playingPlayers[3 - seat].getName(),
+                                timeUpEvent.getPlayer(), false, true, false);
+                    } else {
+                        gameOver(false, playingPlayers[3 - seat].getName(),
+                                timeUpEvent.getPlayer(), false, true, false);
+                    }
                 } else {
                     log4j.info(psid() + "Invalid time up call, timer says time remains");
                 }
