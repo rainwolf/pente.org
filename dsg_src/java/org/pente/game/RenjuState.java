@@ -168,7 +168,22 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
             inner.setAllowNonBoardMoves(true);
             inner.addMove(move);
             inner.setAllowNonBoardMoves(false);
-            return; // no finder refresh, no opening bookkeeping, no hash update
+            // A pass does not change the position, so its hash slot must equal
+            // the previous move's. SimpleGridState's hash store is incremental
+            // (each slot is copied forward then XOR'd); the pass bypassed that
+            // update, leaving its slot zeroed. Copy the previous slot's hashes
+            // and rotation forward so getHash() reports the position hash and
+            // the next real move's copy-forward chains from a correct base.
+            long[][] hashes = inner.getHashes();
+            int[] rotations = inner.getRotations();
+            int passIndex = inner.getNumMoves() - 1;
+            if (passIndex > 0) { // passes require a completed opening; guards -1
+                for (int i = 0; i < hashes[passIndex].length; i++) {
+                    hashes[passIndex][i] = hashes[passIndex - 1][i];
+                }
+                rotations[passIndex] = rotations[passIndex - 1];
+            }
+            return; // no finder refresh, no opening bookkeeping, no stone hashing
         }
         gridState.addMove(move);
         refreshFinder();
@@ -196,6 +211,15 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
         }
         gridState.undoMove();
         refreshFinder();
+        // If a pass is now the top move (a stone was undone above an earlier
+        // pass), its hash slot already holds the carried-forward position hash
+        // set when the pass was added. Running updateHash over a pass would XOR
+        // ZobristUtil.rand[color-1] with color 0 (the pass placed no stone),
+        // indexing rand[-1]. Skip it: the position hash is already correct.
+        int top = getNumMoves();
+        if (top > 0 && isPass(getMove(top - 1))) {
+            return;
+        }
         updateHash(this);
     }
 

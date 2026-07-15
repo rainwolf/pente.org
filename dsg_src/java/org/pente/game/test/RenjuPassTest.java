@@ -95,4 +95,20 @@ public class RenjuPassTest extends TestCase {
         s.addMove(225);
         assertTrue(!s.isGameOver());
     }
+
+    public void testPassPreservesPositionHash() {
+        // A pass places no stone, so getHash() must still report the position
+        // hash, and a real move after the pass must continue the hash chain
+        // (not hash forward from a zeroed pass slot).
+        RenjuState s = openedState();
+        long h = s.getHash();
+        s.addMove(225);
+        assertEquals(h, s.getHash()); // pass leaves the position hash unchanged
+        s.addMove(xy(0, 0));
+        assertTrue(s.getHash() != h); // real move after a pass changes the hash
+        s.undoMove(); // undo the stone -> back to the post-pass position
+        assertEquals(h, s.getHash());
+        s.undoMove(); // undo the pass -> back to the opened position
+        assertEquals(h, s.getHash());
+    }
 }
