@@ -65,6 +65,8 @@ And in `ERROR_EVENTS` (L84-97) add:
   'dsgRenjuDrawTableErrorEvent',
 ```
 
+(Listing it only makes decode ACCEPT the frame; with no `EVENT_HANDLERS` entry it falls through the reducer default and is silently ignored — acceptable for v1 since invalid accept/reject is a race artifact, not a user error. Add a handler surfacing `state.notification` only if QA wants visible feedback.)
+
 (Do NOT add `drawOffer` to the move descriptor's `out` — that list is required-fields and would break every existing move.)
 
 - [ ] **Step 4: Run** — `npm test` → PASS (all suites; decode tests keep passing since `INBOUND_TYPES` derives from `MESSAGES`).

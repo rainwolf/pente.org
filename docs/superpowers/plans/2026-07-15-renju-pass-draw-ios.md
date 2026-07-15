@@ -71,7 +71,7 @@ final class RenjuPassTests: XCTestCase {
     }
 ```
 
-In `addMoves(moves:)` (and any single-`addMove` path): for a pass, append to `moves` and run the same bookkeeping (`advanceRenjuTracking`) but skip the engine/board application — grep every `engine.addMove` / `abstractBoard[` write reached from `addMoves` and guard with `if isPass(move) { continue-equivalent }`. Audit renderers reading move HISTORY by coordinate (last-move marker, `stone(at:)` calls with a history move) and skip pass values.
+In `addMoves(moves:)` (and any single-`addMove` path): for a pass, append to `moves` and run the same bookkeeping (`advanceRenjuTracking`) but skip the engine/board application — grep every `engine.addMove` / `abstractBoard[` write reached from `addMoves` and guard with `if isPass(move) { continue-equivalent }`. NOTE (adversarial review): `PenteGame.play` already guards `move < cells` (no-op on 225), so much of this may already be safe — the explicit guard + `isPass` helper still land for clarity and for any path bypassing the engine; expect this task to be small. Audit renderers reading move HISTORY by coordinate (last-move marker, `stone(at:)` calls with a history move) and skip pass values.
 
 - [ ] **Step 4: Run** — new test green; full `PenteEngineTests` green (154+ baseline).
 
@@ -89,6 +89,7 @@ git commit -S -m "feat(renju): live model tolerates pass move 225 (list-only, bo
 **Files:**
 - Modify: `test1/TableViewController.swift`
 - Modify: `test1/RoomViewController.swift`
+- Modify: `test1/PenteLiveSocket.swift` — **the inbound event key-dispatch lives here** (`processEvent`, ~L105-183), NOT in RoomViewController (that file only holds handler bodies). Without new branches here, inbound accept/reject/rejoin never route (adversarial-review MAJOR #3).
 
 **Interfaces:**
 - Consumes: Task 1 (`isPass`), `RenjuTracking.complete`, `sendMove` (L621-624), `requestUndo` alert pattern (L1065-1090), TSMessage (already used Swift-side, L430/L1038), RoomViewController event routing (L820-850 pattern).
@@ -238,7 +239,7 @@ Mirror `requestUndo(player:)` (L1065-1090) exactly, including the iPad popover a
             }
 ```
 
-2. New handlers + dispatch entries (find the master event-key dispatch — grep `undoRequestTableEvent(event:` callers — and register the two new keys the same way):
+2. **Dispatch registration in `PenteLiveSocket.processEvent` (L105-183):** find how `"dsgUndoRequestTableEvent"` is keyed to its RoomViewController handler and register `"dsgRenjuAcceptDrawTableEvent"` → `renjuAcceptDrawTableEvent(event:)` and `"dsgRenjuRejectDrawTableEvent"` → `renjuRejectDrawTableEvent(event:)` identically (`dsgRenjuDrawTableErrorEvent` may be ignored or logged). Then add the handler bodies in RoomViewController:
 
 ```swift
     func renjuAcceptDrawTableEvent(event: [String: Any]) {

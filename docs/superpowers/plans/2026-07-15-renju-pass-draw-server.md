@@ -163,14 +163,26 @@ Expected: FAIL/ERROR — `getPassMove()` / `isPass(int)` / `doublePass()` don't 
     }
 ```
 
-3b. Initialize in BOTH constructors (after the `finder = ...` lines, L32/L40) and enable out-of-board appends on the wrapped grid:
+3b. Initialize in BOTH constructors (after the `finder = ...` lines, L32/L40):
 
 ```java
         passMove = gridState.getGridSizeX() * gridState.getGridSizeY();
-        ((SimpleGridState) gridState).setAllowNonBoardMoves(true);
 ```
 
-(`SimpleGridState.addMove` L178-192 otherwise SILENTLY drops out-of-board moves — the flag makes it append them without touching the board. Only `passMove` itself gets through because `isValidMove`/`addMove` below reject everything else out of range.)
+**CRITICAL — do NOT cast `gridState` to `SimpleGridState`:** `RenjuState.gridState` is a `SimpleGomokuState` (itself a `GridStateDecorator`), NOT a `SimpleGridState` — `((SimpleGridState) gridState).setAllowNonBoardMoves(true)` throws `ClassCastException` at construction and would break every renju game (adversarial-review BLOCKER #1). `setAllowNonBoardMoves` lives on the INNERMOST `SimpleGridState`. Add an unwrap helper and route pass moves through it directly, bypassing the gomoku decorator's move logic (its capture/hash handling of an out-of-board move is unaudited):
+
+```java
+    /** The innermost SimpleGridState at the bottom of the decorator chain. */
+    private SimpleGridState innermostGrid() {
+        GridState g = gridState;
+        while (g instanceof GridStateDecorator) {
+            g = ((GridStateDecorator) g).getGridState(); // use the decorator's actual accessor/field
+        }
+        return (SimpleGridState) g;
+    }
+```
+
+(Read `GridStateDecorator` first for the real accessor name — if the wrapped state is only a protected field, add a getter there or walk via that field. Verify `SimpleGomokuState`'s own inheritance while you're there; if it turns out to EXTEND `SimpleGridState` after all, the helper still works — the loop just never iterates.)
 
 3c. Rework `addMove` (L154-168) to route passes and reject other out-of-board values:
 
@@ -183,8 +195,14 @@ Expected: FAIL/ERROR — `getPassMove()` / `isPass(int)` / `doublePass()` don't 
             if (!openingComplete) {
                 throw new IllegalStateException("pass not allowed during renju opening");
             }
-            gridState.addMove(move);   // appended to the move list, no stone placed
-            return;                    // no finder refresh, no opening bookkeeping, no hash
+            // Append via the INNERMOST SimpleGridState, bypassing the gomoku
+            // decorator (no stone, no captures, no hash — a pass only enters
+            // the move list). setAllowNonBoardMoves is scoped to this call.
+            SimpleGridState inner = innermostGrid();
+            inner.setAllowNonBoardMoves(true);
+            inner.addMove(move);
+            inner.setAllowNonBoardMoves(false);
+            return;                    // no finder refresh, no opening bookkeeping
         }
         gridState.addMove(move);
         refreshFinder();
@@ -245,7 +263,7 @@ In `getWinner()` (L219): no change needed — `outOfBounds(lastMove) → return 
 
 Leave the rest of the method untouched.
 
-3g. Check `undoMove` (L170-174): `gridState.undoMove()` must tolerate removing a pass. Read `SimpleGridState.undoMove`; its `setPosition(move, 0)` path is guarded by `outOfBounds` (`setPosition` L270-275 no-ops out of board), so no change is expected — `testUndoPass` proves it.
+3g. Rework `undoMove` (L170-174) symmetrically with the pass branch of `addMove`: if the LAST move is a pass, undo it on the innermost grid (`innermostGrid().undoMove()` — `SimpleGridState.undoMove`'s `setPosition` no-ops out-of-board) and skip the gomoku decorator's undo bookkeeping, since the decorator never saw the pass being added. Otherwise keep `gridState.undoMove()` unchanged. `testUndoPass` proves it either way; also verify the decorator chain's move COUNT stays consistent (the innermost vector is the single source the decorators read — confirm with a debug print if in doubt).
 
 3h. Check `clear()` (L176-187): nothing pass-specific to reset (passMove is fixed by board size). No change.
 
@@ -417,6 +435,9 @@ import java.util.Set;
  *                   stage 3 +cooperative white helpers.
  * Five-priority is built into RenjuForbiddenPointFinder (isFive cancels
  * overline/double-four/double-three), so isFive == win, !isForbidden == legal.
+ *
+ * API trap: isFive(x, y, nColor)'s third argument is a COLOR (0=black,
+ * 1=white), NOT a direction — never loop it over 1..4.
  */
 public class RenjuTimeoutDrawEvaluator {
 
@@ -1354,10 +1375,12 @@ Replace the game-over call inside the timer-expired branch (L2389-2393 region �
 
                     boolean timeoutDraw = false;
                     if (gridState instanceof RenjuState) {
-                        // draw unless the NON-timed-out player (seat 3-seat,
-                        // board color == seat number) can still theoretically win
+                        // The timed-out player is the player TO MOVE (live clocks
+                        // only run for the current player), so their board color is
+                        // gridState.getCurrentPlayer() — robust even if renju seat
+                        // swaps ever broke the seat==color assumption.
                         timeoutDraw = !RenjuTimeoutDrawEvaluator.opponentCanWin(
-                                gridState, 3 - seat);
+                                gridState, 3 - gridState.getCurrentPlayer());
                     }
 
                     if (timeoutDraw) {
@@ -1559,14 +1582,41 @@ No DB-backed JUnit harness exists for these classes (`TBStorerTest` is excluded 
             }
 ```
 
-- [ ] **Step 2: `CacheTBStorer.offerDraw` — mirror `requestUndo` (L255+) exactly**
+- [ ] **Step 2: `CacheTBStorer.offerDraw` + `MySQLTBGameStorer` fixed-slot helpers**
+
+The offer row lives at the **fixed slot `(gid, move_num = -2, move = -2)`** — NOT at the
+next-free slot the way `requestUndo` writes its `-1` row. This is a hard spec decision
+(§2 "Why the offer needs a fixed move_num slot", added by the adversarial review): at the
+next-free slot, an undo request and a draw offer would silently overwrite each other under
+the `(gid, move_num)` primary key's `ON DUPLICATE KEY UPDATE`, and `undoLastMove`'s
+`MAX(move_num)` delete (both the plain form and `acceptUndo`'s multi-row variant) would
+consume a top-slot offer row instead of the move it meant to remove. The fixed `-2` slot
+sits below every real row, so both sentinels coexist and no MAX-delete can touch the offer.
+
+In `MySQLTBGameStorer`:
+
+```java
+    /** Pending-draw-offer sentinel at its fixed tb_move slot (gid, -2, -2). Idempotent. */
+    public void storeDrawOffer(long gid) throws TBStoreException {
+        storeNewMove(gid, -2, -2);   // INSERT ... ON DUPLICATE KEY UPDATE
+    }
+
+    /** Deletes the offer row if present: DELETE FROM tb_move WHERE gid = ? AND move_num = -2 */
+    public void clearDrawOffer(long gid) { /* copy undoLastMove's conn/stmt/cleanup shape, L351-384 */ }
+```
+
+Human `tb_move` only — Task 10's validation rejects offers on AI games (pid `23000000020606`),
+so no `tb_move_ai` variants are needed; still guard here (log + return) as defense in depth,
+because a `-2` row in `tb_move` for a gid whose moves live in `tb_move_ai` would be orphaned.
+
+In `CacheTBStorer` (requestUndo's L827-844 shape, fixed slot instead of next-free):
 
 ```java
     public void offerDraw(long gid) {
         synchronized (cacheTbLock) {
             TBGame tbGame = getGame(gid);
             try {
-                ((MySQLTBGameStorer) baseStorer).storeNewMove(gid, tbGame.getNumMoves(), -2);
+                ((MySQLTBGameStorer) baseStorer).storeDrawOffer(gid);
                 tbGame.setDrawOffered(true);
                 persistSet(tbGame.getTbSet());
             } catch (TBStoreException e) {
@@ -1576,19 +1626,15 @@ No DB-backed JUnit harness exists for these classes (`TBStorerTest` is excluded 
     }
 ```
 
-(Copy `requestUndo`'s ACTUAL tail — read it past L260; if it recalculates timeouts or has no try/catch, mirror that form instead of the sketch above. The invariants: write `-2` at `getNumMoves()`, set the flag, persist the set.)
-
 - [ ] **Step 3: `CacheTBStorer.acceptDraw` — mirror `declineUndo` (L234-253) + game end**
 
 ```java
     public void acceptDraw(long gid) {
         synchronized (cacheTbLock) {
             TBGame tbGame = getGame(gid);
-            if (tbGame.isDrawOffered()) {
+            if (tbGame.isDrawOffered() && tbGame.getState() == TBGame.STATE_ACTIVE) {
                 tbGame.setDrawOffered(false);
-                // the -2 row is the top move_num row while pending — same
-                // MAX(move_num) delete declineUndo uses for the -1 row
-                ((MySQLTBGameStorer) baseStorer).undoLastMove(gid);
+                ((MySQLTBGameStorer) baseStorer).clearDrawOffer(gid); // targeted fixed-slot delete
                 tbGame.end();          // STATE_COMPLETED + completionDate
                 tbGame.setWinner(0);   // -> draw = true (Task 8 derivation)
                 persistSet(tbGame.getTbSet());
@@ -1598,23 +1644,50 @@ No DB-backed JUnit harness exists for these classes (`TBStorerTest` is excluded 
     }
 ```
 
-(Check how other end paths persist the state/winner columns — `storeNewMove`'s game-over branch does `game.end(); game.setWinner(...); persistSet(...)` then `endGameRunnable.endGame(...)`; if `persistSet` alone doesn't write `tb_game.state/winner`, replicate whatever `storeNewMove`'s game-over path does — e.g. a `baseStorer.updateGame...` call — verbatim.)
+Do NOT delete the offer row via `undoLastMove` — with the fixed `-2` slot the offer is
+NEVER the `MAX(move_num)` row (real moves always sit above it), so a MAX-delete would
+remove a real move. Use the targeted `clearDrawOffer` from Step 2.
+`tb_game.state/winner` persistence needs no extra call here: `EndGameRunnable.run` invokes
+`baseStorer.endGame(data.game)` (L832), which writes `state`, `completion_date`, `winner`
+(`MySQLTBGameStorer.endGame` L1226-1271) — the same path every other ending uses (resign L1897+).
 
-- [ ] **Step 4: Mutual exclusion + implicit decline**
+- [ ] **Step 4: Lifecycle wiring — coexistence, implicit decline, draw reason**
 
-1. `requestUndo` (L255+): after `tbGame.setUndoRequested(true);` add:
-
-```java
-                tbGame.setDrawOffered(false); // -1 just overwrote any -2 row (same slot)
-```
+1. `requestUndo` (L255+): **NO change.** Spec §7: an undo REQUEST and a draw offer may be
+   pending simultaneously — distinct slots (`-1` at next-free, `-2` fixed), distinct
+   lifecycles; neither write can touch the other's row, and neither clears the other's
+   flag. (The "same slot, last write wins" idea is exactly what the adversarial spec
+   review rejected in §2.)
 
 2. `storeNewMove` (L1570+): next to `game.setUndoRequested(false);` (L1656) add:
 
 ```java
-            game.setDrawOffered(false); // opponent's move overwrites any -2 row (implicit decline)
+            boolean hadOffer = game.isDrawOffered();
+            game.setDrawOffered(false); // playing a move implicitly declines a pending offer
 ```
 
-(No DB delete needed in either case — the `-2` row occupied slot `numMoves` and the new `-1`/move row lands on exactly that slot via `ON DUPLICATE KEY UPDATE`. For `storeNewMove`, confirm `actualMoveNum = game.getNumMoves()` is computed from a move list that EXCLUDES sentinels — `loadMoves` strips them — so the slot matches. It does.)
+then AFTER the lock, alongside the existing DB move write (L1672-1675):
+
+```java
+            if (hadOffer || gameOver) {
+                ((MySQLTBGameStorer) baseStorer).clearDrawOffer(gid);
+            }
+```
+
+(With the fixed slot nothing overwrites the `-2` row, so the delete must be explicit.
+Clearing on `gameOver` too guarantees a finished game never resurrects a phantom offer on
+cold load — including the "second pass carried a draw offer" edge from spec §7.)
+
+3. Performing an undo clears the offer (spec §7): in `CacheTBStorer.undoLastMove(gid, numMoves)`
+   (L207-232) add `if (game.isDrawOffered()) { game.setDrawOffered(false); ((MySQLTBGameStorer) baseStorer).clearDrawOffer(gid); }`.
+   `declineUndo` (L234-253) needs no change — its MySQL `undoLastMove` MAX-delete hits the
+   top `-1` row and can never reach the fixed `-2` slot.
+
+4. Double-pass draw reason: in `storeNewMove`'s game-over dispatch (L1666-1669) send
+   `game.isDraw() ? EndGameRunnable.Data.REASON_DRAW : EndGameRunnable.Data.REASON_WIN`.
+   A renju double-pass ends with `state.getWinner() == 0` → `game.setWinner(0)` → Task 8's
+   derivation makes `isDraw()` true; without this, drawn endings would take the REASON_WIN
+   wording branch (see Step 5).
 
 - [ ] **Step 5: `REASON_DRAW` + notification dispatch**
 
@@ -1637,7 +1710,22 @@ In the notification text dispatch (L1095-1174 — `if (data.reason == Data.REASO
 
 Confirm the draw subject/body selection (`"It's a Draw"` at the `winSubj`/`loseSubj` lines) fires purely on `game.isDraw()` — it does per the excerpt — so no other text work is needed.
 
-- [ ] **Step 6: TB timeout-draw in `TimeoutCheckRunnable` (L655-698)**
+- [ ] **Step 6: TB double-pass → draw in `storeNewMove` (adversarial-review MAJOR #2)**
+
+In `storeNewMove`'s game-over region (`gameOver = state.isGameOver(); if (gameOver) { game.end(); game.setWinner(state.getWinner()); ... }` at ~L1657-1669): the renju validation branch builds `rs = RenjuState.reconstruct(...)` but confirm what `state` (the object that gets `addMove` + `isGameOver`) actually IS in the renju case — it must be the reconstructed `RenjuState` (Task 1 gives it double-pass detection), not a bare gomoku state. If the renju branch uses a different `state`, make it use the reconstructed `RenjuState`. Then fix the reason selection: the game-over dispatch currently ends with `REASON_WIN`; make the draw case explicit:
+
+```java
+        if (gameOver) {
+            int reason = (game.getWinner() == 0)
+                    ? EndGameRunnable.Data.REASON_DRAW
+                    : EndGameRunnable.Data.REASON_WIN;
+            endGameRunnable.endGame(game, reason);
+        }
+```
+
+(Adapt to the actual reason-selection code shape at the call site — the excerpt showed a compressed region; the invariant: `winner==0` game-over → `REASON_DRAW`, and `game.setWinner(0)` with `STATE_COMPLETED` already derives `draw=true` via Task 8. This covers double-pass AND any board-full renju draw. Add a manual verification line to Task 14 is already present — this step is its implementation.)
+
+- [ ] **Step 7: TB timeout-draw in `TimeoutCheckRunnable` (L655-698)**
 
 Replace the winner assignment in the expiry branch:
 
@@ -1666,14 +1754,22 @@ Replace the winner assignment in the expiry branch:
                                 } else {
                                     fresh.setWinner(3 - seat);
                                 }
+                                if (fresh.isDrawOffered()) {   // timeout discards a pending offer (spec §7)
+                                    fresh.setDrawOffered(false);
+                                }
                                 persistSet(fresh.getTbSet());
                                 doEnd = true;
                             }
 ```
 
+and after the lock, next to the existing `endGameRunnable.endGame(fresh, REASON_TO)` dispatch,
+add `((MySQLTBGameStorer) baseStorer).clearDrawOffer(fresh.getGid());` when `doEnd` — the
+fixed-slot row must be deleted explicitly or a cold load of the finished game would
+resurrect `drawOffered`.
+
 (`RenjuState.reconstruct(fresh, ...)` accepts `fresh` because `TBGame implements MoveData` — the same call `getRenjuPhase()` makes. Note the evaluator only reads positions, and passes never placed stones, so the reconstructed grid is exactly the board. `endGameRunnable.endGame(fresh, REASON_TO)` stays as is: reason TO gives the "ran out of time" context line while `isDraw()` flips subject/body to the draw variants — the desired combination.)
 
-- [ ] **Step 7: Audit every other `tb_move` reader**
+- [ ] **Step 8: Audit every other `tb_move` reader**
 
 The `-1` undo sentinel already flows through the table; every reader must now equally tolerate `-2`:
 
@@ -1683,13 +1779,13 @@ grep -rn "tb_move" dsg_src/java --include=*.java | grep -v test
 
 For each hit besides `MySQLTBGameStorer.loadMoves`/`storeNewMove`/`undoLastMove` (expect: archival/stats/replica-sync code, `tb_move_ai` variants): check how it treats `move = -1` today and give `-2` the identical treatment (skip). List the audited files in the commit message. If a reader would break on `-1` too, note it as a pre-existing bug — do not fix here.
 
-- [ ] **Step 8: Compile + commit**
+- [ ] **Step 9: Compile + commit**
 
 Run: `./justCompile` — Expected: BUILD SUCCESSFUL.
 
 ```bash
 git add dsg_src/java/org/pente/turnBased/CacheTBStorer.java dsg_src/java/org/pente/turnBased/MySQLTBGameStorer.java
-git commit -S -m "feat(renju): TB draw-offer persistence (-2 sentinel), acceptDraw, REASON_DRAW, timeout-draw check"
+git commit -S -m "feat(renju): TB draw-offer persistence (-2 sentinel), acceptDraw, REASON_DRAW, double-pass + timeout draws"
 ```
 
 ---
@@ -1711,6 +1807,8 @@ In the `move` block (L344+), after `String renjuAction = request.getParameter("r
                 boolean drawOffer = "true".equals(request.getParameter("drawOffer"));
                 if (drawOffer &&
                         (game.getGame() != GridStateFactory.TB_RENJU ||
+                         game.getPlayer1Pid() == 23000000020606L ||   // no offers vs AI
+                         game.getPlayer2Pid() == 23000000020606L ||   // (spec §7; keeps -2 out of tb_move for tb_move_ai games)
                          !TBGame.RENJU_COMPLETE.equals(game.getRenjuPhase()))) {
                     log4j.error("MoveServlet, draw offer outside renju/opening-complete " + gid);
                     handleError(request, response,
@@ -2023,15 +2121,18 @@ ant test-one -Dtest=org.pente.turnBased.test.TBGameRenjuPhaseTest
 ant test-one -Dtest=org.pente.turnBased.web.test.RenjuTbContractTest
 ```
 
-- [ ] TB flows on the local docker stack (two browsers, test accounts): pass after opening; pass rejected during opening (button absent + direct URL `moves=225` errors); double-pass → "It's a Draw" for both; offer→accept; offer→opponent-moves (offer cleared, no draw); offer→offerer-requests-undo (offer cancelled, undo pending — DB shows single `-1` row); undo request blocked during opening (existing behavior intact).
-- [ ] tb_move hygiene after each flow: `select * from tb_move where gid=<gid> order by move_num` — sentinels never duplicated, no stray rows after acceptDraw.
+- [ ] TB flows on the local docker stack (two browsers, test accounts): pass after opening; pass rejected during opening (button absent + direct URL `moves=225` errors); double-pass → "It's a Draw" for both; offer→accept; offer→opponent-moves (offer cleared, no draw); **undo/offer coexistence** (spec §7): offer pending + undo requested in BOTH orders — DB shows the `-1` row AND the `-2` row simultaneously, each resolvable independently; ACCEPTING the undo removes the intended move row and clears the offer (`-2` row gone); undo request blocked during opening (existing behavior intact).
+- [ ] Timeout endings: renju game where the opponent can still win → timeout LOSS exactly as today (`state 'T'`, winner = non-timed-out player); congested dead position → timeout DRAW (`state 'T'`, `winner 0`, draw wording in messages/mail); any pending offer discarded on timeout.
+- [ ] Cold-load: restart the app mid-offer → `drawOffered` reconstructed from the `-2` row; a completed draw still reports `isDraw()` after restart (winner-0 derivation).
+- [ ] tb_move hygiene after each flow: `select * from tb_move where gid=<gid> order by move_num` — the `-2` offer row only while pending (at `move_num=-2`), sentinels never duplicated, no stray rows after acceptDraw/timeout/game end.
 - [ ] Live flows are exercised by the react-live-game-room plan's checklist (plan 2); server-side compile + code review cover Tasks 5-7 until then.
 - [ ] Timeout-draw: covered by evaluator unit tests; optionally set a 1-day `daysPerMove` game in DB with a congested drawn board and force `timeout_date` into the past, then watch the runnable end it as a draw ('T', winner=0, "It's a Draw" messages).
+- [ ] Tournament plumbing (spec §9): grep tourney result recording (`TourneyMatch.RESULT_TIE=4`, live `TournamentServerTable`) and confirm a drawn renju game maps to `RESULT_TIE` where sets feed tournaments; fix mapping if a draw falls through to a win/loss.
 
 ---
 
 ## Execution notes
 
-- Tasks 1-4 are pure rules-core and can be executed strictly in order by one engineer/subagent chain; Tasks 5-7 (live) and 8-12 (TB+JSP) are independent of each other after Task 4, but keep the numbered order unless parallelizing across worktrees.
+- Tasks 1-4 are pure rules-core and can be executed strictly in order by one engineer/subagent chain; Tasks 5-7 (live) and 8-14 (TB+JSP+PGN) are independent of each other after Task 4, but keep the numbered order unless parallelizing across worktrees.
 - Model policy for this repo: implementation subagents run on opus (rules core, ServerTable, storers) or sonnet (JSP, GameResponse, PGN, event POJOs); reviews on opus.
 - The four excerpt files under the session scratchpad (`excerpts-rules-core.md`, `excerpts-live-server.md`, `excerpts-tb-server.md`, plus client ones) contain verbatim source context gathered for this plan; implementers should trust the REPO, not the excerpts, wherever they diverge.

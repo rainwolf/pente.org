@@ -32,7 +32,7 @@
 - Test: `app/src/test/java/be/submanifold/pentelive/LiveTablePassTest.java` (new; if `Table` has Android deps that block a JVM test, fold the assertions into `GameStateWiringTest`'s existing harness instead)
 
 **Interfaces:**
-- Produces: `Table.addMoves`/`addMove` accept move `225` without writing `abstractBoard` (15×15 — index 225/15=15 would crash), while keeping it in the move list so turn parity and `RenjuLiveState.advanceAfterMove(numMoves,…)` stay correct. Helper `Table.isPass(int move)` (`move == gridSize*gridSize`). Task 2 relies on `isPass`.
+- Produces: `Table.addMoves`/`addMove` accept move `225` without writing `abstractBoard`, while keeping it in the move list so turn parity and `RenjuLiveState.advanceAfterMove(numMoves,…)` stay correct. Helper `Table.isPass(int move)` (`move == gridSize*gridSize`). Task 2 relies on `isPass`. NOTE (adversarial review): `abstractBoard` is a fixed 19×19 array, so 225 → `[15][0]` does NOT crash — it silently writes a phantom stone at a wrong cell instead. The guard is still required; the failure mode is corruption, not a crash. Adjust the test to assert no phantom stone rather than no-trap.
 
 - [ ] **Step 1: Write the failing test**
 
