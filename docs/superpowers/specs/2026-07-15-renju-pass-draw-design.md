@@ -112,7 +112,7 @@ Simple scan; stages 2–3 never apply.
 - On `DSGRenjuRejectDrawTableEvent`: valid only from the non-offering seat while pending → clear offer, broadcast so the offerer's UI can un-arm/notify.
 - On any move by the non-offering player: clear pending offer (implicit decline).
 - Invalid accept/reject (no pending offer, wrong seat) → new error code `NO_DRAW_OFFERED = 25` on `DSGTableErrorEvent` (codes 17-24 are already taken, `DSGTableErrorEvent.java:21-30`; 25 is the next free value).
-- **Rejoin/reconnect**: the pending offer (offering seat) rides on the live table-state sync — concretely, a new optional `pendingDrawOffer` field on `DSGGameStateTableEvent` (already in `DSGEventWrapper.java:33`; plain POJO field, old clients ignore it) — broadcast/sent on rejoin so the opponent's accept/reject dialog and the offerer's armed state are restored. (`RenjuRejoin` only encodes the opening phase and is not the carrier.)
+- **Rejoin/reconnect**: the pending offer rides on the live table-state sync — concretely, a new optional `drawOfferedBy` field (offerer's player name, null when none) on `DSGGameStateTableEvent` (already in `DSGEventWrapper.java:33`; plain POJO field, old clients ignore it) — broadcast/sent on rejoin so the opponent's accept/reject dialog and the offerer's armed state are restored. (`RenjuRejoin` only encodes the opening phase and is not the carrier.)
 - **AI tables** (`ServerAITableController`): pass and draw offers are disabled at AI tables in v1 — server rejects them (`INVALID_MOVE` / auto-reject) and clients hide the buttons. Rationale: the native AI engines do not understand a pass input, and the AI has no draw-evaluation logic.
 - Spectators never see the buttons; events from non-seated players are rejected as today.
 
