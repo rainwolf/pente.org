@@ -8,6 +8,7 @@ public class DSGMoveTableEvent extends AbstractDSGTableEvent {
 
     private int move;
     private int moves[];
+    private boolean drawOffer;
 
     public DSGMoveTableEvent() {
         super();
@@ -16,6 +17,20 @@ public class DSGMoveTableEvent extends AbstractDSGTableEvent {
     public DSGMoveTableEvent(String player, int table, int move) {
         super(player, table);
         setMove(move);
+    }
+
+    public DSGMoveTableEvent(String player, int table, int move, boolean drawOffer) {
+        super(player, table);
+        setMove(move);
+        this.drawOffer = drawOffer;
+    }
+
+    public boolean isDrawOffer() {
+        return drawOffer;
+    }
+
+    public void setDrawOffer(boolean drawOffer) {
+        this.drawOffer = drawOffer;
     }
 
     /**

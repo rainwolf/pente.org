@@ -11,6 +11,7 @@ public class DSGGameStateTableEvent extends AbstractDSGTableEvent {
     private String changeText;
     private String winner;
     private int gameInSet;
+    private String drawOfferedBy;
 
     public DSGGameStateTableEvent() {
         super();
@@ -67,6 +68,14 @@ public class DSGGameStateTableEvent extends AbstractDSGTableEvent {
 
     public void setGameInSet(int gameInSet) {
         this.gameInSet = gameInSet;
+    }
+
+    public String getDrawOfferedBy() {
+        return drawOfferedBy;
+    }
+
+    public void setDrawOfferedBy(String drawOfferedBy) {
+        this.drawOfferedBy = drawOfferedBy;
     }
 
 }

@@ -84,6 +84,9 @@ public class DSGEventWrapper {
     private DSGRenjuTaraguchiSwapTableEvent dsgRenjuTaraguchiSwapTableEvent;
     private DSGRenjuTaraguchiOffer10TableEvent dsgRenjuTaraguchiOffer10TableEvent;
     private DSGRenjuTaraguchi10Select1TableEvent dsgRenjuTaraguchi10Select1TableEvent;
+    private DSGRenjuAcceptDrawTableEvent dsgRenjuAcceptDrawTableEvent;
+    private DSGRenjuRejectDrawTableEvent dsgRenjuRejectDrawTableEvent;
+    private DSGRenjuDrawTableErrorEvent dsgRenjuDrawTableErrorEvent;
 
     public DSGEventWrapper(Object o) {
         Field[] fields = DSGEventWrapper.class.getDeclaredFields();
@@ -701,6 +704,30 @@ public class DSGEventWrapper {
 
     public void setDsgRenjuTaraguchi10Select1TableEvent(DSGRenjuTaraguchi10Select1TableEvent dsgRenjuTaraguchi10Select1TableEvent) {
         this.dsgRenjuTaraguchi10Select1TableEvent = dsgRenjuTaraguchi10Select1TableEvent;
+    }
+
+    public DSGRenjuAcceptDrawTableEvent getDsgRenjuAcceptDrawTableEvent() {
+        return dsgRenjuAcceptDrawTableEvent;
+    }
+
+    public void setDsgRenjuAcceptDrawTableEvent(DSGRenjuAcceptDrawTableEvent dsgRenjuAcceptDrawTableEvent) {
+        this.dsgRenjuAcceptDrawTableEvent = dsgRenjuAcceptDrawTableEvent;
+    }
+
+    public DSGRenjuRejectDrawTableEvent getDsgRenjuRejectDrawTableEvent() {
+        return dsgRenjuRejectDrawTableEvent;
+    }
+
+    public void setDsgRenjuRejectDrawTableEvent(DSGRenjuRejectDrawTableEvent dsgRenjuRejectDrawTableEvent) {
+        this.dsgRenjuRejectDrawTableEvent = dsgRenjuRejectDrawTableEvent;
+    }
+
+    public DSGRenjuDrawTableErrorEvent getDsgRenjuDrawTableErrorEvent() {
+        return dsgRenjuDrawTableErrorEvent;
+    }
+
+    public void setDsgRenjuDrawTableErrorEvent(DSGRenjuDrawTableErrorEvent dsgRenjuDrawTableErrorEvent) {
+        this.dsgRenjuDrawTableErrorEvent = dsgRenjuDrawTableErrorEvent;
     }
 }
 
