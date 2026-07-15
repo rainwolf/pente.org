@@ -204,11 +204,13 @@ public class PGNGameFormat implements GameFormat {
         // print move list
         String moveList = "";
 
-        // renju (including speed/turn-based renju, which share the "Renju" /
-        // "Speed Renju" game names) represents a pass as move 225 (15*15);
-        // serialize it as the literal token "pass" instead of a bogus coordinate.
-        boolean isRenju = data.getGame().equals(GridStateFactory.RENJU_GAME.getName()) ||
-                data.getGame().equals(GridStateFactory.SPEED_RENJU_GAME.getName());
+        // renju (including speed/turn-based renju -- whose game name may be
+        // "Renju", "Speed Renju", or the alternate "Turn-based Renju" used by
+        // GridStateFactory's displaygames[] entry) represents a pass as move
+        // 225 (15*15); serialize it as the literal token "pass" instead of a
+        // bogus coordinate. Match case-insensitively on "renju" rather than
+        // any one exact name so no renju variant is missed.
+        boolean isRenju = data.getGame() != null && data.getGame().toLowerCase().contains("renju");
 
         int j = 1;
         for (int i = 0; i < data.getNumMoves(); i++) {
@@ -339,9 +341,10 @@ public class PGNGameFormat implements GameFormat {
                     if (gameHeader == null) {
                         gameHeader = headers.get("GameType");
                     }
-                    boolean isRenju = gameHeader != null &&
-                            (gameHeader.equals(GridStateFactory.RENJU_GAME.getName()) ||
-                                    gameHeader.equals(GridStateFactory.SPEED_RENJU_GAME.getName()));
+                    // Match case-insensitively on "renju" (see the format()
+                    // call site above) so alternate names such as
+                    // "Turn-based Renju" are also recognized.
+                    boolean isRenju = gameHeader != null && gameHeader.toLowerCase().contains("renju");
 
                     StringTokenizer moveTokenizer = new StringTokenizer(line, " ");
                     while (moveTokenizer.hasMoreTokens()) {
