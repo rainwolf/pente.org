@@ -90,11 +90,53 @@ public class RenjuTimeoutDrawEvaluator {
         return out;
     }
 
-    // Stage 1 lands in Task 3; keep the build green with a placeholder that
-    // is CORRECT for the Task 2 tests (they never reach a fill search for
-    // black except trivially fillable/unfillable windows).
+    /**
+     * Stage 1: for each candidate window try to fill its empty cells with
+     * black stones in some order such that every placement is legal
+     * (!isForbidden) or immediately wins (isFive). Only window cells are
+     * placed. Any success -> black can win.
+     */
     private static boolean stage1(GridState state, int sx, int sy, List<int[]> windows) {
-        throw new UnsupportedOperationException("stage1: Task 3");
+        for (int[] w : windows) {
+            List<int[]> empty = new ArrayList<int[]>();
+            for (int i = 0; i < 5; i++) {
+                int cx = w[0] + i * w[2], cy = w[1] + i * w[3];
+                if (state.getPosition(cx, cy) == 0) empty.add(new int[]{cx, cy});
+            }
+            if (empty.isEmpty()) {
+                // window already fully black: position is already won/over --
+                // treat as winnable (defensive; live positions never reach this)
+                return true;
+            }
+            RenjuForbiddenPointFinder f = buildFinder(state, sx, sy);
+            if (fillSearch(f, empty, new boolean[empty.size()])) return true;
+        }
+        return false;
+    }
+
+    /**
+     * DFS over fill orders of a window's empty cells. Win iff some placement
+     * completes an exactly-five (isFive); every intermediate placement must be
+     * legal (!isForbidden). Five-priority is honoured by testing isFive before
+     * isForbidden, so a cell that both wins and would otherwise be forbidden is
+     * treated as a win. (The window's own line closes as exactly-five on its
+     * last empty cell -- flanks were pre-filtered non-black and white never
+     * intrudes in stage 1 -- so a full fill without a five cannot occur.)
+     */
+    private static boolean fillSearch(RenjuForbiddenPointFinder f, List<int[]> cells, boolean[] used) {
+        for (int i = 0; i < cells.size(); i++) {
+            if (used[i]) continue;
+            int x = cells.get(i)[0], y = cells.get(i)[1];
+            if (f.isFive(x, y, 0)) return true;          // five-priority win
+            if (f.isForbidden(x, y)) continue;           // illegal now; try later order
+            used[i] = true;
+            f.setStone(x, y, RenjuForbiddenPointFinder.BLACK);
+            boolean win = fillSearch(f, cells, used);
+            f.setStone(x, y, RenjuForbiddenPointFinder.EMPTY);
+            used[i] = false;
+            if (win) return true;
+        }
+        return false;
     }
 
     static boolean inBounds(int x, int y, int sx, int sy) {
