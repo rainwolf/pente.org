@@ -49,6 +49,7 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 
     private boolean undoRequested;
     private byte hiddenBy = 0;
+    private boolean drawOffered;
 
     private ArrayList<Integer> moves = new ArrayList<Integer>();
     private ArrayList<TBMessage> messages = new ArrayList<TBMessage>();
@@ -198,6 +199,8 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
             passMove = 9 * 9;
         } else if (game == GridStateFactory.TB_GO13) {
             passMove = 13 * 13;
+        } else if (game == GridStateFactory.TB_RENJU) {
+            passMove = 15 * 15;
         }
         this.game = game;
     }
@@ -479,7 +482,7 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 
     public void setWinner(int winner) {
         this.winner = winner;
-        if (state == STATE_COMPLETED && winner == 0) {
+        if ((state == STATE_COMPLETED || state == STATE_COMPLETED_TO) && winner == 0) {
             draw = true;
         }
     }
@@ -642,6 +645,14 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 
     public void setUndoRequested(boolean undoRequested) {
         this.undoRequested = undoRequested;
+    }
+
+    public boolean isDrawOffered() {
+        return drawOffered;
+    }
+
+    public void setDrawOffered(boolean drawOffered) {
+        this.drawOffered = drawOffered;
     }
 
     public byte getHiddenBy() {
