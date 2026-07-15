@@ -204,11 +204,17 @@ public class PGNGameFormat implements GameFormat {
         // print move list
         String moveList = "";
 
+        // renju (including speed/turn-based renju, which share the "Renju" /
+        // "Speed Renju" game names) represents a pass as move 225 (15*15);
+        // serialize it as the literal token "pass" instead of a bogus coordinate.
+        boolean isRenju = data.getGame().equals(GridStateFactory.RENJU_GAME.getName()) ||
+                data.getGame().equals(GridStateFactory.SPEED_RENJU_GAME.getName());
+
         int j = 1;
         for (int i = 0; i < data.getNumMoves(); i++) {
 
             int move = data.getMove(i);
-            String moveStr = formatCoordinates(move);
+            String moveStr = formatMoveToken(move, isRenju);
 
             // whites move
             if (i % 2 == 0) {
@@ -322,6 +328,21 @@ public class PGNGameFormat implements GameFormat {
                 }
                 // process moves
                 else {
+                    // NOTE: data.getGame() is not yet populated here -- parseGame()
+                    // only runs after this whole loop finishes (see below), so the
+                    // "game data" accessor is unreachable at this call site. Fall
+                    // back to the raw Game/GameType header value already collected
+                    // in the headers table (headers always precede moves in the
+                    // file, so it is fully populated by the time we reach move
+                    // lines) to determine renju-ness for pass-token parsing.
+                    String gameHeader = headers.get(HEADER_GAME);
+                    if (gameHeader == null) {
+                        gameHeader = headers.get("GameType");
+                    }
+                    boolean isRenju = gameHeader != null &&
+                            (gameHeader.equals(GridStateFactory.RENJU_GAME.getName()) ||
+                                    gameHeader.equals(GridStateFactory.SPEED_RENJU_GAME.getName()));
+
                     StringTokenizer moveTokenizer = new StringTokenizer(line, " ");
                     while (moveTokenizer.hasMoreTokens()) {
                         String move = moveTokenizer.nextToken();
@@ -334,7 +355,7 @@ public class PGNGameFormat implements GameFormat {
                                 data.setStatus(GameData.STATUS_FORCE_RESIGN);
                                 continue;
                             }
-                            int moveInt = parseCoordinates(move);
+                            int moveInt = parseMoveToken(move, isRenju);
                             if (moveInt != -1) {
                                 data.addMove(moveInt);
                             }
@@ -905,6 +926,22 @@ public class PGNGameFormat implements GameFormat {
         }
     }
 
+
+    /** Renju: 225 (=15*15) is a pass; serialized as the literal token "pass". */
+    public static String formatMoveToken(int move, boolean renju) {
+        if (renju && move == 15 * 15) {
+            return "pass";
+        }
+        return formatCoordinates(move);
+    }
+
+    /** Renju: parse the literal token "pass" back to move 225 (=15*15). */
+    public static int parseMoveToken(String token, boolean renju) {
+        if (renju && "pass".equalsIgnoreCase(token)) {
+            return 15 * 15;
+        }
+        return parseCoordinates(token);
+    }
 
     /** Format a Alpha-Numeric coordinate string for a move
      *  @param p The move
