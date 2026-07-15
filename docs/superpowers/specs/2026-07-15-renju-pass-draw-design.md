@@ -20,9 +20,11 @@ Moves are encoded `x + y*width` (`SimpleGridState.convertMove`, `SimpleGridState
 |---|---|---|
 | `225` (`gridSizeX*gridSizeY`) | **Renju pass** (new) | Same convention as Go (`GoState.java:116`). Stored in the move list like any move. |
 | `-1` in `tb_move` | Undo request (existing) | Stripped on load (`MySQLTBGameStorer.java:516`) → `undoRequested=true`. |
-| `-2` in `tb_move` | **Pending draw offer** (new) | Stripped on load → `drawOffered=true`. Never enters the in-memory move list. |
+| `-2` in `tb_move` | **Pending draw offer** (new) | Stored at the **fixed slot `(gid, move_num = -2, move = -2)`**. Stripped on load → `drawOffered=true`. Never enters the in-memory move list. |
 
-No collisions: renju opening offers pack into `0..224` and `renjuSwaps`/`renjuOffers` separately (`RenjuOpeningState`); `GridPieceAction.REMOVE=2` is an action, not a move; `ServerAITableController.NO_MOVE=-1` is in-memory only. Go's `passMove`/`handicapPass` apply to Go boards only.
+No collisions: renju opening offers pack into `0..224` and `renjuSwaps`/`renjuOffers` separately (`RenjuOpeningState`); `GridPieceAction.REMOVE=2` is an action, not a move; `ServerAITableController.NO_MOVE=-1` is in-memory only. Go's `passMove`/`handicapPass` apply to Go boards only. The `move` column is a signed smallint (`schema.sql:944`), so `-1`/`-2`/`225` all fit.
+
+**Why the offer needs a fixed `move_num` slot:** `tb_move`'s primary key is `(gid, move_num)` (`schema.sql:945`) and inserts use `ON DUPLICATE KEY UPDATE move=VALUES(move)` (`MySQLTBGameStorer.java:889`). Undo's `-1` row is written at the next free slot (`move_num = getNumMoves()`, `CacheTBStorer.java:259`); if the offer used the same convention, whichever sentinel was written second would silently overwrite the first. Additionally, `undoLastMove` deletes `MAX(move_num)` (`MySQLTBGameStorer.java:362`) and would consume a top-slot offer row instead of the intended move. The fixed `move_num = -2` slot sits below every real move and every undo row, so it can never be overwritten by, nor be mistaken for, either. `loadMoves` orders by `move_num asc`, so the offer row (if present) is simply the first row read.
 
 ## 3. Feature 1 — Pass
 
@@ -66,7 +68,9 @@ Simple scan; stages 2–3 never apply.
 
 - **Stage 1 — window-only fill orders.** For each candidate window, try every order (≤ 5! = 120) of filling its empty cells with black stones, all other cells untouched. Each intermediate placement must be non-forbidden per `RenjuForbiddenPointFinder` against the evolving board. The final placement wins if it completes an **exactly-five** (five-priority: a simultaneous double-three/double-four does not void the win; a simultaneous overline **on the same line** does — that is just an overline). Any success → not a draw. Any position with open space exits here.
 
-- **Stage 2 — black helper stones.** Helpers outside a window can legalize fills stage 1 cannot (example: a helper extends one three of a double-three into a four, so the once-forbidden cell now makes four+three — legal). Exhaustive memoized DFS: state = set of added black stones; successor = any legal (non-forbidden) black placement on an empty cell; win test = a placement completing an exactly-five under five-priority. Search arena restricted to the **relevant region**: fixpoint expansion from candidate-window cells by line-distance ≤ 4 (pattern radius); stones outside the fixpoint provably cannot influence any legality chain into a window.
+  **Win-oracle requirement (critical):** the win test MUST check exactly-five completion first, *independently* of the forbidden check. The existing helpers do not implement five-priority: `RenjuForbiddenPointFinder.isForbidden` (L448-450) is `isOverline || isDoubleFour || isDoubleThree` with no five exemption, and `RenjuState.getWinner` checks `forbidden` before `five` (`RenjuState.java:231-232`). Reusing them naively would misclassify a five-priority win (exactly-five on one line + incidental double-three/four on others) as "not a win" and wrongly declare draws. **Companion fix (recommended, flagged for owner):** `RenjuState.getWinner`'s ordering is a latent five-priority bug affecting live rule adjudication too; the timeout oracle and game play should agree, so fixing the ordering there is recommended alongside this work.
+
+- **Stage 2 — black helper stones.** Helpers outside a window can legalize fills stage 1 cannot (example: a helper extends one three of a double-three into a four, so the once-forbidden cell now makes four+three — legal). Exhaustive memoized DFS: state = set of added black stones; successor = any legal (non-forbidden) black placement on an empty cell; win test = a placement completing an exactly-five under five-priority. Search arena restricted to the **relevant region**: fixpoint expansion from candidate-window cells by line-distance ≤ 6 per hop — the per-hop radius must cover the longest single legality dependency, and open/broken three and gapped four detection in `RenjuForbiddenPointFinder` inspects spans of up to ~6 cells, so 4 (bare pattern radius) would under-cover. Stones outside the fixpoint provably cannot influence any legality chain into a window.
 
 - **Stage 3 — cooperative white helper stones.** White helpers can do exactly one thing for black: occupy the extension square of a black three/four, making it "fake" and dissolving a double-three/double-four forbiddenness. (They cannot fix overline-forbiddenness — that depends only on black stones — and cannot join black's five.) Extend the DFS state to (added black, added white); white placements are always legal (no cascade); prune white candidates to cells within pattern radius of a potential black placement in the relevant region. Memoized; worst case 3^(empty∩region), reached only on congested boards where the region is small.
 
@@ -76,7 +80,7 @@ Simple scan; stages 2–3 never apply.
 
 ### Integration points
 
-- **Turn-based**: `CacheTBStorer.TimeoutCheckRunnable` (`CacheTBStorer.java:504+`) — for renju, run the check before `fresh.setWinner(3 - seat)`; on draw, end with `STATE_COMPLETED_TO` ('T') + `setDraw(true)` + `winner=0`, new `REASON_DRAW=4` (`CacheTBStorer` reason codes at L781-783). `EndGameRunnable` already branches on `isDraw()` for ratings and messages (L1003-1020, L1035-1039).
+- **Turn-based**: `CacheTBStorer.TimeoutCheckRunnable` (class at `CacheTBStorer.java:519`) — for renju, run the check before `fresh.setWinner(3 - seat)` (insertion point L672, preserving the premature-timeout guard at L680); on draw, end with `STATE_COMPLETED_TO` ('T') + `setDraw(true)` + `winner=0`, new `REASON_DRAW=4` (`CacheTBStorer` reason codes at L781-783). `EndGameRunnable` already branches on `isDraw()` for ratings and messages (L1003-1020, L1035-1039); verify its reason-based notification dispatch (L1111-1128 branches on RESIGN/TO/WIN) needs no extra `REASON_DRAW` branch beyond the `isDraw()` subject/text at L1163-1166.
 - **Live**: the `DSGTimeUpTableEvent` handling path (`ArenaServerTable.java:340`, and `ServerTable`/`SynchronizedServerTable` consumers) — same check before recording a timeout win; on draw, record `DSGPlayerGameData.DRAW` (= 3) for both players.
 
 ## 5. Feature 3 — Draw offers
@@ -105,16 +109,16 @@ Simple scan; stages 2–3 never apply.
 - On `DSGRenjuAcceptDrawTableEvent`: valid only from the non-offering seat while pending → end game as draw (both players `DSGPlayerGameData.DRAW`), broadcast game end.
 - On `DSGRenjuRejectDrawTableEvent`: valid only from the non-offering seat while pending → clear offer, broadcast so the offerer's UI can un-arm/notify.
 - On any move by the non-offering player: clear pending offer (implicit decline).
-- Invalid accept/reject (no pending offer, wrong seat) → new error code `NO_DRAW_OFFERED` on `DSGTableErrorEvent` (next free code after `NO_UNDO_REQUESTED=16`).
-- **Rejoin/reconnect**: the game-state sync sent to a (re)joining player includes the pending offer (offering seat), so the opponent's accept/reject dialog and the offerer's armed state are restored.
+- Invalid accept/reject (no pending offer, wrong seat) → new error code `NO_DRAW_OFFERED = 25` on `DSGTableErrorEvent` (codes 17-24 are already taken, `DSGTableErrorEvent.java:21-30`; 25 is the next free value).
+- **Rejoin/reconnect**: the pending offer (offering seat) rides on the live table-state sync — concretely, a new optional `pendingDrawOffer` field on `DSGGameStateTableEvent` (already in `DSGEventWrapper.java:33`; plain POJO field, old clients ignore it) — broadcast/sent on rejoin so the opponent's accept/reject dialog and the offerer's armed state are restored. (`RenjuRejoin` only encodes the opening phase and is not the carrier.)
 - **AI tables** (`ServerAITableController`): pass and draw offers are disabled at AI tables in v1 — server rejects them (`INVALID_MOVE` / auto-reject) and clients hide the buttons. Rationale: the native AI engines do not understand a pass input, and the AI has no draw-evaluation logic.
 - Spectators never see the buttons; events from non-seated players are rejected as today.
 
 ### Turn-based server
 
-- `MoveServlet` `command=move` gains optional param `drawOffer=true` (validated: renju, phase MOVE/COMPLETE). New `command=acceptDraw` mirroring `acceptUndo` (`MoveServlet.java:281`): valid only while an offer is pending and it is the acceptor's turn → end game `STATE_COMPLETED` + `setDraw(true)` + `winner=0`, `REASON_DRAW`.
+- `MoveServlet` `command=move` gains optional param `drawOffer=true` (validated: renju, **phase COMPLETE only** — `RenjuOpeningPhase.MOVE` is an *opening* sub-phase (Branch-A placements, see `RenjuRejoin.java:29`) and must NOT enable pass or offers anywhere). New `command=acceptDraw` mirroring `acceptUndo` (`MoveServlet.java:281`): valid only while an offer is pending and it is the acceptor's turn → end game `STATE_COMPLETED` + `setDraw(true)` + `winner=0`, `REASON_DRAW`.
 - Double-pass in `CacheTBStorer.storeNewMove` (game-over handling at L1657-1669): renju double-pass → `STATE_COMPLETED` + draw, `REASON_DRAW`.
-- Persistence: on storing a move with an offer, write the move row then a `-2` row; `loadMoves` maps `-2 → drawOffered=true` (alongside `-1 → undoRequested`). Cleared storer-side (row deleted, flag false) when the opponent moves or accepts — same lifecycle as undo's `-1`. `-1` and `-2` may coexist; the loader handles both independently.
+- Persistence: on storing a move with an offer, also write the offer row at the **fixed slot `(gid, move_num=-2, move=-2)`** (see §2 for why a next-free-slot row would collide with undo's `-1` under the `(gid, move_num)` primary key and be eaten by `undoLastMove`'s `MAX(move_num)` delete). `loadMoves` maps `move==-2 → drawOffered=true` (alongside `-1 → undoRequested`). Cleared storer-side (explicit `DELETE` of the `-2` slot, flag false) when the opponent moves or accepts. Any undo also clears the offer: delete the `-2` row explicitly — safe in any order since the fixed slot is never `MAX(move_num)`. `-1` and `-2` coexist safely in distinct slots. The plan must audit all other `tb_move` readers (archival, replica, stats) — they already skip `-1` and must equally skip negative-`move_num`/`-2` rows.
 - `TBGame`: new transient `drawOffered` boolean (getter/setter), like `undoRequested` (`TBGame.java:50`).
 - Mobile JSON (`GameResponse.java`): new `drawOffered` Boolean field, emitted like `undoRequested`.
 - Notifications: move push/email notifications for a move carrying an offer say so ("… and offers a draw"); draw endings reuse the existing draw message text in `EndGameRunnable` (L1053-1071).
@@ -122,6 +126,8 @@ Simple scan; stages 2–3 never apply.
 ## 6. Client UI
 
 ### Shared turn-based button behavior (Android, iOS, JSP)
+
+"Opening complete" means, uniformly across every gate in this document, the state equivalent to server `RenjuState.openingComplete`: `getOpeningPhase()/getRenjuPhase() == COMPLETE` (server/TB/JSP), `RenjuLiveState` complete flag (Android live), `state.renju.complete` (iOS live), renju tracking complete (react). The `MOVE` phase value is an opening sub-phase and never enables pass or draw offers.
 
 When the game is renju, opening complete, it is my turn, and no stone is staged:
 
@@ -150,7 +156,7 @@ When the game is renju, opening complete, it is my turn, and no stone is staged:
 
 ### JSP turn-based web (`mobileGame.jsp`)
 
-- PASS button copied from the Go pass pattern (`submitPass()`, L329-331 / L1428-1431) posting `moves=225`, gated on renju + `game.getRenjuPhase()` in {MOVE, COMPLETE} + `myTurn`.
+- PASS button copied from the Go pass pattern (`submitPass()`, L329-331 / L1428-1431) posting `moves=225`, gated on renju + `game.getRenjuPhase() == "COMPLETE"` **only** (never `MOVE`, which is an opening sub-phase) + `myTurn`.
 - DRAW? button arms a JS flag; `submit()`/`submitPass()` append `&drawOffer=true`.
 - "Draw offered — Accept" indicator/link mirroring the `isUndoRequested()` else-if (L338-340); accept posts `command=acceptDraw`.
 
@@ -158,17 +164,19 @@ When the game is renju, opening complete, it is my turn, and no stone is staged:
 
 - Pass rejected: during opening, when game over, at AI tables, in non-renju games.
 - `drawOffer` rejected: same conditions; also when a draw offer is somehow already pending from the same player (cannot normally happen — offer resolves before offerer moves again).
-- Undo interactions: performing an undo clears any pending draw offer. An undo request and a draw offer may be simultaneously pending in TB (`-1` and `-2` rows coexist); each keeps its own lifecycle.
+- Undo interactions: performing an undo clears any pending draw offer (explicit delete of the fixed `-2` slot; order-independent, see §5). An undo request and a draw offer may be simultaneously pending in TB (distinct fixed slots); each keeps its own lifecycle.
+- Offer vs simultaneous timeout: events are processed serially in arrival order. If the timeout lands first, the game ends via the timeout path (including the timeout-draw check) and the pending offer is discarded like any game end; a late accept/reject gets `NO_DRAW_OFFERED` (live) or is ignored (TB). If an accept lands first, the game is drawn and the timeout is moot.
 - Double-pass draw takes effect immediately even if the second pass carried a draw offer (game already drawn; offer moot).
-- Move history: pass shown as "PASS"; the offer flag is not part of history (not replayed/exported; PGN unaffected — a drawn result uses the existing `GameData.DRAW` mapping, `PGNGameFormat.java:826`).
+- Move history: pass shown as "PASS"; the offer flag is not part of history (not replayed/exported). PGN: a drawn result uses the existing `GameData.DRAW` mapping (`PGNGameFormat.java:826`), but move serialization must handle `225` — `PGNGameFormat` converts move ints to board coordinates and `225` is out of range on 15×15. Serialize a pass as a literal `pass` token and accept it on parse, keeping round-trip intact.
+- Cosmetic: `DSGMoveTableEvent.toString()` formats moves with hardcoded 19×19 coordinates (`DSGMoveTableEvent.java:7`); a `225` pass logs a bogus coordinate. Optionally print "PASS"; log-only, no functional impact.
 - Old clients (live): unknown `drawOffer` field is ignored by Gson on old clients; unknown new events are dropped by their wrappers — an old-client opponent would never see the offer, and it gets cleared when they move. Acceptable degradation during rollout.
 - Ratings/stats: draws flow through existing draw handling (`EndGameRunnable` draw branch; `DSGPlayerGameData.DRAW`).
 
 ## 8. Testing strategy
 
 - **Rules core (JUnit)**: pass legality across all opening phases; double-pass draw; draw-offer validation; sentinel non-collision.
-- **Timeout-draw (JUnit, most important)**: Case A scan correctness; stage 1 window orders incl. five-priority and same-line-overline exclusion; stage 2 positions requiring a black helper (double-three dissolved by extending one three to a four); stage 3 positions requiring a white helper; congested full-board draws; region-fixpoint soundness (a position whose only "win" needs out-of-region stones must still answer correctly); performance guard on pathological mid-density boards.
-- **TB persistence**: `-2` store/load/clear; coexistence with `-1`; offer cleared by opponent move and by acceptDraw; timeout-draw end state ('T' + draw).
+- **Timeout-draw (JUnit, most important)**: Case A scan correctness; stage 1 window orders incl. five-priority and same-line-overline exclusion; **win-oracle five-priority case: exactly-five completed simultaneously with a cross-line double-three/double-four must count as a win** (guards against reusing `isForbidden`/`getWinner` naively); stage 2 positions requiring a black helper (double-three dissolved by extending one three to a four); stage 3 positions requiring a white helper; congested full-board draws; region-fixpoint soundness incl. **a position whose sole helper sits at line-distance 5 from the window** (validates the ≤6 hop radius); performance guard on pathological mid-density boards.
+- **TB persistence**: `-2` fixed-slot store/load/clear; coexistence with `-1` (both pending, then each resolved in both orders); `undoLastMove` with a pending offer never deletes the offer row implicitly (explicit clear only, and the right move row is removed); offer cleared by opponent move and by acceptDraw; timeout-draw end state ('T' + draw); `REASON_DRAW` notification dispatch produces the draw message.
 - **Live integration**: offer→accept, offer→reject, offer→implicit-decline-by-move, rejoin with pending offer, old-client compatibility (event with `drawOffer` against wrapper without the field).
 - **Clients**: manual test matrix per client (arm/disarm, pass+offer, incoming dialog accept/decline/dismiss, opening-phase gating, AI-table hiding).
 
