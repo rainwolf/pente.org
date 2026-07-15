@@ -1863,6 +1863,7 @@ public class ServerTable {
         undoRequested = false;
         cancelRequested = false;
         cancelRequestedBy = null;
+        drawOfferedBySeat = 0;
         gameTime = null;
 
         // to avoid creating new gridstate we could add another variable
@@ -2711,6 +2712,7 @@ public class ServerTable {
         undoRequested = false;
         cancelRequested = false;
         cancelRequestedBy = null;
+        drawOfferedBySeat = 0;
         waitingForPlayerToReturnTimeUp = false;
         gameTime = new Date();
 
