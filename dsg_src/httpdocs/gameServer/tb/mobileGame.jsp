@@ -314,6 +314,9 @@
                                      || TBGame.RENJU_BRANCH.equals(renjuPh)
                                      || TBGame.RENJU_SELECTION.equals(renjuPh);
                      }
+                     // Renju opening complete (never MOVE, an opening sub-phase) -> normal-play PASS + DRAW? buttons apply
+                     boolean renjuComplete = game.getGame() == GridStateFactory.TB_RENJU
+                                  && TBGame.RENJU_COMPLETE.equals(game.getRenjuPhase());
                   %>
                   <div class="buttonwrapper" style="margin-top:5px; width:500px;">
                      <% if ("false".equals(myTurn) && isGo) { %>
@@ -334,8 +337,21 @@
                      <%--</div>--%>
                      <%--<div class="buttonwrapper" style="margin-top:5px; width:580px;">--%>
 
-                     <% }
-                     } else if ((game.getPlayer1Pid() == meData.getPlayerID() || game.getPlayer2Pid() == meData.getPlayerID()) && game.isUndoRequested()) {
+                     <% } %>
+                     <% if (renjuComplete) { %>
+                     <a class="boldbuttons" href="javascript:submitPass();"
+                        style="margin-right:5px;"><span>Pass</span></a>
+                     <a class="boldbuttons" href="javascript:toggleDrawOffer();" id="drawOfferBtn"
+                        style="margin-right:5px;"><span>Draw?</span></a>
+                     <span id="drawOfferNote" style="display:none; font-weight:bold;">
+                        Draw offer will be sent after you move</span>
+                     <% if (game.isDrawOffered()) { %>
+                     <b style="margin-left:10px;">Draw offered</b>
+                     <a class="boldbuttons" href="javascript:acceptDraw();"
+                        style="margin-left:5px;"><span>Accept draw</span></a>
+                     <% } %>
+                     <% } %>
+                     <% } else if ((game.getPlayer1Pid() == meData.getPlayerID() || game.getPlayer2Pid() == meData.getPlayerID()) && game.isUndoRequested()) {
                      %>
                      <b>Undo requested</b>
                      <%
@@ -343,7 +359,11 @@
                      %>
                      <a class="boldbuttons" href="javascript:requestUndo();"
                         style="margin-right:5px;"><span>Request undo</span></a>
-                     <% }
+                     <% } else if ((game.getPlayer1Pid() == meData.getPlayerID() || game.getPlayer2Pid() == meData.getPlayerID()) && game.isDrawOffered()) {
+                     %>
+                     <b>Draw offered — awaiting reply</b>
+                     <%
+                     }
                      %>
                      <% if (game.getDPenteState() == 2 && !"false".equals(myTurn)) { %>
                      <% if (game.getGame() == 77 || game.getGame() == 79) { %>
@@ -652,6 +672,7 @@
    var renjuOfferedMoves = [<%=renjuOffersJs%>];  // persisted offers (for SELECTION)
    var renjuOfferList = [];                         // client picks (move-4 / BRANCH: 1=Branch A, up to 10=Branch B)
    var renjuSel = [];                               // SELECTION pick pair: [offered black 5th, white 6th]
+   var drawArmed = false;                           // renju: DRAW? toggled on -> offer sent with next move/pass
    var boardCanvas = document.getElementById("board");
    var boardContext = boardCanvas.getContext("2d");
    var indentWidth = (boardCanvas.width / (gridSize + 3)) / 2;
@@ -1419,7 +1440,7 @@
          }
       } else {
          window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+
-         cycleStr + hideStr + "&moves=" + playedMove + "&message=" + encodeURIComponent(document.getElementById('message').value), "_self"
+         cycleStr + hideStr + "&moves=" + playedMove + "&message=" + encodeURIComponent(document.getElementById('message').value) + drawOfferParam(), "_self"
       )
          ;
       }
@@ -1427,9 +1448,30 @@
 
    function submitPass() {
       window.open("/gameServer/tb/game?command=move&gid="+<%=game.getGid()%>+
-      cycleStr + hideStr + "&moves=" + (gridSize * gridSize) + "&message=" + encodeURIComponent(document.getElementById('message').value), "_self"
+      cycleStr + hideStr + "&moves=" + (gridSize * gridSize) + "&message=" + encodeURIComponent(document.getElementById('message').value) + drawOfferParam(), "_self"
    )
       ;
+   }
+
+   function toggleDrawOffer() {
+      drawArmed = !drawArmed;
+      var btn = document.getElementById('drawOfferBtn');
+      var note = document.getElementById('drawOfferNote');
+      if (drawArmed) {
+         btn.style.backgroundColor = 'green';
+         note.style.display = 'inline';
+      } else {
+         btn.style.backgroundColor = '';
+         note.style.display = 'none';
+      }
+   }
+
+   function drawOfferParam() {
+      return drawArmed ? "&drawOffer=true" : "";
+   }
+
+   function acceptDraw() {
+      window.open("/gameServer/tb/game?command=acceptDraw&gid=" + <%=game.getGid()%>, "_self");
    }
 
    function dPentePlayAsP1() {
