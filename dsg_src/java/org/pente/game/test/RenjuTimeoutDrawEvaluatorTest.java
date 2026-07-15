@@ -146,4 +146,114 @@ public class RenjuTimeoutDrawEvaluatorTest extends TestCase {
         }
         assertTrue(RenjuTimeoutDrawEvaluator.opponentCanWin(s, 1));
     }
+
+    // Build a board poisoned solid white except a small empty pocket + black
+    // stones: this guarantees NO trivial all-empty 5-window exists anywhere, so
+    // black can only win through the intended congested pocket. (This is the
+    // "poison remaining regions" discipline the brief mandates for the staged
+    // fixtures; it makes stage 1 provably fail — see the task-4 report.)
+    private SimpleGridState whiteBoardWith(int[][] black, int[][] empties) {
+        SimpleGridState s = board();
+        for (int y = 0; y < 15; y++) {
+            for (int x = 0; x < 15; x++) {
+                s.setPosition(s.convertMove(x, y), 2); // solid white poison
+            }
+        }
+        for (int[] e : empties) s.setPosition(s.convertMove(e[0], e[1]), 0);
+        for (int[] b : black) s.setPosition(s.convertMove(b[0], b[1]), 1);
+        return s;
+    }
+
+    // Stage 2: black HELPER stones OUTSIDE any fillable window are required.
+    // Fixture calibrated by exhaustive finder search (task-4 report): stage 1
+    // (window-only fills) FAILS on this board -- both live window cells (5,7)
+    // and (7,7) are double-three-forbidden in every window-only order, and
+    // neither window line is independently fillable to a five. Placing black
+    // helper stones in the region makes one extension point forbidden, which
+    // demotes a blocking cell's crossing open-three, legalising the fill. The
+    // exact cooperative search (stage 2, black helpers only) finds the win;
+    // white cooperation is NOT needed here.
+    public void testStage2BlackHelperNeeded() {
+        int[][] black = {
+            {5, 5}, {7, 5},
+            {4, 6}, {6, 6}, {8, 6},
+            {4, 7}, {6, 7}, {8, 7},
+            {5, 8}, {7, 8},
+            {5, 9}, {7, 9},
+        };
+        int[][] empties = {
+            {5, 7}, {7, 7}, {5, 6}, {7, 6}, {3, 6}, {6, 8}, {6, 9}, {9, 6},
+        };
+        SimpleGridState s = whiteBoardWith(black, empties);
+        assertTrue(RenjuTimeoutDrawEvaluator.opponentCanWin(s, 1));
+    }
+
+    // Stage 3: cooperative WHITE helper stones are required (black helpers alone
+    // are insufficient). Fixture calibrated by exhaustive finder search: stage 1
+    // fails and the black-helpers-only search (stage 2) also fails on this board;
+    // only when a cooperative white stone blocks the extension of a blocking
+    // cell's open-three (a defuse black cannot achieve, since adding black never
+    // closes a black three) does the window become fillable. The exact stage-3
+    // search finds it.
+    public void testStage3WhiteHelperNeeded() {
+        int[][] black = {
+            {5, 4}, {7, 4},
+            {5, 5}, {7, 5},
+            {4, 6}, {6, 6}, {8, 6},
+            {4, 7}, {6, 7}, {8, 7},
+            {5, 8}, {7, 8},
+        };
+        int[][] empties = {
+            {5, 7}, {7, 7}, {5, 6}, {7, 6}, {3, 5}, {6, 8}, {9, 5}, {4, 9},
+        };
+        SimpleGridState s = whiteBoardWith(black, empties);
+        assertTrue(RenjuTimeoutDrawEvaluator.opponentCanWin(s, 1));
+    }
+
+    // Full-board congested draw: every 5-window (all four directions) is blocked,
+    // so neither colour can ever complete a five. The blocking set is the lattice
+    // (x + 2y) % 5 == 0: for each direction (dx,dy) in {E,S,SE,NE} the per-step
+    // delta (dx + 2*dy) mod 5 is non-zero, so every run of 5 consecutive cells
+    // contains exactly one lattice cell. (A plain (x+y)%2 checkerboard does NOT
+    // draw: its constant-parity diagonals are entirely one colour or entirely
+    // empty, and an all-empty diagonal 5-window is winnable -- verified in the
+    // task-4 report -- so the brief's checkerboard sketch is replaced here with a
+    // provably-blocking lattice; setup-only, no assertion weakened.)
+    public void testCongestedDraw() {
+        SimpleGridState s = board(); // white poison -> black (timed-out opponent) cannot win
+        for (int y = 0; y < 15; y++) {
+            for (int x = 0; x < 15; x++) {
+                if ((x + 2 * y) % 5 == 0) s.setPosition(s.convertMove(x, y), 2);
+            }
+        }
+        assertTrue(!RenjuTimeoutDrawEvaluator.opponentCanWin(s, 1));
+
+        SimpleGridState t = board(); // mirror: black poison -> white cannot win
+        for (int y = 0; y < 15; y++) {
+            for (int x = 0; x < 15; x++) {
+                if ((x + 2 * y) % 5 == 0) t.setPosition(t.convertMove(x, y), 1);
+            }
+        }
+        assertTrue(!RenjuTimeoutDrawEvaluator.opponentCanWin(t, 2));
+    }
+
+    // Perf guard: a mid-density board on which stage 1 succeeds must return fast
+    // (well under the 2s budget). Rows 0-6 carry a deterministic stone scatter;
+    // the lower board is left open, so stage 1 finds a fillable window without
+    // ever building the region or entering the cooperative search.
+    public void testOpenPositionFast() {
+        SimpleGridState s = board();
+        for (int y = 0; y < 7; y++) {
+            for (int x = 0; x < 15; x++) {
+                if ((x * 3 + y * 7) % 4 == 0) {
+                    s.setPosition(s.convertMove(x, y), ((x + y) % 2 == 0) ? 1 : 2);
+                }
+            }
+        }
+        long t0 = System.currentTimeMillis();
+        boolean canWin = RenjuTimeoutDrawEvaluator.opponentCanWin(s, 1);
+        long elapsed = System.currentTimeMillis() - t0;
+        assertTrue(canWin);
+        assertTrue(elapsed < 2000);
+    }
 }

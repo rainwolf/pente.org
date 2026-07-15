@@ -56,11 +56,33 @@ public class RenjuTimeoutDrawEvaluator {
         return false;
     }
 
+    /**
+     * Search-state budget. Distinct cooperative configurations (memoised on the
+     * region's placed-array) are capped here; on overflow the search returns the
+     * conservative verdict "black can win" (never wrongly declares a draw).
+     */
+    private static final int MEMO_CAP = 4_000_000;
+
     private static boolean blackCanWin(GridState state, int sx, int sy) {
         List<int[]> windows = blackCandidateWindows(state, sx, sy);
         if (windows.isEmpty()) return false;
-        // Stages 1-3 arrive in Tasks 3 and 4.
-        return stage1(state, sx, sy, windows);
+
+        // Stage 1: window-only fill orders (cheap fast path).
+        if (stage1(state, sx, sy, windows)) return true;
+
+        // Relevant region: empty cells reachable from candidate-window cells by
+        // line-distance <= 6 hops (covers the finder's longest pattern span).
+        Set<Integer> region = relevantRegion(state, sx, sy, windows);
+
+        // Stage 2: cooperative search with BLACK helper stones only.
+        HelperSearch s2 = new HelperSearch(state, sx, sy, windows, region, false);
+        if (s2.search()) return true;
+        if (s2.overflowed) return true; // conservative: never wrongly declare draw
+
+        // Stage 3: cooperative search with black + cooperative WHITE helpers.
+        HelperSearch s3 = new HelperSearch(state, sx, sy, windows, region, true);
+        if (s3.search()) return true;
+        return s3.overflowed; // overflow -> conservative "can win"
     }
 
     /**
@@ -154,5 +176,135 @@ public class RenjuTimeoutDrawEvaluator {
             }
         }
         return f;
+    }
+
+    /**
+     * Empty-cell "relevant region": the fixpoint of empty board cells reachable
+     * from any candidate-window cell by line-distance &lt;= 6 hops along the four
+     * canonical axes (both directions). Six covers the longest span the finder
+     * inspects when judging a placement (a broken four / three plus flanks), so
+     * every empty cell that could possibly influence whether a window cell is a
+     * five or a forbidden point is included. Occupied cells are never added, but
+     * expansion probes past them (a superset region is safe: extra helper
+     * candidates can only reveal more wins, never hide a draw). The region is the
+     * search domain for stages 2-3.
+     */
+    static Set<Integer> relevantRegion(GridState state, int sx, int sy, List<int[]> windows) {
+        Set<Integer> region = new HashSet<Integer>();
+        List<int[]> frontier = new ArrayList<int[]>();
+        for (int[] w : windows) {
+            for (int i = 0; i < 5; i++) {
+                int cx = w[0] + i * w[2], cy = w[1] + i * w[3];
+                frontierAdd(state, sx, sy, region, frontier, cx, cy);
+            }
+        }
+        while (!frontier.isEmpty()) {
+            int[] c = frontier.remove(frontier.size() - 1);
+            for (int[] d : DIRS) {
+                for (int s = 1; s <= 6; s++) {
+                    frontierAdd(state, sx, sy, region, frontier, c[0] + s * d[0], c[1] + s * d[1]);
+                    frontierAdd(state, sx, sy, region, frontier, c[0] - s * d[0], c[1] - s * d[1]);
+                }
+            }
+        }
+        return region;
+    }
+
+    /** Add an in-bounds EMPTY cell to the region/frontier once; true iff newly added. */
+    private static boolean frontierAdd(GridState state, int sx, int sy,
+            Set<Integer> region, List<int[]> frontier, int x, int y) {
+        if (!inBounds(x, y, sx, sy)) return false;
+        if (state.getPosition(x, y) != 0) return false;
+        Integer key = Integer.valueOf(x + y * sx);
+        if (!region.add(key)) return false;
+        frontier.add(new int[]{x, y});
+        return true;
+    }
+
+    /**
+     * Memoised cooperative DFS over monotone stone additions inside the relevant
+     * region. Both players cooperate to let black reach an exactly-five; turn
+     * order is irrelevant to reachability under cooperation, so stones are added
+     * in any order. Black placements must be legal (!isForbidden) unless they
+     * complete a five (five-priority wins even from an otherwise-forbidden point);
+     * white placements (stage 3 only) are always legal. Configurations are
+     * memoised on the region's placed-array so each reachable board is expanded
+     * once; the memo size is capped at {@link #MEMO_CAP}, and on overflow the
+     * caller treats the result as the conservative "black can win".
+     */
+    private static final class HelperSearch {
+        final GridState state;
+        final int sx, sy;
+        final List<int[]> windows;
+        final int[] regionCells;      // packed x + y*sx, sorted (deterministic order)
+        final boolean whiteHelpers;
+        final RenjuForbiddenPointFinder f;
+        final byte[] placed;          // 0 empty, 1 black, 2 white (parallel to regionCells)
+        final Set<String> memo = new HashSet<String>();
+        boolean overflowed = false;
+
+        HelperSearch(GridState state, int sx, int sy, List<int[]> windows,
+                Set<Integer> region, boolean whiteHelpers) {
+            this.state = state;
+            this.sx = sx;
+            this.sy = sy;
+            this.windows = windows;
+            this.whiteHelpers = whiteHelpers;
+            this.regionCells = new int[region.size()];
+            int i = 0;
+            for (Integer c : region) regionCells[i++] = c.intValue();
+            java.util.Arrays.sort(regionCells);
+            this.placed = new byte[regionCells.length];
+            this.f = buildFinder(state, sx, sy);
+        }
+
+        boolean search() {
+            return dfs();
+        }
+
+        private boolean dfs() {
+            if (overflowed) return false;
+            // Memo key: the placed-array as a Latin-1 string. Computed at entry so
+            // it reflects exactly the mutations visible in `placed` for this state
+            // (recursion mutates and restores placed[], so the key is per-node).
+            String key = new String(placed, java.nio.charset.StandardCharsets.ISO_8859_1);
+            if (!memo.add(key)) return false;
+            if (memo.size() > MEMO_CAP) {
+                overflowed = true;
+                System.err.println("RenjuTimeoutDrawEvaluator: cooperative search exceeded "
+                        + MEMO_CAP + " states; returning conservative can-win.");
+                return false;
+            }
+            for (int i = 0; i < regionCells.length; i++) {
+                if (placed[i] != 0) continue;
+                int x = regionCells[i] % sx, y = regionCells[i] / sx;
+
+                // Winning black placement: five-priority wins even if the point
+                // would otherwise be forbidden (the finder cancels the forbidden
+                // verdict on an exactly-five).
+                if (f.isFive(x, y, 0)) return true;
+
+                // Legal black helper / window-fill placement.
+                if (!f.isForbidden(x, y)) {
+                    placed[i] = 1;
+                    f.setStone(x, y, RenjuForbiddenPointFinder.BLACK);
+                    boolean win = dfs();
+                    f.setStone(x, y, RenjuForbiddenPointFinder.EMPTY);
+                    placed[i] = 0;
+                    if (win) return true;
+                }
+
+                // Cooperative white placement (stage 3 only; white is never forbidden).
+                if (whiteHelpers) {
+                    placed[i] = 2;
+                    f.setStone(x, y, RenjuForbiddenPointFinder.WHITE);
+                    boolean win = dfs();
+                    f.setStone(x, y, RenjuForbiddenPointFinder.EMPTY);
+                    placed[i] = 0;
+                    if (win) return true;
+                }
+            }
+            return false;
+        }
     }
 }
