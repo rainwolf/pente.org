@@ -152,6 +152,39 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
     }
 
     public void addMove(int move) {
+        if (outOfBounds(move)) {
+            if (!isPass(move)) {
+                throw new IllegalArgumentException("move out of range: " + move);
+            }
+            if (!openingComplete) {
+                throw new IllegalStateException("pass not allowed during renju opening");
+            }
+            // Append the pass via the INNERMOST SimpleGridState, bypassing the
+            // SimpleGomokuState decorator: a pass places no stone, makes no
+            // capture, and must not enter the Zobrist hash (ZobristUtil.rand has
+            // no index for an out-of-board move). The pass only enters the move
+            // list; setAllowNonBoardMoves is scoped to this one call.
+            SimpleGridState inner = innermostGrid();
+            inner.setAllowNonBoardMoves(true);
+            inner.addMove(move);
+            inner.setAllowNonBoardMoves(false);
+            // A pass does not change the position, so its hash slot must equal
+            // the previous move's. SimpleGridState's hash store is incremental
+            // (each slot is copied forward then XOR'd); the pass bypassed that
+            // update, leaving its slot zeroed. Copy the previous slot's hashes
+            // and rotation forward so getHash() reports the position hash and
+            // the next real move's copy-forward chains from a correct base.
+            long[][] hashes = inner.getHashes();
+            int[] rotations = inner.getRotations();
+            int passIndex = inner.getNumMoves() - 1;
+            if (passIndex > 0) { // passes require a completed opening; guards -1
+                for (int i = 0; i < hashes[passIndex].length; i++) {
+                    hashes[passIndex][i] = hashes[passIndex - 1][i];
+                }
+                rotations[passIndex] = rotations[passIndex - 1];
+            }
+            return; // no finder refresh, no opening bookkeeping, no stone hashing
+        }
         gridState.addMove(move);
         refreshFinder();
         int n = gridState.getNumMoves();
@@ -168,8 +201,25 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
     }
 
     public void undoMove() {
+        int n = getNumMoves();
+        if (n > 0 && isPass(getMove(n - 1))) {
+            // Symmetric to the pass branch of addMove: drop the pass from the
+            // innermost move list only. A pass changed no board position, so
+            // there is no finder refresh and no hash update to undo.
+            innermostGrid().undoMove();
+            return;
+        }
         gridState.undoMove();
         refreshFinder();
+        // If a pass is now the top move (a stone was undone above an earlier
+        // pass), its hash slot already holds the carried-forward position hash
+        // set when the pass was added. Running updateHash over a pass would XOR
+        // ZobristUtil.rand[color-1] with color 0 (the pass placed no stone),
+        // indexing rand[-1]. Skip it: the position hash is already correct.
+        int top = getNumMoves();
+        if (top > 0 && isPass(getMove(top - 1))) {
+            return;
+        }
         updateHash(this);
     }
 
@@ -189,6 +239,7 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
     public boolean isGameOver() {
         int n = getNumMoves();
         if (n == 0) return false;
+        if (doublePass()) return true; // two consecutive passes end the game in a draw
 
         int lastMove = getMove(n - 1);
         if (outOfBounds(lastMove)) {
@@ -213,7 +264,13 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
     }
 
     private boolean drawCheck(int n) {
-        return n == gridState.getGridSizeX() * gridState.getGridSizeY();
+        // Count only real board stones: passes inflate the move count but place
+        // nothing, so the board is full only when stones fill every point.
+        int stones = 0;
+        for (int i = 0; i < n; i++) {
+            if (!outOfBounds(getMove(i))) stones++;
+        }
+        return stones == gridState.getGridSizeX() * gridState.getGridSizeY();
     }
 
     public int getWinner() {
@@ -252,6 +309,45 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
 
     // --- opening protocol state (fully wired in Task 4) ---
     private boolean openingComplete = false;
+
+    // --- pass / draw support ---
+    // A pass is the single out-of-board move index equal to the board area
+    // (225 on a 15x15 board), fixed by board size at construction. Passes are
+    // legal only once the opening is complete; two consecutive passes end the
+    // game in a draw.
+    private final int passMove = gridState.getGridSizeX() * gridState.getGridSizeY();
+
+    /** The move index that represents a pass (board area; 225 on a 15x15 board). */
+    public int getPassMove() {
+        return passMove;
+    }
+
+    /** True iff {@code move} is the pass move. */
+    public boolean isPass(int move) {
+        return move == passMove;
+    }
+
+    /** True iff the last two moves were both passes (game-ending double pass). */
+    public boolean doublePass() {
+        int n = getNumMoves();
+        return n >= 2 && isPass(getMove(n - 1)) && isPass(getMove(n - 2));
+    }
+
+    /**
+     * The innermost {@link SimpleGridState} at the bottom of the decorator
+     * chain. Passes are appended and undone here directly, bypassing the
+     * {@link SimpleGomokuState} decorator whose stone/capture/hash handling of
+     * an out-of-board move is unaudited. Walks the protected {@code gridState}
+     * field (same package), so it still works if SimpleGomokuState ever extends
+     * SimpleGridState directly -- the loop simply never iterates.
+     */
+    private SimpleGridState innermostGrid() {
+        GridState g = gridState;
+        while (g instanceof GridStateDecorator) {
+            g = ((GridStateDecorator) g).gridState;
+        }
+        return (SimpleGridState) g;
+    }
 
     public boolean isOpeningComplete() {
         return openingComplete;
@@ -704,6 +800,9 @@ public class RenjuState extends GridStateDecorator implements GomokuState, HashC
     }
 
     public boolean isValidMove(int move, int player) {
+        if (isPass(move)) {
+            return openingComplete && !isGameOver();
+        }
         if (outOfBounds(move)) return false;
         if (player != getCurrentPlayer()) return false;
         if (getPosition(move) != 0) return false;

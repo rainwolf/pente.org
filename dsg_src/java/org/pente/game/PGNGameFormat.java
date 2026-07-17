@@ -204,11 +204,19 @@ public class PGNGameFormat implements GameFormat {
         // print move list
         String moveList = "";
 
+        // renju (including speed/turn-based renju -- whose game name may be
+        // "Renju", "Speed Renju", or the alternate "Turn-based Renju" used by
+        // GridStateFactory's displaygames[] entry) represents a pass as move
+        // 225 (15*15); serialize it as the literal token "pass" instead of a
+        // bogus coordinate. Match case-insensitively on "renju" rather than
+        // any one exact name so no renju variant is missed.
+        boolean isRenju = data.getGame() != null && data.getGame().toLowerCase().contains("renju");
+
         int j = 1;
         for (int i = 0; i < data.getNumMoves(); i++) {
 
             int move = data.getMove(i);
-            String moveStr = formatCoordinates(move);
+            String moveStr = formatMoveToken(move, isRenju);
 
             // whites move
             if (i % 2 == 0) {
@@ -322,6 +330,22 @@ public class PGNGameFormat implements GameFormat {
                 }
                 // process moves
                 else {
+                    // NOTE: data.getGame() is not yet populated here -- parseGame()
+                    // only runs after this whole loop finishes (see below), so the
+                    // "game data" accessor is unreachable at this call site. Fall
+                    // back to the raw Game/GameType header value already collected
+                    // in the headers table (headers always precede moves in the
+                    // file, so it is fully populated by the time we reach move
+                    // lines) to determine renju-ness for pass-token parsing.
+                    String gameHeader = headers.get(HEADER_GAME);
+                    if (gameHeader == null) {
+                        gameHeader = headers.get("GameType");
+                    }
+                    // Match case-insensitively on "renju" (see the format()
+                    // call site above) so alternate names such as
+                    // "Turn-based Renju" are also recognized.
+                    boolean isRenju = gameHeader != null && gameHeader.toLowerCase().contains("renju");
+
                     StringTokenizer moveTokenizer = new StringTokenizer(line, " ");
                     while (moveTokenizer.hasMoreTokens()) {
                         String move = moveTokenizer.nextToken();
@@ -334,7 +358,7 @@ public class PGNGameFormat implements GameFormat {
                                 data.setStatus(GameData.STATUS_FORCE_RESIGN);
                                 continue;
                             }
-                            int moveInt = parseCoordinates(move);
+                            int moveInt = parseMoveToken(move, isRenju);
                             if (moveInt != -1) {
                                 data.addMove(moveInt);
                             }
@@ -905,6 +929,22 @@ public class PGNGameFormat implements GameFormat {
         }
     }
 
+
+    /** Renju: 225 (=15*15) is a pass; serialized as the literal token "pass". */
+    public static String formatMoveToken(int move, boolean renju) {
+        if (renju && move == 15 * 15) {
+            return "pass";
+        }
+        return formatCoordinates(move);
+    }
+
+    /** Renju: parse the literal token "pass" back to move 225 (=15*15). */
+    public static int parseMoveToken(String token, boolean renju) {
+        if (renju && "pass".equalsIgnoreCase(token)) {
+            return 15 * 15;
+        }
+        return parseCoordinates(token);
+    }
 
     /** Format a Alpha-Numeric coordinate string for a move
      *  @param p The move

@@ -37,6 +37,7 @@ public class GameResponse {
     public final String state;         // "active" | "inactive"
     public final String goState;       // null | "MARK_DEAD_STONES" | "EVALUATE_DEAD_STONES"
     public final Boolean undoRequested;
+    public final Boolean drawOffered;
     public final Boolean canHide;
     public final Boolean canUnHide;
     public final CancelInfo cancel;
@@ -72,7 +73,7 @@ public class GameResponse {
                          String messages, String messageNums,
                          Long sid, String currentPlayer, String seqNums,
                          String dates, String players, String state, String goState,
-                         Boolean undoRequested, Boolean canHide, Boolean canUnHide,
+                         Boolean undoRequested, Boolean drawOffered, Boolean canHide, Boolean canUnHide,
                          CancelInfo cancel, String dPenteState, Boolean swap2pass,
                          String renjuPhase, String renjuOffers, Integer renjuSwaps) {
         this.gid = gid;
@@ -92,6 +93,7 @@ public class GameResponse {
         this.state = state;
         this.goState = goState;
         this.undoRequested = undoRequested;
+        this.drawOffered = drawOffered;
         this.canHide = canHide;
         this.canUnHide = canUnHide;
         this.cancel = cancel;
@@ -192,6 +194,7 @@ public class GameResponse {
                 tbGame.getState() == TBGame.STATE_ACTIVE ? "active" : "inactive",
                 goState,
                 tbGame.isUndoRequested(),
+                tbGame.getState() == TBGame.STATE_ACTIVE ? tbGame.isDrawOffered() : Boolean.FALSE,
                 tbGame.canHide(visitor.getPlayerID()),
                 tbGame.canUnHide(visitor.getPlayerID()),
                 cancelInfo,
@@ -231,7 +234,7 @@ public class GameResponse {
                 new PlayerRef(p2.getUserIDName(), (int) p2.getRating()),
                 "", "",
                 null, null, null, null, null, null, null,
-                null, null, null, null, null, null,
+                null, null, null, null, null, null, null,
                 null, historicRenjuOffers, game.getRenjuSwaps()
         );
     }

@@ -341,6 +341,34 @@ public class MoveServlet extends HttpServlet {
                 }
                 log4j.debug("done forwarding");
                 return;
+            } else if (command.equals("acceptDraw")) {
+                if (game.getCurrentPlayer() != playerData.getPlayerID()) {
+                    log4j.error("MoveServlet, out-of-turn draw accept");
+                    handleError(request, response,
+                            "Draw accept is available when it's your turn.");
+                    return;
+                }
+                if (!(game.isDrawOffered() && game.getState() == TBGame.STATE_ACTIVE)) {
+                    log4j.error("MoveServlet, no draw offer exists " + gid);
+                    handleError(request, response,
+                            "No draw offer exists.");
+                    return;
+                }
+                ((CacheTBStorer) tbGameStorer).acceptDraw(gid);
+                game = tbGameStorer.loadGame(gid);
+                request.setAttribute("game", game);
+
+                log4j.debug("forward game page");
+                String isMobile = (String) request.getParameter("mobile");
+                if (isMobile == null) {
+                    getServletContext().getRequestDispatcher(gamePage).forward(
+                            request, response);
+                } else {
+                    getServletContext().getRequestDispatcher(mobileGamePage).forward(
+                            request, response);
+                }
+                log4j.debug("done forwarding");
+                return;
             } else if (command.equals("move")) {
 
 // log4j.debug("************current player initial pid " + game.getCurrentPlayer());
@@ -381,6 +409,18 @@ public class MoveServlet extends HttpServlet {
                 }
 
                 String renjuAction = request.getParameter("renjuAction");
+
+                boolean drawOffer = "true".equals(request.getParameter("drawOffer"));
+                if (drawOffer &&
+                        (game.getGame() != GridStateFactory.TB_RENJU ||
+                         game.getPlayer1Pid() == 23000000020606L || // no offers vs AI
+                         game.getPlayer2Pid() == 23000000020606L || // (spec §7; keeps -2 out tb_move_ai games)
+                         !TBGame.RENJU_COMPLETE.equals(game.getRenjuPhase()))) {
+                    log4j.error("MoveServlet, draw offer outside renju/opening-complete " + gid);
+                    handleError(request, response,
+                            "Draw offers are only available in Renju opening.");
+                    return;
+                }
 
                 String msg = request.getParameter("message");
                 TBMessage message = null;
@@ -690,6 +730,16 @@ public class MoveServlet extends HttpServlet {
                 TBGame refreshedGame = tbGameStorer.loadGame(gid);
                 if (refreshedGame != null) {
                     game = refreshedGame;
+                }
+
+                // A move that ended the game moots any accompanying draw offer;
+                // only arm the offer when the refreshed game is still active.
+                // storeNewMove already cleared any pending undo/draw flags, so
+                // this is the sole place the offer flag is set.
+                if (drawOffer && refreshedGame != null &&
+                        refreshedGame.getState() == TBGame.STATE_ACTIVE) {
+                    ((CacheTBStorer) tbGameStorer).offerDraw(gid);
+                    game = tbGameStorer.loadGame(gid);
                 }
 
                 NotificationServer notificationServer = resources.getNotificationServer();
