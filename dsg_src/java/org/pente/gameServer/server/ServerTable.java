@@ -509,6 +509,17 @@ public class ServerTable {
                         }
 
                         changeGameState(DSGGameStateTableEvent.GAME_IN_PROGRESS, "game restarted", getGameInSet());
+
+                        // The "game restarted" broadcast above does not carry a
+                        // pending draw offer. sendGameState() is the only path that
+                        // surfaces drawOfferedBy, and it is skipped for restarts
+                        // (restartedGame==true suppresses the sendGameState below).
+                        // So if a draw offer was still pending when this player
+                        // dropped, resend the per-player game state to the returning
+                        // player so their client can restore the offer.
+                        if (drawOfferedBySeat != 0 && playingPlayers[drawOfferedBySeat] != null) {
+                            sendGameState(player);
+                        }
                     }
                 }
             }
