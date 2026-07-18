@@ -38,6 +38,10 @@ public class WebDbApiServlet extends HttpServlet {
     // TODO(webdb Task 5): private static MySQLWebDbStorer webDbStorer;
 
     private static PositionStatsHandler positionStatsHandler;
+    private static GameSearchHandler gameSearchHandler;
+    private static GameLoadHandler gameLoadHandler;
+    private static VenuesHandler venuesHandler;
+    private static PlayersHandler playersHandler;
 
     public void init(ServletConfig config) throws ServletException {
 
@@ -60,6 +64,11 @@ public class WebDbApiServlet extends HttpServlet {
 
             positionStatsHandler =
                     new PositionStatsHandler(dbHandler, gameVenueStorer);
+            gameSearchHandler =
+                    new GameSearchHandler(dbHandler, gameStorer, gameVenueStorer);
+            gameLoadHandler = new GameLoadHandler(gameStorer);
+            venuesHandler = new VenuesHandler(gameVenueStorer);
+            playersHandler = new PlayersHandler(dbHandler);
 
             // TODO(webdb Task 5): construct MySQLWebDbStorer on top of the
             // storers above and keep it for the real position/stats endpoints.
@@ -79,6 +88,19 @@ public class WebDbApiServlet extends HttpServlet {
             handlePing(request, response);
             return;
         }
+        if ("/venues".equals(path)) {
+            venuesHandler.handle(request, response);
+            return;
+        }
+        if ("/players".equals(path)) {
+            playersHandler.handle(request, response);
+            return;
+        }
+        if (path.startsWith("/games/")) {
+            gameLoadHandler.handle(request, response,
+                    path.substring("/games/".length()));
+            return;
+        }
 
         notFound(response, path);
     }
@@ -91,6 +113,10 @@ public class WebDbApiServlet extends HttpServlet {
 
         if ("/position-stats".equals(path)) {
             positionStatsHandler.handle(request, response);
+            return;
+        }
+        if ("/games/search".equals(path)) {
+            gameSearchHandler.handle(request, response);
             return;
         }
 
