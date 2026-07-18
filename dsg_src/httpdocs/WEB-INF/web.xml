@@ -383,6 +383,11 @@
     </servlet>
 
     <servlet>
+        <servlet-name>WebDbApiServlet</servlet-name>
+        <servlet-class>org.pente.webdb.WebDbApiServlet</servlet-class>
+    </servlet>
+
+    <servlet>
         <servlet-name>
             MobileGameServlet
         </servlet-name>
@@ -560,6 +565,11 @@
     <servlet-mapping>
         <servlet-name>HttpGameServlet</servlet-name>
         <url-pattern>/gameServer/controller/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>WebDbApiServlet</servlet-name>
+        <url-pattern>/api/db/*</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
