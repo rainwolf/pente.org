@@ -35,7 +35,7 @@ public class WebDbApiServlet extends HttpServlet {
     private static GameStorer gameStorer;
     private static GameVenueStorer gameVenueStorer;
     private static GameStorerSearcher gameStorerSearcher;
-    // TODO(webdb Task 5): private static MySQLWebDbStorer webDbStorer;
+    private static MySQLWebDbStorer webDbStorer;
 
     private static PositionStatsHandler positionStatsHandler;
     private static GameSearchHandler gameSearchHandler;
@@ -70,8 +70,9 @@ public class WebDbApiServlet extends HttpServlet {
             venuesHandler = new VenuesHandler(gameVenueStorer);
             playersHandler = new PlayersHandler(dbHandler);
 
-            // TODO(webdb Task 5): construct MySQLWebDbStorer on top of the
-            // storers above and keep it for the real position/stats endpoints.
+            // Personal collection + analyses persistence (Task 5). The Task 6
+            // "my games" / "my analyses" endpoints build their handlers on this.
+            webDbStorer = new MySQLWebDbStorer(dbHandler);
 
         } catch (Throwable t) {
             cat.error("Problem in init()", t);
