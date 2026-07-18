@@ -62,6 +62,12 @@ public class PositionStatsHandler {
     private final DSGPlayerStorer playerStorer;
 
     /**
+     * LRU+TTL cache for pure archive-scope responses. Never consulted or
+     * populated for {@code scope="mine"}/{@code "both"} (see {@link #computeStats}).
+     */
+    private final StatsCache statsCache = new StatsCache();
+
+    /**
      * Archive-only handler (no {@code scope="mine"}/{@code "both"} support).
      * Retained for the archive DB test and any caller that never needs auth.
      */
@@ -83,6 +89,15 @@ public class PositionStatsHandler {
         this.gameVenueStorer = gameVenueStorer;
         this.webDbStorer = webDbStorer;
         this.playerStorer = playerStorer;
+    }
+
+    /**
+     * Archive stats-cache hit count since startup — a test/metrics hook. Kept
+     * on the handler (rather than exposing the package-private cache itself) so
+     * {@link StatsCache} stays internal to this package.
+     */
+    public int cacheHitCount() {
+        return statsCache.hitCount();
     }
 
     /**
@@ -169,6 +184,23 @@ public class PositionStatsHandler {
         boolean wantArchive = !"mine".equals(scope);              // archive or both
         boolean wantMine = "mine".equals(scope) || "both".equals(scope);
 
+        // Cache pure archive-scope responses only. "mine" and "both" never read
+        // or populate the cache: "mine" has no archive half, and "both" folds
+        // the archive and personal rows into a single accumulator before
+        // finalizing, so there is no standalone archive response to reuse. The
+        // key pins the caller's rotation (see StatsCache) — same canonical hash,
+        // different orientation, is a genuinely different response.
+        boolean archiveOnly = wantArchive && !wantMine;
+        StatsCache.Key cacheKey = null;
+        if (archiveOnly) {
+            cacheKey = StatsCache.keyOf(game, hash, numMoves, resp.rotation,
+                    req.filters);
+            PositionStatsResponse cached = statsCache.get(cacheKey);
+            if (cached != null) {
+                return cached;
+            }
+        }
+
         Acc acc = new Acc();
 
         if (wantArchive) {
@@ -188,6 +220,9 @@ public class PositionStatsHandler {
         }
 
         finalizeStats(acc, resp);
+        if (archiveOnly) {
+            statsCache.put(cacheKey, resp);
+        }
         return resp;
     }
 

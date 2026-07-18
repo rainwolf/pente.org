@@ -91,44 +91,49 @@ public class WebDbApiServlet extends HttpServlet {
             throws ServletException, IOException {
 
         String path = pathOf(request);
+        setCacheControl(response, path);
 
-        if ("/ping".equals(path)) {
-            handlePing(request, response);
-            return;
-        }
-        if ("/venues".equals(path)) {
-            venuesHandler.handle(request, response);
-            return;
-        }
-        if ("/players".equals(path)) {
-            playersHandler.handle(request, response);
-            return;
-        }
-        if (path.startsWith("/games/")) {
-            gameLoadHandler.handle(request, response,
-                    path.substring("/games/".length()));
-            return;
-        }
-        if ("/collection".equals(path)) {
-            collectionHandler.handleList(request, response);
-            return;
-        }
-        if (path.startsWith("/collection/")) {
-            collectionHandler.handleGet(request, response,
-                    path.substring("/collection/".length()));
-            return;
-        }
-        if ("/analyses".equals(path)) {
-            analysesHandler.handleList(request, response);
-            return;
-        }
-        if (path.startsWith("/analyses/")) {
-            analysesHandler.handleGet(request, response,
-                    path.substring("/analyses/".length()));
-            return;
-        }
+        try {
+            if ("/ping".equals(path)) {
+                handlePing(request, response);
+                return;
+            }
+            if ("/venues".equals(path)) {
+                venuesHandler.handle(request, response);
+                return;
+            }
+            if ("/players".equals(path)) {
+                playersHandler.handle(request, response);
+                return;
+            }
+            if (path.startsWith("/games/")) {
+                gameLoadHandler.handle(request, response,
+                        path.substring("/games/".length()));
+                return;
+            }
+            if ("/collection".equals(path)) {
+                collectionHandler.handleList(request, response);
+                return;
+            }
+            if (path.startsWith("/collection/")) {
+                collectionHandler.handleGet(request, response,
+                        path.substring("/collection/".length()));
+                return;
+            }
+            if ("/analyses".equals(path)) {
+                analysesHandler.handleList(request, response);
+                return;
+            }
+            if (path.startsWith("/analyses/")) {
+                analysesHandler.handleGet(request, response,
+                        path.substring("/analyses/".length()));
+                return;
+            }
 
-        notFound(response, path);
+            notFound(response, path);
+        } catch (Throwable t) {
+            serverError(response, path, t);
+        }
     }
 
     public void doPost(HttpServletRequest request,
@@ -137,24 +142,28 @@ public class WebDbApiServlet extends HttpServlet {
 
         String path = pathOf(request);
 
-        if ("/position-stats".equals(path)) {
-            positionStatsHandler.handle(request, response);
-            return;
-        }
-        if ("/games/search".equals(path)) {
-            gameSearchHandler.handle(request, response);
-            return;
-        }
-        if ("/collection/import".equals(path)) {
-            collectionHandler.handleImport(request, response);
-            return;
-        }
-        if ("/analyses".equals(path)) {
-            analysesHandler.handleCreate(request, response);
-            return;
-        }
+        try {
+            if ("/position-stats".equals(path)) {
+                positionStatsHandler.handle(request, response);
+                return;
+            }
+            if ("/games/search".equals(path)) {
+                gameSearchHandler.handle(request, response);
+                return;
+            }
+            if ("/collection/import".equals(path)) {
+                collectionHandler.handleImport(request, response);
+                return;
+            }
+            if ("/analyses".equals(path)) {
+                analysesHandler.handleCreate(request, response);
+                return;
+            }
 
-        notFound(response, path);
+            notFound(response, path);
+        } catch (Throwable t) {
+            serverError(response, path, t);
+        }
     }
 
     public void doPut(HttpServletRequest request,
@@ -163,13 +172,17 @@ public class WebDbApiServlet extends HttpServlet {
 
         String path = pathOf(request);
 
-        if (path.startsWith("/analyses/")) {
-            analysesHandler.handleUpdate(request, response,
-                    path.substring("/analyses/".length()));
-            return;
-        }
+        try {
+            if (path.startsWith("/analyses/")) {
+                analysesHandler.handleUpdate(request, response,
+                        path.substring("/analyses/".length()));
+                return;
+            }
 
-        notFound(response, path);
+            notFound(response, path);
+        } catch (Throwable t) {
+            serverError(response, path, t);
+        }
     }
 
     public void doDelete(HttpServletRequest request,
@@ -178,18 +191,22 @@ public class WebDbApiServlet extends HttpServlet {
 
         String path = pathOf(request);
 
-        if (path.startsWith("/collection/")) {
-            collectionHandler.handleDelete(request, response,
-                    path.substring("/collection/".length()));
-            return;
-        }
-        if (path.startsWith("/analyses/")) {
-            analysesHandler.handleDelete(request, response,
-                    path.substring("/analyses/".length()));
-            return;
-        }
+        try {
+            if (path.startsWith("/collection/")) {
+                collectionHandler.handleDelete(request, response,
+                        path.substring("/collection/".length()));
+                return;
+            }
+            if (path.startsWith("/analyses/")) {
+                analysesHandler.handleDelete(request, response,
+                        path.substring("/analyses/".length()));
+                return;
+            }
 
-        notFound(response, path);
+            notFound(response, path);
+        } catch (Throwable t) {
+            serverError(response, path, t);
+        }
     }
 
     /**
@@ -212,6 +229,38 @@ public class WebDbApiServlet extends HttpServlet {
             throws IOException {
         JsonHttp.error(response, HttpServletResponse.SC_NOT_FOUND,
                 "not_found", "No such endpoint: " + path);
+    }
+
+    /**
+     * Cache-Control for GET responses: the venue tree is large and rarely
+     * changes, so it may be cached briefly ({@code max-age=300}); every other
+     * GET carries live per-caller/auth-scoped data and must not be cached
+     * ({@code no-store}). Set before any body is written.
+     */
+    private static void setCacheControl(HttpServletResponse response, String path) {
+        if ("/venues".equals(path)) {
+            response.setHeader("Cache-Control", "public, max-age=300");
+        } else {
+            response.setHeader("Cache-Control", "no-store");
+        }
+    }
+
+    /**
+     * Last-resort handler for anything a per-endpoint {@code catch} did not
+     * already convert to an error envelope (e.g. an unchecked exception escaping
+     * the routing layer). Logs the full stack via log4j and emits a bare
+     * {@code 500} envelope with no exception detail in the body, so internals
+     * never leak to the client. Best-effort: if the response is already
+     * committed, the write simply fails and is swallowed.
+     */
+    private void serverError(HttpServletResponse response, String path,
+                             Throwable t) {
+        cat.error("Unhandled error serving " + path, t);
+        try {
+            JsonHttp.error(response, 500, "server_error", null);
+        } catch (Throwable ignore) {
+            // Response likely already committed; nothing more we can do.
+        }
     }
 
     private static String pathOf(HttpServletRequest request) {

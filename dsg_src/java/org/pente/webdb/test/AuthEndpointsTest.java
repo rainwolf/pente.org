@@ -187,6 +187,27 @@ public class AuthEndpointsTest extends TestCase {
                 1, storer.countGames(PID, PENTE));
     }
 
+    /**
+     * Two identical games in ONE batch: the first is stored, the second is
+     * reported as a duplicate. Intra-batch dedup works because each game is
+     * committed as it is stored, so the next game's duplicate check sees the
+     * just-stored row within the same request.
+     */
+    public void testImportIntraBatchDuplicate() throws Exception {
+        int[] moves = new int[]{CENTER, 199, 218};
+        ImportResponse resp = collectionHandler.doImport(PID, importReq(
+                game(moves, 1),
+                game(moves, 1)));   // byte-identical to index 0
+
+        assertEquals("only the first is stored", 1, resp.imported);
+        assertEquals("one duplicate", 1, resp.duplicates.size());
+        assertEquals("the second item (index 1) is the duplicate",
+                1, resp.duplicates.get(0).intValue());
+        assertTrue("no errors", resp.errors.isEmpty());
+        assertEquals("collection holds a single game",
+                1, storer.countGames(PID, PENTE));
+    }
+
     /** An off-center variant is rejected per-item with the documented message. */
     public void testImportOffCenterVariantRejected() throws Exception {
         WebDbGameData go = new WebDbGameData();
@@ -446,6 +467,39 @@ public class AuthEndpointsTest extends TestCase {
             assertEquals("both games for move " + m.move + " is the per-move sum",
                     a + m.games, b);
         }
+    }
+
+    /**
+     * The archive stats cache is archive-scope only: neither {@code "mine"} nor
+     * {@code "both"} ever reads or populates it. Proven two ways — the hit count
+     * never bumps for mine/both, and a following archive request for the same
+     * position is still a fresh miss (so "both" did not populate the entry),
+     * hitting only on its own repeat.
+     */
+    public void testMineAndBothNeverTouchCache() throws Exception {
+        collectionHandler.doImport(PID, importReq(
+                game(new int[]{CENTER, 199, 218}, 1),
+                game(new int[]{CENTER, 181, 200}, 2)));
+
+        int hits0 = statsHandler.cacheHitCount();
+        statsHandler.compute(statsReq(new int[]{CENTER}, "mine"), PID);
+        statsHandler.compute(statsReq(new int[]{CENTER}, "mine"), PID);
+        assertEquals("mine never produces a cache hit",
+                hits0, statsHandler.cacheHitCount());
+
+        statsHandler.compute(statsReq(new int[]{CENTER}, "both"), PID);
+        statsHandler.compute(statsReq(new int[]{CENTER}, "both"), PID);
+        assertEquals("both never produces a cache hit",
+                hits0, statsHandler.cacheHitCount());
+
+        // Neither mine nor both populated the cache: the first archive request
+        // for the same position is still a miss; only its repeat is a hit.
+        statsHandler.compute(statsReq(new int[]{CENTER}, "archive"), PID);
+        assertEquals("first archive after mine/both is a miss",
+                hits0, statsHandler.cacheHitCount());
+        statsHandler.compute(statsReq(new int[]{CENTER}, "archive"), PID);
+        assertEquals("second archive is a hit",
+                hits0 + 1, statsHandler.cacheHitCount());
     }
 
     // ==================================================================

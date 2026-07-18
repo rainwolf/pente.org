@@ -316,4 +316,76 @@ public class PositionStatsHandlerTest extends TestCase {
                     nm.winPct, other.winPct, 0.0);
         }
     }
+
+    // ==================================================================
+    // archive-scope LRU cache (Task 7)
+    // ==================================================================
+
+    /** Repeating an identical archive request serves the second call from cache. */
+    public void testArchiveResultIsCachedOnRepeat() throws Exception {
+        PositionStatsRequest r = req(PENTE, new int[]{CENTER});
+
+        int hits0 = handler.cacheHitCount();
+        PositionStatsResponse first = handler.computeArchive(r);
+        assertEquals("first call is a miss", hits0, handler.cacheHitCount());
+
+        PositionStatsResponse second = handler.computeArchive(r);
+        assertEquals("second identical call is a cache hit",
+                hits0 + 1, handler.cacheHitCount());
+        assertEquals("cached response reports the same totalGames",
+                first.totalGames, second.totalGames);
+        assertEquals("cached response reports the same nextMoves size",
+                first.nextMoves.size(), second.nextMoves.size());
+    }
+
+    /** Different filters produce different keys (a miss); same filters hit. */
+    public void testDifferentFiltersUseDistinctKeys() throws Exception {
+        PositionStatsRequest a = req(PENTE, new int[]{CENTER});
+        a.filters = new PositionStatsRequest.Filters();
+        a.filters.winner = 1; // winner filter needs no venue resolution
+
+        PositionStatsRequest b = req(PENTE, new int[]{CENTER});
+        b.filters = new PositionStatsRequest.Filters();
+        b.filters.winner = 2;
+
+        int hits0 = handler.cacheHitCount();
+        handler.computeArchive(a);          // miss (winner=1)
+        handler.computeArchive(b);          // miss (winner=2 -> distinct key)
+        assertEquals("distinct filters must not share a cache entry",
+                hits0, handler.cacheHitCount());
+
+        handler.computeArchive(a);          // repeat winner=1 -> hit
+        assertEquals("repeating a filtered request is a hit",
+                hits0 + 1, handler.cacheHitCount());
+    }
+
+    /**
+     * Two orientations of the same physical position share the canonical hash
+     * but must NOT share a cache entry — each response is expressed in its own
+     * caller orientation, so the key pins rotation. Regression guard for the
+     * cache-key audit (keying on hash alone would collide here).
+     */
+    public void testOrientationsDoNotShareCacheEntry() throws Exception {
+        PositionStatsResponse opening =
+                handler.computeArchive(req(PENTE, new int[]{CENTER}));
+        int reply = -1;
+        for (PositionStatsResponse.NextMove nm : opening.nextMoves) {
+            if (geom.rotateMove(nm.move, SYMMETRY) != nm.move) {
+                reply = nm.move;
+                break;
+            }
+        }
+        assertTrue("expected an off-axis reply", reply >= 0);
+
+        int[] p = new int[]{CENTER, reply};
+        int[] pRot = new int[]{geom.rotateMove(CENTER, SYMMETRY),
+                geom.rotateMove(reply, SYMMETRY)};
+        assertTrue("symmetry actually moves the position", pRot[1] != p[1]);
+
+        handler.computeArchive(req(PENTE, p));      // populates key(p)
+        int hits = handler.cacheHitCount();
+        handler.computeArchive(req(PENTE, pRot));   // different orientation -> miss
+        assertEquals("a different orientation is not served from the other's entry",
+                hits, handler.cacheHitCount());
+    }
 }
