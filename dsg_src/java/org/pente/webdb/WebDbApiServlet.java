@@ -37,6 +37,8 @@ public class WebDbApiServlet extends HttpServlet {
     private static GameStorerSearcher gameStorerSearcher;
     // TODO(webdb Task 5): private static MySQLWebDbStorer webDbStorer;
 
+    private static PositionStatsHandler positionStatsHandler;
+
     public void init(ServletConfig config) throws ServletException {
 
         super.init(config);
@@ -55,6 +57,9 @@ public class WebDbApiServlet extends HttpServlet {
                     ctx.getAttribute(GameVenueStorer.class.getName());
             gameStorerSearcher = (GameStorerSearcher)
                     ctx.getAttribute(GameStorerSearcher.class.getName());
+
+            positionStatsHandler =
+                    new PositionStatsHandler(dbHandler, gameVenueStorer);
 
             // TODO(webdb Task 5): construct MySQLWebDbStorer on top of the
             // storers above and keep it for the real position/stats endpoints.
@@ -81,8 +86,15 @@ public class WebDbApiServlet extends HttpServlet {
     public void doPost(HttpServletRequest request,
                        HttpServletResponse response)
             throws ServletException, IOException {
-        // No POST endpoints yet; handlers added in later tasks.
-        notFound(response, pathOf(request));
+
+        String path = pathOf(request);
+
+        if ("/position-stats".equals(path)) {
+            positionStatsHandler.handle(request, response);
+            return;
+        }
+
+        notFound(response, path);
     }
 
     public void doPut(HttpServletRequest request,
