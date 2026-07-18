@@ -87,6 +87,31 @@ public class GameHeader {
         return from(gd, GridStateFactory.getGameId(gd.getGame()), source);
     }
 
+    /**
+     * Map a personal-collection {@link WebDbGameData} row onto the wire header.
+     * The {@code source} is always {@code "mine"} and {@code gid} is the row's
+     * {@code wgid}. Personal games store player names as plain strings with no
+     * rating (rating {@code 0}). {@code moveCount} reflects the reconstructed
+     * move list when present (the single-game GET path) and is {@code 0} on the
+     * header-only list path, where {@code WebDbGameData.moves} is left null.
+     */
+    public static GameHeader fromWebDb(WebDbGameData g) {
+        GameHeader h = new GameHeader();
+        h.gid = g.wgid;
+        h.source = "mine";
+        h.game = g.game;
+        h.player1 = new Player(g.player1, 0);
+        h.player2 = new Player(g.player2, 0);
+        h.winner = g.winner;
+        h.site = g.site;
+        h.event = g.event;
+        h.round = g.round;
+        h.section = g.section;
+        h.playDate = isoUtc(g.playDate);
+        h.moveCount = (g.moves == null) ? 0 : g.moves.length;
+        return h;
+    }
+
     private static Player player(PlayerData p) {
         if (p == null) {
             return null;

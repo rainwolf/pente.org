@@ -15,6 +15,7 @@ import org.pente.game.GameVenueStorer;
 import org.pente.game.GridState;
 import org.pente.game.GridStateFactory;
 import org.pente.game.MoveData;
+import org.pente.gameServer.core.DSGPlayerStorer;
 
 import org.pente.webdb.dto.PositionStatsRequest;
 import org.pente.webdb.dto.PositionStatsResponse;
@@ -55,11 +56,33 @@ public class PositionStatsHandler {
 
     private final DBHandler dbHandler;
     private final GameVenueStorer gameVenueStorer;
+    /** Personal ("mine") stats source; null for an archive-only handler. */
+    private final MySQLWebDbStorer webDbStorer;
+    /** Resolves the request's login name to a pid; null for archive-only. */
+    private final DSGPlayerStorer playerStorer;
 
+    /**
+     * Archive-only handler (no {@code scope="mine"}/{@code "both"} support).
+     * Retained for the archive DB test and any caller that never needs auth.
+     */
     public PositionStatsHandler(DBHandler dbHandler,
                                 GameVenueStorer gameVenueStorer) {
+        this(dbHandler, gameVenueStorer, null, null);
+    }
+
+    /**
+     * Full handler: archive plus the authenticated {@code scope="mine"}/
+     * {@code "both"} paths, which fold the caller's own {@code webdb_move} rows
+     * through the same rotation-normalization loop as the archive.
+     */
+    public PositionStatsHandler(DBHandler dbHandler,
+                                GameVenueStorer gameVenueStorer,
+                                MySQLWebDbStorer webDbStorer,
+                                DSGPlayerStorer playerStorer) {
         this.dbHandler = dbHandler;
         this.gameVenueStorer = gameVenueStorer;
+        this.webDbStorer = webDbStorer;
+        this.playerStorer = playerStorer;
     }
 
     /**
@@ -75,8 +98,17 @@ public class PositionStatsHandler {
             return; // readBody already emitted the 4xx envelope
         }
 
+        String scope = notEmpty(req.scope) ? req.scope : "archive";
+        long pid = -1L;
+        if (needsAuth(scope)) {
+            pid = WebDbAuth.requirePid(request, response, playerStorer);
+            if (pid < 0) {
+                return; // 401 already emitted
+            }
+        }
+
         try {
-            PositionStatsResponse resp = computeArchive(req);
+            PositionStatsResponse resp = compute(req, pid);
             JsonHttp.ok(response, resp);
         } catch (Exception e) {
             cat.error("position-stats failed", e);
@@ -85,10 +117,33 @@ public class PositionStatsHandler {
         }
     }
 
+    /** {@code scope="mine"}/{@code "both"} require an authenticated pid. */
+    private static boolean needsAuth(String scope) {
+        return "mine".equals(scope) || "both".equals(scope);
+    }
+
     /**
      * Compute next-move statistics for the request against the whole archive.
      */
     public PositionStatsResponse computeArchive(PositionStatsRequest req)
+            throws Exception {
+        return computeStats(req, "archive", -1L);
+    }
+
+    /**
+     * Scope-aware entry point. {@code scope} is read from the request
+     * ({@code "archive"} default, {@code "mine"}, or {@code "both"}); {@code pid}
+     * is only consulted for the {@code "mine"}/{@code "both"} personal fold and
+     * must be a resolved, authenticated player id there.
+     */
+    public PositionStatsResponse compute(PositionStatsRequest req, long pid)
+            throws Exception {
+        String scope = notEmpty(req.scope) ? req.scope : "archive";
+        return computeStats(req, scope, pid);
+    }
+
+    private PositionStatsResponse computeStats(PositionStatsRequest req,
+                                               String scope, long pid)
             throws Exception {
 
         int game = req.game;
@@ -98,9 +153,9 @@ public class PositionStatsHandler {
         PositionStatsResponse resp = new PositionStatsResponse();
         resp.nextMoves = new ArrayList<PositionStatsResponse.NextMove>();
 
-        // An empty move list has no position to hash. Non-Go archive positions
-        // always begin with the center stone, so numMoves >= 1 in practice; the
-        // guard just keeps getHash() from indexing an empty state.
+        // An empty move list has no position to hash. Non-Go positions always
+        // begin with the center stone, so numMoves >= 1 in practice; the guard
+        // just keeps getHash() from indexing an empty state.
         if (numMoves == 0) {
             return resp; // totalGames=0, rotation=0, nextMoves=[]
         }
@@ -111,35 +166,56 @@ public class PositionStatsHandler {
         resp.rotation = state.getRotation();
         int currentPlayer = (numMoves % 2) + 1;
 
-        Connection con = null;
-        try {
-            con = dbHandler.getConnection();
-            aggregateArchive(con, state, hash, numMoves, game, currentPlayer,
-                    req.filters, resp);
-        } finally {
-            if (con != null) {
-                dbHandler.freeConnection(con);
+        boolean wantArchive = !"mine".equals(scope);              // archive or both
+        boolean wantMine = "mine".equals(scope) || "both".equals(scope);
+
+        Acc acc = new Acc();
+
+        if (wantArchive) {
+            Connection con = null;
+            try {
+                con = dbHandler.getConnection();
+                aggregateArchive(con, state, hash, numMoves, game, currentPlayer,
+                        req.filters, acc);
+            } finally {
+                if (con != null) {
+                    dbHandler.freeConnection(con);
+                }
             }
         }
+        if (wantMine) {
+            aggregatePersonal(pid, state, hash, numMoves, game, currentPlayer, acc);
+        }
+
+        finalizeStats(acc, resp);
         return resp;
     }
 
     /**
-     * Run the archive statistics query and fold the rows into {@code resp}.
+     * Mutable accumulator shared across the archive and personal folds: one
+     * running total plus a per-local-move aggregate. Both sources feed it
+     * through {@link #foldRow}, and {@link #finalizeStats} turns it into the
+     * response.
+     */
+    private static final class Acc {
+        final Map<Integer, PositionStatsResponse.NextMove> byMove =
+                new HashMap<Integer, PositionStatsResponse.NextMove>();
+        long totalGames = 0;
+    }
+
+    /**
+     * Run the archive statistics query and fold each row into {@code acc}.
      * Kept separate from {@link #buildArchiveSql} and from the request handling
-     * so a per-player ("mine") variant can reuse this exact aggregation loop.
+     * so the per-player ("mine") path reuses the exact aggregation via
+     * {@link #foldRow}.
      */
     private void aggregateArchive(Connection con, GridState state, long hash,
                                   int numMoves, int game, int currentPlayer,
                                   PositionStatsRequest.Filters filters,
-                                  PositionStatsResponse resp) throws Exception {
+                                  Acc acc) throws Exception {
 
         List<Object> params = new ArrayList<Object>();
         String sql = buildArchiveSql(game, hash, numMoves, filters, params);
-
-        Map<Integer, PositionStatsResponse.NextMove> byMove =
-                new HashMap<Integer, PositionStatsResponse.NextMove>();
-        long totalGames = 0;
 
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -148,54 +224,81 @@ public class PositionStatsHandler {
             bind(stmt, params);
             rs = stmt.executeQuery();
             while (rs.next()) {
-                int nextMove = rs.getInt(1);
-                int rotation = rs.getInt(2);
-                int winner = rs.getInt(3);
-                long count = rs.getLong(4);
-
-                // Every matching game counts toward the total, including games
-                // that ended here (next_move == 361) and undecided games.
-                totalGames += count;
-
-                // A candidate move must be a real board cell (0..360). The
-                // documented terminal sentinel (361) and any out-of-board value
-                // (rare corrupt/legacy archive rows carry, e.g., next_move ==
-                // 3528) are counted toward the total only, never emitted as a
-                // continuation — this keeps every returned move within 0..360.
-                if (nextMove < 0 || nextMove > MAX_BOARD_MOVE) {
-                    continue;
-                }
-
-                // Map the stored next move back into the caller's orientation.
-                int localMove = (numMoves == 0)
-                        ? state.rotateFirstMove(nextMove, rotation)
-                        : state.rotateMoveToLocalRotation(nextMove, rotation);
-
-                if (winner == WINNER_UNKNOWN) {
-                    continue; // only decided games contribute to a move's stats
-                }
-
-                Integer key = Integer.valueOf(localMove);
-                PositionStatsResponse.NextMove nm = byMove.get(key);
-                if (nm == null) {
-                    nm = new PositionStatsResponse.NextMove();
-                    nm.move = localMove;
-                    byMove.put(key, nm);
-                }
-                nm.games += count;
-                if (currentPlayer == winner) {
-                    nm.wins += count;
-                }
+                foldRow(acc, state, numMoves, currentPlayer,
+                        rs.getInt(1), rs.getInt(2), rs.getInt(3), rs.getLong(4));
             }
         } finally {
             closeQuietly(rs);
             closeQuietly(stmt);
         }
+    }
 
+    /**
+     * Fold the caller's own {@code webdb_move} rows into {@code acc}. The storer
+     * returns rows already grouped as {@code {next_move, rotation, winner,
+     * count}} — the same shape as the archive query — so they run through the
+     * identical {@link #foldRow} rotate/skip/accumulate loop, with no personal
+     * SQL or filtering divergence.
+     */
+    private void aggregatePersonal(long pid, GridState state, long hash,
+                                   int numMoves, int game, int currentPlayer,
+                                   Acc acc) throws Exception {
+
+        List<long[]> rows = webDbStorer.positionStats(pid, hash, numMoves - 1, game);
+        for (long[] row : rows) {
+            foldRow(acc, state, numMoves, currentPlayer,
+                    (int) row[0], (int) row[1], (int) row[2], row[3]);
+        }
+    }
+
+    /**
+     * The canonical single-row fold shared by archive and personal sources.
+     * Accumulates the total, maps the stored next move back into the caller's
+     * orientation, and (for decided games) tallies games/wins for that move.
+     */
+    private void foldRow(Acc acc, GridState state, int numMoves, int currentPlayer,
+                         int nextMove, int rotation, int winner, long count) {
+
+        // Every matching game counts toward the total, including games that
+        // ended here (next_move == 361) and undecided games.
+        acc.totalGames += count;
+
+        // A candidate move must be a real board cell (0..360). The terminal
+        // sentinel (361) and any out-of-board value (rare corrupt/legacy rows,
+        // e.g. next_move == 3528) are counted toward the total only, never
+        // emitted as a continuation — this keeps every returned move in 0..360.
+        if (nextMove < 0 || nextMove > MAX_BOARD_MOVE) {
+            return;
+        }
+
+        // Map the stored next move back into the caller's orientation.
+        int localMove = (numMoves == 0)
+                ? state.rotateFirstMove(nextMove, rotation)
+                : state.rotateMoveToLocalRotation(nextMove, rotation);
+
+        if (winner == WINNER_UNKNOWN) {
+            return; // only decided games contribute to a move's stats
+        }
+
+        Integer key = Integer.valueOf(localMove);
+        PositionStatsResponse.NextMove nm = acc.byMove.get(key);
+        if (nm == null) {
+            nm = new PositionStatsResponse.NextMove();
+            nm.move = localMove;
+            acc.byMove.put(key, nm);
+        }
+        nm.games += count;
+        if (currentPlayer == winner) {
+            nm.wins += count;
+        }
+    }
+
+    /** Turn the accumulator into the response (per-move winPct, sort, totals). */
+    private void finalizeStats(Acc acc, PositionStatsResponse resp) {
         long sumWins = 0;
         long sumGames = 0;
         List<PositionStatsResponse.NextMove> list =
-                new ArrayList<PositionStatsResponse.NextMove>(byMove.values());
+                new ArrayList<PositionStatsResponse.NextMove>(acc.byMove.values());
         for (PositionStatsResponse.NextMove nm : list) {
             nm.winPct = winPct(nm.wins, nm.games);
             sumWins += nm.wins;
@@ -204,7 +307,7 @@ public class PositionStatsHandler {
         Collections.sort(list, BY_GAMES_DESC);
 
         resp.nextMoves = list;
-        resp.totalGames = totalGames;
+        resp.totalGames = acc.totalGames;
         resp.totalWinPct = winPct(sumWins, sumGames);
     }
 

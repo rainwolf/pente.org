@@ -506,4 +506,28 @@ public class GridStateFactory {
                 game == RENJU || game == SPEED_RENJU || game == TB_RENJU;
     }
 
+    /**
+     * True for variants whose first stored move is NOT forced to the board
+     * center — the go family (free first placement), the double-move openings
+     * (D-Pente / D-Keryo) and the swap2 openings, where the opening stone(s)
+     * may sit off-center.
+     *
+     * <p>Callers that reconstruct a game's move list by synthesizing
+     * {@code moves[0]} as {@link #getCenterMove(int)} (the personal-collection
+     * {@code webdb_*} storage model, and the archive
+     * {@code MySQLPenteGameStorer} load path) are only correct for variants
+     * where this returns {@code false}; the {@code true} variants must be
+     * rejected or handled specially rather than silently corrupted.
+     */
+    public static boolean firstMoveCanBeOffCenter(int game) {
+        return (game == DPENTE || game == SPEED_DPENTE ||
+                game == DKERYO || game == SPEED_DKERYO ||
+                game == TB_DPENTE || game == TB_DKERYO ||
+                game == GO || game == SPEED_GO || game == TB_GO ||
+                game == GO9 || game == SPEED_GO9 || game == TB_GO9 ||
+                game == GO13 || game == SPEED_GO13 || game == TB_GO13 ||
+                game == SWAP2PENTE || game == SPEED_SWAP2PENTE || game == TB_SWAP2PENTE ||
+                game == SWAP2KERYO || game == SPEED_SWAP2KERYO || game == TB_SWAP2KERYO);
+    }
+
 }

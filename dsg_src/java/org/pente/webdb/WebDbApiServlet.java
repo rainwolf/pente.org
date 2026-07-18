@@ -42,6 +42,8 @@ public class WebDbApiServlet extends HttpServlet {
     private static GameLoadHandler gameLoadHandler;
     private static VenuesHandler venuesHandler;
     private static PlayersHandler playersHandler;
+    private static CollectionHandler collectionHandler;
+    private static AnalysesHandler analysesHandler;
 
     public void init(ServletConfig config) throws ServletException {
 
@@ -62,17 +64,22 @@ public class WebDbApiServlet extends HttpServlet {
             gameStorerSearcher = (GameStorerSearcher)
                     ctx.getAttribute(GameStorerSearcher.class.getName());
 
-            positionStatsHandler =
-                    new PositionStatsHandler(dbHandler, gameVenueStorer);
-            gameSearchHandler =
-                    new GameSearchHandler(dbHandler, gameStorer, gameVenueStorer);
+            // Personal collection + analyses persistence (Task 5). The auth'd
+            // "my games" / "my analyses" / scope endpoints build on this.
+            webDbStorer = new MySQLWebDbStorer(dbHandler);
+
+            positionStatsHandler = new PositionStatsHandler(
+                    dbHandler, gameVenueStorer, webDbStorer, dsgPlayerStorer);
+            gameSearchHandler = new GameSearchHandler(
+                    dbHandler, gameStorer, gameVenueStorer, webDbStorer,
+                    dsgPlayerStorer);
             gameLoadHandler = new GameLoadHandler(gameStorer);
             venuesHandler = new VenuesHandler(gameVenueStorer);
             playersHandler = new PlayersHandler(dbHandler);
-
-            // Personal collection + analyses persistence (Task 5). The Task 6
-            // "my games" / "my analyses" endpoints build their handlers on this.
-            webDbStorer = new MySQLWebDbStorer(dbHandler);
+            collectionHandler =
+                    new CollectionHandler(webDbStorer, dsgPlayerStorer);
+            analysesHandler =
+                    new AnalysesHandler(webDbStorer, dsgPlayerStorer);
 
         } catch (Throwable t) {
             cat.error("Problem in init()", t);
@@ -102,6 +109,24 @@ public class WebDbApiServlet extends HttpServlet {
                     path.substring("/games/".length()));
             return;
         }
+        if ("/collection".equals(path)) {
+            collectionHandler.handleList(request, response);
+            return;
+        }
+        if (path.startsWith("/collection/")) {
+            collectionHandler.handleGet(request, response,
+                    path.substring("/collection/".length()));
+            return;
+        }
+        if ("/analyses".equals(path)) {
+            analysesHandler.handleList(request, response);
+            return;
+        }
+        if (path.startsWith("/analyses/")) {
+            analysesHandler.handleGet(request, response,
+                    path.substring("/analyses/".length()));
+            return;
+        }
 
         notFound(response, path);
     }
@@ -120,6 +145,14 @@ public class WebDbApiServlet extends HttpServlet {
             gameSearchHandler.handle(request, response);
             return;
         }
+        if ("/collection/import".equals(path)) {
+            collectionHandler.handleImport(request, response);
+            return;
+        }
+        if ("/analyses".equals(path)) {
+            analysesHandler.handleCreate(request, response);
+            return;
+        }
 
         notFound(response, path);
     }
@@ -127,15 +160,36 @@ public class WebDbApiServlet extends HttpServlet {
     public void doPut(HttpServletRequest request,
                       HttpServletResponse response)
             throws ServletException, IOException {
-        // No PUT endpoints yet; handlers added in later tasks.
-        notFound(response, pathOf(request));
+
+        String path = pathOf(request);
+
+        if (path.startsWith("/analyses/")) {
+            analysesHandler.handleUpdate(request, response,
+                    path.substring("/analyses/".length()));
+            return;
+        }
+
+        notFound(response, path);
     }
 
     public void doDelete(HttpServletRequest request,
                          HttpServletResponse response)
             throws ServletException, IOException {
-        // No DELETE endpoints yet; handlers added in later tasks.
-        notFound(response, pathOf(request));
+
+        String path = pathOf(request);
+
+        if (path.startsWith("/collection/")) {
+            collectionHandler.handleDelete(request, response,
+                    path.substring("/collection/".length()));
+            return;
+        }
+        if (path.startsWith("/analyses/")) {
+            analysesHandler.handleDelete(request, response,
+                    path.substring("/analyses/".length()));
+            return;
+        }
+
+        notFound(response, path);
     }
 
     /**

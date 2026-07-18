@@ -18,11 +18,13 @@ import org.pente.game.GridState;
 import org.pente.game.GridStateFactory;
 import org.pente.game.MoveData;
 import org.pente.game.MySQLPenteGameStorer;
+import org.pente.gameServer.core.DSGPlayerStorer;
 
 import org.pente.webdb.dto.GameHeader;
 import org.pente.webdb.dto.GameSearchRequest;
 import org.pente.webdb.dto.GameSearchResponse;
 import org.pente.webdb.dto.PositionStatsRequest;
+import org.pente.webdb.dto.WebDbGameData;
 
 /**
  * Endpoint logic for {@code POST /api/db/games/search} (archive scope).
@@ -59,12 +61,33 @@ public class GameSearchHandler {
     private final DBHandler dbHandler;
     private final GameStorer gameStorer;
     private final GameVenueStorer gameVenueStorer;
+    /** Personal ("mine") collection source; null for an archive-only handler. */
+    private final MySQLWebDbStorer webDbStorer;
+    /** Resolves the request's login name to a pid; null for archive-only. */
+    private final DSGPlayerStorer playerStorer;
 
+    /**
+     * Archive-only handler (no {@code scope="mine"}/{@code "both"} support).
+     * Retained for the archive DB test and any caller that never needs auth.
+     */
     public GameSearchHandler(DBHandler dbHandler, GameStorer gameStorer,
                              GameVenueStorer gameVenueStorer) {
+        this(dbHandler, gameStorer, gameVenueStorer, null, null);
+    }
+
+    /**
+     * Full handler: archive plus the authenticated {@code scope="mine"}/
+     * {@code "both"} listings over the caller's personal collection.
+     */
+    public GameSearchHandler(DBHandler dbHandler, GameStorer gameStorer,
+                             GameVenueStorer gameVenueStorer,
+                             MySQLWebDbStorer webDbStorer,
+                             DSGPlayerStorer playerStorer) {
         this.dbHandler = dbHandler;
         this.gameStorer = gameStorer;
         this.gameVenueStorer = gameVenueStorer;
+        this.webDbStorer = webDbStorer;
+        this.playerStorer = playerStorer;
     }
 
     /** Servlet entry point: read JSON, run the search, write JSON (or error). */
@@ -77,8 +100,17 @@ public class GameSearchHandler {
             return; // readBody already emitted the 4xx envelope
         }
 
+        String scope = notEmpty(req.scope) ? req.scope : "archive";
+        long pid = -1L;
+        if (needsAuth(scope)) {
+            pid = WebDbAuth.requirePid(request, response, playerStorer);
+            if (pid < 0) {
+                return; // 401 already emitted
+            }
+        }
+
         try {
-            GameSearchResponse resp = search(req);
+            GameSearchResponse resp = search(req, pid);
             JsonHttp.ok(response, resp);
         } catch (Exception e) {
             cat.error("games/search failed", e);
@@ -86,18 +118,82 @@ public class GameSearchHandler {
         }
     }
 
+    /** {@code scope="mine"}/{@code "both"} require an authenticated pid. */
+    private static boolean needsAuth(String scope) {
+        return "mine".equals(scope) || "both".equals(scope);
+    }
+
     /**
-     * Run the search and return its response. Split out from {@link #handle} so
-     * the DB-backed test can exercise it without a servlet container.
+     * Archive-scope search. Split out from {@link #handle} so the DB-backed
+     * test can exercise it without a servlet container.
      */
     public GameSearchResponse search(GameSearchRequest req) throws Exception {
+        return archiveSearch(req);
+    }
+
+    /**
+     * Scope-aware search. {@code scope} is read from the request
+     * ({@code "archive"} default, {@code "mine"}, {@code "both"}); {@code pid}
+     * is consulted only for the personal-collection paths and must be a
+     * resolved, authenticated player id there. For {@code "both"} the archive
+     * page is returned first, then the caller's own games are appended (each
+     * header self-describes via its {@code source} field), and {@code total} is
+     * the sum of the two counts.
+     */
+    public GameSearchResponse search(GameSearchRequest req, long pid)
+            throws Exception {
+
+        String scope = notEmpty(req.scope) ? req.scope : "archive";
+        if ("mine".equals(scope)) {
+            return mineSearch(req, pid);
+        }
+        if ("both".equals(scope)) {
+            GameSearchResponse archive = archiveSearch(req);
+            GameSearchResponse mine = mineSearch(req, pid);
+            GameSearchResponse both = new GameSearchResponse();
+            both.total = archive.total + mine.total;
+            both.games = new ArrayList<GameHeader>();
+            both.games.addAll(archive.games); // archive page first
+            both.games.addAll(mine.games);    // personal appended
+            return both;
+        }
+        return archiveSearch(req);
+    }
+
+    /**
+     * List the caller's own games for one variant (newest first), as headers
+     * with {@code source="mine"} and {@code gid=wgid}. Personal listings are a
+     * plain variant scan — position and venue/player filters are not applied
+     * (the collection storer exposes only variant + paging).
+     */
+    private GameSearchResponse mineSearch(GameSearchRequest req, long pid)
+            throws Exception {
+
+        int game = req.game;
+        int limit = clampLimit(req.limit);
+        int offset = Math.max(0, req.offset);
+
+        GameSearchResponse resp = new GameSearchResponse();
+        resp.total = webDbStorer.countGames(pid, game);
+
+        List<WebDbGameData> rows = webDbStorer.listGames(pid, game, offset, limit);
+        List<GameHeader> out = new ArrayList<GameHeader>();
+        for (WebDbGameData g : rows) {
+            out.add(GameHeader.fromWebDb(g));
+        }
+        resp.games = out;
+        return resp;
+    }
+
+    private GameSearchResponse archiveSearch(GameSearchRequest req)
+            throws Exception {
 
         int game = req.game;
         int[] moves = (req.moves == null) ? NO_MOVES : req.moves;
         int limit = clampLimit(req.limit);
         int offset = Math.max(0, req.offset);
         PositionStatsRequest.Filters f = req.filters;
-        String source = notEmpty(req.scope) ? req.scope : "archive";
+        String source = "archive";
 
         GameSearchResponse resp = new GameSearchResponse();
 
