@@ -211,6 +211,11 @@ public class AnalysesHandler {
         if (currentRaw == null) {
             return false; // not found / cross-owner
         }
+        // A present-but-blank name is rejected with 400, mirroring create; an
+        // absent name (null) keeps the stored name. F7.
+        if (req.name != null && req.name.trim().length() == 0) {
+            throw new WebDbHttpError(400, "bad_request", "name is required");
+        }
         String newName = (req.name != null) ? req.name : meta.name;
         String newRaw = (req.tree != null) ? validateTree(req.tree) : currentRaw;
         return storer.updateAnalysis(pid, aid, newName, newRaw);
@@ -294,11 +299,19 @@ public class AnalysesHandler {
 
     private static long parseId(String s, HttpServletResponse response)
             throws IOException {
+        long id;
         try {
-            return Long.parseLong(s == null ? "" : s.trim());
+            id = Long.parseLong(s == null ? "" : s.trim());
         } catch (NumberFormatException e) {
             JsonHttp.error(response, 400, "bad_request", "invalid id: " + s);
             return -1L;
         }
+        // aid is a positive auto-increment key; reject zero/negative ids with a
+        // 400 envelope so callers never see an empty 200 for /analyses/-5. F3.
+        if (id <= 0) {
+            JsonHttp.error(response, 400, "bad_request", "invalid id: " + s);
+            return -1L;
+        }
+        return id;
     }
 }

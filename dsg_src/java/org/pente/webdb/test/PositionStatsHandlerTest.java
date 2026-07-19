@@ -147,15 +147,21 @@ public class PositionStatsHandlerTest extends TestCase {
 
         Connection con = dbHandler.getConnection();
         try {
+            // Join pente_game and exclude private games, mirroring the handler's
+            // F1 guard exactly — otherwise this independent aggregation would
+            // count private games the handler now (correctly) omits.
             PreparedStatement stmt = con.prepareStatement(
-                    "select next_move, rotation, winner, count(*) "
-                            + "from pente_move "
-                            + "where hash_key = ? and move_num = ? and game = ? "
-                            + "group by next_move, rotation, winner");
+                    "select m.next_move, m.rotation, m.winner, count(*) "
+                            + "from pente_move m, pente_game g "
+                            + "where m.hash_key = ? and m.move_num = ? and m.game = ? "
+                            + "and m.gid = g.gid and g.game = ? "
+                            + "and g.private = 'N' "
+                            + "group by m.next_move, m.rotation, m.winner");
             try {
                 stmt.setLong(1, hash);
                 stmt.setInt(2, numMoves - 1);
                 stmt.setInt(3, PENTE);
+                stmt.setInt(4, PENTE);
                 ResultSet rs = stmt.executeQuery();
                 try {
                     while (rs.next()) {
@@ -236,6 +242,57 @@ public class PositionStatsHandlerTest extends TestCase {
         // rotation is one of the 8 symmetries.
         assertTrue("rotation in 0..7",
                 resp.rotation >= 0 && resp.rotation <= 7);
+    }
+
+    /**
+     * F1: the archive stats SQL always joins {@code pente_game} and carries the
+     * {@code g.private = 'N'} guard, so private games are excluded from
+     * position statistics. Asserted on the generated SQL (archive is read-only).
+     */
+    public void testArchiveSqlHasPrivateGuard() throws Exception {
+        String sql = handler.buildArchiveSql(
+                PENTE, 0L, 1, null, new java.util.ArrayList<Object>());
+        assertTrue("stats SQL must exclude private games: " + sql,
+                sql.contains("g.private = 'N'"));
+        assertTrue("stats SQL must join pente_game: " + sql,
+                sql.contains("pente_game g"));
+    }
+
+    /**
+     * F4: a malformed date filter aborts with {@link IllegalArgumentException}
+     * (mapped to a 400 at the servlet), not a 500; a valid ISO date narrows.
+     */
+    public void testMalformedDateFilterRejected() throws Exception {
+        PositionStatsRequest bad = req(PENTE, new int[]{CENTER});
+        bad.filters = new PositionStatsRequest.Filters();
+        bad.filters.afterDate = "07/18/2026";
+        try {
+            handler.computeArchive(bad);
+            fail("a malformed date filter must be rejected");
+        } catch (IllegalArgumentException expected) {
+            // expected
+        }
+
+        long unfiltered = handler.computeArchive(req(PENTE, new int[]{CENTER})).totalGames;
+        PositionStatsRequest ok = req(PENTE, new int[]{CENTER});
+        ok.filters = new PositionStatsRequest.Filters();
+        ok.filters.afterDate = "2000-01-01";
+        assertTrue("a valid date filter can only narrow the total",
+                handler.computeArchive(ok).totalGames <= unfiltered);
+    }
+
+    /**
+     * F9: an unresolvable site name causes the site predicate to be OMITTED
+     * (the filter is ignored), so the total matches the unfiltered position —
+     * it must not silently zero out the result.
+     */
+    public void testUnresolvableSiteFilterIgnored() throws Exception {
+        long unfiltered = handler.computeArchive(req(PENTE, new int[]{CENTER})).totalGames;
+        PositionStatsRequest r = req(PENTE, new int[]{CENTER});
+        r.filters = new PositionStatsRequest.Filters();
+        r.filters.site = "__no_such_site_zzz__";
+        assertEquals("an unresolvable site must be ignored, not zero results",
+                unfiltered, handler.computeArchive(r).totalGames);
     }
 
     /** Builds a {@link MoveData} over a fixed move list, mirroring the small

@@ -18,6 +18,7 @@ import org.pente.webdb.dto.GameDetailResponse;
 import org.pente.webdb.dto.GameHeader;
 import org.pente.webdb.dto.GameSearchRequest;
 import org.pente.webdb.dto.GameSearchResponse;
+import org.pente.webdb.dto.PositionStatsRequest;
 import org.pente.webdb.dto.VenuesResponse;
 
 /**
@@ -218,6 +219,67 @@ public class GameEndpointsTest extends TestCase {
             fail("a single-character query must be rejected");
         } catch (IllegalArgumentException expected) {
             // expected
+        }
+    }
+
+    /**
+     * F1: both archive query shapes (position-constrained and filter-only)
+     * carry the {@code g.private = 'N'} guard and join {@code pente_game}, so
+     * private archive games are never returned. Asserted on the generated SQL
+     * because the archive tables are read-only (no private test row possible).
+     */
+    public void testArchiveSearchSqlHasPrivateGuard() throws Exception {
+        String pos =
+                searchHandler.archiveSqlForTest(searchReq(PENTE, new int[]{CENTER}, 5));
+        assertTrue("position query must exclude private games: " + pos,
+                pos.contains("g.private = 'N'"));
+        assertTrue("position query must join pente_game: " + pos,
+                pos.contains("pente_game g"));
+
+        String filter =
+                searchHandler.archiveSqlForTest(searchReq(PENTE, new int[0], 5));
+        assertTrue("filter-only query must exclude private games: " + filter,
+                filter.contains("g.private = 'N'"));
+    }
+
+    /**
+     * F4: a malformed date filter is rejected (→ 400 at the servlet), not a 500;
+     * a valid ISO date parses and can only narrow the result set.
+     */
+    public void testMalformedDateFilterRejectedBoundaryHonored() throws Exception {
+        GameSearchRequest bad = searchReq(PENTE, new int[]{CENTER}, 5);
+        bad.filters = new PositionStatsRequest.Filters();
+        bad.filters.afterDate = "07/18/2026";
+        try {
+            searchHandler.search(bad);
+            fail("a malformed date filter must be rejected");
+        } catch (IllegalArgumentException expected) {
+            // expected
+        }
+
+        long unfiltered =
+                searchHandler.search(searchReq(PENTE, new int[]{CENTER}, 5)).total;
+        GameSearchRequest ok = searchReq(PENTE, new int[]{CENTER}, 5);
+        ok.filters = new PositionStatsRequest.Filters();
+        ok.filters.afterDate = "2000-01-01";
+        GameSearchResponse resp = searchHandler.search(ok);
+        assertNotNull("valid ISO date must not error", resp);
+        assertTrue("a date filter can only narrow the count",
+                resp.total <= unfiltered);
+    }
+
+    /**
+     * F5: "%%" passes the 2-char minimum but is matched as an escaped LITERAL
+     * prefix, so it cannot wildcard-scan the whole player table.
+     */
+    public void testPlayersWildcardEscapedNotFullScan() throws Exception {
+        List<String> names = playersHandler.players("%%");
+        assertNotNull("wildcard query must not error", names);
+        assertTrue("escaped wildcard must not exceed the cap",
+                names.size() <= LIMIT);
+        for (String n : names) {
+            assertTrue("every result matches the literal prefix '%%': " + n,
+                    n.startsWith("%%"));
         }
     }
 

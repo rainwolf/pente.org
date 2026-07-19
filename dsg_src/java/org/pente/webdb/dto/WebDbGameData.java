@@ -48,4 +48,12 @@ public class WebDbGameData {
 
     /** Move list in the caller's orientation; {@code moves[0]} is the center. */
     public int[] moves;
+
+    /**
+     * Number of moves in the reconstructed game. The "list" query populates this
+     * from a grouped {@code count(*)} over {@code webdb_move} (leaving
+     * {@code moves} null); it equals {@code loadGame(...).moves.length}. Unset
+     * ({@code 0}) until populated. See {@code MySQLWebDbStorer.listGames}.
+     */
+    public int moveCount;
 }

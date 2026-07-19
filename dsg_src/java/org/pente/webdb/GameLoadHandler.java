@@ -77,6 +77,12 @@ public class GameLoadHandler {
         if (gd == null) {
             return null;
         }
+        // Private archive games are not exposed by the public gid load path;
+        // treat them as missing (→ 404), mirroring the search endpoint's
+        // g.private = 'N' guard. F1.
+        if (gd.isPrivateGame()) {
+            return null;
+        }
 
         GameDetailResponse resp = new GameDetailResponse();
         resp.header = GameHeader.from(gd, "archive");

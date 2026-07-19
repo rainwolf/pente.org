@@ -108,7 +108,9 @@ public class GameHeader {
         h.round = g.round;
         h.section = g.section;
         h.playDate = isoUtc(g.playDate);
-        h.moveCount = (g.moves == null) ? 0 : g.moves.length;
+        // Single-game load path carries the full move list; the header-only list
+        // path leaves moves null and supplies the count via g.moveCount. F10.
+        h.moveCount = (g.moves != null) ? g.moves.length : g.moveCount;
         return h;
     }
 

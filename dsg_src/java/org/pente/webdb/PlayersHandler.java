@@ -73,9 +73,13 @@ public class PlayersHandler {
         try {
             con = dbHandler.getConnection();
             // name_lower is indexed; LIMIT is a fixed constant, not user input.
+            // Escape LIKE metacharacters in the user input so a query like "%%"
+            // is matched as a literal prefix (returning nothing) rather than a
+            // full-table wildcard scan that defeats the 2-char minimum. F5.
             stmt = con.prepareStatement("select name from player "
-                    + "where name_lower like ? order by name_lower limit " + LIMIT);
-            stmt.setString(1, trimmed.toLowerCase() + "%");
+                    + "where name_lower like ? escape '\\\\' "
+                    + "order by name_lower limit " + LIMIT);
+            stmt.setString(1, escapeLike(trimmed.toLowerCase()) + "%");
             rs = stmt.executeQuery();
             while (rs.next()) {
                 names.add(rs.getString(1));
@@ -100,5 +104,22 @@ public class PlayersHandler {
             }
         }
         return names;
+    }
+
+    /**
+     * Escape the LIKE metacharacters {@code %}, {@code _} and the escape char
+     * {@code \} itself so user input is matched literally under {@code ESCAPE
+     * '\'}. Only the trailing prefix wildcard is left unescaped by the caller.
+     */
+    private static String escapeLike(String s) {
+        StringBuilder b = new StringBuilder(s.length() + 4);
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '\\' || c == '%' || c == '_') {
+                b.append('\\');
+            }
+            b.append(c);
+        }
+        return b.toString();
     }
 }

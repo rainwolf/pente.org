@@ -264,12 +264,69 @@ public class MySQLWebDbStorer {
                 close(rs);
                 close(stmt);
             }
+
+            // Populate the real move count for each header on the list path
+            // (moves is left null here). One grouped count over webdb_move for
+            // the page's wgids; count(*) equals loadGame(...).moves.length
+            // because each game stores exactly one row per reconstructed move. F10.
+            List<Long> wgids = new ArrayList<Long>();
+            for (WebDbGameData g : out) {
+                wgids.add(Long.valueOf(g.wgid));
+            }
+            Map<Long, Integer> counts = moveCounts(con, pid, wgids);
+            for (WebDbGameData g : out) {
+                Integer c = counts.get(Long.valueOf(g.wgid));
+                g.moveCount = (c == null) ? 0 : c.intValue();
+            }
+
             return out;
         } finally {
             if (con != null) {
                 dbHandler.freeConnection(con);
             }
         }
+    }
+
+    /**
+     * Move-list length per wgid for a page of the player's games: one grouped
+     * {@code count(*)} over {@code webdb_move}, keyed by wgid and scoped to the
+     * owner. Each game stores exactly one {@code webdb_move} row per
+     * reconstructed move (center prepend + one row per stored next_move,
+     * including the terminal row), so {@code count(*)} equals
+     * {@code loadGame(...).moves.length}. Returns {@code wgid -> count}.
+     */
+    private Map<Long, Integer> moveCounts(Connection con, long pid,
+                                          List<Long> wgids) throws SQLException {
+
+        Map<Long, Integer> out = new HashMap<Long, Integer>();
+        if (wgids.isEmpty()) {
+            return out;
+        }
+        StringBuilder sql = new StringBuilder(
+                "select wgid, count(*) from " + MOVE_TABLE +
+                " where pid = ? and wgid in (");
+        for (int i = 0; i < wgids.size(); i++) {
+            sql.append(i == 0 ? "?" : ", ?");
+        }
+        sql.append(") group by wgid");
+
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        try {
+            stmt = con.prepareStatement(sql.toString());
+            stmt.setLong(1, pid);
+            for (int i = 0; i < wgids.size(); i++) {
+                stmt.setLong(i + 2, wgids.get(i).longValue());
+            }
+            rs = stmt.executeQuery();
+            while (rs.next()) {
+                out.put(Long.valueOf(rs.getLong(1)), Integer.valueOf(rs.getInt(2)));
+            }
+        } finally {
+            close(rs);
+            close(stmt);
+        }
+        return out;
     }
 
     /** Total number of the player's games for one variant. */

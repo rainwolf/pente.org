@@ -232,6 +232,28 @@ public class MySQLWebDbStorerTest extends TestCase {
         assertEquals("both games counted at the shared position", 2, total);
     }
 
+    /**
+     * A listed header's moveCount equals the reconstructed move-list length
+     * ({@code loadGame(...).moves.length}), populated by the grouped count query
+     * on the list path (where {@code moves} is left null). F10.
+     */
+    public void testListMoveCountMatchesLoadedMoveList() throws Exception {
+        int[] moves = new int[]{180, 100, 300, 50, 250};
+        long wgid = storer.storeGame(PID, game(moves, 1));
+
+        List<WebDbGameData> page = storer.listGames(PID, PENTE, 0, 25);
+        assertEquals("one game listed", 1, page.size());
+        WebDbGameData listed = page.get(0);
+        assertEquals("listed wgid", wgid, listed.wgid);
+        assertNull("list path leaves the move list null", listed.moves);
+
+        int loadedLen = storer.loadGame(PID, wgid).moves.length;
+        assertEquals("list header moveCount == reconstructed move count",
+                loadedLen, listed.moveCount);
+        assertEquals("moveCount == imported move count",
+                moves.length, listed.moveCount);
+    }
+
     // ------------------------------------------------------------------
     // analyses
     // ------------------------------------------------------------------

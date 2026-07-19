@@ -28,6 +28,8 @@ import org.pente.database.*;
 import org.pente.game.*;
 import org.pente.gameDatabase.*;
 
+import org.pente.gameServer.core.DSGPlayerData;
+import org.pente.gameServer.core.DSGPlayerStorer;
 import org.pente.webdb.AnalysesHandler;
 import org.pente.webdb.CollectionHandler;
 import org.pente.webdb.GameSearchHandler;
@@ -226,6 +228,46 @@ public class AuthEndpointsTest extends TestCase {
         assertEquals("no rows written", 0, storer.countGames(PID, PENTE));
     }
 
+    /**
+     * F2: for a center-first variant, a first move that is not the center is
+     * rejected per-item (the webdb model would otherwise silently rewrite it to
+     * the center on load and defeat duplicate detection). Nothing is stored.
+     */
+    public void testImportOffCenterFirstMoveRejected() throws Exception {
+        // PENTE.firstMoveCanBeOffCenter == false; moves[0] != center.
+        ImportResponse resp = collectionHandler.doImport(PID, importReq(
+                game(new int[]{CENTER + 1, 200, 220}, 1)));
+        assertEquals("nothing stored", 0, resp.imported);
+        assertEquals("one error", 1, resp.errors.size());
+        assertEquals("index 0", 0, resp.errors.get(0).index);
+        assertEquals("documented message",
+                "first move must be the center move", resp.errors.get(0).message);
+        assertEquals("no rows written", 0, storer.countGames(PID, PENTE));
+    }
+
+    /**
+     * F6: an illegal-move error carries a fixed message with a computed move
+     * index and NO leaked internals (SQL text, exception class, driver detail);
+     * the exception is logged server-side, never returned.
+     */
+    public void testImportIllegalMoveMessageHasNoInternals() throws Exception {
+        ImportResponse resp = collectionHandler.doImport(PID, importReq(
+                game(new int[]{CENTER, 199, 199}, 1)));  // 199 repeated -> illegal
+        assertEquals("nothing stored", 0, resp.imported);
+        assertEquals("one error", 1, resp.errors.size());
+        String msg = resp.errors.get(0).message;
+        assertNotNull("error carries a message", msg);
+        assertTrue("message names the offending move index: " + msg,
+                msg.startsWith("illegal move at index "));
+        assertTrue("must not leak SQL text: " + msg,
+                !msg.toLowerCase().contains("sql"));
+        assertTrue("must not leak an exception class: " + msg,
+                !msg.contains("Exception"));
+        assertTrue("must not leak the raw engine message: " + msg,
+                !msg.contains("position already filled"));
+        assertEquals("no rows written", 0, storer.countGames(PID, PENTE));
+    }
+
     /** A batch over the 200-game cap is a hard 400 (nothing stored). */
     public void testImportBatchTooLargeIs400() throws Exception {
         List<WebDbGameData> big = new ArrayList<WebDbGameData>();
@@ -263,6 +305,27 @@ public class AuthEndpointsTest extends TestCase {
             assertEquals("variant echoed", PENTE, h.game);
             assertTrue("gid (wgid) set", h.gid > 0);
         }
+    }
+
+    /**
+     * F10: a collection-list header reports a real moveCount equal to the loaded
+     * game's move-list length (populated by a grouped count over webdb_move),
+     * not the placeholder 0.
+     */
+    public void testCollectionListMoveCountMatchesLoad() throws Exception {
+        collectionHandler.doImport(PID, importReq(
+                game(new int[]{CENTER, 199, 218, 200}, 1)));
+        long wgid = storer.listGames(PID, PENTE, 0, 25).get(0).wgid;
+
+        GameSearchResponse list = collectionHandler.listCollection(PID, PENTE, 0, 25);
+        assertEquals("one game listed", 1, list.games.size());
+        GameHeader header = list.games.get(0);
+
+        GameDetailResponse detail = collectionHandler.getGame(PID, wgid);
+        assertTrue("moveCount is populated, not the placeholder 0",
+                header.moveCount > 0);
+        assertEquals("list header moveCount == loaded move-list length",
+                detail.moves.length, header.moveCount);
     }
 
     /** GET one game reconstructs the center-first move list; cross-owner is null. */
@@ -522,32 +585,65 @@ public class AuthEndpointsTest extends TestCase {
         }
     }
 
-    /** scope="both" search appends the caller's games after the archive page. */
-    public void testSearchBothAppendsPersonal() throws Exception {
+    /**
+     * scope="both" is ONE combined page over [archive rows...][personal rows...]:
+     * the page is filled from the archive first and topped up with personal
+     * games, never exceeding the requested limit; total is the sum of both
+     * source counts. (Previously each source was paged independently and
+     * concatenated, returning up to 2x limit rows and mis-paging.) F8.
+     */
+    public void testSearchBothCombinedPage() throws Exception {
         collectionHandler.doImport(PID, importReq(
                 game(new int[]{CENTER, 199, 218}, 1),
                 game(new int[]{CENTER, 181, 200}, 2)));
 
+        int limit = 5;
         GameSearchResponse archive =
-                searchHandler.search(searchReq(new int[]{CENTER}, "archive", 5), PID);
+                searchHandler.search(searchReq(new int[]{CENTER}, "archive", limit), PID);
         GameSearchResponse both =
-                searchHandler.search(searchReq(new int[]{CENTER}, "both", 5), PID);
+                searchHandler.search(searchReq(new int[]{CENTER}, "both", limit), PID);
 
         assertEquals("both total is archive + personal",
                 archive.total + 2, both.total);
+        assertTrue("combined page must not exceed the requested limit",
+                both.games.size() <= limit);
 
+        // Archive rows lead; personal rows top up any remaining page slots.
+        boolean seenMine = false;
         int mineInBoth = 0;
         for (GameHeader h : both.games) {
             if ("mine".equals(h.source)) {
+                seenMine = true;
                 mineInBoth++;
+            } else {
+                assertTrue("archive rows must precede personal rows", !seenMine);
             }
         }
-        assertEquals("both appends the two personal games", 2, mineInBoth);
-        // Archive page comes first, personal last.
-        assertEquals("archive source leads",
-                "archive", both.games.get(0).source);
-        assertEquals("personal source trails",
-                "mine", both.games.get(both.games.size() - 1).source);
+        int expectedMine = Math.min(2, Math.max(0, limit - archive.games.size()));
+        assertEquals("personal tops up exactly the remaining page slots",
+                expectedMine, mineInBoth);
+
+        // Top-up path: at a deep position the archive returns few/no rows, so
+        // the caller's personal games fill the otherwise-empty page.
+        int[] deep = new int[]{CENTER, 199, 218, 5, 25, 45, 65};
+        GameSearchResponse deepArchive =
+                searchHandler.search(searchReq(deep, "archive", limit), PID);
+        GameSearchResponse deepBoth =
+                searchHandler.search(searchReq(deep, "both", limit), PID);
+        assertEquals("deep both total is archive + personal",
+                deepArchive.total + 2, deepBoth.total);
+        assertTrue("deep combined page must not exceed the limit",
+                deepBoth.games.size() <= limit);
+        int deepMine = 0;
+        for (GameHeader h : deepBoth.games) {
+            if ("mine".equals(h.source)) {
+                deepMine++;
+            }
+        }
+        int deepExpectedMine =
+                Math.min(2, Math.max(0, limit - deepArchive.games.size()));
+        assertEquals("personal tops up the deep-position page",
+                deepExpectedMine, deepMine);
     }
 
     // ==================================================================
@@ -616,6 +712,65 @@ public class AuthEndpointsTest extends TestCase {
                 searchHandler.handle(rq, rs);
             }
         }, mineBody));
+    }
+
+    // ==================================================================
+    // input-validation regressions (F3, F7)
+    // ==================================================================
+
+    /**
+     * F3: a negative/zero id yields the 400 error envelope (not an empty 200)
+     * on every id-bearing collection/analyses endpoint, once authenticated.
+     */
+    public void testNegativeIdReturns400() throws Exception {
+        DSGPlayerStorer ps = stubPlayerStorer();
+        final CollectionHandler ch = new CollectionHandler(storer, ps);
+        final AnalysesHandler ah = new AnalysesHandler(storer, ps);
+
+        assertEquals("GET /collection/-5", 400, driveAuth(new Call() {
+            public void run(HttpServletRequest rq, HttpServletResponse rs) throws IOException {
+                ch.handleGet(rq, rs, "-5");
+            }
+        }, ""));
+        assertEquals("DELETE /collection/-5", 400, driveAuth(new Call() {
+            public void run(HttpServletRequest rq, HttpServletResponse rs) throws IOException {
+                ch.handleDelete(rq, rs, "-5");
+            }
+        }, ""));
+        assertEquals("GET /analyses/-5", 400, driveAuth(new Call() {
+            public void run(HttpServletRequest rq, HttpServletResponse rs) throws IOException {
+                ah.handleGet(rq, rs, "-5");
+            }
+        }, ""));
+        assertEquals("DELETE /analyses/-5", 400, driveAuth(new Call() {
+            public void run(HttpServletRequest rq, HttpServletResponse rs) throws IOException {
+                ah.handleDelete(rq, rs, "-5");
+            }
+        }, ""));
+    }
+
+    /**
+     * F7: PUT with a present-but-blank name is rejected with 400, mirroring the
+     * POST check; the stored name is left unchanged.
+     */
+    public void testAnalysesBlankNameUpdateRejected() throws Exception {
+        AnalysisDtos.CreateRequest cr = new AnalysisDtos.CreateRequest();
+        cr.name = "Opening";
+        cr.game = PENTE;
+        cr.tree = tree(CENTER);
+        long aid = analysesHandler.createAnalysis(PID, cr);
+
+        AnalysisDtos.UpdateRequest blank = new AnalysisDtos.UpdateRequest();
+        blank.name = "   ";  // whitespace-only
+        try {
+            analysesHandler.updateAnalysis(PID, aid, blank);
+            fail("a blank name must be rejected with 400");
+        } catch (WebDbHttpError he) {
+            assertEquals("blank-name status", 400, he.status);
+        }
+
+        AnalysisDtos.DetailResponse got = analysesHandler.getAnalysis(PID, aid);
+        assertEquals("name preserved after the rejected update", "Opening", got.name);
     }
 
     // ==================================================================
@@ -710,6 +865,71 @@ public class AuthEndpointsTest extends TestCase {
         HttpServletResponse rs = capturingResponse(status);
         call.run(rq, rs);
         return status[0];
+    }
+
+    /** Drive a handler with an AUTHENTICATED request (resolves to PID); return status. */
+    private static int driveAuth(Call call, String body) throws IOException {
+        int[] status = new int[]{200};
+        HttpServletRequest rq = authRequest(body);
+        HttpServletResponse rs = capturingResponse(status);
+        call.run(rq, rs);
+        return status[0];
+    }
+
+    /** Like {@link #anonRequest} but publishes a login name so auth resolves. */
+    private static HttpServletRequest authRequest(final String body) {
+        final byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
+        InvocationHandler h = new InvocationHandler() {
+            public Object invoke(Object proxy, Method m, Object[] args) {
+                String name = m.getName();
+                if ("getInputStream".equals(name)) {
+                    return new FakeServletInputStream(bytes);
+                }
+                if ("getAttribute".equals(name)) {
+                    return "sentinel"; // authenticated login name
+                }
+                if ("getParameter".equals(name)) {
+                    return null;
+                }
+                if ("getPathInfo".equals(name)) {
+                    return null;
+                }
+                return defaultFor(m, name);
+            }
+        };
+        return (HttpServletRequest) Proxy.newProxyInstance(
+                HttpServletRequest.class.getClassLoader(),
+                new Class[]{HttpServletRequest.class}, h);
+    }
+
+    /** A player storer that resolves any login name to the sentinel PID. */
+    private static DSGPlayerStorer stubPlayerStorer() {
+        InvocationHandler h = new InvocationHandler() {
+            public Object invoke(Object proxy, Method m, Object[] args) {
+                if ("loadPlayer".equals(m.getName()) && args != null
+                        && args.length == 1 && args[0] instanceof String) {
+                    return stubPlayerData();
+                }
+                return defaultFor(m, m.getName());
+            }
+        };
+        return (DSGPlayerStorer) Proxy.newProxyInstance(
+                DSGPlayerStorer.class.getClassLoader(),
+                new Class[]{DSGPlayerStorer.class}, h);
+    }
+
+    private static DSGPlayerData stubPlayerData() {
+        InvocationHandler h = new InvocationHandler() {
+            public Object invoke(Object proxy, Method m, Object[] args) {
+                if ("getPlayerID".equals(m.getName())) {
+                    return Long.valueOf(PID);
+                }
+                return defaultFor(m, m.getName());
+            }
+        };
+        return (DSGPlayerData) Proxy.newProxyInstance(
+                DSGPlayerData.class.getClassLoader(),
+                new Class[]{DSGPlayerData.class}, h);
     }
 
     private static HttpServletRequest anonRequest(final String body) {

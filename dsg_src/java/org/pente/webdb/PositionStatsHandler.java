@@ -2,6 +2,8 @@ package org.pente.webdb;
 
 import java.io.IOException;
 import java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import jakarta.servlet.http.*;
@@ -125,6 +127,9 @@ public class PositionStatsHandler {
         try {
             PositionStatsResponse resp = compute(req, pid);
             JsonHttp.ok(response, resp);
+        } catch (IllegalArgumentException e) {
+            // Bad user input (e.g. a malformed date filter) is a 400, not a 500.
+            JsonHttp.error(response, 400, "bad_request", e.getMessage());
         } catch (Exception e) {
             cat.error("position-stats failed", e);
             JsonHttp.error(response, 500, "server_error",
@@ -353,9 +358,9 @@ public class PositionStatsHandler {
      * game-level filter is present, and player-name filters join {@code player}.
      * Appends the bind values to {@code params} in positional order.
      */
-    private String buildArchiveSql(int game, long hash, int numMoves,
-                                   PositionStatsRequest.Filters f,
-                                   List<Object> params) throws Exception {
+    public String buildArchiveSql(int game, long hash, int numMoves,
+                                  PositionStatsRequest.Filters f,
+                                  List<Object> params) throws Exception {
 
         boolean p1 = f != null && notEmpty(f.player1Name);
         boolean p2 = f != null && notEmpty(f.player2Name);
@@ -368,33 +373,32 @@ public class PositionStatsHandler {
         boolean haveBefore = f != null && notEmpty(f.beforeDate);
         boolean haveWinner = f != null && f.winner != WINNER_UNKNOWN;
 
-        // Resolve venue names to ids via the same cache the searcher uses. An
-        // unresolved name binds an impossible id so the query returns no rows.
+        // Resolve venue names to ids. An UNRESOLVABLE name causes the predicate
+        // to be OMITTED (the filter is ignored), matching production — never
+        // bound to an impossible id (which would silently return zero rows). F9.
         Integer siteId = null;
         if (haveSite) {
             GameSiteData sd = gameVenueStorer.getGameSiteData(game, f.site);
-            siteId = Integer.valueOf(sd == null ? -1 : sd.getSiteID());
-        }
-        Integer eventId = null;
-        if (haveEvent) {
-            // Event ids are scoped by site in the venue tree; a site name is
-            // required to resolve one.
-            if (haveSite) {
-                GameEventData ed =
-                        gameVenueStorer.getGameEventData(game, f.event, f.site);
-                eventId = Integer.valueOf(ed == null ? -1 : ed.getEventID());
-            } else {
-                eventId = Integer.valueOf(-1);
+            if (sd != null) {
+                siteId = Integer.valueOf(sd.getSiteID());
             }
         }
-
-        boolean gameLevel = haveSite || haveEvent || haveRound || haveSection
-                || haveAfter || haveBefore || p1 || p2;
-
-        StringBuilder from = new StringBuilder("from pente_move m");
-        if (gameLevel) {
-            from.append(", pente_game g");
+        Integer eventId = null;
+        // Event ids are scoped by site in the venue tree; a resolvable site name
+        // is required to resolve one.
+        if (haveEvent && siteId != null) {
+            GameEventData ed =
+                    gameVenueStorer.getGameEventData(game, f.event, f.site);
+            if (ed != null) {
+                eventId = Integer.valueOf(ed.getEventID());
+            }
         }
+        boolean useSite = siteId != null;
+        boolean useEvent = eventId != null;
+
+        // Always join pente_game so the private guard (and any game-level filter)
+        // applies; production pays this join cost too. F1.
+        StringBuilder from = new StringBuilder("from pente_move m, pente_game g");
         if (p1) {
             from.append(", player p1");
         }
@@ -408,10 +412,11 @@ public class PositionStatsHandler {
         params.add(Integer.valueOf(numMoves - 1));
         params.add(Integer.valueOf(game));
 
-        if (gameLevel) {
-            where.append(" and m.gid = g.gid and g.game = ?");
-            params.add(Integer.valueOf(game));
-        }
+        where.append(" and m.gid = g.gid and g.game = ?");
+        params.add(Integer.valueOf(game));
+
+        // Private archive games are never included in position statistics. F1.
+        where.append(" and g.private = 'N'");
 
         if (p1) {
             appendPlayerPredicate(where, params, "p1", f.player1Seat, f.player1Name);
@@ -420,11 +425,11 @@ public class PositionStatsHandler {
             appendPlayerPredicate(where, params, "p2", f.player2Seat, f.player2Name);
         }
 
-        if (haveSite) {
+        if (useSite) {
             where.append(" and g.site_id = ?");
             params.add(siteId);
         }
-        if (haveEvent) {
+        if (useEvent) {
             where.append(" and g.event_id = ?");
             params.add(eventId);
         }
@@ -503,16 +508,26 @@ public class PositionStatsHandler {
         return s != null && s.trim().length() > 0;
     }
 
-    /** Parse ISO {@code yyyy-MM-dd} (optionally with a time) to a Timestamp. */
+    /**
+     * Parse ISO {@code yyyy-MM-dd} (optionally with a time) to a Timestamp,
+     * interpreted as UTC so date filters round-trip with the UTC output the
+     * headers emit. A malformed value throws {@link IllegalArgumentException}
+     * (mapped to a 400 by {@link #handle}), never a 500. F4.
+     */
     private static Timestamp toTimestamp(String s) {
         String t = s.trim().replace('T', ' ');
         if (t.endsWith("Z")) {
             t = t.substring(0, t.length() - 1).trim();
         }
-        if (t.length() <= 10) {
-            t = t + " 00:00:00";
+        String pattern = (t.length() <= 10) ? "yyyy-MM-dd" : "yyyy-MM-dd HH:mm:ss";
+        SimpleDateFormat fmt = new SimpleDateFormat(pattern);
+        fmt.setTimeZone(TimeZone.getTimeZone("UTC"));
+        fmt.setLenient(false);
+        try {
+            return new Timestamp(fmt.parse(t).getTime());
+        } catch (ParseException e) {
+            throw new IllegalArgumentException("invalid date format");
         }
-        return Timestamp.valueOf(t);
     }
 
     private static MoveData moveDataOf(final int[] moves) {

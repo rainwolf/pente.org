@@ -9,6 +9,7 @@ import jakarta.servlet.http.*;
 
 import org.apache.log4j.*;
 
+import org.pente.game.GridState;
 import org.pente.game.GridStateFactory;
 import org.pente.game.MoveData;
 import org.pente.gameServer.core.DSGPlayerStorer;
@@ -122,12 +123,24 @@ public class CollectionHandler {
                 continue;
             }
 
+            // For center-first variants the webdb model synthesizes moves[0] as
+            // the center stone on load, so a non-center first move would be
+            // silently rewritten (and defeat duplicate detection). Reject it. F2.
+            if (g.moves[0] != GridStateFactory.getCenterMove(g.game)) {
+                resp.errors.add(new ImportResponse.Error(i,
+                        "first move must be the center move"));
+                continue;
+            }
+
             // Reject games whose moves do not replay legally for the variant.
+            // The client-facing message is fixed and carries only a computed
+            // move index; the exception detail is logged, never returned. F6.
             try {
                 GridStateFactory.createGridState(g.game, moveDataOf(g.moves));
             } catch (Exception e) {
+                cat.error("import of game index " + i + " has an illegal move", e);
                 resp.errors.add(new ImportResponse.Error(i,
-                        "illegal move: " + e.getMessage()));
+                        "illegal move at index " + illegalMoveIndex(g.game, g.moves)));
                 continue;
             }
 
@@ -140,10 +153,11 @@ public class CollectionHandler {
                 storer.storeGame(pid, g);
                 resp.imported++;
             } catch (Exception e) {
-                // One game's storage failure must not sink the whole batch.
+                // One game's storage failure must not sink the whole batch. Log
+                // the details server-side; never leak exception text (SQL,
+                // driver messages, class names) to the client. F6.
                 cat.error("import of game index " + i + " failed", e);
-                resp.errors.add(new ImportResponse.Error(i,
-                        "store failed: " + e.getMessage()));
+                resp.errors.add(new ImportResponse.Error(i, "store failed"));
             }
         }
         return resp;
@@ -301,12 +315,38 @@ public class CollectionHandler {
 
     private static long parseId(String s, HttpServletResponse response)
             throws IOException {
+        long id;
         try {
-            return Long.parseLong(s == null ? "" : s.trim());
+            id = Long.parseLong(s == null ? "" : s.trim());
         } catch (NumberFormatException e) {
             JsonHttp.error(response, 400, "bad_request", "invalid id: " + s);
             return -1L;
         }
+        // wgid is a positive auto-increment key; reject zero/negative ids with a
+        // 400 envelope so callers never see an empty 200 for /collection/-5. F3.
+        if (id <= 0) {
+            JsonHttp.error(response, 400, "bad_request", "invalid id: " + s);
+            return -1L;
+        }
+        return id;
+    }
+
+    /**
+     * Replay the moves one at a time to find the index of the first illegal move
+     * (a repeated/occupied cell). Returns the last index as a fallback if no
+     * single move throws. Used only to build a fixed, non-leaking error message
+     * — the exception detail is logged server-side, never returned. F6.
+     */
+    private static int illegalMoveIndex(int game, int[] moves) {
+        GridState gs = GridStateFactory.createGridState(game);
+        for (int k = 0; k < moves.length; k++) {
+            try {
+                gs.addMove(moves[k]);
+            } catch (RuntimeException ex) {
+                return k;
+            }
+        }
+        return (moves.length > 0) ? moves.length - 1 : 0;
     }
 
     private static MoveData moveDataOf(final int[] moves) {

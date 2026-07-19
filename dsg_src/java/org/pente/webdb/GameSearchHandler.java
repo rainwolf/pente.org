@@ -2,6 +2,8 @@ package org.pente.webdb;
 
 import java.io.IOException;
 import java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import jakarta.servlet.http.*;
@@ -112,6 +114,9 @@ public class GameSearchHandler {
         try {
             GameSearchResponse resp = search(req, pid);
             JsonHttp.ok(response, resp);
+        } catch (IllegalArgumentException e) {
+            // Bad user input (e.g. a malformed date filter) is a 400, not a 500.
+            JsonHttp.error(response, 400, "bad_request", e.getMessage());
         } catch (Exception e) {
             cat.error("games/search failed", e);
             JsonHttp.error(response, 500, "server_error", "game search failed");
@@ -148,16 +153,54 @@ public class GameSearchHandler {
             return mineSearch(req, pid);
         }
         if ("both".equals(scope)) {
-            GameSearchResponse archive = archiveSearch(req);
-            GameSearchResponse mine = mineSearch(req, pid);
-            GameSearchResponse both = new GameSearchResponse();
-            both.total = archive.total + mine.total;
-            both.games = new ArrayList<GameHeader>();
-            both.games.addAll(archive.games); // archive page first
-            both.games.addAll(mine.games);    // personal appended
-            return both;
+            return bothSearch(req, pid);
         }
         return archiveSearch(req);
+    }
+
+    /**
+     * scope="both": ONE combined page over the virtual concatenation
+     * {@code [archive rows...][personal rows...]}. The requested
+     * {@code (offset, limit)} window is filled from the archive first; if the
+     * archive is exhausted within that window, the remainder is topped up from
+     * the caller's personal games. The returned page is therefore never larger
+     * than {@code limit}, and {@code total} is the sum of the two source counts.
+     *
+     * <p>(Previously each source was paged independently with the same
+     * offset/limit and then concatenated, which returned up to {@code 2 * limit}
+     * rows and skipped/duplicated games while paging — F8.)
+     */
+    private GameSearchResponse bothSearch(GameSearchRequest req, long pid)
+            throws Exception {
+
+        int game = req.game;
+        int limit = clampLimit(req.limit);
+        int offset = Math.max(0, req.offset);
+
+        // Archive page at (offset, limit); archive.total is the archive count.
+        GameSearchResponse archive = archiveSearch(req);
+        long archiveTotal = archive.total;
+        long mineTotal = webDbStorer.countGames(pid, game);
+
+        GameSearchResponse both = new GameSearchResponse();
+        both.total = archiveTotal + mineTotal;
+
+        List<GameHeader> page = new ArrayList<GameHeader>(archive.games);
+        int remaining = limit - page.size();
+        if (remaining > 0) {
+            // Personal rows occupy combined indices [archiveTotal, ...); the
+            // first personal row visible in this window is at that offset.
+            int mineStart = (int) Math.max(0L, offset - archiveTotal);
+            for (WebDbGameData g :
+                    webDbStorer.listGames(pid, game, mineStart, remaining)) {
+                if (page.size() >= limit) {
+                    break;
+                }
+                page.add(GameHeader.fromWebDb(g));
+            }
+        }
+        both.games = page;
+        return both;
     }
 
     /**
@@ -192,67 +235,108 @@ public class GameSearchHandler {
         int[] moves = (req.moves == null) ? NO_MOVES : req.moves;
         int limit = clampLimit(req.limit);
         int offset = Math.max(0, req.offset);
-        PositionStatsRequest.Filters f = req.filters;
         String source = "archive";
 
-        GameSearchResponse resp = new GameSearchResponse();
+        ArchiveQuery q = buildArchive(game, moves, req.filters);
 
+        GameSearchResponse resp = new GameSearchResponse();
         Connection con = null;
         try {
             con = dbHandler.getConnection();
-
-            StringBuilder from = new StringBuilder();
-            StringBuilder where = new StringBuilder();
-            List<Object> baseParams = new ArrayList<Object>();
-            String gidCol;
-            String orderCol;
-
-            if (moves.length > 0) {
-                // Position-constrained: hash the position and match pente_move.
-                GridState state =
-                        GridStateFactory.createGridState(game, moveDataOf(moves));
-                long hash = state.getHash();
-                int numMoves = moves.length;
-
-                boolean gameLevel = needsGameTable(f);
-                from.append("from pente_move m");
-                if (gameLevel) {
-                    from.append(", pente_game g");
-                }
-                where.append(
-                        " where m.hash_key = ? and m.move_num = ? and m.game = ?");
-                baseParams.add(Long.valueOf(hash));
-                baseParams.add(Integer.valueOf(numMoves - 1));
-                baseParams.add(Integer.valueOf(game));
-                if (gameLevel) {
-                    where.append(" and m.gid = g.gid and g.game = ?");
-                    baseParams.add(Integer.valueOf(game));
-                }
-                appendFilters(from, where, baseParams, game, f, "m.winner");
-                gidCol = "m.gid";
-                orderCol = "m.play_date";
-            } else {
-                // Filter-only: a plain paged scan of pente_game.
-                from.append("from pente_game g");
-                where.append(" where g.game = ?");
-                baseParams.add(Integer.valueOf(game));
-                appendFilters(from, where, baseParams, game, f, "g.winner");
-                gidCol = "g.gid";
-                orderCol = "g.play_date";
-            }
-
-            resp.total =
-                    count(con, from.toString(), where.toString(), baseParams);
-            List<Long> gids = selectGids(con, gidCol, from.toString(),
-                    where.toString(), orderCol, baseParams, limit, offset);
+            resp.total = count(con, q.from, q.where, q.params);
+            List<Long> gids = selectGids(con, q.gidCol, q.from, q.where,
+                    q.orderCol, q.params, limit, offset);
             resp.games = hydrate(con, gids, game, source);
-
         } finally {
             if (con != null) {
                 dbHandler.freeConnection(con);
             }
         }
         return resp;
+    }
+
+    /** Assembled archive query: shared FROM/WHERE, id/order columns, bind params. */
+    static final class ArchiveQuery {
+        final String from;
+        final String where;
+        final String gidCol;
+        final String orderCol;
+        final List<Object> params;
+
+        ArchiveQuery(String from, String where, String gidCol, String orderCol,
+                     List<Object> params) {
+            this.from = from;
+            this.where = where;
+            this.gidCol = gidCol;
+            this.orderCol = orderCol;
+            this.params = params;
+        }
+    }
+
+    /**
+     * Build the archive FROM/WHERE (and bind params) for a request. Both query
+     * shapes ALWAYS join {@code pente_game g} and append {@code g.private = 'N'}
+     * so private archive games are never returned by the public search endpoint
+     * — this mirrors production {@code MySQLGameStorerSearcher}, which always
+     * appends the same guard (F1). The position-constrained shape pays the
+     * {@code pente_game} join cost unconditionally, exactly as production does.
+     */
+    private ArchiveQuery buildArchive(int game, int[] moves,
+                                      PositionStatsRequest.Filters f)
+            throws Exception {
+
+        StringBuilder from = new StringBuilder();
+        StringBuilder where = new StringBuilder();
+        List<Object> params = new ArrayList<Object>();
+        String gidCol;
+        String orderCol;
+
+        if (moves.length > 0) {
+            // Position-constrained: hash the position and match pente_move. We
+            // always join pente_game so the private guard (and any game-level
+            // filter) can be applied; production pays this join cost too.
+            GridState state =
+                    GridStateFactory.createGridState(game, moveDataOf(moves));
+            long hash = state.getHash();
+            int numMoves = moves.length;
+
+            from.append("from pente_move m, pente_game g");
+            where.append(
+                    " where m.hash_key = ? and m.move_num = ? and m.game = ?");
+            params.add(Long.valueOf(hash));
+            params.add(Integer.valueOf(numMoves - 1));
+            params.add(Integer.valueOf(game));
+            where.append(" and m.gid = g.gid and g.game = ?");
+            params.add(Integer.valueOf(game));
+            appendFilters(from, where, params, game, f, "m.winner");
+            gidCol = "m.gid";
+            orderCol = "m.play_date";
+        } else {
+            // Filter-only: a plain paged scan of pente_game.
+            from.append("from pente_game g");
+            where.append(" where g.game = ?");
+            params.add(Integer.valueOf(game));
+            appendFilters(from, where, params, game, f, "g.winner");
+            gidCol = "g.gid";
+            orderCol = "g.play_date";
+        }
+
+        // Private archive games are never exposed by the public search endpoint.
+        where.append(" and g.private = 'N'");
+
+        return new ArchiveQuery(from.toString(), where.toString(), gidCol,
+                orderCol, params);
+    }
+
+    /**
+     * Test seam: the archive SELECT a request would run, so tests can assert the
+     * private-visibility guard is present without inserting into the read-only
+     * archive tables. Not used by the production request paths.
+     */
+    public String archiveSqlForTest(GameSearchRequest req) throws Exception {
+        int[] moves = (req.moves == null) ? NO_MOVES : req.moves;
+        ArchiveQuery q = buildArchive(req.game, moves, req.filters);
+        return "select " + q.gidCol + " " + q.from + q.where;
     }
 
     /** {@code select count(*)} over the shared FROM/WHERE (no paging). */
@@ -358,22 +442,27 @@ public class GameSearchHandler {
             appendPlayerPredicate(where, params, "p2", f.player2Seat, f.player2Name);
         }
 
+        // Venue filters: an UNRESOLVABLE site/event name causes the predicate to
+        // be OMITTED (the filter is ignored), matching production — never bound
+        // to an impossible id (which would silently return zero rows). F9.
         if (notEmpty(f.site)) {
             GameSiteData sd = gameVenueStorer.getGameSiteData(game, f.site);
-            where.append(" and g.site_id = ?");
-            params.add(Integer.valueOf(sd == null ? -1 : sd.getSiteID()));
-            if (notEmpty(f.event)) {
-                GameEventData ed =
-                        gameVenueStorer.getGameEventData(game, f.event, f.site);
-                where.append(" and g.event_id = ?");
-                params.add(Integer.valueOf(ed == null ? -1 : ed.getEventID()));
+            if (sd != null) {
+                where.append(" and g.site_id = ?");
+                params.add(Integer.valueOf(sd.getSiteID()));
+                if (notEmpty(f.event)) {
+                    GameEventData ed =
+                            gameVenueStorer.getGameEventData(game, f.event, f.site);
+                    if (ed != null) {
+                        where.append(" and g.event_id = ?");
+                        params.add(Integer.valueOf(ed.getEventID()));
+                    }
+                    // Unresolvable event name: omit the event predicate.
+                }
             }
-        } else if (notEmpty(f.event)) {
-            // Event ids are scoped by site; without a site name an event cannot
-            // resolve, so bind an impossible id (matches the stats handler).
-            where.append(" and g.event_id = ?");
-            params.add(Integer.valueOf(-1));
+            // Unresolvable site name: omit the site (and any event) predicate.
         }
+        // An event without a site cannot resolve; production omits it, so do we.
         if (notEmpty(f.round)) {
             where.append(" and g.round = ?");
             params.add(f.round);
@@ -410,18 +499,6 @@ public class GameSearchHandler {
         params.add(name.trim().toLowerCase());
     }
 
-    /**
-     * Whether any filter needs the {@code pente_game} join in the position
-     * query. A winner-only filter does not — {@code m.winner} is denormalized
-     * onto {@code pente_move}.
-     */
-    private static boolean needsGameTable(PositionStatsRequest.Filters f) {
-        return f != null && (notEmpty(f.player1Name) || notEmpty(f.player2Name)
-                || notEmpty(f.site) || notEmpty(f.event) || notEmpty(f.round)
-                || notEmpty(f.section) || notEmpty(f.afterDate)
-                || notEmpty(f.beforeDate));
-    }
-
     private static int clampLimit(int requested) {
         if (requested <= 0) {
             return DEFAULT_LIMIT;
@@ -450,16 +527,26 @@ public class GameSearchHandler {
         return s != null && s.trim().length() > 0;
     }
 
-    /** Parse ISO {@code yyyy-MM-dd} (optionally with a time) to a Timestamp. */
+    /**
+     * Parse ISO {@code yyyy-MM-dd} (optionally with a time) to a Timestamp,
+     * interpreted as UTC so date filters round-trip with the UTC output the
+     * headers emit. A malformed value throws {@link IllegalArgumentException}
+     * (mapped to a 400 by {@link #handle}), never a 500. F4.
+     */
     private static Timestamp toTimestamp(String s) {
         String t = s.trim().replace('T', ' ');
         if (t.endsWith("Z")) {
             t = t.substring(0, t.length() - 1).trim();
         }
-        if (t.length() <= 10) {
-            t = t + " 00:00:00";
+        String pattern = (t.length() <= 10) ? "yyyy-MM-dd" : "yyyy-MM-dd HH:mm:ss";
+        SimpleDateFormat fmt = new SimpleDateFormat(pattern);
+        fmt.setTimeZone(TimeZone.getTimeZone("UTC"));
+        fmt.setLenient(false);
+        try {
+            return new Timestamp(fmt.parse(t).getTime());
+        } catch (ParseException e) {
+            throw new IllegalArgumentException("invalid date format");
         }
-        return Timestamp.valueOf(t);
     }
 
     /** Adapt a raw move array to {@link MoveData} for the hash factory. */
