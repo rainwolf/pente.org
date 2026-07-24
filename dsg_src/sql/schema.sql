@@ -1028,3 +1028,42 @@ CREATE TABLE `temp_tb` (
   `pid` bigint(20) NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+CREATE TABLE `webdb_analysis` (
+  `aid` bigint(20) NOT NULL AUTO_INCREMENT,
+  `pid` bigint(20) unsigned NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `game` smallint(6) NOT NULL,
+  `tree` mediumtext NOT NULL,
+  `created` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`aid`),
+  KEY `idx_pid` (`pid`,`updated`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+CREATE TABLE `webdb_game` (
+  `wgid` bigint(20) NOT NULL AUTO_INCREMENT,
+  `pid` bigint(20) unsigned NOT NULL,
+  `game` smallint(6) NOT NULL,
+  `player1` varchar(64) NOT NULL,
+  `player2` varchar(64) NOT NULL,
+  `winner` smallint(6) NOT NULL,
+  `site` varchar(128) DEFAULT NULL,
+  `event` varchar(128) DEFAULT NULL,
+  `round` varchar(32) DEFAULT NULL,
+  `section` varchar(32) DEFAULT NULL,
+  `play_date` timestamp NULL DEFAULT NULL,
+  `imported` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`wgid`),
+  KEY `idx_owner` (`pid`,`game`,`imported`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+CREATE TABLE `webdb_move` (
+  `wgid` bigint(20) NOT NULL,
+  `move_num` smallint(6) NOT NULL,
+  `next_move` smallint(6) NOT NULL,
+  `hash_key` bigint(20) NOT NULL,
+  `rotation` smallint(6) NOT NULL,
+  `game` smallint(6) NOT NULL,
+  `winner` smallint(6) NOT NULL,
+  `pid` bigint(20) unsigned NOT NULL,
+  PRIMARY KEY (`wgid`,`move_num`),
+  KEY `idx_stats` (`pid`,`hash_key`,`move_num`,`game`,`next_move`,`rotation`,`winner`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
