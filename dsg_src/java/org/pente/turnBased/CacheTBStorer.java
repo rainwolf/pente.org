@@ -1252,11 +1252,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                             game.getOriginalPlayer1Pid(), game.getOriginalPlayer2Pid(), game.getEventId());
                     if (tourneyMatch != null) {
                         tourneyMatch.setGid(game.getGid());
-                        int winner = game.getWinner();
-                        if (game.seatsSwapped() && winner != 0) { // != 0: not a draw
-                            winner = 3 - winner;
-                        }
-                        tourneyMatch.setResult(winner);
+                        tourneyMatch.setResult(tourneyResult(game));
                         tourneyStorer.updateMatch(tourneyMatch);
                         // return;
                     }
@@ -1269,6 +1265,23 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         }
     }
 
+    /**
+     * Maps a finished TB game to a TourneyMatch result code. A draw must become
+     * RESULT_TIE — raw getWinner() is 0 for draws, which collides with
+     * RESULT_UNFINISHED and would leave the match permanently "unplayed".
+     * Winners are flipped when the game's seats were swapped, because tourney
+     * matches are stored in original-seat orientation.
+     */
+    public static int tourneyResult(TBGame game) {
+        if (game.isDraw()) {
+            return TourneyMatch.RESULT_TIE;
+        }
+        int winner = game.getWinner();
+        if (game.seatsSwapped() && winner != 0) {
+            winner = 3 - winner;
+        }
+        return winner;
+    }
 
     /** THE write primitive: persist a set as the single source of truth and
      *  refresh its gid->sid index entries. Call inside synchronized(cacheTbLock). */
