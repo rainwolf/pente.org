@@ -329,6 +329,11 @@ public class DoubleEliminationFormat extends SingleEliminationFormat implements 
         return round;
     }
 
+    // NOTE: single-game-set tie replays call the 2-arg overload on
+    // SingleEliminationFormat directly and do NOT route through this override
+    // (see CacheTourneyStorer.applyMatchTo). Any double-elim-specific change
+    // here must also handle that path; the equivalence is pinned by
+    // TieReplayMatchTest.testDoubleElimOverrideMatchesInheritedTwoArgFalse.
     public TourneyMatch[] createMoreMatchesAfterTie(TourneyMatch original) {
         TourneyMatch more[] = new TourneyMatch[2];
         for (int i = 0; i < 2; i++) {

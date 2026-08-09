@@ -545,10 +545,17 @@ public class CacheTourneyStorer implements TourneyStorer {
             SingleEliminationMatch m = s2.getSingleEliminationMatch(tourneyMatch);
             log4j.debug("get result of matches = " + m.getResult());
             if (m.getResult() == TourneyMatch.RESULT_TIE && t.getNumRounds() == tourneyMatch.getRound()) {
-                TourneyMatch more[] = f.createMoreMatchesAfterTie(tourneyMatch);
+                // single-game sets replay a tie as ONE match, so that match must
+                // be the seat-SWAPPED one. The 1-arg call returns more[0]
+                // unswapped (the swap lives in more[1], which we drop here), so
+                // it would replay the same colours and could re-tie forever.
+                boolean single = GridStateFactory.isSingleGameSet(t.getGame());
+                TourneyMatch more[] = single
+                        ? f.createMoreMatchesAfterTie(tourneyMatch, true)
+                        : f.createMoreMatchesAfterTie(tourneyMatch);
                 insertMatch(more[0]);
                 s.addMatch(more[0]);
-                if (!GridStateFactory.isSingleGameSet(t.getGame())) {
+                if (!single) {
                     insertMatch(more[1]);
                     s.addMatch(more[1]);
                 }
