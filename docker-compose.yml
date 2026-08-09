@@ -2,6 +2,9 @@ services:
   pente.org:
     build:
       context: .
+      additional_contexts:
+        - live_build=../react_live_game_room/build
+        - mmai_build=../react_mmai/build
       args:
         - ENV=docker
         - DOCKER_DEFAULT_PLATFORM=$DOCKER_DEFAULT_PLATFORM

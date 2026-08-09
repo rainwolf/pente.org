@@ -75,8 +75,8 @@ RUN mkdir -p /var/lib/dsg/gameServer/game && \
 COPY submanifolddomains/ /usr/local/tomcat/
 
 # copy the react components (make sure they're built)
-COPY ./react-live-game-room/build /usr/local/tomcat/webapps/ROOT/gameServer/live
-COPY ./react-mmai/build /usr/local/tomcat/webapps/ROOT/gameServer/mmai
+COPY --from=live_build / /usr/local/tomcat/webapps/ROOT/gameServer/live
+COPY --from=mmai_build / /usr/local/tomcat/webapps/ROOT/gameServer/mmai
 
 # mmai sidecar binary (MMAIPlayer spawns it; see dsg_src/mmai/)
 COPY --from=mmai_sidecar_build /build/mmai_player /usr/local/bin/mmai_player
