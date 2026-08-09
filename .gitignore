@@ -39,8 +39,6 @@ testMail
 MyDSKeyStore.jks
 *.crt
 *.key
-# ...except the public DNSSEC root trust anchor, which is not a secret.
-!dockerMail/root.key
 *.p12
 dsg_src/db2/
 config/

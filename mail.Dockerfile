@@ -1,6 +1,6 @@
 FROM debian:trixie-slim
 
-RUN apt update && apt install postfix opendkim procps inetutils-telnet busybox-syslogd -y && apt autoremove -y && apt autopurge -y
+RUN apt update && apt install postfix opendkim procps inetutils-telnet busybox-syslogd dns-root-data -y && apt autoremove -y && apt autopurge -y
 
 # Configuration we own, copied to its real destination. Everything else under
 # /etc/postfix and /etc/opendkim is left as the distro installed it -- notably
@@ -12,7 +12,6 @@ COPY dockerMail/opendkim/KeyTable     /etc/opendkim/KeyTable
 COPY dockerMail/opendkim/SigningTable /etc/opendkim/SigningTable
 COPY dockerMail/opendkim/TrustedHosts /etc/opendkim/TrustedHosts
 COPY dockerMail/mailname              /etc/mailname
-COPY dockerMail/root.key              /usr/share/dns/root.key
 
 # Secrets. These are gitignored, so a clone without them fails the build here,
 # loudly, instead of silently shipping whatever was lying around.

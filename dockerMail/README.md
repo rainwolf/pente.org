@@ -17,8 +17,15 @@ clone plus the two secrets listed below.
 | `opendkim/SigningTable` | `/etc/opendkim/SigningTable` | Signs everything `*@pente.org`. |
 | `opendkim/TrustedHosts` | `/etc/opendkim/TrustedHosts` | Hosts signed for rather than verified. **Template** — contains `@MAIL_DOCKER_SUBNET@`. |
 | `mailname` | `/etc/mailname` | `myorigin` source. |
-| `root.key` | `/usr/share/dns/root.key` | Public DNSSEC root trust anchor for OpenDKIM's resolver. Not a secret. |
 | `start_dsg_mail.sh` | `/start_dsg_mail.sh` | Entrypoint: renders the templates, then starts syslogd, opendkim, postfix. |
+
+The DNSSEC root trust anchor OpenDKIM's resolver uses (`/usr/share/dns/root.key`)
+is no longer a file we ship: `mail.Dockerfile` installs the `dns-root-data`
+package, which owns and updates it. A frozen copy would go stale at the next
+root KSK (key-signing key) rollover; the package tracks Debian's own updates
+instead. Rebuilding the image picks up whatever `dns-root-data` ships at that
+point. OpenDKIM only reads the file once, at process start, so an already
+running container keeps its old anchor until restarted onto the rebuilt image.
 
 Everything else under `/etc/postfix` and `/etc/opendkim` is whatever the distro
 installed. In particular `master.cf`, `postfix-files`, `postfix-script` and
