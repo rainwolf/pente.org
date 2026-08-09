@@ -7,6 +7,17 @@ This directory used to be copied wholesale into the image's `/etc`. It is now a
 set of explicit, individually-copied files, so the image is reproducible from a
 clone plus the two secrets listed below.
 
+The container is outbound-only by configuration. Inbound-inertness rests on
+two independent things: it's **unreachable** (no MX record for pente.org, no
+published ports — nothing routes mail to this container from outside), and
+even a connection that somehow reached port 25 would find pente.org **not
+configured as a local destination** (`mydestination` no longer includes it)
+with OpenDKIM verification off (`Mode s`, sign-only). The latter is
+defense-in-depth, not the primary protection: Postfix's `permit_mynetworks`
+grants relay to any client on the trusted docker subnet regardless of
+`mydestination`, so it only matters for a hypothetical connection from outside
+`mynetworks`.
+
 ## Tracked files
 
 | File | Copied to | What it is |

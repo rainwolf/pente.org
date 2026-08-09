@@ -38,7 +38,11 @@ myhostname = pente.org
 alias_maps = hash:/etc/aliases
 alias_database = hash:/etc/aliases
 myorigin = /etc/mailname
-mydestination = $myhostname, pente.org,localhost
+# Inbound-inert on purpose: no MX record, no published ports, outbound relay
+# only. myhostname is pente.org, so leaving it (or pente.org) here would make
+# this box accept mail addressed to pente.org; myorigin/mailname keep the
+# outbound identity as pente.org regardless.
+mydestination = localhost
 relayhost =
 mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128 @MAIL_DOCKER_SUBNET@
 mailbox_size_limit = 0
