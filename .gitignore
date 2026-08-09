@@ -16,7 +16,22 @@ docker*/db/
 dockerMain/config/
 dockerMain/logs/
 dockerMain/etctomcat9/
-dockerMail/
+# dockerMail: the config files are tracked (see dockerMail/README.md).
+# Only the secrets are ignored.
+dockerMail/opendkim/keys/**/*.private
+dockerMail/postfix/sasl_passwd*
+# Distro-managed postfix internals and editor backups left over from the old
+# /etc snapshot. Not tracked, not copied into the image, safe to delete.
+dockerMail/postfix/dynamicmaps.cf
+dockerMail/postfix/dynamicmaps.cf.d/
+dockerMail/postfix/makedefs.out
+dockerMail/postfix/post-install
+dockerMail/postfix/postfix-files
+dockerMail/postfix/postfix-files.d/
+dockerMail/postfix/postfix-script
+dockerMail/postfix/sasl/
+dockerMail/postfix/*.save
+dockerMail/postfix/*--
 .env
 *.sql.gz
 settings.jar
@@ -24,6 +39,8 @@ testMail
 MyDSKeyStore.jks
 *.crt
 *.key
+# ...except the public DNSSEC root trust anchor, which is not a secret.
+!dockerMail/root.key
 *.p12
 dsg_src/db2/
 config/

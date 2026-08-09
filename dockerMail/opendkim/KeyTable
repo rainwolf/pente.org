@@ -1,0 +1,2 @@
+mail._domainkey.pente.org pente.org:mail:/etc/opendkim/keys/pente.org/mail.private
+
