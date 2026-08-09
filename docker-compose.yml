@@ -154,11 +154,8 @@ services:
       dockerfile: mail.Dockerfile
     image: pente_mail
     restart: always
-    healthcheck:
-      test: [ "CMD-SHELL", "service postfix status > /dev/null 2>&1 || (echo 'postfix not running, help plssss'; exit 1)" ]
-      interval: 333s
-      timeout: 5s
-      retries: 1000
+    # healthcheck comes from the image (SMTP banner + opendkim, retries=3);
+    # a compose-level block here would override and disable it
     ports:
       - '127.0.0.1:25:25'  # change this to 25 when deploying, this is to prevent sending mail on local
     deploy:
