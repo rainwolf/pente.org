@@ -2,6 +2,9 @@ services:
   pente.org:
     build:
       context: .
+      additional_contexts:
+        - live_build=../react_live_game_room/build
+        - mmai_build=../react_mmai/build
       args:
         - ENV=docker
         - DOCKER_DEFAULT_PLATFORM=$DOCKER_DEFAULT_PLATFORM
@@ -154,13 +157,12 @@ services:
       dockerfile: mail.Dockerfile
     image: pente_mail
     restart: always
-    healthcheck:
-      test: [ "CMD-SHELL", "service postfix status > /dev/null 2>&1 || (echo 'postfix not running, help plssss'; exit 1)" ]
-      interval: 333s
-      timeout: 5s
-      retries: 1000
-    ports:
-      - '127.0.0.1:25:25'  # change this to 25 when deploying, this is to prevent sending mail on local
+    # healthcheck comes from the image (SMTP banner + opendkim, retries=3);
+    # a compose-level block here would override and disable it
+    # no ports: on purpose — the app reaches pente_mail:25 over the docker
+    # network, which needs no publishing; outbound-only, nothing may connect
+    # from the host or the internet (pente.org has no MX; the A record would
+    # otherwise attract direct-to-IP SMTP)
     deploy:
       resources:
         limits:
