@@ -44,3 +44,8 @@ dsg_src/db2/
 config/
 pentai/
 dsg_src/mmai/mmai_player
+
+# opendkim signing keys — mail.private is the DKIM private key.
+# Named .private, so the *.key / *.crt / *.p12 rules above do not catch it.
+dockerMail/opendkim/keys/
+*.private
