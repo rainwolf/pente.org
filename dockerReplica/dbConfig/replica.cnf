@@ -4,3 +4,6 @@ log-basename=pente_org         # used to be independent of hostname changes
                                # (otherwise name is <datadir>/mysql-bin)
 replicate_do_db=dsg            # replicate only this DB
 #binlog-format=MIXED           #default
+
+[mysqld]
+key_buffer_size = 1G              # MyISAM index cache (default 128M is too small)

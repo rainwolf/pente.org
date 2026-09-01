@@ -6,3 +6,6 @@ log-basename=pente_org            # used to be independent of hostname changes
 #binlog-format=MIXED              #default
 max_binlog_size=1G                # default
 expire_logs_days=21                # default
+
+[mysqld]
+key_buffer_size = 1G              # MyISAM index cache (default 128M is too small)
