@@ -219,10 +219,8 @@ public class MobileGameServlet extends HttpServlet {
 
                     if (requestData.getNumMoves() > 0 ||
                             (requestData.getNumMoves() == 0 &&
-                                    (requestData.getGameStorerSearchRequestFilterData().getGame() == GridStateFactory.DPENTE ||
-                                            requestData.getGameStorerSearchRequestFilterData().getGame() == GridStateFactory.SPEED_DPENTE ||
-                                            requestData.getGameStorerSearchRequestFilterData().getGame() == GridStateFactory.DKERYO ||
-                                            requestData.getGameStorerSearchRequestFilterData().getGame() == GridStateFactory.SPEED_DKERYO))) {
+                                    GridStateFactory.firstMoveCanBeOffCenter(
+                                            requestData.getGameStorerSearchRequestFilterData().getGame()))) {
 
                         gameStorerSearcher.search(requestData, responseData1);
 

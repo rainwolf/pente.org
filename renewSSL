@@ -3,4 +3,4 @@
 open ~/mariposa/coding/keysCertificatesStuff.dmg 
 
 cd letsencrypt
-./getssl -w . pente.org
+./getssl -f -w . pente.org

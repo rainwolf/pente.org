@@ -114,8 +114,16 @@ function isPoofPente(game) {
    return false;
 }
 
+// Games whose first stone may be taken back on this page: 7/8 D-Pente + Speed D-Pente,
+// 17/18 DK-Pente (D-Keryo) + Speed DK-Pente, 19/20 Go + Speed Go,
+// 27/28 Swap2-Pente + Speed Swap2-Pente, 29/30 Swap2-Keryo + Speed Swap2-Keryo.
+// Taking back move 1 empties the board, so the next click places the first stone
+// off-center. clearGame() still re-seeds K10 on a full reset, as it does for D-Pente.
+// Deliberately narrower than GridStateFactory.firstMoveCanBeOffCenter(), which also
+// covers Go 9x9/13x13 and the turn-based TB_ ids.
 function isDPente(game) {
-   if (game === 17 || game === 18 || game === 7 || game === 8 || game === 19 || game === 20) {
+   if (game === 17 || game === 18 || game === 7 || game === 8 || game === 19 || game === 20 ||
+       game === 27 || game === 28 || game === 29 || game === 30) {
       return true;
    }
    return false;
@@ -1266,7 +1274,9 @@ function getStrMove(move) {
 
 function backMove() {
 
-   if (currentMove !== 1 || (isDPente(game) && currentMove > 0)) {
+   // currentMove > 0 first: at 0 there is nothing to take back, and walking to
+   // moves[-1] throws and leaves currentMove at -1, breaking every later click.
+   if (currentMove > 0 && (currentMove !== 1 || isDPente(game))) {
 
       hideStatistics();
 

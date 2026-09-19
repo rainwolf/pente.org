@@ -25,6 +25,10 @@ import org.pente.game.*;
 
 public class GameVenueJSFormat {
 
+    /** Mirrors GridStateFactory's TB_START, which is private there; the same
+     *  literal is used by MySQLGameVenueStorer.findGameTreeData. */
+    private static final int TB_ID_OFFSET = 50;
+
     private static final GameEventData EMPTY_EVENT_DATA;
     private static final GameRoundData EMPTY_ROUND_DATA;
     private static final GameSectionData EMPTY_SECTION_DATA;
@@ -59,6 +63,46 @@ public class GameVenueJSFormat {
     /** This is implemented in a pretty dumb way but it works...
      *  Recursion would probably work with less code.
      */
+    /** Turn-based games share their display name with the live game of the same
+     *  variant (GridStateFactory's tbGames entries carry the live names), so a tree
+     *  that contains both a live id and its turn-based id (base + 50) would emit two
+     *  identically-labelled entries in the games dropdown. Fold the turn-based entry
+     *  into its base entry, unioning the sites by name, matching the base-id
+     *  translation MySQLGameVenueStorer.findGameTreeData already does for lookups.
+     *  A turn-based entry with no live counterpart is kept as-is.
+     */
+    private Vector<GameTreeData> mergeTurnBasedIntoBase(Vector<GameTreeData> treeData) {
+
+        Map<Integer, GameTreeData> byBaseId = new LinkedHashMap<>();
+        Vector<GameTreeData> merged = new Vector<>();
+
+        for (int i = 0; i < treeData.size(); i++) {
+            GameTreeData game = treeData.get(i);
+            int baseId = game.getID() > TB_ID_OFFSET ?
+                    game.getID() - TB_ID_OFFSET : game.getID();
+
+            GameTreeData existing = byBaseId.get(baseId);
+            if (existing == null) {
+                byBaseId.put(baseId, game);
+                merged.addElement(game);
+                continue;
+            }
+
+            // Duplicate variant: move any site the base entry does not already have.
+            Set<String> haveSites = new HashSet<>();
+            for (GameSiteData s : existing.getGameSiteData()) {
+                haveSites.add(s.getName());
+            }
+            for (GameSiteData s : game.getGameSiteData()) {
+                if (haveSites.add(s.getName())) {
+                    existing.addGameSiteData(s);
+                }
+            }
+        }
+
+        return merged;
+    }
+
     public StringBuffer format(Vector<GameTreeData> treeData) {
 
         // clone data since we plan on adding new data to tree
@@ -71,7 +115,7 @@ public class GameVenueJSFormat {
 
             newTreeData.addElement((GameTreeData) t.clone());
         }
-        treeData = newTreeData;
+        treeData = mergeTurnBasedIntoBase(newTreeData);
 
         for (int i = 0; i < treeData.size(); i++) {
 

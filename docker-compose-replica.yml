@@ -14,7 +14,7 @@ services:
     volumes:
       - ~/.ssh:/root/.ssh
     healthcheck:
-      test: ["CMD-SHELL", "mariadb -u${MYSQL_USER} -p${MYSQL_PASSWORD} -h 127.0.0.1 -P ${REPLICA_LOCAL_PORT} ${MYSQL_DATABASE} -e \"select * from dsg_donation limit 1\""]
+      test: [ "CMD-SHELL", "mariadb -u${MYSQL_USER} -p${MYSQL_PASSWORD} -h 127.0.0.1 -P ${REPLICA_LOCAL_PORT} ${MYSQL_DATABASE} -e \"select * from dsg_donation limit 1\"" ]
       interval: 10s
       timeout: 5s
       retries: 1000
@@ -30,11 +30,11 @@ services:
     image: replica_db
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "test -f /var/lib/mysql/dsg/temp_tb.MYI"]
+      test: [ "CMD-SHELL", "test -f /var/lib/mysql/dsg/temp_tb.MYI" ]
       interval: 10s
       timeout: 5s
       retries: 1000
-    environment:  # values from .env file
+    environment: # values from .env file
       - MYSQL_INITDB_SKIP_TZINFO=Y
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
@@ -43,15 +43,15 @@ services:
       - REPLICATION_USER=${REPLICATION_USER}
       - REPLICATION_PASSWORD=${REPLICATION_PASSWORD}
       - REPLICA_LOCAL_PORT=${REPLICA_LOCAL_PORT}
-#      - max_binlog_size=${max_binlog_size}
-#      - replica_pending_jobs_size_max=${replica_pending_jobs_size_max}
-#      - max_allowed_packet=${max_allowed_packet}
-#      - replica_max_allowed_packet=${replica_max_allowed_packet}
+    #      - max_binlog_size=${max_binlog_size}
+    #      - replica_pending_jobs_size_max=${replica_pending_jobs_size_max}
+    #      - max_allowed_packet=${max_allowed_packet}
+    #      - replica_max_allowed_packet=${replica_max_allowed_packet}
     ports:
       - '127.0.0.1:${DSG_REMOTE_PORT}:3306'
     networks:
       - pente_org
-    volumes:  # make the sh files executable
+    volumes: # make the sh files executable
       - ./dockerReplica/dbConfig:/etc/mysql/conf.d
       - ./dockerReplica/db:/var/lib/mysql
       - ./dockerReplica/dbInit:/docker-entrypoint-initdb.d
