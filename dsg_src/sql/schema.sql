@@ -401,7 +401,7 @@ CREATE TABLE `jiveAttachment` (
   `modificationDate` varchar(15) NOT NULL DEFAULT '',
   PRIMARY KEY (`attachmentID`),
   KEY `jiveAttachment_messageID_idx` (`messageID`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `jiveAttachmentProp`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -409,9 +409,9 @@ DROP TABLE IF EXISTS `jiveAttachmentProp`;
 CREATE TABLE `jiveAttachmentProp` (
   `attachmentID` bigint(20) NOT NULL DEFAULT 0,
   `name` varchar(100) NOT NULL DEFAULT '',
-  `propValue` text NOT NULL,
+  `propValue` mediumtext NOT NULL,
   PRIMARY KEY (`attachmentID`,`name`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `jiveCategory`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -419,7 +419,7 @@ DROP TABLE IF EXISTS `jiveCategory`;
 CREATE TABLE `jiveCategory` (
   `categoryID` bigint(20) NOT NULL DEFAULT 0,
   `name` varchar(255) NOT NULL DEFAULT '',
-  `description` text DEFAULT NULL,
+  `description` mediumtext DEFAULT NULL,
   `creationDate` varchar(15) NOT NULL DEFAULT '',
   `modificationDate` varchar(15) NOT NULL DEFAULT '',
   `lft` int(11) NOT NULL DEFAULT 0,
@@ -427,7 +427,7 @@ CREATE TABLE `jiveCategory` (
   PRIMARY KEY (`categoryID`),
   KEY `jiveCategory_lft_idx` (`lft`),
   KEY `jiveCategory_rgt_idx` (`rgt`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `jiveCategoryProp`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -435,9 +435,9 @@ DROP TABLE IF EXISTS `jiveCategoryProp`;
 CREATE TABLE `jiveCategoryProp` (
   `categoryID` bigint(20) NOT NULL DEFAULT 0,
   `name` varchar(100) NOT NULL DEFAULT '',
-  `propValue` text NOT NULL,
+  `propValue` mediumtext NOT NULL,
   PRIMARY KEY (`categoryID`,`name`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `jiveForum`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -445,7 +445,7 @@ DROP TABLE IF EXISTS `jiveForum`;
 CREATE TABLE `jiveForum` (
   `forumID` bigint(20) NOT NULL DEFAULT 0,
   `name` varchar(255) NOT NULL DEFAULT '',
-  `description` text DEFAULT NULL,
+  `description` mediumtext DEFAULT NULL,
   `modDefaultThreadVal` bigint(20) NOT NULL DEFAULT 0,
   `modMinThreadVal` bigint(20) NOT NULL DEFAULT 0,
   `modDefaultMsgVal` bigint(20) NOT NULL DEFAULT 0,
@@ -457,7 +457,7 @@ CREATE TABLE `jiveForum` (
   PRIMARY KEY (`forumID`),
   KEY `jiveForum_name_idx` (`name`(10)),
   KEY `jiveForum_cat_idx` (`categoryID`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `jiveForumProp`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -465,9 +465,9 @@ DROP TABLE IF EXISTS `jiveForumProp`;
 CREATE TABLE `jiveForumProp` (
   `forumID` bigint(20) NOT NULL DEFAULT 0,
   `name` varchar(100) NOT NULL DEFAULT '',
-  `propValue` text NOT NULL,
+  `propValue` mediumtext NOT NULL,
   PRIMARY KEY (`forumID`,`name`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `jiveGroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -481,7 +481,7 @@ CREATE TABLE `jiveGroup` (
   PRIMARY KEY (`groupID`),
   KEY `jiveGroup_name_idx` (`name`(10)),
   KEY `jiveGroup_cDate_idx` (`creationDate`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `jiveGroupPerm`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -493,7 +493,7 @@ CREATE TABLE `jiveGroupPerm` (
   `permission` int(11) NOT NULL DEFAULT 0,
   KEY `jiveGroupPerm_object_idx` (`objectType`,`objectID`),
   KEY `jiveGroupPerm_groupID_idx` (`groupID`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `jiveGroupProp`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -501,9 +501,9 @@ DROP TABLE IF EXISTS `jiveGroupProp`;
 CREATE TABLE `jiveGroupProp` (
   `groupID` bigint(20) NOT NULL DEFAULT 0,
   `name` varchar(100) NOT NULL DEFAULT '',
-  `propValue` text NOT NULL,
+  `propValue` mediumtext NOT NULL,
   PRIMARY KEY (`groupID`,`name`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `jiveGroupUser`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -513,7 +513,7 @@ CREATE TABLE `jiveGroupUser` (
   `userID` bigint(20) NOT NULL DEFAULT 0,
   `administrator` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`groupID`,`userID`,`administrator`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `jiveID`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -522,7 +522,7 @@ CREATE TABLE `jiveID` (
   `idType` int(11) NOT NULL DEFAULT 0,
   `id` bigint(20) NOT NULL DEFAULT 0,
   PRIMARY KEY (`idType`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `jiveMessage`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -534,7 +534,7 @@ CREATE TABLE `jiveMessage` (
   `forumID` bigint(20) NOT NULL DEFAULT 0,
   `userID` bigint(20) DEFAULT NULL,
   `subject` varchar(255) DEFAULT NULL,
-  `body` text DEFAULT NULL,
+  `body` mediumtext DEFAULT NULL,
   `modValue` bigint(20) NOT NULL DEFAULT 0,
   `rewardPoints` int(11) NOT NULL DEFAULT 0,
   `creationDate` varchar(15) NOT NULL DEFAULT '',
@@ -547,7 +547,7 @@ CREATE TABLE `jiveMessage` (
   KEY `jiveMessage_cDate_idx` (`creationDate`),
   KEY `jiveMessage_mDate_idx` (`modificationDate`),
   KEY `jiveMessage_forumID_modVal_idx` (`forumID`,`modValue`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `jiveMessageProp`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -555,9 +555,9 @@ DROP TABLE IF EXISTS `jiveMessageProp`;
 CREATE TABLE `jiveMessageProp` (
   `messageID` bigint(20) NOT NULL DEFAULT 0,
   `name` varchar(100) NOT NULL DEFAULT '',
-  `propValue` text NOT NULL,
+  `propValue` mediumtext NOT NULL,
   PRIMARY KEY (`messageID`,`name`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `jiveModeration`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -571,7 +571,7 @@ CREATE TABLE `jiveModeration` (
   KEY `jiveModeration_objectID_idx` (`objectID`),
   KEY `jiveModeration_objectType_idx` (`objectType`),
   KEY `jiveModeration_userID_idx` (`userID`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `jiveReadTracker`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -582,7 +582,7 @@ CREATE TABLE `jiveReadTracker` (
   `objectID` bigint(20) NOT NULL DEFAULT 0,
   `readDate` varchar(15) NOT NULL DEFAULT '',
   PRIMARY KEY (`userID`,`objectType`,`objectID`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `jiveReward`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -597,7 +597,7 @@ CREATE TABLE `jiveReward` (
   KEY `jiveReward_creationDate_idx` (`creationDate`),
   KEY `jiveReward_messageID_idx` (`messageID`),
   KEY `jiveReward_threadID_idx` (`threadID`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `jiveThread`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -616,7 +616,7 @@ CREATE TABLE `jiveThread` (
   KEY `jiveThread_cDate_idx` (`creationDate`),
   KEY `jiveThread_mDate_idx` (`modificationDate`),
   KEY `jiveThread_fID_mV_idx` (`forumID`,`modValue`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `jiveThreadProp`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -624,9 +624,9 @@ DROP TABLE IF EXISTS `jiveThreadProp`;
 CREATE TABLE `jiveThreadProp` (
   `threadID` bigint(20) NOT NULL DEFAULT 0,
   `name` varchar(100) NOT NULL DEFAULT '',
-  `propValue` text NOT NULL,
+  `propValue` mediumtext NOT NULL,
   PRIMARY KEY (`threadID`,`name`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `jiveUser`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -646,7 +646,7 @@ CREATE TABLE `jiveUser` (
   KEY `jiveUser_username_idx` (`username`(10)),
   KEY `jiveUser_cDate_idx` (`creationDate`),
   KEY `jiveUser_hash_idx` (`passwordHash`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `jiveUserPerm`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -658,7 +658,7 @@ CREATE TABLE `jiveUserPerm` (
   `permission` int(11) NOT NULL DEFAULT 0,
   KEY `jiveUserPerm_object_idx` (`objectType`,`objectID`),
   KEY `jiveUserPerm_userID_idx` (`userID`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `jiveUserProp`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -666,9 +666,9 @@ DROP TABLE IF EXISTS `jiveUserProp`;
 CREATE TABLE `jiveUserProp` (
   `userID` bigint(20) NOT NULL DEFAULT 0,
   `name` varchar(100) NOT NULL DEFAULT '',
-  `propValue` text NOT NULL,
+  `propValue` mediumtext NOT NULL,
   PRIMARY KEY (`userID`,`name`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `jiveUserReward`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -677,7 +677,7 @@ CREATE TABLE `jiveUserReward` (
   `userID` bigint(20) NOT NULL DEFAULT 0,
   `rewardPoints` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`userID`,`rewardPoints`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `jiveUserRoster`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -686,7 +686,7 @@ CREATE TABLE `jiveUserRoster` (
   `userID` bigint(20) NOT NULL DEFAULT 0,
   `subUserID` bigint(20) NOT NULL DEFAULT 0,
   PRIMARY KEY (`userID`,`subUserID`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `jiveWatch`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -701,7 +701,7 @@ CREATE TABLE `jiveWatch` (
   KEY `jiveWatch_userID_idx` (`userID`),
   KEY `jiveWatch_objectID_idx` (`objectID`),
   KEY `jiveWatch_objectType_idx` (`objectType`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `koth`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -778,13 +778,6 @@ CREATE TABLE `pente_game` (
   KEY `game_rating2` (`player2_rating`,`game`,`gid`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-CREATE TABLE `pente_renju_offer` (
-  `gid` bigint(20) unsigned NOT NULL DEFAULT 0,
-  `site_id` smallint(5) unsigned NOT NULL DEFAULT 0,
-  `offer_num` tinyint(3) unsigned NOT NULL DEFAULT 0,
-  `move` smallint(5) unsigned NOT NULL DEFAULT 0,
-  PRIMARY KEY (`gid`,`site_id`,`offer_num`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 DROP TABLE IF EXISTS `pente_move`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -802,6 +795,17 @@ CREATE TABLE `pente_move` (
   KEY `hash_key` (`hash_key`,`move_num`,`game`,`next_move`,`rotation`,`winner`),
   KEY `hash_key_2` (`hash_key`,`move_num`,`game`,`play_date`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `pente_renju_offer`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `pente_renju_offer` (
+  `gid` bigint(20) unsigned NOT NULL DEFAULT 0,
+  `site_id` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `offer_num` tinyint(3) unsigned NOT NULL DEFAULT 0,
+  `move` smallint(5) unsigned NOT NULL DEFAULT 0,
+  PRIMARY KEY (`gid`,`site_id`,`offer_num`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `player`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -1028,6 +1032,9 @@ CREATE TABLE `temp_tb` (
   `pid` bigint(20) NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `webdb_analysis`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `webdb_analysis` (
   `aid` bigint(20) NOT NULL AUTO_INCREMENT,
   `pid` bigint(20) unsigned NOT NULL,
@@ -1038,7 +1045,11 @@ CREATE TABLE `webdb_analysis` (
   `updated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`aid`),
   KEY `idx_pid` (`pid`,`updated`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `webdb_game`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `webdb_game` (
   `wgid` bigint(20) NOT NULL AUTO_INCREMENT,
   `pid` bigint(20) unsigned NOT NULL,
@@ -1054,7 +1065,11 @@ CREATE TABLE `webdb_game` (
   `imported` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`wgid`),
   KEY `idx_owner` (`pid`,`game`,`imported`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `webdb_move`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `webdb_move` (
   `wgid` bigint(20) NOT NULL,
   `move_num` smallint(6) NOT NULL,
@@ -1066,4 +1081,15 @@ CREATE TABLE `webdb_move` (
   `pid` bigint(20) unsigned NOT NULL,
   PRIMARY KEY (`wgid`,`move_num`),
   KEY `idx_stats` (`pid`,`hash_key`,`move_num`,`game`,`next_move`,`rotation`,`winner`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*M!100616 SET NOTE_VERBOSITY=@OLD_NOTE_VERBOSITY */;
+
