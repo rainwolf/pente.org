@@ -235,8 +235,16 @@
     <td>&nbsp;</td>
     <td>
 
-    <% // Date formatter for the date in the textare below
+    <% // Date formatter for the date in the textare below.
+       // JDK 20+ (CLDR 42) emits U+202F NARROW NO-BREAK SPACE before AM/PM for en_US.
+       // jiveMessage.body is latin1, so that character makes the UPDATE in
+       // DbForumMessage.saveToDb fail with "Incorrect string value" -- an error Jive
+       // logs and swallows, so the edit is reported as saved, served from messageCache
+       // for 6 hours, and then reverts to the original when the cache reloads from the
+       // database. Fold any Unicode space separator down to a plain space so the
+       // timestamp is always representable in latin1.
        DateFormat formatter = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT);
+       String editedAtDate = formatter.format(new java.util.Date()).replaceAll("\\p{Zs}", " ");
     %>
 
 <textarea name="comment" cols="58" rows="2" wrap="virtual">
@@ -246,7 +254,7 @@
          <ww:property value="pageUser/username"/>
       </jive:arg>
       <jive:arg>
-         <%= formatter.format(new java.util.Date()) %>
+         <%= editedAtDate %>
       </jive:arg>
    </jive:i18n>
 </textarea>

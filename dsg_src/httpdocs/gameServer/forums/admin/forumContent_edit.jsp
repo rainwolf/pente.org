@@ -188,9 +188,17 @@
                <br>
             </font>
             <% Date editDate = new Date(); %>
+            <% // SkinUtils.formatDate uses DateFormat.getDateTimeInstance(MEDIUM, SHORT), which on
+               // JDK 20+ (CLDR 42) emits U+202F NARROW NO-BREAK SPACE before AM/PM for en_US.
+               // jiveMessage.body is latin1, so that character makes the UPDATE in
+               // DbForumMessage.saveToDb fail with "Incorrect string value" -- an error Jive logs
+               // and swallows, so the edit is reported as saved, served from messageCache for 6
+               // hours, and then reverts to the original. See docs/forum-edit-revert-rca.md.
+               String editedOnDate = SkinUtils.formatDate(request, pageUser, new Date()).replaceAll("\\p{Zs}", " ");
+            %>
             <textarea rows="3" cols="60" name="editedByText" wrap="virtual">
 
-[Edited by: <%= pageUser.getUsername() %> on <%= SkinUtils.formatDate(request, pageUser, new Date()) %>]</textarea>
+[Edited by: <%= pageUser.getUsername() %> on <%= editedOnDate %>]</textarea>
          </td>
       </tr>
       <tr>
