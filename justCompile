@@ -5,4 +5,19 @@ clear; printf '\e[3J';
 set -gx JAVA_HOME /opt/homebrew/opt/openjdk@21/
 rsync -vurtd --exclude-from exclude_compile.txt --stats --progress dsg_src/java/ deploy/
 ant
+set -l ant_status $status
+
+# no auto-reload: restart the container so freshly compiled classes take effect
+if test $ant_status -eq 0
+    set -l cid (docker compose ps -q pente.org 2>/dev/null)
+    if test -n "$cid"
+        docker compose -f docker-compose.yml restart pente.org
+    else
+        echo "Local pente.org container not running; skipping restart"
+    end
+else
+    echo "ant failed; skipping restart"
+end
+
+exit $ant_status
 

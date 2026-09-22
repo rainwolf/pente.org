@@ -25,7 +25,7 @@ else
   do
     if [[ ${target} == "pente.org" ]]
     then
-      ./sync_gameServer.sh
+      SKIP_PROD_RESTART=1 ./sync_gameServer.sh
     fi
     echo "Building ${target} for linux/amd64"
     docker compose -f docker-compose.yml -f docker-compose-replica.yml build "${target}" || exit 1
@@ -60,7 +60,12 @@ do
   docker save "${image}" | bzip2 | pv | ssh "${target}" docker load
 done
 
-./sync_gameServer.sh
+if [[ ${#images_main_push[@]} -ne 0 ]]
+then
+  SKIP_PROD_RESTART=1 ./sync_gameServer.sh
+else
+  ./sync_gameServer.sh
+fi
 
 # restart the containers with new images
 if [[ ${#images_main_push[@]} -ne 0 ]]

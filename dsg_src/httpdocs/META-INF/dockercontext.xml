@@ -1,5 +1,5 @@
 <Context path="" docBase="ROOT.war" debug="7"
-         privileged="false" crossContext="false" reloadable="true">
+         privileged="false" crossContext="false" reloadable="false">
 
     <Valve className="org.apache.catalina.valves.AccessLogValve"
            directory="/var/log/dsg" prefix="access." suffix=".log"
