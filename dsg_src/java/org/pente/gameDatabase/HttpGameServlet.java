@@ -18,24 +18,32 @@
  */
 package org.pente.gameDatabase;
 
-import java.io.*;
-import java.net.*;
-import java.text.ParseException;
-import java.util.*;
-import java.util.zip.*;
-
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
-
-import org.apache.log4j.*;
-
-import org.pente.database.*;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.apache.log4j.Category;
+import org.pente.database.DBHandler;
+import org.pente.filter.http.HttpConstants;
+import org.pente.filter.iyt.game.IYTGameData;
 import org.pente.game.*;
-import org.pente.filter.http.*;
-import org.pente.filter.iyt.game.*;
 import org.pente.gameServer.core.DSGPlayerData;
 import org.pente.gameServer.core.DSGPlayerStorer;
-import org.pente.gameServer.server.*;
+import org.pente.gameServer.server.ActivityData;
+import org.pente.gameServer.server.ActivityLogger;
+import org.pente.gameServer.server.Resources;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.Enumeration;
+import java.util.StringTokenizer;
+import java.util.Vector;
+import java.util.zip.GZIPOutputStream;
 
 public class HttpGameServlet extends HttpServlet {
 
@@ -197,9 +205,11 @@ public class HttpGameServlet extends HttpServlet {
                 String playerName = (String) request.getAttribute("name");
                 DSGPlayerData pdata = playerStorer.loadPlayer(playerName);
 
-                if (pdata == null || !pdata.databaseAccess() ||
-                    ((pdata.getRegisterDate().getTime() > System.currentTimeMillis() - 1000L * 3600 * 24 * 30 * 2) &&
-                                pdata.getTotalGames() == 0)) {
+                if (pdata == null ||
+                // or no db access
+                        !(pdata.databaseAccess() ||
+                        ((pdata.getRegisterDate().getTime() > System.currentTimeMillis() - 1000L * 3600 * 24 * 30 * 2) &&
+                                pdata.getTotalGames() > 0))) {
                     cat.info("Blocking database access for player: " + playerName);
                     request.setAttribute("blocked", new Object());
                     requestStr = HttpGameServer.SEARCH; // force normal search
@@ -381,10 +391,12 @@ public class HttpGameServlet extends HttpServlet {
         }
     }
 
-    /** Determine from the request whether or not the output can
-     *  be sent gzipped.
-     *  @param request The request, used to get headers
-     *  @return boolean True if output can be gzipped
+    /**
+     * Determine from the request whether or not the output can
+     * be sent gzipped.
+     *
+     * @param request The request, used to get headers
+     * @return boolean True if output can be gzipped
      */
 
     private boolean canGzipOutput(HttpServletRequest request) {
