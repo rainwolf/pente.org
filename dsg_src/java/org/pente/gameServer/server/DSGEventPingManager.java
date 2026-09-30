@@ -53,11 +53,12 @@ public class DSGEventPingManager implements PingManager {
                     playersCopy = new HashMap<>(players);
                 }
 
-                Iterator<String> names = playersCopy.keySet().iterator();
-                while (names.hasNext()) {
-                    String name = (String) names.next();
-                    //log4j.info(name + ": " + players.get(name));
-                    pingEvent = new DSGPingEvent(name, players.get(name).getAveragePingTime(), players.get(name).getLatestPingTime());
+                // read ping data from the snapshot, not the live map: a player
+                // removed since the copy would make players.get(name) null
+                for (Map.Entry<String, PingTimeData> entry : playersCopy.entrySet()) {
+                    String name = entry.getKey();
+                    PingTimeData data = entry.getValue();
+                    pingEvent = new DSGPingEvent(name, data.getAveragePingTime(), data.getLatestPingTime());
                     dsgRouter.routeEvent(pingEvent, name);
                     pingEvent = null;
                 }
