@@ -92,6 +92,44 @@ public class RenjuTbContractTest extends TestCase {
         assertEquals(C + 2, d.stones[0]);
     }
 
+    public void testMoveDeclineAndPlaceWindow1() throws Exception {
+        // (8,8): empty, inside the move-2 3x3 square
+        Decision d = RenjuTbContract.resolve("move", new int[]{ C + 16 }, swapWindow(1));
+        assertEquals(Kind.PLACE, d.kind);
+        assertTrue(d.declineSwap);
+        assertEquals(C + 16, d.stones[0]);
+    }
+
+    // A rejected decline+place must not reach MoveServlet, which commits the
+    // decline (renjuSwap(false)) before storeNewMove validates the stone.
+
+    public void testMoveDeclineRejectsOccupiedPointWindow1() {
+        try {
+            RenjuTbContract.resolve("move", new int[]{ C }, swapWindow(1));
+            fail("expected rejection: centre already occupied");
+        } catch (RenjuContractException e) { /* ok */ }
+    }
+
+    public void testMoveDeclineRejectsPointOutsideSquareWindow2() {
+        try {
+            // 0 = (0,0): empty but outside the move-3 5x5 square
+            RenjuTbContract.resolve("move", new int[]{ 0 }, swapWindow(2));
+            fail("expected rejection: outside the opening square");
+        } catch (RenjuContractException e) { /* ok */ }
+    }
+
+    public void testMoveDeclineRejectsOccupiedPointWindow5() {
+        RenjuState s = swapWindow(4);
+        s.renjuSwapDecisionMade(false);
+        s.chooseBranch(false);
+        s.addMove(C + 2); // Branch A move 5 -> white's move-5 swap window
+        assertTrue(s.isAwaitingSwapDecision());
+        try {
+            RenjuTbContract.resolve("move", new int[]{ C + 2 }, s);
+            fail("expected rejection: move 5 point already occupied");
+        } catch (RenjuContractException e) { /* ok */ }
+    }
+
     // --- move: branch A at window 4 (fresh decline) ---
 
     public void testMoveBranchAFreshDecline() throws Exception {

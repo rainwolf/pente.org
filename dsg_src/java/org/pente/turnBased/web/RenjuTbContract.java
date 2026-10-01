@@ -108,6 +108,11 @@ public final class RenjuTbContract {
                 if (n != 1) {
                     throw new RenjuContractException("Expected a single move.");
                 }
+                // Pre-validate a decline+place read-only: MoveServlet commits the
+                // decline before storeNewMove validates the stone.
+                if (declineSwap && !pending.wouldAcceptDeclinedOpeningMove(moves[0])) {
+                    throw new RenjuContractException("Invalid move.");
+                }
                 return new Decision(Kind.PLACE, declineSwap, new int[]{ moves[0] });
             }
         }
