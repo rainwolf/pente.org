@@ -53,6 +53,7 @@
    String seqNums = "";
    String dates = "";
    String players = ""; //indicates which seat made message
+   String messageAuthors = "";
    for (int i = 0; i < game.getNumMoves(); i++) {
       moves += game.getMove(i) + ",";
    }
@@ -61,22 +62,18 @@
    }
 // if (loggedInStr.equals("rainwolf") || loggedInStr.equals(p1.getName()) || loggedInStr.equals(p2.getName())) {
    if ("rainwolf".equals(loggedInStr) || loggedInStr.equals(p1.getName()) || loggedInStr.equals(p2.getName())) {
-      for (TBMessage m : game.getMessages()) {
-         // bug in URLConverter
-         if (m.getMessage().length() == 1) {
-            messages += "\"" + m.getMessage() + "\",";
-         } else {
-            messages += "\"" + MessageEncoder.encodeMessage(
-               filters.applyFilters(0, m.getMessage())) + "\",";
-         }
-         seqNums += m.getSeqNbr() + ",";
-         moveNums += m.getMoveNum() + ",";
-         dates += m.getDate().getTime() + ",";
-         if (p1.getPlayerID() == m.getPid()) {
-            players += "1,";
-         } else {
-            players += "2,";
-         }
+      final com.jivesoftware.base.FilterChain msgFilters = filters;
+      for (TBMessageThread.Entry entry : TBMessageThread.entries(game,
+            m -> m.getMessage().length() == 1 // bug in URLConverter
+                  ? m.getMessage()
+                  : MessageEncoder.encodeMessage(msgFilters.applyFilters(0, m.getMessage())),
+            p1.getName(), p2.getName(), "<b>%s</b>: ", "<br>")) {
+         messages += "\"" + entry.text + "\",";
+         seqNums += entry.seqNbr + ",";
+         moveNums += entry.moveNum + ",";
+         dates += entry.date + ",";
+         players += (entry.authorSeat == 2 ? "2" : "1") + ",";
+         messageAuthors += "\"" + (entry.authorSeat == 1 ? p1.getName() : entry.authorSeat == 2 ? p2.getName() : "") + "\",";
       }
    }
    String tmpMsgs = "";
@@ -88,6 +85,9 @@
    if (!"".equals(moveNums)) {
       tmpMsgs = moveNums.substring(0, moveNums.length() - 1);
       moveNums = tmpMsgs;
+   }
+   if (!"".equals(messageAuthors)) {
+      messageAuthors = messageAuthors.substring(0, messageAuthors.length() - 1);
    }
 
 
@@ -655,6 +655,7 @@
    var moves = [<%=moves.substring(0, moves.length() - 1)%>];
    var messages = [<%=messages%>];
    var messageMoveNums = [<%=moveNums%>];
+   var messageAuthors = [<%=messageAuthors%>];
    var active = <%=!"false".equals(myTurn)%>;
    var game = <%= game.getGame() %>;
    var isSwap2 = game === 77 || game === 79;
@@ -1325,23 +1326,15 @@
       // document.getElementById("messageBox").innerHTML = "message";
       if (until <= moves.length) {
          if ((game !== 63 && messageMoveNums.indexOf(until) !== -1) || (game === 63 && messageMoveNums.indexOf(until - 2) !== -1)) {
-            let msgr, msgIdx;
+            let msgIdx;
             if (game === 63) {
-               if ((Math.floor((until - 1) / 2) % 2) === 0) {
-                  msgr = p1Name;
-               } else {
-                  msgr = p2Name;
-               }
                msgIdx = until - 2;
             } else {
-               if (((until + 1) % 2) === 0) {
-                  msgr = p1Name;
-               } else {
-                  msgr = p2Name;
-               }
                msgIdx = until;
             }
-            document.getElementById("messageBox").innerHTML = "<b>" + msgr + "</b>" + ": " + messages[messageMoveNums.indexOf(msgIdx)].replace("[host]", window.location.host);
+            const msgAt = messageMoveNums.indexOf(msgIdx);
+            const who = messageAuthors[msgAt];
+            document.getElementById("messageBox").innerHTML = (who ? "<b>" + who + "</b>: " : "") + messages[msgAt].replace("[host]", window.location.host);
          } else {
             document.getElementById("messageBox").innerHTML = "";
          }
