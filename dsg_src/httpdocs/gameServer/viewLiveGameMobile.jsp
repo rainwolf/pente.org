@@ -476,7 +476,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
    var messages = [<%=messages%>];
    var messageMoveNums = [<%=moveNums%>];
    var messageAuthors = [<%=messageAuthors%>];
-   var game =<%= ((gameId % 2) == 0)?gameId-1:gameId %>;
+   var game = <%= ((gameId % 2) == 0)?gameId-1:gameId %>;
    var p1Name = "<%=game.getPlayer1Data().getUserIDName()%>";
    var p2Name = "<%=game.getPlayer2Data().getUserIDName()%>";
    var rated = false;

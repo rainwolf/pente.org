@@ -590,7 +590,6 @@ public class MoveServlet extends HttpServlet {
                             tbGameStorer.dPenteSwap(game, swap);
                         }
 
-                        // didn't swap but still might have written message
                         if (pass) {
                             tbGameStorer.swap2Pass(game);
 

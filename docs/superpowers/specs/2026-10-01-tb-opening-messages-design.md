@@ -59,4 +59,5 @@ No player writes twice at one move_num during an opening. This matters under the
 - iOS builds older than the change still put a parity "me"/opponent label in front of a prefixed entry. The name inside the text is correct.
 - Messages kept from undone moves now show merged with the replayed move's message instead of hiding it.
 - **Normal games change in one place.** When the inviter and invitee both wrote a message, the two messages at move 0 now show merged with names. Before, web showed only the first and the apps only the last. Leftover messages from undone moves merge the same way.
-- **Deploy order.** The old 2-arg `EncodedMessages.from` stays, so JSPs and classes can go live in either order without errors. Compile the classes first anyway.
+- **Deploy order.** Classes must go live before the JSPs. The new JSPs use `TBMessageThread` and the 4-arg `EncodedMessages.from`, so a JSP that goes live first returns HTTP 500 until the classes are loaded. The other direction is safe: the old 2-arg `from` stays for JSPs that still call it.
+- **Resign messages.** `ResignServlet` stores a resign message at the current move number with seq 2, so it now shows merged, with names, alongside the opponent's last-move message.
