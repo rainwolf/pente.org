@@ -117,6 +117,7 @@
    }
 
    boolean isGo = game.getGame() == GridStateFactory.TB_GO || game.getGame() == GridStateFactory.TB_GO9 || game.getGame() == GridStateFactory.TB_GO13;
+   boolean p1IsBlack = isGo || game.getGame() == GridStateFactory.TB_RENJU;
    int gridSize = 19;
    if (game.getGame() == GridStateFactory.TB_GO9) {
       gridSize = 9;
@@ -453,13 +454,13 @@
                               </tr>
                               <tr>
                                  <td width="10%"></td>
-                                 <td width="45%" align="center" bgcolor="#<%=(!isGo?"FFFFFF":"000000")%>">
-                                    <b><font color="<%=(!isGo?"black":"white")%>"><%=p1.getName()%>
+                                 <td width="45%" align="center" bgcolor="#<%=(!p1IsBlack?"FFFFFF":"000000")%>">
+                                    <b><font color="<%=(!p1IsBlack?"black":"white")%>"><%=p1.getName()%>
                                     </font>
                                     </b>
                                  </td>
-                                 <td align="center" bgcolor="#<%=(isGo?"FFFFFF":"000000")%>">
-                                    <b><font color="<%=(isGo?"black":"white")%>"><%=p2.getName()%>
+                                 <td align="center" bgcolor="#<%=(p1IsBlack?"FFFFFF":"000000")%>">
+                                    <b><font color="<%=(p1IsBlack?"black":"white")%>"><%=p2.getName()%>
                                     </font>
                                     </b>
                                  </td>
