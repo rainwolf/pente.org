@@ -92,6 +92,7 @@
    String dates = "";
    String tmpMsgs = "";
    String players = ""; //indicates which seat made message
+   String messageAuthors = "";
    boolean showMessages = false;
    DSGPlayerData meData = dsgPlayerStorer.loadPlayer(me);
    List prefs = dsgPlayerStorer.loadPlayerPreferences(meData.getPlayerID());
@@ -109,22 +110,20 @@
 
       showMessages = true;
 
-      for (TBMessage m : tbGame.getMessages()) {
-         // bug in URLConverter
-         if (m.getMessage().length() == 1) {
-            messages += "\"" + m.getMessage() + "\",";
-         } else {
-            messages += "\"" + MessageEncoder.encodeMessage(
-               filters.applyFilters(0, m.getMessage())) + "\",";
-         }
-         seqNums += m.getSeqNbr() + ",";
-         moveNums += (m.getMoveNum() + (tbGame.getGame() == GridStateFactory.TB_CONNECT6 ? 2 : 0)) + ",";
-         dates += m.getDate().getTime() + ",";
-         if (tbGame.getPlayer1Pid() == m.getPid()) {
-            players += "1,";
-         } else {
-            players += "2,";
-         }
+      String tbP1Name = dsgPlayerStorer.loadPlayer(tbGame.getPlayer1Pid()).getName();
+      String tbP2Name = dsgPlayerStorer.loadPlayer(tbGame.getPlayer2Pid()).getName();
+      final com.jivesoftware.base.FilterChain msgFilters = filters;
+      for (TBMessageThread.Entry entry : TBMessageThread.entries(tbGame,
+            m -> m.getMessage().length() == 1 // bug in URLConverter
+                  ? m.getMessage()
+                  : MessageEncoder.encodeMessage(msgFilters.applyFilters(0, m.getMessage())),
+            tbP1Name, tbP2Name, "<b>%s</b>: ", "<br>")) {
+         messages += "\"" + entry.text + "\",";
+         seqNums += entry.seqNbr + ",";
+         moveNums += (entry.moveNum + (tbGame.getGame() == GridStateFactory.TB_CONNECT6 ? 2 : 0)) + ",";
+         dates += entry.date + ",";
+         players += (entry.authorSeat == 2 ? "2" : "1") + ",";
+         messageAuthors += "\"" + (entry.authorSeat == 1 ? tbP1Name : entry.authorSeat == 2 ? tbP2Name : "") + "\",";
       }
       if (!"".equals(messages)) {
          //    tmpMsgs = messages.substring(0, messages.length() - 1);
@@ -134,6 +133,9 @@
       if (!"".equals(moveNums)) {
          tmpMsgs = moveNums.substring(0, moveNums.length() - 1);
          moveNums = tmpMsgs;
+      }
+      if (!"".equals(messageAuthors)) {
+         messageAuthors = messageAuthors.substring(0, messageAuthors.length() - 1);
       }
    }
 
@@ -473,6 +475,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
    var moves = [<%=moves.substring(0, moves.length() - 1)%>];
    var messages = [<%=messages%>];
    var messageMoveNums = [<%=moveNums%>];
+   var messageAuthors = [<%=messageAuthors%>];
    var game = <%= ((gameId % 2) == 0)?gameId-1:gameId %>;
    var p1Name = "<%=game.getPlayer1Data().getUserIDName()%>";
    var p2Name = "<%=game.getPlayer2Data().getUserIDName()%>";
@@ -562,20 +565,9 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
       if (until <= moves.length) {
          if (messageMoveNums.indexOf(until) != -1) {
             var encMessage = messages[messageMoveNums.indexOf(until)];
-            var msgr = "";
-            if (((until + 1) % 2) === 0) {
-               msgr = p1Name;
-            } else {
-               msgr = p2Name;
-            }
-            if (game === 63) {
-               if ((Math.floor((until - 1) / 2) % 2) === 0) {
-                  msgr = p1Name;
-               } else {
-                  msgr = p2Name;
-               }
-            }
-            document.getElementById("messageBox").innerHTML = msgr + ": " + messages[messageMoveNums.indexOf(until)].replace("[host]", window.location.host);
+            const msgAt = messageMoveNums.indexOf(until);
+            const who = messageAuthors[msgAt];
+            document.getElementById("messageBox").innerHTML = (who ? "<b>" + who + "</b>: " : "") + messages[msgAt].replace("[host]", window.location.host);
          } else {
             document.getElementById("messageBox").innerHTML = "";
          }

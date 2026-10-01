@@ -65,22 +65,17 @@ sid=<%=set.getSetId()%>
 
    if ("rainwolf".equals(loggedInStr) || loggedInStr.equals(player1.getName()) || loggedInStr.equals(player2.getName())) {
 
-      for (TBMessage m : tbGame.getMessages()) {
-         // bug in URLConverter
-         if (m.getMessage().length() == 1) {
-            messages += m.getMessage() + ",";
-         } else {
-            messages += MessageEncoder.encodeMessage(
-               filters.applyFilters(0, m.getMessage())) + ",";
-         }
-         seqNums += m.getSeqNbr() + ",";
-         moveNums += (m.getMoveNum() + (tbGame.getGame() == GridStateFactory.TB_CONNECT6 ? 2 : 0)) + ",";
-         dates += m.getDate().getTime() + ",";
-         if (tbGame.getPlayer1Pid() == m.getPid()) {
-            players += "1,";
-         } else {
-            players += "2,";
-         }
+      final com.jivesoftware.base.FilterChain msgFilters = filters;
+      for (TBMessageThread.Entry entry : TBMessageThread.entries(tbGame,
+            m -> m.getMessage().length() == 1 // bug in URLConverter
+                  ? m.getMessage()
+                  : MessageEncoder.encodeMessage(msgFilters.applyFilters(0, m.getMessage())),
+            player1.getName(), player2.getName(), "%s: ", " | ")) {
+         messages += entry.text + ",";
+         seqNums += entry.seqNbr + ",";
+         moveNums += (entry.moveNum + (tbGame.getGame() == GridStateFactory.TB_CONNECT6 ? 2 : 0)) + ",";
+         dates += entry.date + ",";
+         players += (entry.authorSeat == 2 ? "2" : "1") + ",";
       }
 
       if (tbGame.isUndoRequested()) {

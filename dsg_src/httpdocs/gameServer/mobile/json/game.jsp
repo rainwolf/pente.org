@@ -43,7 +43,8 @@
       GameResponse.EncodedMessages encodedMsgs = canSeeMessages
               ? GameResponse.EncodedMessages.from(tbGame, m -> m.getMessage().length() == 1
                       ? m.getMessage()
-                      : MessageEncoder.encodeMessage(f.applyFilters(0, m.getMessage())))
+                      : MessageEncoder.encodeMessage(f.applyFilters(0, m.getMessage())),
+                      player1.getName(), player2.getName())
               : null;
       out.print(new Gson().toJson(GameResponse.build(tbGame, visitor, dsgPlayerStorer, encodedMsgs)));
    } else {
