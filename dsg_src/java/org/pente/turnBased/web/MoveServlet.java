@@ -433,6 +433,10 @@ public class MoveServlet extends HttpServlet {
                     message.setSeqNbr(1);
                     message.setPid(game.getCurrentPlayer());
                 }
+                // opening decisions (swaps, swap2 pass, renju take-over/offers) are
+                // not moves: their messages are stored once after the action, at the
+                // stone count it leaves on the board (see refresh below)
+                TBMessage openingMessage = null;
 
                 String hideStr = request.getParameter("hide");
 //                if (hideStr != null && (game.getEventId() == tbGameStorer.getEventId(game.getGame()))) {
@@ -458,7 +462,6 @@ public class MoveServlet extends HttpServlet {
                         return;
                     }
 
-                    boolean storedStone = false;
                     switch (decision.kind) {
                         case TAKE_OVER:
                             tbGameStorer.renjuSwap(game, true);
@@ -467,7 +470,6 @@ public class MoveServlet extends HttpServlet {
                         case PLACE:
                             if (decision.declineSwap) tbGameStorer.renjuSwap(game, false);
                             tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(), decision.stones[0]);
-                            storedStone = true;
                             break;
 
                         case BRANCH_A:
@@ -476,7 +478,6 @@ public class MoveServlet extends HttpServlet {
                             // move 5 — resolver already enforced the 9x9 restriction
                             // (wouldAcceptDeclinedOpeningMove); this just persists it
                             tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(), decision.stones[0]);
-                            storedStone = true;
                             break;
 
                         case BRANCH_B:
@@ -494,14 +495,10 @@ public class MoveServlet extends HttpServlet {
                             // (Cache reloads & ignores it; MySQL uses it directly).
                             tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(),     decision.stones[0]);
                             tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves() + 1, decision.stones[1]);
-                            storedStone = true;
                             break;
                     }
 
-                    if (storedStone && message != null) {
-                        message.setMoveNum(game.getNumMoves() + 1);
-                        tbGameStorer.storeNewMessage(game.getGid(), message);
-                    }
+                    openingMessage = message;
 
                 } else
                 // handle dpente separately
@@ -536,10 +533,7 @@ public class MoveServlet extends HttpServlet {
                                     moves[i]);
                         }
 
-                        if (message != null) {
-                            message.setMoveNum(4);
-                            tbGameStorer.storeNewMessage(game.getGid(), message);
-                        }
+                        openingMessage = message;
                     } else if (game.getDPenteState() == TBGame.DPENTE_STATE_DECIDE) {
 
                         log4j.debug("MoveServlet, handle dpente decision");
@@ -547,25 +541,15 @@ public class MoveServlet extends HttpServlet {
                         boolean swap = moves[0] == 1;
                         tbGameStorer.dPenteSwap(game, swap);
 
-                        // didn't swap but still might have written message
-                        if (!swap && message != null) {
-                            // set seq nbr
-                            log4j.debug("MoveServlet, no swap record message");
-                            message.setMoveNum(4);
-                            message.setSeqNbr(2);
-                            tbGameStorer.storeNewMessage(game.getGid(), message);
-                        } else if (swap) {
+                        if (swap) {
                             log4j.debug("MoveServlet, swap, " + moves[1]);
                             tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(),
                                     moves[1]);
                             if (game.isHidden()) {
                                 tbGameStorer.hideGame(game.getGid(), (byte) (3 - game.getHiddenBy()));
                             }
-                            if (message != null) {
-                                message.setMoveNum(5);
-                                tbGameStorer.storeNewMessage(game.getGid(), message);
-                            }
                         }
+                        openingMessage = message;
 
                     }
                 } else if (isSwap2 && game.getDPenteState() != TBGame.DPENTE_STATE_DECIDED) {
@@ -592,10 +576,7 @@ public class MoveServlet extends HttpServlet {
                             tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(), move);
                         }
 
-                        if (message != null) {
-                            message.setMoveNum(4);
-                            tbGameStorer.storeNewMessage(game.getGid(), message);
-                        }
+                        openingMessage = message;
                     } else if (game.getDPenteState() == TBGame.DPENTE_STATE_DECIDE &&
                             (game.getNumMoves() == 3 || game.getNumMoves() == 5)) {
                         log4j.debug("MoveServlet, handle swap2 decision at move " + game.getNumMoves());
@@ -619,24 +600,11 @@ public class MoveServlet extends HttpServlet {
                             if (game.isHidden()) {
                                 tbGameStorer.hideGame(game.getGid(), (byte) (3 - game.getHiddenBy()));
                             }
-                            if (message != null) {
-                                message.setMoveNum(5);
-                                tbGameStorer.storeNewMessage(game.getGid(), message);
-                            }
-                        } else if (!addOneMove && message != null) {
-                            // set seq nbr
-                            log4j.debug("MoveServlet, swap2 swap, record message");
-                            message.setMoveNum(game.getNumMoves());
-                            message.setSeqNbr(2);
-                            tbGameStorer.storeNewMessage(game.getGid(), message);
                         } else if (addOneMove) {
                             log4j.debug("MoveServlet, swap2 add move " + moves[1]);
-                            if (message != null) {
-                                message.setMoveNum(game.getNumMoves() + 1);
-                                tbGameStorer.storeNewMessage(game.getGid(), message);
-                            }
                             tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(), moves[1]);
                         }
+                        openingMessage = message;
                         if (swap && game.isHidden()) {
                             tbGameStorer.hideGame(game.getGid(), (byte) (3 - game.getHiddenBy()));
                         }
@@ -730,6 +698,14 @@ public class MoveServlet extends HttpServlet {
                 TBGame refreshedGame = tbGameStorer.loadGame(gid);
                 if (refreshedGame != null) {
                     game = refreshedGame;
+                }
+                if (openingMessage != null && refreshedGame != null) {
+                    int stones = refreshedGame.getNumMoves();
+                    openingMessage.setMoveNum(stones);
+                    openingMessage.setSeqNbr(TBMessageThread.nextSeqNbr(refreshedGame.getMessages(), stones));
+                    tbGameStorer.storeNewMessage(gid, openingMessage);
+                } else if (openingMessage != null) {
+                    log4j.error("MoveServlet, opening message dropped, game reload failed " + gid);
                 }
 
                 // A move that ended the game moots any accompanying draw offer;
