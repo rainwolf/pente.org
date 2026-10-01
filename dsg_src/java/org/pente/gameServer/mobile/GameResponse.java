@@ -7,6 +7,8 @@ import org.pente.gameServer.core.DSGPlayerStoreException;
 import org.pente.gameServer.core.DSGPlayerStorer;
 import org.pente.turnBased.TBGame;
 import org.pente.turnBased.TBMessage;
+import org.pente.turnBased.TBMessageThread;
+import org.pente.turnBased.TBMessageThread;
 import org.pente.turnBased.TBSet;
 
 /**
@@ -34,6 +36,7 @@ public class GameResponse {
     public final String seqNums;
     public final String dates;
     public final String players;       // "1" or "2" per message
+    public final String messageAuthors;   // per entry: 1, 2, or 0 = text names its authors
     public final String state;         // "active" | "inactive"
     public final String goState;       // null | "MARK_DEAD_STONES" | "EVALUATE_DEAD_STONES"
     public final Boolean undoRequested;
@@ -72,7 +75,7 @@ public class GameResponse {
                          String moves, PlayerRef player1, PlayerRef player2,
                          String messages, String messageNums,
                          Long sid, String currentPlayer, String seqNums,
-                         String dates, String players, String state, String goState,
+                         String dates, String players, String messageAuthors, String state, String goState,
                          Boolean undoRequested, Boolean drawOffered, Boolean canHide, Boolean canUnHide,
                          CancelInfo cancel, String dPenteState, Boolean swap2pass,
                          String renjuPhase, String renjuOffers, Integer renjuSwaps) {
@@ -90,6 +93,7 @@ public class GameResponse {
         this.seqNums = seqNums;
         this.dates = dates;
         this.players = players;
+        this.messageAuthors = messageAuthors;
         this.state = state;
         this.goState = goState;
         this.undoRequested = undoRequested;
@@ -191,6 +195,7 @@ public class GameResponse {
                 encodedMsgs != null ? encodedMsgs.seqNums : "",
                 encodedMsgs != null ? encodedMsgs.dates : "",
                 encodedMsgs != null ? encodedMsgs.players : "",
+                encodedMsgs != null ? encodedMsgs.authors : "",
                 tbGame.getState() == TBGame.STATE_ACTIVE ? "active" : "inactive",
                 goState,
                 tbGame.isUndoRequested(),
@@ -233,7 +238,7 @@ public class GameResponse {
                 new PlayerRef(p1.getUserIDName(), (int) p1.getRating()),
                 new PlayerRef(p2.getUserIDName(), (int) p2.getRating()),
                 "", "",
-                null, null, null, null, null, null, null,
+                null, null, null, null, null, null, null, null,
                 null, null, null, null, null, null, null,
                 null, historicRenjuOffers, game.getRenjuSwaps()
         );
@@ -249,9 +254,11 @@ public class GameResponse {
         public final String seqNums;    // comma-separated sequence numbers
         public final String dates;      // comma-separated epoch millis
         public final String players;    // comma-separated "1" or "2"
+        public final String authors;    // comma-separated 1/2, or 0 when the text names its authors
 
         public EncodedMessages(String messages, String moveNums, String seqNums,
-                               String dates, String players) {
+                               String dates, String players, String authors) {
+            this.authors = authors;
             this.messages = messages;
             this.moveNums = moveNums;
             this.seqNums = seqNums;
@@ -294,8 +301,46 @@ public class GameResponse {
                     nums.toString(),
                     seqs.toString(),
                     dts.toString(),
+                    plrs.toString(),
                     plrs.toString()
             );
+        }
+
+        /**
+         * One entry per move number (messages of the same move merged, authors named when needed).
+         * {@code authors} is 1/2 per entry, or 0 when the text already names its authors.
+         */
+        public static EncodedMessages from(TBGame tbGame,
+                                           java.util.function.Function<TBMessage, String> encoder,
+                                           String p1Name, String p2Name) {
+            StringBuilder msgs = new StringBuilder();
+            StringBuilder nums = new StringBuilder();
+            StringBuilder seqs = new StringBuilder();
+            StringBuilder dts = new StringBuilder();
+            StringBuilder plrs = new StringBuilder();
+            StringBuilder auth = new StringBuilder();
+            int offset = tbGame.getGame() == GridStateFactory.TB_CONNECT6 ? 2 : 0;
+            boolean first = true;
+            for (TBMessageThread.Entry e : TBMessageThread.entries(tbGame, encoder, p1Name, p2Name, "%s: ", "\n")) {
+                if (!first) {
+                    msgs.append(',');
+                    nums.append(',');
+                    seqs.append(',');
+                    dts.append(',');
+                    plrs.append(',');
+                    auth.append(',');
+                }
+                first = false;
+                msgs.append(e.text);
+                nums.append(e.moveNum + offset);
+                seqs.append(e.seqNbr);
+                dts.append(e.date);
+                plrs.append(e.authorSeat == 2 ? "2" : "1");
+                auth.append(e.authorSeat);
+            }
+            return new EncodedMessages(
+                    msgs.toString().replace("\\2", "'"),
+                    nums.toString(), seqs.toString(), dts.toString(), plrs.toString(), auth.toString());
         }
     }
 }
