@@ -23,6 +23,10 @@
       </li>
       <li>Show poor conduct or sportsmanship.</li>
    </ol>
+   <br>
+   <b>Update 21/09/2026: the pente community reached something close to a consensus that
+      db usage was acceptable for turn-based play, but forbidden for live rated games.</b>
+   <br>
    <b><a href="helpWindow.jsp?file=tourneyPlayingGames">&lt;&lt; Playing Games</a>&nbsp;&nbsp;&nbsp;
       <b><a href="helpWindow.jsp?file=tourneyFormats">&gt;&gt; Tournament Formats</a>
 </font>
