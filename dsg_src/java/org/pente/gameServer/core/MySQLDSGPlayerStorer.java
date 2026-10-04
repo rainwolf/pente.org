@@ -2009,6 +2009,57 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
         return haveIdOrNot;
     }
 
+    /** pids of the dsg_subscribers rows whose transactionid is one of transactionIds */
+    public List<Long> getiOSTransactionOwners(Collection<String> transactionIds) throws DSGPlayerStoreException {
+        List<Long> ownerPids = new ArrayList<Long>();
+        if (transactionIds.isEmpty()) {
+            return ownerPids;
+        }
+
+        Connection con = null;
+        PreparedStatement stmt = null;
+        ResultSet result = null;
+
+        try {
+            try {
+                con = dbHandler.getConnection();
+
+                StringBuilder placeholders = new StringBuilder();
+                for (int i = 0; i < transactionIds.size(); i++) {
+                    placeholders.append(i == 0 ? "?" : ", ?");
+                }
+                stmt = con.prepareStatement(
+                        "select pid " +
+                                "from dsg_subscribers " +
+                                "where transactionid in (" + placeholders + ")");
+                int idx = 1;
+                for (String transactionId : transactionIds) {
+                    stmt.setString(idx++, transactionId);
+                }
+                result = stmt.executeQuery();
+
+                while (result.next()) {
+                    ownerPids.add(Long.valueOf(result.getLong(1)));
+                }
+            } finally {
+                if (result != null) {
+                    result.close();
+                }
+                if (stmt != null) {
+                    stmt.close();
+                }
+                if (con != null) {
+                    dbHandler.freeConnection(con);
+                }
+            }
+
+        } catch (SQLException sq) {
+            throw new DSGPlayerStoreException("Problem getiOSTransactionOwners: " + transactionIds, sq);
+        }
+
+        return ownerPids;
+    }
+
     public void insertiOSTransactionId(long pid, String transactionId, Date startDate) throws DSGPlayerStoreException {
         Connection con = null;
         PreparedStatement stmt = null;

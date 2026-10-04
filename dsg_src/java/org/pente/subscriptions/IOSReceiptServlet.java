@@ -7,7 +7,12 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.sql.*;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 import javax.net.ssl.HttpsURLConnection;
 import jakarta.servlet.ServletException;
@@ -53,7 +58,7 @@ public class IOSReceiptServlet extends HttpServlet {
         RENEWAL("success:renewal"),
         /** this transaction was already recorded for this player (replay/restore) */
         KNOWN("success:known"),
-        /** the latest transaction is already recorded under a different player (shared Apple ID) */
+        /** the subscription chain (or its latest transaction) is already recorded under a different player (shared Apple ID) */
         SHARED("success:shared");
 
         private final String reply;
@@ -67,9 +72,85 @@ public class IOSReceiptServlet extends HttpServlet {
         }
     }
 
+    /** Who already has dsg_subscribers rows for the transactions of a receipt's subscription chain. */
+    public enum ChainOwnership {
+        /** no transaction of the chain is recorded yet */
+        UNOWNED,
+        /** only the posting player owns chain transactions */
+        MINE,
+        /** the posting player owns chain transactions, but other players own some too */
+        MINE_AND_OTHERS,
+        /** only other players own chain transactions: the subscription belongs to someone else */
+        OTHERS
+    }
+
+    /**
+     * Pure ownership decision for a subscription chain, shared by this servlet and
+     * CacheDSGPlayerStorer's CheckiOSSubscribersRunnable.
+     *
+     * @param pid        the player posting (or whose stored receipt is re-validated)
+     * @param ownerPids  pids of the dsg_subscribers rows whose transactionid is in the chain
+     */
+    public static ChainOwnership chainOwnership(long pid, Collection<Long> ownerPids) {
+        boolean mine = false;
+        boolean others = false;
+        for (Long ownerPid : ownerPids) {
+            if (ownerPid.longValue() == pid) {
+                mine = true;
+            } else {
+                others = true;
+            }
+        }
+        if (mine) {
+            return others ? ChainOwnership.MINE_AND_OTHERS : ChainOwnership.MINE;
+        }
+        return others ? ChainOwnership.OTHERS : ChainOwnership.UNOWNED;
+    }
+
+    /**
+     * All transaction ids (transaction_id and original_transaction_id) of 1YRNOADSORLIMITS entries
+     * in a verifyReceipt response: receipt.in_app plus latest_receipt_info (or
+     * latest_expired_receipt_info), i.e. the whole subscription chain.
+     */
+    public static Set<String> chainTransactionIds(JSONObject json) {
+        Set<String> ids = new LinkedHashSet<String>();
+        JSONObject receipt = json.optJSONObject("receipt");
+        if (receipt != null) {
+            addChainTransactionIds(receipt.optJSONArray("in_app"), ids);
+        }
+        if (json.has("latest_receipt_info")) {
+            addChainTransactionIds(json.optJSONArray("latest_receipt_info"), ids);
+        } else if (json.has("latest_expired_receipt_info")) {
+            addChainTransactionIds(json.optJSONArray("latest_expired_receipt_info"), ids);
+        }
+        return ids;
+    }
+
+    private static void addChainTransactionIds(JSONArray entries, Set<String> ids) {
+        if (entries == null) {
+            return;
+        }
+        for (int i = 0; i < entries.length(); i++) {
+            JSONObject jsn = entries.optJSONObject(i);
+            if (jsn == null || !"1YRNOADSORLIMITS".equals(jsn.optString("product_id", null))) {
+                continue;
+            }
+            String transactionId = jsn.optString("transaction_id", "");
+            if (!transactionId.isEmpty()) {
+                ids.add(transactionId);
+            }
+            String originalTransactionId = jsn.optString("original_transaction_id", "");
+            if (!originalTransactionId.isEmpty()) {
+                ids.add(originalTransactionId);
+            }
+        }
+    }
+
     /**
      * Pure classification of a validated receipt.
      *
+     * @param chainOwnership        who owns the receipt's subscription chain, checked before anything is written;
+     *                              OTHERS means nothing was written and the receipt is SHARED
      * @param inserted              true if the plain INSERT INTO dsg_subscribers of transactionId succeeded
      * @param ownedBySubscriber     on a duplicate: true if the existing row belongs to the posting player
      * @param previousIosPaymentMs  paymentdate (epoch ms) of the player's dsg_subscribers_ios row as it was
@@ -79,9 +160,12 @@ public class IOSReceiptServlet extends HttpServlet {
      * @param transactionId         latest transaction_id from the receipt
      * @param originalTransactionId its original_transaction_id
      */
-    public static ReceiptClass classify(boolean inserted, boolean ownedBySubscriber, Long previousIosPaymentMs,
-                                        long receiptPaymentMs, long nowMs,
+    public static ReceiptClass classify(ChainOwnership chainOwnership, boolean inserted, boolean ownedBySubscriber,
+                                        Long previousIosPaymentMs, long receiptPaymentMs, long nowMs,
                                         String transactionId, String originalTransactionId) {
+        if (chainOwnership == ChainOwnership.OTHERS) {
+            return ReceiptClass.SHARED;
+        }
         if (!inserted) {
             return ownedBySubscriber ? ReceiptClass.KNOWN : ReceiptClass.SHARED;
         }
@@ -111,11 +195,14 @@ public class IOSReceiptServlet extends HttpServlet {
         final long startMs;
         final String transactionId;
         final String originalTransactionId;
+        /** every transaction id of the subscription chain in this receipt, including transactionId */
+        final Set<String> chainTransactionIds;
 
-        ReceiptInfo(long startMs, String transactionId, String originalTransactionId) {
+        ReceiptInfo(long startMs, String transactionId, String originalTransactionId, Set<String> chainTransactionIds) {
             this.startMs = startMs;
             this.transactionId = transactionId;
             this.originalTransactionId = originalTransactionId;
+            this.chainTransactionIds = chainTransactionIds;
         }
     }
 
@@ -209,61 +296,95 @@ public class IOSReceiptServlet extends HttpServlet {
             rs = null;
             stmt.close();
 
-            // idempotent upsert before the gate INSERT, so a failure here leaves no dsg_subscribers row.
-            // A retry after a later failure (or a concurrent POST) may read the paymentdate written here;
-            // classify() ignores a stored row that is not older than this receipt's paymentDate.
-//                stmt = con.prepareStatement("INSERT INTO dsg_subscribers_ios (pid, paymentdate, receipt) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE paymentdate=VALUES(paymentdate)");
-            stmt = con.prepareStatement("INSERT INTO dsg_subscribers_ios (pid, paymentdate, receipt) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE paymentdate=VALUES(paymentdate), receipt=VALUES(receipt)");
-            stmt.setLong(1, subscriberPid);
-            stmt.setTimestamp(2, paymentDate);
-            stmt.setString(3, receiptDataStr);
-            log4j.info("IOSReceiptServlet: before executeUpdate of ios upsert");
-            stmt.executeUpdate();
-            stmt.close();
-
-            int subscriptionLvl = 0;
-            subscriptionLvl = (subscriptionLvl | org.pente.gameServer.core.MySQLDSGPlayerStorer.ONEYEAR);
-            subscriptionLvl = (subscriptionLvl | org.pente.gameServer.core.MySQLDSGPlayerStorer.UNLIMITEDTBGAMES);
-            subscriptionLvl = (subscriptionLvl | org.pente.gameServer.core.MySQLDSGPlayerStorer.NOADS);
-            subscriptionLvl = (subscriptionLvl | org.pente.gameServer.core.MySQLDSGPlayerStorer.DBACCESS);
-
-            // gate: a plain insert, the transactionid primary key decides which request records it first
-            log4j.info("IOSReceiptServlet: Before insert");
-            DSGPlayerData dsgPlayerData = subscriberData;
-            stmt = con.prepareStatement("INSERT INTO dsg_subscribers (pid, level, paymentdate, transactionid, amount, verified) VALUES (?, ?, ?, ?, ?, ?)");
-            stmt.setLong(1, subscriberPid);
-            stmt.setInt(2, subscriptionLvl);
-            stmt.setTimestamp(3, paymentDate);
-            stmt.setString(4, transactionId);
-            stmt.setDouble(5, 0);
-            stmt.setInt(6, 1);
-            log4j.info("IOSReceiptServlet: before executeUpdate of insert");
-            boolean inserted;
-            try {
-                stmt.executeUpdate();
-                inserted = true;
-            } catch (SQLException e) {
-                if (!isDuplicateKey(e)) {
-                    throw e;
-                }
-                inserted = false;
+            // who already owns this receipt's subscription chain? Ownership is decided per chain, not per
+            // latest transaction, so a second player on the same Apple ID cannot take over a renewal.
+            List<Long> chainOwnerPids = new ArrayList<Long>();
+            StringBuilder placeholders = new StringBuilder();
+            for (int i = 0; i < receiptInfo.chainTransactionIds.size(); i++) {
+                placeholders.append(i == 0 ? "?" : ", ?");
             }
+            stmt = con.prepareStatement("SELECT pid FROM dsg_subscribers WHERE transactionid IN (" + placeholders + ")");
+            int chainIdx = 1;
+            for (String chainTransactionId : receiptInfo.chainTransactionIds) {
+                stmt.setString(chainIdx++, chainTransactionId);
+            }
+            rs = stmt.executeQuery();
+            while (rs.next()) {
+                chainOwnerPids.add(rs.getLong(1));
+            }
+            rs.close();
+            rs = null;
             stmt.close();
-
+            ChainOwnership chainOwnership = chainOwnership(subscriberPid, chainOwnerPids);
             long ownerPid = subscriberPid;
-            if (!inserted) {
-                stmt = con.prepareStatement("SELECT pid FROM dsg_subscribers WHERE transactionid = ?");
-                stmt.setString(1, transactionId);
-                rs = stmt.executeQuery();
-                if (rs.next()) {
-                    ownerPid = rs.getLong(1);
+            for (Long chainOwnerPid : chainOwnerPids) {
+                if (chainOwnerPid.longValue() != subscriberPid) {
+                    ownerPid = chainOwnerPid;
+                    break;
                 }
-                rs.close();
-                rs = null;
-                stmt.close();
+            }
+            if (chainOwnership == ChainOwnership.MINE_AND_OTHERS) {
+                log4j.warn("IOSReceiptServlet: subscription chain of transaction " + transactionId + " posted by " +
+                        subscriberData.getName() + " is also registered to other pids " + chainOwnerPids + "; proceeding");
             }
 
-            ReceiptClass receiptClass = classify(inserted, ownerPid == subscriberPid, previousIosPaymentMs,
+            DSGPlayerData dsgPlayerData = subscriberData;
+            boolean inserted = false;
+            if (chainOwnership != ChainOwnership.OTHERS) {
+                // idempotent upsert before the gate INSERT, so a failure here leaves no dsg_subscribers row.
+                // A retry after a later failure (or a concurrent POST) may read the paymentdate written here;
+                // classify() ignores a stored row that is not older than this receipt's paymentDate.
+//                stmt = con.prepareStatement("INSERT INTO dsg_subscribers_ios (pid, paymentdate, receipt) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE paymentdate=VALUES(paymentdate)");
+                stmt = con.prepareStatement("INSERT INTO dsg_subscribers_ios (pid, paymentdate, receipt) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE paymentdate=VALUES(paymentdate), receipt=VALUES(receipt)");
+                stmt.setLong(1, subscriberPid);
+                stmt.setTimestamp(2, paymentDate);
+                stmt.setString(3, receiptDataStr);
+                log4j.info("IOSReceiptServlet: before executeUpdate of ios upsert");
+                stmt.executeUpdate();
+                stmt.close();
+
+                int subscriptionLvl = 0;
+                subscriptionLvl = (subscriptionLvl | org.pente.gameServer.core.MySQLDSGPlayerStorer.ONEYEAR);
+                subscriptionLvl = (subscriptionLvl | org.pente.gameServer.core.MySQLDSGPlayerStorer.UNLIMITEDTBGAMES);
+                subscriptionLvl = (subscriptionLvl | org.pente.gameServer.core.MySQLDSGPlayerStorer.NOADS);
+                subscriptionLvl = (subscriptionLvl | org.pente.gameServer.core.MySQLDSGPlayerStorer.DBACCESS);
+
+                // gate: a plain insert, the transactionid primary key decides which request records it first
+                log4j.info("IOSReceiptServlet: Before insert");
+                stmt = con.prepareStatement("INSERT INTO dsg_subscribers (pid, level, paymentdate, transactionid, amount, verified) VALUES (?, ?, ?, ?, ?, ?)");
+                stmt.setLong(1, subscriberPid);
+                stmt.setInt(2, subscriptionLvl);
+                stmt.setTimestamp(3, paymentDate);
+                stmt.setString(4, transactionId);
+                stmt.setDouble(5, 0);
+                stmt.setInt(6, 1);
+                log4j.info("IOSReceiptServlet: before executeUpdate of insert");
+                try {
+                    stmt.executeUpdate();
+                    inserted = true;
+                } catch (SQLException e) {
+                    if (!isDuplicateKey(e)) {
+                        throw e;
+                    }
+                    inserted = false;
+                }
+                stmt.close();
+
+                ownerPid = subscriberPid;
+                if (!inserted) {
+                    stmt = con.prepareStatement("SELECT pid FROM dsg_subscribers WHERE transactionid = ?");
+                    stmt.setString(1, transactionId);
+                    rs = stmt.executeQuery();
+                    if (rs.next()) {
+                        ownerPid = rs.getLong(1);
+                    }
+                    rs.close();
+                    rs = null;
+                    stmt.close();
+                }
+            }
+
+            ReceiptClass receiptClass = classify(chainOwnership, inserted, ownerPid == subscriberPid, previousIosPaymentMs,
                     receiptInfo.startMs, System.currentTimeMillis(), transactionId, receiptInfo.originalTransactionId);
             log4j.info("IOSReceiptServlet: " + subscriberData.getName() + " transaction " + transactionId +
                     " (original " + receiptInfo.originalTransactionId + ") classified " + receiptClass);
@@ -460,7 +581,9 @@ public class IOSReceiptServlet extends HttpServlet {
                 }
             }
             if (transactionId != null) {
-                return new ReceiptInfo(start_ms, transactionId, originalTransactionId);
+                Set<String> chainTransactionIds = chainTransactionIds(json);
+                chainTransactionIds.add(transactionId);
+                return new ReceiptInfo(start_ms, transactionId, originalTransactionId, chainTransactionIds);
             } else {
                 log4j.info("IOSReceiptServlet: getStartDate: Returned data: " + json.toString());
                 return null;
