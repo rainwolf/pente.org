@@ -2754,6 +2754,46 @@ public class ServerTable {
         changeGameState(DSGGameStateTableEvent.NO_GAME_IN_PROGRESS, txt, 0);
     }
 
+    /**
+     * Score a completed two game set by points: win = 1, draw = 1/2,
+     * loss = 0. The higher total wins the set, equal totals draw it.
+     *
+     * @param g1WinnerPid pid of the game 1 winner, 0 if game 1 was a draw
+     * @param g2WinnerPid pid of the game 2 winner, 0 if game 2 was a draw
+     * @return 1 if set player 1 wins the set, 2 if set player 2 wins it,
+     * 0 if the set is a draw
+     */
+    public static int scoreTwoGameSet(long p1Pid, long p2Pid,
+                                      long g1WinnerPid, long g2WinnerPid) {
+        int p1HalfPoints = halfPoints(p1Pid, g1WinnerPid) + halfPoints(p1Pid, g2WinnerPid);
+        int p2HalfPoints = halfPoints(p2Pid, g1WinnerPid) + halfPoints(p2Pid, g2WinnerPid);
+        if (p1HalfPoints > p2HalfPoints) {
+            return 1;
+        } else if (p2HalfPoints > p1HalfPoints) {
+            return 2;
+        }
+        return 0;
+    }
+
+    private static int halfPoints(long pid, long gameWinnerPid) {
+        if (gameWinnerPid == 0) {
+            return 1;
+        }
+        return gameWinnerPid == pid ? 2 : 0;
+    }
+
+    /**
+     * TourneyMatch result for a finished live game. A draw (winner 0) is
+     * RESULT_TIE, not RESULT_UNFINISHED. If an opening swap flipped player
+     * ids mid-game, a win is recorded from the match's original perspective.
+     */
+    public static int liveTourneyResult(int winner, boolean swapped) {
+        if (winner == 0) {
+            return TourneyMatch.RESULT_TIE;
+        }
+        return swapped ? 3 - winner : winner;
+    }
+
     protected void gameOver(boolean draw,
                             String winnerPlayer, String loserPlayer, boolean resign, boolean timeup,
                             boolean forceResign) {
@@ -2762,6 +2802,14 @@ public class ServerTable {
         drawOfferedBySeat = 0;
 
         int winner = getPlayingPlayerSeat(winnerPlayer);
+        // callers name a player as "winner" even for a draw, a draw has no winner
+        if (draw) {
+            winner = 0;
+        }
+        // who gets rated as winner/loser, differs from the game result when
+        // a two game set is decided by the other game
+        String setWinnerPlayer = winnerPlayer;
+        String setLoserPlayer = loserPlayer;
 
         int newStatus = DSGGameStateTableEvent.NO_GAME_IN_PROGRESS;
         int gameInSet = 0;
@@ -2813,35 +2861,27 @@ public class ServerTable {
 
             } else {
 
-                long g2WinnerPid = playingPlayers[getPlayingPlayerSeat(winnerPlayer)].getPlayerID();
+                long g2WinnerPid = draw ? 0 :
+                        playingPlayers[getPlayingPlayerSeat(winnerPlayer)].getPlayerID();
 
-                int winnerSetPos = set.getP1Pid() == g2WinnerPid ? 1 : 2;
-
+                // 0 if first game draw
                 long g1WinnerPid = 0;
-                int result = 0;
-                // if first game draw
-                if (set.getG1().getWinner() == 0) {
-                    if (draw) {
-                        result = 0;
-                    } else {
-                        result = winnerSetPos;
-                    }
-                } else if (set.getG1().getWinner() == 1) {
+                if (set.getG1().getWinner() == 1) {
                     g1WinnerPid = set.getG1().getPlayer1Data().getUserID();
-                } else {
+                } else if (set.getG1().getWinner() == 2) {
                     g1WinnerPid = set.getG1().getPlayer2Data().getUserID();
                 }
-                // if a player won both games
-                if (g1WinnerPid == g2WinnerPid) {
-                    result = winnerSetPos;
-                } else {
-                    result = 0;
-                }
+                int result = scoreTwoGameSet(set.getP1Pid(), set.getP2Pid(),
+                        g1WinnerPid, g2WinnerPid);
 
                 if (result == 0) {
                     setMsg = "set over, set is a draw";
                 } else {
-                    setMsg = "set over, " + winnerPlayer + ", wins the set!";
+                    long setWinnerPid = result == 1 ? set.getP1Pid() : set.getP2Pid();
+                    int setWinnerSeat = playingPlayers[1].getPlayerID() == setWinnerPid ? 1 : 2;
+                    setWinnerPlayer = playingPlayers[setWinnerSeat].getName();
+                    setLoserPlayer = playingPlayers[3 - setWinnerSeat].getName();
+                    setMsg = "set over, " + setWinnerPlayer + ", wins the set!";
                 }
 
                 set.setWinner(result);
@@ -2883,7 +2923,7 @@ public class ServerTable {
         changeGameState(newStatus, txt, winnerPlayer, gameInSet);
 
         updateDatabaseAfterGameOverInSeparateThread(
-                winnerPlayer, loserPlayer, winner, set, gameStatus);
+                setWinnerPlayer, setLoserPlayer, winner, set, gameStatus);
 
         if (noHumanPlayersInTable()) {
             removeAllComputers();
@@ -3809,15 +3849,12 @@ public class ServerTable {
         if (serverData.isTournament()) {
 
             try {
-                int localWinner2 = localWinner;
                 // if an opening swap flipped the player ids mid-game, record
                 // the result from the match's original perspective. net
                 // parity via seatsSwapped() covers the dpente family and
                 // renju take-overs alike.
                 boolean swapped = gridState != null && gridState.seatsSwapped();
-                if (swapped && localWinner2 != 0) { // != 0: not a draw
-                    localWinner2 = 3 - localWinner;
-                }
+                int localWinner2 = liveTourneyResult(localWinner, swapped);
 
                 tourneyMatch.setGid(gameData.getGameID());
                 tourneyMatch.setResult(localWinner2);
