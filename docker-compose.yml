@@ -152,23 +152,23 @@ services:
       - '127.0.0.1:6379:6379'
     networks:
       - pente_org
-#  pente_mail:
-#    build:
-#      dockerfile: mail.Dockerfile
-#    image: pente_mail
-#    restart: always
-#    # healthcheck comes from the image (SMTP banner + opendkim, retries=3);
-#    # a compose-level block here would override and disable it
-#    # no ports: on purpose — the app reaches pente_mail:25 over the docker
-#    # network, which needs no publishing; outbound-only, nothing may connect
-#    # from the host or the internet (pente.org has no MX; the A record would
-#    # otherwise attract direct-to-IP SMTP)
-#    deploy:
-#      resources:
-#        limits:
-#          memory: 48M
-#    networks:
-#      - pente_org
+  pente_mail:
+    build:
+      dockerfile: mail.Dockerfile
+    image: pente_mail
+    restart: always
+    # healthcheck comes from the image (SMTP banner + opendkim, retries=3);
+    # a compose-level block here would override and disable it
+    # no ports: on purpose — the app reaches pente_mail:25 over the docker
+    # network, which needs no publishing; outbound-only, nothing may connect
+    # from the host or the internet (pente.org has no MX; the A record would
+    # otherwise attract direct-to-IP SMTP)
+    deploy:
+      resources:
+        limits:
+          memory: 48M
+    networks:
+      - pente_org
 networks:
   pente_org:
     driver: bridge
