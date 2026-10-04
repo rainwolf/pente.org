@@ -419,6 +419,9 @@ public class CacheNotificationServer implements NotificationServer {
     @Override
     public void sendAdminNotification(String message) {
         Map<String, Date> tokenMap = null;
+        Date oneWeekAgo = new Date();
+        long timeMillis = oneWeekAgo.getTime();
+        oneWeekAgo.setTime(timeMillis - 1000L * 3600 * 24 * 7);
 
         long pid = 23000000016237L;
 
@@ -428,11 +431,13 @@ public class CacheNotificationServer implements NotificationServer {
             e.printStackTrace();
         }
         for (Map.Entry<String, Date> tokenEntry : tokenMap.entrySet()) {
-            ApnsPayloadBuilder payloadBuilder = new SimpleApnsPayloadBuilder();
-            payloadBuilder.setAlertBody(message)
-                    .setBadgeNumber(1)
-                    .setSound("default");
-            sendiOSNotification(pid, tokenEntry.getKey(), payloadBuilder.build());
+            if (oneWeekAgo.before(tokenEntry.getValue())) {
+                ApnsPayloadBuilder payloadBuilder = new SimpleApnsPayloadBuilder();
+                payloadBuilder.setAlertBody(message)
+                        .setBadgeNumber(1)
+                        .setSound("default");
+                sendiOSNotification(pid, tokenEntry.getKey(), payloadBuilder.build());
+            }
         }
 
         try {
@@ -441,16 +446,18 @@ public class CacheNotificationServer implements NotificationServer {
             e.printStackTrace();
         }
         for (Map.Entry<String, Date> tokenEntry : tokenMap.entrySet()) {
-            JSONObject jGcmData = new JSONObject();
-            JSONObject jMessage = new JSONObject();
-            try {
-                jMessage.put("token", tokenEntry.getKey());
-                jMessage.put("data", new JSONObject().put("message", message));
-                jGcmData.put("message", jMessage);
+            if (oneWeekAgo.before(tokenEntry.getValue())) {
+                JSONObject jGcmData = new JSONObject();
+                JSONObject jMessage = new JSONObject();
+                try {
+                    jMessage.put("token", tokenEntry.getKey());
+                    jMessage.put("data", new JSONObject().put("message", message));
+                    jGcmData.put("message", jMessage);
 
-                sendAndroidNotification(pid, tokenEntry.getKey(), jGcmData.toString());
-            } catch (JSONException e) {
-                e.printStackTrace();
+                    sendAndroidNotification(pid, tokenEntry.getKey(), jGcmData.toString());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
