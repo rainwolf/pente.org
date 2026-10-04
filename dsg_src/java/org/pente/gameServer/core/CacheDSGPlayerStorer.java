@@ -27,6 +27,7 @@ import org.json.JSONObject;
 import org.pente.database.DBHandler;
 import org.pente.gameServer.server.RedisConnectionManager;
 import org.pente.notifications.NotificationServer;
+import org.pente.subscriptions.IOSReceiptServlet;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
@@ -447,6 +448,7 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         }
 
         private String transactionId;
+        private Set<String> chainTransactionIds = new HashSet<String>();
         private Date startDate;
         private String iOSSharedSecret = ctx.getInitParameter("iOSSharedSecret");
 
@@ -456,6 +458,14 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
                 for (Map.Entry<Long, String> entry : expiringSubscriptions.entrySet()) {
                     if (checkReceipt(entry.getValue(), iOSSharedSecret, true)) {
                         if (!((MySQLDSGPlayerStorer) basePlayerStorer).hasiOSTransactionId(transactionId)) {
+                            // the renewal belongs to whoever owns the subscription chain, not to every
+                            // player whose ios row holds a receipt of the same Apple ID
+                            List<Long> chainOwnerPids = ((MySQLDSGPlayerStorer) basePlayerStorer).getiOSTransactionOwners(chainTransactionIds);
+                            if (IOSReceiptServlet.chainOwnership(entry.getKey().longValue(), chainOwnerPids) == IOSReceiptServlet.ChainOwnership.OTHERS) {
+                                log4j.info("CheckiOSSubscribersRunnable: not recording transaction " + transactionId + " for pid " +
+                                        entry.getKey() + ", its subscription chain is registered to pids " + chainOwnerPids);
+                                continue;
+                            }
                             ((MySQLDSGPlayerStorer) basePlayerStorer).insertiOSTransactionId(entry.getKey().longValue(), transactionId, startDate);
                             ((MySQLDSGPlayerStorer) basePlayerStorer).updateiOSPaymentDate(entry.getKey().longValue(), startDate);
                             DSGPlayerData subscriberData = loadPlayer(entry.getKey().longValue());
@@ -554,6 +564,7 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         }
 
         private void getStartDate(JSONObject json) {
+            chainTransactionIds = IOSReceiptServlet.chainTransactionIds(json);
             try {
                 long start_ms = 0;
 
@@ -589,6 +600,9 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
                     }
                 }
                 startDate.setTime(start_ms);
+                if (transactionId != null) {
+                    chainTransactionIds.add(transactionId);
+                }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
