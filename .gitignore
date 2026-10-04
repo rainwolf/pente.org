@@ -49,3 +49,4 @@ dsg_src/mmai/mmai_player
 # Named .private, so the *.key / *.crt / *.p12 rules above do not catch it.
 dockerMail/opendkim/keys/
 *.private
+graphify-out/
