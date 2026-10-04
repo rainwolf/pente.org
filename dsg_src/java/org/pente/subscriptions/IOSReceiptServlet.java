@@ -68,6 +68,49 @@ public class IOSReceiptServlet extends HttpServlet {
     }
 
     /**
+     * Reply when the receipt could not be checked right now (Apple/network/config
+     * trouble). Contains neither "success" nor "invalid receipt", so shipped
+     * clients keep their pending receipt and POST it again on next launch.
+     */
+    public static final String RETRY_REPLY = "retry later";
+
+    /** Result of verifying a receipt with Apple. */
+    public enum ReceiptOutcome {
+        /** Apple accepted the receipt */
+        VALID,
+        /** the receipt itself is bad or expired: client may drop it */
+        INVALID,
+        /** could not be decided now (Apple down, network, our config): client must retry */
+        TRANSIENT
+    }
+
+    /**
+     * Pure mapping of a verifyReceipt status code to an outcome. 21007 (sandbox
+     * receipt sent to production) is handled by checkReceipt before this mapping
+     * (it retries against the sandbox), so its value here is never used there.
+     * Unknown codes are TRANSIENT so a real purchase is never dropped by surprise.
+     */
+    public static ReceiptOutcome statusOutcome(int status) {
+        switch (status) {
+            case 0:
+                return ReceiptOutcome.VALID;
+            case 21000: // App Store could not read the JSON
+            case 21002: // receipt data malformed
+            case 21003: // receipt not authenticated
+            case 21006: // valid but subscription expired
+            case 21007: // sandbox receipt sent to production
+            case 21008: // production receipt sent to sandbox
+            case 21010: // account not found / deleted
+                return ReceiptOutcome.INVALID;
+            default:
+                // 21004 shared secret mismatch (our config), 21005 server unavailable,
+                // 21009 internal data access error, 21100-21199 internal data access
+                // errors, and anything unknown
+                return ReceiptOutcome.TRANSIENT;
+        }
+    }
+
+    /**
      * Pure classification of a validated receipt.
      *
      * @param inserted              true if the plain INSERT INTO dsg_subscribers of transactionId succeeded
@@ -119,6 +162,25 @@ public class IOSReceiptServlet extends HttpServlet {
         }
     }
 
+    /** Outcome of checkReceipt; info is non-null exactly when outcome is VALID. */
+    private static final class ReceiptCheck {
+        static final ReceiptCheck INVALID = new ReceiptCheck(ReceiptOutcome.INVALID, null);
+        static final ReceiptCheck TRANSIENT = new ReceiptCheck(ReceiptOutcome.TRANSIENT, null);
+
+        final ReceiptOutcome outcome;
+        final ReceiptInfo info;
+
+        private ReceiptCheck(ReceiptOutcome outcome, ReceiptInfo info) {
+            this.outcome = outcome;
+            this.info = info;
+        }
+
+        /** a status-0 response: VALID with info, or INVALID when no matching product was found */
+        static ReceiptCheck of(ReceiptInfo info) {
+            return info != null ? new ReceiptCheck(ReceiptOutcome.VALID, info) : INVALID;
+        }
+    }
+
     private static boolean isDuplicateKey(SQLException e) {
         return e instanceof SQLIntegrityConstraintViolationException || e.getErrorCode() == ER_DUP_ENTRY;
     }
@@ -162,8 +224,16 @@ public class IOSReceiptServlet extends HttpServlet {
             return;
         }
 
-        final ReceiptInfo receiptInfo = checkReceipt(receiptDataStr, iOSSharedSecret, true);
-        if (receiptInfo == null) {
+        final ReceiptCheck receiptCheck = checkReceipt(receiptDataStr, iOSSharedSecret, true);
+        final ReceiptInfo receiptInfo = receiptCheck.info;
+        if (receiptCheck.outcome == ReceiptOutcome.TRANSIENT) {
+            // no DB writes, no notifications: client keeps the receipt and POSTs it again
+            log4j.error("IOSReceiptServlet: receipt for " + username + " could not be verified now, replying " + RETRY_REPLY);
+            response.setContentType("text/html");
+            PrintWriter out = response.getWriter();
+            out.println(RETRY_REPLY);
+            return;
+        } else if (receiptInfo == null) {
             log4j.info("IOSReceiptServlet: error: Receipt not valid");
             response.setContentType("text/html");
             PrintWriter out = response.getWriter();
@@ -337,7 +407,7 @@ public class IOSReceiptServlet extends HttpServlet {
         }
     }
 
-    private ReceiptInfo checkReceipt(String receiptDataStr, String sharedSecret, boolean production) {
+    private ReceiptCheck checkReceipt(String receiptDataStr, String sharedSecret, boolean production) {
         String lines = "";
         // sandbox URL
         try {
@@ -373,48 +443,50 @@ public class IOSReceiptServlet extends HttpServlet {
             int status = json.getInt("status");
             switch (status) {
                 case 0:
-                    return getStartDate(json);
+                    return ReceiptCheck.of(getStartDate(json));
                 case 21000:
                     log4j.info("IOSReceiptServlet: " + status + ": App store could not read");
-                    return null;
+                    break;
                 case 21002:
                     log4j.info("IOSReceiptServlet: " + status + ": Data was malformed");
-                    return null;
+                    break;
                 case 21003:
                     log4j.info("IOSReceiptServlet: " + status + ": Receipt not authenticated");
-                    return null;
+                    break;
                 case 21004:
-                    log4j.info("IOSReceiptServlet: " + status + ": Shared secret does not match");
-                    return null;
+                    log4j.error("IOSReceiptServlet: " + status + ": Shared secret does not match");
+                    break;
                 case 21005:
-                    log4j.info("IOSReceiptServlet: " + status + ": Receipt server unavailable");
-                    return null;
+                    log4j.error("IOSReceiptServlet: " + status + ": Receipt server unavailable");
+                    break;
                 case 21006:
                     log4j.info("IOSReceiptServlet: " + status + ": Receipt valid but sub expired");
-                    return null;
+                    break;
                 case 21007:
                     log4j.info("IOSReceiptServlet: " + status + ": Sandbox receipt sent to Production environment");
                     return checkReceipt(receiptDataStr, sharedSecret, false);
                 case 21008:
                     log4j.info("IOSReceiptServlet: " + status + ": Production receipt sent to Sandbox environment");
-                    return null;
+                    break;
                 default:
                     // unknown error code (nevertheless a problem)
-                    log4j.info("IOSReceiptServlet: " + "Unknown error: status code = " + status);
-                    return null;
+                    log4j.error("IOSReceiptServlet: " + "Unknown error: status code = " + status);
+                    break;
             }
+            return statusOutcome(status) == ReceiptOutcome.TRANSIENT ? ReceiptCheck.TRANSIENT : ReceiptCheck.INVALID;
         } catch (IOException e) {
-            // I/O-error: let's assume bad news...
-            log4j.info("IOSReceiptServlet: I/O error during verification: " + e);
+            // I/O error (HTTP 5xx, timeout, ...): Apple or the network, not the receipt
+            log4j.error("IOSReceiptServlet: I/O error during verification: " + e);
             e.printStackTrace();
-            return null;
+            return ReceiptCheck.TRANSIENT;
         } catch (JSONException e) {
-            log4j.info("IOSReceiptServlet: JSONException during verification: " + e);
-            log4j.info("IOSReceiptServlet: received response: " + lines);
+            log4j.error("IOSReceiptServlet: JSONException during verification: " + e);
+            log4j.error("IOSReceiptServlet: received response: " + lines);
             e.printStackTrace();
-            return null;
+            return ReceiptCheck.TRANSIENT;
         } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
+            log4j.error("IOSReceiptServlet: URISyntaxException during verification: " + e);
+            return ReceiptCheck.TRANSIENT;
         }
     }
 
