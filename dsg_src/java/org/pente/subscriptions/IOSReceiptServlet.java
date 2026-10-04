@@ -73,17 +73,19 @@ public class IOSReceiptServlet extends HttpServlet {
      * @param inserted              true if the plain INSERT INTO dsg_subscribers of transactionId succeeded
      * @param ownedBySubscriber     on a duplicate: true if the existing row belongs to the posting player
      * @param previousIosPaymentMs  paymentdate (epoch ms) of the player's dsg_subscribers_ios row as it was
-     *                              before this request, or null if there was no row
+     *                              when read by this request, or null if there was no row
+     * @param receiptPaymentMs      paymentdate (epoch ms) this receipt itself records (ReceiptInfo.startMs)
      * @param nowMs                 current time (epoch ms)
      * @param transactionId         latest transaction_id from the receipt
      * @param originalTransactionId its original_transaction_id
      */
     public static ReceiptClass classify(boolean inserted, boolean ownedBySubscriber, Long previousIosPaymentMs,
-                                        long nowMs, String transactionId, String originalTransactionId) {
+                                        long receiptPaymentMs, long nowMs,
+                                        String transactionId, String originalTransactionId) {
         if (!inserted) {
             return ownedBySubscriber ? ReceiptClass.KNOWN : ReceiptClass.SHARED;
         }
-        if (isRecentIosSubscription(previousIosPaymentMs, nowMs)
+        if (isRecentIosSubscription(previousIosPaymentMs, receiptPaymentMs, nowMs)
                 && originalTransactionId != null && !originalTransactionId.equals(transactionId)) {
             return ReceiptClass.RENEWAL;
         }
@@ -91,11 +93,13 @@ public class IOSReceiptServlet extends HttpServlet {
     }
 
     /**
-     * true if the previous iOS subscription (expiry = paymentdate + PAYMENTDATE_OFFSET_MS) is still
-     * current or ended no more than RENEWAL_GRACE_MS ago.
+     * true if the stored iOS row is a previous subscription (its paymentdate is strictly earlier than
+     * this receipt's, so it was not written for this same receipt by a failed or concurrent request)
+     * whose expiry (paymentdate + PAYMENTDATE_OFFSET_MS) is still current or no more than
+     * RENEWAL_GRACE_MS ago.
      */
-    private static boolean isRecentIosSubscription(Long previousIosPaymentMs, long nowMs) {
-        if (previousIosPaymentMs == null) {
+    private static boolean isRecentIosSubscription(Long previousIosPaymentMs, long receiptPaymentMs, long nowMs) {
+        if (previousIosPaymentMs == null || previousIosPaymentMs.longValue() >= receiptPaymentMs) {
             return false;
         }
         long previousExpiryMs = previousIosPaymentMs + PAYMENTDATE_OFFSET_MS;
@@ -205,8 +209,9 @@ public class IOSReceiptServlet extends HttpServlet {
             rs = null;
             stmt.close();
 
-            // idempotent upsert before the gate INSERT, so a failure here leaves no dsg_subscribers row
-            // and a retry is still classified from scratch (the read above already saw the pre-request state)
+            // idempotent upsert before the gate INSERT, so a failure here leaves no dsg_subscribers row.
+            // A retry after a later failure (or a concurrent POST) may read the paymentdate written here;
+            // classify() ignores a stored row that is not older than this receipt's paymentDate.
 //                stmt = con.prepareStatement("INSERT INTO dsg_subscribers_ios (pid, paymentdate, receipt) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE paymentdate=VALUES(paymentdate)");
             stmt = con.prepareStatement("INSERT INTO dsg_subscribers_ios (pid, paymentdate, receipt) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE paymentdate=VALUES(paymentdate), receipt=VALUES(receipt)");
             stmt.setLong(1, subscriberPid);
@@ -259,7 +264,7 @@ public class IOSReceiptServlet extends HttpServlet {
             }
 
             ReceiptClass receiptClass = classify(inserted, ownerPid == subscriberPid, previousIosPaymentMs,
-                    System.currentTimeMillis(), transactionId, receiptInfo.originalTransactionId);
+                    receiptInfo.startMs, System.currentTimeMillis(), transactionId, receiptInfo.originalTransactionId);
             log4j.info("IOSReceiptServlet: " + subscriberData.getName() + " transaction " + transactionId +
                     " (original " + receiptInfo.originalTransactionId + ") classified " + receiptClass);
 
