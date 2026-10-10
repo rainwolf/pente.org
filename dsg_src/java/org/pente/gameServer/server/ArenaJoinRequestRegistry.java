@@ -225,6 +225,46 @@ public class ArenaJoinRequestRegistry {
         }
     }
 
+    /**
+     * R7: the player left the main room (or disconnected); their requests
+     * end silently. A claim is kept so the queued join is refused (R6).
+     */
+    public synchronized void requesterLeftMainRoom(String player) {
+        if (removeAllPending(player)) {
+            notifyMyRequests(player);
+        }
+    }
+
+    /**
+     * R8: the table is gone. Pending and claimed requesters get TABLE_CLOSED
+     * and the memory is purged, so a reused table number starts clean.
+     */
+    public synchronized void tableRemoved(int table) {
+        TableMemory t = tables.remove(table);
+        if (t == null) {
+            return;
+        }
+        endAllPending(table, t, DSGArenaRequestEndedEvent.TABLE_CLOSED);
+        releaseClaim(table, t, DSGArenaRequestEndedEvent.TABLE_CLOSED);
+    }
+
+    /**
+     * R2/R11: an arena event for a table number that no longer exists still
+     * gets its answer. Called by ArenaServer.routeEventToTable.
+     */
+    public synchronized void answerUnroutable(DSGEvent event, int table) {
+        if (event instanceof DSGArenaRequestJoinTableEvent request) {
+            notifier.send(request.getPlayer(), new DSGArenaRequestEndedEvent(
+                    request.getPlayer(), table, "", DSGArenaRequestEndedEvent.NOT_AVAILABLE));
+            notifyMyRequests(request.getPlayer());
+        } else if (event instanceof DSGArenaWithdrawJoinRequestEvent withdraw) {
+            notifyMyRequests(withdraw.getPlayer());
+        } else if (event instanceof DSGArenaAcceptTableJoinEvent
+                || event instanceof DSGArenaRejectTableJoinEvent) {
+            notifyEmptySnapshot(table, ((DSGTableEvent) event).getPlayer());
+        }
+    }
+
     // ---- answers on demand ---------------------------------------------------
 
     /** Sent when a player joins the main room. */

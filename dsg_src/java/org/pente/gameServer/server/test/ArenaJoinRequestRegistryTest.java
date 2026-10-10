@@ -557,4 +557,109 @@ public class ArenaJoinRequestRegistryTest extends TestCase {
         assertTrue(seqs.get(0) > bobFirst);
         assertTrue(seqs.get(1) > seqs.get(0));
     }
+
+    // ---- R7: leaving the main room ----------------------------------------
+
+    public void testRequesterLeavingMainRoomLosesRequestsSilently() {
+        reg.request(A, "bob", true);
+        reg.request(C, "bob", true);
+        log.clear();
+
+        reg.requesterLeftMainRoom("bob");
+
+        assertEquals(players(), log.lastSnapshot("alice", A));
+        assertEquals(players(), log.lastSnapshot("carol", C));
+        assertEquals(players(), log.reasons("bob"));
+        assertTrue(reg.pendingTables("bob").isEmpty());
+    }
+
+    public void testLeavingKeepsTheClaimSoTheJoinIsRefused() {
+        reg.request(A, "bob", true);
+        reg.accept(A, "alice", "bob", new JoinQueue());
+
+        reg.requesterLeftMainRoom("bob");
+
+        assertEquals(Integer.valueOf(A), reg.claimedTable("bob"));
+        assertTrue(!reg.admitJoin(A, "bob", false));
+    }
+
+    // ---- R8: table removal --------------------------------------------------
+
+    public void testRemovedTableClosesPendingRequests() {
+        reg.request(A, "bob", true);
+        reg.request(A, "dave", true);
+        log.clear();
+
+        reg.tableRemoved(A);
+
+        assertEquals(players("TABLE_CLOSED@" + A), log.reasons("bob"));
+        assertEquals(players("TABLE_CLOSED@" + A), log.reasons("dave"));
+        assertEquals("alice", log.to("bob", DSGArenaRequestEndedEvent.class).get(0).getOwner());
+        assertEquals(tables(), log.lastMyRequests("bob"));
+        assertTrue(!reg.isOpen(A));
+    }
+
+    public void testAcceptThenTableRemovedBeforeJoinLands() {
+        reg.request(A, "bob", true);
+        reg.request(C, "bob", true);
+        reg.accept(A, "alice", "bob", new JoinQueue());
+        log.clear();
+
+        reg.tableRemoved(A);
+
+        assertEquals(players("TABLE_CLOSED@" + A), log.reasons("bob"));
+        assertNull(reg.claimedTable("bob"));
+        assertEquals(players("bob"), reg.pendingRequesters(C));   // lost nothing else
+        JoinQueue q = new JoinQueue();
+        assertTrue(reg.accept(C, "carol", "bob", q));
+        assertEquals(1, q.runs);
+    }
+
+    public void testReusedTableNumberStartsClean() {
+        reg.request(A, "bob", true);
+        reg.request(A, "dave", true);
+        reg.decline(A, "alice", "dave");
+        reg.tableRemoved(A);
+        log.clear();
+
+        reg.publishTable(A, "zed", players("zed"), true, false);
+
+        assertEquals(players(), log.lastSnapshot("zed", A));
+        assertEquals(players(), reg.pendingRequesters(A));
+        reg.request(A, "dave", true);
+        assertEquals(players("dave"), reg.pendingRequesters(A));
+    }
+
+    // ---- R2/R11: events for a table that is gone ---------------------------
+
+    public void testRequestToGoneTableIsAnsweredNotAvailable() {
+        reg.answerUnroutable(new DSGArenaRequestJoinTableEvent("bob", 99), 99);
+
+        assertEquals(players("NOT_AVAILABLE@99"), log.reasons("bob"));
+        assertEquals("", log.to("bob", DSGArenaRequestEndedEvent.class).get(0).getOwner());
+        assertEquals(tables(), log.lastMyRequests("bob"));
+    }
+
+    public void testWithdrawFromGoneTableIsAnsweredWithMyRequests() {
+        reg.request(C, "bob", true);
+
+        reg.answerUnroutable(new DSGArenaWithdrawJoinRequestEvent("bob", 99), 99);
+
+        assertEquals(2, log.to("bob", DSGArenaMyRequestsEvent.class).size());
+        assertEquals(tables(C), log.lastMyRequests("bob"));
+    }
+
+    public void testAcceptAndDeclineAtGoneTableAreAnsweredWithEmptySnapshot() {
+        reg.answerUnroutable(new DSGArenaAcceptTableJoinEvent("alice", 99, "bob"), 99);
+        reg.answerUnroutable(new DSGArenaRejectTableJoinEvent("alice", 99, "bob", null), 99);
+
+        assertEquals(2, log.to("alice", DSGArenaJoinRequestsEvent.class).size());
+        assertEquals(players(), log.lastSnapshot("alice", 99));
+    }
+
+    public void testOtherEventsAtGoneTableAreIgnored() {
+        reg.answerUnroutable(new DSGJoinTableEvent("bob", 99), 99);
+
+        assertEquals(0, log.to("bob", DSGEvent.class).size());
+    }
 }
