@@ -438,4 +438,138 @@ public class ArenaServerTableJoinRequestTest extends TestCase {
         assertEquals(names("TABLE_CLOSED@" + A), log.reasons("dave"));
         assertTrue(reg.pendingTables("bob").isEmpty());
     }
+
+    // ---- Task 8: R6b reopen transitions -------------------------------------
+
+    /** alice's table with bob accepted and seated, and a game running */
+    private TestArenaTable gameInProgress() {
+        TestArenaTable a = tableCreatedBy(A, "alice");
+        request(a, "bob");
+        accept(a, "alice", "bob");
+        a.landQueuedJoin();
+        a.beginGame();
+        log.clear();
+        return a;
+    }
+
+    public void testTableStaysClosedWhilePausedForReturningPlayer() {
+        TestArenaTable a = gameInProgress();
+
+        a.leaveMainRoom("bob");   // bob disconnects mid-game
+
+        assertEquals(DSGGameStateTableEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN, a.gameState());
+        assertEquals(1, a.playerCount());
+        assertTrue(!reg.isOpen(A));
+        request(a, "erin");
+        assertEquals(names("NOT_AVAILABLE@" + A), log.reasons("erin"));
+    }
+
+    public void testOwnerLeavingFinishedGameHandsOverAnOpenTable() {
+        TestArenaTable a = gameInProgress();
+        a.handleResign(new DSGResignTableEvent("bob", A));
+        assertEquals(DSGGameStateTableEvent.NO_GAME_IN_PROGRESS, a.gameState());
+        assertTrue(!reg.isOpen(A));   // still two players
+        log.clear();
+
+        a.handleExit("alice", false);
+
+        assertTrue(reg.isOpen(A));
+        assertEquals(1, log.to("bob", DSGArenaJoinRequestsEvent.class).size());
+        assertEquals(names(), log.lastSnapshot("bob", A));
+        request(a, "erin");
+        assertEquals(names("erin"), log.lastSnapshot("bob", A));
+    }
+
+    public void testPlayerLeavingAfterGameEndsReopensTable() {
+        TestArenaTable a = gameInProgress();
+        a.handleResign(new DSGResignTableEvent("bob", A));
+        log.clear();
+
+        a.handleExit("bob", false);
+
+        assertTrue(reg.isOpen(A));
+        assertEquals(names(), log.lastSnapshot("alice", A));
+        request(a, "erin");
+        assertEquals(names("erin"), log.lastSnapshot("alice", A));
+    }
+
+    /**
+     * Review Focus 8: handleBoot runs exit (which reopens the table, R6b,
+     * and wipes registry memory) and then records bootTimes. The boot
+     * outlives the reopen, so bob is still refused with BOOTED.
+     */
+    public void testBootThatReopensTheTableStillRefusesTheBootedPlayer() {
+        TestArenaTable a = gameInProgress();
+        a.handleResign(new DSGResignTableEvent("bob", A));
+        log.clear();
+
+        a.handleBoot(new DSGBootTableEvent("alice", A, "bob"));
+
+        assertTrue(!a.seats("bob"));
+        assertTrue(reg.isOpen(A));
+        assertEquals(names(), log.lastSnapshot("alice", A));
+        request(a, "bob");
+        assertEquals(names("BOOTED@" + A), log.reasons("bob"));
+        assertEquals("alice", log.to("bob", DSGArenaRequestEndedEvent.class).get(0).getOwner());
+        assertEquals(nums(), log.lastMyRequests("bob"));
+        assertEquals(names(), reg.pendingRequesters(A));
+        request(a, "erin");   // the reopen still lets everyone else in
+        assertEquals(names("erin"), log.lastSnapshot("alice", A));
+    }
+
+    /**
+     * Through real tables the memory is already empty here: filling to two
+     * players wiped it (R6) and a table that is not open takes no requests.
+     * What R6b adds at this level is the owner's fresh snapshot and that the
+     * table takes requests again; the wipe itself is pinned at registry level
+     * by testPausedTableReopensWithMemoryWiped (Task 4).
+     */
+    public void testWaitingGameCancelledReopensTable() {
+        TestArenaTable a = gameInProgress();
+        a.leaveMainRoom("bob");
+        request(a, "erin");           // refused while paused
+        a.waitingTimeIsUp();
+        log.clear();
+
+        a.handleForceCancelResign(new DSGForceCancelResignTableEvent(
+                "alice", A, DSGForceCancelResignTableEvent.CANCEL));
+
+        assertEquals(DSGGameStateTableEvent.NO_GAME_IN_PROGRESS, a.gameState());
+        assertTrue(reg.isOpen(A));
+        assertEquals(names(), log.lastSnapshot("alice", A));
+        request(a, "erin");
+        assertEquals(names("erin"), reg.pendingRequesters(A));
+    }
+
+    public void testWaitingGameForceResignedReopensTable() {
+        TestArenaTable a = gameInProgress();
+        a.leaveMainRoom("bob");
+        a.waitingTimeIsUp();
+        log.clear();
+
+        a.handleForceCancelResign(new DSGForceCancelResignTableEvent(
+                "alice", A, DSGForceCancelResignTableEvent.RESIGN));
+
+        assertEquals(DSGGameStateTableEvent.NO_GAME_IN_PROGRESS, a.gameState());
+        assertTrue(reg.isOpen(A));
+        assertEquals(names(), log.lastSnapshot("alice", A));
+        request(a, "erin");
+        assertEquals(names("erin"), reg.pendingRequesters(A));
+    }
+
+    /**
+     * Review Focus 3. Passes before this task (nothing published on state
+     * change) and must keep passing after it: the guard is what holds.
+     */
+    public void testDestroyedTableNeverRepublishesIntoReusedNumber() {
+        TestArenaTable old = tableCreatedBy(A, "alice");
+        old.destroy();
+        TestArenaTable reused = tableCreatedBy(A, "zed");
+
+        old.beginGame();   // a timer thread on the old object still runs startGame()
+
+        assertTrue(reg.isOpen(A));
+        request(reused, "erin");
+        assertEquals(names("erin"), log.lastSnapshot("zed", A));
+    }
 }

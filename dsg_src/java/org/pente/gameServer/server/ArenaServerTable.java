@@ -41,6 +41,15 @@ public class ArenaServerTable extends ServerTable {
     protected int playAs = 1;
 
     protected ArenaJoinRequestRegistry joinRequests;
+    /**
+     * Serializes every publish with destroy(): startGame() publishes from the
+     * pressPlayTimer thread, so without it a publish that passed the
+     * destroyed check could land after tableRemoved and recreate the table.
+     * Lock order: Server.tables -> publishLock -> registry (never reversed).
+     */
+    private final Object publishLock = new Object();
+    /** Set by destroy() under publishLock; a destroyed table never publishes again. */
+    protected boolean destroyed = false;
 
     /** Only for unit tests: an empty table without a server. */
     protected ArenaServerTable() {
@@ -87,8 +96,11 @@ public class ArenaServerTable extends ServerTable {
 
 
     public void destroy() {
-        if (joinRequests != null) {
-            joinRequests.tableRemoved(tableNum);   // R8
+        synchronized (publishLock) {
+            destroyed = true;
+            if (joinRequests != null) {
+                joinRequests.tableRemoved(tableNum);   // R8
+            }
         }
         if (closeTableTimer != null) {
             closeTableTimer.cancel();
@@ -206,22 +218,39 @@ public class ArenaServerTable extends ServerTable {
 
     /** R6b/R10: tell the registry who sits here, who owns it, and whether a game runs. */
     protected void publishJoinRequestState() {
-        // one atomic copy (Vector.toArray is synchronized): startGame() also
-        // publishes from the pressPlayTimer thread while the pump may change
-        // the list, and iterating the Vector itself could throw into startGame()
-        List<DSGPlayerData> seated = new ArrayList<>(playersInTable);
-        List<String> names = new ArrayList<>();
-        String owner = null;
-        for (DSGPlayerData d : seated) {
-            if (d != null) {
-                names.add(d.getName());
-                if (owner == null && d.isHuman()) {
-                    owner = d.getName();   // the ServerTable.getOwner() rule, on the copy
+        synchronized (publishLock) {
+            if (destroyed) {
+                return;
+            }
+            // one atomic copy (Vector.toArray is synchronized): startGame() also
+            // publishes from the pressPlayTimer thread while the pump may change
+            // the list, and iterating the Vector itself could throw into startGame()
+            List<DSGPlayerData> seated = new ArrayList<>(playersInTable);
+            List<String> names = new ArrayList<>();
+            String owner = null;
+            for (DSGPlayerData d : seated) {
+                if (d != null) {
+                    names.add(d.getName());
+                    if (owner == null && d.isHuman()) {
+                        owner = d.getName();   // the ServerTable.getOwner() rule, on the copy
+                    }
                 }
             }
+            joinRequests.publishTable(tableNum, owner, names,
+                    state == DSGGameStateTableEvent.NO_GAME_IN_PROGRESS, rated);
         }
-        joinRequests.publishTable(tableNum, owner, names,
-                state == DSGGameStateTableEvent.NO_GAME_IN_PROGRESS, rated);
+    }
+
+    @Override
+    protected void exit(String player, boolean booted) {
+        super.exit(player, booted);
+        publishJoinRequestState();   // player count and maybe owner changed (R6b)
+    }
+
+    @Override
+    protected void changeGameState(int newState, String reason, String winner, int gameInSet) {
+        super.changeGameState(newState, reason, winner, gameInSet);
+        publishJoinRequestState();   // a table is only open with no game in progress (R6b)
     }
 
     @Override
