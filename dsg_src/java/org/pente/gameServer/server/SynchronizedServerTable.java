@@ -182,6 +182,8 @@ public class SynchronizedServerTable implements DSGEventListener {
                             serverTable.handleArenaRejectJoin(dsgArenaRejectTableJoinEvent);
                     case DSGArenaAcceptTableJoinEvent dsgArenaAcceptTableJoinEvent ->
                             serverTable.handleArenaAcceptJoin(dsgArenaAcceptTableJoinEvent);
+                    case DSGArenaWithdrawJoinRequestEvent dsgArenaWithdrawJoinRequestEvent ->
+                            serverTable.handleArenaWithdrawJoin(dsgArenaWithdrawJoinRequestEvent);
                     case DSGRenjuTaraguchiSwapTableEvent dsgRenjuTaraguchiSwapTableEvent ->
                             serverTable.handleRenjuSwap(dsgRenjuTaraguchiSwapTableEvent);
                     case DSGRenjuTaraguchiOffer10TableEvent dsgRenjuTaraguchiOffer10TableEvent ->

@@ -9,8 +9,12 @@ import junit.framework.TestCase;
 import org.pente.gameServer.core.DSGPlayerData;
 import org.pente.gameServer.core.DSGPlayerGameData;
 import org.pente.gameServer.event.*;
+import org.pente.gameServer.server.ServerTable;
+import org.pente.gameServer.server.SynchronizedServerTable;
 
 import java.awt.Color;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.*;
 
 /**
@@ -128,6 +132,38 @@ public class ArenaJoinRequestWireTest extends TestCase {
 
         assertTrue(lower.getEncodedEvent() instanceof DSGArenaRejectTableJoinEvent);
         assertNull(capital.getEncodedEvent());
+    }
+
+    // ---- dispatch ------------------------------------------------------
+
+    /** ServerTable that records withdraw calls. */
+    static final class RecordingTable extends ServerTable {
+        final List<DSGArenaWithdrawJoinRequestEvent> withdrawals = new ArrayList<>();
+
+        @Override
+        public void handleArenaWithdrawJoin(DSGArenaWithdrawJoinRequestEvent dsgEvent) {
+            withdrawals.add(dsgEvent);
+        }
+    }
+
+    /**
+     * SynchronizedServerTable's switch drops unknown events silently, so a
+     * missing case would lose every withdraw. Calls the real dispatch method.
+     */
+    public void testSynchronizedServerTableDispatchesWithdraw() throws Exception {
+        SynchronizedServerTable sync = new SynchronizedServerTable();
+        RecordingTable table = new RecordingTable();
+        Field serverTable = SynchronizedServerTable.class.getDeclaredField("serverTable");
+        serverTable.setAccessible(true);
+        serverTable.set(sync, table);
+        Method dispatch = SynchronizedServerTable.class.getDeclaredMethod("callServerTable", DSGEvent.class);
+        dispatch.setAccessible(true);
+        DSGArenaWithdrawJoinRequestEvent withdraw = new DSGArenaWithdrawJoinRequestEvent("bob", 7);
+
+        dispatch.invoke(sync, withdraw);
+
+        assertEquals(1, table.withdrawals.size());
+        assertSame(withdraw, table.withdrawals.get(0));
     }
 
     // ---- helpers -------------------------------------------------------
