@@ -41,6 +41,8 @@ public class ArenaJoinRequestRegistry {
         final Set<String> blocked = new HashSet<>();
         /** requester whose accepted join is queued on this table, or null (R5) */
         String claimed;
+        /** requesters whose claim a fill released while their join was still queued (R6) */
+        final Set<String> releasedJoins = new HashSet<>();
     }
 
     private final Notifier notifier;
@@ -58,11 +60,14 @@ public class ArenaJoinRequestRegistry {
     public synchronized void publishTable(int table, String owner, Collection<String> players,
                                           boolean noGameInProgress, boolean rated) {
         TableMemory t = tables.get(table);
-        if (t == null) {
+        boolean created = t == null;
+        if (created) {
             t = new TableMemory();
             tables.put(table, t);
         }
         String oldOwner = t.owner;
+        boolean wasOpen = t.open;
+        int oldCount = t.players.size();
 
         t.owner = owner;
         t.rated = rated;
@@ -70,7 +75,18 @@ public class ArenaJoinRequestRegistry {
         t.open = t.players.size() == 1 && noGameInProgress;
 
         // a player who becomes owner gets the list for their table
-        if (owner != null && !owner.equals(oldOwner)) {
+        boolean snapshotOwner = owner != null && !owner.equals(oldOwner);
+        if (oldCount < 2 && t.players.size() >= 2) {
+            // R6: the table is full
+            snapshotOwner |= !t.pending.isEmpty();
+            wipeMemory(table, t);
+        } else if (!created && !wasOpen && t.open) {
+            // R6b: not open -> open. Requests only exist while a table is
+            // open, so pending is already empty; the owner starts fresh.
+            wipeMemory(table, t);
+            snapshotOwner = true;
+        }
+        if (snapshotOwner && owner != null) {
             notifySnapshot(table, t, owner);
         }
     }
@@ -118,6 +134,97 @@ public class ArenaJoinRequestRegistry {
         notifySnapshot(table, t, sender);
     }
 
+    /**
+     * R5: accept only claims. Runs queueJoin, which queues the
+     * DSGJoinTableEvent on the table's own pump, inside the lock. Always
+     * answers the sender with a snapshot (R11).
+     *
+     * @return true if the requester was claimed and the join queued
+     */
+    public synchronized boolean accept(int table, String sender, String requester, Runnable queueJoin) {
+        TableMemory t = tables.get(table);
+        if (t == null || !sender.equals(t.owner)) {
+            log4j.warn("Arena accept at table " + table + " by non-owner " + sender + " ignored");
+            notifyEmptySnapshot(table, sender);
+            return false;
+        }
+        if (t.claimed != null) {
+            // an earlier accept's join is queued; the table fills when it lands
+            notifySnapshot(table, t, sender);
+            return false;
+        }
+        if (requester == null || !t.pending.containsKey(requester) || claims.containsKey(requester)) {
+            // "" for a frame without playerToAccept: Gson would drop a null player
+            notifier.send(sender, new DSGArenaRequestEndedEvent(
+                    requester == null ? "" : requester, table, t.owner,
+                    DSGArenaRequestEndedEvent.NO_LONGER_AVAILABLE));
+            notifySnapshot(table, t, sender);
+            return false;
+        }
+        t.pending.remove(requester);
+        t.claimed = requester;
+        claims.put(requester, table);
+        queueJoin.run();
+        notifySnapshot(table, t, sender);
+        notifyMyRequests(requester);
+        return true;
+    }
+
+    /**
+     * R6: may this join land? Only a claimed join is checked: the requester
+     * must still be in the main room and not seated at another table.
+     * Otherwise the claim is released and the owner told. The one queued
+     * join whose claim a fill already ended with TABLE_FULL is refused
+     * silently, so the requester is not seated as a spectator after that
+     * notice.
+     */
+    public synchronized boolean admitJoin(int table, String player, boolean playerInMainRoom) {
+        TableMemory t = tables.get(table);
+        if (t != null && t.releasedJoins.remove(player)) {
+            return false;
+        }
+        Integer claimedTable = claims.get(player);
+        if (claimedTable == null || claimedTable != table) {
+            return true;
+        }
+        if (playerInMainRoom && !isSeatedElsewhere(player, table)) {
+            return true;
+        }
+        releaseClaimAndTellOwner(table, player);
+        return false;
+    }
+
+    /**
+     * The join was admitted but ServerTable.handleJoin did not seat the
+     * player (BOOTED within 5 minutes, or it threw). A claim held at this
+     * table is released and the owner told, so neither stays stuck on it.
+     */
+    public synchronized void joinFailed(int table, String player) {
+        Integer claimedTable = claims.get(player);
+        if (claimedTable != null && claimedTable == table) {
+            releaseClaimAndTellOwner(table, player);
+        }
+    }
+
+    /**
+     * R7: player sat down at table, so their requests everywhere end
+     * silently. Fulfils their claim at this table; a claim at another table
+     * is kept so that table refuses the join when it lands (R6).
+     */
+    public synchronized void playerJoinedTable(int table, String player) {
+        Integer claimedTable = claims.get(player);
+        if (claimedTable != null && claimedTable == table) {
+            claims.remove(player);
+            TableMemory t = tables.get(table);
+            if (t != null) {
+                t.claimed = null;
+            }
+        }
+        if (removeAllPending(player)) {
+            notifyMyRequests(player);
+        }
+    }
+
     // ---- answers on demand ---------------------------------------------------
 
     /** Sent when a player joins the main room. */
@@ -144,6 +251,10 @@ public class ArenaJoinRequestRegistry {
     public synchronized boolean isOpen(int table) {
         TableMemory t = tables.get(table);
         return t != null && t.open;
+    }
+
+    public synchronized Integer claimedTable(String requester) {
+        return claims.get(requester);
     }
 
     // ---- helpers; the caller holds the lock ---------------------------------
@@ -175,6 +286,74 @@ public class ArenaJoinRequestRegistry {
             }
         }
         return false;
+    }
+
+    private boolean isSeatedElsewhere(String player, int table) {
+        for (Map.Entry<Integer, TableMemory> e : tables.entrySet()) {
+            if (e.getKey() != table && e.getValue().players.contains(player)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** R6/R6b: end pending with TABLE_FULL, release any claim, forget the blocked set. */
+    private void wipeMemory(int table, TableMemory t) {
+        endAllPending(table, t, DSGArenaRequestEndedEvent.TABLE_FULL);
+        String released = t.claimed;
+        releaseClaim(table, t, DSGArenaRequestEndedEvent.TABLE_FULL);
+        t.blocked.clear();
+        if (released != null) {
+            // its DSGJoinTableEvent is still queued on the table's pump
+            t.releasedJoins.add(released);
+        }
+    }
+
+    /** R6: the claimed join will not seat the requester; the owner gets NO_LONGER_AVAILABLE. */
+    private void releaseClaimAndTellOwner(int table, String player) {
+        claims.remove(player);
+        TableMemory t = tables.get(table);
+        if (t != null) {
+            t.claimed = null;
+            if (t.owner != null) {
+                notifier.send(t.owner, new DSGArenaRequestEndedEvent(
+                        player, table, t.owner, DSGArenaRequestEndedEvent.NO_LONGER_AVAILABLE));
+                notifySnapshot(table, t, t.owner);
+            }
+        }
+    }
+
+    /** Ends every pending request at t with a notice; each requester gets my-requests. */
+    private void endAllPending(int table, TableMemory t, String reason) {
+        List<String> ended = new ArrayList<>(t.pending.keySet());
+        t.pending.clear();
+        for (String requester : ended) {
+            notifyEnded(requester, table, t, requester, reason);
+            notifyMyRequests(requester);
+        }
+    }
+
+    private void releaseClaim(int table, TableMemory t, String reason) {
+        if (t.claimed == null) {
+            return;
+        }
+        String requester = t.claimed;
+        t.claimed = null;
+        claims.remove(requester);
+        notifyEnded(requester, table, t, requester, reason);
+    }
+
+    /** Removes requester's pending requests everywhere; owners get snapshots. */
+    private boolean removeAllPending(String requester) {
+        boolean changed = false;
+        for (Map.Entry<Integer, TableMemory> e : tables.entrySet()) {
+            TableMemory t = e.getValue();
+            if (t.pending.remove(requester) != null) {
+                changed = true;
+                notifySnapshot(e.getKey(), t, t.owner);
+            }
+        }
+        return changed;
     }
 
     private SortedSet<Integer> pendingTablesOf(String requester) {
