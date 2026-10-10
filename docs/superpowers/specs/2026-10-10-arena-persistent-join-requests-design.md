@@ -36,6 +36,7 @@ R3. Withdraw (requester, new C→S event): pending (requester, table) is removed
 R4. Decline (owner): pending (requester, table) is removed, the requester joins the table's blocked set and gets `DECLINED`. Blocked requesters cannot request that table until R6 wipes its memory.
 
 R5. Accept (owner) only **claims**. Atomically:
+- check the table has no outstanding claim. If it does, change nothing and answer with a snapshot only (R11). That requester later gets `TABLE_FULL` when the claimed join lands (R6);
 - check (requester, table) is pending and the requester has no claim elsewhere. Otherwise answer the owner with `NO_LONGER_AVAILABLE` and a snapshot;
 - remove (requester, table) and record the claim (requester → table);
 - queue the `DSGJoinTableEvent` on the table's pump, as today.
