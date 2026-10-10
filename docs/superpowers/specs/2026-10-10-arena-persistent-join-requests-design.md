@@ -27,7 +27,8 @@ R2. A request is created only if all hold:
 - the requester is in the main room, is not the owner, is not seated at any table, and has no outstanding claim anywhere;
 - no pending (requester, table) exists;
 - the requester is not in the table's blocked set;
-- the existing guest-on-rated-table rule still applies.
+- the existing guest-on-rated-table rule still applies;
+- the requester is not currently booted from that table (`ServerTable.bootTimes` entry still in its 5-minute window). `ArenaServerTable` checks this on its own pump before calling the registry and refuses with `BOOTED`. A boot is table state, not request memory, so a reopen (R6b) does not clear it.
 
 A refused attempt sends the requester `dsgArenaRequestEndedEvent` with the matching reason. A request to a table number that no longer exists (dropped today as "Invalid table" in `ArenaServer.routeEventToTable`) is refused with `NOT_AVAILABLE`.
 
@@ -100,6 +101,7 @@ S→C, new (each needs a `DSGEventWrapper` field and decoders in all three clien
   - `DUPLICATE`, `BLOCKED` (in the blocked set);
   - `NOT_AVAILABLE` (an R2 table or requester check failed);
   - `GUEST_RATED`;
+  - `BOOTED` (R2, the requester was booted from that table less than 5 minutes ago);
   - `NO_LONGER_AVAILABLE` (to the owner, R5/R6).
 
 No longer sent S→C: `dsgArenaRequestJoinTableEvent` and `dsgArenaRejectTableJoinEvent`. Snapshots and `dsgArenaRequestEndedEvent` replace them.
@@ -130,7 +132,8 @@ C4. `dsgArenaRequestEndedEvent` shows a short notice. The style follows each app
 - `DECLINED`: "<owner> declined your request"
 - `TABLE_FULL`: "Table <n> is no longer available"
 - `TABLE_CLOSED`: "Table <n> was closed"
-- `DUPLICATE`: "You already requested table <n>"
+- `DUPLICATE`: "You already sent a request to <owner>"
+- `BOOTED`: "<owner> removed you from table <n>, try again in a few minutes"
 - `BLOCKED`: "You can't request table <n> again until its next game"
 - `NOT_AVAILABLE`: "You can't join table <n> right now"
 - `GUEST_RATED`: "Guests can't join rated tables"
