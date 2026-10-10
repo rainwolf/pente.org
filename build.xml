@@ -80,6 +80,7 @@
             <arg value="org.pente.gameServer.server.test.MMAIPlayerInitTest"/>
         </java>
         <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
             <classpath refid="test-classpath"/>
             <arg value="org.pente.gameServer.server.test.ArenaJoinRequestWireTest"/>
         </java>
@@ -88,6 +89,7 @@
     <!-- Run a single test class: ant test-one -Dtest=org.pente.gameServer.server.test.RedisConnectionManagerTest -->
     <target name="test-one" depends="compile-tests">
         <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
             <classpath refid="test-classpath"/>
             <arg value="${test}"/>
         </java>
