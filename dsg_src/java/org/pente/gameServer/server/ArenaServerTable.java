@@ -40,8 +40,11 @@ public class ArenaServerTable extends ServerTable {
 
     protected int playAs = 1;
 
-    Map<String, DSGArenaRequestJoinTableEvent> joinRequestMap = new HashMap<>();
-    Map<String, Date> rejectMap = new HashMap<>();
+    protected ArenaJoinRequestRegistry joinRequests;
+
+    /** Only for unit tests: an empty table without a server. */
+    protected ArenaServerTable() {
+    }
 
     public ArenaServerTable(final Server server,
                             final Resources resources,
@@ -74,6 +77,7 @@ public class ArenaServerTable extends ServerTable {
         this.returnEmailStorer = returnEmailStorer;
         this.activityLogger = activityLogger;
         this.creator = joinEvent.getPlayer();
+        this.joinRequests = ((ArenaServer) server).getJoinRequestRegistry();
 
         this.playersInMainRoom = new Vector<>();
         playersInMainRoom.addAll(namesInMainRoom);
@@ -219,60 +223,41 @@ public class ArenaServerTable extends ServerTable {
     @Override
     public void handleArenaRequestJoin(DSGArenaRequestJoinTableEvent dsgEvent) {
         String player = dsgEvent.getPlayer();
-        if (player.startsWith("guest") && rated) {
-            dsgEventRouter.routeEvent(
-                    new DSGArenaRejectTableJoinEvent(getOwner(), tableNum, player, "Guests are not allowed to join rated games."),
-                    player);
+        // R2: a boot is this table's state, so it is checked here on the
+        // table's own pump, before the registry sees the request. A reopen
+        // (R6b) wipes registry memory but leaves bootTimes alone.
+        if (isBooted(player)) {
+            String owner = getOwner();
+            dsgEventRouter.routeEvent(new DSGArenaRequestEndedEvent(player, tableNum,
+                    owner == null ? "" : owner, DSGArenaRequestEndedEvent.BOOTED), player);
+            joinRequests.sendMyRequests(player);   // R11 answer
             return;
         }
-        if (rejectMap.containsKey(player)) {
-            if (new Date().getTime() - rejectMap.get(player).getTime() < 1000L * 60) {
-                dsgEventRouter.routeEvent(
-                        new DSGArenaRejectTableJoinEvent(getOwner(), tableNum, player, "Wait one minute after rejection before requesting again."),
-                        player);
-                return;
-            } else {
-                rejectMap.remove(player);
-            }
-        } else if (joinRequestMap.containsKey(player)) {
-            if (new Date().getTime() - joinRequestMap.get(player).getTime() < 1000L * 60) {
-                dsgEventRouter.routeEvent(
-                        new DSGArenaRejectTableJoinEvent(getOwner(), tableNum, player, "You already have a pending join request for this table."),
-                        player);
-                return;
-            }
-        }
-        joinRequestMap.put(player, dsgEvent);
-        String ownerName = this.getOwner();
-        dsgEventRouter.routeEvent(
-                new DSGArenaRequestJoinTableEvent(player, tableNum),
-                ownerName);
+        joinRequests.request(tableNum, player, isPlayerInMainRoom(player));
+    }
+
+    /** The ServerTable.handleJoin boot rule (ServerTable.java:447-453), applied at request time. */
+    private boolean isBooted(String player) {
+        Long until = bootTimes.get(player);
+        return until != null && System.currentTimeMillis() < until;
+    }
+
+    @Override
+    public void handleArenaWithdrawJoin(DSGArenaWithdrawJoinRequestEvent dsgEvent) {
+        joinRequests.withdraw(tableNum, dsgEvent.getPlayer());
     }
 
     @Override
     public void handleArenaRejectJoin(DSGArenaRejectTableJoinEvent dsgEvent) {
-        rejectMap.put(dsgEvent.getPlayerToReject(), new Date());
-        String ownerName = this.getOwner();
-        dsgEventRouter.routeEvent(
-                new DSGArenaRejectTableJoinEvent(ownerName, tableNum, dsgEvent.getPlayerToReject(), ownerName + "declined your request."),
-                dsgEvent.getPlayerToReject());
+        joinRequests.decline(tableNum, dsgEvent.getPlayer(), dsgEvent.getPlayerToReject());
     }
 
     @Override
     public void handleArenaAcceptJoin(DSGArenaAcceptTableJoinEvent dsgEvent) {
-        String player = dsgEvent.getPlayerToAccept();
-        if (joinRequestMap.containsKey(player)) {
-            for (SynchronizedServerTable table : server.tables) {
-                if (table != null && table.getServerTable() != null && table.getServerTable().isPlayerInTable(player)) {
-                    return;
-                }
-            }
-            if (isPlayerInMainRoom(player)) {
-                synchronizedTableListener.eventOccurred(
-                        new DSGJoinTableEvent(player, tableNum));
-                joinRequestMap.clear();
-            }
-        }
+        final String player = dsgEvent.getPlayerToAccept();
+        // R5: only claims; the join is queued on this table's pump and re-checked when it lands (R6)
+        joinRequests.accept(tableNum, dsgEvent.getPlayer(), player,
+                () -> synchronizedTableListener.eventOccurred(new DSGJoinTableEvent(player, tableNum)));
     }
 
 

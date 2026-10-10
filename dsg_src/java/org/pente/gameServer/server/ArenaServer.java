@@ -23,6 +23,7 @@ import org.pente.gameServer.core.DSGPlayerData;
 import org.pente.gameServer.core.ServerData;
 import org.pente.gameServer.event.DSGArenaCreateTableEvent;
 import org.pente.gameServer.event.DSGEvent;
+import org.pente.gameServer.event.DSGJoinMainRoomEvent;
 import org.pente.gameServer.event.DSGJoinTableEvent;
 
 import java.util.Collection;
@@ -33,10 +34,29 @@ import java.util.Collection;
  */
 public class ArenaServer extends Server {
 
+    // All arena join-request state (spec R10). Field initializers run after
+    // super() returns, so the hooks below null-check it for events that race
+    // server startup.
+    private final ArenaJoinRequestRegistry joinRequests =
+            new ArenaJoinRequestRegistry((player, event) -> dsgEventToPlayerRouter.routeEvent(event, player));
+
     public ArenaServer(Resources resources,
                        ServerData serverData) throws Throwable {
 
         super(resources, serverData);
+    }
+
+    public ArenaJoinRequestRegistry getJoinRequestRegistry() {
+        return joinRequests;
+    }
+
+    @Override
+    public void routeEventToMainRoom(DSGEvent event) {
+        super.routeEventToMainRoom(event);
+        // spec: dsgArenaMyRequestsEvent is sent when a player joins the main room
+        if (event instanceof DSGJoinMainRoomEvent && joinRequests != null) {
+            joinRequests.sendMyRequests(((DSGJoinMainRoomEvent) event).getPlayer());
+        }
     }
 
     public void routeEventToTable(DSGEvent event, int tableNum) {
@@ -52,12 +72,19 @@ public class ArenaServer extends Server {
             joinEvent.setTable(tableNum);
             event = joinEvent;
         }
+        boolean routed = false;
         synchronized (tables) {
             if (tableNum < 1 || tableNum >= tables.size() || tables.get(tableNum) == null) {
                 log4j.error("Invalid table: " + tableNum + " for event " + event);
-                return;
+            } else {
+                tables.get(tableNum).eventOccurred(event);
+                routed = true;
             }
-            tables.get(tableNum).eventOccurred(event);
+        }
+        // R2/R11: arena events for a gone table still get their answer.
+        // Outside the tables lock: the registry never runs under it from here.
+        if (!routed && joinRequests != null) {
+            joinRequests.answerUnroutable(event, tableNum);
         }
     }
 
