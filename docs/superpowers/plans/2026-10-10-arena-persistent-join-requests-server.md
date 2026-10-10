@@ -23,7 +23,8 @@
   - C→S, new: `dsgArenaWithdrawJoinRequestEvent {table}`.
   - S→C, new: `dsgArenaJoinRequestsEvent {table, requests: [{player, seq}]}` → owner; `dsgArenaMyRequestsEvent {tables: [int]}` → requester; `dsgArenaRequestEndedEvent {table, player, owner, reason}`.
   - Every event also carries the existing `time` field from `AbstractDSGEvent`; Gson omits null fields.
-- Reasons, verbatim: `DECLINED`, `TABLE_FULL`, `TABLE_CLOSED`, `DUPLICATE`, `BLOCKED`, `NOT_AVAILABLE`, `GUEST_RATED`, `NO_LONGER_AVAILABLE`.
+- Reasons, verbatim: `DECLINED`, `TABLE_FULL`, `TABLE_CLOSED`, `DUPLICATE`, `BLOCKED`, `NOT_AVAILABLE`, `GUEST_RATED`, `BOOTED`, `NO_LONGER_AVAILABLE`.
+- R2 boot check, verbatim: "the requester is not currently booted from that table (`ServerTable.bootTimes` entry still in its 5-minute window). `ArenaServerTable` checks this on its own pump before calling the registry and refuses with `BOOTED`. A boot is table state, not request memory, so a reopen (R6b) does not clear it."
 - "No longer sent S→C: `dsgArenaRequestJoinTableEvent` and `dsgArenaRejectTableJoinEvent`."
 - "Old app builds are not supported." "There is no server alias for the capital-key decline."
 - R10: "Every mutation runs in a `synchronized` method"; "The registry never takes the `tables` lock"; "Outgoing events are enqueued while the lock is held"; "Payloads are immutable copies". Lock order is always `Server.tables` → an arena table's `publishLock` (Task 8) → registry → router → player writer queue, never the reverse.
@@ -44,8 +45,9 @@
 3. **A destroyed table object publishes again** (its `pressPlayTimer` fires `startGame()` on a `java.util.Timer` thread after `destroy()`) while its table number has been reused. Expect the stale publish to be ignored so the new table keeps its own state. Pinned by `testDestroyedTableNeverRepublishesIntoReusedNumber` (Task 8).
 4. **Request, withdraw, accept or decline aimed at a table that is gone, or whose creator join has not been processed yet.** Expect an R11 answer and `NOT_AVAILABLE` with `owner: ""`, never an NPE or silence. Pinned by `testUnknownTableRefusesWithEmptyOwner` (Task 3) and the `answerUnroutable` tests (Task 5), and E2E scenario "events for a gone table are answered" (Task 9).
 5. **`seq` across a reopen.** A requester who asks again after the table filled and reopened gets a higher `seq` than requests made meanwhile, so the owner's list stays in arrival order and numbers are never reused. Pinned by `testSeqKeepsGrowingAcrossReopen` (Task 4).
-6. **A claimed join that `admitJoin` lets through but `ServerTable.handleJoin` still turns away** (the requester was booted within 5 minutes, `ServerTable.java:447-453`, or the join throws). Expect the claim released and the owner told `NO_LONGER_AVAILABLE` plus a snapshot, so neither the table nor the requester stays stuck on a claim. Pinned by `testClaimedJoinTheTableTurnsAwayReleasesClaimAndTellsOwner` (Task 4) and `testClaimedJoinRefusedByTheTableReleasesTheClaim` (Task 7).
+6. **A claimed join that `admitJoin` lets through but `ServerTable.handleJoin` still turns away** (a boot recorded after the request was made, `ServerTable.java:447-453`, or the join throws; a boot recorded before the request is refused up front, Review Focus 8). Expect the claim released and the owner told `NO_LONGER_AVAILABLE` plus a snapshot, so neither the table nor the requester stays stuck on a claim. Pinned by `testClaimedJoinTheTableTurnsAwayReleasesClaimAndTellsOwner` (Task 4) and `testClaimedJoinRefusedByTheTableReleasesTheClaim` (Task 7).
 7. **The table fills by another path while a claimed join is still queued.** The claim ends with `TABLE_FULL` to the requester; expect the queued join, when it lands, to be refused instead of seating the requester as a spectator. Pinned by `testJoinQueuedByAClaimThatTheTableFullReleasedIsRefused` (Task 4).
+8. **A player the owner booted requests that table again within 5 minutes**, including after the boot itself reopened the table (R6b). Expect `BOOTED` with `owner` set, the R11 `dsgArenaMyRequestsEvent` answer, no request created and no snapshot to the owner; once the 5 minutes pass the request is accepted. The check reads the table's own `bootTimes` on its pump, before the registry. Pinned by `testBootedRequesterIsRefusedWithOwnerNamed`, `testBootRefusalStillAnswersMyRequests`, `testExpiredBootNoLongerRefuses` (Task 6), `testBootThatReopensTheTableStillRefusesTheBootedPlayer` (Task 8) and E2E scenario "booted player is refused after the boot reopens the table" (Task 9).
 
 ---
 
@@ -58,7 +60,7 @@ All Java paths are under `/Users/waliedothman/mariposa/coding/pente.org-project/
 | `event/DSGArenaWithdrawJoinRequestEvent.java` | create | C→S withdraw (a `DSGTableEvent`, so `ServerPlayer` routes it) |
 | `event/DSGArenaJoinRequestsEvent.java` | create | S→C owner snapshot, with nested `Request {player, seq}` |
 | `event/DSGArenaMyRequestsEvent.java` | create | S→C requester's pending tables |
-| `event/DSGArenaRequestEndedEvent.java` | create | S→C notice with the eight reason constants |
+| `event/DSGArenaRequestEndedEvent.java` | create | S→C notice with the nine reason constants |
 | `event/DSGEventWrapper.java` | modify `:80-89`, `:677-683` | four new wrapper fields + accessors (field name = wire key) |
 | `server/ServerTable.java` | modify `:3919-3929` | no-op `handleArenaWithdrawJoin` |
 | `server/SynchronizedServerTable.java` | modify `:179-184` | dispatch case for the withdraw event |
@@ -91,7 +93,7 @@ All Java paths are under `/Users/waliedothman/mariposa/coding/pente.org-project/
   - `DSGArenaWithdrawJoinRequestEvent()` and `DSGArenaWithdrawJoinRequestEvent(String player, int table)`
   - `DSGArenaJoinRequestsEvent(int table, List<DSGArenaJoinRequestsEvent.Request> requests)`; `List<Request> getRequests()`; `int getTable()`; nested `static class Request` with `Request(String player, long seq)`, `String getPlayer()`, `long getSeq()`
   - `DSGArenaMyRequestsEvent(int[] tables)`; `int[] getTables()`
-  - `DSGArenaRequestEndedEvent(String player, int table, String owner, String reason)`; `getPlayer()`, `getTable()`, `String getOwner()`, `String getReason()`; constants `DECLINED`, `TABLE_FULL`, `TABLE_CLOSED`, `DUPLICATE`, `BLOCKED`, `NOT_AVAILABLE`, `GUEST_RATED`, `NO_LONGER_AVAILABLE` (each equal to its own name)
+  - `DSGArenaRequestEndedEvent(String player, int table, String owner, String reason)`; `getPlayer()`, `getTable()`, `String getOwner()`, `String getReason()`; constants `DECLINED`, `TABLE_FULL`, `TABLE_CLOSED`, `DUPLICATE`, `BLOCKED`, `NOT_AVAILABLE`, `GUEST_RATED`, `BOOTED`, `NO_LONGER_AVAILABLE` (each equal to its own name)
 
 - [ ] **Step 1: Write the failing test**
 
@@ -195,6 +197,7 @@ public class ArenaJoinRequestWireTest extends TestCase {
         assertEquals("BLOCKED", DSGArenaRequestEndedEvent.BLOCKED);
         assertEquals("NOT_AVAILABLE", DSGArenaRequestEndedEvent.NOT_AVAILABLE);
         assertEquals("GUEST_RATED", DSGArenaRequestEndedEvent.GUEST_RATED);
+        assertEquals("BOOTED", DSGArenaRequestEndedEvent.BOOTED);
         assertEquals("NO_LONGER_AVAILABLE", DSGArenaRequestEndedEvent.NO_LONGER_AVAILABLE);
     }
 
@@ -400,6 +403,7 @@ public class DSGArenaRequestEndedEvent extends AbstractDSGTableEvent {
     public static final String BLOCKED = "BLOCKED";
     public static final String NOT_AVAILABLE = "NOT_AVAILABLE";
     public static final String GUEST_RATED = "GUEST_RATED";
+    public static final String BOOTED = "BOOTED";
     public static final String NO_LONGER_AVAILABLE = "NO_LONGER_AVAILABLE";
 
     private String owner;
@@ -2055,9 +2059,10 @@ git -C /Users/waliedothman/mariposa/coding/pente.org-project/pente.org commit -S
   - `protected ArenaJoinRequestRegistry ArenaServerTable.joinRequests` (set in the real constructor from `((ArenaServer) server).getJoinRequestRegistry()`)
   - `protected ArenaServerTable()`: for unit tests only, builds an empty table without a server.
   - `ArenaServerTable.handleArenaRequestJoin`, `handleArenaWithdrawJoin`, `handleArenaRejectJoin`, `handleArenaAcceptJoin` forward to the registry; accept's `queueJoin` is `synchronizedTableListener.eventOccurred(new DSGJoinTableEvent(player, tableNum))`.
+  - R2 boot check: `handleArenaRequestJoin` first checks `isBooted(player)` (private; the `ServerTable.handleJoin` rule at `ServerTable.java:447-453`: a `bootTimes` entry whose time is still in the future). A booted requester gets `dsgArenaRequestEndedEvent(player, tableNum, owner, BOOTED)` through `dsgEventRouter`, with `owner` from `getOwner()` (`""` if null), then `joinRequests.sendMyRequests(player)` as the R11 answer; `joinRequests.request` is not called. So `BOOTED` comes before every registry refusal. Both sends happen on this table's pump, in that order, and nothing changes, so the registry lock is not needed for ordering. `bootTimes` is only ever cleared by `handleInvite` (`ServerTable.java:3180`), never by a reopen.
   - The R2 "requester is in the main room" input is the table's own `isPlayerInMainRoom(player)`, which is updated on this table's pump in the same order as the request.
   - `joinRequestMap` and `rejectMap` are deleted; the old S→C `DSGArenaRequestJoinTableEvent` / `DSGArenaRejectTableJoinEvent` are no longer sent.
-- Test scaffolding produced for Tasks 7-8 (in `ArenaServerTableJoinRequestTest`): nested `TestArenaTable extends ArenaServerTable` with stubs and drivers `landQueuedJoin()`, `leaveMainRoom(String)`, `seats(String)`, `playerCount()`, `number()`, `beginGame()`, `waitingTimeIsUp()`, `gameState()`, and field `pump`; outer helpers `human`, `names`, `nums`, `request`, `accept`.
+- Test scaffolding produced for Tasks 7-8 (in `ArenaServerTableJoinRequestTest`): nested `TestArenaTable extends ArenaServerTable` with stubs and drivers `landQueuedJoin()`, `leaveMainRoom(String)`, `seats(String)`, `playerCount()`, `number()`, `beginGame()`, `waitingTimeIsUp()`, `gameState()`, `holds(String)`, `bootedRecently(String)`, `bootExpired(String)`, and field `pump`; outer helpers `human`, `names`, `nums`, `request`, `accept`, `seededTable`, `ownedTable`.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -2193,6 +2198,21 @@ public class ArenaServerTableJoinRequestTest extends TestCase {
         int gameState() {
             return state;
         }
+
+        /** Puts a player inside the ServerTable without the join path, so getOwner() sees them. */
+        void holds(String player) {
+            playersInTable.add(human(player));
+        }
+
+        /** Records a boot the way handleBoot does (ServerTable.java:3117): no rejoin for 5 minutes. */
+        void bootedRecently(String player) {
+            bootTimes.put(player, System.currentTimeMillis() + 1000L * 60 * 5);
+        }
+
+        /** A boot whose 5 minutes have passed: ServerTable leaves the entry, it just stops counting. */
+        void bootExpired(String player) {
+            bootTimes.put(player, System.currentTimeMillis() - 1);
+        }
     }
 
     private static List<String> names(String... names) {
@@ -2216,6 +2236,13 @@ public class ArenaServerTableJoinRequestTest extends TestCase {
         TestArenaTable t = new TestArenaTable(table, reg, log);
         reg.publishTable(table, owner, names(owner), true, false);
         log.clear();
+        return t;
+    }
+
+    /** seededTable with the owner also inside the ServerTable, for checks that read getOwner(). */
+    private TestArenaTable ownedTable(int table, String owner) {
+        TestArenaTable t = seededTable(table, owner);
+        t.holds(owner);
         return t;
     }
 
@@ -2288,6 +2315,49 @@ public class ArenaServerTableJoinRequestTest extends TestCase {
 
         assertEquals(0, log.countAll(DSGArenaRequestJoinTableEvent.class));
         assertEquals(0, log.countAll(DSGArenaRejectTableJoinEvent.class));
+    }
+
+    // ---- Task 6: R2 boot check, on the table's own pump ---------------------
+
+    public void testBootedRequesterIsRefusedWithOwnerNamed() {
+        TestArenaTable a = ownedTable(A, "alice");
+        a.bootedRecently("bob");
+
+        request(a, "bob");
+
+        assertEquals(names("BOOTED@" + A), log.reasons("bob"));
+        DSGArenaRequestEndedEvent ended = log.to("bob", DSGArenaRequestEndedEvent.class).get(0);
+        assertEquals("bob", ended.getPlayer());
+        assertEquals("alice", ended.getOwner());
+        assertEquals(names(), reg.pendingRequesters(A));
+        assertNull(log.lastSnapshot("alice", A));   // the registry never saw the request
+    }
+
+    public void testBootRefusalStillAnswersMyRequests() {
+        TestArenaTable a = ownedTable(A, "alice");
+        TestArenaTable c = ownedTable(C, "carol");
+        request(c, "bob");
+        a.bootedRecently("bob");
+        log.clear();
+
+        request(a, "bob");
+
+        assertEquals(names("BOOTED@" + A), log.reasons("bob"));
+        assertEquals(1, log.to("bob", DSGArenaMyRequestsEvent.class).size());   // R11
+        assertEquals(nums(C), log.lastMyRequests("bob"));
+        assertEquals(names("bob"), reg.pendingRequesters(C));                    // untouched
+    }
+
+    public void testExpiredBootNoLongerRefuses() {
+        TestArenaTable a = ownedTable(A, "alice");
+        a.bootExpired("bob");
+
+        request(a, "bob");
+
+        assertEquals(names(), log.reasons("bob"));
+        assertEquals(names("bob"), reg.pendingRequesters(A));
+        assertEquals(names("bob"), log.lastSnapshot("alice", A));
+        assertEquals(nums(A), log.lastMyRequests("bob"));
     }
 }
 ```
@@ -2416,7 +2486,23 @@ Replace the three handlers (`:219-276`, from `@Override public void handleArenaR
     @Override
     public void handleArenaRequestJoin(DSGArenaRequestJoinTableEvent dsgEvent) {
         String player = dsgEvent.getPlayer();
+        // R2: a boot is this table's state, so it is checked here on the
+        // table's own pump, before the registry sees the request. A reopen
+        // (R6b) wipes registry memory but leaves bootTimes alone.
+        if (isBooted(player)) {
+            String owner = getOwner();
+            dsgEventRouter.routeEvent(new DSGArenaRequestEndedEvent(player, tableNum,
+                    owner == null ? "" : owner, DSGArenaRequestEndedEvent.BOOTED), player);
+            joinRequests.sendMyRequests(player);   // R11 answer
+            return;
+        }
         joinRequests.request(tableNum, player, isPlayerInMainRoom(player));
+    }
+
+    /** The ServerTable.handleJoin boot rule (ServerTable.java:447-453), applied at request time. */
+    private boolean isBooted(String player) {
+        Long until = bootTimes.get(player);
+        return until != null && System.currentTimeMillis() < until;
     }
 
     @Override
@@ -2438,18 +2524,18 @@ Replace the three handlers (`:219-276`, from `@Override public void handleArenaR
     }
 ```
 
-This also removes the unlocked `server.tables` scan that the old accept did (spec R10).
+This also removes the unlocked `server.tables` scan that the old accept did (spec R10). `bootTimes` is `protected` in `ServerTable` (`:57`), so the subclass reads it directly; `DSGArenaRequestEndedEvent` comes in through the existing `org.pente.gameServer.event.*` import.
 
 - [ ] **Step 6: Run the test to verify it passes**
 
 Run: `rsync -urtd --exclude-from /Users/waliedothman/mariposa/coding/pente.org-project/pente.org/exclude_compile.txt /Users/waliedothman/mariposa/coding/pente.org-project/pente.org/dsg_src/java/ /Users/waliedothman/mariposa/coding/pente.org-project/pente.org/deploy/ && env JAVA_HOME=/opt/homebrew/opt/openjdk@21/ ant -f /Users/waliedothman/mariposa/coding/pente.org-project/pente.org/build.xml test-one -Dtest=org.pente.gameServer.server.test.ArenaServerTableJoinRequestTest`
-Expected: `OK (6 tests)` and `BUILD SUCCESSFUL`. The `compile` target also builds `ArenaServer.java` here, which proves the server wiring compiles; its behavior is exercised by E2E scenarios "events for a gone table are answered" and every login (Task 9).
+Expected: `OK (9 tests)` and `BUILD SUCCESSFUL`. The `compile` target also builds `ArenaServer.java` here, which proves the server wiring compiles; its behavior is exercised by E2E scenarios "events for a gone table are answered" and every login (Task 9).
 
 - [ ] **Step 7: Commit**
 
 ```bash
 git -C /Users/waliedothman/mariposa/coding/pente.org-project/pente.org add dsg_src/java/org/pente/gameServer/server/ArenaServer.java dsg_src/java/org/pente/gameServer/server/ArenaServerTable.java dsg_src/java/org/pente/gameServer/server/test/ArenaServerTableJoinRequestTest.java build.xml
-git -C /Users/waliedothman/mariposa/coding/pente.org-project/pente.org commit -S -m "Route arena requests through the shared registry" -m "ArenaServer owns the registry, sends each player their pending tables on main-room join, and answers events aimed at a gone table. Arena tables forward request, withdraw, accept and decline to it and drop their per-table maps and the old incremental events."
+git -C /Users/waliedothman/mariposa/coding/pente.org-project/pente.org commit -S -m "Route arena requests through the shared registry" -m "ArenaServer owns the registry, sends each player their pending tables on main-room join, and answers events aimed at a gone table. Arena tables forward request, withdraw, accept and decline to it and drop their per-table maps and the old incremental events. A player booted from a table less than 5 minutes ago is refused with BOOTED before the registry sees the request."
 ```
 
 ---
@@ -2465,23 +2551,12 @@ git -C /Users/waliedothman/mariposa/coding/pente.org-project/pente.org commit -S
 - Produces:
   - `ArenaServerTable.handleJoin(String)`: `admitJoin` (return if `false`) → `super.handleJoin` → auto-sit, then in a `finally`: `playerJoinedTable` if the player is seated, else `joinFailed` (Review Focus 6), then `publishJoinRequestState()`. Every join passes through here (create, claimed join, returning player, admin join).
   - `protected void ArenaServerTable.publishJoinRequestState()`: takes one atomic copy of `playersInTable` and publishes its names, its owner (first non-null human, the `ServerTable.getOwner()` rule at `ServerTable.java:1974-1995`), `state == NO_GAME_IN_PROGRESS` and `rated`. The copy matters because `startGame()` publishes from the `pressPlayTimer` thread (Task 8) while the pump may change the `Vector`.
-  - Test driver added to `TestArenaTable`: `bootedRecently(String)`.
   - `ArenaServerTable.handleMainRoomExit(String)`: `requesterLeftMainRoom` then `super`.
   - `ArenaServerTable.destroy()`: calls `tableRemoved(tableNum)` (covers both removal paths, since `Server.removeTable` always calls `destroy()`).
 
 - [ ] **Step 1: Write the failing tests**
 
-In `ArenaServerTableJoinRequestTest.java`, add this driver to `TestArenaTable` after `gameState()`:
-
-```java
-
-        /** Records a boot the way handleBoot does (ServerTable.java:3117): no rejoin for 5 minutes. */
-        void bootedRecently(String player) {
-            bootTimes.put(player, System.currentTimeMillis() + 1000L * 60 * 5);
-        }
-```
-
-Add before the class's closing brace:
+In `ArenaServerTableJoinRequestTest.java` (the `bootedRecently` driver already exists from Task 6), add before the class's closing brace:
 
 ```java
     // ---- Task 7: join, leave and removal hooks ----------------------------
@@ -2551,16 +2626,16 @@ Add before the class's closing brace:
     }
 
     /**
-     * Review Focus 6: alice booted bob after an earlier game; the table
-     * reopened and bob requested again (R2 has no boot check). admitJoin lets
+     * Review Focus 6: the request passed R2's boot check, then a boot was
+     * recorded on this table before the claimed join landed. admitJoin lets
      * the claimed join through, then ServerTable.handleJoin answers BOOTED.
      */
     public void testClaimedJoinRefusedByTheTableReleasesTheClaim() {
         TestArenaTable a = tableCreatedBy(A, "alice");
         TestArenaTable c = tableCreatedBy(C, "carol");
-        a.bootedRecently("bob");
         request(a, "bob");
         accept(a, "alice", "bob");
+        a.bootedRecently("bob");               // after the request was created
         log.clear();
 
         a.landQueuedJoin();
@@ -2744,7 +2819,7 @@ with:
 - [ ] **Step 4: Run the tests to verify they pass**
 
 Run: `rsync -urtd --exclude-from /Users/waliedothman/mariposa/coding/pente.org-project/pente.org/exclude_compile.txt /Users/waliedothman/mariposa/coding/pente.org-project/pente.org/dsg_src/java/ /Users/waliedothman/mariposa/coding/pente.org-project/pente.org/deploy/ && env JAVA_HOME=/opt/homebrew/opt/openjdk@21/ ant -f /Users/waliedothman/mariposa/coding/pente.org-project/pente.org/build.xml test-one -Dtest=org.pente.gameServer.server.test.ArenaServerTableJoinRequestTest`
-Expected: `OK (15 tests)` and `BUILD SUCCESSFUL`.
+Expected: `OK (18 tests)` and `BUILD SUCCESSFUL`.
 
 - [ ] **Step 5: Commit**
 
@@ -2827,6 +2902,30 @@ Add before the class's closing brace in `ArenaServerTableJoinRequestTest.java`:
     }
 
     /**
+     * Review Focus 8: handleBoot runs exit (which reopens the table, R6b,
+     * and wipes registry memory) and then records bootTimes. The boot
+     * outlives the reopen, so bob is still refused with BOOTED.
+     */
+    public void testBootThatReopensTheTableStillRefusesTheBootedPlayer() {
+        TestArenaTable a = gameInProgress();
+        a.handleResign(new DSGResignTableEvent("bob", A));
+        log.clear();
+
+        a.handleBoot(new DSGBootTableEvent("alice", A, "bob"));
+
+        assertTrue(!a.seats("bob"));
+        assertTrue(reg.isOpen(A));
+        assertEquals(names(), log.lastSnapshot("alice", A));
+        request(a, "bob");
+        assertEquals(names("BOOTED@" + A), log.reasons("bob"));
+        assertEquals("alice", log.to("bob", DSGArenaRequestEndedEvent.class).get(0).getOwner());
+        assertEquals(nums(), log.lastMyRequests("bob"));
+        assertEquals(names(), reg.pendingRequesters(A));
+        request(a, "erin");   // the reopen still lets everyone else in
+        assertEquals(names("erin"), log.lastSnapshot("alice", A));
+    }
+
+    /**
      * Through real tables the memory is already empty here: filling to two
      * players wiped it (R6) and a table that is not open takes no requests.
      * What R6b adds at this level is the owner's fresh snapshot and that the
@@ -2886,7 +2985,7 @@ Add before the class's closing brace in `ArenaServerTableJoinRequestTest.java`:
 - [ ] **Step 2: Run the tests to verify they fail**
 
 Run: `rsync -urtd --exclude-from /Users/waliedothman/mariposa/coding/pente.org-project/pente.org/exclude_compile.txt /Users/waliedothman/mariposa/coding/pente.org-project/pente.org/dsg_src/java/ /Users/waliedothman/mariposa/coding/pente.org-project/pente.org/deploy/ && env JAVA_HOME=/opt/homebrew/opt/openjdk@21/ ant -f /Users/waliedothman/mariposa/coding/pente.org-project/pente.org/build.xml test-one -Dtest=org.pente.gameServer.server.test.ArenaServerTableJoinRequestTest`
-Expected: `FAILURES!!!` in the four reopen tests (`testOwnerLeavingFinishedGameHandsOverAnOpenTable`, `testPlayerLeavingAfterGameEndsReopensTable`, `testWaitingGameCancelledReopensTable`, `testWaitingGameForceResignedReopensTable`): the registry never hears about exits or state changes, so `isOpen` stays false and no snapshot reaches the owner. `testTableStaysClosedWhilePausedForReturningPlayer` and `testDestroyedTableNeverRepublishesIntoReusedNumber` already pass here; they guard against the new publishes opening a paused table or a reused number, and must still pass after Step 3.
+Expected: `FAILURES!!!` in the five reopen tests (`testOwnerLeavingFinishedGameHandsOverAnOpenTable`, `testPlayerLeavingAfterGameEndsReopensTable`, `testBootThatReopensTheTableStillRefusesTheBootedPlayer`, `testWaitingGameCancelledReopensTable`, `testWaitingGameForceResignedReopensTable`): the registry never hears about exits or state changes, so `isOpen` stays false and no snapshot reaches the owner. `testTableStaysClosedWhilePausedForReturningPlayer` and `testDestroyedTableNeverRepublishesIntoReusedNumber` already pass here; they guard against the new publishes opening a paused table or a reused number, and must still pass after Step 3.
 
 - [ ] **Step 3: Implement the overrides and the guard**
 
@@ -2973,7 +3072,7 @@ After `publishJoinRequestState()` add:
 - [ ] **Step 4: Run the tests to verify they pass**
 
 Run: `rsync -urtd --exclude-from /Users/waliedothman/mariposa/coding/pente.org-project/pente.org/exclude_compile.txt /Users/waliedothman/mariposa/coding/pente.org-project/pente.org/dsg_src/java/ /Users/waliedothman/mariposa/coding/pente.org-project/pente.org/deploy/ && env JAVA_HOME=/opt/homebrew/opt/openjdk@21/ ant -f /Users/waliedothman/mariposa/coding/pente.org-project/pente.org/build.xml test-one -Dtest=org.pente.gameServer.server.test.ArenaServerTableJoinRequestTest`
-Expected: `OK (21 tests)` and `BUILD SUCCESSFUL`.
+Expected: `OK (25 tests)` and `BUILD SUCCESSFUL`.
 
 - [ ] **Step 5: Commit**
 
@@ -2999,7 +3098,7 @@ The spec's E2E list names "two React instances plus one Android or iOS device". 
 - [ ] **Step 1: Run the full server suite**
 
 Run: `rsync -urtd --exclude-from /Users/waliedothman/mariposa/coding/pente.org-project/pente.org/exclude_compile.txt /Users/waliedothman/mariposa/coding/pente.org-project/pente.org/dsg_src/java/ /Users/waliedothman/mariposa/coding/pente.org-project/pente.org/deploy/ && env JAVA_HOME=/opt/homebrew/opt/openjdk@21/ ant -f /Users/waliedothman/mariposa/coding/pente.org-project/pente.org/build.xml test`
-Expected: one `OK (N tests)` per runner, including `OK (10 tests)` (wire), `OK (46 tests)` (registry), `OK (21 tests)` (table), then `BUILD SUCCESSFUL`. Route the output through `ctx_execute` and grep for `OK (`, `FAILURES`, `BUILD`.
+Expected: one `OK (N tests)` per runner, including `OK (10 tests)` (wire), `OK (46 tests)` (registry), `OK (25 tests)` (table), then `BUILD SUCCESSFUL`. Route the output through `ctx_execute` and grep for `OK (`, `FAILURES`, `BUILD`.
 
 - [ ] **Step 2: Run the `ServerTable` regression test that `test` does not include**
 
@@ -3133,6 +3232,7 @@ class Client {
   exitTable(table) { this.send('dsgExitTableEvent', { table, forced: false, booted: false }); }
   resign(table) { this.send('dsgResignTableEvent', { table }); }
   forceCancelResign(table, action) { this.send('dsgForceCancelResignTableEvent', { table, action }); }
+  boot(table, player) { this.send('dsgBootTableEvent', { table, toBoot: player }); }
   disconnect() { this.sock.destroy(); }
 }
 
@@ -3275,6 +3375,36 @@ async function gameEndsThenBlockedPlayerCanRequest() {
     const mo = alice.mark();
     bob.exitTable(t);
     await alice.waitFor('dsgArenaJoinRequestsEvent', snapIs(t, []), mo);   // R6b
+    await requestOk(erin, alice, t, [erin.name]);
+  } finally {
+    closeAll(all);
+  }
+}
+
+// R2 boot check: the boot reopens the table (R6b) but bootTimes survives it
+async function bootedPlayerIsRefused() {
+  const all = await guests(3);
+  const [alice, bob, erin] = all;
+  try {
+    const t = await alice.createTable();
+    await requestOk(bob, alice, t, [bob.name]);
+    const ma = alice.mark();
+    await acceptAndJoin(alice, bob, t);
+    await playUntilOver(alice, bob, t, ma);
+
+    const mo = alice.mark();
+    alice.boot(t, bob.name);
+    await alice.waitFor('dsgArenaJoinRequestsEvent', snapIs(t, []), mo);   // R6b
+    const mb = bob.mark();
+    await requestRefused(bob, t, 'BOOTED');
+    const ended = bob.since(mb, 'dsgArenaRequestEndedEvent')[0];
+    if (ended.owner !== alice.name || ended.player !== bob.name) {
+      throw new Error(`bad BOOTED notice ${JSON.stringify(ended)}`);
+    }
+    await sleep(500);
+    if (alice.since(mo, 'dsgArenaJoinRequestsEvent').some((b) => b.table === t && names(b).length > 0)) {
+      throw new Error('the owner saw a request from a booted player');
+    }
     await requestOk(erin, alice, t, [erin.name]);
   } finally {
     closeAll(all);
@@ -3443,6 +3573,7 @@ const scenarios = [
   ['requester disconnect removes request', requesterDisconnect],
   ['owner exits right after accept', ownerExitsRightAfterAccept],
   ['events for a gone table are answered', goneTableIsAnswered],
+  ['booted player is refused after the boot reopens the table', bootedPlayerIsRefused],
 ];
 
 const only = process.argv[2];
@@ -3462,12 +3593,12 @@ console.log(failed === 0 ? 'ALL PASS' : `${failed} scenario(s) FAILED`);
 process.exit(failed === 0 ? 0 : 1);
 ```
 
-Scenario ↔ spec E2E mapping: "request → decline → re-request refused" = scenario 1; "withdraw → re-request refused" = 2; "accept → the requester's other requests cancelled, other requesters see `TABLE_FULL`" = 3; "game ends, table open → previously blocked player can request" = 4; "the owner leaves a finished 2-player table → …" = 5; "a waiting set is cancelled or force-resigned → …" = 6 and 7; "table close" = 8; "requester disconnect" = 9; "owner exits right after accept" = 10. Scenario 11 covers Review Focus 4.
+Scenario ↔ spec E2E mapping: "request → decline → re-request refused" = scenario 1; "withdraw → re-request refused" = 2; "accept → the requester's other requests cancelled, other requesters see `TABLE_FULL`" = 3; "game ends, table open → previously blocked player can request" = 4; "the owner leaves a finished 2-player table → …" = 5; "a waiting set is cancelled or force-resigned → …" = 6 and 7; "table close" = 8; "requester disconnect" = 9; "owner exits right after accept" = 10. Scenario 11 covers Review Focus 4, scenario 12 covers Review Focus 8 (the R2 boot check).
 
 - [ ] **Step 5: Run the E2E**
 
 Run (about 4 minutes; the two waiting-game scenarios each wait out the server's 1-minute return timer): `node /private/tmp/claude-501/arena-plans/e2e/arena-e2e.mjs` with a 600000 ms timeout.
-Expected: 11 `PASS` lines (scenario 10 also prints its outcome, `closed` or `handed over`; both are valid) and `ALL PASS`, exit code 0.
+Expected: 12 `PASS` lines (scenario 10 also prints its outcome, `closed` or `handed over`; both are valid) and `ALL PASS`, exit code 0.
 
 If anything fails, pull the server side through `ctx_execute`:
 `docker compose -f /Users/waliedothman/mariposa/coding/pente.org-project/pente.org/docker-compose.yml logs --since 15m pente.org 2>&1 | grep -i -E "arena|exception|Invalid table" | tail -80`
