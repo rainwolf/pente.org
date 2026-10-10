@@ -288,4 +288,154 @@ public class ArenaServerTableJoinRequestTest extends TestCase {
         assertEquals(names("bob"), log.lastSnapshot("alice", A));
         assertEquals(nums(A), log.lastMyRequests("bob"));
     }
+
+    // ---- Task 7: join, leave and removal hooks ----------------------------
+
+    private TestArenaTable tableCreatedBy(int table, String owner) {
+        TestArenaTable t = new TestArenaTable(table, reg, log);
+        t.handleJoin(owner);
+        return t;
+    }
+
+    public void testCreatingTableOpensItAndGivesOwnerEmptySnapshot() {
+        TestArenaTable a = tableCreatedBy(A, "alice");
+
+        assertTrue(a.seats("alice"));
+        assertTrue(reg.isOpen(A));
+        assertEquals(names(), log.lastSnapshot("alice", A));
+    }
+
+    public void testClaimedJoinSeatsRequesterAndEndsEveryoneElse() {
+        TestArenaTable a = tableCreatedBy(A, "alice");
+        TestArenaTable c = tableCreatedBy(C, "carol");
+        request(a, "bob");
+        request(a, "dave");
+        request(c, "bob");
+        accept(a, "alice", "bob");
+        log.clear();
+
+        a.landQueuedJoin();
+
+        assertTrue(a.seats("bob"));
+        assertEquals(2, a.playerCount());
+        assertTrue(!reg.isOpen(A));
+        assertNull(reg.claimedTable("bob"));
+        assertEquals(names("TABLE_FULL@" + A), log.reasons("dave"));
+        assertEquals(names(), log.reasons("bob"));                 // R7: silent
+        assertEquals(names(), log.lastSnapshot("carol", C));
+        assertEquals(nums(), log.lastMyRequests("bob"));
+    }
+
+    public void testAcceptThenRequesterLeavesBeforeJoinLands() {
+        TestArenaTable a = tableCreatedBy(A, "alice");
+        request(a, "bob");
+        accept(a, "alice", "bob");
+        a.leaveMainRoom("bob");                // the exit reached this pump first
+        log.clear();
+
+        a.landQueuedJoin();
+
+        assertTrue(!a.seats("bob"));
+        assertEquals(1, a.playerCount());      // no phantom null player
+        assertNull(reg.claimedTable("bob"));
+        assertEquals(names("NO_LONGER_AVAILABLE@" + A), log.reasons("alice"));
+        assertTrue(reg.isOpen(A));
+    }
+
+    public void testAcceptThenRequesterSitsDownElsewhereBeforeJoinLands() {
+        TestArenaTable a = tableCreatedBy(A, "alice");
+        request(a, "bob");
+        accept(a, "alice", "bob");
+        tableCreatedBy(7, "bob");
+        log.clear();
+
+        a.landQueuedJoin();
+
+        assertTrue(!a.seats("bob"));
+        assertEquals(names("NO_LONGER_AVAILABLE@" + A), log.reasons("alice"));
+    }
+
+    /**
+     * Review Focus 6: the request passed R2's boot check, then a boot was
+     * recorded on this table before the claimed join landed. admitJoin lets
+     * the claimed join through, then ServerTable.handleJoin answers BOOTED.
+     */
+    public void testClaimedJoinRefusedByTheTableReleasesTheClaim() {
+        TestArenaTable a = tableCreatedBy(A, "alice");
+        TestArenaTable c = tableCreatedBy(C, "carol");
+        request(a, "bob");
+        accept(a, "alice", "bob");
+        a.bootedRecently("bob");               // after the request was created
+        log.clear();
+
+        a.landQueuedJoin();
+
+        assertTrue(!a.seats("bob"));
+        assertEquals(1, log.to("bob", DSGJoinTableErrorEvent.class).size());
+        assertNull(reg.claimedTable("bob"));
+        assertEquals(names("NO_LONGER_AVAILABLE@" + A), log.reasons("alice"));
+        assertEquals(names(), log.lastSnapshot("alice", A));
+        assertTrue(reg.isOpen(A));
+        // neither the table nor bob stays stuck on the claim
+        request(a, "dave");
+        assertEquals(names("dave"), reg.pendingRequesters(A));
+        request(c, "bob");
+        assertEquals(names("bob"), reg.pendingRequesters(C));
+    }
+
+    public void testAcceptThenTableRemovedBeforeJoinLands() {
+        TestArenaTable a = tableCreatedBy(A, "alice");
+        TestArenaTable c = tableCreatedBy(C, "carol");
+        request(a, "bob");
+        request(c, "bob");
+        accept(a, "alice", "bob");
+        log.clear();
+
+        a.destroy();   // Server.removeTable stopped the pump: the queued join is dropped
+
+        assertEquals(names("TABLE_CLOSED@" + A), log.reasons("bob"));
+        assertNull(reg.claimedTable("bob"));
+        accept(c, "carol", "bob");
+        assertEquals(1, c.pump.queued.size());
+    }
+
+    public void testDoubleAcceptAcrossTablesQueuesOneJoin() {
+        TestArenaTable a = tableCreatedBy(A, "alice");
+        TestArenaTable c = tableCreatedBy(C, "carol");
+        request(a, "bob");
+        request(c, "bob");
+
+        accept(a, "alice", "bob");
+        accept(c, "carol", "bob");
+
+        assertEquals(1, a.pump.queued.size());
+        assertEquals(0, c.pump.queued.size());
+        assertEquals(names("NO_LONGER_AVAILABLE@" + C), log.reasons("carol"));
+        a.landQueuedJoin();
+        assertEquals(names(), log.lastSnapshot("carol", C));   // bob's request at C ends when he sits at A
+    }
+
+    public void testRequesterDisconnectRemovesRequests() {
+        TestArenaTable a = tableCreatedBy(A, "alice");
+        request(a, "bob");
+        log.clear();
+
+        a.leaveMainRoom("bob");
+
+        assertEquals(names(), log.lastSnapshot("alice", A));
+        assertEquals(names(), log.reasons("bob"));
+    }
+
+    public void testClosingTableEndsPendingRequests() {
+        TestArenaTable a = tableCreatedBy(A, "alice");
+        request(a, "bob");
+        request(a, "dave");
+        log.clear();
+
+        a.destroy();
+
+        assertEquals(names("TABLE_CLOSED@" + A), log.reasons("bob"));
+        assertEquals(names("TABLE_CLOSED@" + A), log.reasons("dave"));
+        assertTrue(reg.pendingTables("bob").isEmpty());
+    }
 }

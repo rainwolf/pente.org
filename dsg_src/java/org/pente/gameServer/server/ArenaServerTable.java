@@ -87,6 +87,9 @@ public class ArenaServerTable extends ServerTable {
 
 
     public void destroy() {
+        if (joinRequests != null) {
+            joinRequests.tableRemoved(tableNum);   // R8
+        }
         if (closeTableTimer != null) {
             closeTableTimer.cancel();
             closeTableTimer.purge();
@@ -158,20 +161,67 @@ public class ArenaServerTable extends ServerTable {
 
     @Override
     public void handleJoin(String player) {
-        super.handleJoin(player);
-        if (isPlayerInTable(player)) {
-            if (!rated) {
-                if (sittingPlayers[playAs] == null) {
-                    this.sit(player, playAs);
-                    return;
-                }
+        // R6: a claimed join only lands if the requester is still available
+        if (!joinRequests.admitJoin(tableNum, player, isPlayerInMainRoom(player))) {
+            return;
+        }
+        try {
+            super.handleJoin(player);
+            if (isPlayerInTable(player)) {
+                sitJoinedPlayer(player);
             }
-            if (this.sittingPlayers[1] == null) {
-                this.sit(player, 1);
-            } else if (this.sittingPlayers[2] == null) {
-                this.sit(player, 2);
+        } finally {
+            if (isPlayerInTable(player)) {
+                // R7: joining any table ends the player's requests everywhere
+                joinRequests.playerJoinedTable(tableNum, player);
+            } else {
+                // turned away after admitJoin (BOOTED, or super threw and
+                // callServerTable swallowed it): never leave a claim stuck
+                joinRequests.joinFailed(tableNum, player);
+            }
+            publishJoinRequestState();
+        }
+    }
+
+    private void sitJoinedPlayer(String player) {
+        if (!rated) {
+            if (sittingPlayers[playAs] == null) {
+                this.sit(player, playAs);
+                return;
             }
         }
+        if (this.sittingPlayers[1] == null) {
+            this.sit(player, 1);
+        } else if (this.sittingPlayers[2] == null) {
+            this.sit(player, 2);
+        }
+    }
+
+    @Override
+    public void handleMainRoomExit(String player) {
+        // R7: leaving the main room (or disconnecting) ends the player's requests
+        joinRequests.requesterLeftMainRoom(player);
+        super.handleMainRoomExit(player);
+    }
+
+    /** R6b/R10: tell the registry who sits here, who owns it, and whether a game runs. */
+    protected void publishJoinRequestState() {
+        // one atomic copy (Vector.toArray is synchronized): startGame() also
+        // publishes from the pressPlayTimer thread while the pump may change
+        // the list, and iterating the Vector itself could throw into startGame()
+        List<DSGPlayerData> seated = new ArrayList<>(playersInTable);
+        List<String> names = new ArrayList<>();
+        String owner = null;
+        for (DSGPlayerData d : seated) {
+            if (d != null) {
+                names.add(d.getName());
+                if (owner == null && d.isHuman()) {
+                    owner = d.getName();   // the ServerTable.getOwner() rule, on the copy
+                }
+            }
+        }
+        joinRequests.publishTable(tableNum, owner, names,
+                state == DSGGameStateTableEvent.NO_GAME_IN_PROGRESS, rated);
     }
 
     @Override
