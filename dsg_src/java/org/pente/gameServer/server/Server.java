@@ -236,6 +236,7 @@ public class Server {
                         passwordHelper,
                         activityLogger);
         socketDSGEventHandler.addListener(serverPlayer);
+        socketDSGEventHandler.go();
     }
 
     public void addPlayerListener(DSGEventListener listener, String name,
