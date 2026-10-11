@@ -3928,4 +3928,8 @@ public class ServerTable {
 
     }
 
+    public void handleArenaWithdrawJoin(DSGArenaWithdrawJoinRequestEvent dsgEvent) {
+
+    }
+
 }

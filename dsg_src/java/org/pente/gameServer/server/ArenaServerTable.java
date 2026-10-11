@@ -40,8 +40,20 @@ public class ArenaServerTable extends ServerTable {
 
     protected int playAs = 1;
 
-    Map<String, DSGArenaRequestJoinTableEvent> joinRequestMap = new HashMap<>();
-    Map<String, Date> rejectMap = new HashMap<>();
+    protected ArenaJoinRequestRegistry joinRequests;
+    /**
+     * Serializes every publish with destroy(): startGame() publishes from the
+     * pressPlayTimer thread, so without it a publish that passed the
+     * destroyed check could land after tableRemoved and recreate the table.
+     * Lock order: Server.tables -> publishLock -> registry (never reversed).
+     */
+    private final Object publishLock = new Object();
+    /** Set by destroy() under publishLock; a destroyed table never publishes again. */
+    protected boolean destroyed = false;
+
+    /** Only for unit tests: an empty table without a server. */
+    protected ArenaServerTable() {
+    }
 
     public ArenaServerTable(final Server server,
                             final Resources resources,
@@ -74,6 +86,7 @@ public class ArenaServerTable extends ServerTable {
         this.returnEmailStorer = returnEmailStorer;
         this.activityLogger = activityLogger;
         this.creator = joinEvent.getPlayer();
+        this.joinRequests = ((ArenaServer) server).getJoinRequestRegistry();
 
         this.playersInMainRoom = new Vector<>();
         playersInMainRoom.addAll(namesInMainRoom);
@@ -83,6 +96,12 @@ public class ArenaServerTable extends ServerTable {
 
 
     public void destroy() {
+        synchronized (publishLock) {
+            destroyed = true;
+            if (joinRequests != null) {
+                joinRequests.tableRemoved(tableNum);   // R8
+            }
+        }
         if (closeTableTimer != null) {
             closeTableTimer.cancel();
             closeTableTimer.purge();
@@ -154,20 +173,84 @@ public class ArenaServerTable extends ServerTable {
 
     @Override
     public void handleJoin(String player) {
-        super.handleJoin(player);
-        if (isPlayerInTable(player)) {
-            if (!rated) {
-                if (sittingPlayers[playAs] == null) {
-                    this.sit(player, playAs);
-                    return;
-                }
+        // R6: a claimed join only lands if the requester is still available
+        if (!joinRequests.admitJoin(tableNum, player, isPlayerInMainRoom(player))) {
+            return;
+        }
+        try {
+            super.handleJoin(player);
+            if (isPlayerInTable(player)) {
+                sitJoinedPlayer(player);
             }
-            if (this.sittingPlayers[1] == null) {
-                this.sit(player, 1);
-            } else if (this.sittingPlayers[2] == null) {
-                this.sit(player, 2);
+        } finally {
+            if (isPlayerInTable(player)) {
+                // R7: joining any table ends the player's requests everywhere
+                joinRequests.playerJoinedTable(tableNum, player);
+            } else {
+                // turned away after admitJoin (BOOTED, or super threw and
+                // callServerTable swallowed it): never leave a claim stuck
+                joinRequests.joinFailed(tableNum, player);
+            }
+            publishJoinRequestState();
+        }
+    }
+
+    private void sitJoinedPlayer(String player) {
+        if (!rated) {
+            if (sittingPlayers[playAs] == null) {
+                this.sit(player, playAs);
+                return;
             }
         }
+        if (this.sittingPlayers[1] == null) {
+            this.sit(player, 1);
+        } else if (this.sittingPlayers[2] == null) {
+            this.sit(player, 2);
+        }
+    }
+
+    @Override
+    public void handleMainRoomExit(String player) {
+        // R7: leaving the main room (or disconnecting) ends the player's requests
+        joinRequests.requesterLeftMainRoom(player);
+        super.handleMainRoomExit(player);
+    }
+
+    /** R6b/R10: tell the registry who sits here, who owns it, and whether a game runs. */
+    protected void publishJoinRequestState() {
+        synchronized (publishLock) {
+            if (destroyed) {
+                return;
+            }
+            // one atomic copy (Vector.toArray is synchronized): startGame() also
+            // publishes from the pressPlayTimer thread while the pump may change
+            // the list, and iterating the Vector itself could throw into startGame()
+            List<DSGPlayerData> seated = new ArrayList<>(playersInTable);
+            List<String> names = new ArrayList<>();
+            String owner = null;
+            for (DSGPlayerData d : seated) {
+                if (d != null) {
+                    names.add(d.getName());
+                    if (owner == null && d.isHuman()) {
+                        owner = d.getName();   // the ServerTable.getOwner() rule, on the copy
+                    }
+                }
+            }
+            joinRequests.publishTable(tableNum, owner, names,
+                    state == DSGGameStateTableEvent.NO_GAME_IN_PROGRESS, rated);
+        }
+    }
+
+    @Override
+    protected void exit(String player, boolean booted) {
+        super.exit(player, booted);
+        publishJoinRequestState();   // player count and maybe owner changed (R6b)
+    }
+
+    @Override
+    protected void changeGameState(int newState, String reason, String winner, int gameInSet) {
+        super.changeGameState(newState, reason, winner, gameInSet);
+        publishJoinRequestState();   // a table is only open with no game in progress (R6b)
     }
 
     @Override
@@ -219,60 +302,41 @@ public class ArenaServerTable extends ServerTable {
     @Override
     public void handleArenaRequestJoin(DSGArenaRequestJoinTableEvent dsgEvent) {
         String player = dsgEvent.getPlayer();
-        if (player.startsWith("guest") && rated) {
-            dsgEventRouter.routeEvent(
-                    new DSGArenaRejectTableJoinEvent(getOwner(), tableNum, player, "Guests are not allowed to join rated games."),
-                    player);
+        // R2: a boot is this table's state, so it is checked here on the
+        // table's own pump, before the registry sees the request. A reopen
+        // (R6b) wipes registry memory but leaves bootTimes alone.
+        if (isBooted(player)) {
+            String owner = getOwner();
+            dsgEventRouter.routeEvent(new DSGArenaRequestEndedEvent(player, tableNum,
+                    owner == null ? "" : owner, DSGArenaRequestEndedEvent.BOOTED), player);
+            joinRequests.sendMyRequests(player);   // R11 answer
             return;
         }
-        if (rejectMap.containsKey(player)) {
-            if (new Date().getTime() - rejectMap.get(player).getTime() < 1000L * 60) {
-                dsgEventRouter.routeEvent(
-                        new DSGArenaRejectTableJoinEvent(getOwner(), tableNum, player, "Wait one minute after rejection before requesting again."),
-                        player);
-                return;
-            } else {
-                rejectMap.remove(player);
-            }
-        } else if (joinRequestMap.containsKey(player)) {
-            if (new Date().getTime() - joinRequestMap.get(player).getTime() < 1000L * 60) {
-                dsgEventRouter.routeEvent(
-                        new DSGArenaRejectTableJoinEvent(getOwner(), tableNum, player, "You already have a pending join request for this table."),
-                        player);
-                return;
-            }
-        }
-        joinRequestMap.put(player, dsgEvent);
-        String ownerName = this.getOwner();
-        dsgEventRouter.routeEvent(
-                new DSGArenaRequestJoinTableEvent(player, tableNum),
-                ownerName);
+        joinRequests.request(tableNum, player, isPlayerInMainRoom(player));
+    }
+
+    /** The ServerTable.handleJoin boot rule (ServerTable.java:447-453), applied at request time. */
+    private boolean isBooted(String player) {
+        Long until = bootTimes.get(player);
+        return until != null && System.currentTimeMillis() < until;
+    }
+
+    @Override
+    public void handleArenaWithdrawJoin(DSGArenaWithdrawJoinRequestEvent dsgEvent) {
+        joinRequests.withdraw(tableNum, dsgEvent.getPlayer());
     }
 
     @Override
     public void handleArenaRejectJoin(DSGArenaRejectTableJoinEvent dsgEvent) {
-        rejectMap.put(dsgEvent.getPlayerToReject(), new Date());
-        String ownerName = this.getOwner();
-        dsgEventRouter.routeEvent(
-                new DSGArenaRejectTableJoinEvent(ownerName, tableNum, dsgEvent.getPlayerToReject(), ownerName + "declined your request."),
-                dsgEvent.getPlayerToReject());
+        joinRequests.decline(tableNum, dsgEvent.getPlayer(), dsgEvent.getPlayerToReject());
     }
 
     @Override
     public void handleArenaAcceptJoin(DSGArenaAcceptTableJoinEvent dsgEvent) {
-        String player = dsgEvent.getPlayerToAccept();
-        if (joinRequestMap.containsKey(player)) {
-            for (SynchronizedServerTable table : server.tables) {
-                if (table != null && table.getServerTable() != null && table.getServerTable().isPlayerInTable(player)) {
-                    return;
-                }
-            }
-            if (isPlayerInMainRoom(player)) {
-                synchronizedTableListener.eventOccurred(
-                        new DSGJoinTableEvent(player, tableNum));
-                joinRequestMap.clear();
-            }
-        }
+        final String player = dsgEvent.getPlayerToAccept();
+        // R5: only claims; the join is queued on this table's pump and re-checked when it lands (R6)
+        joinRequests.accept(tableNum, dsgEvent.getPlayer(), player,
+                () -> synchronizedTableListener.eventOccurred(new DSGJoinTableEvent(player, tableNum)));
     }
 
 

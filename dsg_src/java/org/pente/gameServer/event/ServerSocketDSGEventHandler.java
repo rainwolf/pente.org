@@ -32,6 +32,7 @@ public class ServerSocketDSGEventHandler extends SocketDSGEventHandler {
 
     private String playerName;
     private boolean handledError;
+    private boolean streamsReady;
 
     public ServerSocketDSGEventHandler(Socket s) {
 
@@ -52,8 +53,15 @@ public class ServerSocketDSGEventHandler extends SocketDSGEventHandler {
             // this kills the connection before it gets created
             return;
         }
+        streamsReady = true;
+        // reading starts in go(), which the caller invokes after adding its
+        // listeners, so a frame sent right after connecting is not lost
+    }
 
-        super.go();
+    public synchronized void go() {
+        if (streamsReady) {
+            super.go();
+        }
     }
 
     public ServerSocketDSGEventHandler() {

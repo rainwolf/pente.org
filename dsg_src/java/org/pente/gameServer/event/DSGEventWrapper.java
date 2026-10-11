@@ -81,6 +81,10 @@ public class DSGEventWrapper {
     private DSGArenaAcceptTableJoinEvent dsgArenaAcceptTableJoinEvent;
     private DSGArenaCreateTableEvent dsgArenaCreateTableEvent;
     private DSGArenaRequestJoinTableEvent dsgArenaRequestJoinTableEvent;
+    private DSGArenaWithdrawJoinRequestEvent dsgArenaWithdrawJoinRequestEvent;
+    private DSGArenaJoinRequestsEvent dsgArenaJoinRequestsEvent;
+    private DSGArenaMyRequestsEvent dsgArenaMyRequestsEvent;
+    private DSGArenaRequestEndedEvent dsgArenaRequestEndedEvent;
     private DSGRenjuTaraguchiSwapTableEvent dsgRenjuTaraguchiSwapTableEvent;
     private DSGRenjuTaraguchiOffer10TableEvent dsgRenjuTaraguchiOffer10TableEvent;
     private DSGRenjuTaraguchi10Select1TableEvent dsgRenjuTaraguchi10Select1TableEvent;
@@ -680,6 +684,38 @@ public class DSGEventWrapper {
 
     public void setDsgArenaRequestJoinTableEvent(DSGArenaRequestJoinTableEvent dsgArenaRequestJoinTableEvent) {
         this.dsgArenaRequestJoinTableEvent = dsgArenaRequestJoinTableEvent;
+    }
+
+    public DSGArenaWithdrawJoinRequestEvent getDsgArenaWithdrawJoinRequestEvent() {
+        return dsgArenaWithdrawJoinRequestEvent;
+    }
+
+    public void setDsgArenaWithdrawJoinRequestEvent(DSGArenaWithdrawJoinRequestEvent dsgArenaWithdrawJoinRequestEvent) {
+        this.dsgArenaWithdrawJoinRequestEvent = dsgArenaWithdrawJoinRequestEvent;
+    }
+
+    public DSGArenaJoinRequestsEvent getDsgArenaJoinRequestsEvent() {
+        return dsgArenaJoinRequestsEvent;
+    }
+
+    public void setDsgArenaJoinRequestsEvent(DSGArenaJoinRequestsEvent dsgArenaJoinRequestsEvent) {
+        this.dsgArenaJoinRequestsEvent = dsgArenaJoinRequestsEvent;
+    }
+
+    public DSGArenaMyRequestsEvent getDsgArenaMyRequestsEvent() {
+        return dsgArenaMyRequestsEvent;
+    }
+
+    public void setDsgArenaMyRequestsEvent(DSGArenaMyRequestsEvent dsgArenaMyRequestsEvent) {
+        this.dsgArenaMyRequestsEvent = dsgArenaMyRequestsEvent;
+    }
+
+    public DSGArenaRequestEndedEvent getDsgArenaRequestEndedEvent() {
+        return dsgArenaRequestEndedEvent;
+    }
+
+    public void setDsgArenaRequestEndedEvent(DSGArenaRequestEndedEvent dsgArenaRequestEndedEvent) {
+        this.dsgArenaRequestEndedEvent = dsgArenaRequestEndedEvent;
     }
 
     public DSGRenjuTaraguchiSwapTableEvent getDsgRenjuTaraguchiSwapTableEvent() {
