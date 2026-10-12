@@ -487,5 +487,17 @@ public class PlayEntitlementService {
     }
 
     // ---------------------------------------------------------------- store page (§4.4)
+
+    /** GET /gameServer/googlePlayPurchase */
+    public StoreInfo storeInfo(long pid) throws PlayStoreException {
+        StoreInfo info = new StoreInfo();
+        info.accountId = accountIds.create(pid);
+        info.vacationAllowed = players.vacationAllowed(pid);
+        Long expiration = players.subscriptionExpirationMs(pid);
+        info.subscribedUntilMs = expiration != null && expiration.longValue() > clock.getAsLong() ? expiration : null;
+        info.autoRenewing = purchases.hasAutoRenewingSubscription(pid);
+        return info;
+    }
+
     // ---------------------------------------------------------------- pollers (§4.7)
 }
