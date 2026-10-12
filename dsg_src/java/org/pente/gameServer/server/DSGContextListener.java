@@ -51,7 +51,6 @@ import org.pente.notifications.MySQLNotificationServer;
 import org.pente.notifications.NotificationServer;
 import org.pente.subscriptions.play.AccountIds;
 import org.pente.subscriptions.play.PlayBillingSetup;
-import org.pente.subscriptions.play.PlayEntitlementService;
 import org.pente.turnBased.CacheTBStorer;
 import org.pente.turnBased.MySQLTBGameStorer;
 
@@ -294,12 +293,6 @@ public class DSGContextListener implements ServletContextListener {
             DSGFollowerStorer followerStorer = new CacheDSGFollowerStorer(new MySQLDSGFollowerStorer(dbHandler), notificationServer, dsgPlayerStorer);
             resources.setFollowerStorer(followerStorer);
 
-            // Google Play Billing (spec 2026-10-11 section 4): servlets read this attribute, pollers start here
-            PlayEntitlementService playEntitlementService = PlayBillingSetup.create(ctx, resources, playAccountIds);
-            ctx.setAttribute(PlayEntitlementService.class.getName(), playEntitlementService);
-            dsgPlayerStorer.startPlayPollers(playEntitlementService);
-            log4j.info("contextInitialized(), created PlayEntitlementService");
-
             ctx.setAttribute(Resources.class.getName(), resources);
 
             LeaderBoard lb = new LeaderBoard(dbHandler, dsgPlayerStorer);
@@ -310,6 +303,10 @@ public class DSGContextListener implements ServletContextListener {
             setupArenaServers(resources, ctx);
 
             tourneyStorer.setupTBTournaments();
+
+            // Google Play Billing (spec 2026-10-11 section 4): last, and isolated by install's own
+            // catch (Throwable), so a Play failure never stops the rest of the site
+            PlayBillingSetup.install(ctx, resources, playAccountIds, dsgPlayerStorer::startPlayPollers);
 
         } catch (Throwable t) {
             log4j.error("Problem in contextInitialized()", t);

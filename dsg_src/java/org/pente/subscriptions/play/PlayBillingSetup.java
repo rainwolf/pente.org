@@ -1,5 +1,7 @@
 package org.pente.subscriptions.play;
 
+import java.util.function.Consumer;
+
 import jakarta.servlet.ServletContext;
 
 import org.apache.log4j.Category;
@@ -12,6 +14,28 @@ public final class PlayBillingSetup {
     private static final Category log4j = Category.getInstance(PlayBillingSetup.class.getName());
 
     private PlayBillingSetup() {
+    }
+
+    /**
+     * Wires Play into the context: builds the service, starts its pollers, then sets the attribute the
+     * servlets read. Run last in DSGContextListener. Any Throwable (a missing androidpublisher jar is a
+     * NoClassDefFoundError, which create's catch does not see) is logged and leaves the attribute unset,
+     * so the rest of the site still starts; both servlets treat a null service as retry later.
+     *
+     * @return the service, or null when wiring failed
+     */
+    public static PlayEntitlementService install(ServletContext ctx, Resources resources, AccountIds accountIds,
+                                                 Consumer<PlayEntitlementService> startPollers) {
+        try {
+            PlayEntitlementService service = create(ctx, resources, accountIds);
+            startPollers.accept(service);
+            ctx.setAttribute(PlayEntitlementService.class.getName(), service);
+            log4j.info("PlayBillingSetup: created PlayEntitlementService");
+            return service;
+        } catch (Throwable t) {
+            log4j.error("PlayBillingSetup: Google Play Billing not wired, Play purchases are refused until restart", t);
+            return null;
+        }
     }
 
     /**
