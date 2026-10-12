@@ -9,6 +9,7 @@ import org.pente.subscriptions.play.PlayProducts;
 import org.pente.subscriptions.play.PlayStates;
 import org.pente.subscriptions.play.PlaySubscription;
 import org.pente.subscriptions.play.SubscriberRow;
+import org.pente.subscriptions.play.SubscriberRule;
 
 /**
  * syncSubscription: classification, grant, deferral, clamp, acknowledge, link, resolvePid
@@ -211,6 +212,29 @@ public class PlaySubscriptionSyncTest extends PlayServiceTestCase {
         s.expiryTimeMs = Long.valueOf(now - 2 * DAY);
         service.syncSubscription("tok1", null);
         assertEquals(now - 2 * DAY - PlayProducts.PAYMENTDATE_OFFSET_MS, row("GPA.1").paymentDateMs);
+    }
+
+    public void testClampMovesStackedMonthPassBackToTheClampedExpiry() throws Exception {
+        PlaySubscription s = subscription("tok1", PID, PlayStates.ACTIVE, "GPA.1", now + 300 * DAY);
+        service.syncSubscription("tok1", null);
+        product("m", PID, PlayProducts.MONTH_PASS, "GPA.m");
+        service.syncProduct(PlayProducts.MONTH_PASS, "m", null);
+        assertTrue(row("GPA.m").paymentDateMs > now + 290 * DAY);
+
+        s.subscriptionState = PlayStates.EXPIRED;
+        s.expiryTimeMs = Long.valueOf(now - 3600L * 1000);
+        service.syncSubscription("tok1", null);
+
+        SubscriberRow yearly = row("GPA.1");
+        long clampedEnd = SubscriberRule.impliedExpiryMs(yearly.level, yearly.paymentDateMs).longValue();
+        assertEquals(clampedEnd, row("GPA.m").paymentDateMs);
+        assertEquals(SubscriberRule.impliedExpiryMs(PlayProducts.MONTH_LEVEL, clampedEnd), expiration(PID));
+        assertEquals(1, players.changed.size());
+
+        // a repeat poll of the expired subscription moves nothing again
+        service.syncSubscription("tok1", null);
+        assertEquals(clampedEnd, row("GPA.m").paymentDateMs);
+        assertEquals(1, players.changed.size());
     }
 
     public void testNaturalExpiryWithinSlackIsNotClamped() throws Exception {

@@ -5,6 +5,7 @@ import org.pente.subscriptions.play.PlayProducts;
 import org.pente.subscriptions.play.PlayStates;
 import org.pente.subscriptions.play.PlaySubscription;
 import org.pente.subscriptions.play.SubscriberRow;
+import org.pente.subscriptions.play.SubscriberRule;
 
 /**
  * revoke(orderId): level 0, REVOKED, ONEMONTH shift, no clawback of vacation days, repeat revoke
@@ -82,6 +83,64 @@ public class PlayRevokeTest extends PlayServiceTestCase {
         assertEquals(PlayClassification.KNOWN, service.syncSubscription("y", null));
         assertEquals(0, row("GPA.y").level);
         assertNull(expiration(PID));
+    }
+
+    public void testRevokedYearlyMovesStackedPassBackToNow() throws Exception {
+        subscription("y", PID, PlayStates.ACTIVE, "GPA.y", now + 300 * DAY);
+        service.syncSubscription("y", null);
+        product("m", PID, PlayProducts.MONTH_PASS, "GPA.m");
+        service.syncProduct(PlayProducts.MONTH_PASS, "m", null);
+        assertTrue(row("GPA.m").paymentDateMs > now + 290 * DAY);
+
+        service.revoke("GPA.y");
+
+        assertEquals(0, row("GPA.y").level);
+        assertEquals(now, row("GPA.m").paymentDateMs);
+        assertEquals(SubscriberRule.impliedExpiryMs(PlayProducts.MONTH_LEVEL, now), expiration(PID));
+        assertEquals(1, players.changed.size());
+
+        service.revoke("GPA.y");
+        assertEquals(now, row("GPA.m").paymentDateMs);
+        assertEquals(1, players.changed.size());
+    }
+
+    public void testRevokedYearlyRestacksPassesAfterTheRemainingEntitlement() throws Exception {
+        product("m1", PID, PlayProducts.MONTH_PASS, "GPA.m1");
+        service.syncProduct(PlayProducts.MONTH_PASS, "m1", null);
+        product("m2", PID, PlayProducts.MONTH_PASS, "GPA.m2");
+        service.syncProduct(PlayProducts.MONTH_PASS, "m2", null);
+        long m2 = row("GPA.m2").paymentDateMs;
+        subscription("y", PID, PlayStates.ACTIVE, "GPA.y", now + 300 * DAY);
+        service.syncSubscription("y", null);
+        product("m3", PID, PlayProducts.MONTH_PASS, "GPA.m3");
+        service.syncProduct(PlayProducts.MONTH_PASS, "m3", null);
+        product("m4", PID, PlayProducts.MONTH_PASS, "GPA.m4");
+        service.syncProduct(PlayProducts.MONTH_PASS, "m4", null);
+
+        service.revoke("GPA.y");
+
+        // m1 is running and m2 was stacked on it before the yearly: both untouched
+        assertEquals(now, row("GPA.m1").paymentDateMs);
+        assertEquals(m2, row("GPA.m2").paymentDateMs);
+        long m3 = SubscriberRule.impliedExpiryMs(PlayProducts.MONTH_LEVEL, m2).longValue();
+        assertEquals(m3, row("GPA.m3").paymentDateMs);
+        long m4 = SubscriberRule.impliedExpiryMs(PlayProducts.MONTH_LEVEL, m3).longValue();
+        assertEquals(m4, row("GPA.m4").paymentDateMs);
+        assertEquals(SubscriberRule.impliedExpiryMs(PlayProducts.MONTH_LEVEL, m4), expiration(PID));
+    }
+
+    public void testRevokedYearlyLeavesPassesOfAnotherYearlyAlone() throws Exception {
+        subscription("y1", PID, PlayStates.ACTIVE, "GPA.y1", now + 300 * DAY);
+        service.syncSubscription("y1", null);
+        subscription("y2", PID, PlayStates.ACTIVE, "GPA.y2", now + 400 * DAY);
+        service.syncSubscription("y2", null);
+        product("m", PID, PlayProducts.MONTH_PASS, "GPA.m");
+        service.syncProduct(PlayProducts.MONTH_PASS, "m", null);
+        long m = row("GPA.m").paymentDateMs;
+
+        service.revoke("GPA.y1");
+
+        assertEquals(m, row("GPA.m").paymentDateMs);
     }
 
     public void testRevokedVacationKeepsDays() throws Exception {

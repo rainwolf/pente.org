@@ -1,5 +1,7 @@
 package org.pente.subscriptions.play;
 
+import java.util.List;
+
 /** dsg_subscribers, keyed on transactionid. MySQLPlayStore is the real implementation; tests use a fake. */
 public interface SubscriberStore {
 
@@ -8,6 +10,9 @@ public interface SubscriberStore {
 
     /** the row for this transactionid, or null */
     SubscriberRow findByTransactionId(String transactionId) throws PlayStoreException;
+
+    /** every row of pid, any level, in no particular order */
+    List<SubscriberRow> findByPid(long pid) throws PlayStoreException;
 
     void updatePaymentDate(String transactionId, long paymentDateMs) throws PlayStoreException;
 

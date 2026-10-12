@@ -28,6 +28,10 @@ public class FakeSubscriberStore implements SubscriberStore {
         return r == null ? null : r.copy();
     }
 
+    public synchronized List<SubscriberRow> findByPid(long pid) {
+        return rowsOf(pid);
+    }
+
     public synchronized void updatePaymentDate(String transactionId, long paymentDateMs) {
         SubscriberRow r = rows.get(transactionId);
         if (r != null) {

@@ -1,5 +1,8 @@
 package org.pente.subscriptions.play;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.LongSupplier;
@@ -185,7 +188,9 @@ public class PlayEntitlementService {
                 Long implied = SubscriberRule.impliedExpiryMs(existing.level, existing.paymentDateMs);
                 if (implied != null && sub.expiryTimeMs.longValue() < implied.longValue() - CLAMP_SLACK_MS) {
                     // entitlement ends at Play's expiry (expired, revoked or on hold), not at the year boundary
-                    subscribers.updatePaymentDate(orderId, sub.expiryTimeMs.longValue() - PlayProducts.PAYMENTDATE_OFFSET_MS);
+                    long clamped = sub.expiryTimeMs.longValue() - PlayProducts.PAYMENTDATE_OFFSET_MS;
+                    restackMonthPasses(pid, orderId, existing.level, clamped, now);
+                    subscribers.updatePaymentDate(orderId, clamped);
                     players.entitlementChanged(pid);
                 }
             }
@@ -397,7 +402,8 @@ public class PlayEntitlementService {
 
     /**
      * A voided order (refund or chargeback): level=0 on its dsg_subscribers row, REVOKED on its
-     * dsg_subscribers_android rows, later stacked ONEMONTH rows moved back 31 days, refreshPlayer.
+     * dsg_subscribers_android rows, later stacked ONEMONTH rows moved back 31 days (a ONEMONTH order) or
+     * restacked after the remaining entitlement (a ONEYEAR order), refreshPlayer.
      * Vacation days already granted are not clawed back. A repeat revoke is a no-op.
      */
     public void revoke(String orderId) throws PlayStoreException {
@@ -415,6 +421,10 @@ public class PlayEntitlementService {
             boolean changed = false;
             SubscriberRow current = subscribers.findByTransactionId(orderId);
             if (current != null && current.level != 0) {
+                if ((current.level & MySQLDSGPlayerStorer.ONEYEAR) != 0) {
+                    // before setLevelZero, so a crash in between is redone by the repeat revoke
+                    restackMonthPasses(current.pid, orderId, 0, current.paymentDateMs, clock.getAsLong());
+                }
                 subscribers.setLevelZero(orderId);
                 if ((current.level & MySQLDSGPlayerStorer.ONEMONTH) != 0) {
                     subscribers.shiftMonthRowsBack(current.pid, current.paymentDateMs, orderId, MONTH_SHIFT_DAYS);
@@ -432,6 +442,47 @@ public class PlayEntitlementService {
             if (changed) {
                 players.entitlementChanged(pid.longValue());
             }
+        }
+    }
+
+    /**
+     * A ONEYEAR row about to be zeroed (revoke) or shortened (clamp), given as its new level and
+     * paymentdate: month passes stacked after its old expiry (ONEMONTH rows dated after now) move back
+     * to start, in their order, where the remaining entitlement now ends, or now. A row never moves
+     * later. Idempotent, and run before the yearly row is written, so a crash in between is redone by
+     * the repeat revoke or the next sync. Caller holds the pid lock.
+     */
+    private void restackMonthPasses(long pid, String transactionId, int newLevel, long newPaymentDateMs, long now)
+            throws PlayStoreException {
+        List<SubscriberRow> started = new ArrayList<SubscriberRow>();
+        List<SubscriberRow> stacked = new ArrayList<SubscriberRow>();
+        for (SubscriberRow r : subscribers.findByPid(pid)) {
+            if (transactionId.equals(r.transactionId)) {
+                r = new SubscriberRow(r.pid, r.transactionId, newLevel, newPaymentDateMs);
+            }
+            if ((r.level & MySQLDSGPlayerStorer.ONEMONTH) != 0 && r.paymentDateMs > now) {
+                stacked.add(r);
+            } else {
+                started.add(r);
+            }
+        }
+        if (stacked.isEmpty()) {
+            return;
+        }
+        Collections.sort(stacked, new Comparator<SubscriberRow>() {
+            public int compare(SubscriberRow a, SubscriberRow b) {
+                return Long.compare(a.paymentDateMs, b.paymentDateMs);
+            }
+        });
+        Long end = SubscriberRule.expirationMs(started, now);
+        long start = end != null && end.longValue() > now ? end.longValue() : now;
+        for (SubscriberRow r : stacked) {
+            long paymentDate = r.paymentDateMs;
+            if (start < paymentDate && r.transactionId != null) {
+                subscribers.updatePaymentDate(r.transactionId, start);
+                paymentDate = start;
+            }
+            start = Math.max(start, SubscriberRule.impliedExpiryMs(r.level, paymentDate).longValue());
         }
     }
 
