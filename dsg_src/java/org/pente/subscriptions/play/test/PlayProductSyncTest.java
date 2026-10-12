@@ -159,6 +159,26 @@ public class PlayProductSyncTest extends PlayServiceTestCase {
         assertEquals(PlayStates.CONSUMED, android("m1").state);
     }
 
+    public void testVacationInsertFailureIsRetriedAndGrantsOnce() throws Exception {
+        product("v1", PID, PlayProducts.VACATION_10, "GPA.v1");
+        subscribers.failInserts = 1;
+        try {
+            service.syncProduct(PlayProducts.VACATION_10, "v1", null);
+            fail("expected PlayStoreException");
+        } catch (org.pente.subscriptions.play.PlayStoreException expected) {
+            // RTDN answers 500 and Pub/Sub redelivers
+        }
+        assertEquals(0, players.vacationDaysOf(PID));
+        assertTrue(!PlayStates.GRANTING.equals(android("v1").state));
+
+        assertEquals(PlayClassification.NEW, service.syncProduct(PlayProducts.VACATION_10, "v1", null));
+        assertEquals(PlayClassification.KNOWN, service.syncProduct(PlayProducts.VACATION_10, "v1", null));
+
+        assertEquals(10, players.vacationDaysOf(PID));
+        assertEquals(0, row("GPA.v1").level);
+        assertEquals(PlayStates.CONSUMED, android("v1").state);
+    }
+
     public void testStuckGrantingIsNeverRegranted() throws Exception {
         product("v1", PID, PlayProducts.VACATION_10, "GPA.v1");
         api.failConsumes = 1;

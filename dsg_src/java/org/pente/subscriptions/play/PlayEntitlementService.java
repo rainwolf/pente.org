@@ -368,8 +368,10 @@ public class PlayEntitlementService {
             }
             boolean inserted;
             if (days > 0) {
-                purchases.setState(tokenHash, PlayStates.GRANTING);
+                // the level-0 insert is idempotent (keyed on the order), so it goes before GRANTING: a failed
+                // insert is retried; only a crash in addVacationDays leaves the row in GRANTING
                 inserted = subscribers.insert(new SubscriberRow(pid, key, 0, now));
+                purchases.setState(tokenHash, PlayStates.GRANTING);
                 players.addVacationDays(pid, days);
                 purchases.setState(tokenHash, PlayStates.GRANTED);
             } else {

@@ -84,7 +84,7 @@ public class PlayFakesTest extends TestCase {
         assertEquals(PlayStates.GRANTED, purchases.find("p1").state);
     }
 
-    public void testSubscriberInsertRefusesDuplicate() {
+    public void testSubscriberInsertRefusesDuplicate() throws Exception {
         assertTrue(subscribers.insert(new SubscriberRow(1L, "GPA.1", 5, T0)));
         assertTrue(!subscribers.insert(new SubscriberRow(2L, "GPA.1", 7, T0 + DAY)));
         assertEquals(1L, subscribers.findByTransactionId("GPA.1").pid);

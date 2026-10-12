@@ -15,8 +15,14 @@ public class FakeSubscriberStore implements SubscriberStore {
     public final Map<String, SubscriberRow> rows = new LinkedHashMap<String, SubscriberRow>();
     /** updatePaymentDate calls that throw before the next one succeeds */
     public int failPaymentDateUpdates;
+    /** insert calls that throw before the next one succeeds */
+    public int failInserts;
 
-    public synchronized boolean insert(SubscriberRow row) {
+    public synchronized boolean insert(SubscriberRow row) throws PlayStoreException {
+        if (failInserts > 0) {
+            failInserts--;
+            throw new PlayStoreException("fake: insert dsg_subscribers failed");
+        }
         if (rows.containsKey(row.transactionId)) {
             return false;
         }
