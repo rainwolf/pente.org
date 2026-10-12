@@ -500,4 +500,47 @@ public class PlayEntitlementService {
     }
 
     // ---------------------------------------------------------------- pollers (§4.7)
+
+    /** CheckAndroidSubscribersRunnable, every 6 hours. One failing token never stops the others. */
+    public void pollSubscriptions() throws PlayStoreException {
+        long now = clock.getAsLong();
+        for (AndroidPurchaseRow row : purchases.subscriptionsToPoll(now)) {
+            try {
+                syncSubscription(row.purchaseToken, null);
+            } catch (PlayApiException e) {
+                log4j.warn("PlayEntitlementService: subscription poll failed for " + row.tokenHash + ": " + e);
+            } catch (PlayStoreException e) {
+                log4j.warn("PlayEntitlementService: subscription poll failed for " + row.tokenHash + ": " + e);
+            }
+        }
+        for (AndroidPurchaseRow row : purchases.productsToPoll(now)) {
+            try {
+                syncProduct(row.productId, row.purchaseToken, null);
+            } catch (PlayApiException e) {
+                log4j.warn("PlayEntitlementService: product poll failed for " + row.tokenHash + ": " + e);
+            } catch (PlayStoreException e) {
+                log4j.warn("PlayEntitlementService: product poll failed for " + row.tokenHash + ": " + e);
+            }
+        }
+    }
+
+    /** CheckAndroidVoidedRunnable, daily: admin alert for stale GRANTING rows, then revoke every voided order. */
+    public void pollVoided() throws PlayApiException, PlayStoreException {
+        long now = clock.getAsLong();
+        for (AndroidPurchaseRow row : purchases.staleGranting(now - GRANTING_STALE_MS)) {
+            players.adminAlert("Google Play " + row.productId + " for pid " + row.pid
+                    + " stuck in GRANTING (token hash " + row.tokenHash + "): check vacation days, then set the state by hand");
+        }
+        String pageToken = null;
+        int pages = 0;
+        do {
+            VoidedPage page = api.listVoided(now - VOIDED_WINDOW_MS, pageToken);
+            for (String orderId : page.orderIds) {
+                revoke(orderId);
+            }
+            pageToken = page.nextPageToken;
+            pages++;
+        } while (pageToken != null && pages < MAX_VOIDED_PAGES);
+    }
+
 }
