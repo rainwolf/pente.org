@@ -218,6 +218,174 @@ public class PlayEntitlementService {
     }
 
     // ---------------------------------------------------------------- one-time products (§4.5)
+
+    /** a KNOWN reply to the buyer's own POST within this long of the token's first record still says "success" */
+    static final long THANK_YOU_WINDOW_MS = 10 * 60 * 1000L;
+
+    /**
+     * client POST: the client's product id picks the API call; the API's product id decides the grant when present.
+     * The RTDN push often records the grant before the buyer's own POST arrives, so a KNOWN answer for a
+     * token this pid first recorded under 10 minutes ago is reported as NEW and the buyer still sees the thank-you.
+     */
+    public PlayClassification syncFromClient(String productId, String purchaseToken, long requesterPid)
+            throws PlayApiException, PlayStoreException {
+        PlayClassification result;
+        if (PlayProducts.isSubscription(productId)) {
+            result = syncSubscription(purchaseToken, Long.valueOf(requesterPid));
+        } else {
+            result = syncProduct(productId, purchaseToken, Long.valueOf(requesterPid));
+        }
+        if (result == PlayClassification.KNOWN) {
+            AndroidPurchaseRow row = purchases.find(PlayTokens.sha256Hex(purchaseToken));
+            if (row != null && row.pid == requesterPid && clock.getAsLong() - row.createdMs < THANK_YOU_WINDOW_MS) {
+                return PlayClassification.NEW;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Re-read a one-time purchase from Google, grant it once, then consume it.
+     *
+     * @param requestedProductId the product id products.get is called with; it must be on the whitelist. It
+     *                           names the grant only when Google's answer has no productId, which is safe
+     *                           because Google answers 400 (null) for a token bought as another product.
+     * @param requesterPid       the logged-in player for a client POST, null for RTDN and the pollers
+     */
+    public PlayClassification syncProduct(String requestedProductId, String purchaseToken, Long requesterPid)
+            throws PlayApiException, PlayStoreException {
+        if (!PlayProducts.isOneTime(requestedProductId)) {
+            return PlayClassification.INVALID;
+        }
+        PlayProduct product = api.getProduct(requestedProductId, purchaseToken);
+        PlayClassification rejected = rejectProduct(product, requestedProductId, requesterPid);
+        if (rejected != null) {
+            return rejected;
+        }
+        long pid = resolvePid(product.obfuscatedAccountId, null).longValue();
+        synchronized (lockFor(pid)) {
+            // Re-read under the lock: an answer read before another sync of this token was applied must never
+            // be applied after it.
+            PlayProduct fresh = api.getProduct(requestedProductId, purchaseToken);
+            rejected = rejectProduct(fresh, requestedProductId, requesterPid);
+            if (rejected != null) {
+                return rejected;
+            }
+            Long freshPid = resolvePid(fresh.obfuscatedAccountId, null);
+            if (freshPid.longValue() != pid) {
+                log4j.warn("PlayEntitlementService: product token moved from pid " + pid + " to " + freshPid);
+                return PlayClassification.INVALID;
+            }
+            String productId = fresh.productId != null ? fresh.productId : requestedProductId;
+            return syncProductLocked(productId, purchaseToken, fresh, pid);
+        }
+    }
+
+    /** INVALID, INACTIVE or SHARED when this answer must not be applied for requesterPid, else null */
+    private PlayClassification rejectProduct(PlayProduct product, String requestedProductId, Long requesterPid)
+            throws PlayStoreException {
+        if (product == null) {
+            return PlayClassification.INVALID;
+        }
+        // ProductPurchase.productId "may not be present"; the requested id is whitelisted and Google answers
+        // 400 (null here) for a token bought as another product, so it then names the product.
+        String productId = product.productId != null ? product.productId : requestedProductId;
+        if (!PlayProducts.isOneTime(productId)) {
+            return PlayClassification.INVALID;
+        }
+        if (product.purchaseState == null || product.purchaseState.intValue() != 0) {
+            boolean pending = product.purchaseState != null && product.purchaseState.intValue() == 2;
+            return pending ? PlayClassification.INACTIVE : PlayClassification.INVALID;
+        }
+        if (product.quantity != null && product.quantity.intValue() != 1) {
+            log4j.warn("PlayEntitlementService: rejected quantity " + product.quantity + " for " + productId);
+            return PlayClassification.INVALID;
+        }
+        Long pid = resolvePid(product.obfuscatedAccountId, null);
+        if (pid == null) {
+            log4j.info("PlayEntitlementService: no pid for " + productId + " token, not granted or consumed");
+            return PlayClassification.INVALID;
+        }
+        if (requesterPid != null && pid.longValue() != requesterPid.longValue()) {
+            return PlayClassification.SHARED;
+        }
+        return null;
+    }
+
+    private PlayClassification syncProductLocked(String productId, String purchaseToken, PlayProduct product, long pid)
+            throws PlayApiException, PlayStoreException {
+        long now = clock.getAsLong();
+        String tokenHash = PlayTokens.sha256Hex(purchaseToken);
+        String key = PlayTokens.orderKey(product.orderId, tokenHash);
+
+        AndroidPurchaseRow row = purchases.find(tokenHash);
+        if (row == null) {
+            row = new AndroidPurchaseRow();
+            row.tokenHash = tokenHash;
+            row.purchaseToken = purchaseToken;
+            row.pid = pid;
+            row.productId = productId;
+            row.latestSuccessfulOrderId = key;
+            row.state = PlayStates.PURCHASED;
+            row.acknowledged = product.acknowledgementState != null && product.acknowledgementState.intValue() == 1;
+            purchases.insertProductIfAbsent(row);
+        }
+
+        String state = row.state;
+        if (PlayStates.REFUNDED.equals(state)) {
+            return PlayClassification.REFUNDED;
+        }
+        if (PlayStates.REVOKED.equals(state)) {
+            return PlayClassification.INVALID;
+        }
+        if (PlayStates.GRANTING.equals(state)) {
+            // a crash between addExtraTBVacationDays and GRANTED: fixed by hand after the daily admin alert
+            log4j.warn("PlayEntitlementService: " + productId + " for pid " + pid + " is stuck in GRANTING");
+            return PlayClassification.KNOWN;
+        }
+
+        PlayClassification result;
+        if (PlayStates.GRANTED.equals(state) || PlayStates.CONSUMED.equals(state)) {
+            result = PlayClassification.KNOWN;
+        } else {
+            int days = PlayProducts.vacationDays(productId);
+            if (days > 0 && !players.vacationAllowed(pid)) {
+                if (product.orderId != null) {
+                    api.refundOrder(product.orderId);
+                }
+                purchases.setState(tokenHash, PlayStates.REFUNDED);
+                return PlayClassification.REFUNDED;
+            }
+            boolean inserted;
+            if (days > 0) {
+                purchases.setState(tokenHash, PlayStates.GRANTING);
+                inserted = subscribers.insert(new SubscriberRow(pid, key, 0, now));
+                players.addVacationDays(pid, days);
+                purchases.setState(tokenHash, PlayStates.GRANTED);
+            } else {
+                // month pass: stack after the current entitlement whatever its level, so it is never wasted
+                Long current = players.subscriptionExpirationMs(pid);
+                long paymentDate = current != null && current.longValue() > now ? current.longValue() : now;
+                inserted = subscribers.insert(new SubscriberRow(pid, key, PlayProducts.MONTH_LEVEL, paymentDate));
+                purchases.setState(tokenHash, PlayStates.GRANTED);
+            }
+            result = inserted ? PlayClassification.NEW : PlayClassification.KNOWN;
+            players.granted(pid, productId, result);
+        }
+
+        if (!PlayStates.CONSUMED.equals(state)) {
+            try {
+                if (product.consumptionState == null || product.consumptionState.intValue() != 1) {
+                    api.consumeProduct(productId, purchaseToken);
+                }
+                purchases.setState(tokenHash, PlayStates.CONSUMED);
+            } catch (PlayApiException e) {
+                log4j.warn("PlayEntitlementService: consume failed, retried by resync, RTDN or the poller: " + e);
+            }
+        }
+        return result;
+    }
+
     // ---------------------------------------------------------------- revoke (§4.5)
     // ---------------------------------------------------------------- store page (§4.4)
     // ---------------------------------------------------------------- pollers (§4.7)
