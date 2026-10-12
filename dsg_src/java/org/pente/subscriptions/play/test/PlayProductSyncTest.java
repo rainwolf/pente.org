@@ -102,6 +102,11 @@ public class PlayProductSyncTest extends PlayServiceTestCase {
         assertEquals(PlayStates.REFUNDED, android("v1").state);
         assertEquals(PlayClassification.REFUNDED, service.syncProduct(PlayProducts.VACATION_10, "v1", null));
         assertEquals(1, api.refunded.size());
+        // the refund's voided notification, seen by the daily voided poller for 30 days
+        service.revoke("GPA.v1");
+        assertEquals(PlayStates.REFUNDED, android("v1").state);
+        assertEquals(0, players.changed.size());
+        assertEquals(PlayClassification.REFUNDED, service.syncProduct(PlayProducts.VACATION_10, "v1", Long.valueOf(PID)));
     }
 
     public void testRefundFailureLeavesPurchaseForRetry() throws Exception {

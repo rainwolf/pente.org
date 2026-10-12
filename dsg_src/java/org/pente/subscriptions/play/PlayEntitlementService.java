@@ -394,6 +394,47 @@ public class PlayEntitlementService {
     }
 
     // ---------------------------------------------------------------- revoke (§4.5)
+
+    /**
+     * A voided order (refund or chargeback): level=0 on its dsg_subscribers row, REVOKED on its
+     * dsg_subscribers_android rows, later stacked ONEMONTH rows moved back 31 days, refreshPlayer.
+     * Vacation days already granted are not clawed back. A repeat revoke is a no-op.
+     */
+    public void revoke(String orderId) throws PlayStoreException {
+        if (orderId == null || orderId.isEmpty()) {
+            return;
+        }
+        List<AndroidPurchaseRow> rows = purchases.findByOrderId(orderId);
+        SubscriberRow subscriber = subscribers.findByTransactionId(orderId);
+        Long pid = subscriber != null ? Long.valueOf(subscriber.pid)
+                : (rows.isEmpty() ? null : Long.valueOf(rows.get(0).pid));
+        if (pid == null) {
+            return;
+        }
+        synchronized (lockFor(pid.longValue())) {
+            boolean changed = false;
+            SubscriberRow current = subscribers.findByTransactionId(orderId);
+            if (current != null && current.level != 0) {
+                subscribers.setLevelZero(orderId);
+                if ((current.level & MySQLDSGPlayerStorer.ONEMONTH) != 0) {
+                    subscribers.shiftMonthRowsBack(current.pid, current.paymentDateMs, orderId, MONTH_SHIFT_DAYS);
+                }
+                changed = true;
+            }
+            for (AndroidPurchaseRow row : rows) {
+                // a REFUNDED vacation purchase (refunded during a tourney, nothing granted) stays REFUNDED when
+                // its voided notification comes back, so its later replies stay success:refunded
+                if (!PlayStates.REVOKED.equals(row.state) && !PlayStates.REFUNDED.equals(row.state)) {
+                    purchases.setState(row.tokenHash, PlayStates.REVOKED);
+                    changed = true;
+                }
+            }
+            if (changed) {
+                players.entitlementChanged(pid.longValue());
+            }
+        }
+    }
+
     // ---------------------------------------------------------------- store page (§4.4)
     // ---------------------------------------------------------------- pollers (§4.7)
 }
