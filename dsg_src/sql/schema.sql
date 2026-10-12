@@ -247,7 +247,7 @@ CREATE TABLE `dsg_subscribers` (
   `pid` bigint(20) unsigned NOT NULL,
   `level` bigint(20) unsigned NOT NULL DEFAULT 0,
   `paymentdate` datetime NOT NULL,
-  `transactionid` char(19) NOT NULL,
+  `transactionid` varchar(64) NOT NULL,
   `amount` double NOT NULL DEFAULT 0,
   `verified` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`transactionid`),
@@ -265,6 +265,27 @@ CREATE TABLE `dsg_subscribers_ios` (
   PRIMARY KEY (`pid`),
   KEY `paymentdate` (`paymentdate`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `dsg_subscribers_android`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `dsg_subscribers_android` (
+  `purchase_token_hash` char(64) NOT NULL,
+  `purchase_token` text NOT NULL,
+  `pid` bigint(20) unsigned NOT NULL,
+  `product_id` varchar(64) NOT NULL,
+  `latest_successful_order_id` varchar(64) DEFAULT NULL,
+  `linked_purchase_token_hash` char(64) DEFAULT NULL,
+  `expiry_time` datetime DEFAULT NULL,
+  `state` varchar(64) NOT NULL,
+  `acknowledged` tinyint(1) NOT NULL DEFAULT 0,
+  `created` datetime NOT NULL,
+  `updated` datetime NOT NULL,
+  PRIMARY KEY (`purchase_token_hash`),
+  KEY `pid` (`pid`),
+  KEY `expiry_time` (`expiry_time`),
+  KEY `latest_successful_order_id` (`latest_successful_order_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `dsg_tournament`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;

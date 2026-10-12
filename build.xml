@@ -176,4 +176,16 @@
         </java>
         <!-- play-billing test classes: add one <java> block per class above this line -->
     </target>
+
+    <!-- MySQLPlayStore against a THROWAWAY MariaDB (it drops dsg_subscribers and dsg_subscribers_android).
+         ant test-play-billing-db -DplayDbUrl=jdbc:mariadb://127.0.0.1:33099/playit?user=root -->
+    <target name="test-play-billing-db" depends="test-play-billing">
+        <fail unless="playDbUrl" message="set -DplayDbUrl to a throwaway MariaDB"/>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <sysproperty key="playDbUrl" value="${playDbUrl}"/>
+            <sysproperty key="playMigration" value="${basedir}/dsg_src/sql/2026-10-11-google-play-billing.sql"/>
+            <arg value="org.pente.subscriptions.play.test.MySQLPlayStoreIT"/>
+        </java>
+    </target>
 </project>
