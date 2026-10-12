@@ -174,6 +174,10 @@
             <classpath refid="test-classpath"/>
             <arg value="org.pente.subscriptions.play.test.VacationPurchaseRuleTest"/>
         </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.subscriptions.play.test.GooglePlayPurchaseServletTest"/>
+        </java>
         <!-- play-billing test classes: add one <java> block per class above this line -->
     </target>
 

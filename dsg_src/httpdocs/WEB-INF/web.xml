@@ -155,6 +155,30 @@
         <param-value>1ff8dccb271448f19137e1bb621da561</param-value>
     </context-param>
 
+    <!-- Google Play Billing (docs/superpowers/specs/2026-10-11-android-play-billing-design.md section 4.1).
+         The account-id secret is the PLAY_ACCOUNT_ID_SECRET environment variable, not a context-param. -->
+    <context-param>
+        <param-name>googlePlayPackageName</param-name>
+        <param-value>be.submanifold.pentelive</param-value>
+    </context-param>
+
+    <context-param>
+        <param-name>googlePlayServiceAccountKey</param-name>
+        <param-value>/etc/dsg/play-service-account.json</param-value>
+    </context-param>
+
+    <!-- must equal the audience set on the Pub/Sub push subscription (spec section 6, step 4.3) -->
+    <context-param>
+        <param-name>googlePlayRtdnAudience</param-name>
+        <param-value>https://www.pente.org/gameServer/googlePlayRTDN</param-value>
+    </context-param>
+
+    <!-- must equal the push service account created in spec section 6, step 4.2 -->
+    <context-param>
+        <param-name>googlePlayRtdnServiceAccount</param-name>
+        <param-value>play-rtdn-push@pente-live.iam.gserviceaccount.com</param-value>
+    </context-param>
+
     <context-param>
         <param-name>adminName</param-name>
         <param-value>rainwolf</param-value>
@@ -508,6 +532,14 @@
         </servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>GooglePlayPurchaseServlet</servlet-name>
+        <servlet-class>org.pente.subscriptions.play.GooglePlayPurchaseServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>GooglePlayRtdnServlet</servlet-name>
+        <servlet-class>org.pente.subscriptions.play.GooglePlayRtdnServlet</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>AgeVerificationServlet</servlet-name>
         <servlet-class>org.pente.gameServer.client.web.AgeVerificationServlet</servlet-class>
     </servlet>
@@ -721,6 +753,14 @@
     <servlet-mapping>
         <servlet-name>IOSReceiptServlet</servlet-name>
         <url-pattern>/gameServer/iOSReceiptValidation</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>GooglePlayPurchaseServlet</servlet-name>
+        <url-pattern>/gameServer/googlePlayPurchase</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>GooglePlayRtdnServlet</servlet-name>
+        <url-pattern>/gameServer/googlePlayRTDN</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
