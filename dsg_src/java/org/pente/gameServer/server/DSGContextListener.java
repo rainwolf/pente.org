@@ -49,6 +49,9 @@ import org.pente.message.MySQLDSGMessageStorer;
 import org.pente.notifications.CacheNotificationServer;
 import org.pente.notifications.MySQLNotificationServer;
 import org.pente.notifications.NotificationServer;
+import org.pente.subscriptions.play.AccountIds;
+import org.pente.subscriptions.play.PlayBillingSetup;
+import org.pente.subscriptions.play.PlayEntitlementService;
 import org.pente.turnBased.CacheTBStorer;
 import org.pente.turnBased.MySQLTBGameStorer;
 
@@ -69,6 +72,9 @@ public class DSGContextListener implements ServletContextListener {
     private List<Timer> timers = null;
 
     public void contextInitialized(ServletContextEvent servletContextEvent) {
+        // Google Play Billing (spec 2026-10-11 section 4.1): a blank PLAY_ACCOUNT_ID_SECRET must stop startup.
+        // This runs outside the try below on purpose: that catch only logs, so a throw there would not fail the context.
+        AccountIds playAccountIds = AccountIds.fromEnvironment();
         try {
             timers = new ArrayList<>();
 
@@ -287,6 +293,12 @@ public class DSGContextListener implements ServletContextListener {
 
             DSGFollowerStorer followerStorer = new CacheDSGFollowerStorer(new MySQLDSGFollowerStorer(dbHandler), notificationServer, dsgPlayerStorer);
             resources.setFollowerStorer(followerStorer);
+
+            // Google Play Billing (spec 2026-10-11 section 4): servlets read this attribute, pollers start here
+            PlayEntitlementService playEntitlementService = PlayBillingSetup.create(ctx, resources, playAccountIds);
+            ctx.setAttribute(PlayEntitlementService.class.getName(), playEntitlementService);
+            dsgPlayerStorer.startPlayPollers(playEntitlementService);
+            log4j.info("contextInitialized(), created PlayEntitlementService");
 
             ctx.setAttribute(Resources.class.getName(), resources);
 
