@@ -189,29 +189,53 @@ public class PlayProductSyncTest extends PlayServiceTestCase {
         assertEquals(0, api.consumed.size());
     }
 
-    public void testApiProductIdDecidesTheGrant() throws Exception {
+    public void testApiProductIdDifferentFromTheRequestedOneIsInvalid() throws Exception {
         product("t", PID, PlayProducts.VACATION_60, "GPA.t");
-        service.syncProduct(PlayProducts.MONTH_PASS, "t", Long.valueOf(PID));
-        assertEquals(60, players.vacationDaysOf(PID));
-        assertEquals(0, row("GPA.t").level);
-    }
-
-    public void testClientPostWithoutApiProductIdIsInvalidAndRtdnStillGrants() throws Exception {
-        PlayProduct p = product("t", PID, PlayProducts.VACATION_10, "GPA.t");
-        p.productId = null;
-        // the client names a bigger product than the one bought; the API answer carries no productId
-        assertEquals(PlayClassification.INVALID, service.syncFromClient(PlayProducts.VACATION_60, "t", PID));
-        assertEquals(PlayClassification.INVALID, service.syncFromClient(PlayProducts.VACATION_10, "t", PID));
+        assertEquals(PlayClassification.INVALID, service.syncFromClient(PlayProducts.MONTH_PASS, "t", PID));
+        assertEquals("invalid receipt", PlayClassification.INVALID.getReply());
+        assertEquals(PlayClassification.INVALID, service.syncProduct(PlayProducts.MONTH_PASS, "t", null));
         assertEquals(0, subscribers.rows.size());
         assertEquals(0, purchases.rows.size());
         assertEquals(0, players.grants.size());
         assertEquals(0, players.vacationDaysOf(PID));
         assertEquals(0, api.consumed.size());
-        // RTDN's sku is Google's own value, so it names the grant
-        assertEquals(PlayClassification.NEW, service.syncProduct(PlayProducts.VACATION_10, "t", null));
+    }
+
+    public void testClientPostWithoutApiProductIdGrantsTheRequestedProduct() throws Exception {
+        PlayProduct p = product("t", PID, PlayProducts.VACATION_10, "GPA.t");
+        p.productId = null;
+        api.productTokens.put("t", PlayProducts.VACATION_10);
+        // the client names a bigger product than the one bought: Google answers products.get with HTTP 400
+        assertEquals(PlayClassification.INVALID, service.syncFromClient(PlayProducts.VACATION_60, "t", PID));
+        assertEquals(0, subscribers.rows.size());
+        assertEquals(0, purchases.rows.size());
+        // asked as the product it was bought as, the answer has no productId and the requested id names the grant
+        assertEquals(PlayClassification.NEW, service.syncFromClient(PlayProducts.VACATION_10, "t", PID));
+        assertEquals("success", PlayClassification.NEW.getReply());
         assertEquals(10, players.vacationDaysOf(PID));
+        assertEquals(0, row("GPA.t").level);
+        assertEquals(1, subscribers.rows.size());
         assertEquals(PlayStates.CONSUMED, android("t").state);
         assertEquals(PlayProducts.VACATION_10, android("t").productId);
+        assertEquals(1, api.consumed.size());
+        // the RTDN push for the same token arrives later and grants nothing more
+        assertEquals(PlayClassification.KNOWN, service.syncProduct(PlayProducts.VACATION_10, "t", null));
+        assertEquals(10, players.vacationDaysOf(PID));
+        assertEquals(1, subscribers.rows.size());
+    }
+
+    public void testClientPostAfterRtdnGrantWithoutApiProductIdIsKnown() throws Exception {
+        PlayProduct p = product("m1", PID, PlayProducts.MONTH_PASS, "GPA.m1");
+        p.productId = null;
+        assertEquals(PlayClassification.NEW, service.syncProduct(PlayProducts.MONTH_PASS, "m1", null));
+        assertEquals(PlayStates.CONSUMED, android("m1").state);
+        now += 9 * 60 * 1000L;
+        assertEquals(PlayClassification.NEW, service.syncFromClient(PlayProducts.MONTH_PASS, "m1", PID));
+        now += 2 * 60 * 1000L;
+        assertEquals(PlayClassification.KNOWN, service.syncFromClient(PlayProducts.MONTH_PASS, "m1", PID));
+        assertEquals(1, players.grants.size());
+        assertEquals(1, subscribers.rows.size());
+        assertEquals(1, api.consumed.size());
     }
 
     public void testTokenForOtherProductIsInvalid() throws Exception {
