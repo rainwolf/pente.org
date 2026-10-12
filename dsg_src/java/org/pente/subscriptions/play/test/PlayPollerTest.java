@@ -54,6 +54,24 @@ public class PlayPollerTest extends PlayServiceTestCase {
         assertTrue(android("y").acknowledged);
     }
 
+    public void testAcknowledgeRetriedAfterDaysPending() throws Exception {
+        // deferred payment: the row is created while PENDING, days before the 3-day acknowledge window opens
+        PlaySubscription s = subscription("y", PID, PlayStates.PENDING, null, now + 300 * DAY);
+        service.syncSubscription("y", null);
+        now += 4 * DAY;
+        s.subscriptionState = PlayStates.ACTIVE;
+        s.latestSuccessfulOrderId = "GPA.y";
+        s.expiryTimeMs = Long.valueOf(now + 365 * DAY);
+        api.failAcknowledges = 1;
+        service.syncSubscription("y", null);
+        assertNotNull(row("GPA.y"));
+        assertTrue(!android("y").acknowledged);
+
+        service.pollSubscriptions();
+
+        assertTrue(android("y").acknowledged);
+    }
+
     public void testFarFromExpiryAcknowledgedRowIsNotPolled() throws Exception {
         PlaySubscription s = subscription("y", PID, PlayStates.ACTIVE, "GPA.y", now + 300 * DAY);
         service.syncSubscription("y", null);

@@ -233,14 +233,16 @@ public class MySQLPlayStore implements AndroidPurchaseStore, SubscriberStore {
                 try (PreparedStatement stmt = con.prepareStatement(
                         "SELECT " + COLUMNS + " FROM dsg_subscribers_android WHERE product_id = ? AND ("
                                 + "(state NOT IN (?, ?, ?) AND expiry_time BETWEEN ? AND ?) "
-                                + "OR (acknowledged = 0 AND created > ?))")) {
+                                + "OR (acknowledged = 0 AND state IN (?, ?, ?)))")) {
                     stmt.setString(1, PlayProducts.YEARLY);
                     stmt.setString(2, PlayStates.EXPIRED);
                     stmt.setString(3, PlayStates.REVOKED);
                     stmt.setString(4, PlayStates.SUPERSEDED);
                     stmt.setTimestamp(5, ts(nowMs - 60 * DAY));
                     stmt.setTimestamp(6, ts(nowMs + 2 * DAY));
-                    stmt.setTimestamp(7, ts(nowMs - 3 * DAY));
+                    stmt.setString(7, PlayStates.ACTIVE);
+                    stmt.setString(8, PlayStates.IN_GRACE_PERIOD);
+                    stmt.setString(9, PlayStates.CANCELED);
                     return readRows(stmt);
                 }
             }

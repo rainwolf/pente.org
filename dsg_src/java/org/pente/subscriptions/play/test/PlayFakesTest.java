@@ -98,14 +98,21 @@ public class PlayFakesTest extends TestCase {
         purchases.upsertSubscription(sub("revoked", 1L, PlayStates.REVOKED, Long.valueOf(T0 - DAY), true));
         purchases.upsertSubscription(sub("superseded", 1L, PlayStates.SUPERSEDED, Long.valueOf(T0 - DAY), true));
         purchases.upsertSubscription(sub("unacked", 1L, PlayStates.ACTIVE, Long.valueOf(T0 + 300 * DAY), false));
+        purchases.upsertSubscription(sub("unackedGrace", 1L, PlayStates.IN_GRACE_PERIOD, Long.valueOf(T0 + 300 * DAY), false));
+        purchases.upsertSubscription(sub("unackedCanceled", 1L, PlayStates.CANCELED, Long.valueOf(T0 + 300 * DAY), false));
+        purchases.upsertSubscription(sub("unackedPending", 1L, PlayStates.PENDING, Long.valueOf(T0 + 300 * DAY), false));
+        purchases.upsertSubscription(sub("unackedOnHold", 1L, PlayStates.ON_HOLD, Long.valueOf(T0 + 300 * DAY), false));
         List<AndroidPurchaseRow> polled = purchases.subscriptionsToPoll(T0);
-        assertEquals(2, polled.size());
+        assertEquals(4, polled.size());
         assertEquals("live", polled.get(0).tokenHash);
         assertEquals("unacked", polled.get(1).tokenHash);
-        // three days later the unacknowledged row has aged out; the live row is still near expiry
-        polled = purchases.subscriptionsToPoll(T0 + 3 * DAY + 1);
-        assertEquals(1, polled.size());
+        assertEquals("unackedGrace", polled.get(2).tokenHash);
+        assertEquals("unackedCanceled", polled.get(3).tokenHash);
+        // an unacknowledged grantable row is polled however old it is (it may have been PENDING for days)
+        polled = purchases.subscriptionsToPoll(T0 + 10 * DAY);
+        assertEquals(4, polled.size());
         assertEquals("live", polled.get(0).tokenHash);
+        assertEquals("unacked", polled.get(1).tokenHash);
     }
 
     public void testProductPollAndStaleGranting() {

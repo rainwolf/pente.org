@@ -205,11 +205,14 @@ public class MySQLPlayStoreIT extends TestCase {
         store.upsertSubscription(sub("expired", 1L, PlayStates.EXPIRED, Long.valueOf(now - DAY), true));
         store.upsertSubscription(sub("superseded", 1L, PlayStates.SUPERSEDED, Long.valueOf(now - DAY), true));
         store.upsertSubscription(sub("unacked", 1L, PlayStates.ACTIVE, Long.valueOf(now + 300 * DAY), false));
+        store.upsertSubscription(sub("unackedPending", 1L, PlayStates.PENDING, Long.valueOf(now + 300 * DAY), false));
         List<AndroidPurchaseRow> polled = store.subscriptionsToPoll(now);
         assertEquals(2, polled.size());
-        polled = store.subscriptionsToPoll(now + 3 * DAY + 2000);
-        assertEquals(1, polled.size());
-        assertEquals("live", polled.get(0).tokenHash);
+        // an unacknowledged grantable row is polled however old it is
+        polled = store.subscriptionsToPoll(now + 10 * DAY);
+        assertEquals(2, polled.size());
+        boolean unacked = "unacked".equals(polled.get(0).tokenHash) || "unacked".equals(polled.get(1).tokenHash);
+        assertTrue(unacked);
 
         AndroidPurchaseRow purchased = sub("p1", 1L, PlayStates.PURCHASED, null, false);
         purchased.productId = PlayProducts.MONTH_PASS;

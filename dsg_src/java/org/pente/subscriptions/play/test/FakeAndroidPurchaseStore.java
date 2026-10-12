@@ -110,7 +110,7 @@ public class FakeAndroidPurchaseStore implements AndroidPurchaseStore {
                     && r.expiryTimeMs != null
                     && r.expiryTimeMs.longValue() >= nowMs - 60 * DAY
                     && r.expiryTimeMs.longValue() <= nowMs + 2 * DAY;
-            boolean unacknowledged = !r.acknowledged && r.createdMs > nowMs - 3 * DAY;
+            boolean unacknowledged = !r.acknowledged && PlayStates.isGrantable(r.state);
             if (live || unacknowledged) {
                 result.add(r.copy());
             }

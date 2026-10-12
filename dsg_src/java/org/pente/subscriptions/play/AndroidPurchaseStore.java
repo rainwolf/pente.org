@@ -32,7 +32,8 @@ public interface AndroidPurchaseStore {
 
     /**
      * yearly_subscription rows the 6-hour poller re-syncs: state not EXPIRED, REVOKED or SUPERSEDED with
-     * expiry_time between now - 60 days and now + 2 days, or acknowledged=0 and created after now - 3 days
+     * expiry_time between now - 60 days and now + 2 days, or acknowledged=0 and state ACTIVE, IN_GRACE_PERIOD
+     * or CANCELED (however old the row: a deferred payment can be PENDING for days before it is grantable)
      */
     List<AndroidPurchaseRow> subscriptionsToPoll(long nowMs) throws PlayStoreException;
 
