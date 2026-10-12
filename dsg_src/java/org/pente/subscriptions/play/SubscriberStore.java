@@ -18,10 +18,4 @@ public interface SubscriberStore {
 
     /** level=0, the PayPal refund precedent */
     void setLevelZero(String transactionId) throws PlayStoreException;
-
-    /**
-     * paymentdate -= days on every ONEMONTH row of pid whose paymentdate is after afterMs,
-     * except the row exceptTransactionId
-     */
-    void shiftMonthRowsBack(long pid, long afterMs, String exceptTransactionId, int days) throws PlayStoreException;
 }

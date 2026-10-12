@@ -90,20 +90,6 @@ public class PlayFakesTest extends TestCase {
         assertEquals(1L, subscribers.findByTransactionId("GPA.1").pid);
     }
 
-    public void testShiftMonthRowsBackOnlyLaterMonthRowsOfPid() {
-        subscribers.insert(new SubscriberRow(1L, "A", PlayProducts.MONTH_LEVEL, T0));
-        subscribers.insert(new SubscriberRow(1L, "B", PlayProducts.MONTH_LEVEL, T0 + 31 * DAY));
-        subscribers.insert(new SubscriberRow(1L, "Y", PlayProducts.YEARLY_LEVEL, T0 + 40 * DAY));
-        subscribers.insert(new SubscriberRow(2L, "C", PlayProducts.MONTH_LEVEL, T0 + 31 * DAY));
-        subscribers.insert(new SubscriberRow(1L, "E", PlayProducts.MONTH_LEVEL, T0 - DAY));
-        subscribers.shiftMonthRowsBack(1L, T0, "A", 31);
-        assertEquals(T0, subscribers.findByTransactionId("A").paymentDateMs);
-        assertEquals(T0, subscribers.findByTransactionId("B").paymentDateMs);
-        assertEquals(T0 + 40 * DAY, subscribers.findByTransactionId("Y").paymentDateMs);
-        assertEquals(T0 + 31 * DAY, subscribers.findByTransactionId("C").paymentDateMs);
-        assertEquals(T0 - DAY, subscribers.findByTransactionId("E").paymentDateMs);
-    }
-
     public void testSubscriptionPollWindows() {
         purchases.upsertSubscription(sub("live", 1L, PlayStates.ACTIVE, Long.valueOf(T0 + DAY), true));
         purchases.upsertSubscription(sub("far", 1L, PlayStates.ACTIVE, Long.valueOf(T0 + 300 * DAY), true));

@@ -25,8 +25,6 @@ public class PlayEntitlementService {
 
     /** clamp only when Play's expiry is more than 2 days before the row's implied expiry (encoding slack) */
     static final long CLAMP_SLACK_MS = 2 * PlayProducts.DAY_MS;
-    /** a refunded month pass moves later stacked ONEMONTH rows back by this many days */
-    static final int MONTH_SHIFT_DAYS = 31;
     /** GRANTING rows older than this get a daily admin alert */
     static final long GRANTING_STALE_MS = 3600L * 1000;
     /** voided purchases look-back: Play allows 30 days; one hour of margin keeps startTime inside the window */
@@ -402,8 +400,8 @@ public class PlayEntitlementService {
 
     /**
      * A voided order (refund or chargeback): level=0 on its dsg_subscribers row, REVOKED on its
-     * dsg_subscribers_android rows, later stacked ONEMONTH rows moved back 31 days (a ONEMONTH order) or
-     * restacked after the remaining entitlement (a ONEYEAR order), refreshPlayer.
+     * dsg_subscribers_android rows, month passes stacked after it (ONEMONTH rows dated after now) restacked
+     * after the remaining entitlement, refreshPlayer.
      * Vacation days already granted are not clawed back. A repeat revoke is a no-op.
      */
     public void revoke(String orderId) throws PlayStoreException {
@@ -421,14 +419,9 @@ public class PlayEntitlementService {
             boolean changed = false;
             SubscriberRow current = subscribers.findByTransactionId(orderId);
             if (current != null && current.level != 0) {
-                if ((current.level & MySQLDSGPlayerStorer.ONEYEAR) != 0) {
-                    // before setLevelZero, so a crash in between is redone by the repeat revoke
-                    restackMonthPasses(current.pid, orderId, 0, current.paymentDateMs, clock.getAsLong());
-                }
+                // before setLevelZero, so a crash in between is redone by the repeat revoke
+                restackMonthPasses(current.pid, orderId, 0, current.paymentDateMs, clock.getAsLong());
                 subscribers.setLevelZero(orderId);
-                if ((current.level & MySQLDSGPlayerStorer.ONEMONTH) != 0) {
-                    subscribers.shiftMonthRowsBack(current.pid, current.paymentDateMs, orderId, MONTH_SHIFT_DAYS);
-                }
                 changed = true;
             }
             for (AndroidPurchaseRow row : rows) {
@@ -446,7 +439,7 @@ public class PlayEntitlementService {
     }
 
     /**
-     * A ONEYEAR row about to be zeroed (revoke) or shortened (clamp), given as its new level and
+     * A row about to be zeroed (revoke) or a ONEYEAR row about to be shortened (clamp), given as its new level and
      * paymentdate: month passes stacked after its old expiry (ONEMONTH rows dated after now) move back
      * to start, in their order, where the remaining entitlement now ends, or now. A row never moves
      * later. Idempotent, and run before the yearly row is written, so a crash in between is redone by

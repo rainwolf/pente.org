@@ -163,21 +163,6 @@ public class MySQLPlayStoreIT extends TestCase {
         assertNull(store.findByTransactionId("nope"));
     }
 
-    public void testShiftMonthRowsBack() throws Exception {
-        long t = sec(System.currentTimeMillis());
-        store.insert(new SubscriberRow(1L, "A", PlayProducts.MONTH_LEVEL, t));
-        store.insert(new SubscriberRow(1L, "B", PlayProducts.MONTH_LEVEL, t + 31 * DAY));
-        store.insert(new SubscriberRow(1L, "Y", PlayProducts.YEARLY_LEVEL, t + 40 * DAY));
-        store.insert(new SubscriberRow(2L, "C", PlayProducts.MONTH_LEVEL, t + 31 * DAY));
-        store.insert(new SubscriberRow(1L, "E", PlayProducts.MONTH_LEVEL, t - DAY));
-        store.shiftMonthRowsBack(1L, t, "A", 31);
-        assertEquals(t, store.findByTransactionId("A").paymentDateMs);
-        assertEquals(t, store.findByTransactionId("B").paymentDateMs);
-        assertEquals(t + 40 * DAY, store.findByTransactionId("Y").paymentDateMs);
-        assertEquals(t + 31 * DAY, store.findByTransactionId("C").paymentDateMs);
-        assertEquals(t - DAY, store.findByTransactionId("E").paymentDateMs);
-    }
-
     public void testFindByPidReturnsEveryRowOfThatPidOnly() throws Exception {
         long t = sec(System.currentTimeMillis());
         store.insert(new SubscriberRow(1L, "A", PlayProducts.MONTH_LEVEL, t));

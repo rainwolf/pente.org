@@ -5,8 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.pente.gameServer.core.MySQLDSGPlayerStorer;
-import org.pente.subscriptions.play.PlayProducts;
+import org.pente.subscriptions.play.PlayStoreException;
 import org.pente.subscriptions.play.SubscriberRow;
 import org.pente.subscriptions.play.SubscriberStore;
 
@@ -14,6 +13,8 @@ import org.pente.subscriptions.play.SubscriberStore;
 public class FakeSubscriberStore implements SubscriberStore {
 
     public final Map<String, SubscriberRow> rows = new LinkedHashMap<String, SubscriberRow>();
+    /** updatePaymentDate calls that throw before the next one succeeds */
+    public int failPaymentDateUpdates;
 
     public synchronized boolean insert(SubscriberRow row) {
         if (rows.containsKey(row.transactionId)) {
@@ -32,7 +33,11 @@ public class FakeSubscriberStore implements SubscriberStore {
         return rowsOf(pid);
     }
 
-    public synchronized void updatePaymentDate(String transactionId, long paymentDateMs) {
+    public synchronized void updatePaymentDate(String transactionId, long paymentDateMs) throws PlayStoreException {
+        if (failPaymentDateUpdates > 0) {
+            failPaymentDateUpdates--;
+            throw new PlayStoreException("fake: update paymentdate failed");
+        }
         SubscriberRow r = rows.get(transactionId);
         if (r != null) {
             r.paymentDateMs = paymentDateMs;
@@ -43,15 +48,6 @@ public class FakeSubscriberStore implements SubscriberStore {
         SubscriberRow r = rows.get(transactionId);
         if (r != null) {
             r.level = 0;
-        }
-    }
-
-    public synchronized void shiftMonthRowsBack(long pid, long afterMs, String exceptTransactionId, int days) {
-        for (SubscriberRow r : rows.values()) {
-            if (r.pid == pid && (r.level & MySQLDSGPlayerStorer.ONEMONTH) != 0
-                    && r.paymentDateMs > afterMs && !r.transactionId.equals(exceptTransactionId)) {
-                r.paymentDateMs -= days * PlayProducts.DAY_MS;
-            }
         }
     }
 

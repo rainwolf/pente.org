@@ -8,7 +8,7 @@ import org.pente.subscriptions.play.SubscriberRow;
 import org.pente.subscriptions.play.SubscriberRule;
 
 /**
- * revoke(orderId): level 0, REVOKED, ONEMONTH shift, no clawback of vacation days, repeat revoke
+ * revoke(orderId): level 0, REVOKED, month-pass restack, no clawback of vacation days, repeat revoke
  * is a no-op, and a re-sync never resurrects a revoked order (spec 2026-10-11 §4.5, §5).
  *
  * Run: ant test-play-billing
@@ -28,30 +28,80 @@ public class PlayRevokeTest extends PlayServiceTestCase {
         service.syncProduct(PlayProducts.MONTH_PASS, "m3", null);
     }
 
-    public void testRevokedMonthPassShiftsLaterPassesBack31Days() throws Exception {
+    public void testRevokedMonthPassRestacksStackedPassesFromNow() throws Exception {
         buyThreePasses();
-        long m2 = row("GPA.m2").paymentDateMs;
-        long m3 = row("GPA.m3").paymentDateMs;
         long expiryBefore = expiration(PID).longValue();
 
         service.revoke("GPA.m1");
 
         assertEquals(0, row("GPA.m1").level);
-        assertEquals(m2 - 31 * DAY, row("GPA.m2").paymentDateMs);
-        assertEquals(m3 - 31 * DAY, row("GPA.m3").paymentDateMs);
+        assertEquals(now, row("GPA.m2").paymentDateMs);
+        long m3 = SubscriberRule.impliedExpiryMs(PlayProducts.MONTH_LEVEL, now).longValue();
+        assertEquals(m3, row("GPA.m3").paymentDateMs);
+        assertEquals(SubscriberRule.impliedExpiryMs(PlayProducts.MONTH_LEVEL, m3), expiration(PID));
         assertEquals(PlayStates.REVOKED, android("m1").state);
         assertEquals(PlayStates.CONSUMED, android("m2").state);
         assertTrue(expiration(PID).longValue() < expiryBefore - 30 * DAY);
         assertEquals(1, players.changed.size());
     }
 
-    public void testRepeatRevokeShiftsOnce() throws Exception {
+    public void testRepeatRevokeRestacksOnce() throws Exception {
         buyThreePasses();
-        long m2 = row("GPA.m2").paymentDateMs;
         service.revoke("GPA.m1");
         service.revoke("GPA.m1");
-        assertEquals(m2 - 31 * DAY, row("GPA.m2").paymentDateMs);
+        assertEquals(now, row("GPA.m2").paymentDateMs);
         assertEquals(1, players.changed.size());
+    }
+
+    public void testRevokedMonthPassLeavesALaterSeparatePassAlone() throws Exception {
+        product("a", PID, PlayProducts.MONTH_PASS, "GPA.a");
+        service.syncProduct(PlayProducts.MONTH_PASS, "a", null);
+        now += 40 * DAY;
+        product("b", PID, PlayProducts.MONTH_PASS, "GPA.b");
+        service.syncProduct(PlayProducts.MONTH_PASS, "b", null);
+        long b = row("GPA.b").paymentDateMs;
+        assertEquals(now, b);
+        now += 10 * DAY;
+
+        service.revoke("GPA.a");
+
+        assertEquals(0, row("GPA.a").level);
+        assertEquals(b, row("GPA.b").paymentDateMs);
+        assertEquals(SubscriberRule.impliedExpiryMs(PlayProducts.MONTH_LEVEL, b), expiration(PID));
+    }
+
+    public void testRevokedMonthPassLeavesOtherCurrentMonthRowsAlone() throws Exception {
+        product("a", PID, PlayProducts.MONTH_PASS, "GPA.a");
+        service.syncProduct(PlayProducts.MONTH_PASS, "a", null);
+        long a = row("GPA.a").paymentDateMs;
+        // a PayPal or KotH month row dated later than the pass but already running
+        now += 5 * DAY;
+        subscribers.insert(new SubscriberRow(PID, "PAYPAL", PlayProducts.MONTH_LEVEL, now - DAY));
+        long paypal = now - DAY;
+        assertTrue(paypal > a);
+
+        service.revoke("GPA.a");
+
+        assertEquals(paypal, row("PAYPAL").paymentDateMs);
+    }
+
+    public void testFailedMonthRestackHealsOnRepeatRevoke() throws Exception {
+        buyThreePasses();
+        subscribers.failPaymentDateUpdates = 1;
+        try {
+            service.revoke("GPA.m1");
+            fail("expected PlayStoreException");
+        } catch (org.pente.subscriptions.play.PlayStoreException expected) {
+            // RTDN answers 500 and Pub/Sub redelivers; the voided poller repeats it
+        }
+        assertTrue(row("GPA.m1").level != 0);
+
+        service.revoke("GPA.m1");
+
+        assertEquals(0, row("GPA.m1").level);
+        assertEquals(now, row("GPA.m2").paymentDateMs);
+        assertEquals(SubscriberRule.impliedExpiryMs(PlayProducts.MONTH_LEVEL, now).longValue(),
+                row("GPA.m3").paymentDateMs);
     }
 
     public void testRevokingLastPassShiftsNothing() throws Exception {

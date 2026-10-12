@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.pente.database.DBHandler;
-import org.pente.gameServer.core.MySQLDSGPlayerStorer;
 
 /**
  * JDBC storage for Google Play purchases: dsg_subscribers_android and the dsg_subscribers rows they
@@ -359,24 +358,6 @@ public class MySQLPlayStore implements AndroidPurchaseStore, SubscriberStore {
                 try (PreparedStatement stmt = con.prepareStatement(
                         "UPDATE dsg_subscribers SET level = 0 WHERE transactionid = ?")) {
                     stmt.setString(1, transactionId);
-                    stmt.executeUpdate();
-                }
-                return null;
-            }
-        });
-    }
-
-    public void shiftMonthRowsBack(final long pid, final long afterMs, final String exceptTransactionId, final int days)
-            throws PlayStoreException {
-        withConnection("shift ONEMONTH rows", new Work<Void>() {
-            public Void run(Connection con) throws SQLException {
-                try (PreparedStatement stmt = con.prepareStatement(
-                        "UPDATE dsg_subscribers SET paymentdate = DATE_SUB(paymentdate, INTERVAL " + days + " DAY) "
-                                + "WHERE pid = ? AND (level & " + MySQLDSGPlayerStorer.ONEMONTH + ") <> 0 "
-                                + "AND paymentdate > ? AND transactionid <> ?")) {
-                    stmt.setLong(1, pid);
-                    stmt.setTimestamp(2, ts(afterMs));
-                    stmt.setString(3, exceptTransactionId);
                     stmt.executeUpdate();
                 }
                 return null;
