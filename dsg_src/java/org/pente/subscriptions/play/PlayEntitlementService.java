@@ -399,8 +399,8 @@ public class PlayEntitlementService {
     // ---------------------------------------------------------------- revoke (§4.5)
 
     /**
-     * A voided order (refund or chargeback): level=0 on its dsg_subscribers row, REVOKED on its
-     * dsg_subscribers_android rows, month passes stacked after it (ONEMONTH rows dated after now) restacked
+     * A voided order (refund or chargeback): level=0 on its dsg_subscribers row, REVOKED on its one-time
+     * dsg_subscribers_android rows (a yearly row is per token and keeps Google's state), month passes stacked after it (ONEMONTH rows dated after now) restacked
      * after the remaining entitlement, refreshPlayer.
      * Vacation days already granted are not clawed back. A repeat revoke is a no-op.
      */
@@ -425,6 +425,11 @@ public class PlayEntitlementService {
                 changed = true;
             }
             for (AndroidPurchaseRow row : rows) {
+                // a yearly row is per token, not per order: it keeps Google's state so the poller still
+                // follows later renewals; the order's level 0 above already removes access
+                if (PlayProducts.YEARLY.equals(row.productId)) {
+                    continue;
+                }
                 // a REFUNDED vacation purchase (refunded during a tourney, nothing granted) stays REFUNDED when
                 // its voided notification comes back, so its later replies stay success:refunded
                 if (!PlayStates.REVOKED.equals(row.state) && !PlayStates.REFUNDED.equals(row.state)) {

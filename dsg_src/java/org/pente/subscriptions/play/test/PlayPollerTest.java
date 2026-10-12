@@ -28,6 +28,23 @@ public class PlayPollerTest extends PlayServiceTestCase {
         assertEquals(PID + ":yearly_subscription:RENEWAL", players.grants.get(1));
     }
 
+    public void testRenewalAfterARevokedYearlyOrderIsPolled() throws Exception {
+        PlaySubscription s = subscription("y", PID, PlayStates.ACTIVE, "GPA.y", now + DAY);
+        service.syncSubscription("y", null);
+        // refunded in Play Console without revoking: the subscription stays ACTIVE at Google
+        service.revoke("GPA.y");
+        assertEquals(0, row("GPA.y").level);
+        s.latestSuccessfulOrderId = "GPA.y..0";
+        s.expiryTimeMs = Long.valueOf(now + 366 * DAY);
+
+        service.pollSubscriptions();
+
+        assertNotNull(row("GPA.y..0"));
+        assertEquals(PlayProducts.YEARLY_LEVEL, row("GPA.y..0").level);
+        assertEquals(0, row("GPA.y").level);
+        assertEquals(PID + ":yearly_subscription:RENEWAL", players.grants.get(1));
+    }
+
     public void testFailedAcknowledgeRetriedByPoller() throws Exception {
         subscription("y", PID, PlayStates.ACTIVE, "GPA.y", now + 300 * DAY);
         api.failAcknowledges = 1;

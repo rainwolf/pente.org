@@ -126,7 +126,9 @@ public class PlayRevokeTest extends PlayServiceTestCase {
         service.syncSubscription("y", null);
         service.revoke("GPA.y");
         assertEquals(0, row("GPA.y").level);
-        assertEquals(PlayStates.REVOKED, android("y").state);
+        // the per-token row keeps Google's state, so the poller still follows the token's later orders
+        assertEquals(PlayStates.ACTIVE, android("y").state);
+        assertEquals(1, players.changed.size());
         assertNull(expiration(PID));
 
         s.expiryTimeMs = Long.valueOf(now + 330 * DAY);
