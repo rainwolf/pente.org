@@ -223,7 +223,8 @@ public class PlayEntitlementService {
     static final long THANK_YOU_WINDOW_MS = 10 * 60 * 1000L;
 
     /**
-     * client POST: the client's product id picks the API call; the API's product id decides the grant when present.
+     * client POST: the client's product id picks the API call; the API's product id decides the grant, and an
+     * answer without one is INVALID (the RTDN push still delivers it).
      * The RTDN push often records the grant before the buyer's own POST arrives, so a KNOWN answer for a
      * token this pid first recorded under 10 minutes ago is reported as NEW and the buyer still sees the thank-you.
      */
@@ -248,8 +249,8 @@ public class PlayEntitlementService {
      * Re-read a one-time purchase from Google, grant it once, then consume it.
      *
      * @param requestedProductId the product id products.get is called with; it must be on the whitelist. It
-     *                           names the grant only when Google's answer has no productId, which is safe
-     *                           because Google answers 400 (null) for a token bought as another product.
+     *                           names the grant only for RTDN and the pollers (requesterPid null) when Google's
+     *                           answer has no productId; a client POST without one is INVALID.
      * @param requesterPid       the logged-in player for a client POST, null for RTDN and the pollers
      */
     public PlayClassification syncProduct(String requestedProductId, String purchaseToken, Long requesterPid)
@@ -287,8 +288,14 @@ public class PlayEntitlementService {
         if (product == null) {
             return PlayClassification.INVALID;
         }
-        // ProductPurchase.productId "may not be present"; the requested id is whitelisted and Google answers
-        // 400 (null here) for a token bought as another product, so it then names the product.
+        // ProductPurchase.productId "may not be present". A client POST never names the grant (spec 4.5): without
+        // the API's id it is refused and RTDN or the poller delivers the purchase. For those the requested id is
+        // Google's own (the notification's sku, or the stored row's API-confirmed product).
+        if (product.productId == null && requesterPid != null) {
+            log4j.info("PlayEntitlementService: no API productId for a client " + requestedProductId
+                    + " POST, left to RTDN");
+            return PlayClassification.INVALID;
+        }
         String productId = product.productId != null ? product.productId : requestedProductId;
         if (!PlayProducts.isOneTime(productId)) {
             return PlayClassification.INVALID;

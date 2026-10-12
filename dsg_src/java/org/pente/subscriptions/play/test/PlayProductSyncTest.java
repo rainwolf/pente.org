@@ -171,14 +171,22 @@ public class PlayProductSyncTest extends PlayServiceTestCase {
         assertEquals(0, row("GPA.t").level);
     }
 
-    public void testClientPostWithoutApiProductIdUsesRequestedWhitelistedSku() throws Exception {
-        PlayProduct p = product("t", PID, PlayProducts.MONTH_PASS, "GPA.t");
+    public void testClientPostWithoutApiProductIdIsInvalidAndRtdnStillGrants() throws Exception {
+        PlayProduct p = product("t", PID, PlayProducts.VACATION_10, "GPA.t");
         p.productId = null;
-        api.productTokens.put("t", PlayProducts.MONTH_PASS);
-        assertEquals(PlayClassification.NEW, service.syncFromClient(PlayProducts.MONTH_PASS, "t", PID));
-        assertEquals(PlayProducts.MONTH_LEVEL, row("GPA.t").level);
+        // the client names a bigger product than the one bought; the API answer carries no productId
+        assertEquals(PlayClassification.INVALID, service.syncFromClient(PlayProducts.VACATION_60, "t", PID));
+        assertEquals(PlayClassification.INVALID, service.syncFromClient(PlayProducts.VACATION_10, "t", PID));
+        assertEquals(0, subscribers.rows.size());
+        assertEquals(0, purchases.rows.size());
+        assertEquals(0, players.grants.size());
+        assertEquals(0, players.vacationDaysOf(PID));
+        assertEquals(0, api.consumed.size());
+        // RTDN's sku is Google's own value, so it names the grant
+        assertEquals(PlayClassification.NEW, service.syncProduct(PlayProducts.VACATION_10, "t", null));
+        assertEquals(10, players.vacationDaysOf(PID));
         assertEquals(PlayStates.CONSUMED, android("t").state);
-        assertEquals(PID + ":month_pass:NEW", players.grants.get(0));
+        assertEquals(PlayProducts.VACATION_10, android("t").productId);
     }
 
     public void testTokenForOtherProductIsInvalid() throws Exception {
@@ -186,13 +194,13 @@ public class PlayProductSyncTest extends PlayServiceTestCase {
         p.productId = null;
         api.productTokens.put("t", PlayProducts.VACATION_60);
         // Google answers products.get(month_pass, t) with HTTP 400, which GooglePlayApi maps to null
-        assertEquals(PlayClassification.INVALID, service.syncFromClient(PlayProducts.MONTH_PASS, "t", PID));
+        assertEquals(PlayClassification.INVALID, service.syncProduct(PlayProducts.MONTH_PASS, "t", null));
         assertEquals(0, subscribers.rows.size());
         assertEquals(0, purchases.rows.size());
         assertEquals(0, players.grants.size());
         assertEquals(0, api.consumed.size());
         // asked as the product it was bought as, the same token is granted
-        assertEquals(PlayClassification.NEW, service.syncFromClient(PlayProducts.VACATION_60, "t", PID));
+        assertEquals(PlayClassification.NEW, service.syncProduct(PlayProducts.VACATION_60, "t", null));
         assertEquals(60, players.vacationDaysOf(PID));
     }
 
