@@ -28,6 +28,16 @@ public class GooglePlayPurchaseServlet extends HttpServlet {
         return name != null && !name.trim().isEmpty() && !"guest".equalsIgnoreCase(name.trim());
     }
 
+    public static final String UNKNOWN_PRODUCT = "<unknown product>";
+
+    /** the client's productId for the billing log: a whitelisted id, else a fixed placeholder (no forged lines) */
+    public static String loggableProductId(String productId) {
+        if (PlayProducts.isSubscription(productId) || PlayProducts.isOneTime(productId)) {
+            return productId;
+        }
+        return UNKNOWN_PRODUCT;
+    }
+
     private PlayEntitlementService service() {
         return (PlayEntitlementService) getServletContext().getAttribute(PlayEntitlementService.class.getName());
     }
@@ -101,7 +111,7 @@ public class GooglePlayPurchaseServlet extends HttpServlet {
         }
         try {
             PlayClassification result = service.syncFromClient(productId, purchaseToken, pid.longValue());
-            log4j.info("GooglePlayPurchaseServlet: " + productId + " for pid " + pid + " -> " + result);
+            log4j.info("GooglePlayPurchaseServlet: " + loggableProductId(productId) + " for pid " + pid + " -> " + result);
             out.println(result.getReply());
         } catch (PlayApiException e) {
             log4j.warn("GooglePlayPurchaseServlet: Google API error, client retries: " + e);
