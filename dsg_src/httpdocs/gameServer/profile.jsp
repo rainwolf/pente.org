@@ -170,7 +170,7 @@
                      Yes
                      <% } else if (!dsgPlayerData.getName().equals(name)) { %>
 
-                     <form method="POST" action="subscriptions">
+                     <form method="GET" action="subscriptions">
                         <input type="hidden" name="gifter" value="<%=name %>"/>
                         <input type="hidden" name="name" value="<%= dsgPlayerData.getName() %>"/>
                         No
