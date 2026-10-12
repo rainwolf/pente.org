@@ -115,4 +115,21 @@
             <arg value="org.pente.gameServer.server.test.MMAIPlayerIntegrationTest"/>
         </java>
     </target>
+
+    <!-- Google Play Billing unit tests (docs/superpowers/specs/2026-10-11-android-play-billing-design.md section 5).
+         No DB, no network. 'compile' builds deploy/ (rsync dsg_src/java/ to deploy/ first, as ./justCompile does);
+         this target then compiles org/pente/subscriptions/play/** including test/ straight from dsg_src/java. -->
+    <target name="test-play-billing" depends="compile">
+        <javac srcdir="dsg_src/java" destdir="deployClasses" sourcepath="" includeantruntime="false"
+               debug="true" debuglevel="lines,vars,source">
+            <include name="org/pente/subscriptions/play/**/*.java"/>
+            <include name="org/pente/gameServer/tourney/VacationPurchaseRule.java"/>
+            <classpath refid="test-classpath"/>
+        </javac>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.subscriptions.play.test.AccountIdsTest"/>
+        </java>
+        <!-- play-billing test classes: add one <java> block per class above this line -->
+    </target>
 </project>
