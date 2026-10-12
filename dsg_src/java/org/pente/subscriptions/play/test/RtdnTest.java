@@ -12,6 +12,7 @@ import org.pente.subscriptions.play.PlayStates;
 import org.pente.subscriptions.play.RtdnAuth;
 import org.pente.subscriptions.play.RtdnDispatcher;
 import org.pente.subscriptions.play.RtdnNotification;
+import org.pente.subscriptions.play.VoidedPage;
 
 /**
  * RTDN: Pub/Sub envelope parsing, JWT claim rules behind the signature interface, and dispatch with
@@ -147,13 +148,61 @@ public class RtdnTest extends PlayServiceTestCase {
         assertNull(row("GPA.p"));
     }
 
-    public void testVoidedNotificationRevokes() throws Exception {
+    public void testVoidedNotificationRevokesWhatGoogleListsAsVoided() throws Exception {
+        product("p", PID, PlayProducts.MONTH_PASS, "GPA.p");
+        service.syncProduct(PlayProducts.MONTH_PASS, "p", null);
+        VoidedPage page = new VoidedPage();
+        page.orderIds.add("GPA.p");
+        api.voidedPages.add(page);
+        int status = new RtdnDispatcher(service, PACKAGE).dispatch(envelope("{\"packageName\":\"" + PACKAGE
+                + "\",\"voidedPurchaseNotification\":{\"purchaseToken\":\"p\",\"orderId\":\"GPA.p\",\"productType\":2}}"));
+        assertEquals(200, status);
+        assertEquals(0, row("GPA.p").level);
+        assertEquals(1, api.voidedStartTimes.size());
+    }
+
+    public void testVoidedNotificationForAnOrderGoogleDoesNotListRevokesNothing() throws Exception {
         product("p", PID, PlayProducts.MONTH_PASS, "GPA.p");
         service.syncProduct(PlayProducts.MONTH_PASS, "p", null);
         int status = new RtdnDispatcher(service, PACKAGE).dispatch(envelope("{\"packageName\":\"" + PACKAGE
                 + "\",\"voidedPurchaseNotification\":{\"purchaseToken\":\"p\",\"orderId\":\"GPA.p\",\"productType\":2}}"));
         assertEquals(200, status);
-        assertEquals(0, row("GPA.p").level);
+        assertEquals(PlayProducts.MONTH_LEVEL, row("GPA.p").level);
+        assertEquals(PlayStates.CONSUMED, android("p").state);
+    }
+
+    public void testVoidedNotificationSendsNoGrantingAlert() throws Exception {
+        product("v", PID, PlayProducts.VACATION_10, "GPA.v");
+        service.syncProduct(PlayProducts.VACATION_10, "v", null);
+        purchases.setState(hash("v"), PlayStates.GRANTING);
+        now += 2 * 3600 * 1000L;
+        new RtdnDispatcher(service, PACKAGE).dispatch(envelope("{\"packageName\":\"" + PACKAGE
+                + "\",\"voidedPurchaseNotification\":{\"purchaseToken\":\"x\",\"orderId\":\"GPA.x\",\"productType\":2}}"));
+        assertEquals(0, players.alerts.size());
+    }
+
+    public void testVoidedListFailureIs500() throws Exception {
+        api.failVoided = 1;
+        int status = new RtdnDispatcher(service, PACKAGE).dispatch(envelope("{\"packageName\":\"" + PACKAGE
+                + "\",\"voidedPurchaseNotification\":{\"purchaseToken\":\"p\",\"orderId\":\"GPA.p\",\"productType\":2}}"));
+        assertEquals(500, status);
+    }
+
+    public void testOneTimeNotificationUsesTheStoredProductOverTheSku() throws Exception {
+        // Google's answer has no productId, and the token's first delivery stored vacation_10 but did not grant
+        product("v", PID, PlayProducts.VACATION_10, "GPA.v").productId = null;
+        subscribers.failInserts = 1;
+        try {
+            service.syncProduct(PlayProducts.VACATION_10, "v", null);
+            fail("expected PlayStoreException");
+        } catch (org.pente.subscriptions.play.PlayStoreException expected) {
+            // redelivered
+        }
+        assertEquals(PlayProducts.VACATION_10, android("v").productId);
+        int status = new RtdnDispatcher(service, PACKAGE).dispatch(envelope("{\"packageName\":\"" + PACKAGE
+                + "\",\"oneTimeProductNotification\":{\"notificationType\":1,\"purchaseToken\":\"v\",\"sku\":\"vacation_60\"}}"));
+        assertEquals(200, status);
+        assertEquals(10, players.vacationDaysOf(PID));
     }
 
     public void testUnknownPidWrongPackageMalformedAndTestAre200() {

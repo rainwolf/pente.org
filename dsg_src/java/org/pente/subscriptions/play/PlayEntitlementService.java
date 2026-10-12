@@ -253,13 +253,21 @@ public class PlayEntitlementService {
      *
      * @param requestedProductId the product id products.get is called with; it must be on the whitelist. It
      *                           names the grant only for RTDN and the pollers (requesterPid null) when Google's
-     *                           answer has no productId; a client POST without one is INVALID.
+     *                           answer has no productId, and for them a one-time product already stored for
+     *                           the token replaces it; a client POST without one is INVALID.
      * @param requesterPid       the logged-in player for a client POST, null for RTDN and the pollers
      */
     public PlayClassification syncProduct(String requestedProductId, String purchaseToken, Long requesterPid)
             throws PlayApiException, PlayStoreException {
         if (!PlayProducts.isOneTime(requestedProductId)) {
             return PlayClassification.INVALID;
+        }
+        if (requesterPid == null) {
+            // an RTDN sku is only the push body's word: a product already stored for this token wins
+            AndroidPurchaseRow stored = purchases.find(PlayTokens.sha256Hex(purchaseToken));
+            if (stored != null && PlayProducts.isOneTime(stored.productId)) {
+                requestedProductId = stored.productId;
+            }
         }
         PlayProduct product = api.getProduct(requestedProductId, purchaseToken);
         PlayClassification rejected = rejectProduct(product, requestedProductId, requesterPid);
@@ -531,6 +539,16 @@ public class PlayEntitlementService {
             players.adminAlert("Google Play " + row.productId + " for pid " + row.pid
                     + " stuck in GRANTING (token hash " + row.tokenHash + "): check vacation days, then set the state by hand");
         }
+        revokeVoided();
+    }
+
+    /**
+     * Revoke every order on Google's voided-purchases list (last 30 days, all pages). The daily poller and
+     * a voidedPurchaseNotification both use it, so only orders Google lists are revoked, never an order id
+     * taken from a push body.
+     */
+    public void revokeVoided() throws PlayApiException, PlayStoreException {
+        long now = clock.getAsLong();
         String pageToken = null;
         int pages = 0;
         do {

@@ -4,7 +4,8 @@ import org.apache.log4j.Category;
 
 /**
  * Routes an authenticated RTDN push body to PlayEntitlementService (spec 2026-10-11 §4.6).
- * Every notification is re-read from the Google API, so a forged body cannot grant anything.
+ * Every notification is re-read from the Google API, so a forged body cannot grant anything: a voided
+ * notification sweeps Google's voided list instead of revoking the order it names.
  */
 public class RtdnDispatcher {
 
@@ -50,8 +51,9 @@ public class RtdnDispatcher {
                     }
                     break;
                 case VOIDED:
-                    service.revoke(n.orderId);
-                    log4j.info("RtdnDispatcher: voided order " + n.orderId + " revoked");
+                    // the body's order id is not trusted: revoke only what Google's voided list holds
+                    service.revokeVoided();
+                    log4j.info("RtdnDispatcher: voided notification for order " + n.orderId + ", voided list swept");
                     break;
                 case TEST:
                     log4j.info("RtdnDispatcher: test notification received");
