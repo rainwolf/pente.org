@@ -68,6 +68,7 @@ public class ChangeProfileServlet extends HttpServlet {
         String changeProfileError = null;
         String viewProfileError = null;
         String changeProfileSuccess = null;
+        String weekendChangeError = null;
         DSGPlayerData dsgPlayerData = null;
 
         String pathinfo = request.getPathInfo();
@@ -428,20 +429,28 @@ public class ChangeProfileServlet extends HttpServlet {
                         weekend[0] = Integer.parseInt(weekend1);
                         weekend[1] = Integer.parseInt(weekend2);
                         int weekendStored[] = new int[]{7, 1};
+                        Date weekendLastChanged = null;
                         DSGPlayerPreference p2 = null;
                         for (Iterator it = prefs.iterator(); it.hasNext(); ) {
                             p2 = (DSGPlayerPreference) it.next();
                             if (p2.getName().equals("weekend")) {
                                 weekendStored = (int[]) p2.getValue();
+                                weekendLastChanged = p2.getLastUpdateDate();
                             }
                         }
 
                         boolean weekendChanged = false;
-                        // if weekend days changed
-                        if ((weekend[0] != weekendStored[0] &&
+                        boolean weekendDiffers = (weekend[0] != weekendStored[0] &&
                                 weekend[0] != weekendStored[1]) ||
                                 (weekend[1] != weekendStored[0] &&
-                                        weekend[1] != weekendStored[1])) {
+                                        weekend[1] != weekendStored[1]);
+                        String weekendCooldownError = DSGPlayerPreference.weekendChangeCooldownError(
+                                weekendLastChanged);
+                        // if weekend days changed
+                        if (weekendDiffers && weekendCooldownError != null) {
+                            // refused: keep stored weekend and skip updateDaysOff
+                            weekendChangeError = weekendCooldownError;
+                        } else if (weekendDiffers) {
 
                             weekendChanged = true;
 
@@ -584,7 +593,9 @@ public class ChangeProfileServlet extends HttpServlet {
                         if (changeProfileError == null) {
                             String button = (String) params.get("submit");
                             if (button != null && !button.equals("Change")) {
-                                changeProfileSuccess = "Your preferences have been changed successfully.";
+                                changeProfileSuccess = weekendChangeError == null
+                                        ? "Your preferences have been changed successfully."
+                                        : "Your other preferences have been saved.";
                             }
                         }
                     }
@@ -624,6 +635,7 @@ public class ChangeProfileServlet extends HttpServlet {
         request.setAttribute("viewProfileError", viewProfileError);
         request.setAttribute("changeProfileError", changeProfileError);
         request.setAttribute("changeProfileSuccess", changeProfileSuccess);
+        request.setAttribute("weekendChangeError", weekendChangeError);
         getServletContext().getRequestDispatcher(redirectPage).forward(request, response);
     }
 

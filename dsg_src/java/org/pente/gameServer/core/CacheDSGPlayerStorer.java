@@ -358,6 +358,7 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
     public void storePlayerPreference(long playerID, DSGPlayerPreference pref)
             throws DSGPlayerStoreException {
         basePlayerStorer.storePlayerPreference(playerID, pref);
+        pref.setLastUpdateDate(new Date());
         pente_cache.hremove(RedisConnectionManager.PID_TO_PREFS, playerID);
     }
 

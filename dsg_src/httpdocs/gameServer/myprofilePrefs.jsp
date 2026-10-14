@@ -21,6 +21,7 @@
    boolean email = true;
    boolean emailSent = false;
    int weekend[] = new int[]{7, 1};
+   Date weekendLastChanged = null;
    int refresh = 5;
    boolean personalizeAds = false;
    if (prefs != null) {
@@ -34,6 +35,7 @@
             emailSent = ((Boolean) p.getValue()).booleanValue();
          } else if ("weekend".equals(p.getName())) {
             weekend = (int[]) p.getValue();
+            weekendLastChanged = p.getLastUpdateDate();
          } else if ("refresh".equals(p.getName())) {
             refresh = ((Integer) p.getValue());
          } else if ("personalizeAds".equals(p.getName())) {
@@ -44,6 +46,8 @@
 
    String changeProfileError = (String) request.getAttribute("changeProfileError");
    String changeProfileSuccess = (String) request.getAttribute("changeProfileSuccess");
+   String weekendChangeError = (String) request.getAttribute("weekendChangeError");
+   int weekendDaysLeft = DSGPlayerPreference.weekendChangeDaysLeft(weekendLastChanged);
 
 
    pageContext.setAttribute("title", "My Profile");
@@ -187,6 +191,13 @@
                      <% } %>
             </select>
             <br>
+            <% if (weekendChangeError != null) { %>
+            <span style="color:red"><%= weekendChangeError %></span><br>
+            <% } %>
+            <span style="color:red">Weekend days can only be changed once every <%= DSGPlayerPreference.WEEKEND_CHANGE_COOLDOWN_TEXT %>.</span><br>
+            <% if (weekendDaysLeft > 0) { %>
+            <span style="color:red">You can change them again in <%= weekendDaysLeft %> day<%= weekendDaysLeft == 1 ? "" : "s" %>.</span><br>
+            <% } %>
             <font size="-2">Be careful when updating the weekend days, if you have any games with less
                than 2 days left for you to move and you change the weekend days, its possible
                that you will force a timeout on yourself!</font>
