@@ -1141,7 +1141,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                 con = dbHandler.getConnection();
 
                 stmt = con.prepareStatement(
-                        "select pref_name, pref_value " +
+                        "select pref_name, pref_value, last_update_date " +
                                 "from " + DSG_PLAYER_PREFS_TABLE + " " +
                                 "where pid = ?");
                 stmt.setLong(1, playerID);
@@ -1156,6 +1156,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
 
                     DSGPlayerPreference p = new DSGPlayerPreference(
                             name, value);
+                    p.setLastUpdateDate(readPreferenceDate(result, 3));
                     prefs.add(p);
                 }
 
@@ -1175,6 +1176,23 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
         }
 
         return prefs;
+    }
+
+    /**
+     * Reads a preference's last_update_date. Legacy rows hold the zero date
+     * '0000-00-00 00:00:00', which the driver may return as null, a pre-1970
+     * timestamp or throw on; all of those map to null ("no date").
+     */
+    private java.util.Date readPreferenceDate(ResultSet result, int column) {
+        try {
+            Timestamp ts = result.getTimestamp(column);
+            if (ts == null || ts.getTime() <= 0) {
+                return null;
+            }
+            return new java.util.Date(ts.getTime());
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public void storePlayerPreference(long playerID, DSGPlayerPreference pref)

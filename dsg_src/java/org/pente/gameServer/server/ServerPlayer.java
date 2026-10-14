@@ -268,8 +268,13 @@ public class ServerPlayer implements DSGEventListener {
                 try {
                     DSGPlayerPreference pref = ((DSGPreferenceEvent) dsgEvent).
                             getPref();
-                    dsgPlayerStorer.storePlayerPreference(
-                            playerData.getPlayerID(), pref);
+                    // weekend days are cooldown-limited and only changeable via the website
+                    if ("weekend".equals(pref.getName())) {
+                        log4j.warn(psid() + "Refused weekend preference change over websocket");
+                    } else {
+                        dsgPlayerStorer.storePlayerPreference(
+                                playerData.getPlayerID(), pref);
+                    }
 
                 } catch (DSGPlayerStoreException e) {
                     log4j.error(psid() + "Error storing preference", e);

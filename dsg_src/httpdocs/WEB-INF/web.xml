@@ -536,6 +536,10 @@
         <servlet-class>org.pente.subscriptions.play.GooglePlayPurchaseServlet</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>ChangeIgnoredServlet</servlet-name>
+        <servlet-class>org.pente.gameServer.client.web.ChangeIgnoredServlet</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>GooglePlayRtdnServlet</servlet-name>
         <servlet-class>org.pente.subscriptions.play.GooglePlayRtdnServlet</servlet-class>
     </servlet>
@@ -757,6 +761,10 @@
     <servlet-mapping>
         <servlet-name>GooglePlayPurchaseServlet</servlet-name>
         <url-pattern>/gameServer/googlePlayPurchase</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ChangeIgnoredServlet</servlet-name>
+        <url-pattern>/gameServer/ignored</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>GooglePlayRtdnServlet</servlet-name>

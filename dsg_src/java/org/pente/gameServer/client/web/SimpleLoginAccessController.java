@@ -21,7 +21,8 @@ public class SimpleLoginAccessController implements LoginAccessController {
                     "gameServer/pentedb",
                     "gameServer/pgn.jsp",
                     "gameServer/tbpgn.jsp",
-                    "gameServer/googlePlayPurchase"
+                    "gameServer/googlePlayPurchase",
+                    "gameServer/ignored"
             };
 
     private static final String restrictedPages[] = new String[]
