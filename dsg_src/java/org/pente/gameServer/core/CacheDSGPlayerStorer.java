@@ -397,8 +397,9 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         ArrayList<DSGIgnoreData> l = pente_cache.hget(RedisConnectionManager.PID_TO_IGNORES, data.getPid());
         if (l == null) {
             l = new ArrayList<DSGIgnoreData>(basePlayerStorer.getIgnoreData(data.getPid()));
+        } else {
+            l.add(data);
         }
-        l.add(data);
         pente_cache.hput(RedisConnectionManager.PID_TO_IGNORES, data.getPid(), l);
     }
 

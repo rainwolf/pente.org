@@ -10,4 +10,3 @@ gameDatabase/swing
 pente/tree
 client/puzzle
 tools/SGFExporter.java
-ChangeIgnoredServlet.java
