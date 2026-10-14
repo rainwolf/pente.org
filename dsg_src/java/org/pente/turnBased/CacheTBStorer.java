@@ -817,10 +817,35 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
     public void addExtraTBVacationDays(long pid, int extraDays) {
         TBVacation vacation = getTBVacation(pid);
         if (vacation != null) {
+            normaliseForExtraDays(vacation, System.currentTimeMillis());
             int hoursLeft = vacation.getHoursLeft();
             vacation.setHoursLeft(hoursLeft + 24 * extraDays);
             storeTBVacation(pid, vacation);
         }
+    }
+
+    /**
+     * Before extra days are added: a record with no lastPinched (no tb_emergency_time row, which
+     * storeTBVacation cannot write) or from another year (which the next cache-hit getTBVacation resets,
+     * wiping the extra days) starts from this year's allowance with lastPinched at 1 January 00:00 of this
+     * year, so it is kept this year and the next pinch is not blocked. A record from this year is untouched.
+     */
+    public static void normaliseForExtraDays(TBVacation vacation, long nowMs) {
+        Calendar now = Calendar.getInstance();
+        now.setTimeInMillis(nowMs);
+        int currentYear = now.get(Calendar.YEAR);
+        if (vacation.getLastPinched() != null) {
+            Calendar lastPinch = Calendar.getInstance();
+            lastPinch.setTime(vacation.getLastPinched());
+            if (lastPinch.get(Calendar.YEAR) == currentYear) {
+                return;
+            }
+        }
+        Calendar januaryFirst = Calendar.getInstance();
+        januaryFirst.clear();
+        januaryFirst.set(currentYear, Calendar.JANUARY, 1, 0, 0, 0);
+        vacation.setHoursLeft(MySQLTBGameStorer.FLOATINGVACATIONDAYS * 24);
+        vacation.setLastPinched(januaryFirst.getTime());
     }
 
     // algorithm - end game thread (just offloads updating ended games to db)

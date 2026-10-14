@@ -28,6 +28,7 @@ import org.pente.database.DBHandler;
 import org.pente.gameServer.server.RedisConnectionManager;
 import org.pente.notifications.NotificationServer;
 import org.pente.subscriptions.IOSReceiptServlet;
+import org.pente.subscriptions.play.PlayEntitlementService;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
@@ -55,6 +56,8 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
 
     private Timer checkiOSSubscribersTimer;
     private Timer checkSubscribersTimer;
+    private Timer checkAndroidSubscribersTimer;
+    private Timer checkAndroidVoidedTimer;
 
     private NotificationServer notificationServer;
 
@@ -82,6 +85,14 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         checkiOSSubscribersTimer.purge();
         checkSubscribersTimer.cancel();
         checkSubscribersTimer.purge();
+        if (checkAndroidSubscribersTimer != null) {
+            checkAndroidSubscribersTimer.cancel();
+            checkAndroidSubscribersTimer.purge();
+        }
+        if (checkAndroidVoidedTimer != null) {
+            checkAndroidVoidedTimer.cancel();
+            checkAndroidVoidedTimer.purge();
+        }
     }
 
     public synchronized void addPlayerDataChangeListener(
@@ -610,6 +621,44 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         }
     }
 
+    /** Google Play subscriptions and unconsumed one-time purchases (spec 2026-10-11 section 4.7), every 6 hours */
+    private static class CheckAndroidSubscribersRunnable extends TimerTask {
+
+        private final PlayEntitlementService playService;
+
+        CheckAndroidSubscribersRunnable(PlayEntitlementService playService) {
+            this.playService = playService;
+        }
+
+        public void run() {
+            try {
+                playService.pollSubscriptions();
+            } catch (Throwable t) {
+                // never let an exception kill the Timer thread
+                log4j.error("CheckAndroidSubscribersRunnable: Something went wrong", t);
+            }
+        }
+    }
+
+    /** Google Play voided purchases and stale GRANTING alerts (spec 2026-10-11 section 4.7), daily */
+    private static class CheckAndroidVoidedRunnable extends TimerTask {
+
+        private final PlayEntitlementService playService;
+
+        CheckAndroidVoidedRunnable(PlayEntitlementService playService) {
+            this.playService = playService;
+        }
+
+        public void run() {
+            try {
+                playService.pollVoided();
+            } catch (Throwable t) {
+                // never let an exception kill the Timer thread
+                log4j.error("CheckAndroidVoidedRunnable: Something went wrong", t);
+            }
+        }
+    }
+
     private class CheckSubscriptionsRunnable extends TimerTask {
 
         private static final int DELAY = 60;
@@ -637,6 +686,16 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
                 log4j.info("CheckSubscriptionsRunnable: Something went wrong: " + e);
             }
         }
+    }
+
+    /** called once by DSGContextListener after the PlayEntitlementService exists */
+    public void startPlayPollers(PlayEntitlementService playService) {
+        checkAndroidSubscribersTimer = new Timer();
+        checkAndroidSubscribersTimer.scheduleAtFixedRate(
+                new CheckAndroidSubscribersRunnable(playService), 20000, 6L * 3600 * 1000);
+        checkAndroidVoidedTimer = new Timer();
+        checkAndroidVoidedTimer.scheduleAtFixedRate(
+                new CheckAndroidVoidedRunnable(playService), 1200000, 24L * 3600 * 1000);
     }
 
     public void setNotificationServer(NotificationServer notificationServer) {

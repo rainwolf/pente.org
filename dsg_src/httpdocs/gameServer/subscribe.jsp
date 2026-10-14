@@ -149,25 +149,9 @@ hosting, maintain security certificates, and to build a better and even more fun
       </td>
       <td align="center" colspan="2">
          <%
-            boolean hideVacation = false;
             Resources resources = (Resources) application.getAttribute(Resources.class.getName());
-            List<Tourney> currentT = resources.getTourneyStorer().getCurrentTournies();
-            for (Tourney tmp : currentT) {
-               Tourney t = resources.getTourneyStorer().getTourney(tmp.getEventID());
-               if (t.isTurnBased() && t.getIncrementalTime() > 0) {
-                  if (t.getNumRounds() > 0) {
-                     for (TourneyPlayerData p : t.getLastRound().getPlayers()) {
-                        if (p.getName().equals(giftee)) {
-                           hideVacation = true;
-                           break;
-                        }
-                     }
-                  }
-               }
-               if (hideVacation) {
-                  break;
-               }
-            }
+            // same rule as the Google Play store (GooglePlayPurchaseServlet vacationAllowed)
+            boolean hideVacation = !VacationPurchaseRule.vacationAllowed(giftee, resources.getTourneyStorer());
 
             if (!hideVacation) { %>
          <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">

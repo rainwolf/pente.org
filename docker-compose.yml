@@ -47,6 +47,7 @@ services:
       - SMTP_PASSWORD=${SMTP_PASSWORD}
       - SSL_PWD=${SSL_PWD}
       - REDIS_HOST=${REDIS_HOST}
+      - PLAY_ACCOUNT_ID_SECRET=${PLAY_ACCOUNT_ID_SECRET}
     #      - ENV=${ENV}
     healthcheck:
       test: curl https://pente.org && curl https://www.pente.org
