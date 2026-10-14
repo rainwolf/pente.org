@@ -168,7 +168,7 @@
                   <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
                      <% if (dsgPlayerData.hasPlayerDonated()) { %>
                      Yes
-                     <% } else if (!dsgPlayerData.getName().equals(name)) { %>
+                     <% } else if (!dsgPlayerData.getName().equals(name) && !String.valueOf(request.getHeader("User-Agent")).contains("penteLive-Android")) { %>
 
                      <form method="GET" action="subscriptions">
                         <input type="hidden" name="gifter" value="<%=name %>"/>
