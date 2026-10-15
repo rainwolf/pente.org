@@ -32,6 +32,8 @@ public class AppleEntitlementService {
 
     /** clamp only when Apple's end is more than 2 days before the row's implied expiry (encoding slack) */
     static final long CLAMP_SLACK_MS = 2 * PlayProducts.DAY_MS;
+    /** a KNOWN reply to the buyer's own POST within this long of the row's creation still says "success" */
+    static final long THANK_YOU_WINDOW_MS = 10 * 60 * 1000L;
 
     private final AppleApi api;
     private final AppleVerifier verifier;
@@ -58,6 +60,113 @@ public class AppleEntitlementService {
     /** the appAccountToken the iOS app passes to Product.PurchaseOption.appAccountToken */
     public UUID appAccountToken(long pid) {
         return tokens.create(pid);
+    }
+
+    // ---------------------------------------------------------------- client POST and GET (§4.4)
+
+    /**
+     * POST /gameServer/appStorePurchase signedTransaction=&lt;jwsRepresentation&gt;. Verify, re-read the transaction
+     * server-side, resolve its owner, apply the sandbox gate, grant. Never trusts the client's copy beyond its
+     * transaction id and environment.
+     *
+     * @throws AppleApiException  retryable only (OCSP or Apple unreachable, API not configured): "retry later"
+     * @throws PlayStoreException a DB or player-storer failure: "retry later"
+     */
+    public PlayClassification purchase(String signedTransaction, long requesterPid)
+            throws AppleApiException, PlayStoreException {
+        AppleTransaction claimed;
+        try {
+            claimed = verifier.verifyTransaction(signedTransaction);
+        } catch (AppleVerificationException e) {
+            if (e.isRetryable()) {
+                throw new AppleApiException("signed transaction cannot be verified now: " + e.getMessage(), true, e);
+            }
+            log4j.warn("AppleEntitlementService: signed transaction from pid " + requesterPid + " refused: " + e.getMessage());
+            return PlayClassification.INVALID;
+        }
+        if (!AppleProducts.isKnown(claimed.productId) || claimed.familyShared) {
+            return PlayClassification.INVALID;
+        }
+        AppleTransaction tx;
+        try {
+            tx = api.transactionInfo(claimed.environment, claimed.transactionId);
+        } catch (AppleApiException e) {
+            if (e.isRetryable()) {
+                throw e;
+            }
+            log4j.warn("AppleEntitlementService: Apple does not know transaction " + claimed.transactionId + ": " + e);
+            return PlayClassification.INVALID;
+        }
+        if (!claimed.transactionId.equals(tx.transactionId) || !AppleProducts.isKnown(tx.productId) || tx.familyShared) {
+            return PlayClassification.INVALID;
+        }
+        if (tx.revocationDateMs != null) {
+            revoke(tx, refundOwner(tx));
+            return PlayClassification.INVALID;
+        }
+
+        // §4.3 resolvePid with a requester, first matching rule wins
+        boolean subscription = AppleProducts.isSubscription(tx.productId);
+        long owner = requesterPid;
+        boolean shared = false;
+        if (tx.appAccountToken != null) {
+            Long parsed = tokens.parse(tx.appAccountToken);
+            if (parsed == null) {
+                log4j.warn("AppleEntitlementService: rejected appAccountToken on " + tx.transactionId);
+                return PlayClassification.INVALID;
+            }
+            owner = parsed.longValue();
+            shared = owner != requesterPid;
+        } else if (subscription && ownedByOthersOnly(tx, requesterPid)) {
+            return PlayClassification.SHARED;
+        }
+        if (!sandboxAllowed(tx.environment, owner)) {
+            return PlayClassification.INVALID;
+        }
+
+        PlayClassification result = subscription
+                ? syncSubscription(tx.originalTransactionId, tx.environment, Long.valueOf(owner))
+                : syncOneTime(tx, owner);
+        if (shared && result != PlayClassification.INVALID && result != PlayClassification.INACTIVE) {
+            return PlayClassification.SHARED;
+        }
+        if (result == PlayClassification.KNOWN) {
+            // a notification often records the grant before the buyer's own POST arrives
+            AppleRow row = store.find(subscription ? tx.originalTransactionId : tx.transactionId);
+            if (row != null && row.pid == requesterPid && clock.getAsLong() - row.createdMs < THANK_YOU_WINDOW_MS) {
+                return PlayClassification.NEW;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * A subscription without a token (old app versions, offer codes, purchases outside the app): true when its
+     * dsg_subscribers_apple row, or else its chain in dsg_subscribers, belongs only to other pids.
+     */
+    private boolean ownedByOthersOnly(AppleTransaction tx, long requesterPid) throws AppleApiException, PlayStoreException {
+        AppleRow row = store.find(tx.originalTransactionId);
+        Set<Long> owners = new LinkedHashSet<Long>();
+        if (row != null && row.pid != 0) {
+            owners.add(Long.valueOf(row.pid));
+        } else {
+            owners.addAll(chainOwners(tx.environment, tx.originalTransactionId));
+        }
+        return !owners.isEmpty() && !owners.contains(Long.valueOf(requesterPid));
+    }
+
+    /** GET /gameServer/appStorePurchase */
+    public AppleStoreInfo storeInfo(long pid) throws PlayStoreException {
+        long now = clock.getAsLong();
+        AppleStoreInfo info = new AppleStoreInfo();
+        info.appAccountToken = tokens.create(pid).toString();
+        Long expiration = players.subscriptionExpirationMs(pid);
+        info.subscribedUntilMs = expiration != null && expiration.longValue() > now ? expiration : null;
+        info.hasActiveAppleSubscription = store.hasActiveSubscription(pid, now);
+        info.vacationAllowed = players.vacationAllowed(pid);
+        info.vacationDaysLeft = players.vacationDaysLeft(pid);
+        info.products = AppleProducts.ON_SALE;
+        return info;
     }
 
     // ---------------------------------------------------------------- owners (§4.3)
@@ -198,11 +307,12 @@ public class AppleEntitlementService {
             return PlayClassification.INACTIVE;
         }
         AppleRow prior = store.find(otid);
-        if (prior != null && prior.pid != 0 && prior.pid != pid) {
-            // §4.3 pid move: the latest transaction carries another account's token; already-written rows stay
-            log4j.warn("AppleEntitlementService: subscription " + otid + " moves from pid " + prior.pid + " to " + pid);
-            players.adminAlert("App Store subscription " + otid + " moved from pid " + prior.pid + " to pid " + pid
-                    + " (appAccountToken of the latest transaction)");
+        // §4.3 pid move: only a valid token for pid on the latest transaction moves the chain; already-written rows stay
+        boolean moving = prior != null && prior.pid != 0 && prior.pid != pid;
+        if (moving && !Long.valueOf(pid).equals(tx.appAccountToken == null ? null : tokens.parse(tx.appAccountToken))) {
+            log4j.warn("AppleEntitlementService: subscription " + otid + " belongs to pid " + prior.pid
+                    + ", not moved to " + pid + " without its token on the latest transaction");
+            return PlayClassification.SHARED;
         }
 
         boolean revoked = tx.revocationDateMs != null;
@@ -258,6 +368,12 @@ public class AppleEntitlementService {
         row.tokenStamped = (prior != null && prior.tokenStamped) || tx.appAccountToken != null;
         if (prior == null || !row.sameContent(prior)) {
             store.upsert(row);
+            if (moving) {
+                // alert once, when the row actually moves: a sync that ends SHARED above never gets here
+                log4j.warn("AppleEntitlementService: subscription " + otid + " moved from pid " + prior.pid + " to " + pid);
+                players.adminAlert("App Store subscription " + otid + " moved from pid " + prior.pid + " to pid " + pid
+                        + " (appAccountToken of the latest transaction)");
+            }
         }
         if (!row.tokenStamped) {
             stamp(env, otid, pid);

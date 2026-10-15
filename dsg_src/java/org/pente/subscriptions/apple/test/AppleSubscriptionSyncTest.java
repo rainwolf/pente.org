@@ -315,6 +315,33 @@ public class AppleSubscriptionSyncTest extends AppleServiceTestCase {
         assertTrue(players.alerts.get(0), players.alerts.get(0).contains("moved from pid " + OTHER_PID + " to pid " + PID));
     }
 
+    public void testATokenlessOwnerMismatchDoesNotMove() throws Exception {
+        status(1, yearly(OTID, Long.valueOf(OTHER_PID), now + DAY), null);
+        sync();
+        now += 2 * DAY;
+        status(1, yearly("2000000100000002", null, now + 364 * DAY), null);
+
+        assertEquals(PlayClassification.SHARED,
+                service.syncSubscription(OTID, AppleEnvironment.PRODUCTION, Long.valueOf(PID)));
+
+        assertEquals("no token, no move", OTHER_PID, apple(OTID).pid);
+        assertNull(row("2000000100000002"));
+        assertTrue(players.alerts.toString(), players.alerts.isEmpty());
+    }
+
+    public void testAMoveThatEndsSharedDoesNotAlert() throws Exception {
+        status(1, yearly(OTID, Long.valueOf(OTHER_PID), now + 300 * DAY), null);
+        sync();
+        // the latest transaction now carries PID's token, but its dsg_subscribers row is OTHER_PID's
+        status(1, yearly(OTID, Long.valueOf(PID), now + 300 * DAY), null);
+
+        assertEquals(PlayClassification.SHARED, sync());
+        assertEquals(PlayClassification.SHARED, sync());
+
+        assertEquals("not upserted, not moved", OTHER_PID, apple(OTID).pid);
+        assertTrue(players.alerts.toString(), players.alerts.isEmpty());
+    }
+
     public void testSandboxNeedsTheAllowList() throws Exception {
         AppleTransaction t = yearly(OTID, Long.valueOf(PID), now + 300 * DAY);
         t.environment = AppleEnvironment.SANDBOX;
