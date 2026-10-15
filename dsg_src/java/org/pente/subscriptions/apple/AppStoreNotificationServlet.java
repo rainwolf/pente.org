@@ -22,10 +22,11 @@ public class AppStoreNotificationServlet extends HttpServlet {
     /** a V2 notification is tens of KB at most; anything bigger is not Apple's */
     static final int MAX_BODY_BYTES = 256 * 1024;
 
-    /** the HTTP status for a POST body (null when too large) */
+    /** the HTTP status for a POST body (null when empty; an oversize body is refused too) */
     public static int status(AppleBilling billing, byte[] body) {
         if (body == null || body.length > MAX_BODY_BYTES) {
-            log4j.warn("AppStoreNotificationServlet: body too large, refused");
+            log4j.warn(body == null ? "AppStoreNotificationServlet: empty body, refused"
+                    : "AppStoreNotificationServlet: body too large, refused");
             return HttpServletResponse.SC_UNAUTHORIZED;
         }
         if (billing == null) {
@@ -42,6 +43,6 @@ public class AppStoreNotificationServlet extends HttpServlet {
             body = in.readNBytes(MAX_BODY_BYTES + 1);
         }
         AppleBilling billing = (AppleBilling) getServletContext().getAttribute(AppleBilling.class.getName());
-        response.setStatus(status(billing, body.length > MAX_BODY_BYTES ? null : body));
+        response.setStatus(status(billing, body));
     }
 }

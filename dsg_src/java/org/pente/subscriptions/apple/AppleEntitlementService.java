@@ -73,7 +73,9 @@ public class AppleEntitlementService {
      * server-side, resolve its owner, apply the sandbox gate, grant. Never trusts the client's copy beyond its
      * transaction id and environment.
      *
-     * @throws AppleApiException  retryable only (OCSP or Apple unreachable, API not configured): "retry later"
+     * @throws AppleApiException  any Apple API or verification failure, retryable or not. AppStorePurchaseServlet
+     *                            answers "retry later" for all of them, deliberately: the app must never finish a
+     *                            transaction we did not grant
      * @throws PlayStoreException a DB or player-storer failure: "retry later"
      */
     public PlayClassification purchase(String signedTransaction, long requesterPid)
@@ -339,7 +341,8 @@ public class AppleEntitlementService {
             state = AppleStates.REVOKED;
         } else if ((AppleStates.ACTIVE.equals(state) || AppleStates.GRACE.equals(state))
                 && effective != null && effective.longValue() > now) {
-            // ACTIVE: expiresDate - 364 days. GRACE: gracePeriodExpiresDate - 364 days, never earlier than today's date.
+            // ACTIVE: expiresDate - 364 days. GRACE: the later of expiresDate and gracePeriodExpiresDate, minus 364 days;
+            // an existing row's paymentdate is only ever moved forward (compared against the current paymentdate below).
             long paymentDate = effective.longValue() - PlayProducts.PAYMENTDATE_OFFSET_MS;
             if (subscribers.insert(new SubscriberRow(pid, txId, PlayProducts.YEARLY_LEVEL, paymentDate))) {
                 result = txId.equals(otid) ? PlayClassification.NEW : PlayClassification.RENEWAL;
@@ -348,6 +351,10 @@ public class AppleEntitlementService {
                 SubscriberRow existing = subscribers.findByTransactionId(txId);
                 if (existing == null || existing.pid != pid) {
                     log4j.warn("AppleEntitlementService: transaction " + txId + " is recorded for another pid than " + pid);
+                    if (moving) {
+                        players.adminAlert("App Store subscription " + otid + " could not move from pid " + prior.pid
+                                + " to pid " + pid + ": transaction " + txId + " is recorded for another pid");
+                    }
                     return PlayClassification.SHARED;
                 }
                 result = PlayClassification.KNOWN;
@@ -624,22 +631,30 @@ public class AppleEntitlementService {
     public void dailyAlerts() throws PlayStoreException {
         long now = clock.getAsLong();
         for (AppleRow row : store.staleGranting(now - GRANTING_STALE_MS)) {
-            if (AppleProducts.MONTH_PASS.equals(row.productId)) {
-                SubscriberRow gate = subscribers.findByTransactionId(row.originalTransactionId);
-                if (gate != null && (gate.level & org.pente.gameServer.core.MySQLDSGPlayerStorer.ONEMONTH) != 0) {
-                    log4j.info("AppleEntitlementService: month pass " + row.originalTransactionId + " of pid " + row.pid
-                            + " stuck in GRANTING but its gate row is the grant: CONSUMED");
-                    store.setState(row.originalTransactionId, AppleStates.CONSUMED);
-                    continue;
+            try {
+                if (AppleProducts.MONTH_PASS.equals(row.productId)) {
+                    SubscriberRow gate = subscribers.findByTransactionId(row.originalTransactionId);
+                    if (gate != null && (gate.level & org.pente.gameServer.core.MySQLDSGPlayerStorer.ONEMONTH) != 0) {
+                        log4j.info("AppleEntitlementService: month pass " + row.originalTransactionId + " of pid " + row.pid
+                                + " stuck in GRANTING but its gate row is the grant: CONSUMED");
+                        store.setState(row.originalTransactionId, AppleStates.CONSUMED);
+                        continue;
+                    }
                 }
+                players.adminAlert("App Store " + row.productId + " for pid " + row.pid + " stuck in GRANTING (transaction "
+                        + row.originalTransactionId + "): check vacation days, then set the state by hand");
+            } catch (Exception e) {
+                log4j.error("AppleEntitlementService: dailyAlerts failed for stale GRANTING row " + row.originalTransactionId, e);
             }
-            players.adminAlert("App Store " + row.productId + " for pid " + row.pid + " stuck in GRANTING (transaction "
-                    + row.originalTransactionId + "): check vacation days, then set the state by hand");
         }
         for (AppleRow row : store.staleActive(now - STALE_ACTIVE_MS)) {
-            players.adminAlert("App Store subscription " + row.originalTransactionId + " of pid " + row.pid
-                    + " still ACTIVE after its expiry " + new java.util.Date(row.expiryTimeMs.longValue())
-                    + ": check notifications and the 6-hour sweep");
+            try {
+                players.adminAlert("App Store subscription " + row.originalTransactionId + " of pid " + row.pid
+                        + " still ACTIVE after its expiry " + new java.util.Date(row.expiryTimeMs.longValue())
+                        + ": check notifications and the 6-hour sweep");
+            } catch (Exception e) {
+                log4j.error("AppleEntitlementService: dailyAlerts failed for stale ACTIVE row " + row.originalTransactionId, e);
+            }
         }
     }
 

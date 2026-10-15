@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.apache.log4j.Category;
+
 import com.apple.itunes.storekit.client.APIError;
 import com.apple.itunes.storekit.client.APIException;
 import com.apple.itunes.storekit.client.AppStoreServerAPIClient;
@@ -35,6 +37,8 @@ import com.apple.itunes.storekit.model.UpdateAppAccountTokenRequest;
  * Retryable: IOException, HTTP 429 and 5xx, the *_RETRYABLE API errors, and retryable verification failures.
  */
 public class AppStoreApi implements AppleApi {
+
+    private static final Category log4j = Category.getInstance(AppStoreApi.class.getName());
 
     /** safety stop for transaction-history paging (20 transactions a page) */
     static final int MAX_HISTORY_PAGES = 50;
@@ -91,8 +95,12 @@ public class AppStoreApi implements AppleApi {
             return new AppleApiException(what + ": Apple's answer did not verify: " + e.getMessage(),
                     ((AppleVerificationException) e).isRetryable(), e);
         }
-        // IOException (transport) and anything unexpected: retry, never lose a purchase
-        return new AppleApiException(what + " failed: " + e, true, e);
+        if (e instanceof IOException) {
+            return new AppleApiException(what + " failed: " + e, true, e);
+        }
+        // anything unexpected (a bug, bad input) will not fix itself: final, cause kept in the message
+        log4j.warn("AppStoreApi: unexpected " + e.getClass().getName() + " in " + what, e);
+        return new AppleApiException(what + " failed unexpectedly: " + e, false, e);
     }
 
     public List<AppleSubscriptionStatus> subscriptionStatuses(AppleEnvironment env, String originalTransactionId)
@@ -154,6 +162,10 @@ public class AppStoreApi implements AppleApi {
                 more = Boolean.TRUE.equals(response.getHasMore());
                 pages++;
             } while (more && pages < MAX_HISTORY_PAGES);
+            if (more) {
+                log4j.warn("AppStoreApi: transaction history of " + anyTransactionId + " stopped at " + MAX_HISTORY_PAGES
+                        + " pages with more still available");
+            }
             return new ArrayList<AppleTransaction>(byId.values());
         } catch (Exception e) {
             throw map("getTransactionHistory " + anyTransactionId, e);

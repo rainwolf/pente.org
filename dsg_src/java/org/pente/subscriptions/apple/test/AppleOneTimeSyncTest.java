@@ -1,5 +1,8 @@
 package org.pente.subscriptions.apple.test;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import org.pente.subscriptions.apple.AppleEnvironment;
@@ -145,14 +148,15 @@ public class AppleOneTimeSyncTest extends AppleServiceTestCase {
         players.sleepMs = 50;
         final String[] ids = {"3000000000000001", "3000000000000002"};
         Thread[] threads = new Thread[2];
+        final List<Throwable> failures = Collections.synchronizedList(new ArrayList<Throwable>());
         for (int i = 0; i < threads.length; i++) {
             final String id = ids[i];
             threads[i] = new Thread(new Runnable() {
                 public void run() {
                     try {
                         service.syncOneTime(consumable(id, AppleProducts.MONTH_PASS, null), PID);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
+                    } catch (Throwable e) {
+                        failures.add(e);
                     }
                 }
             });
@@ -161,6 +165,7 @@ public class AppleOneTimeSyncTest extends AppleServiceTestCase {
         for (Thread thread : threads) {
             thread.join();
         }
+        assertTrue("worker threads failed: " + failures, failures.isEmpty());
         long a = row(ids[0]).paymentDateMs;
         long b = row(ids[1]).paymentDateMs;
         assertTrue("one pass starts where the other ends", Math.abs(a - b) >= 28 * DAY);

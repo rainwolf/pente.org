@@ -3,15 +3,18 @@ package org.pente.subscriptions.apple.test;
 import java.util.function.LongSupplier;
 
 import org.pente.subscriptions.apple.AppleBilling;
+import org.pente.subscriptions.apple.AppleEntitlementService;
 import org.pente.subscriptions.apple.AppleEnvironment;
 import org.pente.subscriptions.apple.AppleHistoryReplay;
 import org.pente.subscriptions.apple.AppleNotificationHandler;
 import org.pente.subscriptions.apple.AppleProducts;
 import org.pente.subscriptions.apple.AppleRow;
+import org.pente.subscriptions.apple.AppleSandboxGate;
 import org.pente.subscriptions.apple.AppleStates;
 import org.pente.subscriptions.apple.AppleTransaction;
 import org.pente.subscriptions.play.PlayProducts;
 import org.pente.subscriptions.play.SubscriberRow;
+import org.pente.subscriptions.play.test.FakePlayerGateway;
 
 /**
  * The 6-hour sweep and the daily alerts (spec 2026-10-15 §4.7), and AppleBilling's never-throwing timer entry points.
@@ -119,6 +122,53 @@ public class ApplePollerTest extends AppleServiceTestCase {
         assertEquals(2, players.alerts.size());
         assertTrue(players.alerts.get(0), players.alerts.get(0).contains("stuck in GRANTING"));
         assertTrue(players.alerts.get(1), players.alerts.get(1).contains(OTID));
+    }
+
+    public void testDailyAlertsOneFailingRowDoesNotStopTheOthers() throws Exception {
+        final String bad = "3000000000000003";
+        AppleRow first = new AppleRow();
+        first.originalTransactionId = bad;
+        first.pid = PID;
+        first.productId = AppleProducts.VACATION_30;
+        first.state = AppleStates.GRANTING;
+        first.environment = AppleEnvironment.PRODUCTION;
+        store.upsert(first);
+        AppleRow second = first.copy();
+        second.originalTransactionId = "3000000000000007";
+        store.upsert(second);
+        AppleRow stale = first.copy();
+        stale.originalTransactionId = OTID;
+        stale.productId = AppleProducts.YEARLY;
+        stale.state = AppleStates.ACTIVE;
+        stale.expiryTimeMs = Long.valueOf(now - 3 * DAY);
+        store.upsert(stale);
+        now += 2 * 3600L * 1000;
+
+        LongSupplier clock = new LongSupplier() {
+            public long getAsLong() {
+                return now;
+            }
+        };
+        FakePlayerGateway failing = new FakePlayerGateway(subscribers, clock) {
+            public synchronized void adminAlert(String message) {
+                if (message.contains(bad)) {
+                    throw new IllegalStateException("alert channel down");
+                }
+                super.adminAlert(message);
+            }
+        };
+        AppleEntitlementService s = new AppleEntitlementService(api, verifier, store, subscribers, failing, tokens,
+                new AppleSandboxGate() {
+                    public boolean allows(long pid) {
+                        return false;
+                    }
+                }, clock);
+
+        s.dailyAlerts();
+
+        assertEquals(failing.alerts.toString(), 2, failing.alerts.size());
+        assertTrue(failing.alerts.get(0), failing.alerts.get(0).contains("3000000000000007"));
+        assertTrue(failing.alerts.get(1), failing.alerts.get(1).contains(OTID));
     }
 
     public void testBillingDailyRunsEveryStepWhenOneFails() throws Exception {

@@ -329,17 +329,18 @@ public class AppleSubscriptionSyncTest extends AppleServiceTestCase {
         assertTrue(players.alerts.toString(), players.alerts.isEmpty());
     }
 
-    public void testAMoveThatEndsSharedDoesNotAlert() throws Exception {
+    public void testAMoveThatEndsSharedAlertsTheAdmin() throws Exception {
         status(1, yearly(OTID, Long.valueOf(OTHER_PID), now + 300 * DAY), null);
         sync();
         // the latest transaction now carries PID's token, but its dsg_subscribers row is OTHER_PID's
         status(1, yearly(OTID, Long.valueOf(PID), now + 300 * DAY), null);
 
         assertEquals(PlayClassification.SHARED, sync());
-        assertEquals(PlayClassification.SHARED, sync());
 
         assertEquals("not upserted, not moved", OTHER_PID, apple(OTID).pid);
-        assertTrue(players.alerts.toString(), players.alerts.isEmpty());
+        assertEquals(players.alerts.toString(), 1, players.alerts.size());
+        String alert = players.alerts.get(0);
+        assertTrue(alert, alert.contains(OTID) && alert.contains("from pid " + OTHER_PID + " to pid " + PID));
     }
 
     public void testSandboxNeedsTheAllowList() throws Exception {

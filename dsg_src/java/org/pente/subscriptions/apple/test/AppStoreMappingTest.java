@@ -91,6 +91,15 @@ public class AppStoreMappingTest extends TestCase {
         assertTrue(!map(new AppleVerificationException("INVALID_CHAIN", false)).isRetryable());
     }
 
+    public void testUnexpectedExceptionsAreFinalAndKeepTheCause() {
+        RuntimeException bug = new IllegalStateException("bad input");
+        AppleApiException mapped = map(bug);
+        assertTrue(!mapped.isRetryable());
+        assertTrue(mapped.getMessage(), mapped.getMessage().contains("bad input"));
+        assertSame(bug, mapped.getCause());
+        assertTrue(map(new IOException("connection reset")).isRetryable());
+    }
+
     private static AppleApiException map(Exception e) {
         return AppStoreApi.map("test", e);
     }
