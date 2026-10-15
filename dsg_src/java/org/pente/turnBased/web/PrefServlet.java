@@ -38,8 +38,10 @@ public class PrefServlet extends HttpServlet {
         System.out.println(name + "," + value + "," + player);
         if (player == null || name == null || value == null) {
             log4j.error("error. PropertyServlet empty name or value");
-        } else if (!name.equals("attach")) {
+        } else if (!name.equals("attach") && !name.equals("tbCycle")) {
             log4j.error("error. Trying to set an unknown property");
+        } else if (name.equals("tbCycle") && !value.equals("true") && !value.equals("false")) {
+            log4j.error("error. Invalid value for tbCycle property");
         } else {
             try {
                 DSGPlayerData playerData = resources.getDsgPlayerStorer().
