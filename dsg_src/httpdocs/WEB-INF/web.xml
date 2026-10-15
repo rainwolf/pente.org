@@ -179,6 +179,41 @@
         <param-value>play-rtdn-push@pente-live.iam.gserviceaccount.com</param-value>
     </context-param>
 
+    <!-- App Store Server API and Notifications V2 (docs/superpowers/specs/2026-10-15-ios-app-store-server-design.md
+         section 4.1). The appAccountToken secret is PLAY_ACCOUNT_ID_SECRET, shared with Google Play.
+         appleIapKeyId and appleIapIssuerId come from App Store Connect (plan task M1); while blank, the API is
+         unavailable: purchases answer "retry later" and notifications 500. -->
+    <context-param>
+        <param-name>appleBundleId</param-name>
+        <param-value>be.submanifold.penteLive</param-value>
+    </context-param>
+
+    <!-- the app's numeric Apple ID, required by the production verifier -->
+    <context-param>
+        <param-name>appleAppAppleId</param-name>
+        <param-value>595426592</param-value>
+    </context-param>
+
+    <context-param>
+        <param-name>appleIapKeyId</param-name>
+        <param-value></param-value>
+    </context-param>
+
+    <context-param>
+        <param-name>appleIapIssuerId</param-name>
+        <param-value></param-value>
+    </context-param>
+
+    <context-param>
+        <param-name>appleIapKeyFile</param-name>
+        <param-value>/etc/dsg/apple-iap-key.p8</param-value>
+    </context-param>
+
+    <context-param>
+        <param-name>appleSandboxAccountsFile</param-name>
+        <param-value>/etc/dsg/apple-sandbox-accounts.txt</param-value>
+    </context-param>
+
     <context-param>
         <param-name>adminName</param-name>
         <param-value>rainwolf</param-value>
@@ -544,6 +579,14 @@
         <servlet-class>org.pente.subscriptions.play.GooglePlayRtdnServlet</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>AppStorePurchaseServlet</servlet-name>
+        <servlet-class>org.pente.subscriptions.apple.AppStorePurchaseServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>AppStoreNotificationServlet</servlet-name>
+        <servlet-class>org.pente.subscriptions.apple.AppStoreNotificationServlet</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>AgeVerificationServlet</servlet-name>
         <servlet-class>org.pente.gameServer.client.web.AgeVerificationServlet</servlet-class>
     </servlet>
@@ -769,6 +812,14 @@
     <servlet-mapping>
         <servlet-name>GooglePlayRtdnServlet</servlet-name>
         <url-pattern>/gameServer/googlePlayRTDN</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AppStorePurchaseServlet</servlet-name>
+        <url-pattern>/gameServer/appStorePurchase</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AppStoreNotificationServlet</servlet-name>
+        <url-pattern>/gameServer/appStoreNotifications</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>

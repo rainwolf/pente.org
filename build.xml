@@ -274,6 +274,10 @@
             <sysproperty key="appleFixtures" value="${basedir}/dsg_src/java/org/pente/subscriptions/apple/test/fixtures"/>
             <arg value="org.pente.subscriptions.apple.test.AppleRealVerifierTest"/>
         </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.subscriptions.apple.test.AppStoreServletTest"/>
+        </java>
         <!-- apple-billing test classes: add one <java> block per class above this line -->
     </target>
 
