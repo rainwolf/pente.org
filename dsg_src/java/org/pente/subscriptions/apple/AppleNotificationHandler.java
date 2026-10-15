@@ -64,8 +64,20 @@ public class AppleNotificationHandler {
         return process(n);
     }
 
-    /** a verified notification: 200 once handled (UUID recorded) or already seen, 500 on a transient failure */
+    /** processForReplay's answer when no retry can fix the failure; the endpoint answers 500 for it all the same */
+    public static final int FINAL_FAILURE = -1;
+
+    /** a verified notification: 200 once handled (UUID recorded) or already seen, 500 on any failure (Apple retries) */
     public int process(AppleNotification n) {
+        int status = processForReplay(n);
+        return status == FINAL_FAILURE ? 500 : status;
+    }
+
+    /**
+     * As process, but a failure no retry can fix (a final App Store Server API error such as a 404, or a bug) is
+     * FINAL_FAILURE instead of 500, so the daily replay can move its high-water mark past it.
+     */
+    public int processForReplay(AppleNotification n) {
         if (n.notificationUuid == null || n.notificationUuid.isEmpty()) {
             log4j.warn("AppleNotificationHandler: " + n.type + " without notificationUUID, ignored");
             return 200;
@@ -78,15 +90,21 @@ public class AppleNotificationHandler {
             store.recordNotification(n.notificationUuid, n.type == null ? "UNKNOWN" : n.type, clock.getAsLong());
             return 200;
         } catch (AppleApiException e) {
-            log4j.warn("AppleNotificationHandler: " + n.type + " " + n.notificationUuid + " failed, Apple retries: " + e);
-            return 500;
+            log4j.warn("AppleNotificationHandler: " + n.type + " " + n.notificationUuid + " failed"
+                    + (e.isRetryable() ? ", Apple retries: " : " for good: ") + e);
+            return e.isRetryable() ? 500 : FINAL_FAILURE;
         } catch (PlayStoreException e) {
             log4j.warn("AppleNotificationHandler: " + n.type + " " + n.notificationUuid + " failed, Apple retries: " + e);
             return 500;
         } catch (RuntimeException e) {
-            log4j.error("AppleNotificationHandler: " + n.type + " " + n.notificationUuid + " failed, Apple retries", e);
-            return 500;
+            log4j.error("AppleNotificationHandler: " + n.type + " " + n.notificationUuid + " failed", e);
+            return FINAL_FAILURE;
         }
+    }
+
+    /** an admin alert, for the replay */
+    public void adminAlert(String message) {
+        service.adminAlert(message);
     }
 
     private void route(AppleNotification n) throws AppleApiException, PlayStoreException {

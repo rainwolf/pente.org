@@ -34,6 +34,10 @@ public class AppleEntitlementService {
     static final long CLAMP_SLACK_MS = 2 * PlayProducts.DAY_MS;
     /** a KNOWN reply to the buyer's own POST within this long of the row's creation still says "success" */
     static final long THANK_YOU_WINDOW_MS = 10 * 60 * 1000L;
+    /** GRANTING rows older than this get a daily admin alert */
+    static final long GRANTING_STALE_MS = 3600L * 1000;
+    /** an ACTIVE row whose expiry passed more than this long ago gets a daily admin alert */
+    static final long STALE_ACTIVE_MS = 2 * PlayProducts.DAY_MS;
 
     private final AppleApi api;
     private final AppleVerifier verifier;
@@ -593,6 +597,55 @@ public class AppleEntitlementService {
         if (changed) {
             players.entitlementChanged(current.pid);
         }
+    }
+
+    // ---------------------------------------------------------------- pollers (§4.7)
+
+    /** every 6 hours: syncSubscription on each row to poll, with the row's environment; one failure never stops the rest */
+    public void pollSubscriptions() throws PlayStoreException {
+        for (AppleRow row : store.subscriptionsToPoll(clock.getAsLong())) {
+            try {
+                syncSubscription(row.originalTransactionId, row.environment, null);
+            } catch (AppleApiException e) {
+                log4j.warn("AppleEntitlementService: sweep of " + row.originalTransactionId + " failed: " + e);
+            } catch (PlayStoreException e) {
+                log4j.warn("AppleEntitlementService: sweep of " + row.originalTransactionId + " failed: " + e);
+            } catch (RuntimeException e) {
+                log4j.error("AppleEntitlementService: sweep of " + row.originalTransactionId + " failed", e);
+            }
+        }
+    }
+
+    /**
+     * daily: GRANTING rows older than 1 hour, and subscriptions still ACTIVE more than 2 days after their expiry.
+     * A month pass is granted by its gate row (MONTH_LEVEL), so a stuck month pass whose gate row exists is
+     * promoted to CONSUMED instead; only vacation days can really be left half-done.
+     */
+    public void dailyAlerts() throws PlayStoreException {
+        long now = clock.getAsLong();
+        for (AppleRow row : store.staleGranting(now - GRANTING_STALE_MS)) {
+            if (AppleProducts.MONTH_PASS.equals(row.productId)) {
+                SubscriberRow gate = subscribers.findByTransactionId(row.originalTransactionId);
+                if (gate != null && (gate.level & org.pente.gameServer.core.MySQLDSGPlayerStorer.ONEMONTH) != 0) {
+                    log4j.info("AppleEntitlementService: month pass " + row.originalTransactionId + " of pid " + row.pid
+                            + " stuck in GRANTING but its gate row is the grant: CONSUMED");
+                    store.setState(row.originalTransactionId, AppleStates.CONSUMED);
+                    continue;
+                }
+            }
+            players.adminAlert("App Store " + row.productId + " for pid " + row.pid + " stuck in GRANTING (transaction "
+                    + row.originalTransactionId + "): check vacation days, then set the state by hand");
+        }
+        for (AppleRow row : store.staleActive(now - STALE_ACTIVE_MS)) {
+            players.adminAlert("App Store subscription " + row.originalTransactionId + " of pid " + row.pid
+                    + " still ACTIVE after its expiry " + new java.util.Date(row.expiryTimeMs.longValue())
+                    + ": check notifications and the 6-hour sweep");
+        }
+    }
+
+    /** an admin alert on behalf of the pollers (the replay's notifications that can never succeed) */
+    public void adminAlert(String message) {
+        players.adminAlert(message);
     }
 
     // ---------------------------------------------------------------- refunds (§4.5)
