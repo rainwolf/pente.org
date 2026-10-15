@@ -200,4 +200,23 @@
             <arg value="org.pente.subscriptions.play.test.MySQLPlayStoreIT"/>
         </java>
     </target>
+
+    <!-- App Store Server API and Notifications V2 unit tests (docs/superpowers/specs/2026-10-15-ios-app-store-server-design.md
+         section 5). No DB, no network. 'compile' builds deploy/ (rsync dsg_src/java/ to deploy/ first, as ./justCompile
+         does); this target then compiles org/pente/subscriptions/apple/** including test/, plus the two shared Play
+         fakes, straight from dsg_src/java. -->
+    <target name="test-apple-billing" depends="compile">
+        <javac srcdir="dsg_src/java" destdir="deployClasses" sourcepath="" includeantruntime="false"
+               debug="true" debuglevel="lines,vars,source">
+            <include name="org/pente/subscriptions/apple/**/*.java"/>
+            <include name="org/pente/subscriptions/play/test/FakeSubscriberStore.java"/>
+            <include name="org/pente/subscriptions/play/test/FakePlayerGateway.java"/>
+            <classpath refid="test-classpath"/>
+        </javac>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.subscriptions.apple.test.AppleRootCertificatesTest"/>
+        </java>
+        <!-- apple-billing test classes: add one <java> block per class above this line -->
+    </target>
 </project>
