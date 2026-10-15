@@ -49,6 +49,8 @@ import org.pente.message.MySQLDSGMessageStorer;
 import org.pente.notifications.CacheNotificationServer;
 import org.pente.notifications.MySQLNotificationServer;
 import org.pente.notifications.NotificationServer;
+import org.pente.subscriptions.apple.AppleAccountTokens;
+import org.pente.subscriptions.apple.AppleBillingSetup;
 import org.pente.subscriptions.play.AccountIds;
 import org.pente.subscriptions.play.PlayBillingSetup;
 import org.pente.turnBased.CacheTBStorer;
@@ -74,6 +76,8 @@ public class DSGContextListener implements ServletContextListener {
         // Google Play Billing (spec 2026-10-11 section 4.1): a blank PLAY_ACCOUNT_ID_SECRET must stop startup.
         // This runs outside the try below on purpose: that catch only logs, so a throw there would not fail the context.
         AccountIds playAccountIds = AccountIds.fromEnvironment();
+        // App Store appAccountTokens (spec 2026-10-15 section 4.3) use the same secret, so the line above already failed fast
+        AppleAccountTokens appleAccountTokens = AppleAccountTokens.fromEnvironment();
         try {
             timers = new ArrayList<>();
 
@@ -307,6 +311,9 @@ public class DSGContextListener implements ServletContextListener {
             // Google Play Billing (spec 2026-10-11 section 4): last, and isolated by install's own
             // catch (Throwable), so a Play failure never stops the rest of the site
             PlayBillingSetup.install(ctx, resources, playAccountIds, dsgPlayerStorer::startPlayPollers);
+
+            // App Store Server API and Notifications V2 (spec 2026-10-15 section 4): isolated the same way
+            AppleBillingSetup.install(ctx, resources, appleAccountTokens, dsgPlayerStorer::startApplePollers);
 
         } catch (Throwable t) {
             log4j.error("Problem in contextInitialized()", t);

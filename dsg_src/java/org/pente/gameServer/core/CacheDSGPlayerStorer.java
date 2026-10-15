@@ -28,6 +28,7 @@ import org.pente.database.DBHandler;
 import org.pente.gameServer.server.RedisConnectionManager;
 import org.pente.notifications.NotificationServer;
 import org.pente.subscriptions.IOSReceiptServlet;
+import org.pente.subscriptions.apple.AppleBilling;
 import org.pente.subscriptions.play.PlayEntitlementService;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -58,6 +59,8 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
     private Timer checkSubscribersTimer;
     private Timer checkAndroidSubscribersTimer;
     private Timer checkAndroidVoidedTimer;
+    private Timer checkAppleSubscribersTimer;
+    private Timer checkAppleDailyTimer;
 
     private NotificationServer notificationServer;
 
@@ -92,6 +95,14 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         if (checkAndroidVoidedTimer != null) {
             checkAndroidVoidedTimer.cancel();
             checkAndroidVoidedTimer.purge();
+        }
+        if (checkAppleSubscribersTimer != null) {
+            checkAppleSubscribersTimer.cancel();
+            checkAppleSubscribersTimer.purge();
+        }
+        if (checkAppleDailyTimer != null) {
+            checkAppleDailyTimer.cancel();
+            checkAppleDailyTimer.purge();
         }
     }
 
@@ -661,6 +672,44 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         }
     }
 
+    /** App Store subscription sweep (spec 2026-10-15 section 4.7), every 6 hours */
+    private static class CheckAppleSubscribersRunnable extends TimerTask {
+
+        private final AppleBilling appleBilling;
+
+        CheckAppleSubscribersRunnable(AppleBilling appleBilling) {
+            this.appleBilling = appleBilling;
+        }
+
+        public void run() {
+            try {
+                appleBilling.sweep();
+            } catch (Throwable t) {
+                // never let an exception kill the Timer thread
+                log4j.error("CheckAppleSubscribersRunnable: Something went wrong", t);
+            }
+        }
+    }
+
+    /** App Store notification-history replay and admin alerts (spec 2026-10-15 section 4.7), daily */
+    private static class CheckAppleDailyRunnable extends TimerTask {
+
+        private final AppleBilling appleBilling;
+
+        CheckAppleDailyRunnable(AppleBilling appleBilling) {
+            this.appleBilling = appleBilling;
+        }
+
+        public void run() {
+            try {
+                appleBilling.daily();
+            } catch (Throwable t) {
+                // never let an exception kill the Timer thread
+                log4j.error("CheckAppleDailyRunnable: Something went wrong", t);
+            }
+        }
+    }
+
     private class CheckSubscriptionsRunnable extends TimerTask {
 
         private static final int DELAY = 60;
@@ -698,6 +747,16 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         checkAndroidVoidedTimer = new Timer();
         checkAndroidVoidedTimer.scheduleAtFixedRate(
                 new CheckAndroidVoidedRunnable(playService), 1200000, 24L * 3600 * 1000);
+    }
+
+    /** called once by DSGContextListener after AppleBilling exists: sweep 30 s after startup, daily 25 minutes after */
+    public void startApplePollers(AppleBilling appleBilling) {
+        checkAppleSubscribersTimer = new Timer();
+        checkAppleSubscribersTimer.scheduleAtFixedRate(
+                new CheckAppleSubscribersRunnable(appleBilling), 30000, 6L * 3600 * 1000);
+        checkAppleDailyTimer = new Timer();
+        checkAppleDailyTimer.scheduleAtFixedRate(
+                new CheckAppleDailyRunnable(appleBilling), 1500000, 24L * 3600 * 1000);
     }
 
     public void setNotificationServer(NotificationServer notificationServer) {
