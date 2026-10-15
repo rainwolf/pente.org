@@ -1,0 +1,333 @@
+package org.pente.subscriptions.apple;
+
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.LongSupplier;
+
+import org.apache.log4j.Category;
+import org.pente.subscriptions.play.EntitlementLocks;
+import org.pente.subscriptions.play.MonthPassStack;
+import org.pente.subscriptions.play.PlayClassification;
+import org.pente.subscriptions.play.PlayProducts;
+import org.pente.subscriptions.play.PlayStoreException;
+import org.pente.subscriptions.play.PlayerGateway;
+import org.pente.subscriptions.play.SubscriberRow;
+import org.pente.subscriptions.play.SubscriberRule;
+import org.pente.subscriptions.play.SubscriberStore;
+
+/**
+ * App Store entitlement logic shared by AppStorePurchaseServlet, AppStoreNotificationServlet and the
+ * CacheDSGPlayerStorer pollers (spec docs/superpowers/specs/2026-10-15-ios-app-store-server-design.md §4.5).
+ * Pure logic over AppleApi, AppleVerifier, AppleStore, SubscriberStore and PlayerGateway, so it is unit-tested
+ * with fakes. Every grant for a pid runs inside EntitlementLocks.lockFor(pid), the lock Play uses too.
+ *
+ * MyISAM has no transactions: every step is keyed on a transaction id (the dsg_subscribers primary key) so a
+ * crash between steps heals on the next sync, except the vacation grant, which the GRANTING state exposes.
+ */
+public class AppleEntitlementService {
+
+    private static final Category log4j = Category.getInstance(AppleEntitlementService.class.getName());
+
+    /** clamp only when Apple's end is more than 2 days before the row's implied expiry (encoding slack) */
+    static final long CLAMP_SLACK_MS = 2 * PlayProducts.DAY_MS;
+
+    private final AppleApi api;
+    private final AppleVerifier verifier;
+    private final AppleStore store;
+    private final SubscriberStore subscribers;
+    private final PlayerGateway players;
+    private final AppleAccountTokens tokens;
+    private final AppleSandboxGate sandbox;
+    private final LongSupplier clock;
+
+    public AppleEntitlementService(AppleApi api, AppleVerifier verifier, AppleStore store, SubscriberStore subscribers,
+                                   PlayerGateway players, AppleAccountTokens tokens, AppleSandboxGate sandbox,
+                                   LongSupplier clock) {
+        this.api = api;
+        this.verifier = verifier;
+        this.store = store;
+        this.subscribers = subscribers;
+        this.players = players;
+        this.tokens = tokens;
+        this.sandbox = sandbox;
+        this.clock = clock;
+    }
+
+    /** the appAccountToken the iOS app passes to Product.PurchaseOption.appAccountToken */
+    public UUID appAccountToken(long pid) {
+        return tokens.create(pid);
+    }
+
+    // ---------------------------------------------------------------- owners (§4.3)
+
+    /** true unless env is SANDBOX and pid's username is not on the allow-list (spec §2 D5) */
+    boolean sandboxAllowed(AppleEnvironment env, long pid) throws PlayStoreException {
+        if (env != AppleEnvironment.SANDBOX) {
+            return true;
+        }
+        if (sandbox.allows(pid)) {
+            return true;
+        }
+        log4j.info("AppleEntitlementService: sandbox transaction for pid " + pid + " refused, not on the allow-list");
+        return false;
+    }
+
+    /**
+     * pids, never the tombstone pid 0, owning dsg_subscribers rows for any transaction of this subscription chain:
+     * Get Transaction History V2 filtered to 1YRNOADSORLIMITS, the entries with this originalTransactionId, plus
+     * the originalTransactionId itself, as the legacy verifyReceipt path records them.
+     */
+    Set<Long> chainOwners(AppleEnvironment env, String originalTransactionId) throws AppleApiException, PlayStoreException {
+        Set<String> ids = new LinkedHashSet<String>();
+        ids.add(originalTransactionId);
+        for (AppleTransaction t : api.transactionHistory(env, originalTransactionId, AppleProducts.YEARLY)) {
+            if (originalTransactionId.equals(t.originalTransactionId)) {
+                ids.add(t.transactionId);
+            }
+        }
+        Set<Long> owners = new LinkedHashSet<Long>();
+        for (String id : ids) {
+            SubscriberRow r = subscribers.findByTransactionId(id);
+            if (r != null && r.pid != 0) {
+                owners.add(Long.valueOf(r.pid));
+            }
+        }
+        return owners;
+    }
+
+    /**
+     * §4.3 rule 4, no requester (notifications and pollers): a valid token on the latest transaction, else the
+     * dsg_subscribers_apple row, else the single owner of the chain. null when nothing resolves (logged; the
+     * app's POST delivers it) or the token is forged.
+     */
+    Long subscriptionOwner(AppleTransaction latest, AppleEnvironment env) throws AppleApiException, PlayStoreException {
+        if (latest.appAccountToken != null) {
+            Long pid = tokens.parse(latest.appAccountToken);
+            if (pid == null) {
+                log4j.warn("AppleEntitlementService: rejected appAccountToken on " + latest.transactionId);
+            }
+            return pid;
+        }
+        AppleRow row = store.find(latest.originalTransactionId);
+        // pid 0 is a tombstone written before any owner was known: no owner, fall through to the chain
+        if (row != null && row.pid != 0) {
+            return Long.valueOf(row.pid);
+        }
+        Set<Long> owners = chainOwners(env, latest.originalTransactionId);
+        if (owners.size() == 1) {
+            return owners.iterator().next();
+        }
+        log4j.info("AppleEntitlementService: no owner for subscription " + latest.originalTransactionId
+                + " (" + owners.size() + " chain owners), left to the app's POST");
+        return null;
+    }
+
+    // ---------------------------------------------------------------- subscriptions (§4.5)
+
+    /** the lastTransactions item for exactly this chain, or null (the response lists every chain of the customer) */
+    private AppleSubscriptionStatus readStatus(AppleEnvironment env, String originalTransactionId)
+            throws AppleApiException {
+        List<AppleSubscriptionStatus> all = api.subscriptionStatuses(env, originalTransactionId);
+        for (AppleSubscriptionStatus s : all) {
+            if (originalTransactionId.equals(s.originalTransactionId)) {
+                return s;
+            }
+        }
+        log4j.warn("AppleEntitlementService: no status item for " + originalTransactionId + " in " + all.size());
+        return null;
+    }
+
+    /** the owner of this status item, or null when it must not be applied (not ours, Family Sharing, no owner) */
+    private Long ownerOf(AppleSubscriptionStatus status, AppleEnvironment env, Long ownerPid)
+            throws AppleApiException, PlayStoreException {
+        AppleTransaction tx = status.transaction;
+        if (tx == null || !AppleProducts.isSubscription(tx.productId)) {
+            log4j.warn("AppleEntitlementService: status of " + status.originalTransactionId + " is not 1YRNOADSORLIMITS");
+            return null;
+        }
+        if (tx.familyShared) {
+            log4j.info("AppleEntitlementService: Family Sharing transaction " + tx.transactionId + " not granted");
+            return null;
+        }
+        return ownerPid != null ? ownerPid : subscriptionOwner(tx, env);
+    }
+
+    /**
+     * Read Apple's status of one subscription chain and bring dsg_subscribers and dsg_subscribers_apple in line:
+     * grant the latest transaction, extend it during grace, clamp it on expiry or revocation, revoke a refunded one.
+     *
+     * @param ownerPid the owner a client POST already resolved (§4.3), or null for notifications and pollers
+     */
+    public PlayClassification syncSubscription(String originalTransactionId, AppleEnvironment env, Long ownerPid)
+            throws AppleApiException, PlayStoreException {
+        AppleSubscriptionStatus status = readStatus(env, originalTransactionId);
+        if (status == null) {
+            return PlayClassification.INVALID;
+        }
+        Long pid = ownerOf(status, env, ownerPid);
+        if (pid == null || !sandboxAllowed(env, pid.longValue())) {
+            return PlayClassification.INVALID;
+        }
+        synchronized (EntitlementLocks.lockFor(pid.longValue())) {
+            // Re-read under the lock: an answer read before another sync of this chain was applied must never be
+            // applied after it.
+            AppleSubscriptionStatus fresh = readStatus(env, originalTransactionId);
+            if (fresh == null) {
+                return PlayClassification.INVALID;
+            }
+            Long freshPid = ownerOf(fresh, env, ownerPid);
+            if (freshPid == null || freshPid.longValue() != pid.longValue()) {
+                log4j.warn("AppleEntitlementService: owner of " + originalTransactionId + " changed during the sync");
+                return PlayClassification.INVALID;
+            }
+            return syncSubscriptionLocked(fresh, env, pid.longValue());
+        }
+    }
+
+    private PlayClassification syncSubscriptionLocked(AppleSubscriptionStatus status, AppleEnvironment env, long pid)
+            throws PlayStoreException {
+        long now = clock.getAsLong();
+        AppleTransaction tx = status.transaction;
+        String otid = status.originalTransactionId;
+        String txId = tx.transactionId;
+        String state = AppleStates.fromStatus(status.status);
+        if (state == null) {
+            log4j.warn("AppleEntitlementService: unknown status " + status.status + " for " + otid);
+            return PlayClassification.INACTIVE;
+        }
+        AppleRow prior = store.find(otid);
+        if (prior != null && prior.pid != 0 && prior.pid != pid) {
+            // §4.3 pid move: the latest transaction carries another account's token; already-written rows stay
+            log4j.warn("AppleEntitlementService: subscription " + otid + " moves from pid " + prior.pid + " to " + pid);
+            players.adminAlert("App Store subscription " + otid + " moved from pid " + prior.pid + " to pid " + pid
+                    + " (appAccountToken of the latest transaction)");
+        }
+
+        boolean revoked = tx.revocationDateMs != null;
+        Long effective = tx.expiresDateMs;
+        if (revoked) {
+            effective = tx.revocationDateMs;
+        } else if (AppleStates.GRACE.equals(state) && status.renewal != null
+                && status.renewal.gracePeriodExpiresDateMs != null && tx.expiresDateMs != null) {
+            effective = Long.valueOf(Math.max(tx.expiresDateMs.longValue(), status.renewal.gracePeriodExpiresDateMs.longValue()));
+        }
+
+        PlayClassification result = PlayClassification.INACTIVE;
+        if (revoked) {
+            revokeLocked(tx, pid, now);
+            state = AppleStates.REVOKED;
+        } else if ((AppleStates.ACTIVE.equals(state) || AppleStates.GRACE.equals(state))
+                && effective != null && effective.longValue() > now) {
+            // ACTIVE: expiresDate - 364 days. GRACE: gracePeriodExpiresDate - 364 days, never earlier than today's date.
+            long paymentDate = effective.longValue() - PlayProducts.PAYMENTDATE_OFFSET_MS;
+            if (subscribers.insert(new SubscriberRow(pid, txId, PlayProducts.YEARLY_LEVEL, paymentDate))) {
+                result = txId.equals(otid) ? PlayClassification.NEW : PlayClassification.RENEWAL;
+                players.granted(pid, tx.productId, result);
+            } else {
+                SubscriberRow existing = subscribers.findByTransactionId(txId);
+                if (existing == null || existing.pid != pid) {
+                    log4j.warn("AppleEntitlementService: transaction " + txId + " is recorded for another pid than " + pid);
+                    return PlayClassification.SHARED;
+                }
+                result = PlayClassification.KNOWN;
+                if (existing.level != 0 && paymentDate > existing.paymentDateMs) {
+                    // a grace extension, or the re-assert after the legacy poller overwrote paymentdate (§4.8)
+                    subscribers.updatePaymentDate(txId, paymentDate);
+                    players.entitlementChanged(pid);
+                }
+            }
+        } else if ((AppleStates.EXPIRED.equals(state) || AppleStates.REVOKED.equals(state)) && effective != null) {
+            clamp(pid, txId, effective.longValue(), now);
+        }
+
+        AppleRow row = new AppleRow();
+        row.originalTransactionId = otid;
+        row.pid = pid;
+        row.productId = tx.productId;
+        row.latestTransactionId = txId;
+        row.expiryTimeMs = effective;
+        row.state = state;
+        row.environment = env;
+        row.tokenStamped = (prior != null && prior.tokenStamped) || tx.appAccountToken != null;
+        if (prior == null || !row.sameContent(prior)) {
+            store.upsert(row);
+        }
+        if (!row.tokenStamped) {
+            stamp(env, otid, pid);
+        }
+        return result;
+    }
+
+    /** §4.5 step 5: access ends at Apple's end (expiry or revocation), not at the year boundary */
+    private void clamp(long pid, String txId, long endMs, long now) throws PlayStoreException {
+        SubscriberRow existing = subscribers.findByTransactionId(txId);
+        if (existing == null || existing.pid != pid || existing.level == 0) {
+            return;
+        }
+        Long implied = SubscriberRule.impliedExpiryMs(existing.level, existing.paymentDateMs);
+        if (implied != null && endMs < implied.longValue() - CLAMP_SLACK_MS) {
+            long clamped = endMs - PlayProducts.PAYMENTDATE_OFFSET_MS;
+            MonthPassStack.restack(subscribers, pid, txId, existing.level, clamped, now);
+            subscribers.updatePaymentDate(txId, clamped);
+            players.entitlementChanged(pid);
+        }
+    }
+
+    /** §4.3: write our token onto a subscription that has none, once; a failure is retried at the next sync */
+    private void stamp(AppleEnvironment env, String originalTransactionId, long pid) throws PlayStoreException {
+        try {
+            api.setAppAccountToken(env, originalTransactionId, tokens.create(pid));
+            store.setTokenStamped(originalTransactionId);
+            log4j.info("AppleEntitlementService: stamped appAccountToken of pid " + pid + " on " + originalTransactionId);
+        } catch (AppleApiException e) {
+            log4j.warn("AppleEntitlementService: setAppAccountToken failed for " + originalTransactionId
+                    + ", retried at the next sync: " + e);
+        }
+    }
+
+    // ---------------------------------------------------------------- revoke (§4.5)
+
+    /**
+     * A refunded or revoked transaction: level 0 on its dsg_subscribers row, month passes stacked after it
+     * restacked, and its dsg_subscribers_apple row set to REVOKED (subscription) or REFUNDED (consumable).
+     * Vacation days already added are not clawed back. A repeat revoke does nothing.
+     *
+     * @param pid the owner when known (a token, a row), else null
+     */
+    public void revoke(AppleTransaction revoked, Long pid) throws PlayStoreException {
+        SubscriberRow current = subscribers.findByTransactionId(revoked.transactionId);
+        long lockPid = current != null ? current.pid : (pid != null ? pid.longValue() : 0L);
+        synchronized (EntitlementLocks.lockFor(lockPid)) {
+            revokeLocked(revoked, lockPid, clock.getAsLong());
+        }
+    }
+
+    private void revokeLocked(AppleTransaction revoked, long pid, long now) throws PlayStoreException {
+        String txId = revoked.transactionId;
+        boolean subscription = AppleProducts.isSubscription(revoked.productId);
+        String revokedState = subscription ? AppleStates.REVOKED : AppleStates.REFUNDED;
+        String key = subscription ? revoked.originalTransactionId : txId;
+        SubscriberRow current = subscribers.findByTransactionId(txId);
+        if (current == null) {
+            log4j.warn("AppleEntitlementService: no dsg_subscribers row for revoked transaction " + txId);
+            return;
+        }
+        boolean changed = false;
+        if (current.level != 0) {
+            // before setLevelZero, so a crash in between is redone by the repeat revoke
+            MonthPassStack.restack(subscribers, current.pid, txId, 0, current.paymentDateMs, now);
+            subscribers.setLevelZero(txId);
+            changed = true;
+        }
+        AppleRow row = store.find(key);
+        // a subscription row follows its latest transaction: an older year's refund leaves the chain's state alone
+        if (row != null && !revokedState.equals(row.state) && (!subscription || txId.equals(row.latestTransactionId))) {
+            store.setState(key, revokedState);
+        }
+        if (changed) {
+            players.entitlementChanged(current.pid);
+        }
+    }
+}
