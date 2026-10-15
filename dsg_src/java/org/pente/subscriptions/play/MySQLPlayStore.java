@@ -366,4 +366,18 @@ public class MySQLPlayStore implements AndroidPurchaseStore, SubscriberStore {
             }
         });
     }
+
+    public void setLevel(final String transactionId, final int level) throws PlayStoreException {
+        withConnection("set dsg_subscribers level", new Work<Void>() {
+            public Void run(Connection con) throws SQLException {
+                try (PreparedStatement stmt = con.prepareStatement(
+                        "UPDATE dsg_subscribers SET level = ? WHERE transactionid = ?")) {
+                    stmt.setInt(1, level);
+                    stmt.setString(2, transactionId);
+                    stmt.executeUpdate();
+                }
+                return null;
+            }
+        });
+    }
 }

@@ -57,6 +57,13 @@ public class FakeSubscriberStore implements SubscriberStore {
         }
     }
 
+    public synchronized void setLevel(String transactionId, int level) {
+        SubscriberRow r = rows.get(transactionId);
+        if (r != null) {
+            r.level = level;
+        }
+    }
+
     /** test helper: copies of every row of pid */
     public synchronized List<SubscriberRow> rowsOf(long pid) {
         List<SubscriberRow> result = new ArrayList<SubscriberRow>();
