@@ -11,6 +11,7 @@ import org.pente.message.DSGMessage;
 import org.pente.message.DSGMessageStorer;
 import org.pente.notifications.NotificationServer;
 import org.pente.turnBased.CacheTBStorer;
+import org.pente.turnBased.TBVacation;
 
 /** PlayerGateway over the live storers, following IOSReceiptServlet's grant side effects. */
 public class DsgPlayGateway implements PlayerGateway {
@@ -25,14 +26,32 @@ public class DsgPlayGateway implements PlayerGateway {
     private final TourneyStorer tourneyStorer;
     private final DSGMessageStorer messageStorer;
     private final NotificationServer notificationServer;
+    /** "Google Play" or "App Store": the first words of the admin push after a grant */
+    private final String storeName;
 
     public DsgPlayGateway(CacheDSGPlayerStorer playerStorer, CacheTBStorer tbStorer, TourneyStorer tourneyStorer,
                           DSGMessageStorer messageStorer, NotificationServer notificationServer) {
+        this(playerStorer, tbStorer, tourneyStorer, messageStorer, notificationServer, "Google Play");
+    }
+
+    public DsgPlayGateway(CacheDSGPlayerStorer playerStorer, CacheTBStorer tbStorer, TourneyStorer tourneyStorer,
+                          DSGMessageStorer messageStorer, NotificationServer notificationServer, String storeName) {
         this.playerStorer = playerStorer;
         this.tbStorer = tbStorer;
         this.tourneyStorer = tourneyStorer;
         this.messageStorer = messageStorer;
         this.notificationServer = notificationServer;
+        this.storeName = storeName;
+    }
+
+    /** the admin push sent after every grant, e.g. "Google Play month_pass (new) for rainwolf" */
+    public static String grantAlert(String storeName, String productId, PlayClassification classification, String name) {
+        return storeName + " " + productId + " (" + classification.name().toLowerCase() + ") for " + name;
+    }
+
+    /** whole vacation days in a TBVacation, 0 when there is none */
+    public static int daysLeft(TBVacation vacation) {
+        return vacation == null ? 0 : Math.max(0, vacation.getHoursLeft()) / 24;
     }
 
     private DSGPlayerData load(long pid) throws PlayStoreException {
@@ -63,6 +82,10 @@ public class DsgPlayGateway implements PlayerGateway {
 
     public void addVacationDays(long pid, int days) {
         tbStorer.addExtraTBVacationDays(pid, days);
+    }
+
+    public int vacationDaysLeft(long pid) {
+        return daysLeft(tbStorer.getTBVacation(pid));
     }
 
     public void granted(long pid, String productId, PlayClassification classification) throws PlayStoreException {
@@ -99,8 +122,7 @@ public class DsgPlayGateway implements PlayerGateway {
         } catch (Exception e) {
             throw new PlayStoreException("grant side effects for " + data.getName() + " failed", e);
         }
-        notificationServer.sendAdminNotification("Google Play " + productId + " (" + classification.name().toLowerCase()
-                + ") for " + data.getName());
+        notificationServer.sendAdminNotification(grantAlert(storeName, productId, classification, data.getName()));
     }
 
     public void entitlementChanged(long pid) throws PlayStoreException {

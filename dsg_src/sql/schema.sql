@@ -288,6 +288,45 @@ CREATE TABLE `dsg_subscribers_android` (
   KEY `latest_successful_order_id` (`latest_successful_order_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `dsg_subscribers_apple`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `dsg_subscribers_apple` (
+  `original_transaction_id` varchar(64) NOT NULL,
+  `pid` bigint(20) unsigned NOT NULL,
+  `product_id` varchar(64) NOT NULL,
+  `latest_transaction_id` varchar(64) DEFAULT NULL,
+  `expiry_time` datetime DEFAULT NULL,
+  `state` varchar(32) NOT NULL,
+  `environment` varchar(16) NOT NULL,
+  `token_stamped` tinyint(1) NOT NULL DEFAULT 0,
+  `created` datetime NOT NULL,
+  `updated` datetime NOT NULL,
+  PRIMARY KEY (`original_transaction_id`),
+  KEY `pid` (`pid`),
+  KEY `state_expiry` (`state`,`expiry_time`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `dsg_apple_notifications`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `dsg_apple_notifications` (
+  `notification_uuid` char(36) NOT NULL,
+  `notification_type` varchar(48) NOT NULL,
+  `received` datetime NOT NULL,
+  PRIMARY KEY (`notification_uuid`),
+  KEY `received` (`received`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `dsg_apple_poll_state`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `dsg_apple_poll_state` (
+  `environment` varchar(16) NOT NULL,
+  `history_until` datetime NOT NULL,
+  PRIMARY KEY (`environment`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `dsg_tournament`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;

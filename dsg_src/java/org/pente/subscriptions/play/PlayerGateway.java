@@ -15,6 +15,9 @@ public interface PlayerGateway {
     /** CacheTBStorer.addExtraTBVacationDays (not idempotent) */
     void addVacationDays(long pid, int days) throws PlayStoreException;
 
+    /** whole turn-based vacation days left this year: CacheTBStorer.getTBVacation(pid).getHoursLeft() / 24, 0 if none */
+    int vacationDaysLeft(long pid) throws PlayStoreException;
+
     /** after a grant: default name colour, thank-you message when NEW, refreshPlayer, admin push */
     void granted(long pid, String productId, PlayClassification classification) throws PlayStoreException;
 

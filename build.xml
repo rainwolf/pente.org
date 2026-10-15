@@ -182,6 +182,10 @@
             <classpath refid="test-classpath"/>
             <arg value="org.pente.subscriptions.play.test.TBVacationGrantTest"/>
         </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.subscriptions.play.test.EntitlementExtractionTest"/>
+        </java>
         <!-- play-billing test classes: add one <java> block per class above this line -->
     </target>
 
@@ -194,6 +198,102 @@
             <sysproperty key="playDbUrl" value="${playDbUrl}"/>
             <sysproperty key="playMigration" value="${basedir}/dsg_src/sql/2026-10-11-google-play-billing.sql"/>
             <arg value="org.pente.subscriptions.play.test.MySQLPlayStoreIT"/>
+        </java>
+    </target>
+
+    <!-- App Store Server API and Notifications V2 unit tests (docs/superpowers/specs/2026-10-15-ios-app-store-server-design.md
+         section 5). No DB, no network. 'compile' builds deploy/ (rsync dsg_src/java/ to deploy/ first, as ./justCompile
+         does); this target then compiles org/pente/subscriptions/apple/** including test/, plus the two shared Play
+         fakes, straight from dsg_src/java. -->
+    <target name="test-apple-billing" depends="compile">
+        <javac srcdir="dsg_src/java" destdir="deployClasses" sourcepath="" includeantruntime="false"
+               debug="true" debuglevel="lines,vars,source">
+            <include name="org/pente/subscriptions/apple/**/*.java"/>
+            <include name="org/pente/subscriptions/play/test/FakeSubscriberStore.java"/>
+            <include name="org/pente/subscriptions/play/test/FakePlayerGateway.java"/>
+            <classpath refid="test-classpath"/>
+        </javac>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.subscriptions.apple.test.AppleRootCertificatesTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.subscriptions.apple.test.AppleAccountTokensTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.subscriptions.apple.test.AppleProductsTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.subscriptions.apple.test.AppleSandboxAccountsTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.subscriptions.apple.test.AppleFakesTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.subscriptions.apple.test.AppleSubscriptionSyncTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.subscriptions.apple.test.AppleOneTimeSyncTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.subscriptions.apple.test.AppleRefundTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.subscriptions.apple.test.ApplePurchaseTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.subscriptions.apple.test.AppleStoreInfoTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.subscriptions.apple.test.AppleNotificationTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.subscriptions.apple.test.AppleHistoryReplayTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.subscriptions.apple.test.ApplePollerTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.subscriptions.apple.test.AppStoreMappingTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <sysproperty key="appleFixtures" value="${basedir}/dsg_src/java/org/pente/subscriptions/apple/test/fixtures"/>
+            <arg value="org.pente.subscriptions.apple.test.AppleRealVerifierTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.subscriptions.apple.test.AppStoreServletTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.subscriptions.apple.test.AppleWiringTest"/>
+        </java>
+        <!-- apple-billing test classes: add one <java> block per class above this line -->
+    </target>
+
+    <!-- MySQLAppleStore against a THROWAWAY MariaDB (it drops dsg_subscribers and the three App Store tables).
+         ant test-apple-billing-db -DappleDbUrl=jdbc:mariadb://127.0.0.1:33098/appleit?user=root -->
+    <target name="test-apple-billing-db" depends="test-apple-billing">
+        <fail unless="appleDbUrl" message="set -DappleDbUrl to a throwaway MariaDB"/>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <sysproperty key="appleDbUrl" value="${appleDbUrl}"/>
+            <sysproperty key="appleMigration" value="${basedir}/dsg_src/sql/2026-10-15-app-store-server.sql"/>
+            <arg value="org.pente.subscriptions.apple.test.MySQLAppleStoreIT"/>
         </java>
     </target>
 </project>

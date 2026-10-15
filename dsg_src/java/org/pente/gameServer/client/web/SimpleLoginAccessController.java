@@ -22,6 +22,7 @@ public class SimpleLoginAccessController implements LoginAccessController {
                     "gameServer/pgn.jsp",
                     "gameServer/tbpgn.jsp",
                     "gameServer/googlePlayPurchase",
+                    "gameServer/appStorePurchase",
                     "gameServer/ignored"
             };
 

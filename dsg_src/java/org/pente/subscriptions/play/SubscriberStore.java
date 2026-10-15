@@ -18,4 +18,7 @@ public interface SubscriberStore {
 
     /** level=0, the PayPal refund precedent */
     void setLevelZero(String transactionId) throws PlayStoreException;
+
+    /** puts a level back, e.g. after Apple reverses a refund (spec 2026-10-15 §4.5 refreshRefundState) */
+    void setLevel(String transactionId, int level) throws PlayStoreException;
 }

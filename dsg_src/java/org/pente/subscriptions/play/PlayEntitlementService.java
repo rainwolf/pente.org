@@ -1,14 +1,9 @@
 package org.pente.subscriptions.play;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.LongSupplier;
 
 import org.apache.log4j.Category;
-import org.pente.gameServer.core.MySQLDSGPlayerStorer;
 
 /**
  * Google Play entitlement logic shared by GooglePlayPurchaseServlet, GooglePlayRtdnServlet and the
@@ -38,7 +33,6 @@ public class PlayEntitlementService {
     private final PlayerGateway players;
     private final AccountIds accountIds;
     private final LongSupplier clock;
-    private final ConcurrentHashMap<Long, Object> pidLocks = new ConcurrentHashMap<Long, Object>();
 
     public PlayEntitlementService(PlayApi api, AndroidPurchaseStore purchases, SubscriberStore subscribers,
                                   PlayerGateway players, AccountIds accountIds, LongSupplier clock) {
@@ -55,16 +49,9 @@ public class PlayEntitlementService {
         return accountIds.create(pid);
     }
 
+    /** shared with AppleEntitlementService (spec 2026-10-15 §4.5), so both stores serialise on one lock per pid */
     private Object lockFor(long pid) {
-        Object lock = pidLocks.get(Long.valueOf(pid));
-        if (lock == null) {
-            Object fresh = new Object();
-            lock = pidLocks.putIfAbsent(Long.valueOf(pid), fresh);
-            if (lock == null) {
-                lock = fresh;
-            }
-        }
-        return lock;
+        return EntitlementLocks.lockFor(pid);
     }
 
     /**
@@ -462,36 +449,7 @@ public class PlayEntitlementService {
      */
     private void restackMonthPasses(long pid, String transactionId, int newLevel, long newPaymentDateMs, long now)
             throws PlayStoreException {
-        List<SubscriberRow> started = new ArrayList<SubscriberRow>();
-        List<SubscriberRow> stacked = new ArrayList<SubscriberRow>();
-        for (SubscriberRow r : subscribers.findByPid(pid)) {
-            if (transactionId.equals(r.transactionId)) {
-                r = new SubscriberRow(r.pid, r.transactionId, newLevel, newPaymentDateMs);
-            }
-            if ((r.level & MySQLDSGPlayerStorer.ONEMONTH) != 0 && r.paymentDateMs > now) {
-                stacked.add(r);
-            } else {
-                started.add(r);
-            }
-        }
-        if (stacked.isEmpty()) {
-            return;
-        }
-        Collections.sort(stacked, new Comparator<SubscriberRow>() {
-            public int compare(SubscriberRow a, SubscriberRow b) {
-                return Long.compare(a.paymentDateMs, b.paymentDateMs);
-            }
-        });
-        Long end = SubscriberRule.expirationMs(started, now);
-        long start = end != null && end.longValue() > now ? end.longValue() : now;
-        for (SubscriberRow r : stacked) {
-            long paymentDate = r.paymentDateMs;
-            if (start < paymentDate && r.transactionId != null) {
-                subscribers.updatePaymentDate(r.transactionId, start);
-                paymentDate = start;
-            }
-            start = Math.max(start, SubscriberRule.impliedExpiryMs(r.level, paymentDate).longValue());
-        }
+        MonthPassStack.restack(subscribers, pid, transactionId, newLevel, newPaymentDateMs, now);
     }
 
     // ---------------------------------------------------------------- store page (§4.4)

@@ -24,6 +24,8 @@ public class FakePlayerGateway implements PlayerGateway {
     /** pids in the last round of a turn-based tourney with incremental time */
     public final Set<Long> inTourney = new HashSet<Long>();
     public final Map<Long, Integer> vacationDays = new HashMap<Long, Integer>();
+    /** vacationDaysLeft answers, 0 when absent */
+    public final Map<Long, Integer> daysLeft = new HashMap<Long, Integer>();
     /** "pid:productId:CLASSIFICATION" per granted() call */
     public final List<String> grants = new ArrayList<String>();
     public final List<Long> changed = new ArrayList<Long>();
@@ -64,6 +66,11 @@ public class FakePlayerGateway implements PlayerGateway {
             Integer current = vacationDays.get(Long.valueOf(pid));
             vacationDays.put(Long.valueOf(pid), Integer.valueOf((current == null ? 0 : current.intValue()) + days));
         }
+    }
+
+    public synchronized int vacationDaysLeft(long pid) {
+        Integer d = daysLeft.get(Long.valueOf(pid));
+        return d == null ? 0 : d.intValue();
     }
 
     public synchronized void granted(long pid, String productId, PlayClassification classification) {
