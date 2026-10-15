@@ -196,12 +196,12 @@
 
     <context-param>
         <param-name>appleIapKeyId</param-name>
-        <param-value></param-value>
+        <param-value>52N559ZYN2</param-value>
     </context-param>
 
     <context-param>
         <param-name>appleIapIssuerId</param-name>
-        <param-value></param-value>
+        <param-value>69a6de6e-68bd-47e3-e053-5b8c7c11a4d1</param-value>
     </context-param>
 
     <context-param>
