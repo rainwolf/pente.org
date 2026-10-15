@@ -287,6 +287,127 @@ public class AppleEntitlementService {
         }
     }
 
+    // ---------------------------------------------------------------- consumables (§4.5)
+
+    /**
+     * Grant one consumable transaction to pid exactly once, in a fixed order: the dsg_subscribers gate row
+     * (transactionid = transactionId), the dsg_subscribers_apple row in GRANTING, the grant, CONSUMED. A month pass
+     * is granted by its gate row itself (MONTH_LEVEL, starting where the player's current access ends), so only
+     * vacation days can be left half-done; the daily poller alerts on GRANTING rows older than 1 hour.
+     */
+    public PlayClassification syncOneTime(AppleTransaction tx, long pid) throws PlayStoreException {
+        if (tx == null || !AppleProducts.isOneTime(tx.productId)) {
+            return PlayClassification.INVALID;
+        }
+        if (tx.familyShared) {
+            log4j.info("AppleEntitlementService: Family Sharing transaction " + tx.transactionId + " not granted");
+            return PlayClassification.INVALID;
+        }
+        if (tx.revocationDateMs != null) {
+            revoke(tx, Long.valueOf(pid));
+            return PlayClassification.INVALID;
+        }
+        if (!sandboxAllowed(tx.environment, pid)) {
+            return PlayClassification.INVALID;
+        }
+        synchronized (EntitlementLocks.lockFor(pid)) {
+            return syncOneTimeLocked(tx, pid);
+        }
+    }
+
+    private PlayClassification syncOneTimeLocked(AppleTransaction tx, long pid) throws PlayStoreException {
+        long now = clock.getAsLong();
+        String txId = tx.transactionId;
+        int days = AppleProducts.vacationDays(tx.productId);
+        int level = AppleProducts.level(tx.productId);
+        long paymentDate = now;
+        if (days == 0) {
+            // month pass: stack after the current entitlement whatever its level, so it is never wasted
+            Long current = players.subscriptionExpirationMs(pid);
+            paymentDate = current != null && current.longValue() > now ? current.longValue() : now;
+        }
+        if (!subscribers.insert(new SubscriberRow(pid, txId, level, paymentDate))) {
+            return alreadyGated(tx, pid);
+        }
+        store.upsert(consumableRow(tx, pid, AppleStates.GRANTING));
+        if (days > 0) {
+            if (!players.vacationAllowed(pid)) {
+                // the app hides the vacation buttons during a last round (GET vacationAllowed); a purchase made
+                // anyway is still granted, never lost (spec §4.5 syncOneTime step 3)
+                log4j.info("AppleEntitlementService: " + tx.productId + " for pid " + pid
+                        + " bought during a tourney's last round, granted anyway");
+            }
+            players.addVacationDays(pid, days);
+        }
+        store.setState(txId, AppleStates.CONSUMED);
+        players.granted(pid, tx.productId, PlayClassification.NEW);
+        return PlayClassification.NEW;
+    }
+
+    private static AppleRow consumableRow(AppleTransaction tx, long pid, String state) {
+        AppleRow row = new AppleRow();
+        row.originalTransactionId = tx.transactionId;
+        row.pid = pid;
+        row.productId = tx.productId;
+        row.latestTransactionId = tx.transactionId;
+        row.state = state;
+        row.environment = tx.environment;
+        row.tokenStamped = tx.appAccountToken != null;
+        return row;
+    }
+
+    /**
+     * The gate row already exists: KNOWN for pid's own grant, SHARED for another pid's, INVALID for a refund or a
+     * tombstone. A missing apple row (a crash right after the gate insert) is written now: CONSUMED for a month
+     * pass, whose gate row is the grant, GRANTING for vacation days, which may not have been added.
+     */
+    private PlayClassification alreadyGated(AppleTransaction tx, long pid) throws PlayStoreException {
+        SubscriberRow gate = subscribers.findByTransactionId(tx.transactionId);
+        AppleRow row = store.find(tx.transactionId);
+        if ((row != null && AppleStates.isRevoked(row.state)) || (gate != null && gate.pid == 0)) {
+            return PlayClassification.INVALID;
+        }
+        if (gate != null && gate.pid != pid) {
+            return PlayClassification.SHARED;
+        }
+        if (row == null) {
+            boolean vacation = AppleProducts.vacationDays(tx.productId) > 0;
+            log4j.warn("AppleEntitlementService: " + tx.transactionId + " has a gate row but no apple row"
+                    + (vacation ? ", vacation days unknown: GRANTING for the admin alert" : ""));
+            store.upsert(consumableRow(tx, pid, vacation ? AppleStates.GRANTING : AppleStates.CONSUMED));
+        }
+        return PlayClassification.KNOWN;
+    }
+
+    /**
+     * §4.6 ONE_TIME_CHARGE: grant when the owner resolves without a requester (a valid token, or the row the app's
+     * POST already wrote); otherwise INACTIVE and the app's POST delivers it.
+     */
+    public PlayClassification notifyOneTime(AppleTransaction tx) throws PlayStoreException {
+        if (tx == null || !AppleProducts.isOneTime(tx.productId) || tx.familyShared) {
+            log4j.info("AppleEntitlementService: ONE_TIME_CHARGE not for a granted product, logged only");
+            return PlayClassification.INVALID;
+        }
+        Long pid = null;
+        if (tx.appAccountToken != null) {
+            pid = tokens.parse(tx.appAccountToken);
+            if (pid == null) {
+                log4j.warn("AppleEntitlementService: rejected appAccountToken on " + tx.transactionId);
+                return PlayClassification.INVALID;
+            }
+        } else {
+            AppleRow row = store.find(tx.transactionId);
+            if (row != null) {
+                pid = Long.valueOf(row.pid);
+            }
+        }
+        if (pid == null) {
+            log4j.info("AppleEntitlementService: no owner for " + tx.transactionId + ", left to the app's POST");
+            return PlayClassification.INACTIVE;
+        }
+        return syncOneTime(tx, pid.longValue());
+    }
+
     // ---------------------------------------------------------------- revoke (§4.5)
 
     /**
