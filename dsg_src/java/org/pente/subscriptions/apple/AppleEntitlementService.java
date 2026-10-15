@@ -206,6 +206,11 @@ public class AppleEntitlementService {
         }
 
         boolean revoked = tx.revocationDateMs != null;
+        if (!revoked && AppleStates.REVOKED.equals(state)) {
+            // trust revocationDate, not the status: after REFUND_REVERSED an active subscription can stay 5
+            // (research 2026-10-15-apple-semantics-verified.md §1)
+            state = tx.expiresDateMs != null && tx.expiresDateMs.longValue() > now ? AppleStates.ACTIVE : AppleStates.EXPIRED;
+        }
         Long effective = tx.expiresDateMs;
         if (revoked) {
             effective = tx.revocationDateMs;
@@ -431,8 +436,30 @@ public class AppleEntitlementService {
         String revokedState = subscription ? AppleStates.REVOKED : AppleStates.REFUNDED;
         String key = subscription ? revoked.originalTransactionId : txId;
         SubscriberRow current = subscribers.findByTransactionId(txId);
+        if (current == null && !subscribers.insert(new SubscriberRow(pid, txId, 0, now))) {
+            // a grant holding another pid's lock inserted the gate row after the read above: revoke that row
+            current = subscribers.findByTransactionId(txId);
+        }
         if (current == null) {
-            log4j.warn("AppleEntitlementService: no dsg_subscribers row for revoked transaction " + txId);
+            // tombstone (inserted just above): a level-0 row blocks a later grant from this path (the gate insert
+            // fails) and from the legacy poller (hasiOSTransactionId is true)
+            AppleRow row = store.find(key);
+            if (row == null) {
+                AppleRow tombstone = new AppleRow();
+                tombstone.originalTransactionId = key;
+                tombstone.pid = pid;
+                tombstone.productId = revoked.productId;
+                // a consumable tombstone has no latest transaction: it marks a purchase that was never granted
+                tombstone.latestTransactionId = subscription ? txId : null;
+                tombstone.expiryTimeMs = revoked.revocationDateMs;
+                tombstone.state = revokedState;
+                tombstone.environment = revoked.environment;
+                tombstone.tokenStamped = revoked.appAccountToken != null;
+                store.upsert(tombstone);
+            } else if (!revokedState.equals(row.state) && (!subscription || txId.equals(row.latestTransactionId))) {
+                store.setState(key, revokedState);
+            }
+            log4j.info("AppleEntitlementService: tombstone for revoked transaction " + txId + " (pid " + pid + ")");
             return;
         }
         boolean changed = false;
@@ -450,5 +477,161 @@ public class AppleEntitlementService {
         if (changed) {
             players.entitlementChanged(current.pid);
         }
+    }
+
+    // ---------------------------------------------------------------- refunds (§4.5)
+
+    /**
+     * REFUND, REVOKE and REFUND_REVERSED, state-based: re-read the transaction and revoke it when Apple shows a
+     * revocationDate, or put it back when Apple does not and our tables say revoked. Then a subscription chain is
+     * re-synced. Acting on Apple's current state makes the arrival order of notifications irrelevant.
+     */
+    public void refreshRefundState(String transactionId, AppleEnvironment env)
+            throws AppleApiException, PlayStoreException {
+        AppleTransaction tx = api.transactionInfo(env, transactionId);
+        if (!AppleProducts.isKnown(tx.productId)) {
+            log4j.info("AppleEntitlementService: refund state of " + transactionId + " (" + tx.productId + ") ignored");
+            return;
+        }
+        if (tx.familyShared) {
+            // a family member's transaction was never granted: nothing to revoke or restore
+            log4j.info("AppleEntitlementService: refund state of Family Sharing transaction " + transactionId + " ignored");
+            return;
+        }
+        Long owner = refundOwner(tx);
+        if (env == AppleEnvironment.SANDBOX && (owner == null || !sandboxAllowed(env, owner.longValue()))) {
+            log4j.info("AppleEntitlementService: sandbox refund state of " + transactionId + " ignored");
+            return;
+        }
+        if (tx.revocationDateMs != null) {
+            revoke(tx, owner);
+        } else {
+            unrevoke(tx);
+        }
+        if (AppleProducts.isSubscription(tx.productId)) {
+            syncSubscription(tx.originalTransactionId, env, null);
+        }
+    }
+
+    /** the owner of a refunded transaction: its dsg_subscribers row, else its token, else its apple row; or null */
+    private Long refundOwner(AppleTransaction tx) throws PlayStoreException {
+        SubscriberRow r = subscribers.findByTransactionId(tx.transactionId);
+        if (r != null && r.pid != 0) {
+            return Long.valueOf(r.pid);
+        }
+        if (tx.appAccountToken != null) {
+            Long pid = tokens.parse(tx.appAccountToken);
+            if (pid != null) {
+                return pid;
+            }
+        }
+        boolean subscription = AppleProducts.isSubscription(tx.productId);
+        AppleRow row = store.find(subscription ? tx.originalTransactionId : tx.transactionId);
+        return row == null || row.pid == 0 ? null : Long.valueOf(row.pid);
+    }
+
+    /** Apple no longer shows a revocation: restore the level, or grant a tombstoned purchase that was never granted */
+    private void unrevoke(AppleTransaction tx) throws PlayStoreException {
+        SubscriberRow seen = subscribers.findByTransactionId(tx.transactionId);
+        if (seen == null || !revokedHere(tx, seen)) {
+            return;
+        }
+        if (seen.pid == 0) {
+            players.adminAlert("App Store refund reversed for " + tx.productId + " transaction " + tx.transactionId
+                    + ", which was refunded before any player claimed it: grant it by hand once the owner is known");
+            return;
+        }
+        synchronized (EntitlementLocks.lockFor(seen.pid)) {
+            // re-read under the lock: a concurrent reversal (an Apple retry overlapping the daily replay) may have
+            // restored it already, and the second one must then change nothing
+            SubscriberRow current = subscribers.findByTransactionId(tx.transactionId);
+            if (current == null || current.pid != seen.pid || !revokedHere(tx, current)) {
+                return;
+            }
+            boolean subscription = AppleProducts.isSubscription(tx.productId);
+            String key = subscription ? tx.originalTransactionId : tx.transactionId;
+            AppleRow row = store.find(key);
+            long now = clock.getAsLong();
+            if (!subscription && row != null && row.latestTransactionId == null) {
+                grantTombstoned(tx, current.pid, now);
+                return;
+            }
+            int level = AppleProducts.level(tx.productId);
+            if (level != 0 && current.level == 0) {
+                long paymentDate = current.paymentDateMs;
+                if (subscription && tx.expiresDateMs != null) {
+                    // a subscription tombstone is dated at the refund: restore Apple's year, never a fresh one
+                    paymentDate = tx.expiresDateMs.longValue() - PlayProducts.PAYMENTDATE_OFFSET_MS;
+                    subscribers.updatePaymentDate(tx.transactionId, paymentDate);
+                }
+                subscribers.setLevel(tx.transactionId, level);
+                Long end = SubscriberRule.impliedExpiryMs(level, paymentDate);
+                if (end != null) {
+                    pushPassesAfter(current.pid, tx.transactionId, paymentDate, end.longValue(), now);
+                }
+            }
+            if (!subscription && row != null && AppleStates.isRevoked(row.state)) {
+                store.setState(key, AppleStates.CONSUMED);
+            }
+            players.entitlementChanged(current.pid);
+            log4j.info("AppleEntitlementService: refund of " + tx.transactionId + " reversed for pid " + current.pid);
+        }
+    }
+
+    /** our tables still show tx revoked: its apple row is in a revoked state, or its level is zeroed */
+    private boolean revokedHere(AppleTransaction tx, SubscriberRow current) throws PlayStoreException {
+        boolean subscription = AppleProducts.isSubscription(tx.productId);
+        AppleRow row = store.find(subscription ? tx.originalTransactionId : tx.transactionId);
+        boolean revokedRow = row != null && AppleStates.isRevoked(row.state)
+                && (!subscription || tx.transactionId.equals(row.latestTransactionId));
+        return revokedRow || (AppleProducts.level(tx.productId) != 0 && current.level == 0);
+    }
+
+    /**
+     * The refund pulled the pid's later month passes back (revokeLocked's restack); now that transactionId's level
+     * is restored, move the passes that start at or after its start, and have not run out, to after its end again,
+     * keeping their order and the time each has left.
+     */
+    private void pushPassesAfter(long pid, String transactionId, long restoredStartMs, long restoredEndMs, long now)
+            throws PlayStoreException {
+        List<SubscriberRow> passes = new java.util.ArrayList<SubscriberRow>();
+        long first = Long.MAX_VALUE;
+        for (SubscriberRow r : subscribers.findByPid(pid)) {
+            if (transactionId.equals(r.transactionId) || r.transactionId == null
+                    || (r.level & org.pente.gameServer.core.MySQLDSGPlayerStorer.ONEMONTH) == 0
+                    || r.paymentDateMs < restoredStartMs) {
+                continue;
+            }
+            Long end = SubscriberRule.impliedExpiryMs(r.level, r.paymentDateMs);
+            if (end == null || end.longValue() <= now) {
+                continue;
+            }
+            passes.add(r);
+            first = Math.min(first, Math.max(now, r.paymentDateMs));
+        }
+        if (passes.isEmpty() || restoredEndMs <= first) {
+            return;
+        }
+        long shift = restoredEndMs - first;
+        for (SubscriberRow r : passes) {
+            subscribers.updatePaymentDate(r.transactionId, r.paymentDateMs + shift);
+        }
+    }
+
+    /** a consumable refunded before it was granted, now reversed: grant it, in syncOneTime's order */
+    private void grantTombstoned(AppleTransaction tx, long pid, long now) throws PlayStoreException {
+        int days = AppleProducts.vacationDays(tx.productId);
+        if (days == 0) {
+            Long currentEnd = players.subscriptionExpirationMs(pid);
+            long paymentDate = currentEnd != null && currentEnd.longValue() > now ? currentEnd.longValue() : now;
+            subscribers.updatePaymentDate(tx.transactionId, paymentDate);
+            subscribers.setLevel(tx.transactionId, AppleProducts.level(tx.productId));
+        }
+        store.upsert(consumableRow(tx, pid, AppleStates.GRANTING));
+        if (days > 0) {
+            players.addVacationDays(pid, days);
+        }
+        store.setState(tx.transactionId, AppleStates.CONSUMED);
+        players.granted(pid, tx.productId, PlayClassification.NEW);
     }
 }
