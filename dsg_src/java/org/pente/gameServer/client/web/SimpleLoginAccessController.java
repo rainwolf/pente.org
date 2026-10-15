@@ -23,7 +23,8 @@ public class SimpleLoginAccessController implements LoginAccessController {
                     "gameServer/tbpgn.jsp",
                     "gameServer/googlePlayPurchase",
                     "gameServer/appStorePurchase",
-                    "gameServer/ignored"
+                    "gameServer/ignored",
+                    "gameServer/messageJson"
             };
 
     private static final String restrictedPages[] = new String[]
