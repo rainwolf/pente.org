@@ -235,4 +235,16 @@
         </java>
         <!-- apple-billing test classes: add one <java> block per class above this line -->
     </target>
+
+    <!-- MySQLAppleStore against a THROWAWAY MariaDB (it drops dsg_subscribers and the three App Store tables).
+         ant test-apple-billing-db -DappleDbUrl=jdbc:mariadb://127.0.0.1:33098/appleit?user=root -->
+    <target name="test-apple-billing-db" depends="test-apple-billing">
+        <fail unless="appleDbUrl" message="set -DappleDbUrl to a throwaway MariaDB"/>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <sysproperty key="appleDbUrl" value="${appleDbUrl}"/>
+            <sysproperty key="appleMigration" value="${basedir}/dsg_src/sql/2026-10-15-app-store-server.sql"/>
+            <arg value="org.pente.subscriptions.apple.test.MySQLAppleStoreIT"/>
+        </java>
+    </target>
 </project>
