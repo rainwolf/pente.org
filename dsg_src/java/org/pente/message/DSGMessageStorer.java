@@ -14,6 +14,8 @@ public interface DSGMessageStorer {
 
     public DSGMessage getMessage(int mid) throws DSGMessageStoreException;
 
+    public DSGMessage getMessage(int mid, boolean includeDeleted) throws DSGMessageStoreException;
+
     public List<DSGMessage> getMessages(long pid) throws DSGMessageStoreException;
 
     public List<DSGMessage> getNextMessages(long pid, long start) throws DSGMessageStoreException;

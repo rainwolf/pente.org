@@ -5,6 +5,7 @@ import java.util.Date;
 public class DSGMessage {
 
     private int mid;
+    private int replyToMid; // 0 = not a reply
     private long fromPid;
     private long toPid;
     private String subject;
@@ -35,6 +36,14 @@ public class DSGMessage {
 
     public void setFromPid(long fromPid) {
         this.fromPid = fromPid;
+    }
+
+    public int getReplyToMid() {
+        return replyToMid;
+    }
+
+    public void setReplyToMid(int replyToMid) {
+        this.replyToMid = replyToMid;
     }
 
     public int getMid() {
