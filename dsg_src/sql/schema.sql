@@ -101,6 +101,7 @@ CREATE TABLE `dsg_message` (
   `creation_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `read_fl` char(1) NOT NULL DEFAULT 'N',
   `viewable` char(1) NOT NULL DEFAULT 'Y',
+  `reply_to_mid` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`mid`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;

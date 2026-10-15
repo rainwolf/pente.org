@@ -145,6 +145,28 @@
             </tr>
 
          </table>
+         <% DSGMessage replyParent = (DSGMessage) request.getAttribute("replyToMessage");
+            if (replyParent != null) { %>
+         <table width="600" border="0" cellspacing="0" cellpadding="0">
+            <tr>
+               <td height="10" colspan="2"></td>
+            </tr>
+            <tr>
+               <td valign="top">
+                  <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
+                     In reply to:&nbsp;
+                  </font>
+               </td>
+               <td valign="top" bgcolor="<%= bgColor2 %>">
+                  <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
+                     <%= messageDateFormat.format(replyParent.getCreationDate()) %>
+                  </font>
+                  <p>
+                  <%= filters.applyFilters(0, replyParent.getBody()).replaceAll("#38;", "") %>
+               </td>
+            </tr>
+         </table>
+         <% } %>
          <table border="0" cellspacing="0" cellpadding="0">
             <tr>
                <td height="5"></td>

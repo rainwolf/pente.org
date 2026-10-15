@@ -77,6 +77,20 @@
          <form name="message_form" method="post"
                action="/gameServer/mymessages">
             <input type="hidden" name="command" value="create">
+            <%
+               int replyToMid = 0;
+               if (replyToMessage != null) {
+                  replyToMid = replyToMessage.getMid();
+               } else {
+                  try {
+                     replyToMid = Integer.parseInt(request.getParameter("replyTo").trim());
+                  } catch (Exception e) {
+                  }
+               }
+               if (replyToMid > 0) {
+            %>
+            <input type="hidden" name="replyTo" value="<%= replyToMid %>">
+            <% } %>
             <table border="0" colspacing="1" colpadding="1">
                <tr>
                   <td>

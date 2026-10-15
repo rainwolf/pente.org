@@ -191,6 +191,22 @@ public class DSGMessageServlet extends HttpServlet {
                 }
                 request.setAttribute("message", m);
 
+                // show the message this one replied to, only if the viewer
+                // wrote it to this message's sender
+                if (m.getReplyToMid() > 0) {
+                    try {
+                        DSGMessage parent = dsgMessageStorer.getMessage(
+                                m.getReplyToMid(), true);
+                        if (parent != null &&
+                                parent.getFromPid() == playerData.getPlayerID() &&
+                                parent.getToPid() == m.getFromPid()) {
+                            request.setAttribute("replyToMessage", parent);
+                        }
+                    } catch (DSGMessageStoreException dmse) {
+                        log4j.error("MessageServlet view, error loading reply-to message.", dmse);
+                    }
+                }
+
                 if (!m.isRead()) {
                     dsgMessageStorer.readMessage(m);
                 }
@@ -292,6 +308,26 @@ public class DSGMessageServlet extends HttpServlet {
                 m.setFromPid(playerData.getPlayerID());
                 m.setToPid(toPlayerData.getPlayerID());
                 m.setCreationDate(new Date());
+
+                // optional link to the message being replied to, kept only if
+                // the replier received it from the person they are writing to
+                String replyToStr = request.getParameter("replyTo");
+                if (replyToStr != null) {
+                    try {
+                        int replyTo = Integer.parseInt(replyToStr.trim());
+                        if (replyTo > 0) {
+                            DSGMessage parent = dsgMessageStorer.getMessage(replyTo, true);
+                            if (parent != null &&
+                                    parent.getToPid() == playerData.getPlayerID() &&
+                                    parent.getFromPid() == toPlayerData.getPlayerID()) {
+                                m.setReplyToMid(replyTo);
+                            }
+                        }
+                    } catch (NumberFormatException nfe) {
+                    } catch (DSGMessageStoreException dmse) {
+                        log4j.error("MessageServlet create, error loading reply-to message.", dmse);
+                    }
+                }
 
                 dsgMessageStorer.createMessage(m);
 

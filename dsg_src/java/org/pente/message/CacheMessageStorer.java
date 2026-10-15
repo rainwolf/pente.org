@@ -174,6 +174,15 @@ public class CacheMessageStorer implements DSGMessageStorer {
         return message;
     }
 
+    public DSGMessage getMessage(int mid, boolean includeDeleted)
+            throws DSGMessageStoreException {
+
+        log4j.debug("CacheMessageStorer.getMessage(" + mid + ", " + includeDeleted + ")");
+
+        // pass-through, never cached
+        return baseStorer.getMessage(mid, includeDeleted);
+    }
+
     public List<DSGMessage> getMessages(long pid)
             throws DSGMessageStoreException {
 

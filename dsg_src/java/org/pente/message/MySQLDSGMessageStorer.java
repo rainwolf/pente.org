@@ -39,8 +39,8 @@ public class MySQLDSGMessageStorer implements DSGMessageStorer {
 
                 stmt = con.prepareStatement(
                         "insert into dsg_message " +
-                                "(from_pid, to_pid, subject, body, creation_date) " +
-                                "values(?, ?, ?, ?, ?)",
+                                "(from_pid, to_pid, subject, body, creation_date, reply_to_mid) " +
+                                "values(?, ?, ?, ?, ?, ?)",
                         Statement.RETURN_GENERATED_KEYS);
 
                 stmt.setLong(1, message.getFromPid());
@@ -48,6 +48,11 @@ public class MySQLDSGMessageStorer implements DSGMessageStorer {
                 stmt.setString(3, message.getSubject());
                 stmt.setString(4, message.getBody());
                 stmt.setTimestamp(5, new Timestamp(message.getCreationDate().getTime()));
+                if (message.getReplyToMid() > 0) {
+                    stmt.setInt(6, message.getReplyToMid());
+                } else {
+                    stmt.setNull(6, Types.INTEGER);
+                }
 
                 int rows = stmt.executeUpdate();
                 result = stmt.getGeneratedKeys();
@@ -148,7 +153,11 @@ public class MySQLDSGMessageStorer implements DSGMessageStorer {
     }
 
     public DSGMessage getMessage(int mid) throws DSGMessageStoreException {
-        log4j.debug("MySQLDSGMessageStorer.getMessage(" + mid + ")");
+        return getMessage(mid, false);
+    }
+
+    public DSGMessage getMessage(int mid, boolean includeDeleted) throws DSGMessageStoreException {
+        log4j.debug("MySQLDSGMessageStorer.getMessage(" + mid + ", " + includeDeleted + ")");
         Connection con = null;
         PreparedStatement stmt = null;
         ResultSet result = null;
@@ -158,9 +167,10 @@ public class MySQLDSGMessageStorer implements DSGMessageStorer {
             con = dbHandler.getConnection();
 
             stmt = con.prepareStatement(
-                    "select mid, from_pid, to_pid, subject, body, creation_date, read_fl " +
+                    "select mid, from_pid, to_pid, subject, body, creation_date, read_fl, reply_to_mid " +
                             "from dsg_message " +
-                            "where mid = ? and viewable = 'Y'");
+                            "where mid = ?" +
+                            (includeDeleted ? "" : " and viewable = 'Y'"));
             stmt.setInt(1, mid);
 
             result = stmt.executeQuery();
@@ -173,6 +183,7 @@ public class MySQLDSGMessageStorer implements DSGMessageStorer {
                 m.setBody(result.getString(5));
                 m.setCreationDate(new java.util.Date(result.getTimestamp(6).getTime()));
                 m.setRead(result.getString(7).equals("Y"));
+                m.setReplyToMid(result.getInt(8));
             }
 
         } catch (SQLException se) {
@@ -212,7 +223,7 @@ public class MySQLDSGMessageStorer implements DSGMessageStorer {
             con = dbHandler.getConnection();
 
             stmt = con.prepareStatement(
-                    "select mid, from_pid, to_pid, subject, body, creation_date, read_fl " +
+                    "select mid, from_pid, to_pid, subject, body, creation_date, read_fl, reply_to_mid " +
                             "from dsg_message " +
                             "where to_pid = ? " +
                             "and viewable = 'Y' " +
@@ -229,6 +240,7 @@ public class MySQLDSGMessageStorer implements DSGMessageStorer {
                 m.setBody(result.getString(5));
                 m.setCreationDate(new java.util.Date(result.getTimestamp(6).getTime()));
                 m.setRead(result.getString(7).equals("Y"));
+                m.setReplyToMid(result.getInt(8));
 
                 messages.add(m);
             }
@@ -265,7 +277,7 @@ public class MySQLDSGMessageStorer implements DSGMessageStorer {
             con = dbHandler.getConnection();
 
             stmt = con.prepareStatement(
-                    "select mid, from_pid, to_pid, subject, body, creation_date, read_fl " +
+                    "select mid, from_pid, to_pid, subject, body, creation_date, read_fl, reply_to_mid " +
                             "from dsg_message " +
                             "where to_pid = ? " +
                             "and viewable = 'Y' " +
@@ -283,6 +295,7 @@ public class MySQLDSGMessageStorer implements DSGMessageStorer {
                 m.setBody(result.getString(5));
                 m.setCreationDate(new java.util.Date(result.getTimestamp(6).getTime()));
                 m.setRead(result.getString(7).equals("Y"));
+                m.setReplyToMid(result.getInt(8));
 
                 messages.add(m);
             }
