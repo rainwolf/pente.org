@@ -35,6 +35,8 @@ public class FakeAppleApi implements AppleApi {
     public final List<String> calls = new ArrayList<String>();
     public int failStatuses;
     public int failTransactionInfo;
+    /** transactionInfo throws a final failure that is not a not-found answer */
+    public boolean finalTransactionInfoFailure;
     public int failHistory;
     public int failNotificationHistory;
     public int failStamps;
@@ -64,13 +66,16 @@ public class FakeAppleApi implements AppleApi {
     public synchronized AppleTransaction transactionInfo(AppleEnvironment env, String transactionId)
             throws AppleApiException {
         calls.add("transactionInfo:" + transactionId + ":" + env);
+        if (finalTransactionInfoFailure) {
+            throw new AppleApiException("fake: transactionInfo failed: HTTP 401", false);
+        }
         if (failTransactionInfo > 0) {
             failTransactionInfo--;
             throw transientFailure("transactionInfo");
         }
         AppleTransaction t = transactions.get(transactionId);
         if (t == null) {
-            throw new AppleApiException("fake: 404 transaction id not found", false);
+            throw new AppleApiException("fake: 404 transaction id not found", false, true, null);
         }
         return t.copy();
     }

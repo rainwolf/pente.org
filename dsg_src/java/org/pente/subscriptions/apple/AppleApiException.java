@@ -9,14 +9,25 @@ public class AppleApiException extends Exception {
 
     private final boolean retryable;
 
+    private final boolean transactionNotFound;
+
     public AppleApiException(String message, boolean retryable) {
-        super(message);
-        this.retryable = retryable;
+        this(message, retryable, false, null);
     }
 
     public AppleApiException(String message, boolean retryable, Throwable cause) {
+        this(message, retryable, false, cause);
+    }
+
+    /** transactionNotFound: Apple said the transaction does not exist (TRANSACTION_ID_NOT_FOUND / INVALID_TRANSACTION_ID) */
+    public AppleApiException(String message, boolean retryable, boolean transactionNotFound, Throwable cause) {
         super(message, cause);
         this.retryable = retryable;
+        this.transactionNotFound = transactionNotFound;
+    }
+
+    public boolean isTransactionNotFound() {
+        return transactionNotFound;
     }
 
     public boolean isRetryable() {

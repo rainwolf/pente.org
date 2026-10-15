@@ -91,6 +91,15 @@ public class AppStoreMappingTest extends TestCase {
         assertTrue(!map(new AppleVerificationException("INVALID_CHAIN", false)).isRetryable());
     }
 
+    public void testOnlyUnknownTransactionIdsAreFlaggedNotFound() {
+        assertTrue(map(new APIException(404, APIError.TRANSACTION_ID_NOT_FOUND, "x")).isTransactionNotFound());
+        assertTrue(map(new APIException(400, APIError.INVALID_TRANSACTION_ID, "x")).isTransactionNotFound());
+        assertTrue(!map(new APIException(401)).isTransactionNotFound());
+        assertTrue(!map(new APIException(404, APIError.ORIGINAL_TRANSACTION_ID_NOT_FOUND_RETRYABLE, "x")).isTransactionNotFound());
+        assertTrue(!map(new APIException(500)).isTransactionNotFound());
+        assertTrue(!map(new IllegalStateException("bug")).isTransactionNotFound());
+    }
+
     public void testUnexpectedExceptionsAreFinalAndKeepTheCause() {
         RuntimeException bug = new IllegalStateException("bad input");
         AppleApiException mapped = map(bug);
