@@ -187,6 +187,9 @@
 
 
             function changeCycle() {
+               try {
+                  fetch("/gameServer/tb/pref?name=tbCycle&value=" + document.getElementById('cycleCheck').checked, {credentials: "same-origin"}).catch(function () {});
+               } catch (e) {}
                if (document.getElementById('cycleCheck').checked) {
                   cycleStr = "&cycle";
                } else {
@@ -522,8 +525,28 @@
    var stoneColor = true;
    var trackingI = -1, trackingJ = -1;
    var iRadius = 6 * radius / 4;
-   var cycleCheck = <%=((request.getParameter("cycle") != null)?"true":"false")%>;
-   var cycleStr = <%=((request.getParameter("cycle") != null)?"\"&cycle\"":"\"\"")%>;
+   <%
+      // remembered cycle preference (tbCycle) wins over the &cycle param; guests use the param only
+      boolean tbCycleOn = request.getParameter("cycle") != null;
+      try {
+         String tbCycleUser = (String) request.getAttribute("name");
+         if (tbCycleUser != null) {
+            DSGPlayerData tbCycleData = dsgPlayerStorer.loadPlayer(tbCycleUser);
+            if (tbCycleData != null) {
+               for (DSGPlayerPreference tbCyclePref : dsgPlayerStorer.loadPlayerPreferences(tbCycleData.getPlayerID())) {
+                  if ("tbCycle".equals(tbCyclePref.getName())) {
+                     tbCycleOn = "true".equals(String.valueOf(tbCyclePref.getValue()));
+                     break;
+                  }
+               }
+            }
+         }
+      } catch (Exception tbCycleEx) {
+         // fall back to the request param
+      }
+   %>
+   var cycleCheck = <%= tbCycleOn %>;
+   var cycleStr = <%= tbCycleOn ? "\"&cycle\"" : "\"\"" %>;
    var hideStr = "";
 
    document.onkeydown = leftRight;
