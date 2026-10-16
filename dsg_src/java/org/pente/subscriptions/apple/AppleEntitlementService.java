@@ -97,7 +97,10 @@ public class AppleEntitlementService {
         try {
             tx = api.transactionInfo(claimed.environment, claimed.transactionId);
         } catch (AppleApiException e) {
-            if (e.isRetryable()) {
+            if (!e.isTransactionNotFound()) {
+                // retryable, or final for another reason (revoked key, misconfiguration): never "invalid receipt",
+                // the client would finish a paid purchase; the servlet answers retry later
+                log4j.warn("AppleEntitlementService: transaction lookup for " + claimed.transactionId + " failed: " + e);
                 throw e;
             }
             log4j.warn("AppleEntitlementService: Apple does not know transaction " + claimed.transactionId + ": " + e);

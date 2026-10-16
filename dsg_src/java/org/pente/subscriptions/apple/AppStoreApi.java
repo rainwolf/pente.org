@@ -88,8 +88,10 @@ public class AppStoreApi implements AppleApi {
             int http = a.getHttpStatusCode();
             APIError error = a.getApiError();
             boolean retryable = http == 429 || http >= 500 || (error != null && RETRYABLE_ERRORS.contains(error));
+            boolean notFound = !retryable
+                    && (error == APIError.TRANSACTION_ID_NOT_FOUND || error == APIError.INVALID_TRANSACTION_ID);
             return new AppleApiException(what + " failed: HTTP " + http + " "
-                    + (error != null ? error.name() : String.valueOf(a.getRawApiError())), retryable, e);
+                    + (error != null ? error.name() : String.valueOf(a.getRawApiError())), retryable, notFound, e);
         }
         if (e instanceof AppleVerificationException) {
             return new AppleApiException(what + ": Apple's answer did not verify: " + e.getMessage(),

@@ -179,6 +179,20 @@ public class ApplePurchaseTest extends AppleServiceTestCase {
         assertEquals(PlayClassification.NEW, service.purchase("jws", PID));
     }
 
+    public void testFinalNonNotFoundFailureIsNotInvalid() throws Exception {
+        AppleTransaction t = consumable("3000000000000001", AppleProducts.MONTH_PASS, Long.valueOf(PID));
+        verifier.transactions.put("jws", t);
+        api.transactions.put(t.transactionId, t);
+        api.finalTransactionInfoFailure = true;
+        try {
+            service.purchase("jws", PID);
+            fail("expected AppleApiException");
+        } catch (AppleApiException expected) {
+            assertTrue(!expected.isRetryable());
+            assertTrue(!expected.isTransactionNotFound());
+        }
+    }
+
     public void testUnconfiguredApiIsRetryLater() throws Exception {
         verifier.transactions.put("jws", consumable("3000000000000001", AppleProducts.MONTH_PASS, Long.valueOf(PID)));
         LongSupplier clock = new LongSupplier() {
