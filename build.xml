@@ -31,7 +31,8 @@
             <exclude name="**/client/**"/>
             <exclude name="**/opengl/**"/>
             <exclude name="**/tourney/test/DoubleEliminationDriver.java"/>
-            <exclude name="**/message/test/**"/>
+            <exclude name="**/message/test/BackgroundMailerTest.java"/>
+            <exclude name="**/message/test/FilterTest.java"/>
             <exclude name="**/turnBased/test/TBStorerTest.java"/>
             <classpath refid="test-classpath"/>
         </javac>
@@ -95,6 +96,10 @@
         <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
             <classpath refid="test-classpath"/>
             <arg value="org.pente.gameServer.server.test.ServerSocketEarlyFrameTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.message.test.MessageJsonServletTest"/>
         </java>
     </target>
 

@@ -168,7 +168,10 @@ public class CacheMessageStorer implements DSGMessageStorer {
         }
         if (message == null) {
             message = baseStorer.getMessage(mid);
-            cacheMessage(message);
+            // null means no viewable message with that id; nothing to cache
+            if (message != null) {
+                cacheMessage(message);
+            }
         }
 
         return message;

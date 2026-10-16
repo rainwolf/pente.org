@@ -575,6 +575,10 @@
         <servlet-class>org.pente.gameServer.client.web.ChangeIgnoredServlet</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>MessageJsonServlet</servlet-name>
+        <servlet-class>org.pente.message.MessageJsonServlet</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>GooglePlayRtdnServlet</servlet-name>
         <servlet-class>org.pente.subscriptions.play.GooglePlayRtdnServlet</servlet-class>
     </servlet>
@@ -808,6 +812,10 @@
     <servlet-mapping>
         <servlet-name>ChangeIgnoredServlet</servlet-name>
         <url-pattern>/gameServer/ignored</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>MessageJsonServlet</servlet-name>
+        <url-pattern>/gameServer/messageJson</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>GooglePlayRtdnServlet</servlet-name>
