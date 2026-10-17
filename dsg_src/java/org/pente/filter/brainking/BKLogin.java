@@ -22,7 +22,7 @@ public class BKLogin implements LineFilter {
                 "GET",
                 BKConstants.HOST,
                 BKConstants.LOGIN_REQUEST,
-                new Hashtable(),
+                new Hashtable<>(),
                 cookies,
                 this);
         filterController.run();

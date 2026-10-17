@@ -21,14 +21,16 @@ import java.io.PrintWriter;
  * Created by waliedothman on 28/01/2017.
  */
 public class NotificationServlet extends HttpServlet {
+    private static final long serialVersionUID = -4645069094281936024L;
+
     private static final String errorRedirectPage = "/gameServer/error.jsp";
 
     private static final Category log4j =
             Category.getInstance(NotificationServlet.class.getName());
 
-    private NotificationServer notificationServer;
-    private DSGPlayerStorer dsgPlayerStorer;
-    private ServletContext ctx;
+    private transient NotificationServer notificationServer;
+    private transient DSGPlayerStorer dsgPlayerStorer;
+    private transient ServletContext ctx;
 
     public void init(ServletConfig config) throws ServletException {
 
@@ -57,8 +59,8 @@ public class NotificationServlet extends HttpServlet {
             throws ServletException, IOException {
 
         String player = (String) request.getAttribute("name");
-        String device = (String) request.getParameter("device");
-        String token = (String) request.getParameter("token");
+        String device = request.getParameter("device");
+        String token = request.getParameter("token");
 
         DSGPlayerData playerData = null;
         if (player == null) {

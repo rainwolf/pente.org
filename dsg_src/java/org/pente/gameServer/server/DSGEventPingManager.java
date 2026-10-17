@@ -83,7 +83,7 @@ public class DSGEventPingManager implements PingManager {
 
     public void receivePingEvent(DSGPingEvent pingEvent) {
 
-        PingTimeData p = (PingTimeData) players.get(pingEvent.getPlayer());
+        PingTimeData p = players.get(pingEvent.getPlayer());
         if (p != null) {
             p.updatePingTime((int) (System.currentTimeMillis() - pingEvent.getPingStart()));
         }
@@ -91,7 +91,7 @@ public class DSGEventPingManager implements PingManager {
 
     public long getPingTime(String player) {
 
-        PingTimeData p = (PingTimeData) players.get(player);
+        PingTimeData p = players.get(player);
         if (p == null) {
             return 0; //throw exception?
         }

@@ -17,6 +17,8 @@ import org.apache.log4j.Category;
  */
 public class AppStoreNotificationServlet extends HttpServlet {
 
+    private static final long serialVersionUID = 1323893510437669562L;
+
     private static final Category log4j = Category.getInstance(AppStoreNotificationServlet.class.getName());
 
     /** a V2 notification is tens of KB at most; anything bigger is not Apple's */

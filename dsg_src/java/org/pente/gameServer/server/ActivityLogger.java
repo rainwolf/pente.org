@@ -227,7 +227,7 @@ public class ActivityLogger {
 
     public ActivityData[] getPlayers() {
         synchronized (players) {
-            return (ActivityData[]) players.toArray(new ActivityData[players.size()]);
+            return players.toArray(new ActivityData[players.size()]);
         }
     }
 

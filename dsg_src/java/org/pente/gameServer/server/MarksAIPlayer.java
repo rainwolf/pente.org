@@ -181,7 +181,7 @@ public class MarksAIPlayer extends AbstractAIPlayer {
         clear();
 
         for (Iterator<Integer> it = oldMoves.iterator(); it.hasNext(); ) {
-            addMove(((Integer) it.next()).intValue());
+            addMove(it.next().intValue());
         }
     }
 

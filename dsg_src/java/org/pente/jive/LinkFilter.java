@@ -82,10 +82,7 @@ public class LinkFilter implements Filter {
         }
 
         // now handle all the other urls
-        Iterator<String> iter = schemes.iterator();
-
-        while (iter.hasNext()) {
-            String scheme = iter.next();
+        for (String scheme : schemes) {
             start = string.indexOf(scheme, 0);
 
             while (start != -1) {
@@ -161,12 +158,9 @@ public class LinkFilter implements Filter {
         sortBlocks(urlBlocks);
 
         // now, markup the urls and pass along the filter chain the rest
-        Iterator<URLBlock> blocks = urlBlocks.iterator();
         int last = 0;
 
-        while (blocks.hasNext()) {
-            URLBlock block = blocks.next();
-
+        for (URLBlock block : urlBlocks) {
             if (block.getStart() > 0) {
                 filtered.append(chain.applyFilters(currentIndex,
                         string.substring(last, block.getStart())));
@@ -222,7 +216,7 @@ public class LinkFilter implements Filter {
         StringBuffer buf = new StringBuffer(50);
 
         for (int i = 0; i < schemes.size(); i++) {
-            buf.append((String) schemes.get(i)).append(",");
+            buf.append(schemes.get(i)).append(",");
         }
         buf.deleteCharAt(buf.length() - 1);
 
@@ -257,10 +251,8 @@ public class LinkFilter implements Filter {
         });
     }
 
-    private boolean withinAnotherBlock(List blocks, int start) {
-        for (int i = 0; i < blocks.size(); i++) {
-            URLBlock block = (URLBlock) blocks.get(i);
-
+    private boolean withinAnotherBlock(List<URLBlock> blocks, int start) {
+        for (URLBlock block : blocks) {
             if (start >= block.getStart() && start < block.getEnd()) {
                 return true;
             }

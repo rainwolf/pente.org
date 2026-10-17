@@ -9,6 +9,8 @@ import org.pente.filter.http.*;
 
 public class SimpleHtmlGameStorerSearchRequestData extends SimpleGameStorerSearchRequestData {
 
+    private static final long serialVersionUID = 933783458250342870L;
+
     private int startZippedPartNum = 1;
 
     private static final String ZIPPED_PART_NUM_PARAM = "zippedPartNumParam";

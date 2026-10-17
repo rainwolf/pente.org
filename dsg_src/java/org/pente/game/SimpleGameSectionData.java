@@ -24,6 +24,7 @@ package org.pente.game;
  *  @author dweebo (dweebo@www.pente.org)
  */
 public class SimpleGameSectionData implements GameSectionData, java.io.Serializable {
+    private static final long serialVersionUID = 5798315418059613702L;
 
     /** The name of this section */
     private String name;

@@ -215,9 +215,9 @@ public class SimpleHtmlGameStorerSearchResponseFormat implements GameStorerSearc
 
         // fill the board with blank spaces
         String boardImages[][] = new String[19][19];
-        for (int i = 0; i < boardImages.length; i++) {
-            for (int j = 0; j < boardImages[i].length; j++) {
-                boardImages[i][j] = BLANK_IMAGE;
+        for (String[] row : boardImages) {
+            for (int j = 0; j < row.length; j++) {
+                row[j] = BLANK_IMAGE;
             }
         }
 
@@ -229,9 +229,8 @@ public class SimpleHtmlGameStorerSearchResponseFormat implements GameStorerSearc
         boardImages[12][12] = DOT_IMAGE;
 
         // put query result moves on the board
-        Vector searchResultsVector = data.searchResponseMoveData();
-        for (int i = 0; i < searchResultsVector.size(); i++) {
-            GameStorerSearchResponseMoveData moveData = (GameStorerSearchResponseMoveData) searchResultsVector.elementAt(i);
+        Vector<GameStorerSearchResponseMoveData> searchResultsVector = data.searchResponseMoveData();
+        for (GameStorerSearchResponseMoveData moveData : searchResultsVector) {
             int x = moveData.getMove() % 19;
             int y = moveData.getMove() / 19;
             boardImages[y][x] = imagePath + "light_green.gif";
@@ -388,7 +387,7 @@ public class SimpleHtmlGameStorerSearchResponseFormat implements GameStorerSearc
         int totalGames = 0;
         int totalWins = 0;
 
-        Vector searchResults = data.searchResponseMoveData();
+        Vector<GameStorerSearchResponseMoveData> searchResults = data.searchResponseMoveData();
         for (int i = 0; i <= searchResults.size(); i++) {
 
             GameStorerSearchResponseMoveData moveData = null;
@@ -399,7 +398,7 @@ public class SimpleHtmlGameStorerSearchResponseFormat implements GameStorerSearc
                 moveData.setGames(totalGames);
                 moveData.setWins(totalWins);
             } else {
-                moveData = (GameStorerSearchResponseMoveData) searchResults.elementAt(i);
+                moveData = searchResults.elementAt(i);
 
                 totalGames += moveData.getGames();
                 totalWins += moveData.getWins();
@@ -551,9 +550,8 @@ public class SimpleHtmlGameStorerSearchResponseFormat implements GameStorerSearc
         buffer.append("<td><font face=\"Verdana, Arial, Helvetica, sans-serif\" color=\"#FFFFFF\" size=\"2\"><b>Date</b></font></td>\r\n");
         buffer.append("</tr>\r\n");
 
-        Vector games = data.getGames();
-        for (int i = 0; i < games.size(); i++) {
-            GameData gameData = (GameData) games.elementAt(i);
+        Vector<GameData> games = data.getGames();
+        for (GameData gameData : games) {
 
             buffer.append("<tr bgcolor=\"#0080C0\">\r\n");
 
@@ -776,9 +774,9 @@ public class SimpleHtmlGameStorerSearchResponseFormat implements GameStorerSearc
 
         String selectNames[] = new String[]{"Site", "Event", "Round", "Section"};
         StringBuffer table[][] = new StringBuffer[5][4];
-        for (int i = 0; i < table.length; i++) {
-            for (int j = 0; j < table[i].length; j++) {
-                table[i][j] = new StringBuffer();
+        for (StringBuffer[] row : table) {
+            for (int j = 0; j < row.length; j++) {
+                row[j] = new StringBuffer();
             }
         }
 
@@ -835,12 +833,12 @@ public class SimpleHtmlGameStorerSearchResponseFormat implements GameStorerSearc
         buffer.append("<tr bgcolor=\"#800080\">\r\n");
         buffer.append("<td colspan=\"" + table.length + "\"><font face=\"Verdana, Arial, Helvetica, sans-serif\" color=\"#FFFFFF\" size=\"2\"><b>Filter options</b></font></td>\r\n");
         buffer.append("</tr>\r\n");
-        for (int i = 0; i < table.length; i++) {
+        for (StringBuffer[] row : table) {
 
             buffer.append("<tr bgcolor=\"#800080\">\r\n");
-            for (int j = 0; j < table[i].length; j++) {
+            for (int j = 0; j < row.length; j++) {
                 buffer.append("<td>");
-                buffer.append(table[i][j]);
+                buffer.append(row[j]);
                 buffer.append("</td>\r\n");
             }
             buffer.append("</tr>\r\n");

@@ -23,7 +23,7 @@ public class SwissFormat implements TourneyFormat, Serializable {
 
         if (tourney.getNumRounds() == 0) return false;
         for (Iterator<TourneyRound> rounds = tourney.getRounds().iterator(); rounds.hasNext(); ) {
-            TourneyRound r = (TourneyRound) rounds.next();
+            TourneyRound r = rounds.next();
             if (!r.isComplete()) return false;
         }
 
@@ -68,8 +68,8 @@ public class SwissFormat implements TourneyFormat, Serializable {
                 // sort players by byes ascending
                 // then wins ascending, player who gets the bye is 1st in list
                 Collections.sort(byePlayers, (o1, o2) -> {
-                    TourneyPlayerData p1 = (TourneyPlayerData) o1;
-                    TourneyPlayerData p2 = (TourneyPlayerData) o2;
+                    TourneyPlayerData p1 = o1;
+                    TourneyPlayerData p2 = o2;
                     if (p1.getNumByes() > p2.getNumByes()) return 1;
                     else if (p1.getNumByes() < p2.getNumByes()) return -1;
                     else return p1.getMatchWins() - p2.getMatchWins();
@@ -79,7 +79,7 @@ public class SwissFormat implements TourneyFormat, Serializable {
             byeMatch.setEvent(tourney.getEventID());
             byeMatch.setRound(rnd);
             byeMatch.setSection(1);
-            byeMatch.setPlayer1((TourneyPlayerData) byePlayers.getFirst());
+            byeMatch.setPlayer1(byePlayers.getFirst());
             players.remove(byePlayers.getFirst());
         }
 
@@ -185,12 +185,12 @@ public class SwissFormat implements TourneyFormat, Serializable {
         public TourneySection createRealSection(int eid, int round, int section) {
             TourneySection s = new SwissSection(section);
             Collections.sort(matches, (o1, o2) -> {
-                PotentialMatch m1 = (PotentialMatch) o1;
-                PotentialMatch m2 = (PotentialMatch) o2;
+                PotentialMatch m1 = o1;
+                PotentialMatch m2 = o2;
                 return m1.p1.getSeed() - m2.p1.getSeed();
             });
             for (Iterator<PotentialMatch> it = matches.iterator(); it.hasNext(); ) {
-                PotentialMatch m = (PotentialMatch) it.next();
+                PotentialMatch m = it.next();
                 m.createRealMatch(eid, round, s);
             }
             return s;
@@ -203,8 +203,8 @@ public class SwissFormat implements TourneyFormat, Serializable {
     private PotentialSection getSection(List<TourneyPlayerData> players, int alreadyPlayed[][]) {
         getSectionCount++;
         if (players.size() == 2) {
-            TourneyPlayerData p1 = (TourneyPlayerData) players.get(0);
-            TourneyPlayerData p2 = (TourneyPlayerData) players.get(1);
+            TourneyPlayerData p1 = players.get(0);
+            TourneyPlayerData p2 = players.get(1);
             int repeat = alreadyPlayed[p1.getSeed()][p2.getSeed()];
             //log4j.debug("getSection(), size=" + players.size() + ", " + p1.getName() + "-" +
             //p2.getName() + " r=" + repeat);
@@ -213,8 +213,8 @@ public class SwissFormat implements TourneyFormat, Serializable {
 
         PotentialSection ps = null;
         for (int j = 1; j < 4 && j < players.size(); j++) {
-            TourneyPlayerData p1 = (TourneyPlayerData) players.get(0);
-            TourneyPlayerData p2 = (TourneyPlayerData) players.get(j);
+            TourneyPlayerData p1 = players.get(0);
+            TourneyPlayerData p2 = players.get(j);
             int repeat = alreadyPlayed[p1.getSeed()][p2.getSeed()];
             //log4j.debug("getSection(), size=" + players.size() + ", " + p1.getName() + "-" +
             //p2.getName() + " r=" + repeat);

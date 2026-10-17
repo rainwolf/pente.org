@@ -8,6 +8,8 @@ package org.pente.turnBased;
  */
 public class InvalidMoveException extends TBStoreException {
 
+    private static final long serialVersionUID = -551809551323851413L;
+
     public InvalidMoveException(String message) {
         super(message);
     }

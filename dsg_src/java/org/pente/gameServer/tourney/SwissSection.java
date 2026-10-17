@@ -154,8 +154,8 @@ public class SwissSection extends TourneySection implements Serializable {
 
         // sort matches by player names using p1+p2 (to group games in a match together)
         Collections.sort(matches, (o1, o2) -> {
-            TourneyMatch m1 = (TourneyMatch) o1;
-            TourneyMatch m2 = (TourneyMatch) o2;
+            TourneyMatch m1 = o1;
+            TourneyMatch m2 = o2;
             if (m1.isBye()) return 1;
             else if (m2.isBye()) return -1;
 
@@ -184,7 +184,7 @@ public class SwissSection extends TourneySection implements Serializable {
         //look through matches, determine winners, counts if match complete
         SingleEliminationMatch currentMatch = null;
         for (int i = 0; i < matches.size(); i++) {
-            TourneyMatch m = (TourneyMatch) matches.get(i);
+            TourneyMatch m = matches.get(i);
 
             if (m.isBye()) {
                 if (currentMatch != null) {
@@ -258,7 +258,7 @@ public class SwissSection extends TourneySection implements Serializable {
 
         players.clear();
         for (Iterator<SingleEliminationMatch> it = swissMatches.iterator(); it.hasNext(); ) {
-            SingleEliminationMatch m = (SingleEliminationMatch) it.next();
+            SingleEliminationMatch m = it.next();
             players.add(m.getPlayer1());
             if (!m.isBye()) players.add(m.getPlayer2());
         }
@@ -274,7 +274,7 @@ public class SwissSection extends TourneySection implements Serializable {
 
     public void updateAlreadyPlayed(int[][] alreadyPlayed) {
         for (int i = 0; i < matches.size(); i += 4) {
-            TourneyMatch m = (TourneyMatch) matches.get(i);
+            TourneyMatch m = matches.get(i);
             if (m.isBye()) continue;
             alreadyPlayed[m.getPlayer1().getSeed()][m.getPlayer2().getSeed()]++;
             alreadyPlayed[m.getPlayer2().getSeed()][m.getPlayer1().getSeed()]++;

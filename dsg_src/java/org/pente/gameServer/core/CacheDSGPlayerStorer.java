@@ -127,9 +127,7 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
     }
 
     public void notifyListeners(DSGPlayerData dsgPlayerData) {
-        for (Iterator i = listeners.iterator(); i.hasNext(); ) {
-            PlayerDataChangeListener l = (PlayerDataChangeListener)
-                    i.next();
+        for (PlayerDataChangeListener l : listeners) {
             l.playerChanged(dsgPlayerData);
         }
     }
@@ -270,7 +268,7 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
         notifyListeners(dsgPlayerData);
     }
 
-    public Collection getDonations(long playerID) throws DSGPlayerStoreException {
+    public Collection<DSGDonationData> getDonations(long playerID) throws DSGPlayerStoreException {
         return basePlayerStorer.getDonations(playerID);
     }
 
@@ -336,7 +334,7 @@ public class CacheDSGPlayerStorer implements DSGPlayerStorer {
     }
 
 
-    public Vector search(
+    public Vector<DSGPlayerData> search(
             int game, int sortField,
             int startNum, int length,
             boolean showProvisional, boolean showInactive,

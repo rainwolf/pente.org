@@ -48,8 +48,7 @@ public class InMemoryTBGameStorer implements TBGameStorer {
         // Assign gids to any games whose gid == 0, on the passed-in set so the
         // caller can read the generated gids back.
         TBGame[] games = set.getGames();
-        for (int i = 0; i < games.length; i++) {
-            TBGame g = games[i];
+        for (TBGame g : games) {
             if (g != null) {
                 if (g.getGid() == 0) {
                     g.setGid(nextGid++);

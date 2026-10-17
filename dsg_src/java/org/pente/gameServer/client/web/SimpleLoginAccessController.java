@@ -36,8 +36,8 @@ public class SimpleLoginAccessController implements LoginAccessController {
             return false;
         }
 
-        for (int i = 0; i < loginPages.length; i++) {
-            if (resource.endsWith(loginPages[i])) {
+        for (String page : loginPages) {
+            if (resource.endsWith(page)) {
                 return true;
             }
         }
@@ -60,8 +60,8 @@ public class SimpleLoginAccessController implements LoginAccessController {
             return false;
         }
 
-        for (int i = 0; i < restrictedPages.length; i++) {
-            if (resource.endsWith(restrictedPages[i])) {
+        for (String page : restrictedPages) {
+            if (resource.endsWith(page)) {
                 return true;
             }
         }

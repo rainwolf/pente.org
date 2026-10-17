@@ -18,11 +18,12 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 public class AgeVerificationServlet extends HttpServlet {
+    private static final long serialVersionUID = -2240267916917545976L;
 
     private static final Category cat = Category.getInstance(AgeVerificationServlet.class.getName());
 
-    CacheDSGPlayerStorer dsgPlayerStorer;
-    private PasswordHelper passwordHelper;
+    transient CacheDSGPlayerStorer dsgPlayerStorer;
+    private transient PasswordHelper passwordHelper;
 
     public void init(ServletConfig config) throws ServletException {
         super.init(config);

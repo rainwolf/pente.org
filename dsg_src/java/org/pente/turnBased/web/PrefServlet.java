@@ -12,10 +12,12 @@ import org.pente.gameServer.server.Resources;
 
 public class PrefServlet extends HttpServlet {
 
+    private static final long serialVersionUID = 4081743069807558230L;
+
     private static final Category log4j = Category.getInstance(
             PrefServlet.class.getName());
 
-    private Resources resources;
+    private transient Resources resources;
 
     public void init(ServletConfig config) throws ServletException {
 

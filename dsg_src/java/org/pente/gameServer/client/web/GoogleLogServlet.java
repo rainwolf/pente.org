@@ -8,6 +8,7 @@ import jakarta.servlet.http.*;
 import org.apache.log4j.*;
 
 public class GoogleLogServlet extends HttpServlet {
+    private static final long serialVersionUID = 3792861293860900827L;
 
     private static final Category log4j = Category.getInstance("google");
 

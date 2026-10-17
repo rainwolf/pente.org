@@ -289,7 +289,7 @@ public class Tourney implements Serializable {
         if (rounds.isEmpty() || getLastRound().getWinners().isEmpty()) {
             return null;
         }
-        TourneyPlayerData p = (TourneyPlayerData) getLastRound().getWinners().get(0);
+        TourneyPlayerData p = getLastRound().getWinners().get(0);
         return p.getName();
     }
 
@@ -299,7 +299,7 @@ public class Tourney implements Serializable {
         if (rounds.isEmpty() || getLastRound().getWinners().isEmpty()) {
             return 0;
         }
-        TourneyPlayerData p = (TourneyPlayerData) getLastRound().getWinners().get(0);
+        TourneyPlayerData p = getLastRound().getWinners().get(0);
         return p.getPlayerID();
     }
 

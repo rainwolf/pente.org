@@ -34,6 +34,8 @@ import org.pente.game.*;
  */
 public class IYTGameData extends DefaultGameData {
 
+    private static final long serialVersionUID = -5849058535530585676L;
+
     /** Site is always iyt */
     public IYTGameData() {
         site = IYTConstants.SITE_NAME;

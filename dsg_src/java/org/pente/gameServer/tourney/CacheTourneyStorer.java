@@ -103,8 +103,8 @@ public class CacheTourneyStorer implements TourneyStorer {
     }
 
     private void notifyListeners(TourneyEvent event) {
-        for (Iterator it = listeners.iterator(); it.hasNext(); ) {
-            TourneyListener tl = (TourneyListener) it.next();
+        for (Iterator<TourneyListener> it = listeners.iterator(); it.hasNext(); ) {
+            TourneyListener tl = it.next();
             tl.tourneyEventOccurred(event);
         }
     }
@@ -409,9 +409,9 @@ public class CacheTourneyStorer implements TourneyStorer {
         log4j.debug("getUnplayedMatch(" + player1ID + ", " + player2ID + ", " + eid + ")");
 
         Tourney t = getTourney(eid);
-        for (Iterator sections = t.getLastRound().getSections().iterator();
+        for (Iterator<TourneySection> sections = t.getLastRound().getSections().iterator();
              sections.hasNext(); ) {
-            TourneySection s = (TourneySection) sections.next();
+            TourneySection s = sections.next();
             log4j.debug("checking section " + s.getSection());
             TourneyMatch m = s.getUnplayedMatch(player1ID, player2ID);
             if (m != null) {
@@ -570,12 +570,12 @@ public class CacheTourneyStorer implements TourneyStorer {
      * Operates on the CALLER'S passed tourney (so admin/manageTourney.jsp's
      * reads-after-write see the applied results) and persists it.
      */
-    public synchronized void updateMatches(List tourneyMatches, Tourney t) throws Throwable {
+    public synchronized void updateMatches(List<TourneyMatch> tourneyMatches, Tourney t) throws Throwable {
 
         log4j.debug("updateMatches()");
         if (tourneyMatches != null) {
-            for (Iterator it = tourneyMatches.iterator(); it.hasNext(); ) {
-                TourneyMatch m = (TourneyMatch) it.next();
+            for (Iterator<TourneyMatch> it = tourneyMatches.iterator(); it.hasNext(); ) {
+                TourneyMatch m = it.next();
                 backingStorer.updateMatch(m);
                 applyMatchTo(t, m);
             }

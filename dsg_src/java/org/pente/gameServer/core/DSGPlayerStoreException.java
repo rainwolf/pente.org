@@ -22,6 +22,8 @@ package org.pente.gameServer.core;
 import org.pente.game.ChainedException;
 
 public class DSGPlayerStoreException extends ChainedException {
+    private static final long serialVersionUID = 26119418703844618L;
+
 
     public DSGPlayerStoreException(String message) {
         super(message);

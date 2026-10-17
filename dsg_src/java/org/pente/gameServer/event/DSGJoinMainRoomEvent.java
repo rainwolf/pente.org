@@ -3,6 +3,7 @@ package org.pente.gameServer.event;
 import org.pente.gameServer.core.*;
 
 public class DSGJoinMainRoomEvent extends AbstractDSGEvent implements DSGMainRoomEvent {
+    private static final long serialVersionUID = -3695510933898348282L;
 
     private String player;
     private SimpleDSGPlayerData dsgPlayerData;

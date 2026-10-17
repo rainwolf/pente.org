@@ -72,8 +72,8 @@ public abstract class AbstractTourneyFormat implements TourneyFormat {
         } else {
             // now sort those winners by seeds for placement in sections
             Collections.sort(players, (o1, o2) -> {
-                TourneyPlayerData p1 = (TourneyPlayerData) o1;
-                TourneyPlayerData p2 = (TourneyPlayerData) o2;
+                TourneyPlayerData p1 = o1;
+                TourneyPlayerData p2 = o2;
                 return p1.getSeed() - p2.getSeed();
             });
         }

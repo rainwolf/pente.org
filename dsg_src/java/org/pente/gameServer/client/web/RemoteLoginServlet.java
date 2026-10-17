@@ -21,15 +21,16 @@ import org.pente.gameServer.server.*;
 import org.pente.turnBased.*;
 
 public class RemoteLoginServlet extends HttpServlet {
+    private static final long serialVersionUID = 2165341654209084901L;
 
     private static final Category log4j = Category.getInstance(
             RemoteLoginServlet.class.getName());
 
-    private Resources resources;
+    private transient Resources resources;
 
-    private PasswordHelper passwordHelper;
-    private ActivityLogger activityLogger;
-    private LoginHandler loginHandler;
+    private transient PasswordHelper passwordHelper;
+    private transient ActivityLogger activityLogger;
+    private transient LoginHandler loginHandler;
 
     public void init(ServletConfig config) throws ServletException {
 

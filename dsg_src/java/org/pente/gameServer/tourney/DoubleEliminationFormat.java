@@ -95,12 +95,12 @@ public class DoubleEliminationFormat extends SingleEliminationFormat implements 
         public TourneySection createRealSection(int eid, int round, int section, boolean set) {
             TourneySection s = new SingleEliminationSection(section);
             Collections.sort(matches, (o1, o2) -> {
-                PotentialMatch m1 = (PotentialMatch) o1;
-                PotentialMatch m2 = (PotentialMatch) o2;
+                PotentialMatch m1 = o1;
+                PotentialMatch m2 = o2;
                 return m1.p1.getSeed() - m2.p1.getSeed();
             });
-            for (Iterator it = matches.iterator(); it.hasNext(); ) {
-                PotentialMatch m = (PotentialMatch) it.next();
+            for (Iterator<PotentialMatch> it = matches.iterator(); it.hasNext(); ) {
+                PotentialMatch m = it.next();
                 m.createRealMatch(eid, round, s, set);
             }
             return s;
@@ -116,8 +116,8 @@ public class DoubleEliminationFormat extends SingleEliminationFormat implements 
             return new PotentialSection();
         }
         if (players.size() == 2) {
-            TourneyPlayerData p1 = (TourneyPlayerData) players.get(0);
-            TourneyPlayerData p2 = (TourneyPlayerData) players.get(1);
+            TourneyPlayerData p1 = players.get(0);
+            TourneyPlayerData p2 = players.get(1);
             log4j.info("getSection(), size=" + players.size() + ", " + p1.getName() + "-" + p2.getName());
             int repeat = alreadyPlayed[p1.getSeed()][p2.getSeed()];
             //p2.getName() + " r=" + repeat);
@@ -126,8 +126,8 @@ public class DoubleEliminationFormat extends SingleEliminationFormat implements 
 
         PotentialSection ps = null;
         for (int j = players.size() - 1; j > 0; j--) {
-            TourneyPlayerData p1 = (TourneyPlayerData) players.get(0);
-            TourneyPlayerData p2 = (TourneyPlayerData) players.get(j);
+            TourneyPlayerData p1 = players.get(0);
+            TourneyPlayerData p2 = players.get(j);
             int repeat = alreadyPlayed[p1.getSeed()][p2.getSeed()];
             //log4j.debug("getSection(), size=" + players.size() + ", " + p1.getName() + "-" +
             //p2.getName() + " r=" + repeat);
@@ -176,17 +176,17 @@ public class DoubleEliminationFormat extends SingleEliminationFormat implements 
      */
     void updatePlayerData(Tourney tourney) {
         if (tourney.getNumRounds() == 0) return;
-        for (Iterator it = tourney.getRound(1).getPlayers().iterator(); it.hasNext(); ) {
-            TourneyPlayerData p = (TourneyPlayerData) it.next();
+        for (Iterator<TourneyPlayerData> it = tourney.getRound(1).getPlayers().iterator(); it.hasNext(); ) {
+            TourneyPlayerData p = it.next();
             p.reset();
         }
 
-        for (Iterator it = tourney.getRounds().iterator(); it.hasNext(); ) {
-            TourneyRound r = (TourneyRound) it.next();
-            for (Iterator it2 = r.getSections().iterator(); it2.hasNext(); ) {
+        for (Iterator<TourneyRound> it = tourney.getRounds().iterator(); it.hasNext(); ) {
+            TourneyRound r = it.next();
+            for (Iterator<TourneySection> it2 = r.getSections().iterator(); it2.hasNext(); ) {
                 SingleEliminationSection s = (SingleEliminationSection) it2.next();
-                for (Iterator it3 = s.getSingleEliminationMatches().iterator(); it3.hasNext(); ) {
-                    SingleEliminationMatch m = (SingleEliminationMatch) it3.next();
+                for (Iterator<SingleEliminationMatch> it3 = s.getSingleEliminationMatches().iterator(); it3.hasNext(); ) {
+                    SingleEliminationMatch m = it3.next();
                     if (m.isBye()) {
                         m.getPlayer1().incrementByes();
                         if (m.isForfeit()) { // not sure why this would happen but...
@@ -218,10 +218,10 @@ public class DoubleEliminationFormat extends SingleEliminationFormat implements 
         updatePlayerData(tourney);
 
         // add all players who don't have 2 losses to next round
-        for (Iterator it = lastRound.getSections().iterator(); it.hasNext(); ) {
-            TourneySection s = (TourneySection) it.next();
-            for (Iterator it2 = s.getPlayers().iterator(); it2.hasNext(); ) {
-                TourneyPlayerData p = (TourneyPlayerData) it2.next();
+        for (Iterator<TourneySection> it = lastRound.getSections().iterator(); it.hasNext(); ) {
+            TourneySection s = it.next();
+            for (Iterator<TourneyPlayerData> it2 = s.getPlayers().iterator(); it2.hasNext(); ) {
+                TourneyPlayerData p = it2.next();
 
                 // don't include players who deregistered
                 try {
@@ -254,8 +254,8 @@ public class DoubleEliminationFormat extends SingleEliminationFormat implements 
         }
 
         Comparator<TourneyPlayerData> seedComparator = (o1, o2) -> {
-            TourneyPlayerData p1 = (TourneyPlayerData) o1;
-            TourneyPlayerData p2 = (TourneyPlayerData) o2;
+            TourneyPlayerData p1 = o1;
+            TourneyPlayerData p2 = o2;
             return p1.getSeed() - p2.getSeed();
         };
         boolean set = !GridStateFactory.isSingleGameSet(tourney.getGame());
@@ -275,7 +275,7 @@ public class DoubleEliminationFormat extends SingleEliminationFormat implements 
                 byeMatch.setEvent(tourney.getEventID());
                 byeMatch.setRound(rnd);
                 byeMatch.setSection(1);
-                TourneyPlayerData byePlayer = (TourneyPlayerData)
+                TourneyPlayerData byePlayer =
                         byePlayers.get(0);
                 byeMatch.setPlayer1(byePlayer);
                 bracketPlayers0.remove(byePlayer);
@@ -307,7 +307,7 @@ public class DoubleEliminationFormat extends SingleEliminationFormat implements 
                 byeMatch.setEvent(tourney.getEventID());
                 byeMatch.setRound(rnd);
                 byeMatch.setSection(2);
-                TourneyPlayerData byePlayer = (TourneyPlayerData)
+                TourneyPlayerData byePlayer =
                         byePlayers.get(0);
                 byeMatch.setPlayer1(byePlayer);
                 bracketPlayers1.remove(byePlayer);

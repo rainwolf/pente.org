@@ -65,6 +65,8 @@ public class MMAIProtocol {
     }
 
     public static class ProtocolException extends Exception {
+        private static final long serialVersionUID = 8646859701454605155L;
+
         public ProtocolException(String message) {
             super(message);
         }

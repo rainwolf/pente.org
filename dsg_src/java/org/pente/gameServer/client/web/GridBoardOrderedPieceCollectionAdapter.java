@@ -181,7 +181,7 @@ public class GridBoardOrderedPieceCollectionAdapter extends OrderedPieceCollecti
         }
 
         for (int i = 0; i < listeners.size(); i++) {
-            GridBoardListener l = (GridBoardListener) listeners.elementAt(i);
+            GridBoardListener l = listeners.elementAt(i);
             l.gridClicked(x, y, button);
         }
     }

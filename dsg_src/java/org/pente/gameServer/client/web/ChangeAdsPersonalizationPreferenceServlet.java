@@ -16,11 +16,12 @@ import java.io.IOException;
 
 
 public class ChangeAdsPersonalizationPreferenceServlet extends HttpServlet {
+    private static final long serialVersionUID = 5646669635745188580L;
 
     private static final Category log4j =
             Category.getInstance(ChangeProfileServlet.class.getName());
 
-    private DSGPlayerStorer dsgPlayerStorer;
+    private transient DSGPlayerStorer dsgPlayerStorer;
 
     public void init(ServletConfig config) throws ServletException {
 
@@ -68,7 +69,7 @@ public class ChangeAdsPersonalizationPreferenceServlet extends HttpServlet {
                 return;
             }
 
-            String email = (String) request.getParameter("personalizeAds");
+            String email = request.getParameter("personalizeAds");
             boolean emailDsgMessages = email != null && email.equals("Y");
             DSGPlayerPreference p = new DSGPlayerPreference(
                     "personalizeAds", Boolean.valueOf(emailDsgMessages));

@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.Vector;
 
 public class GoStatePieceCollectionAdapter extends GoState {
+    private static final long serialVersionUID = 8248031053312466031L;
+
 
     protected Vector<OrderedPieceCollection> listeners;
     protected Vector<GridPieceAction> gridPieces;
@@ -65,7 +67,7 @@ public class GoStatePieceCollectionAdapter extends GoState {
         shadowState.clear();
         gridPieces.removeAllElements();
         for (int i = 0; i < listeners.size(); i++) {
-            OrderedPieceCollection o = (OrderedPieceCollection) listeners.elementAt(i);
+            OrderedPieceCollection o = listeners.elementAt(i);
             o.clearPieces();
             updateScoreOnBoard(i);
         }
@@ -100,7 +102,7 @@ public class GoStatePieceCollectionAdapter extends GoState {
         gridPieces.addElement(a);
 
         for (int i = 0; i < listeners.size(); i++) {
-            OrderedPieceCollection o = (OrderedPieceCollection) listeners.elementAt(i);
+            OrderedPieceCollection o = listeners.elementAt(i);
             o.addPiece(p, super.getNumMoves());
             updateScoreOnBoard(i);
         }
@@ -116,7 +118,7 @@ public class GoStatePieceCollectionAdapter extends GoState {
     public synchronized void undoMove() {
 
         for (int i = 0; i < gridPieces.size(); i++) {
-            GridPieceAction a = (GridPieceAction) gridPieces.elementAt(i);
+            GridPieceAction a = gridPieces.elementAt(i);
             if (a.getTurn() == super.getNumMoves()) {
                 gridPieces.removeElementAt(i);
             }
@@ -129,7 +131,7 @@ public class GoStatePieceCollectionAdapter extends GoState {
 
 
         for (int i = 0; i < listeners.size(); i++) {
-            OrderedPieceCollection o = (OrderedPieceCollection) listeners.elementAt(i);
+            OrderedPieceCollection o = listeners.elementAt(i);
             o.undoLastTurn();
             updateScoreOnBoard(i);
         }
@@ -150,7 +152,7 @@ public class GoStatePieceCollectionAdapter extends GoState {
     public synchronized void rejectAndContinue() {
         gridPieces.removeAllElements();
         for (int i = 0; i < listeners.size(); i++) {
-            OrderedPieceCollection o = (OrderedPieceCollection) listeners.elementAt(i);
+            OrderedPieceCollection o = listeners.elementAt(i);
             o.clearPieces();
         }
         super.rejectAndContinue();
@@ -210,12 +212,12 @@ public class GoStatePieceCollectionAdapter extends GoState {
             int y = p.y;
             y = super.getGridSizeY() - y - 1;
             for (int i = gridPieces.size() - 1; i >= 0; i--) {
-                GridPieceAction a = (GridPieceAction) gridPieces.elementAt(i);
+                GridPieceAction a = gridPieces.elementAt(i);
                 if (a.getGridPiece().getX() == x &&
                         a.getGridPiece().getY() == y) {
 
                     for (int j = 0; j < listeners.size(); j++) {
-                        OrderedPieceCollection o = (OrderedPieceCollection) listeners.elementAt(j);
+                        OrderedPieceCollection o = listeners.elementAt(j);
                         o.removePiece(a.getGridPiece(), super.getNumMoves());
                     }
 
@@ -252,7 +254,7 @@ public class GoStatePieceCollectionAdapter extends GoState {
 //            gridPieces.addElement(a);
 //
 //            for (int i = 0; i < listeners.size(); i++) {
-//                OrderedPieceCollection o = (OrderedPieceCollection) listeners.elementAt(i);
+//                OrderedPieceCollection o = listeners.elementAt(i);
 //                o.addPiece(p, super.getNumMoves());
 //            }
         }

@@ -31,9 +31,11 @@ import org.pente.game.*;
 
 public class GameVenueJSServlet extends HttpServlet {
 
+    private static final long serialVersionUID = 2389328174968366275L;
+
     private long lastModified;
     private String jsString;
-    private Timer timer;
+    private transient Timer timer;
 
     private static Category cat = Category.getInstance(GameVenueJSServlet.class.getName());
 
@@ -74,7 +76,7 @@ public class GameVenueJSServlet extends HttpServlet {
 
         //cat.debug("doPost()");
 
-        String update = (String) request.getParameter("update");
+        String update = request.getParameter("update");
         if (update != null) {
             cat.info("manual reload");
             timer.update();

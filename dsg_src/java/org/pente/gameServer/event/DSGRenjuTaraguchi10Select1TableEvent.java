@@ -1,6 +1,7 @@
 package org.pente.gameServer.event;
 
 public class DSGRenjuTaraguchi10Select1TableEvent extends AbstractDSGTableEvent {
+    private static final long serialVersionUID = -5122676063408924604L;
 
     private int move;
 

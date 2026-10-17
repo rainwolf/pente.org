@@ -3,6 +3,7 @@ package org.pente.gameServer.event;
 import java.io.Serializable;
 
 public class ClientInfo implements Serializable {
+    private static final long serialVersionUID = 2063825001006616637L;
 
     private String browser;
     private String javaVersion;

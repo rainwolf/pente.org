@@ -15,6 +15,8 @@ import org.apache.log4j.*;
 
 public class CancelServlet extends HttpServlet {
 
+    private static final long serialVersionUID = 667934154283626710L;
+
     private static final Category log4j = Category.getInstance(
             CancelServlet.class.getName());
 
@@ -24,7 +26,7 @@ public class CancelServlet extends HttpServlet {
     private static final String cancelRedirectPage = "/gameServer/index.jsp";
     private static final String mobileRedirectPage = "/gameServer/mobile/empty.jsp";
 
-    private Resources resources;
+    private transient Resources resources;
 
     public void init(ServletConfig config) throws ServletException {
 
@@ -57,9 +59,9 @@ public class CancelServlet extends HttpServlet {
         String player = (String) request.getAttribute("name");
         DSGPlayerData playerData = null;
 
-        String sidStr = (String) request.getParameter("sid");
+        String sidStr = request.getParameter("sid");
         long sid = 0;
-        String gidStr = (String) request.getParameter("gid");
+        String gidStr = request.getParameter("gid");
         TBSet set = null;
 
         // player must be logged in, so name will be populated
@@ -159,7 +161,7 @@ public class CancelServlet extends HttpServlet {
                     return;
                 }
 
-                String isMobile = (String) request.getParameter("mobile");
+                String isMobile = request.getParameter("mobile");
                 if (isMobile == null) {
                     getServletContext().getRequestDispatcher(requestRedirectPage).
                             forward(request, response);
@@ -186,7 +188,7 @@ public class CancelServlet extends HttpServlet {
 
                 tbGameStorer.cancelSet(set);
 
-                String isMobile = (String) request.getParameter("mobile");
+                String isMobile = request.getParameter("mobile");
                 if (isMobile == null) {
                     getServletContext().getRequestDispatcher(cancelRedirectPage).
                             forward(request, response);
@@ -217,7 +219,7 @@ public class CancelServlet extends HttpServlet {
                 TBGame game = set.getGame(gid);
                 String redirect = "";
                 // if my turn redirect to the game
-                String isMobile = (String) request.getParameter("mobileBrowser");
+                String isMobile = request.getParameter("mobileBrowser");
                 if (game.getCurrentPlayer() == playerData.getPlayerID()) {
                     if (isMobile == null) {
                         redirect = "/gameServer/tb/game?gid=" + gidStr + "&command=load";
@@ -231,7 +233,7 @@ public class CancelServlet extends HttpServlet {
                 }
 
                 if (isMobile == null) {
-                    isMobile = (String) request.getParameter("mobile");
+                    isMobile = request.getParameter("mobile");
                 } else {
                     isMobile = null;
                 }

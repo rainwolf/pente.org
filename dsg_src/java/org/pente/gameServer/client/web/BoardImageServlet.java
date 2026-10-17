@@ -15,11 +15,12 @@ import org.pente.game.*;
 import org.pente.gameServer.core.*;
 
 public class BoardImageServlet extends HttpServlet {
+    private static final long serialVersionUID = 5625646459938536070L;
 
     private static Category log4j =
             Category.getInstance(BoardImageServlet.class.getName());
 
-    private GameStorer gameStorer;
+    private transient GameStorer gameStorer;
 
     public void init(ServletConfig config) throws ServletException {
 

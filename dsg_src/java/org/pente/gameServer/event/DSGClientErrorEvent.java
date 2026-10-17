@@ -1,6 +1,7 @@
 package org.pente.gameServer.event;
 
 public class DSGClientErrorEvent extends AbstractDSGEvent {
+    private static final long serialVersionUID = 5667776016548959253L;
 
     private Throwable throwable;
 

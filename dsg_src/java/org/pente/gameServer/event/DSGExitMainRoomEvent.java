@@ -1,6 +1,7 @@
 package org.pente.gameServer.event;
 
 public class DSGExitMainRoomEvent extends AbstractDSGEvent implements DSGMainRoomEvent {
+    private static final long serialVersionUID = -6055977278430600970L;
 
     private String player;
     private boolean booted;

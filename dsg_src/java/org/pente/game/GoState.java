@@ -9,6 +9,7 @@ import static org.pente.game.ZobristUtil.rand;
  */
 public class GoState extends GridStateDecorator
         implements GridState, HashCalculator {
+    private static final long serialVersionUID = -2926361038852275257L;
 
     private boolean allowSuicide = false;
 
@@ -699,7 +700,7 @@ public class GoState extends GridStateDecorator
         Vector<Integer> oldMoves = new Vector<>();
         int l = containsDoublePass() - 1;
         for (int i = 0; i < l; i++) {
-            oldMoves.add((Integer) ((SimpleGridState) gridState).getMovesVector().get(i));
+            oldMoves.add(((SimpleGridState) gridState).getMovesVector().get(i));
         }
 
         gridState.clear();

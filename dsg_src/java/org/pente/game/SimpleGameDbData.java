@@ -3,6 +3,7 @@ package org.pente.game;
 import java.util.*;
 
 public class SimpleGameDbData implements GameDbData, Cloneable, java.io.Serializable {
+    private static final long serialVersionUID = 4401173905686558840L;
 
     private int id;
     private String name;

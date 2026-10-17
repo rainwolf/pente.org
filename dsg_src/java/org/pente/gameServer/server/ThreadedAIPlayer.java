@@ -148,7 +148,7 @@ class ThreadedAIPlayer implements AIPlayer, Runnable {
                     }
                 }
 
-                event = (DSGEvent) events.remove(0);
+                event = events.remove(0);
             }
 
             if (event instanceof DSGMoveTableEvent) {

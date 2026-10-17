@@ -2,6 +2,7 @@
 package org.pente.gameServer.event;
 
 public class DSGInviteTableErrorEvent extends AbstractDSGTableErrorEvent {
+    private static final long serialVersionUID = -2231977003625073119L;
 
     private String toInvite;
 

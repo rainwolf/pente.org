@@ -74,8 +74,7 @@ public class PenteBoardOrderedPieceCollectionAdapter extends GridBoardOrderedPie
     public synchronized void visitLastTurn() {
 
         if (currentTurn < maxTurn) {
-            for (int i = 0; i < pieceActions.size(); i++) {
-                GridPieceAction action = (GridPieceAction) pieceActions.elementAt(i);
+            for (GridPieceAction action : pieceActions) {
                 if (action.getTurn() > currentTurn) {
                     if (action.getAction() == GridPieceAction.REMOVE) {
                         penteBoardComponent.incrementCaptures(3 - action.getGridPiece().getPlayer());
@@ -95,8 +94,7 @@ public class PenteBoardOrderedPieceCollectionAdapter extends GridBoardOrderedPie
         // we're going forward
         else if (currentTurn < turn) {
 
-            for (int i = 0; i < pieceActions.size(); i++) {
-                GridPieceAction action = (GridPieceAction) pieceActions.elementAt(i);
+            for (GridPieceAction action : pieceActions) {
                 if (action.getTurn() <= turn &&
                         action.getTurn() > currentTurn) {
                     if (action.getAction() == GridPieceAction.REMOVE) {
@@ -108,7 +106,7 @@ public class PenteBoardOrderedPieceCollectionAdapter extends GridBoardOrderedPie
         // we're going backward
         else if (currentTurn > turn) {
             for (int i = pieceActions.size() - 1; i >= 0; i--) {
-                GridPieceAction action = (GridPieceAction) pieceActions.elementAt(i);
+                GridPieceAction action = pieceActions.elementAt(i);
                 if (action.getTurn() > turn &&
                         action.getTurn() <= currentTurn) {
                     if (action.getAction() == GridPieceAction.REMOVE) {
@@ -122,8 +120,7 @@ public class PenteBoardOrderedPieceCollectionAdapter extends GridBoardOrderedPie
     }
 
     void changeCaptures(int turn, boolean increment) {
-        for (int i = 0; i < pieceActions.size(); i++) {
-            GridPieceAction action = (GridPieceAction) pieceActions.elementAt(i);
+        for (GridPieceAction action : pieceActions) {
             if (action.getTurn() == turn) {
                 if (action.getAction() == GridPieceAction.REMOVE) {
                     if (increment) {

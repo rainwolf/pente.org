@@ -694,10 +694,10 @@ public class ImageInfo {
         }
         format = FORMAT_SWF;
         int bitSize = (int) readUBits(5);
-        int minX = (int) readSBits(bitSize);
-        int maxX = (int) readSBits(bitSize);
-        int minY = (int) readSBits(bitSize);
-        int maxY = (int) readSBits(bitSize);
+        int minX = readSBits(bitSize);
+        int maxX = readSBits(bitSize);
+        int minY = readSBits(bitSize);
+        int maxY = readSBits(bitSize);
         width = maxX / 20; //cause we're in twips
         height = maxY / 20;  //cause we're in twips
         setPhysicalWidthDpi(72);
@@ -711,8 +711,8 @@ public class ImageInfo {
      */
     private static boolean determineVerbosity(String[] args) {
         if (args != null && args.length > 0) {
-            for (int i = 0; i < args.length; i++) {
-                if ("-c".equals(args[i])) {
+            for (String arg : args) {
+                if ("-c".equals(arg)) {
                     return false;
                 }
             }
@@ -750,7 +750,7 @@ public class ImageInfo {
         if (comments == null || index < 0 || index >= comments.size()) {
             throw new IllegalArgumentException("Not a valid comment index: " + index);
         }
-        return (String) comments.elementAt(index);
+        return comments.elementAt(index);
     }
 
     /**
@@ -1237,7 +1237,7 @@ public class ImageInfo {
                 result = din.skipBytes(num);
             }
             if (result > 0) {
-                num -= result;
+                num = (int) (num - result);
             }
         }
     }

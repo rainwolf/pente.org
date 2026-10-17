@@ -25,6 +25,8 @@ import java.util.Date;
 import java.util.Vector;
 
 public class SimpleDSGPlayerData implements DSGPlayerData, Serializable {
+    private static final long serialVersionUID = 4921803599608754473L;
+
 
     private long pid;
     private String name;
@@ -364,7 +366,7 @@ public class SimpleDSGPlayerData implements DSGPlayerData, Serializable {
     public int getTotalGames() {
         int count = 0;
         for (int i = 0; i < gameData.size(); i++) {
-            DSGPlayerGameData g = (DSGPlayerGameData) gameData.elementAt(i);
+            DSGPlayerGameData g = gameData.elementAt(i);
             if (g.isComputerScore() == isComputer()) {
                 count += g.getTotalGames();
             }
@@ -386,7 +388,7 @@ public class SimpleDSGPlayerData implements DSGPlayerData, Serializable {
             int game, boolean computer) {
 
         for (int i = 0; i < gameData.size(); i++) {
-            DSGPlayerGameData g = (DSGPlayerGameData) gameData.elementAt(i);
+            DSGPlayerGameData g = gameData.elementAt(i);
             if (g.getGame() == game &&
                     g.isComputerScore() == computer) {
                 return g;
@@ -419,7 +421,7 @@ public class SimpleDSGPlayerData implements DSGPlayerData, Serializable {
 
     public void setPlayerGameData(DSGPlayerGameData newData) {
         for (int i = 0; i < gameData.size(); i++) {
-            DSGPlayerGameData g = (DSGPlayerGameData) gameData.elementAt(i);
+            DSGPlayerGameData g = gameData.elementAt(i);
             if (g.getGame() == newData.getGame() &&
                     g.isComputerScore() == newData.isComputerScore()) {
                 gameData.setElementAt(newData, i);
@@ -433,7 +435,7 @@ public class SimpleDSGPlayerData implements DSGPlayerData, Serializable {
 
     public boolean hasPlayerPlayed() {
         for (int i = 0; i < gameData.size(); i++) {
-            DSGPlayerGameData data = (DSGPlayerGameData) gameData.elementAt(i);
+            DSGPlayerGameData data = gameData.elementAt(i);
             if (data.isComputerScore() == isComputer()) {
                 return true;
             }
@@ -528,7 +530,7 @@ public class SimpleDSGPlayerData implements DSGPlayerData, Serializable {
         int myCrown = DSGPlayerGameData.TOURNEY_WINNER_NONE;
         int myKotHCrown = 0;
         for (int i = 0; i < gameData.size(); i++) {
-            DSGPlayerGameData d = (DSGPlayerGameData) gameData.elementAt(i);
+            DSGPlayerGameData d = gameData.elementAt(i);
             if (d.getTourneyWinner() > DSGPlayerGameData.TOURNEY_WINNER_NONE) {
                 if (d.getTourneyWinner() == DSGPlayerGameData.KINGOFTHEHILL_WINNER) {
                     myKotHCrown = myKotHCrown + 1;

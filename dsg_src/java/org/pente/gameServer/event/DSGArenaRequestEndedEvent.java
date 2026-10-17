@@ -5,6 +5,7 @@ package org.pente.gameServer.event;
  * player is the requester, owner the table owner's name ("" if unknown).
  */
 public class DSGArenaRequestEndedEvent extends AbstractDSGTableEvent {
+    private static final long serialVersionUID = -6918759568172102562L;
 
     public static final String DECLINED = "DECLINED";
     public static final String TABLE_FULL = "TABLE_FULL";

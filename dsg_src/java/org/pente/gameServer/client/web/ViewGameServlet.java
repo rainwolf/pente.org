@@ -14,11 +14,12 @@ import org.pente.gameServer.server.*;
 import org.pente.turnBased.*;
 
 public class ViewGameServlet extends HttpServlet {
+    private static final long serialVersionUID = -1763097510968528417L;
 
     private static final Category log4j = Category.getInstance(
             ViewGameServlet.class.getName());
 
-    private Resources resources;
+    private transient Resources resources;
 
     public void init(ServletConfig config) throws ServletException {
 
@@ -52,7 +53,7 @@ public class ViewGameServlet extends HttpServlet {
             redirectPage = "/gameServer/viewLiveGameMobile.jsp";
         }
         try {
-            String gidStr = (String) request.getParameter("g");
+            String gidStr = request.getParameter("g");
 
             long gid = -1;
             if (gidStr != null) {

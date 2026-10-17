@@ -47,8 +47,7 @@ public class MatchSpeedName {
                     "and dg.computer = 'N' " +
                     "and d.password = ? and p.name != ?");
 
-            for (int i = 0; i < args.length; i++) {
-                String name = args[i];
+            for (String name : args) {
                 DSGPlayerData data = dsgPlayerStorer.loadPlayer(name);
                 if (data == null) {
                     System.out.println(name + " not found.");

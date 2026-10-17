@@ -4,7 +4,7 @@ import java.util.*;
 
 import org.pente.game.*;
 
-public class GameStorerSearchResponseGameComparator implements Comparator {
+public class GameStorerSearchResponseGameComparator implements Comparator<Object> {
 
     public GameStorerSearchResponseGameComparator() {
     }

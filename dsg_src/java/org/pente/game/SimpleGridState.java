@@ -28,6 +28,7 @@ import java.util.*;
  *  @author dweebo (dweebo@www.pente.org)
  */
 public class SimpleGridState implements GridState {
+    private static final long serialVersionUID = 6261797591871449876L;
 
     /** The width of the board */
     private int boardSizeX;
@@ -143,7 +144,7 @@ public class SimpleGridState implements GridState {
     public void undoMove() {
 
         if (!moves.isEmpty()) {
-            int move = (Integer) moves.elementAt(moves.size() - 1);
+            int move = moves.elementAt(moves.size() - 1);
             moves.removeElementAt(moves.size() - 1);
             if (!outOfBounds(move)) {
                 setPosition(move, 0);
@@ -220,7 +221,7 @@ public class SimpleGridState implements GridState {
      *  @param num The sequence number of the move
      */
     public int getMove(int moveNum) {
-        return ((Integer) moves.elementAt(moveNum)).intValue();
+        return moves.elementAt(moveNum).intValue();
     }
 
     public int[] getMoves() {

@@ -3,6 +3,8 @@ package org.pente.gameServer.tourney;
 import org.pente.gameServer.event.*;
 
 public class TourneyEvent extends AbstractDSGEvent {
+    private static final long serialVersionUID = -2927870298584318955L;
+
 
     public static final int NEW_ROUND = 1;
     public static final int COMPLETE = 2;

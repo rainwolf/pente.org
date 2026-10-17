@@ -18,14 +18,16 @@ import java.util.List;
  * Created by waliedothman on 25/01/2017.
  */
 public class TournamentServlet extends HttpServlet {
+    private static final long serialVersionUID = -8329227464036379261L;
+
     private static final String errorRedirectPage = "/gameServer/error.jsp";
 
 
     private static final Category log4j =
             Category.getInstance(TournamentServlet.class.getName());
 
-    private TourneyStorer tourneyStorer;
-    private ServletContext ctx;
+    private transient TourneyStorer tourneyStorer;
+    private transient ServletContext ctx;
 
     public void init(ServletConfig config) throws ServletException {
 
@@ -55,8 +57,8 @@ public class TournamentServlet extends HttpServlet {
         String error = null;
         String player = (String) request.getAttribute("name");
 
-        String eidStr = (String) request.getParameter("eid");
-        String crownCommand = (String) request.getParameter("crown");
+        String eidStr = request.getParameter("eid");
+        String crownCommand = request.getParameter("crown");
 
         if (player == null || !"rainwolf".equals(player)) {
             handleError(request, response, "illegal access");

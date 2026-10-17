@@ -1,6 +1,7 @@
 package org.pente.gameServer.event;
 
 public class DSGTextMainRoomEvent extends AbstractDSGEvent implements DSGMainRoomEvent {
+    private static final long serialVersionUID = 5185422425650761318L;
 
     private String player;
     private String text;

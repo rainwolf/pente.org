@@ -1,6 +1,7 @@
 package org.pente.game;
 
 public class ChainedException extends Exception {
+    private static final long serialVersionUID = 266536139699818844L;
 
     private Throwable cause = null;
 

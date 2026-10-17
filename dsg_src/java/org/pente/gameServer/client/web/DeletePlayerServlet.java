@@ -14,6 +14,7 @@ import com.jivesoftware.base.*;
 import com.jivesoftware.forum.*;
 
 public class DeletePlayerServlet extends HttpServlet {
+    private static final long serialVersionUID = -4592172210584778457L;
 
     private static final DSGAuthToken adminToken =
             new DSGAuthToken(22000000000002L);
@@ -21,7 +22,7 @@ public class DeletePlayerServlet extends HttpServlet {
     private static final Category log4j =
             Category.getInstance(DeletePlayerServlet.class.getName());
 
-    private DSGPlayerStorer dsgPlayerStorer;
+    private transient DSGPlayerStorer dsgPlayerStorer;
 
     public void init(ServletConfig config) throws ServletException {
 

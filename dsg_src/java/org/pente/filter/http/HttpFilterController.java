@@ -119,7 +119,7 @@ public class HttpFilterController extends AbstractFilterController {
      *  @param lineFilter The line filter to use for filtering the response
      */
     public HttpFilterController(String method, String host, String request,
-                                Hashtable params, Hashtable cookies, LineFilter lineFilter) {
+                                Hashtable<String, String> params, Hashtable<String, String> cookies, LineFilter lineFilter) {
 
         this.host = host;
         this.lineFilter = lineFilter;
@@ -127,10 +127,8 @@ public class HttpFilterController extends AbstractFilterController {
         // build request string
         String paramString = new String();
         int paramCount = 0;
-        Enumeration pe = params.keys();
-        while (pe.hasMoreElements()) {
-            String name = (String) pe.nextElement();
-            String value = (String) params.get(name);
+        for (String name : params.keySet()) {
+            String value = params.get(name);
             try {
                 value = URLEncoder.encode(value, "UTF-8");
             } catch (UnsupportedEncodingException e) {
@@ -144,10 +142,8 @@ public class HttpFilterController extends AbstractFilterController {
 
         // build the cookie string
         String cookieString = new String();
-        Enumeration ce = cookies.keys();
-        while (ce.hasMoreElements()) {
-            String name = (String) ce.nextElement();
-            String value = (String) cookies.get(name);
+        for (String name : cookies.keySet()) {
+            String value = cookies.get(name);
             cookieString += HttpConstants.GET_COOKIE + ": " + name + "=" + value + HttpConstants.END_LINE;
         }
 //System.out.println("cookieString="+cookieString);

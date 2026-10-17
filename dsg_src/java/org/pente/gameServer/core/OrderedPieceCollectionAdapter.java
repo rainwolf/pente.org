@@ -78,7 +78,7 @@ public class OrderedPieceCollectionAdapter implements OrderedPieceCollection {
 
         if (maxTurn > 0) {
             for (int i = pieceActions.size() - 1; i >= 0; i--) {
-                GridPieceAction action = (GridPieceAction) pieceActions.elementAt(i);
+                GridPieceAction action = pieceActions.elementAt(i);
                 if (action.getTurn() == maxTurn) {
                     pieceActions.removeElementAt(i);
                     if (viewingCurrent) {
@@ -196,7 +196,7 @@ public class OrderedPieceCollectionAdapter implements OrderedPieceCollection {
         else if (currentTurn < turn) {
 
             for (int i = 0; i < pieceActions.size(); i++) {
-                GridPieceAction action = (GridPieceAction) pieceActions.elementAt(i);
+                GridPieceAction action = pieceActions.elementAt(i);
 
                 if (action.getTurn() <= turn &&
                         action.getTurn() > currentTurn) {
@@ -211,7 +211,7 @@ public class OrderedPieceCollectionAdapter implements OrderedPieceCollection {
         // we're going backward
         else if (currentTurn > turn) {
             for (int i = pieceActions.size() - 1; i >= 0; i--) {
-                GridPieceAction action = (GridPieceAction) pieceActions.elementAt(i);
+                GridPieceAction action = pieceActions.elementAt(i);
 
                 if (action.getTurn() > turn &&
                         action.getTurn() <= currentTurn) {

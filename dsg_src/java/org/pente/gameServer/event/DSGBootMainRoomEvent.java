@@ -2,6 +2,7 @@ package org.pente.gameServer.event;
 
 
 public class DSGBootMainRoomEvent extends AbstractDSGEvent implements DSGMainRoomEvent {
+    private static final long serialVersionUID = 6752928894668823816L;
 
     private String player;
     private String toBoot;

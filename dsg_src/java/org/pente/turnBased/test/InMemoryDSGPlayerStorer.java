@@ -57,8 +57,8 @@ public class InMemoryDSGPlayerStorer implements DSGPlayerStorer {
     public void insertDonation(DSGDonationData dsgDonationData, long playerID) throws DSGPlayerStoreException {
     }
 
-    public Collection getDonations(long playerID) throws DSGPlayerStoreException {
-        return new ArrayList();
+    public Collection<DSGDonationData> getDonations(long playerID) throws DSGPlayerStoreException {
+        return new ArrayList<DSGDonationData>();
     }
 
     public List<DSGDonationData> getAllPlayersWhoDonated() throws DSGPlayerStoreException {
@@ -75,8 +75,8 @@ public class InMemoryDSGPlayerStorer implements DSGPlayerStorer {
         return null;
     }
 
-    public Vector loadAllGames(long playerID) throws DSGPlayerStoreException {
-        return new Vector();
+    public Vector<DSGPlayerGameData> loadAllGames(long playerID) throws DSGPlayerStoreException {
+        return new Vector<>();
     }
 
     public void insertLiveSet(LiveSet set) throws DSGPlayerStoreException {
@@ -120,12 +120,12 @@ public class InMemoryDSGPlayerStorer implements DSGPlayerStorer {
     public void storeVacationDays(long playerID, List<Date> vacationDays) throws DSGPlayerStoreException {
     }
 
-    public Vector search(
+    public Vector<DSGPlayerData> search(
             int game, int sortField,
             int startNum, int length,
             boolean showProvisional, boolean showInactive,
             int playerType) throws DSGPlayerStoreException {
-        return new Vector();
+        return new Vector<>();
     }
 
     public int getNumPlayers(

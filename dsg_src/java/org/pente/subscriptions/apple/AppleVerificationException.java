@@ -7,6 +7,8 @@ package org.pente.subscriptions.apple;
  */
 public class AppleVerificationException extends Exception {
 
+    private static final long serialVersionUID = -2336902911391025995L;
+
     private final boolean retryable;
 
     public AppleVerificationException(String message, boolean retryable) {

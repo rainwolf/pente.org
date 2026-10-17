@@ -107,7 +107,7 @@ public class InMemoryTourneyStorer implements TourneyStorer {
     public void insertMatch(TourneyMatch tourneyMatch) throws Throwable {
     }
 
-    public void updateMatches(List tourneyMatches, Tourney t) throws Throwable {
+    public void updateMatches(List<TourneyMatch> tourneyMatches, Tourney t) throws Throwable {
     }
 
     public void completeTourney(Tourney tourney) throws Throwable {

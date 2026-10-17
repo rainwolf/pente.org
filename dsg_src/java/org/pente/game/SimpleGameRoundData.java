@@ -26,6 +26,7 @@ import java.util.*;
  *  @author dweebo (dweebo@www.pente.org)
  */
 public class SimpleGameRoundData implements GameRoundData, java.io.Serializable {
+    private static final long serialVersionUID = -332297480493468862L;
 
     /** The name of this round */
     private String name;

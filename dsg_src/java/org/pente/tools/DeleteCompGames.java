@@ -51,7 +51,7 @@ public class DeleteCompGames {
                 }
                 int r[] = stmt.executeBatch();
                 stmt2.executeBatch();
-                for (int k = 0; k < r.length; k++) rowsDeleted += r[k];
+                for (int v : r) rowsDeleted += v;
                 System.out.println("Deleted up to " + i + ", " + rowsDeleted + " rows deleted");
             }
 

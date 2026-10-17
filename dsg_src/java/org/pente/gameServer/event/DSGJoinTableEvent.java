@@ -1,6 +1,7 @@
 package org.pente.gameServer.event;
 
 public class DSGJoinTableEvent extends AbstractDSGTableEvent {
+    private static final long serialVersionUID = 4698479184545521570L;
 
     public static final int CREATE_NEW_TABLE = -1;
 

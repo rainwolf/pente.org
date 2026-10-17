@@ -12,6 +12,7 @@ import org.pente.gameServer.core.ServerData;
 import org.pente.gameServer.server.*;
 
 public class ActiveServersServlet extends HttpServlet {
+    private static final long serialVersionUID = 624153288266872690L;
 
     private static final Category log4j =
             Category.getInstance(ActiveServersServlet.class.getName());

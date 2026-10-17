@@ -14,11 +14,12 @@ import org.pente.gameServer.server.*;
  * don't think this is used anymore
  */
 public class EmailPlayerServlet extends HttpServlet {
+    private static final long serialVersionUID = 5541244508775454686L;
 
     private static final Category cat = Category.getInstance(EmailPlayerServlet.class.getName());
 
-    private DSGPlayerStorer dsgPlayerStorer;
-    private MySQLDSGReturnEmailStorer returnEmailStorer;
+    private transient DSGPlayerStorer dsgPlayerStorer;
+    private transient MySQLDSGReturnEmailStorer returnEmailStorer;
 
     private boolean emailEnabled;
 

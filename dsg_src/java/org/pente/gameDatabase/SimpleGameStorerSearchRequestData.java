@@ -23,6 +23,8 @@ import org.pente.game.*;
 
 public class SimpleGameStorerSearchRequestData implements GameStorerSearchRequestData {
 
+    private static final long serialVersionUID = 3140442889123729962L;
+
     protected GameData gameData;
     protected GameStorerSearchRequestFilterData filterData;
     protected String outFormat;

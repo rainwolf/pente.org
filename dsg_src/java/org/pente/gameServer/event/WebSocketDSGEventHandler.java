@@ -117,7 +117,7 @@ public class WebSocketDSGEventHandler extends ServerSocketDSGEventHandler {
 
     public void notifyListeners(DSGEvent dsgEvent) {
         for (int i = 0; i < listeners.size(); i++) {
-            ((DSGEventListener) listeners.elementAt(i)).eventOccurred(dsgEvent);
+            listeners.elementAt(i).eventOccurred(dsgEvent);
         }
     }
 

@@ -3,6 +3,7 @@ package org.pente.gameServer.event;
 import org.pente.gameServer.core.*;
 
 public class DSGLoginEvent extends AbstractDSGEvent {
+    private static final long serialVersionUID = 4725187461815038048L;
 
     // send for login
     private String player;

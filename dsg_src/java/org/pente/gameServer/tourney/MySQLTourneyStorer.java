@@ -270,8 +270,8 @@ public class MySQLTourneyStorer implements TourneyStorer {
                             "(event_id, pid) " +
                             "values(?, ?)");
             stmt.setInt(1, tourney.getEventID());
-            for (Iterator it = tourney.getDirectors().iterator(); it.hasNext(); ) {
-                stmt.setLong(2, ((Long) it.next()).longValue());
+            for (Iterator<Long> it = tourney.getDirectors().iterator(); it.hasNext(); ) {
+                stmt.setLong(2, it.next().longValue());
                 stmt.execute();
             }
 
@@ -338,7 +338,7 @@ public class MySQLTourneyStorer implements TourneyStorer {
                     match.setSection(results.getInt(3));
                     match.setGid(results.getLong(4));
 
-                    TourneyPlayerData player1 = (TourneyPlayerData)
+                    TourneyPlayerData player1 =
                             players.get(results.getString(6));
                     if (player1 == null) {
                         player1 = new TourneyPlayerData();
@@ -351,7 +351,7 @@ public class MySQLTourneyStorer implements TourneyStorer {
 
                     // if not, it's a bye
                     if (results.getLong(8) > 0) {
-                        TourneyPlayerData player2 = (TourneyPlayerData)
+                        TourneyPlayerData player2 =
                                 players.get(results.getString(9));
                         if (player2 == null) {
                             player2 = new TourneyPlayerData();
@@ -495,15 +495,15 @@ public class MySQLTourneyStorer implements TourneyStorer {
             }
 
             Collections.sort(players, (obj1, obj2) -> {
-                TourneyPlayerData t1 = (TourneyPlayerData) obj1;
-                TourneyPlayerData t2 = (TourneyPlayerData) obj2;
+                TourneyPlayerData t1 = obj1;
+                TourneyPlayerData t2 = obj2;
 
                 if (t1.getTotalGames() > 19 && t2.getTotalGames() < 20) {
                     return -1;
                 } else if (t1.getTotalGames() < 20 && t2.getTotalGames() > 19) {
                     return 1;
                 } else {
-                    return (int) (t2.getRating() - t1.getRating());
+                    return (t2.getRating() - t1.getRating());
                 }
             });
 
@@ -715,7 +715,7 @@ public class MySQLTourneyStorer implements TourneyStorer {
                             "where event_id = ? " +
                             "and pid = ?");
             for (int i = 0; i < players.size(); i++) {
-                TourneyPlayerData p = (TourneyPlayerData) players.get(i);
+                TourneyPlayerData p = players.get(i);
                 stmt.setInt(1, i + 1);
                 stmt.setInt(2, eid);
                 stmt.setLong(3, p.getPlayerID());
@@ -739,10 +739,10 @@ public class MySQLTourneyStorer implements TourneyStorer {
     public void insertRound(TourneyRound round)
             throws Throwable {
 
-        for (Iterator sections = round.getSections().iterator(); sections.hasNext(); ) {
-            TourneySection s = (TourneySection) sections.next();
-            for (Iterator matches = s.getMatches().iterator(); matches.hasNext(); ) {
-                TourneyMatch m = (TourneyMatch) matches.next();
+        for (Iterator<TourneySection> sections = round.getSections().iterator(); sections.hasNext(); ) {
+            TourneySection s = sections.next();
+            for (Iterator<TourneyMatch> matches = s.getMatches().iterator(); matches.hasNext(); ) {
+                TourneyMatch m = matches.next();
                 insertMatch(m);
             }
         }
@@ -865,7 +865,7 @@ public class MySQLTourneyStorer implements TourneyStorer {
     }
 
     // not implemented here
-    public void updateMatches(List tourneyMatches, Tourney t) throws Throwable {
+    public void updateMatches(List<TourneyMatch> tourneyMatches, Tourney t) throws Throwable {
     }
 
     public void addTourneyListener(TourneyListener listener) {

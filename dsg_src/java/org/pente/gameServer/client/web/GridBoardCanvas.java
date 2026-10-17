@@ -37,6 +37,7 @@ public class GridBoardCanvas extends Canvas
         implements GridBoardComponent,
         GridCoordinatesChangeListener,
         GameOptionsChangeListener {
+    private static final long serialVersionUID = 6475909245941927100L;
 
     // the number of grids on the x axis
     int gridWidth;
@@ -337,8 +338,7 @@ public class GridBoardCanvas extends Canvas
 
     public void updatePiecePlayer(int x, int y, int player) {
         synchronized (drawLock) {
-            for (int i = 0; i < gridPieces.size(); i++) {
-                GridPiece p = (GridPiece) gridPieces.elementAt(i);
+            for (GridPiece p : gridPieces) {
                 if (p.getX() == x && p.getY() == y) {
                     p.setPlayer(player);
                     boardDirty = true;
@@ -890,7 +890,7 @@ public class GridBoardCanvas extends Canvas
         // draw highlight piece below other pieces
         if (gameOptions.getShowLastMove()) {
             for (int i = gridPieces.size() - 1; i >= 0; i--) {
-                GridPiece piece = (GridPiece) gridPieces.elementAt(i);
+                GridPiece piece = gridPieces.elementAt(i);
                 if (piece.getX() < 0 || piece.getY() < 0 || piece.getX() >= gridWidth || piece.getY() >= gridWidth) {
                     continue;
                 }
@@ -903,7 +903,7 @@ public class GridBoardCanvas extends Canvas
 
         // loop through pieces and draw on board
         for (int i = gridPieces.size() - 1; i >= 0; i--) {
-            GridPiece piece = (GridPiece) gridPieces.elementAt(i);
+            GridPiece piece = gridPieces.elementAt(i);
 
             if (gameOptions.getShowLastMove() && piece == highlightPiece) {
                 continue;
@@ -1068,7 +1068,7 @@ public class GridBoardCanvas extends Canvas
 
             if (gridClicked) {
                 for (int i = 0; i < listeners.size(); i++) {
-                    GridBoardListener l = (GridBoardListener) listeners.elementAt(i);
+                    GridBoardListener l = listeners.elementAt(i);
 
                     // which button pressed changed in 1.4
                     l.gridClicked(gridMove.x, gridMove.y, e.getModifiersEx());

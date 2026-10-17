@@ -64,8 +64,8 @@ public class Resources {
 
     public void removeServer(long id) {
         Server server = null;
-        for (Iterator it = servers.iterator(); it.hasNext(); ) {
-            Server s = (Server) it.next();
+        for (Iterator<Server> it = servers.iterator(); it.hasNext(); ) {
+            Server s = it.next();
             if (s.getServerData().getServerId() == id) {
                 server = s;
                 break;
@@ -126,13 +126,13 @@ public class Resources {
         return maxPort + 1;
     }
 
-    public List getServers() {
+    public List<Server> getServers() {
         return servers;
     }
 
     public ServerData getServerData(int serverId) {
-        for (Iterator it = serverData.iterator(); it.hasNext(); ) {
-            ServerData d = (ServerData) it.next();
+        for (Iterator<ServerData> it = serverData.iterator(); it.hasNext(); ) {
+            ServerData d = it.next();
             if (d.getServerId() == serverId) {
                 return d;
             }

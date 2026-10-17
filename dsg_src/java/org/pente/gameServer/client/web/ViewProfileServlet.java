@@ -10,11 +10,12 @@ import org.apache.log4j.*;
 import org.pente.gameServer.core.*;
 
 public class ViewProfileServlet extends HttpServlet {
+    private static final long serialVersionUID = -5911903104777614880L;
 
     private static final Category log4j = Category.getInstance(
             ViewProfileServlet.class.getName());
 
-    private DSGPlayerStorer dsgPlayerStorer;
+    private transient DSGPlayerStorer dsgPlayerStorer;
 
     public void init(ServletConfig config) throws ServletException {
 
@@ -45,7 +46,7 @@ public class ViewProfileServlet extends HttpServlet {
         DSGPlayerData dsgPlayerData = null;
 
         try {
-            String name = (String) request.getParameter("viewName");
+            String name = request.getParameter("viewName");
             log4j.info("view player profile for " + name);
 
             if (name == null) {

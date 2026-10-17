@@ -16,11 +16,12 @@ import org.pente.gameServer.server.*;
 
 
 public class ChangeEmailPreferenceServlet extends HttpServlet {
+    private static final long serialVersionUID = 1972207635210542227L;
 
     private static final Category log4j =
             Category.getInstance(ChangeProfileServlet.class.getName());
 
-    private DSGPlayerStorer dsgPlayerStorer;
+    private transient DSGPlayerStorer dsgPlayerStorer;
 
     public void init(ServletConfig config) throws ServletException {
 
@@ -68,7 +69,7 @@ public class ChangeEmailPreferenceServlet extends HttpServlet {
                 return;
             }
 
-            String email = (String) request.getParameter("emailMe");
+            String email = request.getParameter("emailMe");
             boolean emailDsgMessages = email != null && email.equals("Y");
             DSGPlayerPreference p = new DSGPlayerPreference(
                     "emailDsgMessages", Boolean.valueOf(emailDsgMessages));

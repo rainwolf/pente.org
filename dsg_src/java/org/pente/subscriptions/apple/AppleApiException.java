@@ -7,6 +7,8 @@ package org.pente.subscriptions.apple;
  */
 public class AppleApiException extends Exception {
 
+    private static final long serialVersionUID = -795573709816123741L;
+
     private final boolean retryable;
 
     private final boolean transactionNotFound;

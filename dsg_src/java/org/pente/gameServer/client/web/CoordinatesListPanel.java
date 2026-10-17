@@ -36,6 +36,7 @@ public class CoordinatesListPanel extends Panel
         OrderedPieceCollection,
         GridCoordinatesChangeListener,
         GameOptionsChangeListener {
+    private static final long serialVersionUID = -153591584560965608L;
 
     private String players[];
 
@@ -126,7 +127,7 @@ public class CoordinatesListPanel extends Panel
         DSGButton firstButton = buttonMaker.createButton("<<", gameStyle);
         firstButton.addActionListener(e -> {
             for (int i = 0; i < listeners.size(); i++) {
-                OrderedPieceCollection c = (OrderedPieceCollection) listeners.elementAt(i);
+                OrderedPieceCollection c = listeners.elementAt(i);
                 c.visitFirstTurn();
             }
             // visit first turn goes back before K10, so
@@ -139,21 +140,21 @@ public class CoordinatesListPanel extends Panel
         DSGButton backButton = buttonMaker.createButton("<", gameStyle);
         backButton.addActionListener(e -> {
             for (int i = 0; i < listeners.size(); i++) {
-                OrderedPieceCollection c = (OrderedPieceCollection) listeners.elementAt(i);
+                OrderedPieceCollection c = listeners.elementAt(i);
                 c.visitPreviousTurn();
             }
         });
         DSGButton nextButton = buttonMaker.createButton(">", gameStyle);
         nextButton.addActionListener(e -> {
             for (int i = 0; i < listeners.size(); i++) {
-                OrderedPieceCollection c = (OrderedPieceCollection) listeners.elementAt(i);
+                OrderedPieceCollection c = listeners.elementAt(i);
                 c.visitNextTurn();
             }
         });
         DSGButton lastButton = buttonMaker.createButton(">>", gameStyle);
         lastButton.addActionListener(e -> {
             for (int i = 0; i < listeners.size(); i++) {
-                OrderedPieceCollection c = (OrderedPieceCollection) listeners.elementAt(i);
+                OrderedPieceCollection c = listeners.elementAt(i);
                 c.visitLastTurn();
             }
         });
@@ -192,7 +193,7 @@ public class CoordinatesListPanel extends Panel
                     }
 
                     for (int i = 0; i < listeners.size(); i++) {
-                        OrderedPieceCollection c = (OrderedPieceCollection) listeners.elementAt(i);
+                        OrderedPieceCollection c = listeners.elementAt(i);
                         c.visitTurn(turn);
                     }
                 }
@@ -866,7 +867,7 @@ public class CoordinatesListPanel extends Panel
         if (gridPieces.size() <= moveNum) {
             return "";
         } else {
-            GridPiece p = (GridPiece) gridPieces.elementAt(moveNum);
+            GridPiece p = gridPieces.elementAt(moveNum);
             return coordinates.getCoordinate(p.getX(), p.getY());
         }
     }

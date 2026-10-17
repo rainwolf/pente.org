@@ -28,8 +28,8 @@ import org.pente.turnBased.TBVacation;
 public class PaypalIPNListenerServlet extends HttpServlet {
 
     private static final Category log4j = Category.getInstance(PaypalIPNListenerServlet.class.getName());
-    private Resources resources;
-    private DBHandler dbHandler;
+    private transient Resources resources;
+    private transient DBHandler dbHandler;
     /**
      *
      */
@@ -57,7 +57,7 @@ public class PaypalIPNListenerServlet extends HttpServlet {
         String paypalMode = ctx.getInitParameter("paypalMode");
         resources = (Resources) ctx.getAttribute(Resources.class.getName());
         NotificationServer notificationServer = resources.getNotificationServer();
-        CacheDSGPlayerStorer dsgPlayerStorer = (CacheDSGPlayerStorer) resources.getDsgPlayerStorer();
+        CacheDSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
         CacheTBStorer tbStorer = (CacheTBStorer) resources.getTbGameStorer();
         Connection con = null;
         PreparedStatement stmt = null;

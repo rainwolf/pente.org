@@ -23,6 +23,8 @@ import com.jivesoftware.base.*;
 @SuppressWarnings("unchecked")
 public class JiveFeedServlet extends HttpServlet {
 
+    private static final long serialVersionUID = 9109020861688407429L;
+
     private static final String DEFAULT_FEED_TYPE = "default.feed.type";
     private static final String FEED_TYPE = "type";
     private static final String MIME_TYPE = "application/xml; charset=UTF-8";
@@ -82,7 +84,7 @@ public class JiveFeedServlet extends HttpServlet {
         rf.setSortField(JiveConstants.CREATION_DATE);
         rf.setNumResults(25);
 
-        Iterator messages = null;
+        Iterator<ForumMessage> messages = null;
         if (forumID != 0) {
             Forum f = ff.getForum(forumID);
             messages = f.getMessages(rf);
@@ -94,10 +96,10 @@ public class JiveFeedServlet extends HttpServlet {
             // so instead load all forums and top 25 messages in each
             // then sort all messages by date and keep only most recent 25
             List<ForumMessage> m = new ArrayList<ForumMessage>();
-            for (Iterator forumIter = ff.getForumCategory(1).getForums(); forumIter.hasNext(); ) {
-                Forum f = (Forum) forumIter.next();
-                for (Iterator mIter = f.getMessages(rf); mIter.hasNext(); ) {
-                    ForumMessage m2 = (ForumMessage) mIter.next();
+            for (Iterator<Forum> forumIter = ff.getForumCategory(1).getForums(); forumIter.hasNext(); ) {
+                Forum f = forumIter.next();
+                for (Iterator<ForumMessage> mIter = f.getMessages(rf); mIter.hasNext(); ) {
+                    ForumMessage m2 = mIter.next();
                     m.add(m2);
                 }
             }

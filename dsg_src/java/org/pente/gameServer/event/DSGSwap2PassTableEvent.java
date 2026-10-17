@@ -1,6 +1,7 @@
 package org.pente.gameServer.event;
 
 public class DSGSwap2PassTableEvent extends AbstractDSGTableEvent {
+    private static final long serialVersionUID = -3189369267264492433L;
 
     boolean silent = false;
 

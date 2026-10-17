@@ -38,8 +38,8 @@ public class ImageUtils {
 //			System.out.println("image ok");
 //			return;
 //		}
-//		Iterator writers = ImageIO.getImageWritersByFormatName(type);
-//		ImageWriter writer = (ImageWriter) writers.next();
+//		Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName(type);
+//		ImageWriter writer = writers.next();
 //	    File f = new File(file + "-sm." + type);
 //	    ImageOutputStream ios = ImageIO.createImageOutputStream(f);
 ////		if (bis.length == 1) {
@@ -69,8 +69,8 @@ public class ImageUtils {
             if (contentType.equals("pjpeg")) {
                 contentType = "jpeg";
             }
-            Iterator readers = ImageIO.getImageReadersByFormatName(contentType);
-            reader = (ImageReader) readers.next();
+            Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName(contentType);
+            reader = readers.next();
 
             ImageInputStream iis = ImageIO.createImageInputStream(in);
             reader.setInput(iis, false);
@@ -91,8 +91,8 @@ public class ImageUtils {
         ImageWriter writer = null;
 
         try {
-            Iterator readers = ImageIO.getImageReadersByFormatName(contentType);
-            reader = (ImageReader) readers.next();
+            Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName(contentType);
+            reader = readers.next();
 
             ImageInputStream iis = ImageIO.createImageInputStream(in);
             reader.setInput(iis, false);
@@ -125,8 +125,8 @@ public class ImageUtils {
             //}
             //return bis;
 
-            Iterator writers = ImageIO.getImageWritersByFormatName(contentType);
-            writer = (ImageWriter) writers.next();
+            Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName(contentType);
+            writer = writers.next();
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             ImageOutputStream ios = ImageIO.createImageOutputStream(out);
             writer.setOutput(ios);
@@ -168,7 +168,7 @@ public class ImageUtils {
                                                   boolean higherQuality) {
         int type = (img.getTransparency() == Transparency.OPAQUE) ?
                 BufferedImage.TYPE_INT_RGB : BufferedImage.TYPE_INT_ARGB;
-        BufferedImage ret = (BufferedImage) img;
+        BufferedImage ret = img;
         int w, h;
         if (higherQuality) {
             // Use multi-step technique: start with original size, then

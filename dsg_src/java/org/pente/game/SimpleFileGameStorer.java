@@ -76,9 +76,9 @@ public class SimpleFileGameStorer implements GameStorer, PlayerStorer {
         File playerFiles[] = playerDir.listFiles();
 
         // for each file
-        for (int i = 0; i < playerFiles.length; i++) {
+        for (File playerFile : playerFiles) {
             try {
-                long pid = Long.parseLong(playerFiles[i].getName());
+                long pid = Long.parseLong(playerFile.getName());
                 if (pid > maxPid) {
                     maxPid = pid;
                 }
@@ -88,9 +88,9 @@ public class SimpleFileGameStorer implements GameStorer, PlayerStorer {
             // read in the player data with an object stream
             ObjectInputStream inputStream = null;
             try {
-                inputStream = new ObjectInputStream(new FileInputStream(playerFiles[i]));
+                inputStream = new ObjectInputStream(new FileInputStream(playerFile));
                 PlayerData playerData = (PlayerData) inputStream.readObject();
-                String site = (String) inputStream.readUTF();
+                String site = inputStream.readUTF();
 
                 // store the player data in the hashtables
                 if (playerData != null) {
@@ -110,9 +110,9 @@ public class SimpleFileGameStorer implements GameStorer, PlayerStorer {
 
         File gameFiles[] = gameDir.listFiles();
 
-        for (int i = 0; i < gameFiles.length; i++) {
+        for (File gameFile : gameFiles) {
             try {
-                long gid = Long.parseLong(gameFiles[i].getName());
+                long gid = Long.parseLong(gameFile.getName());
                 if (gid > maxGid) {
                     maxGid = gid;
                 }

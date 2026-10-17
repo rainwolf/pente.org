@@ -29,6 +29,7 @@ import java.awt.*;
  *  @author dweebo (dweebo@www.pente.org)
  */
 public abstract class GridStateDecorator implements GridState {
+    private static final long serialVersionUID = -6347050025543188410L;
 
     /** The base grid state that does the real work */
     protected GridState gridState;

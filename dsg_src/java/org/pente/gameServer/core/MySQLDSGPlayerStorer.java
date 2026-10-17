@@ -333,9 +333,8 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
     }
 
     private void loadPlayerGames(DSGPlayerData data) throws DSGPlayerStoreException {
-        Vector allGames = loadAllGames(data.getPlayerID());
-        for (int i = 0; i < allGames.size(); i++) {
-            DSGPlayerGameData g = (DSGPlayerGameData) allGames.elementAt(i);
+        Vector<DSGPlayerGameData> allGames = loadAllGames(data.getPlayerID());
+        for (DSGPlayerGameData g : allGames) {
             data.addPlayerGameData(g);
         }
     }
@@ -628,7 +627,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
         }
     }
 
-    public Collection getDonations(long playerID) throws DSGPlayerStoreException {
+    public Collection<DSGDonationData> getDonations(long playerID) throws DSGPlayerStoreException {
 
         Collection<DSGDonationData> donations = new Vector<DSGDonationData>();
 
@@ -874,7 +873,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
         return dsgPlayerGameData;
     }
 
-    public Vector loadAllGames(long playerID) throws DSGPlayerStoreException {
+    public Vector<DSGPlayerGameData> loadAllGames(long playerID) throws DSGPlayerStoreException {
 
         Vector<DSGPlayerGameData> allGames = new Vector<DSGPlayerGameData>();
 
@@ -951,7 +950,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
             "dsg_player_game.draws",
             "dsg_player_game.last_game_date"};
 
-    public Vector search(
+    public Vector<DSGPlayerData> search(
             int game, int sortField,
             int startNum, int length,
             boolean showProvisional, boolean showInactive,

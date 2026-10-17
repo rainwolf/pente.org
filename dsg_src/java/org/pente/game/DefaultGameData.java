@@ -27,6 +27,7 @@ import java.util.*;
  *  @version 0.2 02/12/2001
  */
 public class DefaultGameData implements GameData {
+    private static final long serialVersionUID = -771530626970136389L;
 
     /** Name of the game */
     protected String game;
@@ -413,7 +414,7 @@ public class DefaultGameData implements GameData {
      *  @param num The sequence number of the move
      */
     public int getMove(int num) {
-        return ((Integer) gameMoves.elementAt(num)).intValue();
+        return gameMoves.elementAt(num).intValue();
     }
 
     /** Get the number of moves for this game

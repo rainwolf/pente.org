@@ -11,12 +11,13 @@ import org.pente.gameServer.server.Resources;
 import org.pente.tools.RatingsGrapher;
 
 public class RatingsGraphServlet extends HttpServlet {
+    private static final long serialVersionUID = -2605808906317865001L;
 
     private static Category log4j =
             Category.getInstance(RatingsGraphServlet.class.getName());
 
-    private Resources resources;
-    private DBHandler dbHandler;
+    private transient Resources resources;
+    private transient DBHandler dbHandler;
 
     public void init(ServletConfig config) throws ServletException {
 

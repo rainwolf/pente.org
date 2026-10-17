@@ -17,6 +17,8 @@ import org.apache.log4j.*;
 
 public class MoveServlet extends HttpServlet {
 
+    private static final long serialVersionUID = -5401596665131034244L;
+
     private static final Category log4j = Category.getInstance(
             MoveServlet.class.getName());
 
@@ -31,7 +33,7 @@ public class MoveServlet extends HttpServlet {
     private static final String goMarkDeadRedirectPage = "/gameServer/tb/deadGo.jsp";
     private static final String goFinalStepRedirectPage = "/gameServer/tb/finalGo.jsp";
 
-    private Resources resources;
+    private transient Resources resources;
 
     public void init(ServletConfig config) throws ServletException {
 
@@ -65,11 +67,11 @@ public class MoveServlet extends HttpServlet {
         String player = (String) request.getAttribute("name");
         DSGPlayerData playerData = null;
 
-        String gidStr = (String) request.getParameter("gid");
+        String gidStr = request.getParameter("gid");
         long gid = 0;
         TBGame game = null;
         TBSet set = null;
-        String command = (String) request.getParameter("command");
+        String command = request.getParameter("command");
 
         String attachStr = request.getParameter("attach");
 
@@ -204,10 +206,10 @@ public class MoveServlet extends HttpServlet {
                 }
 
                 // if player prefers to make moves attached or not
-                List prefs = dsgPlayerStorer.loadPlayerPreferences(
+                List<DSGPlayerPreference> prefs = dsgPlayerStorer.loadPlayerPreferences(
                         playerData.getPlayerID());
-                for (Iterator it = prefs.iterator(); it.hasNext(); ) {
-                    DSGPlayerPreference p = (DSGPlayerPreference) it.next();
+                for (Iterator<DSGPlayerPreference> it = prefs.iterator(); it.hasNext(); ) {
+                    DSGPlayerPreference p = it.next();
                     if (p.getName().equals("attach")) {
                         request.setAttribute("attach", p.getValue());
                     }
@@ -215,7 +217,7 @@ public class MoveServlet extends HttpServlet {
 
 
                 log4j.debug("forward to game page");
-                String isMobile = (String) request.getParameter("mobile");
+                String isMobile = request.getParameter("mobile");
                 if (isMobile == null) {
                     getServletContext().getRequestDispatcher(gamePage).forward(
                             request, response);
@@ -270,7 +272,7 @@ public class MoveServlet extends HttpServlet {
                     return;
                 }
                 log4j.debug("forward to game page");
-                String isMobile = (String) request.getParameter("mobile");
+                String isMobile = request.getParameter("mobile");
                 if (isMobile == null) {
                     response.sendRedirect(moveRedirectPage);
                 } else {
@@ -302,7 +304,7 @@ public class MoveServlet extends HttpServlet {
                 }
 
                 log4j.debug("forward to game page");
-                String isMobile = (String) request.getParameter("mobile");
+                String isMobile = request.getParameter("mobile");
                 if (isMobile == null) {
                     response.sendRedirect(moveRedirectPage);
                 } else {
@@ -331,7 +333,7 @@ public class MoveServlet extends HttpServlet {
                 }
 
                 log4j.debug("forward to game page");
-                String isMobile = (String) request.getParameter("mobile");
+                String isMobile = request.getParameter("mobile");
                 if (isMobile == null) {
                     getServletContext().getRequestDispatcher(gamePage).forward(
                             request, response);
@@ -359,7 +361,7 @@ public class MoveServlet extends HttpServlet {
                 request.setAttribute("game", game);
 
                 log4j.debug("forward game page");
-                String isMobile = (String) request.getParameter("mobile");
+                String isMobile = request.getParameter("mobile");
                 if (isMobile == null) {
                     getServletContext().getRequestDispatcher(gamePage).forward(
                             request, response);
@@ -528,9 +530,9 @@ public class MoveServlet extends HttpServlet {
 
                         tbGameStorer.updateDPenteState(game, TBGame.DPENTE_STATE_DECIDE);
 
-                        for (int i = 0; i < moves.length; i++) {
+                        for (int move : moves) {
                             tbGameStorer.storeNewMove(game.getGid(), game.getNumMoves(),
-                                    moves[i]);
+                                    move);
                         }
 
                         openingMessage = message;
@@ -731,10 +733,10 @@ public class MoveServlet extends HttpServlet {
                 notificationServer.sendSilentNotification(game.getOpponent(game.getCurrentPlayer()));
 
                 //redirect to somewhere
-                String isMobile = (String) request.getParameter("mobile");
+                String isMobile = request.getParameter("mobile");
                 if (isMobile == null) {
                     long gameId = 0;
-                    String cycle = (String) request.getParameter("cycle");
+                    String cycle = request.getParameter("cycle");
                     if (cycle != null) {
                         long myPid = playerData.getPlayerID();
                         List<TBSet> sets = tbGameStorer.loadSets(myPid);

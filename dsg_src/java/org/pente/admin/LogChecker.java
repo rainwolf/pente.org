@@ -26,10 +26,10 @@ public class LogChecker {
     private void scanDir() {
 
         File files[] = logDir.listFiles((dir, name) -> name.startsWith("activity.log"));
-        for (int i = 0; i < files.length; i++) {
+        for (File file : files) {
             try {
                 Date d = null;
-                String fn = files[i].getName();
+                String fn = file.getName();
                 if (fn.equals("activity.log")) {
                     d = new Date();//today
                 } else {

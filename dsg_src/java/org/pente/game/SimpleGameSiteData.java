@@ -26,6 +26,7 @@ import java.util.*;
  *  @author dweebo (dweebo@www.pente.org)
  */
 public class SimpleGameSiteData implements GameSiteData, java.io.Serializable {
+    private static final long serialVersionUID = 3215054785551639176L;
 
     /** The unique id for this site */
     private int id;

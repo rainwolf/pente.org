@@ -3,6 +3,7 @@ package org.pente.gameServer.event;
 import org.pente.gameServer.core.*;
 
 public class DSGIgnoreEvent extends AbstractDSGEvent {
+    private static final long serialVersionUID = -3392204318905559942L;
 
     private long pid;
     private DSGIgnoreData[] players;
@@ -27,8 +28,8 @@ public class DSGIgnoreEvent extends AbstractDSGEvent {
     public String toString() {
         String ids = "";
         if (players != null) {
-            for (int i = 0; i < players.length; i++) {
-                ids += players[i] + " ";
+            for (DSGIgnoreData player : players) {
+                ids += player + " ";
             }
             return "ignore " + ids;
         } else {

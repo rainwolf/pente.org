@@ -1,6 +1,7 @@
 package org.pente.gameServer.event;
 
 public class DSGRenjuTaraguchiSwapTableEvent extends AbstractDSGTableEvent {
+    private static final long serialVersionUID = -7585670980555724170L;
 
     private boolean swap;
     private int move;

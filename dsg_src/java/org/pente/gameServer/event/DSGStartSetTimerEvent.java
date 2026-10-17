@@ -1,6 +1,7 @@
 package org.pente.gameServer.event;
 
 public class DSGStartSetTimerEvent extends AbstractDSGTableEvent {
+    private static final long serialVersionUID = 8443660944401336459L;
 
     private long timeLeft;
 

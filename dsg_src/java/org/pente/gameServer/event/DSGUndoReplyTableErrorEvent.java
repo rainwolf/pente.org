@@ -1,6 +1,7 @@
 package org.pente.gameServer.event;
 
 public class DSGUndoReplyTableErrorEvent extends AbstractDSGTableErrorEvent {
+    private static final long serialVersionUID = -9157606028829220307L;
 
     private boolean accepted;
 

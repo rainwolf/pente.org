@@ -28,13 +28,15 @@ import java.io.IOException;
  */
 public class MessageJsonServlet extends HttpServlet {
 
+    private static final long serialVersionUID = 4279861616174050282L;
+
     private static final Category log4j = Category.getInstance(MessageJsonServlet.class.getName());
 
     private static final String NOT_FOUND = "Message not found";
 
-    private DSGPlayerStorer dsgPlayerStorer;
-    private DSGMessageStorer dsgMessageStorer;
-    private final Gson gson = new GsonBuilder().serializeNulls().create();
+    private transient DSGPlayerStorer dsgPlayerStorer;
+    private transient DSGMessageStorer dsgMessageStorer;
+    private final transient Gson gson = new GsonBuilder().serializeNulls().create();
 
     private static class MessageEntry {
         int mid;

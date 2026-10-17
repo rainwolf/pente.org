@@ -14,6 +14,8 @@ import org.apache.log4j.*;
 
 public class CancelInvitationServlet extends HttpServlet {
 
+    private static final long serialVersionUID = -5984261329116023324L;
+
     private static final Category log4j = Category.getInstance(
             CancelInvitationServlet.class.getName());
 
@@ -21,7 +23,7 @@ public class CancelInvitationServlet extends HttpServlet {
     private static final String loadRedirectPage = "/gameServer/tb/cancelInvitation.jsp";
     private static final String mobileRedirectPage = "/gameServer/mobile/empty.jsp";
 
-    private Resources resources;
+    private transient Resources resources;
 
     public void init(ServletConfig config) throws ServletException {
 
@@ -54,10 +56,10 @@ public class CancelInvitationServlet extends HttpServlet {
         DSGPlayerData inviter = null;
         DSGPlayerData invitee = null;
 
-        String sidStr = (String) request.getParameter("sid");
+        String sidStr = request.getParameter("sid");
         long sid = 0;
         TBSet set = null;
-        String command = (String) request.getParameter("command");
+        String command = request.getParameter("command");
 
         if (command == null) {
             command = "load";
@@ -142,7 +144,7 @@ public class CancelInvitationServlet extends HttpServlet {
 
                 tbGameStorer.cancelSet(set);
 
-                String isMobile = (String) request.getParameter("mobile");
+                String isMobile = request.getParameter("mobile");
                 if (isMobile == null) {
                     response.sendRedirect(request.getContextPath() + successPage);
                 } else {

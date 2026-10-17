@@ -1,6 +1,7 @@
 package org.pente.gameServer.event;
 
 public class DSGLoginErrorEvent extends DSGLoginEvent {
+    private static final long serialVersionUID = -64405691928666793L;
 
     public static final int INVALID_LOGIN = 1;
     public static final int PRIVATE_ROOM = 2;

@@ -51,7 +51,7 @@ public class ServerMainRoom {
         this.server = server;
         this.resources = resources;
         this.dsgEventRouter = dsgEventRouter;
-        this.dsgPlayerStorer = (CacheDSGPlayerStorer) resources.getDsgPlayerStorer();
+        this.dsgPlayerStorer = resources.getDsgPlayerStorer();
     }
 
     public Collection<DSGPlayerData> getPlayersInMainRoom() {
@@ -65,8 +65,8 @@ public class ServerMainRoom {
 
     public void broadcast(DSGEvent dsgEvent) {
 
-        for (Iterator i = playersInMainRoom.values().iterator(); i.hasNext(); ) {
-            DSGPlayerData d = (DSGPlayerData) i.next();
+        for (Iterator<DSGPlayerData> i = playersInMainRoom.values().iterator(); i.hasNext(); ) {
+            DSGPlayerData d = i.next();
             dsgEventRouter.routeEvent(dsgEvent, d.getName());
         }
     }
@@ -81,10 +81,10 @@ public class ServerMainRoom {
             // instead broadcast, check each player to see if ignoring 1st
             // could try to implement this on client we'll see how slow this is
             DSGEvent event = new DSGTextMainRoomEvent(player, text);
-            DSGPlayerData actor = (DSGPlayerData) playersInMainRoom.get(player);
+            DSGPlayerData actor = playersInMainRoom.get(player);
 
-            for (Iterator i = playersInMainRoom.values().iterator(); i.hasNext(); ) {
-                DSGPlayerData d = (DSGPlayerData) i.next();
+            for (Iterator<DSGPlayerData> i = playersInMainRoom.values().iterator(); i.hasNext(); ) {
+                DSGPlayerData d = i.next();
                 DSGIgnoreData ig = null;
                 try {
                     ig = dsgPlayerStorer.getIgnoreData(d.getPlayerID(), actor.getPlayerID());
@@ -149,8 +149,8 @@ public class ServerMainRoom {
     }
 
     protected void sendPlayerList(String toPlayer) {
-        for (Iterator i = playersInMainRoom.values().iterator(); i.hasNext(); ) {
-            DSGPlayerData d = (DSGPlayerData) i.next();
+        for (Iterator<DSGPlayerData> i = playersInMainRoom.values().iterator(); i.hasNext(); ) {
+            DSGPlayerData d = i.next();
             if (!toPlayer.equals(d.getName())) {
                 dsgEventRouter.routeEvent(
                         new DSGJoinMainRoomEvent(d.getName(), d),
@@ -201,7 +201,7 @@ public class ServerMainRoom {
                 try {
                     List<DSGIgnoreData> data = dsgPlayerStorer.getIgnoreData(event.getPid());
                     if (!data.isEmpty()) {
-                        event.setPlayers((DSGIgnoreData[]) data.toArray(new DSGIgnoreData[data.size()]));
+                        event.setPlayers(data.toArray(new DSGIgnoreData[data.size()]));
                     }
                 } catch (DSGPlayerStoreException dpse) {
                     log4j.error("Error sending updated ignore data", dpse);
@@ -218,12 +218,12 @@ public class ServerMainRoom {
     }
 
     public void handleBoot(String player, final String toBoot, final int minutes) {
-        DSGPlayerData d = (DSGPlayerData) playersInMainRoom.get(player);
+        DSGPlayerData d = playersInMainRoom.get(player);
         if (d == null || !d.isAdmin()) {
             //ignore invalid boots for now
             return;
         }
-        DSGPlayerData b = (DSGPlayerData) playersInMainRoom.get(toBoot);
+        DSGPlayerData b = playersInMainRoom.get(toBoot);
         if (b == null) {
             // ignore boots for non logged in players
             return;
@@ -254,16 +254,16 @@ public class ServerMainRoom {
                 broadcast(new DSGSystemMessageTableEvent(0,
                         "Round " + lastRound + " complete"));
                 TourneyRound completedRound = tourney.getRound(lastRound);
-                for (Iterator it = completedRound.getMatchStrings().iterator(); it.hasNext(); ) {
-                    String s = (String) it.next();
+                for (Iterator<String> it = completedRound.getMatchStrings().iterator(); it.hasNext(); ) {
+                    String s = it.next();
                     broadcast(new DSGSystemMessageTableEvent(0, s));
                 }
             }
             broadcast(new DSGSystemMessageTableEvent(0,
                     "Round " + tourney.getNumRounds() + " matchups"));
-            for (Iterator it = tourney.getLastRound().getMatchStrings().iterator();
+            for (Iterator<String> it = tourney.getLastRound().getMatchStrings().iterator();
                  it.hasNext(); ) {
-                String s = (String) it.next();
+                String s = it.next();
                 broadcast(new DSGSystemMessageTableEvent(0, s));
             }
         } else if (event.getType() == TourneyEvent.COMPLETE) {
@@ -272,13 +272,13 @@ public class ServerMainRoom {
             broadcast(new DSGSystemMessageTableEvent(0,
                     "Round " + lastRound + " complete"));
             TourneyRound completedRound = tourney.getRound(lastRound);
-            for (Iterator it = completedRound.getMatchStrings().iterator(); it.hasNext(); ) {
-                String s = (String) it.next();
+            for (Iterator<String> it = completedRound.getMatchStrings().iterator(); it.hasNext(); ) {
+                String s = it.next();
                 broadcast(new DSGSystemMessageTableEvent(0, s));
             }
 
             // this won't work if there IS NO winner...double-forfeit
-            String winner = ((TourneyPlayerData) tourney.getLastRound().getSection(1).getWinners().get(0)).getName();
+            String winner = tourney.getLastRound().getSection(1).getWinners().get(0).getName();
             if (winner != null) {
                 // refresh player data to show crown
                 try {

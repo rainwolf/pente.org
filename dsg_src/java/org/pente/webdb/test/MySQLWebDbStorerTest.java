@@ -148,8 +148,7 @@ public class MySQLWebDbStorerTest extends TestCase {
 
         // sample first, a middle, and the last index
         int[] sample = new int[]{0, n / 2, n - 1};
-        for (int s = 0; s < sample.length; s++) {
-            int i = sample[s];
+        for (int i : sample) {
             long[] row = moveRow(wgid, i); // {next_move, hash_key, rotation}
             int expectedNext = (i == n - 1) ? 361 : moves[i + 1];
             assertEquals("next_move at " + i, expectedNext, (int) row[0]);
@@ -226,8 +225,8 @@ public class MySQLWebDbStorerTest extends TestCase {
         assertTrue("shared position must return rows", !rows.isEmpty());
 
         long total = 0;
-        for (int i = 0; i < rows.size(); i++) {
-            total += rows.get(i)[3]; // count column
+        for (long[] r : rows) {
+            total += r[3]; // count column
         }
         assertEquals("both games counted at the shared position", 2, total);
     }
@@ -322,8 +321,8 @@ public class MySQLWebDbStorerTest extends TestCase {
     }
 
     private static boolean containsAid(List<AnalysisMeta> list, long aid) {
-        for (int i = 0; i < list.size(); i++) {
-            if (list.get(i).aid == aid) {
+        for (AnalysisMeta m : list) {
+            if (m.aid == aid) {
                 return true;
             }
         }

@@ -26,6 +26,7 @@ import org.pente.gameServer.client.web.GridBoardCanvas;
 import java.awt.*;
 
 public class PenteBoardCanvas extends GridBoardCanvas implements PenteBoardComponent {
+    private static final long serialVersionUID = 8547766601978604638L;
 
     int captureAreaWidth;
     int captures[];

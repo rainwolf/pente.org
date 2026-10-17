@@ -49,7 +49,7 @@ public class ServerAIController {
 
         AIData aiData = addEvent.getAIData();
         ServerAIMainRoomController controller =
-                (ServerAIMainRoomController) aiPlayers.get(aiData.getUserIDName());
+                aiPlayers.get(aiData.getUserIDName());
 
         if (controller == null) {
             makeSureAIPlayerExists(aiData.getUserIDName());
@@ -63,7 +63,7 @@ public class ServerAIController {
     public synchronized void removeAIPlayer(String player, int tableNum) {
 
         ServerAIMainRoomController controller =
-                (ServerAIMainRoomController) aiPlayers.get(player);
+                aiPlayers.get(player);
 
         if (controller.isInTable(tableNum)) {
             controller.removeAIPlayer(tableNum);

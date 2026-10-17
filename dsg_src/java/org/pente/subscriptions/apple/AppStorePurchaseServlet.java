@@ -24,6 +24,8 @@ import org.pente.subscriptions.play.PlayStoreException;
  */
 public class AppStorePurchaseServlet extends HttpServlet {
 
+    private static final long serialVersionUID = -6380475429219191512L;
+
     private static final Category log4j = Category.getInstance(AppStorePurchaseServlet.class.getName());
 
     /** a StoreKit 2 jwsRepresentation is a few KB; anything far bigger is not one */

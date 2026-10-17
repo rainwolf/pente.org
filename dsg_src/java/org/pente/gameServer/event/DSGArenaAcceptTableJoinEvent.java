@@ -1,6 +1,7 @@
 package org.pente.gameServer.event;
 
 public class DSGArenaAcceptTableJoinEvent extends AbstractDSGTableEvent {
+    private static final long serialVersionUID = -4372940674250105995L;
 
     String playerToAccept;
 

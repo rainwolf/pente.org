@@ -16,6 +16,8 @@ import java.io.IOException;
 
 public class KotHServlet extends HttpServlet {
 
+    private static final long serialVersionUID = 8697933095106431290L;
+
     private static final Category log4j = Category.getInstance(
             KotHServlet.class.getName());
 
@@ -23,7 +25,7 @@ public class KotHServlet extends HttpServlet {
     private static final String errorRedirectPage = "/gameServer/stairs.jsp";
     private static final String mobileRedirectPage = "/gameServer/mobile/empty.jsp";
 
-    private Resources resources;
+    private transient Resources resources;
 
     public void init(ServletConfig config) throws ServletException {
 
@@ -63,8 +65,8 @@ public class KotHServlet extends HttpServlet {
 
         if (error == null) {
             error = "Invalid game.";
-            for (int i = 0; i < GridStateFactory.TB_GAMES.length; i++) {
-                if (game == GridStateFactory.TB_GAMES[i]) {
+            for (int tbGame : GridStateFactory.TB_GAMES) {
+                if (game == tbGame) {
                     error = null;
                     break;
                 }
@@ -92,7 +94,7 @@ public class KotHServlet extends HttpServlet {
             getServletContext().getRequestDispatcher(errorRedirectPage).forward(
                     request, response);
         } else {
-            String isMobile = (String) request.getParameter("mobile");
+            String isMobile = request.getParameter("mobile");
             if (isMobile == null) {
                 getServletContext().getRequestDispatcher(redirectPage).forward(
                         request, response);

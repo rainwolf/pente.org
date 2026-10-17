@@ -3,6 +3,7 @@ package org.pente.gameServer.event;
 import org.pente.gameServer.core.*;
 
 public class DSGMoveTableEvent extends AbstractDSGTableEvent {
+    private static final long serialVersionUID = 3586425460913949327L;
 
     private static final GridCoordinates coordinates = new AlphaNumericGridCoordinates(19, 19);
 

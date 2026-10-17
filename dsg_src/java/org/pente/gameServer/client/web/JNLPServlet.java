@@ -14,11 +14,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class JNLPServlet extends HttpServlet {
+    private static final long serialVersionUID = -2109911356271212592L;
 
     private static Category log4j =
             Category.getInstance(ViewAvatarServlet.class.getName());
 
-    private DSGPlayerStorer dsgPlayerStorer = null;
+    private transient DSGPlayerStorer dsgPlayerStorer = null;
 
     public void init(ServletConfig config) throws ServletException {
 
@@ -46,8 +47,8 @@ public class JNLPServlet extends HttpServlet {
             throws ServletException, IOException {
 
         DSGPlayerData dsgPlayerData = null;
-        String name = (String) request.getParameter("name");
-        String password = (String) request.getParameter("password");
+        String name = request.getParameter("name");
+        String password = request.getParameter("password");
         try {
             if (name != null) {
                 dsgPlayerData = dsgPlayerStorer.loadPlayer(name);

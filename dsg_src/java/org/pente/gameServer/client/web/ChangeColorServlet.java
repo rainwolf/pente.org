@@ -14,11 +14,12 @@ import org.pente.jive.DSGUserManager;
 
 
 public class ChangeColorServlet extends HttpServlet {
+    private static final long serialVersionUID = -240602007157727644L;
 
     private static final Category log4j =
             Category.getInstance(ChangeProfileServlet.class.getName());
 
-    private DSGPlayerStorer dsgPlayerStorer;
+    private transient DSGPlayerStorer dsgPlayerStorer;
 
     public void init(ServletConfig config) throws ServletException {
 
@@ -66,7 +67,7 @@ public class ChangeColorServlet extends HttpServlet {
                 return;
             }
 
-            String nameColorStr = (String) request.getParameter("changeNameColor");
+            String nameColorStr = request.getParameter("changeNameColor");
             Color nameColor = null;
             if (nameColorStr != null && nameColorStr.length() < 6) {
                 changeProfileError = "Name color is too short, must be 6 hexidecimal characters";

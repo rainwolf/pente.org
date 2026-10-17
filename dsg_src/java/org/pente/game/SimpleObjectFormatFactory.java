@@ -108,6 +108,6 @@ public class SimpleObjectFormatFactory implements ObjectFormatFactory {
             return null;
         }
 
-        return (ObjectFormat) formats.get(className);
+        return formats.get(className);
     }
 }

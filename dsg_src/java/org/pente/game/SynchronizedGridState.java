@@ -22,6 +22,7 @@ package org.pente.game;
 import java.awt.Point;
 
 public class SynchronizedGridState implements GridState {
+    private static final long serialVersionUID = -2060358645025705556L;
 
     /** The base grid state that does the real work */
     protected GridState gridState;

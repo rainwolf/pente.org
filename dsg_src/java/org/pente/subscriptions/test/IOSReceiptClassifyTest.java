@@ -180,9 +180,9 @@ public class IOSReceiptClassifyTest extends TestCase {
         assertEquals("success:shared", ReceiptClass.SHARED.getReply());
         // old shipped clients only test containsString:@"success" / @"invalid receipt"
         ReceiptClass[] all = ReceiptClass.values();
-        for (int i = 0; i < all.length; i++) {
-            assertTrue(all[i].getReply().indexOf("success") >= 0);
-            assertTrue(all[i].getReply().indexOf("invalid receipt") < 0);
+        for (ReceiptClass rc : all) {
+            assertTrue(rc.getReply().indexOf("success") >= 0);
+            assertTrue(rc.getReply().indexOf("invalid receipt") < 0);
         }
     }
 }

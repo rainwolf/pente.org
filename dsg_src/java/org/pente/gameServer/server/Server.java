@@ -312,14 +312,14 @@ public class Server {
                 log4j.error("Invalid table: " + tableNum + " for event " + event);
                 return;
             }
-            ((SynchronizedServerTable) tables.get(tableNum)).eventOccurred(event);
+            tables.get(tableNum).eventOccurred(event);
         }
     }
 
     public void routeEventToAllTables(DSGEvent event) {
         synchronized (tables) {
             for (int i = 1; i < tables.size(); i++) {
-                SynchronizedServerTable t = (SynchronizedServerTable) tables.get(i);
+                SynchronizedServerTable t = tables.get(i);
                 if (t != null) {
                     t.eventOccurred(event);
                 }
@@ -334,7 +334,7 @@ public class Server {
         synchronized (tables) {
 
             for (int i = 1; i < tables.size(); i++) {
-                SynchronizedServerTable t = (SynchronizedServerTable) tables.get(i);
+                SynchronizedServerTable t = tables.get(i);
                 if (t == null) {
                     newTableNum = i;
                     break;
@@ -364,7 +364,7 @@ public class Server {
 
     public void removeTable(int tableNum) {
         synchronized (tables) {
-            SynchronizedServerTable t = (SynchronizedServerTable) tables.get(tableNum);
+            SynchronizedServerTable t = tables.get(tableNum);
             if (t != null) {
                 t.destroy();
                 tables.set(tableNum, null);
@@ -398,7 +398,7 @@ public class Server {
 
         synchronized (tables) {
             for (int i = 1; i < tables.size(); i++) {
-                SynchronizedServerTable t = (SynchronizedServerTable) tables.get(i);
+                SynchronizedServerTable t = tables.get(i);
                 if (t != null) {
                     t.destroy();
                 }
@@ -427,7 +427,7 @@ public class Server {
         Tourney tourney = null;
         try {
             if (serverData.isTournament()) {
-                GameEventData first = (GameEventData) serverData.getGameEvents().get(0);
+                GameEventData first = serverData.getGameEvents().get(0);
                 tourney = resources.getTourneyStorer().getTourney(first.getEventID());
             }
         } catch (Throwable t) {

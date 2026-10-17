@@ -24,10 +24,10 @@ public class SwissDriver {
         CacheTourneyStorer tourneyStorer = new CacheTourneyStorer(storer);
 //        
         Tourney t = storer.getTourney(1142);
-        for (Iterator it = ((SingleEliminationSection) t.getRound(1).
+        for (Iterator<SingleEliminationMatch> it = ((SingleEliminationSection) t.getRound(1).
                 getSection(1)).getSingleEliminationMatches().iterator(); it.hasNext(); ) {
 
-            SingleEliminationMatch m = (SingleEliminationMatch) it.next();
+            SingleEliminationMatch m = it.next();
             System.out.println(m.getPlayer1().getName() + " " +
                     m.getResultStr() + " " + m.getPlayer2().getName());
         }

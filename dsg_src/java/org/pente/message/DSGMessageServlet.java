@@ -15,6 +15,8 @@ import org.pente.notifications.NotificationServer;
 
 public class DSGMessageServlet extends HttpServlet {
 
+    private static final long serialVersionUID = 4941111273665616899L;
+
     private static final Category log4j = Category.getInstance(
             DSGMessageServlet.class.getName());
 
@@ -23,7 +25,7 @@ public class DSGMessageServlet extends HttpServlet {
     private static final String newMessagePage = "/gameServer/newMessage.jsp";
     private static final String mobileRedirectPage = "/gameServer/mobile/empty.jsp";
 
-    private Resources resources;
+    private transient Resources resources;
 
     public void init(ServletConfig config) throws ServletException {
 
@@ -69,7 +71,7 @@ public class DSGMessageServlet extends HttpServlet {
         String player = (String) request.getAttribute("name");
         DSGPlayerData playerData = null;
 
-        String command = (String) request.getParameter("command");
+        String command = request.getParameter("command");
 
         if (command == null) {
             command = "load";
@@ -141,10 +143,10 @@ public class DSGMessageServlet extends HttpServlet {
                         return;
                     }
                 }
-                for (int i = 0; i < mids.length; i++) {
+                for (int mid : mids) {
                     try {
-                        if (mids[i] != 0) {
-                            dsgMessageStorer.deleteMessage(mids[i]);
+                        if (mid != 0) {
+                            dsgMessageStorer.deleteMessage(mid);
                         }
                     } catch (DSGMessageStoreException dmse) {
                         log4j.error("MessageServlet delete error.", dmse);
@@ -152,7 +154,7 @@ public class DSGMessageServlet extends HttpServlet {
                 }
             }
 
-            String isMobile = (String) request.getParameter("mobile");
+            String isMobile = request.getParameter("mobile");
             if (isMobile == null) {
                 response.sendRedirect("/gameServer/mymessages?command=load");
             } else {
@@ -334,7 +336,7 @@ public class DSGMessageServlet extends HttpServlet {
                 NotificationServer notificationServer = resources.getNotificationServer();
                 notificationServer.sendMessageNotification(playerData.getName(), toPlayerData.getPlayerID(), m.getMid(), m.getSubject());
 
-                String isMobile = (String) request.getParameter("mobile");
+                String isMobile = request.getParameter("mobile");
                 if (isMobile == null) {
                     response.sendRedirect("/gameServer/mymessages?command=load");
                 } else {

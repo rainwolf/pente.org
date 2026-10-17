@@ -2,6 +2,7 @@ package org.pente.gameServer.event;
 
 /** Requester takes back their pending request to a table (spec R3). */
 public class DSGArenaWithdrawJoinRequestEvent extends AbstractDSGTableEvent {
+    private static final long serialVersionUID = 888005704992988230L;
 
     public DSGArenaWithdrawJoinRequestEvent() {
         super();

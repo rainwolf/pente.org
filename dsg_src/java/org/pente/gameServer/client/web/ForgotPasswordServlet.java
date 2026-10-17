@@ -11,15 +11,16 @@ import org.pente.gameServer.core.*;
 import org.pente.gameServer.server.*;
 
 public class ForgotPasswordServlet extends HttpServlet {
+    private static final long serialVersionUID = -2308537136555198857L;
 
     private static final Category log4j =
             Category.getInstance(ForgotPasswordServlet.class.getName());
 
-    private DSGPlayerStorer dsgPlayerStorer;
-    private MySQLDSGReturnEmailStorer returnEmailStorer;
+    private transient DSGPlayerStorer dsgPlayerStorer;
+    private transient MySQLDSGReturnEmailStorer returnEmailStorer;
 
     private boolean emailEnabled = true;
-    private PasswordHelper passwordHelper;
+    private transient PasswordHelper passwordHelper;
 
     public void init(ServletConfig config) throws ServletException {
 
