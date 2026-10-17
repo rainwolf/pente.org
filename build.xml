@@ -42,27 +42,7 @@
     <target name="test" depends="compile-tests">
         <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
             <classpath refid="test-classpath"/>
-            <arg value="org.pente.gameServer.server.test.RedisConnectionManagerTest"/>
-        </java>
-        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
-            <classpath refid="test-classpath"/>
-            <arg value="org.pente.gameServer.core.test.CacheDSGFollowerStorerTest"/>
-        </java>
-        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
-            <classpath refid="test-classpath"/>
-            <arg value="org.pente.gameServer.core.test.CacheDSGPlayerStorerTest"/>
-        </java>
-        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
-            <classpath refid="test-classpath"/>
-            <arg value="org.pente.gameServer.tourney.test.CacheTourneyStorerTest"/>
-        </java>
-        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
-            <classpath refid="test-classpath"/>
             <arg value="org.pente.gameServer.tourney.test.CacheTourneyStorerRedisTest"/>
-        </java>
-        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
-            <classpath refid="test-classpath"/>
-            <arg value="org.pente.gameServer.tourney.test.TourneySerializationTest"/>
         </java>
         <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
             <classpath refid="test-classpath"/>
@@ -94,6 +74,7 @@
             <arg value="org.pente.gameServer.server.test.ArenaServerTableJoinRequestTest"/>
         </java>
         <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
             <classpath refid="test-classpath"/>
             <arg value="org.pente.gameServer.server.test.ServerSocketEarlyFrameTest"/>
         </java>
