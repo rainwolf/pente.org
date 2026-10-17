@@ -1,6 +1,7 @@
 package org.pente.gameServer.event;
 
 public class DSGWaitingPlayerReturnTimeUpTableEvent extends AbstractDSGTableEvent {
+    private static final long serialVersionUID = -2343793841194556800L;
 
     private int waitingForPlayerToReturnSeqNbr;
     private boolean set;

@@ -32,7 +32,7 @@ public interface PlayerListComponent extends PlayerDataChangeListener {
 
     public void clearPlayers();
 
-    public Enumeration getPlayers();
+    public Enumeration<String> getPlayers();
 
     public void addPlayer(DSGPlayerData playerData);
 

@@ -47,8 +47,8 @@ public abstract class TourneySection implements Serializable {
 
     public int getNumCompleteMatches() {
         int sz = 0;
-        for (Iterator ms = getMatches().iterator(); ms.hasNext(); ) {
-            TourneyMatch m = (TourneyMatch) ms.next();
+        for (Iterator<TourneyMatch> ms = getMatches().iterator(); ms.hasNext(); ) {
+            TourneyMatch m = ms.next();
             if (m.hasBeenPlayed()) {
                 sz++;
             }
@@ -62,8 +62,8 @@ public abstract class TourneySection implements Serializable {
 
     public boolean isComplete() {
         if (isEmpty()) return false;
-        for (Iterator matches = getMatches().iterator(); matches.hasNext(); ) {
-            TourneyMatch m = (TourneyMatch) matches.next();
+        for (Iterator<TourneyMatch> matches = getMatches().iterator(); matches.hasNext(); ) {
+            TourneyMatch m = matches.next();
             if (!m.hasBeenPlayed()) {
                 return false;
             }
@@ -89,8 +89,8 @@ public abstract class TourneySection implements Serializable {
 
     public TourneyMatch getUnplayedMatch(long player1ID, long player2ID) {
         log4j.debug("section.getUnplayedMatch()");
-        for (Iterator it = getMatches().iterator(); it.hasNext(); ) {
-            TourneyMatch m = (TourneyMatch) it.next();
+        for (Iterator<TourneyMatch> it = getMatches().iterator(); it.hasNext(); ) {
+            TourneyMatch m = it.next();
             log4j.debug("examine match " + m.getMatchID());
             if (!m.hasBeenPlayed() &&
                     m.getPlayer1().getPlayerID() == player1ID &&
@@ -149,8 +149,8 @@ public abstract class TourneySection implements Serializable {
     }
 
     public boolean contains(long pids[], long pid) {
-        for (int i = 0; i < pids.length; i++) {
-            if (pids[i] == pid) return true;
+        for (long p : pids) {
+            if (p == pid) return true;
         }
         return false;
     }

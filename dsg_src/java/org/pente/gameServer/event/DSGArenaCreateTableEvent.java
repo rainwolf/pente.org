@@ -1,6 +1,7 @@
 package org.pente.gameServer.event;
 
 public class DSGArenaCreateTableEvent extends AbstractDSGTableEvent {
+    private static final long serialVersionUID = 1362105178688767318L;
 
     private int game;
     private int initialMinutes;

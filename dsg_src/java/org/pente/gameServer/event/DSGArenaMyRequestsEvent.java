@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 /** Server to requester: every table they have a pending request at. */
 public class DSGArenaMyRequestsEvent extends AbstractDSGEvent {
+    private static final long serialVersionUID = -4033538274008844325L;
 
     private int[] tables;
 

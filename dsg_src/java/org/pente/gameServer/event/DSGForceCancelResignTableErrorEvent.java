@@ -1,6 +1,7 @@
 package org.pente.gameServer.event;
 
 public class DSGForceCancelResignTableErrorEvent extends AbstractDSGTableErrorEvent {
+    private static final long serialVersionUID = -2149502897521092013L;
 
     private int action;
 

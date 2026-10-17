@@ -20,6 +20,8 @@ import java.io.IOException;
 
 public class ResignServlet extends HttpServlet {
 
+    private static final long serialVersionUID = 4505688032949897269L;
+
     private static final Category log4j = Category.getInstance(
             ResignServlet.class.getName());
 
@@ -28,7 +30,7 @@ public class ResignServlet extends HttpServlet {
     private static final String resignRedirectPage = "/gameServer/index.jsp";
     private static final String mobileRedirectPage = "/gameServer/mobile/empty.jsp";
 
-    private Resources resources;
+    private transient Resources resources;
 
     public void init(ServletConfig config) throws ServletException {
 
@@ -61,7 +63,7 @@ public class ResignServlet extends HttpServlet {
         String player = (String) request.getAttribute("name");
         DSGPlayerData playerData = null;
 
-        String gidStr = (String) request.getParameter("gid");
+        String gidStr = request.getParameter("gid");
         long gid = 0;
         TBGame game = null;
 
@@ -149,7 +151,7 @@ public class ResignServlet extends HttpServlet {
                     }
                 }
 
-                String isMobile = (String) request.getParameter("mobile");
+                String isMobile = request.getParameter("mobile");
                 if (isMobile == null) {
                     response.sendRedirect(resignRedirectPage);
                 } else {

@@ -1,6 +1,7 @@
 package org.pente.gameServer.event;
 
 public class DSGPingEvent extends AbstractDSGEvent {
+    private static final long serialVersionUID = -8213667788225466536L;
 
     private String player;
     private long pingStart;

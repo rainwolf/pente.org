@@ -9,6 +9,7 @@ import java.util.*;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 
+import org.apache.commons.fileupload2.core.DiskFileItem;
 import org.apache.commons.fileupload2.core.DiskFileItemFactory;
 import org.apache.commons.fileupload2.core.FileItem;
 import org.apache.commons.fileupload2.core.FileUploadException;
@@ -23,11 +24,12 @@ import org.pente.jive.DSGUserManager;
 
 
 public class ChangeAvatarServlet extends HttpServlet {
+    private static final long serialVersionUID = -8316422410422190726L;
 
     private static final Category log4j =
             Category.getInstance(ChangeProfileServlet.class.getName());
 
-    private DSGPlayerStorer dsgPlayerStorer;
+    private transient DSGPlayerStorer dsgPlayerStorer;
 
     public void init(ServletConfig config) throws ServletException {
 
@@ -83,7 +85,7 @@ public class ChangeAvatarServlet extends HttpServlet {
 
             // jakarta commons lib to handle upload files
             DiskFileItemFactory factory = DiskFileItemFactory.builder().get();
-            JakartaServletFileUpload upload = new JakartaServletFileUpload(factory);
+            JakartaServletFileUpload<DiskFileItem, DiskFileItemFactory> upload = new JakartaServletFileUpload<>(factory);
             upload.setSizeMax(4 * 1024 * 1024); //4mb
 
             // if request is multipart then we are saving, otherwise we are
@@ -93,13 +95,11 @@ public class ChangeAvatarServlet extends HttpServlet {
                 // store request parameters in hash map for easy access
                 Map<String, String> params = new HashMap<String, String>();
                 // store avatar for later processing
-                FileItem avatarFileItem = null;
+                FileItem<DiskFileItem> avatarFileItem = null;
 
                 // process request to get parameters and avatar upload
-                List items = upload.parseRequest(request);
-                Iterator iter = items.iterator();
-                while (iter.hasNext()) {
-                    FileItem item = (FileItem) iter.next();
+                List<DiskFileItem> items = upload.parseRequest(request);
+                for (FileItem<DiskFileItem> item : items) {
 
                     if (!item.getName().equals("")) {
                         avatarFileItem = item;

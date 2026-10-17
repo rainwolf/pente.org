@@ -10,11 +10,12 @@ import org.apache.log4j.*;
 import org.pente.database.*;
 
 public class DonationProgressServlet extends HttpServlet {
+    private static final long serialVersionUID = -5257186518448611592L;
 
     private static Category log4j =
             Category.getInstance(DonationProgressServlet.class.getName());
 
-    private DBHandler dbHandler = null;
+    private transient DBHandler dbHandler = null;
     private int percentage;
 
     public void init(ServletConfig config) throws ServletException {

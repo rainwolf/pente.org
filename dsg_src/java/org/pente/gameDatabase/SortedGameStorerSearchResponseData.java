@@ -72,9 +72,9 @@ public class SortedGameStorerSearchResponseData extends SimpleGameStorerSearchRe
     }
 
     public GameStorerSearchResponseMoveData getSearchResponseMoveData(int move) {
-        Iterator iter = moveData.values().iterator();
+        Iterator<GameStorerSearchResponseMoveData> iter = moveData.values().iterator();
         while (iter.hasNext()) {
-            GameStorerSearchResponseMoveData moveData = (GameStorerSearchResponseMoveData) iter.next();
+            GameStorerSearchResponseMoveData moveData = iter.next();
             if (moveData.getMove() == move) {
                 return moveData;
             }

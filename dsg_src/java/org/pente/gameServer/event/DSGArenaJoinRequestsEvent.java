@@ -11,8 +11,10 @@ import java.util.List;
  * serializes the event later, on the player's writer thread.
  */
 public class DSGArenaJoinRequestsEvent extends AbstractDSGTableEvent {
+    private static final long serialVersionUID = 6185645273042762756L;
 
     public static class Request implements Serializable {
+        private static final long serialVersionUID = 2400924235904662863L;
 
         private String player;
         private long seq;

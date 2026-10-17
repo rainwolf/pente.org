@@ -13,10 +13,11 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 public class EmailVerificationServlet extends HttpServlet {
+    private static final long serialVersionUID = -7193465547297748222L;
 
     private static final Category cat = Category.getInstance(EmailPlayerServlet.class.getName());
 
-    CacheDSGPlayerStorer dsgPlayerStorer;
+    transient CacheDSGPlayerStorer dsgPlayerStorer;
 
     public void init(ServletConfig config) throws ServletException {
         super.init(config);

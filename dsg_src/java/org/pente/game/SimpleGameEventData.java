@@ -29,6 +29,7 @@ import org.pente.gameServer.client.web.SiteStatsData;
  *  @author dweebo (dweebo@www.pente.org)
  */
 public class SimpleGameEventData implements GameEventData, Serializable {
+    private static final long serialVersionUID = -1856934148676264128L;
 
     /** The unique id for this event */
     private int id;
@@ -129,7 +130,7 @@ public class SimpleGameEventData implements GameEventData, Serializable {
         cloned.setGame(getGame());
 
         for (int i = 0; i < rounds.size(); i++) {
-            GameRoundData r = (GameRoundData) rounds.elementAt(i);
+            GameRoundData r = rounds.elementAt(i);
             cloned.addGameRoundData((GameRoundData) r.clone());
         }
 

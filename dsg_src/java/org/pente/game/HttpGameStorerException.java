@@ -1,6 +1,7 @@
 package org.pente.game;
 
 public class HttpGameStorerException extends Exception {
+    private static final long serialVersionUID = 6222252719363345222L;
 
     private Exception exception;
 

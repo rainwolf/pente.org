@@ -46,7 +46,7 @@ public class SingleEliminationSection extends TourneySection implements Serializ
             int seq = match.getSeq();
             int insertAt = 0;
             for (insertAt = 0; insertAt < matches.size(); insertAt++) {
-                TourneyMatch m = (TourneyMatch) matches.get(insertAt);
+                TourneyMatch m = matches.get(insertAt);
                 if (m.isBye()) { //we've reached the end, insert before the bye
                     break;
                 }
@@ -207,8 +207,8 @@ public class SingleEliminationSection extends TourneySection implements Serializ
 
     public int getNumCompleteMatches() {
         int sz = 0;
-        for (Iterator ms = getSingleEliminationMatches().iterator(); ms.hasNext(); ) {
-            SingleEliminationMatch m = (SingleEliminationMatch) ms.next();
+        for (Iterator<SingleEliminationMatch> ms = getSingleEliminationMatches().iterator(); ms.hasNext(); ) {
+            SingleEliminationMatch m = ms.next();
             if (m.isComplete()) {
                 sz++;
             }

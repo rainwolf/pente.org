@@ -79,7 +79,7 @@ public class SimpleMemoryGameStorer implements GameStorer, PlayerStorer {
      *  @return GameData The game data
      */
     public synchronized GameData loadGame(long gameID, GameData data) {
-        return (GameData) games.get(Long.valueOf(gameID));
+        return games.get(Long.valueOf(gameID));
     }
 
     /** Checks to see if the player has already been stored
@@ -146,7 +146,7 @@ public class SimpleMemoryGameStorer implements GameStorer, PlayerStorer {
         if (players == null) {
             return null;
         } else {
-            return (PlayerData) players.get(Long.valueOf(playerID));
+            return players.get(Long.valueOf(playerID));
         }
     }
 
@@ -161,7 +161,7 @@ public class SimpleMemoryGameStorer implements GameStorer, PlayerStorer {
         if (players == null) {
             return null;
         } else {
-            return (PlayerData) players.get(name);
+            return players.get(name);
         }
     }
 

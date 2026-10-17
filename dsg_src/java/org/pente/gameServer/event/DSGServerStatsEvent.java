@@ -3,6 +3,7 @@ package org.pente.gameServer.event;
 import java.util.*;
 
 public class DSGServerStatsEvent extends AbstractDSGEvent {
+    private static final long serialVersionUID = 7443000895147415049L;
 
     private int logins;
     private int games;

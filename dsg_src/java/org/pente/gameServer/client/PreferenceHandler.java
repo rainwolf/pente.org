@@ -34,8 +34,7 @@ public class PreferenceHandler {
     public void storePref(String prefName, Object prefValue) {
         synchronized (this) {
             boolean found = false;
-            for (int i = 0; i < prefs.size(); i++) {
-                DSGPlayerPreference p = prefs.elementAt(i);
+            for (DSGPlayerPreference p : prefs) {
                 if (p.getName().equals(prefName)) {
                     found = true;
                     p.setValue(prefValue);
@@ -52,8 +51,7 @@ public class PreferenceHandler {
     }
 
     public synchronized Object getPref(String prefName) {
-        for (int i = 0; i < prefs.size(); i++) {
-            DSGPlayerPreference p = prefs.elementAt(i);
+        for (DSGPlayerPreference p : prefs) {
             if (p.getName().equals(prefName)) {
                 return p.getValue();
             }

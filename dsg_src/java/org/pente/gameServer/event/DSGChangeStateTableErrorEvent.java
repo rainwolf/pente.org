@@ -1,6 +1,7 @@
 package org.pente.gameServer.event;
 
 public class DSGChangeStateTableErrorEvent extends DSGChangeStateTableEvent {
+    private static final long serialVersionUID = 12677563330781321L;
 
     private int error;
 

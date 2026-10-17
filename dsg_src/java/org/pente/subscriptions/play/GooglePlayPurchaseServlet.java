@@ -21,6 +21,8 @@ import org.pente.gameServer.server.Resources;
  */
 public class GooglePlayPurchaseServlet extends HttpServlet {
 
+    private static final long serialVersionUID = -7233659297104667587L;
+
     private static final Category log4j = Category.getInstance(GooglePlayPurchaseServlet.class.getName());
 
     /** LoginFilter sets "guest" for crawler user agents; that is never a buyer */

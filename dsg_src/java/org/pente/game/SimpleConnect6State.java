@@ -23,6 +23,7 @@ import java.awt.Point;
 
 public class SimpleConnect6State extends GridStateDecorator
         implements GridState, HashCalculator {
+    private static final long serialVersionUID = -2729155456146260011L;
 
     private int[] surrounding;
     private boolean allowOverlines = true;
@@ -191,11 +192,11 @@ public class SimpleConnect6State extends GridStateDecorator
             }
             direction = -1;
         }
-        for (int i = 0; i < lines.length; i++) {
-            if (!allowOverlines && lines[i] == 5) {
+        for (int lineLen : lines) {
+            if (!allowOverlines && lineLen == 5) {
                 winner = getColor(getNumMoves() - 1);
                 return true;
-            } else if (allowOverlines && lines[i] >= 5) {
+            } else if (allowOverlines && lineLen >= 5) {
                 winner = getColor(getNumMoves() - 1);
                 return true;
             }

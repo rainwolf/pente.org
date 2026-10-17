@@ -1,6 +1,7 @@
 package org.pente.gameServer.event;
 
 public class DSGJoinMainRoomErrorEvent extends AbstractDSGEvent implements DSGMainRoomErrorEvent {
+    private static final long serialVersionUID = -94733161366469985L;
 
     private String player;
     private int error;

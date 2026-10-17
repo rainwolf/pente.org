@@ -6,6 +6,8 @@ package org.pente.kingOfTheHill;
 
 public class KOTHException extends Exception {
 
+    private static final long serialVersionUID = 5496755159315593540L;
+
     public KOTHException() {
         super();
     }

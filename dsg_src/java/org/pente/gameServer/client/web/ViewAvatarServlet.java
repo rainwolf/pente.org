@@ -10,11 +10,12 @@ import org.apache.log4j.*;
 import org.pente.gameServer.core.*;
 
 public class ViewAvatarServlet extends HttpServlet {
+    private static final long serialVersionUID = -6439418821079770673L;
 
     private static Category log4j =
             Category.getInstance(ViewAvatarServlet.class.getName());
 
-    private DSGPlayerStorer dsgPlayerStorer = null;
+    private transient DSGPlayerStorer dsgPlayerStorer = null;
 
     public void init(ServletConfig config) throws ServletException {
 
@@ -34,7 +35,7 @@ public class ViewAvatarServlet extends HttpServlet {
     public long getLastModified(HttpServletRequest request) {
 
         DSGPlayerData dsgPlayerData = null;
-        String name = (String) request.getParameter("name");
+        String name = request.getParameter("name");
 
         try {
             if (name == null) {
@@ -71,7 +72,7 @@ public class ViewAvatarServlet extends HttpServlet {
             throws ServletException, IOException {
 
         DSGPlayerData dsgPlayerData = null;
-        String name = (String) request.getParameter("name");
+        String name = request.getParameter("name");
 
         try {
             if (name == null) {

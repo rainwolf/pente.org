@@ -22,6 +22,8 @@ package org.pente.gameServer.core;
 import java.util.*;
 
 public class AIData implements java.io.Serializable, Cloneable {
+    private static final long serialVersionUID = 8254210271369293234L;
+
 
     private String name;
     private String className;
@@ -86,8 +88,8 @@ public class AIData implements java.io.Serializable, Cloneable {
     }
 
     public boolean isValidForGame(int game) {
-        for (int i = 0; i < validGames.length; i++) {
-            if (validGames[i] == game) {
+        for (int validGame : validGames) {
+            if (validGame == game) {
                 return true;
             }
         }
@@ -102,7 +104,7 @@ public class AIData implements java.io.Serializable, Cloneable {
         return options.get(name);
     }
 
-    public Enumeration getOptionNames() {
+    public Enumeration<String> getOptionNames() {
         return options.keys();
     }
 

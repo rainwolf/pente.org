@@ -10,10 +10,12 @@ import org.pente.game.*;
 
 public class GameVenueObjectServlet extends HttpServlet {
 
+    private static final long serialVersionUID = -5097339581192430864L;
+
     private static Category log4j = Category.getInstance(GameVenueObjectServlet.class.getName());
 
     private byte[] data;
-    private Timer timer;
+    private transient Timer timer;
 
 
     public void init(ServletConfig config) throws ServletException {

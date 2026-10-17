@@ -33,6 +33,8 @@ import org.apache.log4j.*;
 @SuppressWarnings("unchecked")
 public abstract class SimpleUserAdapter implements User, Cacheable {
 
+    private static final long serialVersionUID = -27714767085406156L;
+
     private static final Category log4j =
             Category.getInstance(SimpleUserAdapter.class.getName());
 
@@ -151,7 +153,7 @@ public abstract class SimpleUserAdapter implements User, Cacheable {
                 loadPropertiesFromDb();
             }
         }
-        return (String) properties.get(name);
+        return properties.get(name);
     }
 
     public void setProperty(String name, String value) throws UnauthorizedException {
@@ -170,7 +172,7 @@ public abstract class SimpleUserAdapter implements User, Cacheable {
             // Only update the value in the database if the property value
             // has changed.
             if (!(value.equals(properties.get(name)))) {
-                String original = (String) properties.get(name);
+                String original = properties.get(name);
                 properties.put(name, value);
                 updatePropertyInDb(name, value);
 

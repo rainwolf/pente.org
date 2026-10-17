@@ -3,6 +3,7 @@ package org.pente.gameServer.event;
 import org.pente.game.*;
 
 public class DSGChangeStateTableEvent extends AbstractDSGTableEvent {
+    private static final long serialVersionUID = -3401858775467164878L;
 
     private boolean timed;
     private int initialMinutes;

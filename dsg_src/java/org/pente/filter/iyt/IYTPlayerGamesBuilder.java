@@ -57,11 +57,10 @@ public class IYTPlayerGamesBuilder implements Runnable {
         for (int j = 0; j < 2; j++) {
 
             // for each game, build the game and store it
-            for (int i = 0; i < games.size(); i++) {
+            for (String gameIDStr : games) {
 
                 try {
 
-                    String gameIDStr = (String) games.elementAt(i);
                     long gameID = Long.parseLong(gameIDStr);
 
                     boolean buildGame = false;

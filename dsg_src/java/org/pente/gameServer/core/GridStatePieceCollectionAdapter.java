@@ -24,6 +24,8 @@ import java.util.*;
 import org.pente.game.*;
 
 public class GridStatePieceCollectionAdapter extends GridStateDecorator {
+    private static final long serialVersionUID = 2491790725387670496L;
+
 
     protected Vector<OrderedPieceCollection> listeners;
     protected Vector<GridPieceAction> gridPieces;
@@ -55,7 +57,7 @@ public class GridStatePieceCollectionAdapter extends GridStateDecorator {
         gridState.clear();
         gridPieces.removeAllElements();
         for (int i = 0; i < listeners.size(); i++) {
-            OrderedPieceCollection o = (OrderedPieceCollection) listeners.elementAt(i);
+            OrderedPieceCollection o = listeners.elementAt(i);
             o.clearPieces();
         }
     }
@@ -80,7 +82,7 @@ public class GridStatePieceCollectionAdapter extends GridStateDecorator {
         gridPieces.addElement(a);
 
         for (int i = 0; i < listeners.size(); i++) {
-            OrderedPieceCollection o = (OrderedPieceCollection) listeners.elementAt(i);
+            OrderedPieceCollection o = listeners.elementAt(i);
             o.addPiece(p, gridState.getNumMoves());
         }
     }
@@ -89,7 +91,7 @@ public class GridStatePieceCollectionAdapter extends GridStateDecorator {
     public void undoMove() {
 
         for (int i = 0; i < gridPieces.size(); i++) {
-            GridPieceAction a = (GridPieceAction) gridPieces.elementAt(i);
+            GridPieceAction a = gridPieces.elementAt(i);
             if (a.getTurn() == gridState.getNumMoves()) {
                 gridPieces.removeElementAt(i);
             }
@@ -98,7 +100,7 @@ public class GridStatePieceCollectionAdapter extends GridStateDecorator {
         gridState.undoMove();
 
         for (int i = 0; i < listeners.size(); i++) {
-            OrderedPieceCollection o = (OrderedPieceCollection) listeners.elementAt(i);
+            OrderedPieceCollection o = listeners.elementAt(i);
             o.undoLastTurn();
         }
     }

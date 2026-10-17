@@ -27,9 +27,7 @@ public class ZipFileGameStorerSearchResponseStream {
 
         Hashtable<Long, String> players = new Hashtable<>();
 
-        Enumeration games = responseData.getGames().elements();
-        while (games.hasMoreElements()) {
-            GameData gameData = (GameData) games.nextElement();
+        for (GameData gameData : responseData.getGames()) {
             ZipEntry gameEntry = new ZipEntry("game/" + gameData.getGameID());
             zipOutputStream.putNextEntry(gameEntry);
 

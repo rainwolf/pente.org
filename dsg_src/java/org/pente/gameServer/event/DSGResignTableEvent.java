@@ -1,6 +1,7 @@
 package org.pente.gameServer.event;
 
 public class DSGResignTableEvent extends AbstractDSGTableEvent {
+    private static final long serialVersionUID = 6915860943258883744L;
 
     public DSGResignTableEvent() {
         super();

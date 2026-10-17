@@ -12,12 +12,12 @@ public class ActiveServerLoader {
         getActiveServers("localhost");
     }
 
-    public static Vector getActiveServers(String host) throws IOException,
+    public static Vector<ServerData> getActiveServers(String host) throws IOException,
             MalformedURLException, URISyntaxException {
 
         URL url = new URI("https", host, "/gameServer/activeServers").toURL();
         BufferedReader in = new BufferedReader(new InputStreamReader(
-                (InputStream) url.openConnection().getInputStream()));
+                url.openConnection().getInputStream()));
         Vector<ServerData> servers = new Vector<ServerData>();
         String s = null;
         while ((s = in.readLine()) != null) {

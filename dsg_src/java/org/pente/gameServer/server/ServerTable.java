@@ -346,7 +346,7 @@ public class ServerTable {
 
     protected void broadcastTable(DSGEvent dsgEvent) {
         for (int i = playersInTable.size() - 1; i > -1; i--) {
-            DSGPlayerData data = (DSGPlayerData) playersInTable.elementAt(i);
+            DSGPlayerData data = playersInTable.elementAt(i);
             if (data != null) {
                 String name = data.getName();
                 dsgEventRouter.routeEvent(dsgEvent, name);
@@ -358,7 +358,7 @@ public class ServerTable {
 
     protected void broadcastMainRoom(DSGEvent dsgEvent) {
         for (int i = playersInMainRoom.size() - 1; i > -1; i--) {
-            DSGPlayerData data = (DSGPlayerData) playersInMainRoom.elementAt(i);
+            DSGPlayerData data = playersInMainRoom.elementAt(i);
             if (data != null) {
                 String name = data.getName();
                 dsgEventRouter.routeEvent(dsgEvent, name);

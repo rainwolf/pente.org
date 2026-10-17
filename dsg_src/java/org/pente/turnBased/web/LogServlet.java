@@ -9,6 +9,8 @@ import org.apache.log4j.*;
 
 public class LogServlet extends HttpServlet {
 
+    private static final long serialVersionUID = -4844577544879421629L;
+
     private static final Category log4j = Category.getInstance(
             LogServlet.class.getName());
 

@@ -27,6 +27,8 @@ import org.pente.gameDatabase.*;
  */
 public class WebDbApiServlet extends HttpServlet {
 
+    private static final long serialVersionUID = 3559299031987038680L;
+
     private static Category cat =
             Category.getInstance(WebDbApiServlet.class.getName());
 

@@ -1,6 +1,7 @@
 package org.pente.gameServer.event;
 
 public class DSGEmailGameReplyTableEvent extends AbstractDSGTableEvent {
+    private static final long serialVersionUID = -5081991942701981486L;
 
     private String reply;
 

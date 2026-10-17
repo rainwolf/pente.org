@@ -899,7 +899,7 @@ public class AuthEndpointsTest extends TestCase {
         };
         return (HttpServletRequest) Proxy.newProxyInstance(
                 HttpServletRequest.class.getClassLoader(),
-                new Class[]{HttpServletRequest.class}, h);
+                new Class<?>[]{HttpServletRequest.class}, h);
     }
 
     /** A player storer that resolves any login name to the sentinel PID. */
@@ -915,7 +915,7 @@ public class AuthEndpointsTest extends TestCase {
         };
         return (DSGPlayerStorer) Proxy.newProxyInstance(
                 DSGPlayerStorer.class.getClassLoader(),
-                new Class[]{DSGPlayerStorer.class}, h);
+                new Class<?>[]{DSGPlayerStorer.class}, h);
     }
 
     private static DSGPlayerData stubPlayerData() {
@@ -929,7 +929,7 @@ public class AuthEndpointsTest extends TestCase {
         };
         return (DSGPlayerData) Proxy.newProxyInstance(
                 DSGPlayerData.class.getClassLoader(),
-                new Class[]{DSGPlayerData.class}, h);
+                new Class<?>[]{DSGPlayerData.class}, h);
     }
 
     private static HttpServletRequest anonRequest(final String body) {
@@ -954,7 +954,7 @@ public class AuthEndpointsTest extends TestCase {
         };
         return (HttpServletRequest) Proxy.newProxyInstance(
                 HttpServletRequest.class.getClassLoader(),
-                new Class[]{HttpServletRequest.class}, h);
+                new Class<?>[]{HttpServletRequest.class}, h);
     }
 
     private static HttpServletResponse capturingResponse(final int[] status) {
@@ -978,7 +978,7 @@ public class AuthEndpointsTest extends TestCase {
         };
         return (HttpServletResponse) Proxy.newProxyInstance(
                 HttpServletResponse.class.getClassLoader(),
-                new Class[]{HttpServletResponse.class}, h);
+                new Class<?>[]{HttpServletResponse.class}, h);
     }
 
     private static Object defaultFor(Method m, String name) {

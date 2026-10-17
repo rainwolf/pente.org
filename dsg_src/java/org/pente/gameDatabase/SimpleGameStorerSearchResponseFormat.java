@@ -157,9 +157,7 @@ public class SimpleGameStorerSearchResponseFormat implements GameStorerSearchRes
 
         StringBuffer resultsBuf = new StringBuffer();
         Vector<GameStorerSearchResponseMoveData> searchResultsVector = data.searchResponseMoveData();
-        Enumeration searchResults = searchResultsVector.elements();
-        while (searchResults.hasMoreElements()) {
-            GameStorerSearchResponseMoveData moveData = (GameStorerSearchResponseMoveData) searchResults.nextElement();
+        for (GameStorerSearchResponseMoveData moveData : searchResultsVector) {
 
             resultsBuf.append(PGNGameFormat.formatCoordinates(moveData.getMove()));
             resultsBuf.append(moveDelimiter);
@@ -183,11 +181,9 @@ public class SimpleGameStorerSearchResponseFormat implements GameStorerSearchRes
             throws UnsupportedEncodingException {
 
         PGNGameFormat gameFormat = new PGNGameFormat();
-        Enumeration games = data.getGames().elements();
 
         int gameCount = 0;
-        while (games.hasMoreElements()) {
-            GameData gameData = (GameData) games.nextElement();
+        for (GameData gameData : data.getGames()) {
 
             if (gameCount++ > 0) {
                 buffer.append(paramSeparator);
@@ -275,8 +271,8 @@ public class SimpleGameStorerSearchResponseFormat implements GameStorerSearchRes
         if (games != null) {
             GameFormat gameFormat = new PGNGameFormat();
             if (games instanceof Vector) {
-                Vector gamesVec = (Vector) games;
-                Vector gameIDsVec = (Vector) gids;
+                Vector<?> gamesVec = (Vector<?>) games;
+                Vector<?> gameIDsVec = (Vector<?>) gids;
                 for (int i = 0; i < gamesVec.size(); i++) {
                     GameData gameData = new DefaultGameData();
                     gameData = (GameData) gameFormat.parse(gameData, new StringBuffer((String) gamesVec.elementAt(i)));

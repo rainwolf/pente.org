@@ -15,18 +15,19 @@ import org.pente.gameServer.server.*;
 import org.pente.jive.*;
 
 public class RegisterServlet extends HttpServlet {
+    private static final long serialVersionUID = -4578612540852400580L;
 
     private static final Category log4j =
             Category.getInstance(RegisterServlet.class.getName());
 
-    private DSGPlayerStorer dsgPlayerStorer;
-    private RegisterHandler registerHandler;
+    private transient DSGPlayerStorer dsgPlayerStorer;
+    private transient RegisterHandler registerHandler;
     private String registrationEmail;
-    private MySQLDSGReturnEmailStorer returnEmailStorer;
+    private transient MySQLDSGReturnEmailStorer returnEmailStorer;
 
     private boolean emailEnabled;
 
-    private PasswordHelper passwordHelper;
+    private transient PasswordHelper passwordHelper;
 
     private static final DSGAuthToken adminToken =
             new DSGAuthToken(22000000000002L);

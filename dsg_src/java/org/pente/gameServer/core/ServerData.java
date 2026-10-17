@@ -7,6 +7,8 @@ import java.io.Serializable;
 import java.util.Vector;
 
 public class ServerData implements Serializable {
+    private static final long serialVersionUID = -6542649512063326716L;
+
 
     private int serverId;
     private String name;

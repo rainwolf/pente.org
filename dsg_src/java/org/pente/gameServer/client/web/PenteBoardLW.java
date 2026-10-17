@@ -22,6 +22,7 @@ import java.util.Vector;
 
 public class PenteBoardLW extends JComponent implements PenteBoardComponent,
         GridCoordinatesChangeListener, GameOptionsChangeListener {
+    private static final long serialVersionUID = 605111696989505273L;
 
     int captureAreaWidth;
     int captures[];
@@ -163,8 +164,8 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
         this.piecesOnGrid = onGrid;
     }
 
-    public Vector getGridPieces() {
-        return (Vector) gridPieces.clone();
+    public Vector<GridPiece> getGridPieces() {
+        return new Vector<GridPiece>(gridPieces);
     }
 
     public void setBackgroundColor(int color) {
@@ -313,8 +314,7 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
         //System.out.println(gridPieces.size() + " update piece player " + x + "," + y + "," + player);
         int count = 0;
         synchronized (drawLock) {
-            for (int i = 0; i < gridPieces.size(); i++) {
-                GridPiece p = (GridPiece) gridPieces.elementAt(i);
+            for (GridPiece p : gridPieces) {
                 if (p.getX() == x && p.getY() == y) {
                     p.setPlayer(player);
                     boardDirty = true;
@@ -1118,7 +1118,7 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
         }
 
         int darkWidth = r - 1;
-        int lightWidth = (int) (darkWidth) * 5 / 6;
+        int lightWidth = (darkWidth) * 5 / 6;
         int reflectionWidth = (darkWidth < 18) ? 4 : 6;
         int reflectionOffset = darkWidth / 4;
 
@@ -1187,7 +1187,7 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
 
             if (gridClicked) {
                 for (int i = 0; i < listeners.size(); i++) {
-                    GridBoardListener l = (GridBoardListener) listeners.elementAt(i);
+                    GridBoardListener l = listeners.elementAt(i);
 
                     // which button pressed changed in 1.4
                     l.gridClicked(gridMove.x, gridMove.y, e.getModifiersEx());
@@ -1253,7 +1253,7 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
             // moved out of synchronized block due to deadlock
             if (gridMoved) {
                 for (int i = 0; i < listeners.size(); i++) {
-                    GridBoardListener l = (GridBoardListener) listeners.elementAt(i);
+                    GridBoardListener l = listeners.elementAt(i);
                     l.gridMoved(gridMove.x, gridMove.y);
                 }
             }
@@ -1326,7 +1326,7 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
         // draw highlight piece below other pieces
         if (gameOptions.getShowLastMove()) {
             for (int i = gridPieces.size() - 1; i >= 0; i--) {
-                GridPiece piece = (GridPiece) gridPieces.elementAt(i);
+                GridPiece piece = gridPieces.elementAt(i);
                 if (piece == highlightPiece) {
                     drawPiece(boardGraphics, piece);
                     break;
@@ -1336,7 +1336,7 @@ public class PenteBoardLW extends JComponent implements PenteBoardComponent,
 
         // loop through pieces and draw on board
         for (int i = gridPieces.size() - 1; i >= 0; i--) {
-            GridPiece piece = (GridPiece) gridPieces.elementAt(i);
+            GridPiece piece = gridPieces.elementAt(i);
 
             if (gameOptions.getShowLastMove() && piece == highlightPiece) {
                 continue;

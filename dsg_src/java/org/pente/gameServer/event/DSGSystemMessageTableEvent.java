@@ -1,6 +1,7 @@
 package org.pente.gameServer.event;
 
 public class DSGSystemMessageTableEvent extends AbstractDSGTableEvent {
+    private static final long serialVersionUID = -4545881470136679681L;
 
     private String message;
 

@@ -11,6 +11,7 @@ import java.util.List;
  * but immediately losing move: the game ends at once with white the winner.
  */
 public class RenjuState extends GridStateDecorator implements GomokuState, HashCalculator {
+    private static final long serialVersionUID = 9076187698688034736L;
 
     private final RenjuForbiddenPointFinder finder;
 

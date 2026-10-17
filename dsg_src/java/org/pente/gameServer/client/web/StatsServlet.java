@@ -12,6 +12,7 @@ import org.pente.database.*;
 import org.pente.gameServer.core.*;
 
 public class StatsServlet extends HttpServlet {
+    private static final long serialVersionUID = 276392772236808545L;
 
     private static Category cat = Category.getInstance(StatsServlet.class.getName());
 
@@ -56,7 +57,7 @@ public class StatsServlet extends HttpServlet {
                 if (!statsData.isValidSearch()) {
                     nextPage = PLAYER_STATS_ERROR_PAGE;
                 } else {
-                    Vector searchResults = dsgPlayerStorer.search(
+                    Vector<DSGPlayerData> searchResults = dsgPlayerStorer.search(
                             statsData.getGame(),
                             statsData.getSortField(),
                             statsData.getStartNum(),

@@ -11,6 +11,7 @@ import java.util.*;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 
+import org.apache.commons.fileupload2.core.DiskFileItem;
 import org.apache.commons.fileupload2.core.FileItem;
 import org.apache.commons.fileupload2.core.FileUploadException;
 import org.apache.commons.fileupload2.jakarta.servlet5.JakartaServletFileUpload;
@@ -24,15 +25,16 @@ import org.pente.jive.DSGUserManager;
 
 
 public class ChangeProfileServlet extends HttpServlet {
+    private static final long serialVersionUID = -8507824559125400920L;
 
     private static final Category log4j =
             Category.getInstance(ChangeProfileServlet.class.getName());
 
-    private Resources resources;
-    private DSGPlayerStorer dsgPlayerStorer;
-    private RegisterHandler registerHandler;
+    private transient Resources resources;
+    private transient DSGPlayerStorer dsgPlayerStorer;
+    private transient RegisterHandler registerHandler;
 
-    private PasswordHelper passwordHelper;
+    private transient PasswordHelper passwordHelper;
 
     public void init(ServletConfig config) throws ServletException {
 
@@ -103,7 +105,7 @@ public class ChangeProfileServlet extends HttpServlet {
 
             // jakarta commons lib to handle upload files
             org.apache.commons.fileupload2.core.DiskFileItemFactory factory = org.apache.commons.fileupload2.core.DiskFileItemFactory.builder().get();
-            JakartaServletFileUpload upload = new JakartaServletFileUpload(factory);
+            JakartaServletFileUpload<DiskFileItem, org.apache.commons.fileupload2.core.DiskFileItemFactory> upload = new JakartaServletFileUpload<>(factory);
 
             // if request is multipart then we are saving, otherwise we are
             // viewing our profile
@@ -112,14 +114,12 @@ public class ChangeProfileServlet extends HttpServlet {
                 // store request parameters in hash map for easy access
                 Map<String, String> params = new HashMap<String, String>();
                 // store avatar for later processing
-                FileItem avatarFileItem = null;
+                FileItem<DiskFileItem> avatarFileItem = null;
 
-                List items = upload.parseRequest(request);
+                List<DiskFileItem> items = upload.parseRequest(request);
 
                 List<Integer> newVacationDays = new ArrayList<Integer>();
-                Iterator iter = items.iterator();
-                while (iter.hasNext()) {
-                    FileItem item = (FileItem) iter.next();
+                for (FileItem<DiskFileItem> item : items) {
 
                     if (item.isFormField()) {
                         if (item.getFieldName().equals("vacationDay")) {
@@ -134,40 +134,40 @@ public class ChangeProfileServlet extends HttpServlet {
 
                 if (command.equals("myInfo")) {
 
-                    String password = (String) params.get("changePassword");
+                    String password = params.get("changePassword");
                     if (password != null) {
                         password = password.trim();
                     } else {
                         password = "";
                     }
-                    String passwordConfirm = (String) params.get("changePasswordConfirm");
+                    String passwordConfirm = params.get("changePasswordConfirm");
                     if (passwordConfirm != null) {
                         passwordConfirm = passwordConfirm.trim();
                     } else {
                         passwordConfirm = "";
                     }
-                    String email = (String) params.get("changeEmail");
+                    String email = params.get("changeEmail");
                     if (email != null) {
                         email = email.trim();
                     } else {
                         email = "";
                     }
-                    String emailVisibleStr = (String) params.get("changeEmailVisible");
+                    String emailVisibleStr = params.get("changeEmailVisible");
                     boolean emailVisible = false;
                     if (emailVisibleStr != null) {
                         emailVisible = emailVisibleStr.trim().equals("Y");
                     }
 
-                    String location = (String) params.get("changeLocation");
+                    String location = params.get("changeLocation");
                     if (location != null) {
                         location = location.trim();
                     }
-                    String timezone = (String) params.get("timezone");
+                    String timezone = params.get("timezone");
                     if (timezone != null) {
                         timezone = timezone.trim();
                     }
 
-                    String sexStr = (String) params.get("changeSex");
+                    String sexStr = params.get("changeSex");
                     char sex = DSGPlayerData.UNKNOWN;
                     if (sexStr != null && !sexStr.isEmpty()) {
                         sex = sexStr.trim().charAt(0);
@@ -176,7 +176,7 @@ public class ChangeProfileServlet extends HttpServlet {
                             sex = DSGPlayerData.UNKNOWN;
                         }
                     }
-                    String ageStr = (String) params.get("changeAge");
+                    String ageStr = params.get("changeAge");
                     int age = 0;
                     if (ageStr != null && !ageStr.isEmpty()) {
                         try {
@@ -185,7 +185,7 @@ public class ChangeProfileServlet extends HttpServlet {
                         }
                     }
 
-                    String homepage = (String) params.get("changeHomepage");
+                    String homepage = params.get("changeHomepage");
                     // homepage can be null, or "", if user is attempting to erase previous entry
                     if (homepage != null) {
                         homepage = homepage.trim();
@@ -283,7 +283,7 @@ public class ChangeProfileServlet extends HttpServlet {
                     if (!dsgPlayerData.hasPlayerDonated()) {
                         changeProfileError = "You must be a donor.";
                     } else {
-                        String nameColorStr = (String) params.get("changeNameColor");
+                        String nameColorStr = params.get("changeNameColor");
                         Color nameColor = null;
                         if (nameColorStr != null && nameColorStr.length() < 6) {
                             changeProfileError = "Name color is too short, must be 6 hexidecimal characters";
@@ -305,7 +305,7 @@ public class ChangeProfileServlet extends HttpServlet {
                             }
                         }
 
-                        String note = (String) params.get("note");
+                        String note = params.get("note");
                         String avatarContentType = null;
                         byte avatarBytes[] = null;
                         if (avatarFileItem != null) {
@@ -361,16 +361,16 @@ public class ChangeProfileServlet extends HttpServlet {
                     }
                 } else if (command.equals("prefs")) {
 
-                    String gameRoomSize = (String) params.get("gameRoomSize");
-                    String email = (String) params.get("email");
-                    String emailSent = (String) params.get("emailSent");
+                    String gameRoomSize = params.get("gameRoomSize");
+                    String email = params.get("email");
+                    String emailSent = params.get("emailSent");
 
-                    String weekend1 = (String) params.get("weekend1");
-                    String weekend2 = (String) params.get("weekend2");
+                    String weekend1 = params.get("weekend1");
+                    String weekend2 = params.get("weekend2");
 
-                    String refresh = (String) params.get("refresh");
+                    String refresh = params.get("refresh");
 
-                    String personalizeAds = (String) params.get("personalizeAds");
+                    String personalizeAds = params.get("personalizeAds");
 
                     if (weekend1.equals(weekend2)) {
                         changeProfileError = "Must select two different " +
@@ -431,8 +431,8 @@ public class ChangeProfileServlet extends HttpServlet {
                         int weekendStored[] = new int[]{7, 1};
                         Date weekendLastChanged = null;
                         DSGPlayerPreference p2 = null;
-                        for (Iterator it = prefs.iterator(); it.hasNext(); ) {
-                            p2 = (DSGPlayerPreference) it.next();
+                        for (Iterator<DSGPlayerPreference> it = prefs.iterator(); it.hasNext(); ) {
+                            p2 = it.next();
                             if (p2.getName().equals("weekend")) {
                                 weekendStored = (int[]) p2.getValue();
                                 weekendLastChanged = p2.getLastUpdateDate();
@@ -528,8 +528,8 @@ public class ChangeProfileServlet extends HttpServlet {
 
                         for (Iterator<DSGIgnoreData> it = ignoreData.iterator(); it.hasNext(); ) {
                             DSGIgnoreData i = it.next();
-                            String iiStr = (String) params.get(i.getIgnorePid() + "_invite");
-                            String icStr = (String) params.get(i.getIgnorePid() + "_chat");
+                            String iiStr = params.get(i.getIgnorePid() + "_invite");
+                            String icStr = params.get(i.getIgnorePid() + "_chat");
                             boolean ignoreInvite = iiStr != null && iiStr.equals("Y");
                             boolean ignoreChat = icStr != null && icStr.equals("Y");
                             // then invite was removed
@@ -546,9 +546,9 @@ public class ChangeProfileServlet extends HttpServlet {
                                 ignoreUpdated = true;
                             }
                         }
-                        String newIgnoreName = (String) params.get("ignore_name");
-                        String newIgnoreInvite = (String) params.get("ignore_invite");
-                        String newIgnoreChat = (String) params.get("ignore_chat");
+                        String newIgnoreName = params.get("ignore_name");
+                        String newIgnoreInvite = params.get("ignore_invite");
+                        String newIgnoreChat = params.get("ignore_chat");
                         if (newIgnoreName != null && !newIgnoreName.equals("")) {
                             boolean ignoreInvite = newIgnoreInvite != null &&
                                     newIgnoreInvite.equals("Y");
@@ -591,7 +591,7 @@ public class ChangeProfileServlet extends HttpServlet {
                         request.setAttribute("ignoreData", ignoreData);
 
                         if (changeProfileError == null) {
-                            String button = (String) params.get("submit");
+                            String button = params.get("submit");
                             if (button != null && !button.equals("Change")) {
                                 changeProfileSuccess = weekendChangeError == null
                                         ? "Your preferences have been changed successfully."

@@ -40,7 +40,7 @@ public interface DSGPlayerStorer {
 
     public void insertDonation(DSGDonationData dsgDonationData, long playerID) throws DSGPlayerStoreException;
 
-    public Collection getDonations(long playerID) throws DSGPlayerStoreException;
+    public Collection<DSGDonationData> getDonations(long playerID) throws DSGPlayerStoreException;
 
     public List<DSGDonationData> getAllPlayersWhoDonated() throws DSGPlayerStoreException;
 
@@ -50,7 +50,7 @@ public interface DSGPlayerStorer {
 
     public DSGPlayerGameData loadGame(int game, long playerID, boolean computer) throws DSGPlayerStoreException;
 
-    public Vector loadAllGames(long playerID) throws DSGPlayerStoreException;
+    public Vector<DSGPlayerGameData> loadAllGames(long playerID) throws DSGPlayerStoreException;
 
     // needed for server table
     public void insertLiveSet(LiveSet set) throws DSGPlayerStoreException;
@@ -82,7 +82,7 @@ public interface DSGPlayerStorer {
 //    public void pinchFloatingVacationDays(long playerID) throws DSGPlayerStoreException;
 //    public void addFloatingVacationDays(long playerID, int extraDays) throws DSGPlayerStoreException;
 
-    public Vector search(
+    public Vector<DSGPlayerData> search(
             int game, int sortField,
             int startNum, int length,
             boolean showProvisional, boolean showInactive,

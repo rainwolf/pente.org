@@ -5,6 +5,7 @@ import java.util.*;
 import jakarta.servlet.http.*;
 
 import org.pente.game.*;
+import org.pente.gameServer.core.DSGPlayerData;
 
 public class StatsData {
 
@@ -20,7 +21,7 @@ public class StatsData {
     public static final int BOTH = 2;
     private int playerType = HUMAN;
     private int numResults;
-    private Vector results;
+    private Vector<DSGPlayerData> results;
 
 
     public void initialize(HttpServletRequest request) {
@@ -128,11 +129,11 @@ public class StatsData {
         this.numResults = numResults;
     }
 
-    public Vector getResults() {
+    public Vector<DSGPlayerData> getResults() {
         return results;
     }
 
-    public void setResults(Vector results) {
+    public void setResults(Vector<DSGPlayerData> results) {
         this.results = results;
     }
 

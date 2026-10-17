@@ -63,8 +63,8 @@ public class AIPlayerFactory {
         aiPlayer.setLevel(aiData.getLevel());
         aiPlayer.setSeat(aiData.getSeat());
 
-        for (Enumeration e = aiData.getOptionNames(); e.hasMoreElements(); ) {
-            String name = (String) e.nextElement();
+        for (Enumeration<String> e = aiData.getOptionNames(); e.hasMoreElements(); ) {
+            String name = e.nextElement();
             String value = aiData.getOption(name);
             aiPlayer.setOption(name, value);
 

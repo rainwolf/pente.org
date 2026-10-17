@@ -23,6 +23,8 @@ import java.util.Date;
 
 public class ReplyInvitationServlet extends HttpServlet {
 
+    private static final long serialVersionUID = 2346041482679067753L;
+
     private static final Category log4j = Category.getInstance(
             ReplyInvitationServlet.class.getName());
 
@@ -30,7 +32,7 @@ public class ReplyInvitationServlet extends HttpServlet {
     private static final String loadRedirectPage = "/gameServer/tb/replyInvitation.jsp";
     private static final String mobileRedirectPage = "/gameServer/mobile/empty.jsp";
 
-    private Resources resources;
+    private transient Resources resources;
 
     public void init(ServletConfig config) throws ServletException {
 
@@ -68,10 +70,10 @@ public class ReplyInvitationServlet extends HttpServlet {
         DSGPlayerData invitee = null;
         DSGPlayerData inviter = null;
 
-        String sidStr = (String) request.getParameter("sid");
+        String sidStr = request.getParameter("sid");
         long sid = 0;
         TBSet set = null;
-        String command = (String) request.getParameter("command");
+        String command = request.getParameter("command");
 
         log4j.info("Reply Invitation: " + inviteePlayer + "," + sidStr + "," + command);
 
@@ -168,7 +170,7 @@ public class ReplyInvitationServlet extends HttpServlet {
 
                     if (command.equals("Accept")) {
 
-                        String isMobile = (String) request.getParameter("mobile");
+                        String isMobile = request.getParameter("mobile");
 //				        ServletContext ctx = getServletContext();
 //						List<TBSet> currentSets = tbGameStorer.loadSets(invitee.getPlayerID());
 //						List<TBSet> invitesTo = new ArrayList<TBSet>();
@@ -206,7 +208,7 @@ public class ReplyInvitationServlet extends HttpServlet {
 //						} else {
 
                         if (set.getGame1().isRated()) {
-                            CacheKOTHStorer kothStorer = (CacheKOTHStorer) resources.getKOTHStorer();
+                            CacheKOTHStorer kothStorer = resources.getKOTHStorer();
                             int game = set.getGame1().getGame();
                             if (kothStorer.getEventId(game) == set.getGame1().getEventId()) {
                                 Hill hill = kothStorer.loadHill(game);
@@ -356,7 +358,7 @@ public class ReplyInvitationServlet extends HttpServlet {
                             dsgMessageStorer.createMessage(message);
 
                             if (set.isTwoGameSet()) {
-                                CacheKOTHStorer kothStorer = (CacheKOTHStorer) resources.getKOTHStorer();
+                                CacheKOTHStorer kothStorer = resources.getKOTHStorer();
                                 int game = set.getGame1().getGame();
                                 if (kothStorer.getEventId(game) == set.getGame1().getEventId() && set.getGame1().getDaysPerMove() >= 5) {
                                     Hill hill = kothStorer.loadHill(game);
@@ -416,7 +418,7 @@ public class ReplyInvitationServlet extends HttpServlet {
                         }
 
                         if (error == null) {
-                            String isMobile = (String) request.getParameter("mobile");
+                            String isMobile = request.getParameter("mobile");
                             if (isMobile == null) {
                                 response.sendRedirect(request.getContextPath() + successPage);
                             } else {

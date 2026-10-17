@@ -20,6 +20,8 @@
 package org.pente.gameServer.core;
 
 public class InvalidCommandException extends Exception {
+    private static final long serialVersionUID = -3404810852393721313L;
+
     public InvalidCommandException() {
         super();
     }

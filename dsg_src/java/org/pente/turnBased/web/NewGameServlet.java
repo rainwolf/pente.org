@@ -22,6 +22,8 @@ import java.util.List;
 
 public class NewGameServlet extends HttpServlet {
 
+    private static final long serialVersionUID = 4388327391137709740L;
+
     private static final Category log4j = Category.getInstance(
             NewGameServlet.class.getName());
 
@@ -31,7 +33,7 @@ public class NewGameServlet extends HttpServlet {
     private static final String kothErrorRedirectPage = "/gameServer/stairs.jsp";
     private static final String mobileRedirectPage = "/gameServer/mobile/empty.jsp";
 
-    private Resources resources;
+    private transient Resources resources;
 
     public void init(ServletConfig config) throws ServletException {
 
@@ -445,7 +447,7 @@ public class NewGameServlet extends HttpServlet {
                         request, response);
             }
         } else {
-            String isMobile = (String) request.getParameter("mobile");
+            String isMobile = request.getParameter("mobile");
             if (isMobile == null) {
                 response.sendRedirect(request.getContextPath() + redirectPage);
             } else {

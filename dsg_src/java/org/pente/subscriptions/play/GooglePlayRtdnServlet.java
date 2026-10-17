@@ -18,12 +18,14 @@ import org.apache.log4j.Category;
  */
 public class GooglePlayRtdnServlet extends HttpServlet {
 
+    private static final long serialVersionUID = 7007486796395836381L;
+
     private static final Category log4j = Category.getInstance(GooglePlayRtdnServlet.class.getName());
 
     /** Pub/Sub push bodies are small; anything bigger is not an RTDN */
     private static final int MAX_BODY_BYTES = 64 * 1024;
 
-    private volatile JwtSignatureVerifier verifier;
+    private transient volatile JwtSignatureVerifier verifier;
 
     public void init() throws ServletException {
         String audience = getServletContext().getInitParameter("googlePlayRtdnAudience");

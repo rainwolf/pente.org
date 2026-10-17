@@ -35,6 +35,8 @@ import org.json.JSONObject;
 
 public class IOSReceiptServlet extends HttpServlet {
 
+    private static final long serialVersionUID = 4840694317797287727L;
+
     private static final Category log4j = Category.getInstance(IOSReceiptServlet.class.getName());
 
     /** MySQL/MariaDB ER_DUP_ENTRY */
@@ -284,7 +286,7 @@ public class IOSReceiptServlet extends HttpServlet {
         ServletContext ctx = getServletContext();
         String iOSSharedSecret = ctx.getInitParameter("iOSSharedSecret");
         Resources resources = (Resources) ctx.getAttribute(Resources.class.getName());
-        CacheDSGPlayerStorer dsgPlayerStorer = (CacheDSGPlayerStorer) resources.getDsgPlayerStorer();
+        CacheDSGPlayerStorer dsgPlayerStorer = resources.getDsgPlayerStorer();
         DBHandler dbHandler = null;
         Connection con = null;
         PreparedStatement stmt = null;

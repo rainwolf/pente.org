@@ -99,8 +99,8 @@ public class Puzzle {
 
     public void setWhiteMoves(int[] wm) {
         whiteMoves = new ArrayList<Integer>(wm.length);
-        for (int i = 0; i < wm.length; i++) {
-            whiteMoves.add(wm[i]);
+        for (int m : wm) {
+            whiteMoves.add(m);
         }
     }
 
@@ -114,8 +114,8 @@ public class Puzzle {
 
     public void setBlackMoves(int[] bm) {
         blackMoves = new ArrayList<Integer>(bm.length);
-        for (int i = 0; i < bm.length; i++) {
-            blackMoves.add(bm[i]);
+        for (int m : bm) {
+            blackMoves.add(m);
         }
     }
 

@@ -38,7 +38,7 @@ public class ColorPicker {
                 backGroundColor.getGreen(), backGroundColor.getBlue(), null);
         System.out.println("hsb=" + hsb[0] + "," + hsb[1] + "," + hsb[2]);
 
-        hsb[2] -= 0.1;
+        hsb[2] = (float) (hsb[2] - 0.1);
 
         Color c = Color.getHSBColor(hsb[0], hsb[1], hsb[2]);
         System.out.println("game name=" + c.getRed() + "," + c.getGreen() + "," +

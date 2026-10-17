@@ -20,11 +20,12 @@ import org.pente.gameServer.server.*;
 import org.pente.turnBased.*;
 
 public class ViewGamesServlet extends HttpServlet {
+    private static final long serialVersionUID = -2060544300120088880L;
 
     private static final Category log4j = Category.getInstance(
             ViewGamesServlet.class.getName());
 
-    private Resources resources;
+    private transient Resources resources;
     private static final String redirectPage = "/gameServer/viewLiveGames.jsp";
 
     public void init(ServletConfig config) throws ServletException {
@@ -57,10 +58,10 @@ public class ViewGamesServlet extends HttpServlet {
 
         try {
             String me = (String) request.getAttribute("name");
-            String name = (String) request.getParameter("p");
-            String countString = (String) request.getParameter("c");
-            String myWinsString = (String) request.getParameter("w");
-            String myTotalString = (String) request.getParameter("t");
+            String name = request.getParameter("p");
+            String countString = request.getParameter("c");
+            String myWinsString = request.getParameter("w");
+            String myTotalString = request.getParameter("t");
 
             if (name == null) {
                 log4j.error("ViewGamesServlet, Player not found: " + name);
@@ -81,7 +82,7 @@ public class ViewGamesServlet extends HttpServlet {
             }
             request.setAttribute("dsgPlayerData", playerData);
 
-            String gameStr = (String) request.getParameter("g");
+            String gameStr = request.getParameter("g");
             int game = -1;
             if (gameStr != null) {
                 try {

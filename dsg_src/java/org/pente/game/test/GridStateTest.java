@@ -185,8 +185,8 @@ public class GridStateTest extends TestCase {
 
     void addMoves(String moves[], GridState state) {
 
-        for (int i = 0; i < moves.length; i++) {
-            state.addMove(getMove(moves[i]));
+        for (String move : moves) {
+            state.addMove(getMove(move));
         }
     }
 

@@ -189,9 +189,9 @@ public class IYTGameFilter implements LineFilter {
         boardSize = new Dimension(19, 19);
         gameData = new IYTGameData();
 
-        String game = (String) params.get(IYTConstants.GAME_PARAMETER);
+        String game = params.get(IYTConstants.GAME_PARAMETER);
         if (game == null) {
-            game = (String) params.get(IYTConstants.OLD_GAME_PARAMETER);
+            game = params.get(IYTConstants.OLD_GAME_PARAMETER);
         }
         if (game != null) {
             gameData.setGameID(Long.parseLong(game));

@@ -3,6 +3,7 @@ package org.pente.game;
 import java.util.*;
 
 public class SimpleGameTreeData implements GameTreeData, Cloneable, java.io.Serializable {
+    private static final long serialVersionUID = -6704149812136053229L;
 
     private int id;
     private String name;
@@ -44,7 +45,7 @@ public class SimpleGameTreeData implements GameTreeData, Cloneable, java.io.Seri
 
         for (int i = 0; i < sites.size(); i++) {
             GameSiteData s = sites.get(i);
-            cloned.addGameSiteData((GameSiteData) s.clone());
+            cloned.addGameSiteData(s.clone());
         }
 
         return cloned;

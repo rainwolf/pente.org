@@ -12,6 +12,7 @@ import java.awt.*;
 
 public class GameBoard extends Container implements GridCoordinatesChangeListener,
         GameOptionsChangeListener {
+    private static final long serialVersionUID = 7101121087247274662L;
 
     private GameOptions gameOptions;
     private GridCoordinates coordinates;

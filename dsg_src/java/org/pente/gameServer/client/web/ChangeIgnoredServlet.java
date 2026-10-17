@@ -25,12 +25,13 @@ import java.util.List;
  * Every reply is JSON: {"success":bool, "error":string (only on failure), "ignores":[...] (only on success)}.
  */
 public class ChangeIgnoredServlet extends HttpServlet {
+    private static final long serialVersionUID = -7875465701283296961L;
 
     private static final Category log4j =
             Category.getInstance(ChangeIgnoredServlet.class.getName());
 
-    private DSGPlayerStorer dsgPlayerStorer;
-    private final Gson gson = new Gson();
+    private transient DSGPlayerStorer dsgPlayerStorer;
+    private final transient Gson gson = new Gson();
 
     /** one entry of the "ignores" list in a reply */
     private static class IgnoreEntry {

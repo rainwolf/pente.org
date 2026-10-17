@@ -12,6 +12,8 @@ import org.pente.gameServer.core.DSGPlayerData;
 
 public class DSGUser extends SimpleUserAdapter {
 
+    private static final long serialVersionUID = -1127875728180170735L;
+
     private static final Category log4j =
             Category.getInstance(DSGUserManager.class.getName());
 

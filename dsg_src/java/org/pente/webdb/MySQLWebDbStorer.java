@@ -214,8 +214,8 @@ public class MySQLWebDbStorer {
                 close(stmt);
             }
 
-            for (int i = 0; i < candidates.size(); i++) {
-                long cand = candidates.get(i).longValue();
+            for (Long candidate : candidates) {
+                long cand = candidate.longValue();
                 int[] stored = loadMoves(con, cand, g.game);
                 if (Arrays.equals(stored, moves)) {
                     return Long.valueOf(cand);

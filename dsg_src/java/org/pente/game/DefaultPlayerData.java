@@ -26,6 +26,7 @@ package org.pente.game;
  *  @version 0.2 02/12/2001
  */
 public class DefaultPlayerData implements PlayerData {
+    private static final long serialVersionUID = 8424443697794358370L;
 
     /** User ID name of the player */
     protected String userIDName;

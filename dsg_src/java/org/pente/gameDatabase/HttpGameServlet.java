@@ -40,12 +40,14 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.Enumeration;
+import java.util.Collections;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.zip.GZIPOutputStream;
 
 public class HttpGameServlet extends HttpServlet {
+
+    private static final long serialVersionUID = -8671196234066104681L;
 
     private static ObjectFormatFactory objectFormatFactory;
     private static HttpObjectFormat httpObjectFormat;
@@ -230,9 +232,7 @@ public class HttpGameServlet extends HttpServlet {
                     // cant decode it, yes its a little backwards but only because
                     // i switched to servlets...
                     StringBuffer paramsBuf = new StringBuffer();
-                    Enumeration params = request.getParameterNames();
-                    while (params.hasMoreElements()) {
-                        String name = (String) params.nextElement();
+                    for (String name : Collections.list(request.getParameterNames())) {
                         String value = request.getParameter(name);
 
                         paramsBuf.append(name);
@@ -317,17 +317,15 @@ public class HttpGameServlet extends HttpServlet {
                         } else {
                             responseData2.setGameStorerSearchRequestData(responseData1.getGameStorerSearchRequestData());
 
-                            Vector resultMoves = responseData1.searchResponseMoveData();
-                            for (int i = 0; i < resultMoves.size(); i++) {
-                                GameStorerSearchResponseMoveData data = (GameStorerSearchResponseMoveData) resultMoves.elementAt(i);
+                            Vector<GameStorerSearchResponseMoveData> resultMoves = responseData1.searchResponseMoveData();
+                            for (GameStorerSearchResponseMoveData data : resultMoves) {
                                 responseData2.addSearchResponseMoveData(data);
                             }
 
                             responseData2.setRotation(responseData1.getRotation());
 
-                            Vector resultGames = responseData1.getGames();
-                            for (int i = 0; i < resultGames.size(); i++) {
-                                GameData data = (GameData) resultGames.elementAt(i);
+                            Vector<GameData> resultGames = responseData1.getGames();
+                            for (GameData data : resultGames) {
                                 responseData2.addGame(data);
                             }
                         }
@@ -404,10 +402,7 @@ public class HttpGameServlet extends HttpServlet {
         boolean gzip = false;
 
         // look at all headers for "accept-encoding"
-        Enumeration headers = request.getHeaderNames();
-        while (headers.hasMoreElements()) {
-
-            String headerName = (String) headers.nextElement();
+        for (String headerName : Collections.list(request.getHeaderNames())) {
             if (headerName.toLowerCase().equals("accept-encoding")) {
 
                 String headerValue = request.getHeader(headerName);

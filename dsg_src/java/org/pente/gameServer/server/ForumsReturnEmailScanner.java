@@ -87,7 +87,7 @@ public class ForumsReturnEmailScanner {
         // move messages to returned folder
         Message move[] = new Message[data.size()];
         for (int i = 0; i < data.size(); i++) {
-            Data d = (Data) data.get(i);
+            Data d = data.get(i);
             move[i] = d.message;
         }
         Folder returned = store.getFolder("returned");
@@ -95,8 +95,8 @@ public class ForumsReturnEmailScanner {
 
         inbox.copyMessages(move, returned);
 
-        for (int i = 0; i < move.length; i++) {
-            move[i].setFlag(Flags.Flag.DELETED, true);
+        for (Message m : move) {
+            m.setFlag(Flags.Flag.DELETED, true);
         }
         inbox.expunge();
 

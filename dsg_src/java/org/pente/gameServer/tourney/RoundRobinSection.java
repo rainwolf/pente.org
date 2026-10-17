@@ -137,7 +137,7 @@ public class RoundRobinSection extends TourneySection implements Serializable {
         for (int i = 0, j = 0;
              i < getMatches().size();
              i += (getNumPlayers() - 1), j++) {
-            TourneyMatch match = (TourneyMatch) getMatches().get(i);
+            TourneyMatch match = getMatches().get(i);
             players.add(match.getPlayer1());
         }
 
@@ -152,7 +152,7 @@ public class RoundRobinSection extends TourneySection implements Serializable {
         for (int i = 0; i < getNumPlayers(); i++) {
             for (int j = 0; j < getNumPlayers(); j++) {
                 if (i == j) continue;
-                TourneyMatch match = (TourneyMatch) getMatches().get(m++);
+                TourneyMatch match = getMatches().get(m++);
                 results[i][j * 3] = match.getResult();
                 results[i][j * 3 + 1] = match.isForfeit() ? 1 : 0;
                 results[i][j * 3 + 2] = match.getGid();

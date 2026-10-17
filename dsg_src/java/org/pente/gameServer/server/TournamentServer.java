@@ -221,7 +221,7 @@ public class TournamentServer extends Server {
                         // remove them if they're spectating
                         removePlayerFromTables(player1);
                         removePlayerFromTables(player2);
-                        SynchronizedServerTable syncedTable = (SynchronizedServerTable) tables.get(tableNum);
+                        SynchronizedServerTable syncedTable = tables.get(tableNum);
                         ServerTable table = syncedTable.getServerTable();
                         table.setTourneyMatch(match);
                         // join only, table will sit them
@@ -247,7 +247,7 @@ public class TournamentServer extends Server {
 
     protected void removePlayerFromTables(String player) {
         for (Integer tableNum : table2matches.keySet()) {
-            SynchronizedServerTable syncedTable = (SynchronizedServerTable) this.tables.get(tableNum);
+            SynchronizedServerTable syncedTable = this.tables.get(tableNum);
             ServerTable table = syncedTable.getServerTable();
             Vector<DSGPlayerData> playersInTable = table.playersInTable;
             for (DSGPlayerData p : playersInTable) {

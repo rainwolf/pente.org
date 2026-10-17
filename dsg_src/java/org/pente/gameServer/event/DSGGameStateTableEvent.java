@@ -1,6 +1,7 @@
 package org.pente.gameServer.event;
 
 public class DSGGameStateTableEvent extends AbstractDSGTableEvent {
+    private static final long serialVersionUID = -1785121154101820685L;
 
     public static final int NO_GAME_IN_PROGRESS = 1;
     public static final int GAME_IN_PROGRESS = 2;

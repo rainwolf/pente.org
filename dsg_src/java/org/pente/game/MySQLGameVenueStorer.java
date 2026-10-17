@@ -367,7 +367,7 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
                 int sid = d.siteId;
                 if (lastSite == null || sid != lastSite.getSiteID()) {
 
-                    GameSiteData sd = (GameSiteData) d.siteData.clone();
+                    GameSiteData sd = d.siteData.clone();
                     lastGame.addGameSiteData(sd);
                     lastSite = sd;
                     lastEvent = null;
@@ -424,10 +424,9 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
 
         synchronized (tree) {
 
-            for (int i = 0; i < tree.size(); i++) {
-                GameTreeData gameTreeData = (GameTreeData) tree.get(i);
-                for (Iterator sites = gameTreeData.getGameSiteData().iterator(); sites.hasNext(); ) {
-                    GameSiteData gameSiteData = (GameSiteData) sites.next();
+            for (GameTreeData gameTreeData : tree) {
+                for (Iterator<GameSiteData> sites = gameTreeData.getGameSiteData().iterator(); sites.hasNext(); ) {
+                    GameSiteData gameSiteData = sites.next();
                     if (gameSiteData.getName().equals(name)) {
                         return gameSiteData.getSiteID();
                     }
@@ -449,8 +448,7 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
     // tournament, whose game id is turn-based) resolve instead of returning null.
     private GameTreeData findGameTreeData(int game) {
         int baseGame = game > 50 ? game - 50 : game;
-        for (int i = 0; i < tree.size(); i++) {
-            GameTreeData gameTreeData = (GameTreeData) tree.get(i);
+        for (GameTreeData gameTreeData : tree) {
             if (gameTreeData != null && gameTreeData.getID() == baseGame) {
                 return gameTreeData;
             }
@@ -466,8 +464,8 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
             if (gameTreeData == null) {
                 return null;
             }
-            for (Iterator sites = gameTreeData.getGameSiteData().iterator(); sites.hasNext(); ) {
-                GameSiteData gameSiteData = (GameSiteData) sites.next();
+            for (Iterator<GameSiteData> sites = gameTreeData.getGameSiteData().iterator(); sites.hasNext(); ) {
+                GameSiteData gameSiteData = sites.next();
                 if (gameSiteData.getSiteID() == sid) {
                     return gameSiteData;
                 }
@@ -529,7 +527,7 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
 
             // add site to data tree
             synchronized (tree) {
-                GameTreeData gameTreeData = (GameTreeData) tree.get(game);
+                GameTreeData gameTreeData = tree.get(game);
                 if (gameTreeData != null) {
                     gameTreeData.addGameSiteData(gameSiteData);
                 }
@@ -566,8 +564,7 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
 
         List<GameEventData> events = gameSiteData.getGameEventData();
         synchronized (events) {
-            for (int j = 0; j < events.size(); j++) {
-                GameEventData gameEventData = (GameEventData) events.get(j);
+            for (GameEventData gameEventData : events) {
                 if (gameEventData.getEventID() == eid) {
                     return gameEventData;
                 }
@@ -586,8 +583,7 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
 
         List<GameEventData> events = gameSiteData.getGameEventData();
         synchronized (events) {
-            for (int j = 0; j < events.size(); j++) {
-                GameEventData gameEventData = (GameEventData) events.get(j);
+            for (GameEventData gameEventData : events) {
                 if (gameEventData.getName().equals(eventName)) {
                     return gameEventData;
                 }

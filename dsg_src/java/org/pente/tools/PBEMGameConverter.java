@@ -78,18 +78,18 @@ public class PBEMGameConverter {
     public void loadGames() throws Exception {
 
         String files[] = gameDir.list();
-        for (int i = 0; i < files.length; i++) {
+        for (String fileName : files) {
 
-            if (new File(gameDir, files[i]).isFile()) {
-                GameData data = loadGame(files[i]);
+            if (new File(gameDir, fileName).isFile()) {
+                GameData data = loadGame(fileName);
 
                 if (data != null) {
 
                     gameStorer.storeGame(data);
 
-                    System.out.println("loaded " + files[i] + " ok");
+                    System.out.println("loaded " + fileName + " ok");
                 } else {
-                    System.out.println("not loaded " + files[i] + " ok");
+                    System.out.println("not loaded " + fileName + " ok");
                 }
             }
         }

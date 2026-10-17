@@ -73,10 +73,10 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
         boolean union = false;
         if ((filterData.getPlayer1Name() != null &&
                 !filterData.getPlayer1Name().trim().isEmpty() &&
-                filterData.getPlayer1Seat() == filterData.SEAT_ALL) ||
+                filterData.getPlayer1Seat() == GameStorerSearchRequestFilterData.SEAT_ALL) ||
                 (filterData.getPlayer2Name() != null &&
                         !filterData.getPlayer2Name().trim().isEmpty() &&
-                        filterData.getPlayer2Seat() == filterData.SEAT_ALL)) {
+                        filterData.getPlayer2Seat() == GameStorerSearchRequestFilterData.SEAT_ALL)) {
             union = true;
             includeGameTable = true;
             initFilterOptions(
@@ -138,7 +138,7 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
         log4j.debug("search time: " + totalTime);
     }
 
-    private int getTotalGameCount(GameStorerSearchRequestData requestData, GameStorerSearchResponseData responseData, Connection con, StringBuffer filterOptionsFrom, StringBuffer filterOptionsWhere, Vector filterOptionsParams, StringBuffer filterOptionsFrom2, StringBuffer filterOptionsWhere2, Vector filterOptionsParams2, boolean includeGameTable, boolean union, int totalGameCount) throws Exception {
+    private int getTotalGameCount(GameStorerSearchRequestData requestData, GameStorerSearchResponseData responseData, Connection con, StringBuffer filterOptionsFrom, StringBuffer filterOptionsWhere, Vector<Object> filterOptionsParams, StringBuffer filterOptionsFrom2, StringBuffer filterOptionsWhere2, Vector<Object> filterOptionsParams2, boolean includeGameTable, boolean union, int totalGameCount) throws Exception {
         if (requestData.getGameStorerSearchRequestFilterData().doGetNextMoves()) {
             totalGameCount = getSearchResults(requestData,
                     responseData, filterOptionsFrom, includeGameTable,
@@ -403,7 +403,7 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
         return includeGameTable;
     }
 
-    protected void setFilterOptionsParams(PreparedStatement stmt, Vector filterOptionsParams, int startParam) throws SQLException {
+    protected void setFilterOptionsParams(PreparedStatement stmt, Vector<Object> filterOptionsParams, int startParam) throws SQLException {
 
         for (int i = 0; i < filterOptionsParams.size(); i++) {
             Object param = filterOptionsParams.elementAt(i);
@@ -425,10 +425,10 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
                                    StringBuffer filterOptionsFrom,
                                    boolean includeGameTable,
                                    StringBuffer filterOptionsWhere,
-                                   Vector filterOptionsParams,
+                                   Vector<Object> filterOptionsParams,
                                    StringBuffer filterOptionsFrom2,
                                    StringBuffer filterOptionsWhere2,
-                                   Vector filterOptionsParams2,
+                                   Vector<Object> filterOptionsParams2,
                                    boolean union,
                                    Connection con) throws Exception {
 
@@ -545,7 +545,7 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
                 if (winner != GameData.UNKNOWN) {
 
                     boolean alreadyStored = true;
-                    GameStorerSearchResponseMoveData moveData = (GameStorerSearchResponseMoveData) moveResponses.get(Integer.valueOf(move));
+                    GameStorerSearchResponseMoveData moveData = moveResponses.get(Integer.valueOf(move));
                     if (moveData == null) {
                         alreadyStored = false;
                         moveData = new SimpleGameStorerSearchResponseMoveData();
@@ -563,9 +563,7 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
                 }
             }
 
-            Enumeration e = moveResponses.elements();
-            while (e.hasMoreElements()) {
-                GameStorerSearchResponseMoveData moveData = (GameStorerSearchResponseMoveData) e.nextElement();
+            for (GameStorerSearchResponseMoveData moveData : moveResponses.values()) {
                 responseData.addSearchResponseMoveData(moveData);
             }
 
@@ -587,9 +585,9 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
                                    StringBuffer filterOptionsFrom,
                                    boolean includeGameTable,
                                    StringBuffer filterOptionsWhere,
-                                   Vector filterOptionsParams, StringBuffer filterOptionsFrom2,
+                                   Vector<Object> filterOptionsParams, StringBuffer filterOptionsFrom2,
                                    StringBuffer filterOptionsWhere2,
-                                   Vector filterOptionsParams2,
+                                   Vector<Object> filterOptionsParams2,
                                    boolean union,
                                    Connection con) throws Exception {
 

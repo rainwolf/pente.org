@@ -29,15 +29,15 @@ public class BoardFilter implements Filter {
             String link = "<img src=/gameServer/board?";
             String text = "";
 
-            for (int i = 0; i < params.length; i++) {
-                if (params[i].startsWith("gid=")) {
+            for (String param : params) {
+                if (param.startsWith("gid=")) {
                     text = "<a href=/gameServer/viewLiveGame?g=" +
-                            params[i].substring(4) +
-                            ">Game ID " + params[i].substring(4) + "</a>";
-                } else if (params[i].startsWith("m=")) {
-                    text = params[i].substring(2);
+                            param.substring(4) +
+                            ">Game ID " + param.substring(4) + "</a>";
+                } else if (param.startsWith("m=")) {
+                    text = param.substring(2);
                 }
-                link += params[i] + "&";
+                link += param + "&";
             }
 
             link += "w=500&h=440>";

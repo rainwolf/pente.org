@@ -22,18 +22,20 @@ import java.io.IOException;
 import java.util.List;
 
 public class BroadcastServlet extends HttpServlet {
+    private static final long serialVersionUID = -89277998691214889L;
+
     private static final String errorRedirectPage = "/gameServer/error.jsp";
 
 
     private static final Category log4j =
             Category.getInstance(FollowerServlet.class.getName());
 
-    private DSGFollowerStorer followerStorer;
-    private DSGPlayerStorer dsgPlayerStorer;
-    private NotificationServer notificationServer;
-    private DSGMessageStorer dsgMessageStorer;
+    private transient DSGFollowerStorer followerStorer;
+    private transient DSGPlayerStorer dsgPlayerStorer;
+    private transient NotificationServer notificationServer;
+    private transient DSGMessageStorer dsgMessageStorer;
 
-    private ServletContext ctx;
+    private transient ServletContext ctx;
 
     public void init(ServletConfig config) throws ServletException {
 
@@ -64,8 +66,8 @@ public class BroadcastServlet extends HttpServlet {
 
         String error = null;
         String player = (String) request.getAttribute("name");
-        String game = (String) request.getParameter("game");
-        String sendTo = (String) request.getParameter("sendTo");
+        String game = request.getParameter("game");
+        String sendTo = request.getParameter("sendTo");
         DSGPlayerData playerData = null, followPlayerData = null, unFollowPlayerData = null;
         if (player == null) {
             handleError(request, response, "not logged in");

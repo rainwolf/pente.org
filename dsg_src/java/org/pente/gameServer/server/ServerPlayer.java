@@ -44,7 +44,7 @@ public class ServerPlayer implements DSGEventListener {
     private String player;
     private DSGPlayerData playerData;
 
-    private Collection aiDataCollection;
+    private Collection<AIData> aiDataCollection;
     private PasswordHelper passwordHelper;
     private ActivityLogger activityLogger;
     private String remoteAddr;
@@ -61,7 +61,7 @@ public class ServerPlayer implements DSGEventListener {
                         LoginHandler loginHandler,
                         PingManager pingManager,
                         ServerStatsHandler serverStatsHandler,
-                        Collection aiDataCollection,
+                        Collection<AIData> aiDataCollection,
                         PasswordHelper passwordHelper,
                         ActivityLogger activityLogger) {
 
@@ -144,7 +144,7 @@ public class ServerPlayer implements DSGEventListener {
                     server.addPlayerListener(client, player, true);
 
                     // load player data, player prefs from db or cache
-                    List prefs = null;
+                    List<DSGPlayerPreference> prefs = null;
                     List<DSGIgnoreData> ignoreData = null;
                     if (loginEvent.isGuest()) {
                         playerData = new SimpleDSGPlayerData();
@@ -161,7 +161,7 @@ public class ServerPlayer implements DSGEventListener {
                         loginEvent.setMe(playerData);
 
                         //empty
-                        prefs = new ArrayList();
+                        prefs = new ArrayList<>();
                         ignoreData = new ArrayList<DSGIgnoreData>();
                     } else {
                         try {
@@ -180,8 +180,8 @@ public class ServerPlayer implements DSGEventListener {
                     }
 
                     // send preferences before logging in
-                    for (Iterator it = prefs.iterator(); it.hasNext(); ) {
-                        DSGPlayerPreference p = (DSGPlayerPreference) it.next();
+                    for (Iterator<DSGPlayerPreference> it = prefs.iterator(); it.hasNext(); ) {
+                        DSGPlayerPreference p = it.next();
                         client.eventOccurred(new DSGPreferenceEvent(p));
                     }
                     if (!ignoreData.isEmpty()) {
@@ -199,10 +199,10 @@ public class ServerPlayer implements DSGEventListener {
                             player, playerData));
 
                     // send the list of possible computer opponents to the client
-                    for (Iterator it = aiDataCollection.iterator(); it.hasNext(); ) {
+                    for (Iterator<AIData> it = aiDataCollection.iterator(); it.hasNext(); ) {
                         log4j.debug(psid() + "sending ai data");
                         client.eventOccurred(new DSGAddAITableEvent(
-                                player, 1, (AIData) it.next()));
+                                player, 1, it.next()));
                     }
                 } else {
                     client.eventOccurred(new DSGLoginErrorEvent(

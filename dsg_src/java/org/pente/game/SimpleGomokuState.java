@@ -21,6 +21,7 @@ package org.pente.game;
 
 public class SimpleGomokuState extends GridStateDecorator
         implements GomokuState, HashCalculator {
+    private static final long serialVersionUID = 7352045879759839721L;
 
     private int[] surrounding;
     private boolean allowOverlines = false;
@@ -145,11 +146,11 @@ public class SimpleGomokuState extends GridStateDecorator
             }
             direction = -1;
         }
-        for (int i = 0; i < lines.length; i++) {
-            if (!allowOverlines && lines[i] == 4) {
+        for (int lineLen : lines) {
+            if (!allowOverlines && lineLen == 4) {
                 winner = 3 - getCurrentPlayer();
                 return true;
-            } else if (allowOverlines && lines[i] >= 4) {
+            } else if (allowOverlines && lineLen >= 4) {
                 winner = 3 - getCurrentPlayer();
                 return true;
             }

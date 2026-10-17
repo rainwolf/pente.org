@@ -1,6 +1,7 @@
 package org.pente.gameServer.event;
 
 public class DSGSetPlayingPlayerTableEvent extends AbstractDSGTableEvent {
+    private static final long serialVersionUID = 3080602166092484076L;
 
     private int seat;
 

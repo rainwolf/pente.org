@@ -63,7 +63,7 @@ public class ReturnEmailScanner {
 
             if (messageIds != null) {
                 for (Iterator<String> it = messageIds.iterator(); it.hasNext(); ) {
-                    String m = (String) it.next();
+                    String m = it.next();
 
                     // only scan messages once
                     if (scannedMessageIds.get(m) != null) {
@@ -89,15 +89,15 @@ public class ReturnEmailScanner {
         // move messages to returned folder
         Message move[] = new Message[moveMessages.size()];
         for (int i = 0; i < moveMessages.size(); i++) {
-            move[i] = (Message) moveMessages.get(i);
+            move[i] = moveMessages.get(i);
         }
         Folder returned = store.getFolder("mail/returned");
         returned.open(Folder.READ_WRITE);
 
         inbox.copyMessages(move, returned);
 
-        for (int i = 0; i < move.length; i++) {
-            move[i].setFlag(Flags.Flag.DELETED, true);
+        for (Message m : move) {
+            m.setFlag(Flags.Flag.DELETED, true);
         }
         inbox.expunge();
 

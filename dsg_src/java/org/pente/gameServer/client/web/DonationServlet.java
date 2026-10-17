@@ -11,12 +11,13 @@ import org.apache.log4j.*;
 import org.pente.gameServer.core.*;
 
 public class DonationServlet extends HttpServlet {
+    private static final long serialVersionUID = 541782757947152341L;
 
     private static final Category cat = Category.getInstance(DonationServlet.class.getName());
 
     public static final String DONATION_LIST = "donationList";
 
-    private DSGPlayerStorer dsgPlayerStorer;
+    private transient DSGPlayerStorer dsgPlayerStorer;
 
     public void init(ServletConfig config) throws ServletException {
 

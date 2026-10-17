@@ -1,6 +1,7 @@
 package org.pente.gameServer.event;
 
 public class DSGTimerChangeTableEvent extends AbstractDSGTableEvent {
+    private static final long serialVersionUID = 7450065128124428590L;
 
     private int minutes;
     private int seconds;

@@ -268,7 +268,7 @@ public class PGNGameFormat implements GameFormat {
         try {
             // read game into a StringBuffer
             StringBuffer buffer = new StringBuffer(new String(
-                    this.readStream(in)));
+                    PGNGameFormat.readStream(in)));
 
             // parse the game data
             gameData = new PlunkGameData();
@@ -368,42 +368,42 @@ public class PGNGameFormat implements GameFormat {
             }
 
             // parse individual headers
-            String game = (String) headers.get(HEADER_GAME);
+            String game = headers.get(HEADER_GAME);
             if (game == null) {
-                game = (String) headers.get("GameType");//marks
+                game = headers.get("GameType");//marks
             }
             parseGame(game, data);
-            parseSite((String) headers.get(HEADER_SITE), data);
-            parseEvent((String) headers.get(HEADER_EVENT), data);
-            parseRound((String) headers.get(HEADER_ROUND), data);
-            parseSection((String) headers.get(HEADER_SECTION), data);
-            parseDate((String) headers.get(HEADER_DATE), data);
-            parseTime((String) headers.get(HEADER_TIME), data);
-            parseTimeControl((String) headers.get(HEADER_TIME_CONTROL), data);
-            parseRated((String) headers.get(HEADER_RATED), data);
-            String p1 = (String) headers.get(HEADER_PLAYER_1_NAME);
+            parseSite(headers.get(HEADER_SITE), data);
+            parseEvent(headers.get(HEADER_EVENT), data);
+            parseRound(headers.get(HEADER_ROUND), data);
+            parseSection(headers.get(HEADER_SECTION), data);
+            parseDate(headers.get(HEADER_DATE), data);
+            parseTime(headers.get(HEADER_TIME), data);
+            parseTimeControl(headers.get(HEADER_TIME_CONTROL), data);
+            parseRated(headers.get(HEADER_RATED), data);
+            String p1 = headers.get(HEADER_PLAYER_1_NAME);
             if (p1 == null) {
-                p1 = (String) headers.get("White");
+                p1 = headers.get("White");
             }
             parsePlayer1Name(p1, data);
-            String p1R = (String) headers.get(HEADER_PLAYER_1_RATING);
+            String p1R = headers.get(HEADER_PLAYER_1_RATING);
             if (p1R == null) {
-                p1R = (String) headers.get("WhiteRating");
+                p1R = headers.get("WhiteRating");
             }
             parsePlayer1Rating(p1R, data);
-            parsePlayer1Type((String) headers.get(HEADER_PLAYER_1_TYPE), data);
-            String p2 = (String) headers.get(HEADER_PLAYER_2_NAME);
+            parsePlayer1Type(headers.get(HEADER_PLAYER_1_TYPE), data);
+            String p2 = headers.get(HEADER_PLAYER_2_NAME);
             if (p2 == null) {
-                p2 = (String) headers.get("Black");
+                p2 = headers.get("Black");
             }
             parsePlayer2Name(p2, data);
-            String p2R = (String) headers.get(HEADER_PLAYER_2_RATING);
+            String p2R = headers.get(HEADER_PLAYER_2_RATING);
             if (p2R == null) {
-                p2R = (String) headers.get("BlackRating");
+                p2R = headers.get("BlackRating");
             }
             parsePlayer2Rating(p2R, data);
-            parsePlayer2Type((String) headers.get(HEADER_PLAYER_2_TYPE), data);
-            parseResult((String) headers.get(HEADER_RESULT), data);
+            parsePlayer2Type(headers.get(HEADER_PLAYER_2_TYPE), data);
+            parseResult(headers.get(HEADER_RESULT), data);
 
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -974,7 +974,7 @@ public class PGNGameFormat implements GameFormat {
             return -1;
         }
 
-        int x = (int) (p.charAt(0) - 65);
+        int x = (p.charAt(0) - 65);
         if (x > 8) x--;
         int y = 19 - Integer.parseInt(p.substring(1));
 

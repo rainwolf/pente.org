@@ -23,8 +23,8 @@ public class WhosOnline {
 
             //sort into sections by room name, pname (serverid)
             Arrays.sort(d, (o1, o2) -> {
-                ActivityData d1 = (ActivityData) o1;
-                ActivityData d2 = (ActivityData) o2;
+                ActivityData d1 = o1;
+                ActivityData d2 = o2;
                 if (d1.getServerId() != d2.getServerId()) {
                     return (int) (d1.getServerId() - d2.getServerId());
                 } else {
@@ -34,27 +34,27 @@ public class WhosOnline {
             long currentServerId = -1;
             ServerData sd = null;
             WhosOnlineRoom room = null;
-            for (int i = 0; i < d.length; i++) {
+            for (ActivityData ad : d) {
 
-                if (d[i].getServerId() != currentServerId) {
-                    currentServerId = d[i].getServerId();
+                if (ad.getServerId() != currentServerId) {
+                    currentServerId = ad.getServerId();
                     sd = resources.getServerData((int) currentServerId);
                     room = new WhosOnlineRoom(sd.getName(), new ArrayList<DSGPlayerData>());
                     rooms.add(room);
                 }
                 DSGPlayerData dsgPlayerData = null;
-                if (d[i].getPlayerName().startsWith("guest")) {
+                if (ad.getPlayerName().startsWith("guest")) {
                     dsgPlayerData = new SimpleDSGPlayerData();
-                    dsgPlayerData.setName(d[i].getPlayerName());
+                    dsgPlayerData.setName(ad.getPlayerName());
                     dsgPlayerData.setGuest(true);
                 } else {
-                    dsgPlayerData = dsgPlayerStorer.loadPlayer(d[i].getPlayerName());
+                    dsgPlayerData = dsgPlayerStorer.loadPlayer(ad.getPlayerName());
                 }
-                if (!seen.isEmpty() && seen.contains(d[i].getPlayerName())) {
+                if (!seen.isEmpty() && seen.contains(ad.getPlayerName())) {
                     continue;
                 }
                 room.getPlayers().add(dsgPlayerData);
-                seen.add(d[i].getPlayerName());
+                seen.add(ad.getPlayerName());
             }
 
             room = new WhosOnlineRoom("web", new ArrayList<DSGPlayerData>());
@@ -107,8 +107,8 @@ public class WhosOnline {
 
             //sort into sections by room name, pname (serverid)
             Arrays.sort(d, (o1, o2) -> {
-                ActivityData d1 = (ActivityData) o1;
-                ActivityData d2 = (ActivityData) o2;
+                ActivityData d1 = o1;
+                ActivityData d2 = o2;
                 if (d1.getServerId() != d2.getServerId()) {
                     return (int) (d1.getServerId() - d2.getServerId());
                 } else {
@@ -118,24 +118,24 @@ public class WhosOnline {
             long currentServerId = -1;
             ServerData sd = null;
             WhosOnlineRoom room = null;
-            for (int i = 0; i < d.length; i++) {
+            for (ActivityData ad : d) {
 
-                if (d[i].getServerId() != currentServerId) {
-                    currentServerId = d[i].getServerId();
+                if (ad.getServerId() != currentServerId) {
+                    currentServerId = ad.getServerId();
                     sd = resources.getServerData((int) currentServerId);
                     room = new WhosOnlineRoom(sd.getName(), new ArrayList<DSGPlayerData>());
                     rooms.add(room);
                 }
                 DSGPlayerData dsgPlayerData = null;
-                if (d[i].getPlayerName().startsWith("guest")) {
+                if (ad.getPlayerName().startsWith("guest")) {
                     dsgPlayerData = new SimpleDSGPlayerData();
-                    dsgPlayerData.setName(d[i].getPlayerName());
+                    dsgPlayerData.setName(ad.getPlayerName());
                     dsgPlayerData.setGuest(true);
                 } else {
-                    dsgPlayerData = dsgPlayerStorer.loadPlayer(d[i].getPlayerName());
+                    dsgPlayerData = dsgPlayerStorer.loadPlayer(ad.getPlayerName());
                 }
                 room.getPlayers().add(dsgPlayerData);
-                seen.add(d[i].getPlayerName());
+                seen.add(ad.getPlayerName());
             }
 
             WhosOnlineRoom webRoom = new WhosOnlineRoom("web", new ArrayList<DSGPlayerData>());

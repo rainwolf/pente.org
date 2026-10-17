@@ -1,6 +1,7 @@
 package org.pente.gameServer.event;
 
 public class DSGTextTableErrorEvent extends AbstractDSGTableErrorEvent {
+    private static final long serialVersionUID = -2095511606446690637L;
 
     private String text;
 

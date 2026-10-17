@@ -639,9 +639,9 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                                 int weekend[] = new int[]{7, 1}; //sat/sun default
                                 try {
                                     // get wk1, wk2 for player whose turn it now is
-                                    List l = dsgPlayerStorer.loadPlayerPreferences(cp);
-                                    for (Iterator it = l.iterator(); it.hasNext(); ) {
-                                        DSGPlayerPreference p = (DSGPlayerPreference) it.next();
+                                    List<DSGPlayerPreference> l = dsgPlayerStorer.loadPlayerPreferences(cp);
+                                    for (Iterator<DSGPlayerPreference> it = l.iterator(); it.hasNext(); ) {
+                                        DSGPlayerPreference p = it.next();
                                         if (p.getName().equals("weekend")) {
                                             weekend = (int[]) p.getValue();
                                         }

@@ -1,6 +1,7 @@
 package org.pente.gameServer.event;
 
 public class DSGExitTableEvent extends AbstractDSGTableEvent {
+    private static final long serialVersionUID = 3504955298351750945L;
 
     private boolean forced;
     private boolean booted;

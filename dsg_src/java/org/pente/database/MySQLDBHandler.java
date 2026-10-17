@@ -142,14 +142,14 @@ public class MySQLDBHandler implements DBHandler {
      *  @param con The database connection to use to lock the tables
      *  @exception Exception If the tables cannot be locked
      */
-    public static void lockTables(Vector tables, Connection con) throws Exception {
+    public static void lockTables(Vector<String> tables, Connection con) throws Exception {
         Statement stmt = con.createStatement();
         String lock = "lock tables";
         for (int i = 0; i < tables.size(); i++) {
             if (i != 0) {
                 lock += ",";
             }
-            lock += " " + (String) tables.elementAt(i) + " write";
+            lock += " " + tables.elementAt(i) + " write";
         }
 
         stmt.executeUpdate(lock);

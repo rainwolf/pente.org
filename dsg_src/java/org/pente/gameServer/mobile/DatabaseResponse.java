@@ -87,27 +87,27 @@ public class DatabaseResponse {
         int responseOrder = data.getGameStorerSearchRequestData()
                 .getGameStorerSearchResponseOrder() + 1;
 
-        Vector searchResultsVector = data.searchResponseMoveData();
+        Vector<GameStorerSearchResponseMoveData> searchResultsVector = data.searchResponseMoveData();
 
         // Compute total for percentage-by-games-count mode
         double total = 0;
         if (responseOrder == 2) {
-            for (Object o : searchResultsVector) {
-                total += ((GameStorerSearchResponseMoveData) o).getGames();
+            for (GameStorerSearchResponseMoveData o : searchResultsVector) {
+                total += o.getGames();
             }
         }
         if (total == 0) total = 100;
 
         // Moves
         List<Integer> movesList = new ArrayList<>();
-        for (Object o : searchResultsVector) {
-            movesList.add(((GameStorerSearchResponseMoveData) o).getMove());
+        for (GameStorerSearchResponseMoveData o : searchResultsVector) {
+            movesList.add(o.getMove());
         }
 
         // Occurrence percentages
         List<String> occurrenceList = new ArrayList<>();
-        for (Object o : searchResultsVector) {
-            GameStorerSearchResponseMoveData md = (GameStorerSearchResponseMoveData) o;
+        for (GameStorerSearchResponseMoveData o : searchResultsVector) {
+            GameStorerSearchResponseMoveData md = o;
             String pct = responseOrder == 2
                     ? percentFormat.format((double) md.getGames() / total)
                     : percentFormat.format(md.getPercentage());

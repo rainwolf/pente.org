@@ -57,9 +57,9 @@ public abstract class AbstractFilterController implements FilterController, Filt
      *  @param line The filtered line
      */
     public void lineFiltered(String line) {
-        Enumeration e = listeners.elements();
+        Enumeration<FilterListener> e = listeners.elements();
         while (e.hasMoreElements()) {
-            FilterListener l = (FilterListener) e.nextElement();
+            FilterListener l = e.nextElement();
             l.lineFiltered(line);
         }
     }
@@ -69,9 +69,9 @@ public abstract class AbstractFilterController implements FilterController, Filt
      *  @param ex The exception that occurred if !success
      */
     public void filteringComplete(boolean success, Exception ex) {
-        Enumeration e = listeners.elements();
+        Enumeration<FilterListener> e = listeners.elements();
         while (e.hasMoreElements()) {
-            FilterListener l = (FilterListener) e.nextElement();
+            FilterListener l = e.nextElement();
             l.filteringComplete(success, ex);
         }
     }

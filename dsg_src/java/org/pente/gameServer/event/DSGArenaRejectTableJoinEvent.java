@@ -1,6 +1,7 @@
 package org.pente.gameServer.event;
 
 public class DSGArenaRejectTableJoinEvent extends AbstractDSGTableEvent {
+    private static final long serialVersionUID = -1771863224683250544L;
 
     String playerToReject, message;
 

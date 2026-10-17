@@ -6,6 +6,7 @@ import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 
 public class LogoutServlet extends HttpServlet {
+    private static final long serialVersionUID = 5896066975398586667L;
 
     private static final String redirectPage = "/gameServer/login.jsp";
 

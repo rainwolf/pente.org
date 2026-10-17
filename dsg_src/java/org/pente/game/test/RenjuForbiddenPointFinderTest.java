@@ -220,8 +220,7 @@ public class RenjuForbiddenPointFinderTest extends TestCase {
         java.util.List<Coord> pts = f.findForbiddenPoints();
         boolean hasForbidden = false;
         boolean hasLegal = false;
-        for (int i = 0; i < pts.size(); i++) {
-            Coord c = pts.get(i);
+        for (Coord c : pts) {
             if (c.x == 7 && c.y == 7) hasForbidden = true;
             if (c.x == 0 && c.y == 0) hasLegal = true;
         }

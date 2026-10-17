@@ -51,8 +51,7 @@ public class PlayerDataCache {
     }
 
     public synchronized DSGPlayerData getPlayer(String name) {
-        for (int i = 0; i < players.size(); i++) {
-            DSGPlayerData d = players.elementAt(i);
+        for (DSGPlayerData d : players) {
             if (d.getName().equals(name)) {
                 return d;
             }
@@ -87,7 +86,7 @@ public class PlayerDataCache {
 
     private synchronized void notifyListeners(DSGPlayerData updateData) {
         for (int i = 0; i < changeListeners.size(); i++) {
-            PlayerDataChangeListener l = (PlayerDataChangeListener)
+            PlayerDataChangeListener l =
                     changeListeners.elementAt(i);
             l.playerChanged(updateData);
         }
@@ -96,8 +95,8 @@ public class PlayerDataCache {
     public synchronized void updateIgnore(DSGIgnoreData data[]) {
         ignored.clear();
         if (data != null) { // could be null if all are removed from web page
-            for (int i = 0; i < data.length; i++) {
-                ignored.add(data[i]);
+            for (DSGIgnoreData ignoreData : data) {
+                ignored.add(ignoreData);
             }
         }
         //printIgnores();
@@ -112,8 +111,7 @@ public class PlayerDataCache {
 
     public synchronized DSGIgnoreData getIgnore(long ignorePid) {
 
-        for (int i = 0; i < ignored.size(); i++) {
-            DSGIgnoreData d2 = ignored.elementAt(i);
+        for (DSGIgnoreData d2 : ignored) {
             if (d2.getIgnorePid() == ignorePid) {
                 return d2;
             }
@@ -141,8 +139,7 @@ public class PlayerDataCache {
     }
 
     public synchronized boolean isChatIgnored(long ignoredPid) {
-        for (int i = 0; i < ignored.size(); i++) {
-            DSGIgnoreData d = ignored.elementAt(i);
+        for (DSGIgnoreData d : ignored) {
             if (d.getIgnorePid() == ignoredPid) {
                 return d.getIgnoreChat();
             }
@@ -151,8 +148,7 @@ public class PlayerDataCache {
     }
 
     public synchronized boolean isInviteIgnored(long ignoredPid) {
-        for (int i = 0; i < ignored.size(); i++) {
-            DSGIgnoreData d = ignored.elementAt(i);
+        for (DSGIgnoreData d : ignored) {
             if (d.getIgnorePid() == ignoredPid) {
                 return d.getIgnoreInvite();
             }

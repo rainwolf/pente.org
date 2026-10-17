@@ -99,16 +99,14 @@ public class IYTSpider {
                     // for each player in the round, get the games the player played in
                     // into the games vector
                     Vector<String> players = playersBuilder.getPlayers();
-                    for (int j = 0; j < players.size(); j++) {
-                        String playerID = (String) players.elementAt(j);
+                    for (String playerID : players) {
                         IYTTournamentGamesBuilder gamesBuilder = new IYTTournamentGamesBuilder(tournamentID, gameTypeID, i, playerID, cookies, games);
                         gamesBuilder.run();
                     }
                 }
 
                 FileOutputStream fileStream = new FileOutputStream(file2);
-                for (int i = 0; i < games.size(); i++) {
-                    String gameIDStr = games.elementAt(i);
+                for (String gameIDStr : games) {
                     fileStream.write(gameIDStr.getBytes());
                     fileStream.write('\r');
                     fileStream.write('\n');
@@ -121,11 +119,10 @@ public class IYTSpider {
             for (int j = 0; j < 2; j++) {
 
                 // for each game, build the game and store it
-                for (int i = 0; i < games.size(); i++) {
+                for (String gameIDStr : games) {
 
                     try {
 
-                        String gameIDStr = games.elementAt(i);
                         long gameID = Long.parseLong(gameIDStr);
 
                         boolean buildGame = false;

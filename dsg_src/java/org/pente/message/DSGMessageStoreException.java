@@ -2,6 +2,8 @@ package org.pente.message;
 
 public class DSGMessageStoreException extends Exception {
 
+    private static final long serialVersionUID = 32098722100862366L;
+
     public DSGMessageStoreException() {
         super();
     }

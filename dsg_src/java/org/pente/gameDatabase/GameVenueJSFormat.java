@@ -76,8 +76,7 @@ public class GameVenueJSFormat {
         Map<Integer, GameTreeData> byBaseId = new LinkedHashMap<>();
         Vector<GameTreeData> merged = new Vector<>();
 
-        for (int i = 0; i < treeData.size(); i++) {
-            GameTreeData game = treeData.get(i);
+        for (GameTreeData game : treeData) {
             int baseId = game.getID() > TB_ID_OFFSET ?
                     game.getID() - TB_ID_OFFSET : game.getID();
 
@@ -107,8 +106,7 @@ public class GameVenueJSFormat {
 
         // clone data since we plan on adding new data to tree
         Vector<GameTreeData> newTreeData = new Vector<>();
-        for (int i = 0; i < treeData.size(); i++) {
-            GameTreeData t = (GameTreeData) treeData.get(i);
+        for (GameTreeData t : treeData) {
 //            if (t.getID() == GridStateFactory.CONNECT6 ||
 //                t.getID() == GridStateFactory.SPEED_CONNECT6 ||
 //                t.getID() == GridStateFactory.TB_CONNECT6) continue;
@@ -117,16 +115,13 @@ public class GameVenueJSFormat {
         }
         treeData = mergeTurnBasedIntoBase(newTreeData);
 
-        for (int i = 0; i < treeData.size(); i++) {
-
-            GameTreeData game = (GameTreeData) treeData.get(i);
+        for (GameTreeData game : treeData) {
 
             List<GameSiteData> sites = game.getGameSiteData();
             // game must have at least 1 site, no need for EMPTY_SITE
             sites.add(0, ALL_SITE_DATA.clone());
 
-            for (int j = 0; j < sites.size(); j++) {
-                GameSiteData site = sites.get(j);
+            for (GameSiteData site : sites) {
 
                 List<GameEventData> events = site.getGameEventData();
                 if (events.isEmpty()) {
@@ -135,8 +130,7 @@ public class GameVenueJSFormat {
                     events.add(0, (GameEventData) ALL_EVENT_DATA.clone());
                 }
 
-                for (int k = 0; k < events.size(); k++) {
-                    GameEventData e = events.get(k);
+                for (GameEventData e : events) {
                     Vector<GameRoundData> rounds = e.getGameRoundData();
 
                     if (rounds.isEmpty()) {
@@ -145,8 +139,7 @@ public class GameVenueJSFormat {
                         rounds.add(0, (GameRoundData) ALL_ROUND_DATA.clone());
                     }
 
-                    for (int l = 0; l < rounds.size(); l++) {
-                        GameRoundData r = (GameRoundData) rounds.get(l);
+                    for (GameRoundData r : rounds) {
                         Vector<GameSectionData> sections = r.getGameSectionData();
 
                         if (sections.isEmpty()) {
@@ -166,7 +159,7 @@ public class GameVenueJSFormat {
         StringBuffer sectionsBuf = new StringBuffer("sections = new Array(");
 
         for (int i = 0; i < treeData.size(); i++) {
-            GameTreeData gameTreeData = (GameTreeData) treeData.get(i);
+            GameTreeData gameTreeData = treeData.get(i);
             if (i != 0) {
                 gamesBuf.append(", ");
                 sitesBuf.append(", ");
@@ -201,7 +194,7 @@ public class GameVenueJSFormat {
 
                 for (int k = 0; k < eventData.size(); k++) {
 
-                    GameEventData gameEventData = (GameEventData) eventData.get(k);
+                    GameEventData gameEventData = eventData.get(k);
 
                     if (k != 0) {
                         eventsBuf.append(", ");

@@ -21,6 +21,7 @@ package org.pente.gameServer.event;
 import org.pente.gameServer.core.DSGPlayerData;
 
 public class DSGUpdatePlayerDataEvent extends AbstractDSGEvent {
+    private static final long serialVersionUID = -2187851276040693882L;
 
     private DSGPlayerData data;
 

@@ -41,8 +41,7 @@ public class MySQLServerStorer {
             // insert into dsg_server_games
             stmt = con.prepareStatement("insert into dsg_server_game " +
                     "values(?, ?, ?)");
-            for (Iterator it = data.getGameEvents().iterator(); it.hasNext(); ) {
-                GameEventData g = (GameEventData) it.next();
+            for (GameEventData g : data.getGameEvents()) {
                 stmt.setInt(1, data.getServerId());
                 stmt.setInt(2, g.getEventID());
                 stmt.setInt(3, g.getGame());
@@ -53,7 +52,7 @@ public class MySQLServerStorer {
             stmt = con.prepareStatement("insert into dsg_server_message " +
                     "values(?, ?, ?)");
             for (int i = 0; i < data.getLoginMessages().size(); i++) {
-                String message = (String) data.getLoginMessages().get(i);
+                String message = data.getLoginMessages().get(i);
                 stmt.setInt(1, data.getServerId());
                 stmt.setInt(2, i);
                 stmt.setString(3, message);
@@ -319,7 +318,7 @@ public class MySQLServerStorer {
             stmt = con.prepareStatement("insert into dsg_server_message " +
                     "values(?, ?, ?)");
             for (int i = 0; i < data.getLoginMessages().size(); i++) {
-                String message = (String) data.getLoginMessages().get(i);
+                String message = data.getLoginMessages().get(i);
                 stmt.setInt(1, data.getServerId());
                 stmt.setInt(2, i);
                 stmt.setString(3, message);

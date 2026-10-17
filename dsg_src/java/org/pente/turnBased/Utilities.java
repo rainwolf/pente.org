@@ -24,9 +24,9 @@ public class Utilities {
         String name = (String) request.getAttribute("name");
         if (name == null) return false;
         DSGPlayerData data = dsgPlayerStorer.loadPlayer(name);
-        List prefs = dsgPlayerStorer.loadPlayerPreferences(data.getPlayerID());
-        for (Iterator it = prefs.iterator(); it.hasNext(); ) {
-            DSGPlayerPreference p = (DSGPlayerPreference) it.next();
+        List<DSGPlayerPreference> prefs = dsgPlayerStorer.loadPlayerPreferences(data.getPlayerID());
+        for (Iterator<DSGPlayerPreference> it = prefs.iterator(); it.hasNext(); ) {
+            DSGPlayerPreference p = it.next();
             if (p.getName().equals("pentedb")) {
                 return true;
             }
@@ -100,9 +100,9 @@ public class Utilities {
         TimeZone tz = null;
         try {
             // get wk1, wk2 for player whose turn it now is
-            List l = dsgPlayerStorer.loadPlayerPreferences(game.getCurrentPlayer());
-            for (Iterator it = l.iterator(); it.hasNext(); ) {
-                DSGPlayerPreference p = (DSGPlayerPreference) it.next();
+            List<DSGPlayerPreference> l = dsgPlayerStorer.loadPlayerPreferences(game.getCurrentPlayer());
+            for (Iterator<DSGPlayerPreference> it = l.iterator(); it.hasNext(); ) {
+                DSGPlayerPreference p = it.next();
                 if (p.getName().equals("weekend")) {
                     weekend = (int[]) p.getValue();
                 }

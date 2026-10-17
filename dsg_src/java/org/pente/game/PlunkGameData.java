@@ -3,6 +3,7 @@ package org.pente.game;
 import org.pente.game.PlunkNode;
 
 public class PlunkGameData extends DefaultGameData {
+    private static final long serialVersionUID = 3304586643411525526L;
 
     private PlunkNode root;
     private String dbName;

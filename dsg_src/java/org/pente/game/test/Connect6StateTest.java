@@ -78,8 +78,8 @@ public class Connect6StateTest extends GridStateTest {
 //    }
 
     void addMoves(int moves[], GridState state) {
-        for (int i = 0; i < moves.length; i++) {
-            state.addMove(moves[i]);
+        for (int move : moves) {
+            state.addMove(move);
         }
     }
 }

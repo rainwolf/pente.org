@@ -17,15 +17,17 @@ import java.util.List;
  * Created by waliedothman on 25/01/2017.
  */
 public class FollowerServlet extends HttpServlet {
+    private static final long serialVersionUID = -2831302753901654854L;
+
     private static final String errorRedirectPage = "/gameServer/error.jsp";
 
 
     private static final Category log4j =
             Category.getInstance(FollowerServlet.class.getName());
 
-    private DSGFollowerStorer followerStorer;
-    private DSGPlayerStorer dsgPlayerStorer;
-    private ServletContext ctx;
+    private transient DSGFollowerStorer followerStorer;
+    private transient DSGPlayerStorer dsgPlayerStorer;
+    private transient ServletContext ctx;
 
     public void init(ServletConfig config) throws ServletException {
 
@@ -55,8 +57,8 @@ public class FollowerServlet extends HttpServlet {
 
         String error = null;
         String player = (String) request.getAttribute("name");
-        String follow = (String) request.getParameter("follow");
-        String unFollow = (String) request.getParameter("unfollow");
+        String follow = request.getParameter("follow");
+        String unFollow = request.getParameter("unfollow");
         DSGPlayerData playerData = null, followPlayerData = null, unFollowPlayerData = null;
         if (player == null) {
             handleError(request, response, "not logged in");

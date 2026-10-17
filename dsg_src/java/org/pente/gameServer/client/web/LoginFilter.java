@@ -214,9 +214,9 @@ public class LoginFilter implements Filter {
                             DSGPlayerData data = resources.getDsgPlayerStorer().loadPlayer(name);
                             data.loginSuccessful();
                             resources.getDsgPlayerStorer().updatePlayer(data);
-                            List prefs = resources.getDsgPlayerStorer().loadPlayerPreferences(data.getPlayerID());
-                            for (Iterator it = prefs.iterator(); it.hasNext(); ) {
-                                DSGPlayerPreference p = (DSGPlayerPreference) it.next();
+                            List<DSGPlayerPreference> prefs = resources.getDsgPlayerStorer().loadPlayerPreferences(data.getPlayerID());
+                            for (Iterator<DSGPlayerPreference> it = prefs.iterator(); it.hasNext(); ) {
+                                DSGPlayerPreference p = it.next();
                                 if (p.getName().equals("gameRoomSize")) {
                                     session.setAttribute("gameRoomSize", p.getValue());
                                 }

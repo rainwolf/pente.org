@@ -58,13 +58,13 @@ public class LoginCookieHandler {
 
         Cookie cookies[] = request.getCookies();
         if (cookies != null) {
-            for (int i = 0; i < cookies.length; i++) {
-                if (cookies[i].getName().equals(NAME_COOKIE)) {
-                    name = cookies[i].getValue();
-                } else if (cookies[i].getName().equals(PASSWORD_COOKIE)) {
-                    password = cookies[i].getValue();
-                } else if (cookies[i].getName().equals(PLUGIN_COOKIE)) {
-                    plugin = cookies[i].getValue().equals(
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals(NAME_COOKIE)) {
+                    name = cookie.getValue();
+                } else if (cookie.getName().equals(PASSWORD_COOKIE)) {
+                    password = cookie.getValue();
+                } else if (cookie.getName().equals(PLUGIN_COOKIE)) {
+                    plugin = cookie.getValue().equals(
                             String.valueOf(USE_PLUGIN)) ?
                             USE_PLUGIN : DONT_USE_PLUGIN;
                 }
@@ -75,9 +75,9 @@ public class LoginCookieHandler {
     public static String getCookie(HttpServletRequest request, String name) {
         Cookie cookies[] = request.getCookies();
         if (cookies != null) {
-            for (int i = 0; i < cookies.length; i++) {
-                if (cookies[i].getName().equals(name)) {
-                    return cookies[i].getValue();
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals(name)) {
+                    return cookie.getValue();
                 }
             }
         }

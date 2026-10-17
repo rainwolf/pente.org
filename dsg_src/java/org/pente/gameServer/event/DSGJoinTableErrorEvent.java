@@ -1,6 +1,7 @@
 package org.pente.gameServer.event;
 
 public class DSGJoinTableErrorEvent extends AbstractDSGTableErrorEvent {
+    private static final long serialVersionUID = 3308945975514938675L;
 
     public DSGJoinTableErrorEvent() {
     }
