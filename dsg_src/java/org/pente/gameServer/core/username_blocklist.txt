@@ -1,0 +1,63 @@
+# Offensive-name list for pente.org usernames. One entry per line.
+# '#' starts a comment; blank lines are ignored.
+#
+# Names are normalized before matching (lowercase, accents stripped, leet
+# digits/symbols mapped to letters, everything else removed), so write
+# entries as plain letters. Entries are normalized the same way.
+#
+# Two kinds of entry:
+#   word    unambiguous stem: blocks any name that CONTAINS it
+#           ("xxfuckxx", "n1gger_77"). Only list words that do not occur
+#           inside ordinary names.
+#   =word   ambiguous stem: blocks only when the name IS the word, or a
+#           separator-delimited part of it ("shit", "sh1t123", "big_shit"),
+#           never when it is merely embedded ("yoshitaka", "pussycat").
+#           Add explicit compounds above if wanted (e.g. shithead).
+#
+# Shipped inside the compiled classes (see the compile target in build.xml).
+nigger
+nigga
+faggot
+tranny
+fuck
+bitch
+asshole
+dickhead
+shithead
+cocksucker
+whore
+wanker
+blowjob
+handjob
+dildo
+pedophile
+paedophile
+=shit
+=cunt
+=retard
+=slut
+=pussy
+=rapist
+=hitler
+=penis
+=vagina
+=porn
+# Censored and compound profanity
+fckr
+fckn
+fckin
+dipshit
+bullshit
+shitty
+butthole
+dumbass
+=bigcock
+# Foreign-language profanity
+scheiss
+hijodeputa
+hijueputa
+pizd
+# Ambiguous short words: whole name or separated part only
+=cock
+=nazi
+=hoe

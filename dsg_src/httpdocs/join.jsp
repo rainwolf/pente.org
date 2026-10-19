@@ -104,6 +104,10 @@
    boolean verified = outputString.contains("\"success\": true");
 
    if (!verified) { %>
+      <% String registrationError = (String) request.getAttribute("registrationError");
+         if (registrationError != null) { %>
+      <div class="fail">Registration failed: <%= registrationError %></div>
+      <% } %>
       <form method="post" action="/join">
          <%
              ReCaptcha c = ReCaptchaFactory.newReCaptcha(captchaSiteKey, captchaSecret, false);

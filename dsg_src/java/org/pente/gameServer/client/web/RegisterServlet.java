@@ -29,6 +29,8 @@ public class RegisterServlet extends HttpServlet {
 
     private transient PasswordHelper passwordHelper;
 
+    private transient UsernameFilter usernameFilter;
+
     private static final DSGAuthToken adminToken =
             new DSGAuthToken(22000000000002L);
 
@@ -55,6 +57,20 @@ public class RegisterServlet extends HttpServlet {
 
         } catch (Throwable t) {
             log4j.error("Problem in init()", t);
+        }
+
+        loadUsernameFilter();
+    }
+
+    // fails open: if the list can't be loaded, registration still works
+    private void loadUsernameFilter() {
+        try {
+            usernameFilter = UsernameFilter.loadShipped();
+            if (usernameFilter == null) {
+                log4j.error("Username blocklist not found, filter disabled");
+            }
+        } catch (Throwable t) {
+            log4j.error("Problem loading username filter, filter disabled", t);
         }
     }
 
@@ -169,6 +185,11 @@ public class RegisterServlet extends HttpServlet {
             } else if (name.indexOf("admin") >= 0) {
                 registerResult = RegisterHandler.ERROR_NAME_TAKEN;
             } else if (name.indexOf("guest") >= 0) {
+                registerResult = RegisterHandler.ERROR_NAME_TAKEN;
+            } else if (usernameFilter != null && usernameFilter.isOffensive(name)) {
+                // same message as a taken name: the mobile apps only detect
+                // failure by that exact text
+                log4j.info("Register: name rejected by username filter: " + name);
                 registerResult = RegisterHandler.ERROR_NAME_TAKEN;
             }
 
