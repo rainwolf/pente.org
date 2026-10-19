@@ -70,8 +70,8 @@ Name matching between the ignore list and message authors is case-insensitive.
 - Tapping opens a confirmation:
   - Title: "Block <name>?"
   - Message: "You will no longer receive messages from <name>." followed by "You can unblock players in Settings."
-  - Buttons: Cancel and Block (destructive).
-- Confirming calls `add` with `ignoreChat=Y`, `ignoreInvite=N` (the server merges). On success, reply is hidden. The message stays readable and is not deleted.
+  - Buttons: Cancel, **Block messages**, and **Block messages and invitations**. Both block buttons are destructive. (Owner request, 2026-10-19: let the player block the other kind as well.)
+- **Block messages** calls `add` with `ignoreChat=Y`, `ignoreInvite=N`. **Block messages and invitations** calls `add` with `ignoreChat=Y`, `ignoreInvite=Y`. The server merges either one with any existing block. On success, reply is hidden. The message stays readable and is not deleted.
 - On opening a message, the app fetches the ignore list. If the author is blocked for messages, the reply view and send button are hidden, and the block button is hidden too since the sender is already blocked.
   - iOS: `replyMessageView`, `sendButton`. `viewWillAppear` un-hides `sendButton`, so it needs the same guard.
   - Android: `reply`, `sendButton`, plus the `KeyboardVisibilityEvent` listener that toggles `sendButton`.
@@ -88,9 +88,9 @@ Name matching between the ignore list and message authors is case-insensitive.
 - Tapping opens a confirmation:
   - Title: "Block <name>?"
   - Message: "This declines the invitation and you will no longer receive invitations from <name>." followed by "You can unblock players in Settings."
-  - Buttons: Cancel and Block (destructive).
-- Confirming runs two steps:
-  1. Call `add` with `ignoreName=<opponentName>&ignoreInvite=Y&ignoreChat=N`. The server merges this with any existing block. If it fails, show an error alert, leave the invitation as it is, and stop.
+  - Buttons: Cancel, **Block invitations**, and **Block messages and invitations**. Both block buttons are destructive. (Owner request, 2026-10-19.)
+- Either block button runs two steps:
+  1. Call `add` with `ignoreName=<opponentName>&ignoreInvite=Y`. **Block invitations** sends `ignoreChat=N`. **Block messages and invitations** sends `ignoreChat=Y`. The server merges this with any existing block. If it fails, show an error alert, leave the invitation as it is, and stop.
   2. Run the existing decline path unchanged, with its existing removal and refresh:
      - iOS: `rejectInvitation:`.
      - Android: `respondInvitation(..., false, ...)`.
@@ -99,7 +99,7 @@ Name matching between the ignore list and message authors is case-insensitive.
 
 ### Strings
 
-New strings in English, plus translations in the locales each app ships: iOS app strings in `zh-Hans.lproj/Localizable.strings` (UTF-16). For the settings row, `MoreSettings.plist` has no `StringsTable` key, so InAppSettingsKit looks up `MoreSettings.strings`. Add new UTF-16LE `Settings.bundle/{en,zh-CN}.lproj/MoreSettings.strings` holding only the new row's strings, and leave `Root.strings` and the existing rows untouched. Android: `values-de`. (Builder's call: machine translation is acceptable. The owner may refine it.)
+New strings in English, plus translations in the locales each app ships: iOS app strings in `zh-Hans.lproj/Localizable.strings` (UTF-16). For the settings row, `MoreSettings.plist` has no `StringsTable` key, so InAppSettingsKit looks up `MoreSettings.strings`. Add new UTF-16LE `Settings.bundle/{en,zh-CN}.lproj/MoreSettings.strings`, each a copy of that locale's `Root.strings` plus the new row's string. Once `MoreSettings.strings` exists, InAppSettingsKit reads only that table for the pane and never falls back to `Root` (`IASKSettingsReader.m:48-60`, `:307`). A file with just the new key would leave the existing rows untranslated. (Amended during implementation.) Android: `values-de`. (Builder's call: machine translation is acceptable. The owner may refine it.)
 
 ## Testing
 

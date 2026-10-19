@@ -33,8 +33,8 @@
   - Empty state: `No blocked players`
   - Swipe action: `Unblock`
   - Unblock dialog: title `Unblock <name>?`, message `<name> will be able to send you <kind> again.`, buttons `Cancel` and `Unblock`
-  - Message block dialog: title `Block <name>?`, message `You will no longer receive messages from <name>.\nYou can unblock players in Settings.`, buttons `Cancel` and `Block` (destructive)
-  - Invitation block dialog: title `Block <name>?`, message `This declines the invitation and you will no longer receive invitations from <name>.\nYou can unblock players in Settings.`, buttons `Cancel` and `Block` (destructive)
+  - Message block dialog: title `Block <name>?`, message `You will no longer receive messages from <name>.\nYou can unblock players in Settings.`, buttons `Cancel`, `Block messages`, `Block messages and invitations` (both destructive; Task 13/14)
+  - Invitation block dialog: title `Block <name>?`, message `This declines the invitation and you will no longer receive invitations from <name>.\nYou can unblock players in Settings.`, buttons `Cancel`, `Block invitations`, `Block messages and invitations` (both destructive; Task 13/14)
   - Errors: title `Couldn't block <name>` or `Couldn't unblock <name>`. Message is the server `error` string, or `Please try again.` when there is none.
 - Translations:
   - iOS: `zh-Hans.lproj/Localizable.strings` (UTF-16). Settings row in new `Settings.bundle/{en,zh-CN}.lproj/MoreSettings.strings` (UTF-16LE).
@@ -413,6 +413,71 @@
 - [ ] **Step 4: Clean up.** Kill the emulator, then run `git -C penteLive-Android status --porcelain`. Expected: empty.
 
 ---
+
+### Task 13: iOS — "block both" option in the block dialogs (owner request 2026-10-19)
+
+**Files:**
+- Modify: `penteLive-iOS/test1/BlockedPlayers/BlockedPlayersService.swift` (`confirmBlock`), `test1/PenteAlert.h/.m` only if the destructive variant can't mark two buttons, `test1/MessagesViewController.m` (`blockTap`), `test1/GamesTableViewController.m` (`blockInvitation:`), `en`/`zh-Hans` `Localizable.strings`
+- Test: `penteLive-iOS/PenteEngineTests/BlockedPlayersTests.swift`
+
+**Interfaces:**
+- Produces: `@objc static func confirmBlock(name: String, forInvitation: Bool, onConfirm: @escaping (_ blockBoth: Bool) -> Void)`. It replaces the old `() -> Void` callback. Buttons in order:
+  - index 0: `Cancel`
+  - index 1: `Block messages` (message dialog) or `Block invitations` (invitation dialog)
+  - index 2: `Block messages and invitations`
+
+  Indexes 1 and 2 are both destructive. Index 1 calls `onConfirm(false)`, index 2 calls `onConfirm(true)`.
+- Also produces: `static func blockButtonTitles(forInvitation: Bool) -> [String]`, a pure function that returns the two block-button titles in order.
+
+- [ ] **Step 1: Write the failing test.** `testBlockButtonTitles` asserts:
+  - `blockButtonTitles(forInvitation: false) == ["Block messages", "Block messages and invitations"]`
+  - `blockButtonTitles(forInvitation: true) == ["Block invitations", "Block messages and invitations"]`
+- [ ] **Step 2: Run it.** `xcodebuild test ... -only-testing:PenteEngineTests/BlockedPlayersTests`. Expected: FAIL, compile error.
+- [ ] **Step 3: Implement.**
+  - Update `confirmBlock` (PenteAlert must mark both block buttons destructive).
+  - Message screen: `onConfirm(both)` calls `block(name:, invite: both, chat: YES)`.
+  - Invitation row: `onConfirm(both)` calls `block(name:, invite: YES, chat: both)`, then the existing guarded `rejectInvitation:`.
+  - Add the strings in en and zh-Hans.
+- [ ] **Step 4: Run the tests.** Same command. Expected: all pass. Then build for the iPhone and iPad sims. Expected: `BUILD SUCCEEDED`.
+- [ ] **Step 5: Commit.** `"Block dialogs: option to block messages and invitations"`
+
+### Task 14: Android — "block both" option in the block dialogs (owner request 2026-10-19)
+
+**Files:**
+- Modify: `penteLive-Android/app/src/main/java/be/submanifold/pentelive/blocked/BlockFlow.java`, `MainActivity.java`, `ReplyMessageActivity.java`, `res/values/strings.xml`, `res/values-de/strings.xml`
+
+**Interfaces:**
+- Produces: `BlockFlow.confirmAndBlock(AppCompatActivity activity, String name, boolean forInvitation, Runnable onSuccess)`.
+  - It shows the right title and message for the dialog kind.
+  - Negative button: `android.R.string.cancel`.
+  - Neutral button: `Block messages` (message dialog) or `Block invitations` (invitation dialog).
+  - Positive button: `Block messages and invitations`.
+  - Both block buttons are red.
+  - Flags sent:
+
+    | Dialog | Button | invite | chat |
+    |---|---|---|---|
+    | Message | Block messages | false | true |
+    | Message | Block messages and invitations | true | true |
+    | Invitation | Block invitations | true | false |
+    | Invitation | Block messages and invitations | true | true |
+
+  - It replaces the old `messageRes, invite, chat` parameters.
+- New strings: `block_messages` ("Block messages"), `block_invitations` ("Block invitations"), `block_both` ("Block messages and invitations"), in values and values-de.
+- Test: `penteLive-Android/app/src/test/java/be/submanifold/pentelive/blocked/BlockFlowTest.java`, covering a pure `static boolean[] flags(boolean forInvitation, boolean both)` that returns `{invite, chat}`.
+
+- [ ] **Step 1: Write the failing test.** `flags(false, false)` → `{false, true}`; `flags(false, true)` → `{true, true}`; `flags(true, false)` → `{true, false}`; `flags(true, true)` → `{true, true}`.
+- [ ] **Step 2: Run it.** `./gradlew testDebugUnitTest --tests '*BlockFlowTest'`. Expected: FAIL.
+- [ ] **Step 3: Implement.** Update `BlockFlow` and both call sites. The `onSuccess` behavior does not change: the message screen runs `applyBlockedState`, and the invitation row runs the existing decline.
+- [ ] **Step 4: Run the build.** `./gradlew assembleDebug testDebugUnitTest lintDebug`. Expected: `BUILD SUCCESSFUL`.
+- [ ] **Step 5: Commit.** `"Block dialogs: option to block messages and invitations"`
+
+### Task 15: E2E re-run for the "block both" option
+
+- Both apps, reusing the Task 10/11 harnesses in `/private/tmp/claude-501/blocked-players-e2e/`:
+  - **Message dialog:** shows 3 buttons with the exact titles. **Block messages and invitations** leaves graviton with `ignoreInvite=true, ignoreChat=true` (`seed.py ignores`).
+  - **Invitation dialog:** shows 3 buttons. **Block messages and invitations** declines the invitation and sets both flags, and a later `seed.py try-send` is rejected.
+  - Reset the ignores before and after.
 
 ### Task 12: PRs
 
