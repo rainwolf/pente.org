@@ -479,6 +479,56 @@
   - **Invitation dialog:** shows 3 buttons. **Block messages and invitations** declines the invitation and sets both flags, and a later `seed.py try-send` is rejected.
   - Reset the ignores before and after.
 
+### Task 16: Server — name color and crown in ignore entries (owner request 2026-10-19)
+
+**Files:**
+- Modify: `pente.org/dsg_src/java/org/pente/gameServer/client/web/ChangeIgnoredServlet.java` (`IgnoreEntry`, `success()`)
+- Test: `/private/tmp/claude-501/blocked-players-e2e/server_check.py`
+
+**Interfaces:**
+- Produces: each `ignores[]` entry gains two fields, using the same values the mobile dashboard JSON sends for message senders (`IndexResponse.buildMessages`):
+  - `nameColor` (int) = `MobileJsonHelper.playerColorNonZero(d)`
+  - `tourneyWinner` (int) = `d.getTourneyWinner()`
+
+  The change is additive and backward compatible.
+
+- [ ] **Step 1: Extend the server check.** In `server_check.py`, after an `add`, assert that every entry has integer `nameColor` and `tourneyWinner` keys. Run it. Expected: FAIL on the missing keys.
+- [ ] **Step 2: Implement.** Add the two fields to `IgnoreEntry` and fill them in `success()`. Then `ant test` and `./justCompile`.
+- [ ] **Step 3: Verify.** Run `server_check.py`. Expected: `ALL OK`.
+- [ ] **Step 4: Commit.** `"Ignore endpoint: include name color and crown"`
+
+### Task 17: iOS — styled names in Blocked players list
+
+**Files:**
+- Modify: `penteLive-iOS/test1/BlockedPlayers/BlockedPlayers.swift` (`IgnoreEntry`), `BlockedPlayersViewController.swift` (cell)
+- Test: `PenteEngineTests/BlockedPlayersTests.swift`
+
+**Interfaces:**
+- Consumes: Task 16's JSON fields.
+- Produces: `IgnoreEntry` gains `nameColor: Int` and `tourneyWinner: Int`. Both decode as optional and default to 0, so an older server still parses.
+- Rendering: the row's name looks exactly like a message sender's name on the dashboard, with the same color rule and the same crown images (crown 1/2/3 → crown/scrown/bcrown, >3 → kothcrownN). Reuse the existing helper. Don't add a new styling rule. If the dashboard code is only inline, extract a small shared function and use it from both places.
+
+- [ ] **Step 1: Write the tests.** `testParseNameColorAndCrown` decodes `nameColor: 16711680, tourneyWinner: 2` into those values. `testParseWithoutStyleFieldsDefaultsZero` decodes the old JSON shape to 0/0. Run them. Expected: FAIL.
+- [ ] **Step 2: Implement.** Update the model and the cell. Then run the tests and build for both sims. Expected: PASS and `BUILD SUCCEEDED`.
+- [ ] **Step 3: Commit.** `"Blocked players list: name color and crown"`
+
+### Task 18: Android — styled names in Blocked players list
+
+**Files:**
+- Modify: `penteLive-Android/.../blocked/BlockedPlayers.java` (`IgnoreEntry`), `BlockedPlayersActivity.java` (row binding), `res/layout/blocked_player_row.xml` if a crown ImageView is needed
+- Test: `.../blocked/BlockedPlayersTest.java`
+
+**Interfaces:**
+- Consumes: Task 16's JSON fields.
+- Produces: `IgnoreEntry` gains `public int nameColor; public int tourneyWinner;`. Gson leaves both at 0 when they are missing.
+- Rendering: the name looks exactly like the dashboard's message-sender name (`DashboardListAdapter` ~L311 and L456, `KothCrownDrawables`). Reuse that logic. If it is only inline, extract a small shared helper and use it from both places.
+
+- [ ] **Step 1: Write the tests.** `parseNameColorAndCrown` and `parseWithoutStyleFieldsDefaultsZero`, with the same values as Task 17. Run them. Expected: FAIL.
+- [ ] **Step 2: Implement.** Then run `./gradlew assembleDebug testDebugUnitTest lintDebug`. Expected: `BUILD SUCCESSFUL`.
+- [ ] **Step 3: Commit.** `"Blocked players list: name color and crown"`
+
+Task 15 (E2E re-run) also screenshots the Blocked players list on both apps. Graviton's name must render with the same styling as on the dashboard.
+
 ### Task 12: PRs
 
 - [ ] **Step 1: Push and open the PRs.**

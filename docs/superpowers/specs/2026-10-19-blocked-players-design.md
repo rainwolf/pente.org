@@ -57,6 +57,7 @@ Name matching between the ignore list and message authors is case-insensitive.
   - Messages lists entries with `ignoreChat`. Invitations lists entries with `ignoreInvite`. Both lists every entry, with a subtitle per row: "messages", "invitations" or "messages and invitations".
   - iOS dropdown: a `UIButton` with a `UIMenu` (iOS 15), or a segmented control if simpler. Builder's call, but it must work on iPhone and iPad.
   - Android dropdown: `AppCompatSpinner`, matching `live_table_settings.xml`.
+- Each name is styled the same way as a message sender's name on the dashboard: subscriber name color, plus a crown when the player has a tourney or King of the Hill crown. The server adds `nameColor` and `tourneyWinner` to each ignore entry, with the same values as `IndexResponse.buildMessages`. (Owner request, 2026-10-19.)
 - An empty state message appears when the filtered list is empty.
 - Swipe a row to reveal Unblock.
   - iOS: trailing swipe action.
