@@ -34,6 +34,7 @@ public class Resources {
     private GameVenueStorer gameVenueStorer;
     private CacheDSGPlayerStorer dsgPlayerStorer;
     private boolean emailEnabled;
+    private org.pente.gameServer.kids.CacheKidStorer kidStorer;
     private GameStorer gameStorer;
     private GameStorer gameStorerRo;
     private GameStorer fileGameStorer;
@@ -190,6 +191,14 @@ public class Resources {
 
     public void setDsgPlayerStorer(CacheDSGPlayerStorer dsgPlayerStorer) {
         this.dsgPlayerStorer = dsgPlayerStorer;
+    }
+
+    public org.pente.gameServer.kids.CacheKidStorer getKidStorer() {
+        return kidStorer;
+    }
+
+    public void setKidStorer(org.pente.gameServer.kids.CacheKidStorer kidStorer) {
+        this.kidStorer = kidStorer;
     }
 
     public boolean isEmailEnabled() {

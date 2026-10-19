@@ -169,6 +169,12 @@ public class DSGContextListener implements ServletContextListener {
             resources.setEmailEnabled(emailEnabled.booleanValue());
             log4j.info("contextInitialized(), emailEnabled=" + emailEnabled);
 
+            org.pente.gameServer.kids.CacheKidStorer kidStorer =
+                new org.pente.gameServer.kids.CacheKidStorer(
+                    new org.pente.gameServer.kids.MySQLKidStorer(dbHandler));
+            resources.setKidStorer(kidStorer);
+            ctx.setAttribute(org.pente.gameServer.kids.KidStorer.class.getName(), kidStorer);
+
 
             // setup storers
             GameStorer gameStorer = new MySQLPenteGameStorer(dbHandler,
