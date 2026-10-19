@@ -6,7 +6,7 @@ import org.pente.gameServer.core.DSGPlayerData;
 /** Pure rules behind /gameServer/ignored (ChangeIgnoredServlet), kept free of servlet and DB for testing. */
 public class IgnoreRules {
 
-    public static final String NOT_FOUND = "Player ignore not found";
+    public static final String NOT_FOUND = "Player to ignore not found";
     public static final String SELF = "You can't ignore yourself silly";
 
     private IgnoreRules() {

@@ -15,7 +15,7 @@ import org.pente.gameServer.core.SimpleDSGPlayerData;
  */
 public class IgnoreRulesTest extends TestCase {
 
-    private static final String NOT_FOUND = "Player ignore not found";
+    private static final String NOT_FOUND = "Player to ignore not found";
     private static final String SELF = "You can't ignore yourself silly";
 
     public IgnoreRulesTest(String name) {
