@@ -84,6 +84,15 @@ public class ServerPlayer implements DSGEventListener {
         return "[" + sid + "] ";
     }
 
+    /**
+     * Whether a main room event sent by the client may be routed. Only the
+     * server builds DSGJoinMainRoomEvent, at login, with stored player data
+     * and kid state; a client-sent one would carry forged data.
+     */
+    public static boolean clientMayRoute(DSGMainRoomEvent event) {
+        return !(event instanceof DSGJoinMainRoomEvent);
+    }
+
     ;
 
     public void eventOccurred(DSGEvent dsgEvent) {
@@ -207,7 +216,8 @@ public class ServerPlayer implements DSGEventListener {
                     DSGJoinMainRoomEvent join = new DSGJoinMainRoomEvent(
                             player, playerData);
                     join.setKidState(kidState);
-                    eventOccurred(join);
+                    // routed directly: the client-event path rejects joins
+                    server.routeEventToMainRoom(join);
 
                     // send the list of possible computer opponents to the client
                     for (Iterator<AIData> it = aiDataCollection.iterator(); it.hasNext(); ) {
@@ -234,6 +244,8 @@ public class ServerPlayer implements DSGEventListener {
                 if (!player.equals(mainRoomEvent.getPlayer())) {
                     log4j.error(psid() + "Illegal access: " + player + " attempting access as " + mainRoomEvent.getPlayer());
                     //disconnect?
+                } else if (!clientMayRoute(mainRoomEvent)) {
+                    log4j.error(psid() + "Illegal access: " + player + " sent " + mainRoomEvent.getClass().getSimpleName());
                 } else {
                     server.routeEventToMainRoom(dsgEvent);
 

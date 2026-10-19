@@ -22,6 +22,7 @@ import org.pente.gameServer.kids.test.MapPlayerStorer;
 import org.pente.gameServer.kids.test.RecordingTextMailer;
 import org.pente.gameServer.server.Resources;
 import org.pente.gameServer.server.ServerMainRoom;
+import org.pente.gameServer.server.ServerPlayer;
 import org.pente.gameServer.server.TournamentServer;
 import org.pente.gameServer.server.TournamentServerMainRoom;
 import org.pente.gameServer.tourney.Tourney;
@@ -137,6 +138,46 @@ public class ServerMainRoomKidTest extends TestCase {
         List<String> lines = store.lines("kids:livechat:" + SERVER + ":" + KID);
         assertEquals(1, lines.size());
         assertTrue(lines.get(0), lines.get(0).contains("[lobby] amy: hi kid"));
+    }
+
+    /** A client-built join carries client data and no kid state (transient). */
+    private void forgedJoin(ServerMainRoom room, SimpleDSGPlayerData d) {
+        room.handleJoin(new DSGJoinMainRoomEvent(d.getName(), d));
+    }
+
+    public void testForgedAdminJoinDoesNotPassKidWhitelist() throws Throwable {
+        ServerMainRoom room = new ServerMainRoom(server, resources, router);
+        join(room, kid);
+        SimpleDSGPlayerData forged = player(BOB, "bob", null, DSGPlayerData.HUMAN);
+        forged.setAdmin(true);
+        forgedJoin(room, forged);
+
+        room.handleText("bob", "hi kid");
+
+        assertEquals(0, router.to("kid", DSGTextMainRoomEvent.class).size());
+    }
+
+    public void testForgedKidJoinStaysFiltered() throws Throwable {
+        ServerMainRoom room = new ServerMainRoom(server, resources, router);
+        join(room, bob);
+        forgedJoin(room, player(KID, "kid", null, DSGPlayerData.HUMAN));
+        assertTrue(sessions.get("kid").isKid());
+
+        room.handleText("bob", "hi kid");
+        room.handleText("kid", "hi bob");
+
+        List<DSGTextMainRoomEvent> toKid = router.to("kid", DSGTextMainRoomEvent.class);
+        assertEquals(1, toKid.size());
+        assertEquals("hi bob", toKid.get(0).getText());
+        List<DSGTextMainRoomEvent> toBob = router.to("bob", DSGTextMainRoomEvent.class);
+        assertEquals(1, toBob.size());
+        assertEquals("hi kid", toBob.get(0).getText());
+    }
+
+    public void testServerPlayerRejectsClientSentMainRoomJoin() {
+        assertTrue(!ServerPlayer.clientMayRoute(new DSGJoinMainRoomEvent("bob", bob)));
+        assertTrue(ServerPlayer.clientMayRoute(new DSGTextMainRoomEvent("bob", "hi")));
+        assertTrue(ServerPlayer.clientMayRoute(new DSGExitMainRoomEvent("bob", false)));
     }
 
     public void testJoinAndExitRegisterKidState() throws Throwable {

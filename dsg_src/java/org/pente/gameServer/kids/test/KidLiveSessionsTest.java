@@ -116,6 +116,65 @@ public class KidLiveSessionsTest extends TestCase {
         assertTrue(sessions.allowed(bob, amy));
     }
 
+    public void testJoinWithoutStateLoadsPlayerFromStorer() {
+        sessions.join("kid", null);
+        assertNotNull(sessions.get("kid"));
+        assertTrue(sessions.get("kid").isKid());
+        assertTrue(!sessions.allowed(kid, bob));
+    }
+
+    public void testJoinWithoutStateRegistersNothingWhenPlayerCannotBeLoaded() {
+        players.failLoads = true;
+        sessions.join("kid", null);
+        assertNull(sessions.get("kid"));
+    }
+
+    public void testForgedAdminFlagDoesNotPassKidWhitelist() {
+        join(kid);
+        join(bob);
+        SimpleDSGPlayerData forged = player(BOB, "bob", null);
+        forged.setAdmin(true);
+        assertTrue(!sessions.allowed(kid, forged));
+        assertTrue(!sessions.allowed(forged, kid));
+    }
+
+    public void testForgedComputerFlagDoesNotPassKidWhitelist() {
+        join(kid);
+        join(bob);
+        SimpleDSGPlayerData forged = player(BOB, "bob", null);
+        forged.setPlayerType(DSGPlayerData.COMPUTER);
+        assertTrue(!sessions.allowed(kid, forged));
+    }
+
+    public void testForgedPidDoesNotPassKidWhitelist() {
+        join(kid);
+        join(bob);
+        SimpleDSGPlayerData forged = player(AMY, "bob", null);
+        assertTrue(!sessions.allowed(kid, forged));
+    }
+
+    public void testForgedParentDropDoesNotUnfilterJoinedKid() {
+        join(kid);
+        SimpleDSGPlayerData forged = player(KID, "kid", null);
+        assertTrue(!sessions.allowed(forged, bob));
+    }
+
+    public void testUnjoinedPlayerAdminFlagIsNotTrusted() {
+        join(kid);
+        SimpleDSGPlayerData stranger = player(BOB, "bob", null);
+        stranger.setAdmin(true);
+        assertTrue(!sessions.allowed(kid, stranger));
+    }
+
+    public void testJoinedAdminPassesKidWhitelist() {
+        SimpleDSGPlayerData admin = player(BOB, "bob", null);
+        admin.setAdmin(true);
+        players.put(admin);
+        join(kid);
+        join(admin);
+        assertTrue(sessions.allowed(kid, player(BOB, "bob", null)));
+    }
+
     public void testKidDataChangedRefreshesJoinedState() {
         join(kid);
         kids.addToWhitelist(KID, BOB);

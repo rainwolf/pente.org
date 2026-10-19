@@ -63,22 +63,32 @@ public class KidLiveSessions implements KidDataChangeListener {
         long loadedSeq = seq.incrementAndGet();
         long pid = d.getPlayerID();
         Long parentPid = d.getParentPid();
+        boolean admin = d.isAdmin();
+        boolean computer = d.isComputer();
         if (parentPid == null) {
-            return new LiveKidState(pid, null, null, false, loadedSeq);
+            return new LiveKidState(pid, null, null, false, loadedSeq, admin, computer);
         }
         try {
             Set<Long> whitelist = kids.getWhitelist(pid);
             boolean copy = kids.getSettings(pid).isCopyLiveChat();
-            return new LiveKidState(pid, parentPid, whitelist, copy, loadedSeq);
+            return new LiveKidState(pid, parentPid, whitelist, copy, loadedSeq, admin, computer);
         } catch (Throwable t) {
             log4j.error("Kid live state load failed, failing closed: pid=" + pid, t);
-            return new LiveKidState(pid, parentPid, null, false, loadedSeq);
+            return new LiveKidState(pid, parentPid, null, false, loadedSeq, admin, computer);
         }
     }
 
+    /**
+     * Registers a joined player. With no state (a join the server did not
+     * build at login, such as an AI player's) the player is loaded by name
+     * from the player storer; never from the join's own player data.
+     */
     public void join(String name, LiveKidState state) {
         if (state == null) {
-            return;
+            state = loadByName(name);
+            if (state == null) {
+                return;
+            }
         }
         LiveKidState s = freshIfStale(state);
         sessions.put(name, s);
@@ -194,14 +204,35 @@ public class KidLiveSessions implements KidDataChangeListener {
         return mailed;
     }
 
+    /**
+     * A joined player's side comes wholly from its session state, loaded from
+     * the player storer; main room player data can carry client-forged pid,
+     * admin, computer and parent fields. A player not joined (an AI player
+     * at a table) is not a kid and is never trusted as admin.
+     */
     private KidChatRules.Party party(DSGPlayerData d) {
         LiveKidState s = sessions.get(d.getName());
-        if (s == null || s.getPid() != d.getPlayerID()) {
-            return new KidChatRules.Party(d.getPlayerID(), d.isAdmin(), d.isComputer(), null,
+        if (s == null) {
+            return new KidChatRules.Party(d.getPlayerID(), false, d.isComputer(), null,
                     Collections.<Long>emptySet());
         }
-        return new KidChatRules.Party(d.getPlayerID(), d.isAdmin(), d.isComputer(),
+        return new KidChatRules.Party(s.getPid(), s.isAdmin(), s.isComputer(),
                 s.getParentPid(), s.getWhitelist());
+    }
+
+    /** player's state loaded by name, or null (logged) when player cannot be loaded. */
+    private LiveKidState loadByName(String name) {
+        try {
+            DSGPlayerData d = players.loadPlayer(name);
+            if (d == null) {
+                log4j.error("Kid live state: joined player not found, not registered: name=" + name);
+                return null;
+            }
+            return load(d);
+        } catch (Throwable t) {
+            log4j.error("Kid live state: joined player load failed, not registered: name=" + name, t);
+            return null;
+        }
     }
 
     private boolean isStale(LiveKidState s) {
