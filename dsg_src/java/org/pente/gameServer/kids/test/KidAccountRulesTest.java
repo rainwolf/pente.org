@@ -173,6 +173,16 @@ public class KidAccountRulesTest extends TestCase {
         assertSame(adult, KidAccountRules.passwordEmailTarget(adult, parent));
     }
 
+    public void testPasswordEmailLogLine() {
+        SimpleDSGPlayerData parent = player(1);
+        parent.setName("mum");
+        parent.setEmail("mum@example.invalid");
+        SimpleDSGPlayerData k = kid(2, 1);
+        k.setName("kidx");
+        assertEquals("Forgot password: name=kidx mailTo=mum mum@example.invalid",
+            KidAccountRules.passwordEmailLogLine(k, parent));
+    }
+
     public void testNameTakenText() {
         assertEquals("Requested name bob is already taken, please choose another.",
             KidAccountRules.nameTaken("bob"));

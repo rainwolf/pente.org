@@ -145,4 +145,10 @@ public class KidAccountRules {
                                                     DSGPlayerData parent) {
         return isKid(player) && parent != null ? parent : player;
     }
+
+    public static String passwordEmailLogLine(DSGPlayerData player,
+                                              DSGPlayerData target) {
+        return "Forgot password: name=" + player.getName() + " mailTo="
+            + target.getName() + " " + target.getEmail();
+    }
 }

@@ -110,6 +110,8 @@ public class ForgotPasswordServlet extends HttpServlet {
                 subject = "Pente.org - Your Password";
             }
 
+            log4j.info(KidAccountRules.passwordEmailLogLine(dsgPlayerData, emailTarget));
+
             String fromEmail = System.getProperty("mail.smtp.user");
 
             try {
