@@ -85,6 +85,8 @@ public class ChangeProfileServlet extends HttpServlet {
             redirectPage = "/gameServer/myprofileDonor.jsp";
         } else if (command.equals("prefs")) {
             redirectPage = "/gameServer/myprofilePrefs.jsp";
+        } else if (command.equals("kids")) {
+            redirectPage = "/gameServer/myprofileKids.jsp";
         }
 
         try {

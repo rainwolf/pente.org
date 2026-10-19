@@ -27,7 +27,8 @@
    {"Social", "/gameServer/social?social"},
    {"Subscriber Settings", "/gameServer/myprofile/donor"},
    {"Forum Settings", "/gameServer/forums/settings!tab.jspa"},
-   {"Forum Watches", "/gameServer/forums/editwatches!default.jspa"}
+   {"Forum Watches", "/gameServer/forums/editwatches!default.jspa"},
+   {"My Kids", "/gameServer/myprofile/kids"}
 };
    subtabs = new String[][][]{
       /* Viewing Preferences */
@@ -49,7 +50,9 @@
          {"Watch Preferences", "#watch"}},
 
       new String[][]{{"Forums", "#forums"},
-         {"Topics", "#topics"}}
+         {"Topics", "#topics"}},
+
+      new String[][]{{"My Kids", "#kids"}}
    };
 %>
 
