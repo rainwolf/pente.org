@@ -21,6 +21,12 @@
             <classpath refid="3rd-party-classpath"/>
             <compilerarg value="-Xlint:deprecation,unchecked"/>
         </javac>
+        <!-- non-class resources that ship with the classes (sync_gameServer.sh only deploys deployClasses/org) -->
+        <copy todir="deployClasses">
+            <fileset dir="dsg_src/java">
+                <include name="org/pente/gameServer/core/username_*.txt"/>
+            </fileset>
+        </copy>
     </target>
 
     <!-- Compile test sources directly from dsg_src/java (bypasses rsync/exclude_compile.txt). -->
@@ -81,6 +87,10 @@
         <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
             <classpath refid="test-classpath"/>
             <arg value="org.pente.message.test.MessageJsonServletTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.core.test.UsernameFilterTest"/>
         </java>
     </target>
 
