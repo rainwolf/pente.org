@@ -175,21 +175,12 @@ public class RegisterServlet extends HttpServlet {
             int registerResult = RegisterHandler.SUCCESS;
             String encryptedPassword = passwordHelper.encrypt(password);
 
-            // preserve the dweebo name!
-            if (name.indexOf("dwe") >= 0) {
-                registerResult = RegisterHandler.ERROR_NAME_TAKEN;
-            } else if (name.startsWith("mm")) {
-                registerResult = RegisterHandler.ERROR_NAME_TAKEN;
-            } else if (name.indexOf("mm_ai") >= 0) {
-                registerResult = RegisterHandler.ERROR_NAME_TAKEN;
-            } else if (name.indexOf("admin") >= 0) {
-                registerResult = RegisterHandler.ERROR_NAME_TAKEN;
-            } else if (name.indexOf("guest") >= 0) {
-                registerResult = RegisterHandler.ERROR_NAME_TAKEN;
-            } else if (usernameFilter != null && usernameFilter.isOffensive(name)) {
-                // same message as a taken name: the mobile apps only detect
-                // failure by that exact text
-                log4j.info("Register: name rejected by username filter: " + name);
+            if (ReservedNames.isReserved(name, usernameFilter)) {
+                if (usernameFilter != null && usernameFilter.isOffensive(name)) {
+                    // same message as a taken name: the mobile apps only detect
+                    // failure by that exact text
+                    log4j.info("Register: name rejected by username filter: " + name);
+                }
                 registerResult = RegisterHandler.ERROR_NAME_TAKEN;
             }
 

@@ -8,6 +8,7 @@ import jakarta.servlet.http.*;
 import org.apache.log4j.*;
 
 import org.pente.gameServer.core.*;
+import org.pente.gameServer.kids.KidAccountRules;
 import org.pente.gameServer.server.*;
 
 public class ForgotPasswordServlet extends HttpServlet {
@@ -60,6 +61,7 @@ public class ForgotPasswordServlet extends HttpServlet {
         log4j.info("Forgot password: name=" + name);
 
         DSGPlayerData dsgPlayerData = null;
+        DSGPlayerData emailTarget = null;
         try {
             if (name != null) {
                 name = name.trim().toLowerCase();
@@ -76,13 +78,37 @@ public class ForgotPasswordServlet extends HttpServlet {
             redirectPage = "/gameServer/forgotpassword.jsp";
         } else if (!emailEnabled) {
             log4j.info("Email not enabled, no password sent.");
+            emailTarget = dsgPlayerData;
             request.setAttribute("emailValid", Boolean.valueOf(dsgPlayerData.getEmailValid()));
         } else {
 
-            String message = dsgPlayerData.getName() + "," + lineSeparator + lineSeparator;
-            message += "Here's your requested password for Dweebo's Stone Games: ";
-            message += passwordHelper.decrypt(dsgPlayerData.getPassword()) + lineSeparator + lineSeparator;
-            message += "http://www.pente.org/";
+            // a kid's password goes to the parent
+            DSGPlayerData parent = null;
+            if (dsgPlayerData.getParentPid() != null) {
+                try {
+                    parent = dsgPlayerStorer.loadPlayer(dsgPlayerData.getParentPid().longValue());
+                } catch (DSGPlayerStoreException e) {
+                    log4j.error("Problem loading parent of " + dsgPlayerData.getName(), e);
+                }
+            }
+            emailTarget = KidAccountRules.passwordEmailTarget(dsgPlayerData, parent);
+
+            String message;
+            String subject;
+            if (emailTarget != dsgPlayerData) {
+                message = emailTarget.getName() + "," + lineSeparator + lineSeparator;
+                message += "Here's the password for the kid account " + dsgPlayerData.getName()
+                        + " on Pente.org: ";
+                message += passwordHelper.decrypt(dsgPlayerData.getPassword()) + lineSeparator + lineSeparator;
+                message += "https://www.pente.org/";
+                subject = "Pente.org - Your kid's password";
+            } else {
+                message = dsgPlayerData.getName() + "," + lineSeparator + lineSeparator;
+                message += "Here's your requested password for Dweebo's Stone Games: ";
+                message += passwordHelper.decrypt(dsgPlayerData.getPassword()) + lineSeparator + lineSeparator;
+                message += "http://www.pente.org/";
+                subject = "Pente.org - Your Password";
+            }
 
             String fromEmail = System.getProperty("mail.smtp.user");
 
@@ -90,10 +116,10 @@ public class ForgotPasswordServlet extends HttpServlet {
                 SendMail2.sendMailSaveInDb(
                         "Pente.org",
                         fromEmail,
-                        dsgPlayerData.getPlayerID(),
-                        dsgPlayerData.getName(),
-                        dsgPlayerData.getEmail(),
-                        "Pente.org - Your Password",
+                        emailTarget.getPlayerID(),
+                        emailTarget.getName(),
+                        emailTarget.getEmail(),
+                        subject,
                         message,
                         false,
                         null,
@@ -117,7 +143,7 @@ public class ForgotPasswordServlet extends HttpServlet {
         else {
             String page = request.getContextPath() + redirectPage +
                     "?forgotPasswordName=" + name;
-            if (!dsgPlayerData.getEmailValid()) {
+            if (!emailTarget.getEmailValid()) {
                 page += "&emailValid=false";
             }
 

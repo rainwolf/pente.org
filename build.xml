@@ -105,6 +105,14 @@
             <arg value="org.pente.gameServer.core.test.UsernameFilterTest"/>
         </java>
         <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.core.test.ReservedNamesTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.kids.test.KidAccountRulesTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
             <jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
             <classpath refid="test-classpath"/>
             <arg value="org.pente.gameServer.kids.test.KidWirePrivacyTest"/>
