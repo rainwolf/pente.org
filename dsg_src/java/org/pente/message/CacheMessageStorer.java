@@ -24,6 +24,9 @@ public class CacheMessageStorer implements DSGMessageStorer {
     private BackgroundMailer mailer;
     private boolean emailEnabled;
 
+    private volatile org.pente.gameServer.kids.KidChatPolicy kidChatPolicy;
+    private volatile org.pente.gameServer.kids.KidCopyMailer kidCopyMailer;
+
     public CacheMessageStorer(
             DSGMessageStorer baseStorer,
             boolean emailEnabled,
@@ -38,6 +41,13 @@ public class CacheMessageStorer implements DSGMessageStorer {
         this.emailEnabled = emailEnabled;
         mailer = new BackgroundMailer(smtpHost, smtpPort,
                 smtpUser, smtpPassword, dsgPlayerStorer);
+    }
+
+    /** Enables the kid chat rule and parent copies; null leaves either off. */
+    public void setKidSupport(org.pente.gameServer.kids.KidChatPolicy policy,
+                              org.pente.gameServer.kids.KidCopyMailer copier) {
+        this.kidChatPolicy = policy;
+        this.kidCopyMailer = copier;
     }
 
     private void cacheMessage(DSGMessage message) {
@@ -81,6 +91,13 @@ public class CacheMessageStorer implements DSGMessageStorer {
                 "->" + message.getToPid() + " : " + message.getSubject() + ", " +
                 "ccSender=" + ccSenderPossible + ")");
 
+        org.pente.gameServer.kids.KidChatPolicy policy = kidChatPolicy;
+        if (policy != null && !message.isSystemNotice() &&
+                !policy.allowed(message.getFromPid(), message.getToPid())) {
+            throw new KidMessageRefusedException("Kid chat rule refused message " +
+                    message.getFromPid() + "->" + message.getToPid());
+        }
+
         baseStorer.createMessage(message);
 
         unCacheMessagesForPlayer(message.getToPid());
@@ -123,6 +140,11 @@ public class CacheMessageStorer implements DSGMessageStorer {
             } catch (DSGPlayerStoreException dpse) {
                 log4j.debug("CacheMessageStorer, error loading prefs to send email.", dpse);
             }
+        }
+
+        org.pente.gameServer.kids.KidCopyMailer copier = kidCopyMailer;
+        if (copier != null) {
+            copier.copyPrivateMessage(message);
         }
     }
 

@@ -278,6 +278,8 @@ public class DSGContextListener implements ServletContextListener {
                     ctx.getInitParameter("mail.smtp.user"),
                     ctx.getInitParameter("mail.smtp.password"),
                     dsgPlayerStorer);
+            ((CacheMessageStorer) dsgMessageStorer).setKidSupport(
+                    resources.getKidChatPolicy(), resources.getKidCopyMailer());
             resources.setDsgMessageStorer(dsgMessageStorer);
             log4j.info("contextInitialized(), created DSGMessageStorer");
 

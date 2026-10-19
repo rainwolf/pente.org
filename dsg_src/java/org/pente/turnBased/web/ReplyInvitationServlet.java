@@ -351,7 +351,12 @@ public class ReplyInvitationServlet extends HttpServlet {
                             message.setSubject("Decline your invitation");
                             String msg = invitee.getName() + " has declined your invitation " +
                                     " to play " + GridStateFactory.getGameName(set.getGame1().getGame()) + ".\n\n";
-                            if (inviteeMessage != null) {
+                            org.pente.gameServer.kids.KidChatPolicy kidPolicy = resources.getKidChatPolicy();
+                            if (kidPolicy != null && !kidPolicy.allowed(
+                                    set.getInviteePid(), set.getInviterPid())) {
+                                // kid rule: send the decline notice without the invitee's text
+                                message.setSystemNotice(true);
+                            } else if (inviteeMessage != null) {
                                 msg += inviteeMessage;
                             }
                             message.setBody(msg);

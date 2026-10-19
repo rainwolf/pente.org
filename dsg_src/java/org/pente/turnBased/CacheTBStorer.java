@@ -314,18 +314,26 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         undoLastMove(gid, tbGame.getNumMoves() - tbGame.containsDoublePass() + 1);
 
         long toPid = tbGame.getCurrentPlayer(), fromPid = tbGame.getOpponent(toPid);
-        DSGMessage message = new DSGMessage();
-        message.setFromPid(fromPid);
-        message.setToPid(toPid);
-        message.setSubject("Dead stones");
-        message.setBody("Your dead stones suggestion was declined. \n\nGame continues. \n\n");
-        message.setCreationDate(new java.util.Date());
+        DSGMessage message = noticeMessage(fromPid, toPid, "Dead stones",
+                "Your dead stones suggestion was declined. \n\nGame continues. \n\n");
         try {
             dsgMessageStorer.createMessage(message, false);
         } catch (DSGMessageStoreException e) {
             e.printStackTrace();
         }
         notificationServer.sendMessageNotification("pente.org", message.getToPid(), message.getMid(), message.getSubject());
+    }
+
+    /** A server-generated game notice, exempt from the kid chat rule. */
+    public static DSGMessage noticeMessage(long fromPid, long toPid, String subject, String body) {
+        DSGMessage message = new DSGMessage();
+        message.setFromPid(fromPid);
+        message.setToPid(toPid);
+        message.setSubject(subject);
+        message.setBody(body);
+        message.setCreationDate(new java.util.Date());
+        message.setSystemNotice(true);
+        return message;
     }
 
     public void hideGame(long gid, byte hiddenBy) {
@@ -1250,21 +1258,23 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                 String aWinText = game.isDraw() ? drawGameWinSetText : winText;
                 String aLossText = game.isDraw() ? drawGameLoseSetText : lossText;
 
-                DSGMessage winMessage = new DSGMessage();
-                winMessage.setFromPid(loserData.getPlayerID());
-                winMessage.setToPid(winnerData.getPlayerID());
-                winMessage.setSubject(winSubj);
-                winMessage.setBody(aWinText);
-                winMessage.setCreationDate(new java.util.Date());
-                dsgMessageStorer.createMessage(winMessage, false);
+                DSGMessage winMessage = noticeMessage(loserData.getPlayerID(),
+                        winnerData.getPlayerID(), winSubj, aWinText);
+                try {
+                    dsgMessageStorer.createMessage(winMessage, false);
+                } catch (DSGMessageStoreException e) {
+                    log4j.error("CacheTBStorer, problem storing win message for game " +
+                            game.getGid(), e);
+                }
 
-                DSGMessage loseMessage = new DSGMessage();
-                loseMessage.setFromPid(winnerData.getPlayerID());
-                loseMessage.setToPid(loserData.getPlayerID());
-                loseMessage.setSubject(loseSubj);
-                loseMessage.setBody(aLossText);
-                loseMessage.setCreationDate(new java.util.Date());
-                dsgMessageStorer.createMessage(loseMessage, false);
+                DSGMessage loseMessage = noticeMessage(winnerData.getPlayerID(),
+                        loserData.getPlayerID(), loseSubj, aLossText);
+                try {
+                    dsgMessageStorer.createMessage(loseMessage, false);
+                } catch (DSGMessageStoreException e) {
+                    log4j.error("CacheTBStorer, problem storing lose message for game " +
+                            game.getGid(), e);
+                }
 
                 if (game.getEventId() == kothStorer.getEventId(game.getGame())) {
                     if (set.isCompleted() && game.isRated() && !set.isDraw()) {
