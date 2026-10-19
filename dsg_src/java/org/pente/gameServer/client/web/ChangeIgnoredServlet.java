@@ -21,7 +21,8 @@ import java.util.List;
  * <p>
  * GET: list the player's ignores.
  * POST action=add (ignoreName, ignoreInvite, ignoreChat), action=update (ignorePid, ignoreInvite, ignoreChat),
- * action=remove (ignorePid). Flags are "Y" or "true"; update with both flags unset removes the entry.
+ * action=remove (ignorePid). add on an already-ignored player merges: the flags are ORed into the existing
+ * entry (200, no 409). Flags are "Y" or "true"; update with both flags unset removes the entry.
  * Every reply is JSON: {"success":bool, "error":string (only on failure), "ignores":[...] (only on success)}.
  */
 public class ChangeIgnoredServlet extends HttpServlet {
@@ -111,16 +112,20 @@ public class ChangeIgnoredServlet extends HttpServlet {
             return;
         }
         DSGPlayerData d = dsgPlayerStorer.loadPlayer(ignoreName.trim());
-        if (d == null) {
-            error(response, HttpServletResponse.SC_NOT_FOUND, "Player to ignore not found");
+        String rejection = IgnoreRules.rejectTarget(d, me.getPlayerID());
+        if (rejection != null) {
+            int status = d == null || !d.isActive()
+                    ? HttpServletResponse.SC_NOT_FOUND : HttpServletResponse.SC_BAD_REQUEST;
+            error(response, status, rejection);
             return;
         }
-        if (d.getPlayerID() == me.getPlayerID()) {
-            error(response, HttpServletResponse.SC_BAD_REQUEST, "You can't ignore yourself silly");
-            return;
-        }
-        if (dsgPlayerStorer.getIgnoreData(me.getPlayerID(), d.getPlayerID()) != null) {
-            error(response, HttpServletResponse.SC_CONFLICT, "Player is already ignored");
+        DSGIgnoreData existing = dsgPlayerStorer.getIgnoreData(me.getPlayerID(), d.getPlayerID());
+        if (existing != null) {
+            if (IgnoreRules.mergeFlags(existing, ignoreInvite, ignoreChat)) {
+                dsgPlayerStorer.updateIgnore(existing);
+                changed(me.getPlayerID());
+            }
+            success(response, me.getPlayerID());
             return;
         }
         DSGIgnoreData i = new DSGIgnoreData();
