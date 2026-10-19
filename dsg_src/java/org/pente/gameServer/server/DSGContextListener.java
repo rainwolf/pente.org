@@ -174,6 +174,8 @@ public class DSGContextListener implements ServletContextListener {
                     new org.pente.gameServer.kids.MySQLKidStorer(dbHandler));
             resources.setKidStorer(kidStorer);
             ctx.setAttribute(org.pente.gameServer.kids.KidStorer.class.getName(), kidStorer);
+            resources.setKidChatPolicy(
+                new org.pente.gameServer.kids.StorerKidChatPolicy(dsgPlayerStorer, kidStorer));
 
 
             // setup storers
