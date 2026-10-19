@@ -117,7 +117,10 @@ public class UsernameFilterTest extends TestCase {
         UsernameFilter f = shipped();
         String[] bad = {"sh1t", "shit", "fuck_you", "n1gger", "nigger",
                 "f4ggot", "c.u.n.t", "cunt69", "s1ut", "fvck", "fvck_you",
-                "big_porn", "xxfuckxx", "shithead", "p3d0phile"};
+                "big_porn", "xxfuckxx", "shithead", "p3d0phile", "mthrfckr",
+                "oldfckr505", "dipshit", "bullshit", "butthole", "dumbass",
+                "bigcock420", "pentepenis", "theretard", "penteslut1",
+                "pente_nazi", "pentehoe", "cock_69", "the_rapist"};
         for (int i = 0; i < bad.length; i++) {
             assertTrue(bad[i], f.isOffensive(bad[i]));
         }
@@ -129,7 +132,10 @@ public class UsernameFilterTest extends TestCase {
                 "yamashita", "shital", "nishit", "pushit", "pussycat",
                 "retardant", "pornic", "whitler", "slutsky", "penisula",
                 "scunthorpe", "therapist", "peniston", "classy_assassin",
-                "cocktail", "dave", "vivian", "kevin1", "oliver"};
+                "cocktail", "dave", "vivian", "kevin1", "oliver", "josh1987",
+                "vash127", "kobushit", "peniste", "pornchai", "tofuking",
+                "dick_tate", "bonner14", "mrpenguin", "thehoek",
+                "therapist_jane", "therapist.mom", "bigcocktail", "bigcockatoo"};
         for (int i = 0; i < ok.length; i++) {
             assertTrue(ok[i], !f.isOffensive(ok[i]));
         }

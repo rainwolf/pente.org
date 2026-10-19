@@ -42,3 +42,22 @@ paedophile
 =penis
 =vagina
 =porn
+# Censored and compound profanity
+fckr
+fckn
+fckin
+dipshit
+bullshit
+shitty
+butthole
+dumbass
+=bigcock
+# Foreign-language profanity
+scheiss
+hijodeputa
+hijueputa
+pizd
+# Ambiguous short words: whole name or separated part only
+=cock
+=nazi
+=hoe

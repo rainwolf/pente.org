@@ -76,10 +76,56 @@ public class UsernameFilter {
         return substrings.size() + exact.size();
     }
 
+    /**
+     * Leading affixes retried once when a name does not match as-is, so
+     * that "pentepenis" or "theretard" are caught by the exact tier. Only
+     * affixes proven on real usernames to catch more with no false positives.
+     */
+    private static final String[] AFFIXES = {"pente", "the", "mr"};
+
+    // Ordinary words that are an affix plus a listed word ("the" + "rapist").
+    // Exempt from the retry only; separated forms such as "the_rapist"
+    // are still blocked by the first, unstripped pass.
+    private static final Set<String> AFFIX_WORDS =
+            new HashSet<String>(Arrays.asList("therapist"));
+
+    // a remainder shorter than this is never retried ("mr" + "ape")
+    private static final int MIN_REMAINDER_LETTERS = 3;
+
     public boolean isOffensive(String name) {
         if (name == null) {
             return false;
         }
+        if (matches(name)) {
+            return true;
+        }
+        String lower = name.toLowerCase(Locale.ROOT);
+        String first = lower.replaceFirst("[^\\p{L}][\\s\\S]*", "");
+        if (AFFIX_WORDS.contains(first)) {
+            return false;
+        }
+        for (String affix : AFFIXES) {
+            if (lower.startsWith(affix)) {
+                String rest = lower.substring(affix.length());
+                if (letters(rest) >= MIN_REMAINDER_LETTERS && matches(rest)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static int letters(String s) {
+        int count = 0;
+        for (int i = 0; i < s.length(); i++) {
+            if (Character.isLetter(s.charAt(i))) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private boolean matches(String name) {
         for (String n : candidates(name)) {
             for (String bad : substrings) {
                 if (n.indexOf(bad) >= 0) {
