@@ -115,6 +115,22 @@ public class KidsServlet extends HttpServlet {
         }
     }
 
+    /**
+     * True only when the name2/password2 request params really are the logged-in player's
+     * credentials: name2 (trimmed, case-insensitive) equals loggedInName and the encrypted
+     * password2 equals the stored encrypted password. LoginFilter ignores these params when a
+     * session exists, so their mere presence must not skip the origin check (CSRF).
+     */
+    public static boolean paramsAuthenticate(String name2, String encryptedPassword2,
+                                             String loggedInName, String storedPassword) {
+        if (name2 == null || loggedInName == null || encryptedPassword2 == null
+                || storedPassword == null || encryptedPassword2.isEmpty()) {
+            return false;
+        }
+        return name2.trim().equalsIgnoreCase(loggedInName.trim())
+                && encryptedPassword2.equals(storedPassword);
+    }
+
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
@@ -138,8 +154,11 @@ public class KidsServlet extends HttpServlet {
                 error(response, HttpServletResponse.SC_UNAUTHORIZED, KidAccountRules.LOGIN_REQUIRED);
                 return;
             }
-            boolean appAuth = request.getParameter("name2") != null
-                    && request.getParameter("password2") != null;
+            String password2 = request.getParameter("password2");
+            String encryptedPassword2 = password2 == null || password2.trim().isEmpty()
+                    ? null : passwordHelper.encrypt(password2.trim());
+            boolean appAuth = paramsAuthenticate(request.getParameter("name2"),
+                    encryptedPassword2, me.getName(), me.getPassword());
             if (!appAuth && !sameOrigin(request.getHeader("Origin"),
                     request.getHeader("Referer"), request.getServerName())) {
                 error(response, HttpServletResponse.SC_FORBIDDEN, KidAccountRules.BAD_ORIGIN);

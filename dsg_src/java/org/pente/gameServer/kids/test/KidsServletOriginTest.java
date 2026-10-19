@@ -33,4 +33,27 @@ public class KidsServletOriginTest extends TestCase {
         assertTrue(!KidsServlet.sameOrigin(null, null, "localhost"));
         assertTrue(!KidsServlet.sameOrigin("", "", "localhost"));
     }
+
+    // paramsAuthenticate(name2, encryptedPassword2, loggedInName, storedEncryptedPassword)
+
+    public void testMatchingParamsAuthenticate() {
+        assertTrue(KidsServlet.paramsAuthenticate("parent", "ENC", "parent", "ENC"));
+        assertTrue(KidsServlet.paramsAuthenticate(" Parent ", "ENC", "parent", "ENC"));
+    }
+
+    public void testDummyParamsDoNotAuthenticate() {
+        // a cross-site form riding the session with dummy name2/password2
+        assertTrue(!KidsServlet.paramsAuthenticate("x", "ENCX", "parent", "ENC"));
+        assertTrue(!KidsServlet.paramsAuthenticate("", "", "parent", "ENC"));
+        assertTrue(!KidsServlet.paramsAuthenticate("parent", "ENCX", "parent", "ENC"));
+        assertTrue(!KidsServlet.paramsAuthenticate("other", "ENC", "parent", "ENC"));
+    }
+
+    public void testMissingValuesDoNotAuthenticate() {
+        assertTrue(!KidsServlet.paramsAuthenticate(null, "ENC", "parent", "ENC"));
+        assertTrue(!KidsServlet.paramsAuthenticate("parent", null, "parent", "ENC"));
+        assertTrue(!KidsServlet.paramsAuthenticate("parent", "ENC", null, "ENC"));
+        assertTrue(!KidsServlet.paramsAuthenticate("parent", null, "parent", null));
+        assertTrue(!KidsServlet.paramsAuthenticate("parent", "", "parent", ""));
+    }
 }
