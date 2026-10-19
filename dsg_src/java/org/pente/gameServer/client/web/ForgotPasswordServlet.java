@@ -92,6 +92,15 @@ public class ForgotPasswordServlet extends HttpServlet {
                 }
             }
             emailTarget = KidAccountRules.passwordEmailTarget(dsgPlayerData, parent);
+        }
+
+        if (emailEnabled && dsgPlayerData != null && emailTarget == null && forgotPasswordError == null) {
+            // fail closed: never mail a kid's password to anyone but the parent
+            log4j.error("Forgot password: parent not loaded, no password sent: name="
+                    + dsgPlayerData.getName() + " pid=" + dsgPlayerData.getPlayerID());
+            forgotPasswordError = "Error sending email to " + dsgPlayerData.getName() + ".  Please try again later.";
+            redirectPage = "/gameServer/forgotpassword.jsp";
+        } else if (emailEnabled && emailTarget != null) {
 
             String message;
             String subject;

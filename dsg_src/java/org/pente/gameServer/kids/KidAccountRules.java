@@ -141,14 +141,19 @@ public class KidAccountRules {
         return now.getTime() - created.getTime() > LINK_LIFETIME_MS;
     }
 
+    /** Who gets a forgotten password: a kid's parent, else the player. Null for a kid whose parent could not be loaded. */
     public static DSGPlayerData passwordEmailTarget(DSGPlayerData player,
                                                     DSGPlayerData parent) {
-        return isKid(player) && parent != null ? parent : player;
+        if (!isKid(player)) {
+            return player;
+        }
+        return parent;
     }
 
+    /** Names and pids only, never an email address. */
     public static String passwordEmailLogLine(DSGPlayerData player,
                                               DSGPlayerData target) {
-        return "Forgot password: name=" + player.getName() + " mailTo="
-            + target.getName() + " " + target.getEmail();
+        return "Forgot password: name=" + player.getName() + " pid=" + player.getPlayerID()
+            + " mailTo=" + target.getName() + " pid=" + target.getPlayerID();
     }
 }

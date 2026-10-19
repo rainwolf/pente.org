@@ -169,7 +169,7 @@ public class KidAccountRulesTest extends TestCase {
         SimpleDSGPlayerData k = kid(2, 1);
         SimpleDSGPlayerData adult = player(3);
         assertSame(parent, KidAccountRules.passwordEmailTarget(k, parent));
-        assertSame(k, KidAccountRules.passwordEmailTarget(k, null));
+        assertNull(KidAccountRules.passwordEmailTarget(k, null));
         assertSame(adult, KidAccountRules.passwordEmailTarget(adult, parent));
     }
 
@@ -179,8 +179,9 @@ public class KidAccountRulesTest extends TestCase {
         parent.setEmail("mum@example.invalid");
         SimpleDSGPlayerData k = kid(2, 1);
         k.setName("kidx");
-        assertEquals("Forgot password: name=kidx mailTo=mum mum@example.invalid",
+        assertEquals("Forgot password: name=kidx pid=2 mailTo=mum pid=1",
             KidAccountRules.passwordEmailLogLine(k, parent));
+        assertTrue(!KidAccountRules.passwordEmailLogLine(k, parent).contains("@"));
     }
 
     public void testNameTakenText() {
