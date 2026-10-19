@@ -3,6 +3,7 @@ package org.pente.gameServer.client.web;
 import com.google.gson.Gson;
 import org.apache.log4j.Category;
 import org.pente.gameServer.core.*;
+import org.pente.gameServer.mobile.MobileJsonHelper;
 import org.pente.gameServer.server.Resources;
 
 import jakarta.servlet.ServletConfig;
@@ -40,6 +41,8 @@ public class ChangeIgnoredServlet extends HttpServlet {
         String name;
         boolean ignoreInvite;
         boolean ignoreChat;
+        int nameColor;
+        int tourneyWinner;
     }
 
     private static class IgnoreReply {
@@ -227,6 +230,8 @@ public class ChangeIgnoredServlet extends HttpServlet {
             e.name = d.getName();
             e.ignoreInvite = i.getIgnoreInvite();
             e.ignoreChat = i.getIgnoreChat();
+            e.nameColor = MobileJsonHelper.playerColorNonZero(d);
+            e.tourneyWinner = d.getTourneyWinner();
             reply.ignores.add(e);
         }
         write(response, HttpServletResponse.SC_OK, reply);
