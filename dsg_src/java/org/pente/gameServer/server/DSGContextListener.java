@@ -176,6 +176,15 @@ public class DSGContextListener implements ServletContextListener {
             ctx.setAttribute(org.pente.gameServer.kids.KidStorer.class.getName(), kidStorer);
             resources.setKidChatPolicy(
                 new org.pente.gameServer.kids.StorerKidChatPolicy(dsgPlayerStorer, kidStorer));
+            resources.setKidCopyMailer(new org.pente.gameServer.kids.KidCopyMailer(
+                emailEnabled.booleanValue(),
+                new org.pente.message.BackgroundMailer(
+                    ctx.getInitParameter("mail.smtp.host"),
+                    Integer.parseInt(ctx.getInitParameter("mail.smtp.port")),
+                    ctx.getInitParameter("mail.smtp.user"),
+                    ctx.getInitParameter("mail.smtp.password"),
+                    dsgPlayerStorer),
+                dsgPlayerStorer, kidStorer));
 
 
             // setup storers
@@ -439,6 +448,9 @@ public class DSGContextListener implements ServletContextListener {
         resources.getKOTHStorer().destroy();
         ((CacheNotificationServer) resources.getNotificationServer()).destroy();
         ((CacheMessageStorer) resources.getDsgMessageStorer()).destroy();
+        if (resources.getKidCopyMailer() != null) {
+            resources.getKidCopyMailer().destroy();
+        }
         RedisConnectionManager.getInstance().destroy();
 
         for (Timer timer : timers) {

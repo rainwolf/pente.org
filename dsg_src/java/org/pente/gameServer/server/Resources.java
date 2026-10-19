@@ -36,6 +36,7 @@ public class Resources {
     private boolean emailEnabled;
     private org.pente.gameServer.kids.CacheKidStorer kidStorer;
     private org.pente.gameServer.kids.KidChatPolicy kidChatPolicy;
+    private org.pente.gameServer.kids.KidCopyMailer kidCopyMailer;
     private GameStorer gameStorer;
     private GameStorer gameStorerRo;
     private GameStorer fileGameStorer;
@@ -208,6 +209,14 @@ public class Resources {
 
     public void setKidChatPolicy(org.pente.gameServer.kids.KidChatPolicy kidChatPolicy) {
         this.kidChatPolicy = kidChatPolicy;
+    }
+
+    public org.pente.gameServer.kids.KidCopyMailer getKidCopyMailer() {
+        return kidCopyMailer;
+    }
+
+    public void setKidCopyMailer(org.pente.gameServer.kids.KidCopyMailer kidCopyMailer) {
+        this.kidCopyMailer = kidCopyMailer;
     }
 
     public boolean isEmailEnabled() {

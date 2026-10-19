@@ -9,7 +9,7 @@ import org.apache.log4j.*;
 import org.pente.gameServer.core.*;
 
 
-public class BackgroundMailer extends BackgroundWorker {
+public class BackgroundMailer extends BackgroundWorker implements TextMailer {
 
     private static Category log4j =
             Category.getInstance(BackgroundMailer.class.getName());
@@ -43,11 +43,80 @@ public class BackgroundMailer extends BackgroundWorker {
         }
     }
 
+    class TextWork {
+        String toName, toEmail, subject, body;
+
+        TextWork(String toName, String toEmail, String subject, String body) {
+            this.toName = toName;
+            this.toEmail = toEmail;
+            this.subject = subject;
+            this.body = body;
+        }
+    }
+
     public void mail(DSGMessage message, boolean email, boolean ccSender) {
         doWork(new Work(message, email, ccSender));
     }
 
+    public void mailText(String toName, String toEmail, String subject, String body) {
+        doWork(new TextWork(toName, toEmail, subject, body));
+    }
+
+    public void mailTextNow(String toName, String toEmail, String subject, String body,
+                            int timeoutMillis) throws Exception {
+        sendText(new TextWork(toName, toEmail, subject, body), timeoutMillis);
+    }
+
+    /** timeoutMillis &lt;= 0 means no explicit SMTP timeouts. */
+    private void sendText(TextWork w, int timeoutMillis) throws Exception {
+        Properties props = new Properties();
+        props.put("mail.smtp.host", smtpHost);
+        props.put("mail.smtp.user", smtpUser);
+        props.put("mail.smtp.password", smtpPassword);
+        props.put("mail.smtp.auth", "true");
+        if (timeoutMillis > 0) {
+            String t = String.valueOf(timeoutMillis);
+            props.put("mail.smtp.connectiontimeout", t);
+            props.put("mail.smtp.timeout", t);
+            props.put("mail.smtp.writetimeout", t);
+        }
+
+        // getInstance, not getDefaultInstance: the default instance caches the
+        // first Properties JVM-wide, so the timeouts would be ignored.
+        Session session = Session.getInstance(props, null);
+        MimeMessage message = buildTextMessage(session, w);
+
+        Transport transport = session.getTransport("smtp");
+        try {
+            transport.connect(smtpHost, smtpPort, smtpUser, smtpPassword);
+            transport.sendMessage(message, message.getAllRecipients());
+        } finally {
+            transport.close();
+        }
+    }
+
+    private MimeMessage buildTextMessage(Session session, TextWork w) throws Exception {
+        MimeMessage message = new MimeMessage(session);
+        message.setFrom(new InternetAddress(smtpUser, "Pente.org"));
+        message.addRecipient(Message.RecipientType.TO,
+                new InternetAddress(w.toEmail, w.toName));
+        message.setSubject(w.subject);
+        message.setSentDate(new java.util.Date());
+        message.setReplyTo(new Address[]{new InternetAddress("noreply@pente.org")});
+        message.setText(w.body);
+        return message;
+    }
+
     public void internalDoWork(Object obj) {
+        if (obj instanceof TextWork) {
+            TextWork tw = (TextWork) obj;
+            try {
+                sendText(tw, 0);
+            } catch (Throwable t) {
+                log4j.error("Problem sending text email to " + tw.toEmail, t);
+            }
+            return;
+        }
         Work w = (Work) obj;
         DSGMessage m = w.message;
 
