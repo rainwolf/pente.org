@@ -106,6 +106,14 @@
         </java>
         <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
             <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.kids.test.KidAccountEmailsTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.kids.test.KidsServletOriginTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
             <arg value="org.pente.gameServer.core.test.ReservedNamesTest"/>
         </java>
         <java classname="junit.textui.TestRunner" fork="true" failonerror="true">

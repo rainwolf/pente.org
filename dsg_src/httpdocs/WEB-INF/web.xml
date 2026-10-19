@@ -575,6 +575,14 @@
         <servlet-class>org.pente.gameServer.client.web.ChangeIgnoredServlet</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>KidsServlet</servlet-name>
+        <servlet-class>org.pente.gameServer.kids.KidsServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>KidLinkConfirmServlet</servlet-name>
+        <servlet-class>org.pente.gameServer.kids.KidLinkConfirmServlet</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>MessageJsonServlet</servlet-name>
         <servlet-class>org.pente.message.MessageJsonServlet</servlet-class>
     </servlet>
@@ -812,6 +820,14 @@
     <servlet-mapping>
         <servlet-name>ChangeIgnoredServlet</servlet-name>
         <url-pattern>/gameServer/ignored</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>KidsServlet</servlet-name>
+        <url-pattern>/gameServer/kids</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>KidLinkConfirmServlet</servlet-name>
+        <url-pattern>/confirmKidLink</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>MessageJsonServlet</servlet-name>
