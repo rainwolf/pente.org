@@ -70,7 +70,7 @@ Introduce one shared constant for each of the two hard-coded pids. Kid-to-kid ch
 
 - **Password and email.** `ChangeProfileServlet` rejects password and email changes for kids. Other profile fields are unchanged.
 - **Forgot password.** `ForgotPasswordServlet` sends to the parent's email when `parent_pid` is set.
-- **Parent-owned data.** Kids cannot write it. The kid's own `dsg_player_ignore` list stays as is, but clients hide the blocked-players screen for kids (**my call**).
+- **Parent-owned data.** Kids cannot write it. The kid's own `dsg_player_ignore` list stays as is, and kids keep the blocked-players screen and block buttons in every client (decision D1, 2026-10-19: blocking only restricts further, so it is harmless).
 - **`emailDsgMessages` pref.** Unchanged. It only controls the kid's own inbox emails.
 
 ### Chat surfaces and enforcement
@@ -82,7 +82,7 @@ Introduce one shared constant for each of the two hard-coded pids. Kid-to-kid ch
 | Lobby chat | `ServerMainRoom.handleText` per-recipient loop | Deliver a line only to recipients where the allowed rule holds both ways. Kid text goes only to allowed players. Kids see only allowed players' text. |
 | Table chat (players + spectators) | `ServerTable.handleText` per-recipient loop | Same as lobby. The AI player is allowed. |
 | Live invite text / invite response text | `ServerTable.handleInvite` / `handleInviteResponse` | The invite itself goes through (games are open). The text is stripped when not allowed. |
-| TB invitation text, move/resign messages | `CacheTBStorer.storeNewMessage` | The move or invite goes through. The text is not stored when not allowed. |
+| TB invitation text, move/resign messages | `CacheTBStorer.storeNewMessage` | The move or invite goes through. The text is not stored when not allowed. An open invitation's text (stored, recipient unknown) is omitted when served to a kid viewer whose rule fails, on the web pages and the mobile JSON (decision D3). |
 | TB cancel-request message | `CacheTBStorer.requestCancel` (`tb_set.cancel_msg`) | The cancel request goes through. The text is stripped when not allowed. |
 | TB invitation decline PM (`ReplyInvitationServlet` appends invitee text) | `CacheMessageStorer` | The PM rule applies. Builder decides whether to strip the free text and still send the notice. |
 | Opponent-attributed TB notices (dead stones, win/loss/draw from `CacheTBStorer`) | `CacheMessageStorer` | These are server-generated and must still reach kids. Mark them as system (for example a flag on the call) so the PM rule exempts them. |
@@ -108,7 +108,7 @@ The kid flag and whitelist are loaded once per live session in `ServerPlayer` (w
 - **JSON endpoints.** One servlet (for example `/gameServer/kids`) that the apps and the website both use. It authenticates via `LoginFilter` and every write checks `kid.parent_pid == caller pid`. Its shape is left to the builder, following `/gameServer/ignored`.
 - **Android.**
   - A "Kid accounts" entry in `SettingsActivity` next to `blockedPlayersButton`, as native screens following the `blocked/` package pattern (**my call**: native, matching blocked players).
-  - For a kid login: hide blocked players, the new-message composer limits recipients to the whitelist, the chat input hint says only approved players see messages, and broadcast is hidden.
+  - For a kid login: the new-message composer limits recipients to the whitelist, the chat input hint says only approved players see messages, and broadcast is hidden.
   - Server refusal strings are handled where the app already matches error strings.
   - The kid flag comes through `PentePlayer` (Parcelable) from the index JSON.
   - The native live room (`LiveGameRoomActivity`, `LiveTableFragment`) gets the same kid-mode UI as React: a chat hint, hidden invite text, and handling of any refusal event.
