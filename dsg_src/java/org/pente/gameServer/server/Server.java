@@ -27,6 +27,8 @@ import org.apache.log4j.*;
 import org.pente.game.*;
 import org.pente.gameServer.core.*;
 import org.pente.gameServer.event.*;
+import org.pente.gameServer.kids.KidLiveSessions;
+import org.pente.gameServer.kids.RedisChatCopyStore;
 import org.pente.gameServer.tourney.*;
 
 import org.pente.kingOfTheHill.*;
@@ -66,6 +68,9 @@ public class Server {
     protected List<SynchronizedServerTable> tables;
 
     protected SynchronizedServerMainRoom mainRoom;
+
+    /** Null when the constructor returned before the main room was built. */
+    protected KidLiveSessions kidSessions;
 
     protected PingManager pingManager;
     protected ServerStatsHandler serverStatsHandler;
@@ -136,6 +141,10 @@ public class Server {
                 this, resources, dsgEventToPlayerRouter);
         dsgPlayerStorer.addPlayerDataChangeListener(mainRoom);
         dsgPlayerStorer.addIgnoreDataChangeListener(mainRoom);
+
+        kidSessions = new KidLiveSessions(serverData.getServerId(), dsgPlayerStorer,
+                resources.getKidStorer(), new RedisChatCopyStore(), resources.getKidCopyMailer());
+        resources.getKidStorer().addKidDataChangeListener(kidSessions);
 
         aiController = new ServerAIController(this, passwordHelper);
         initAiData(resources.getAiConfigFile());
@@ -377,6 +386,10 @@ public class Server {
         return dsgPlayerStorer;
     }
 
+    public KidLiveSessions getKidSessions() {
+        return kidSessions;
+    }
+
     public RegisterHandler getRegisterHandler() {
         return registerHandler;
     }
@@ -406,6 +419,9 @@ public class Server {
         }
         if (dsgPlayerStorer != null) {
             dsgPlayerStorer.removePlayerDataChangeListener(mainRoom);
+        }
+        if (kidSessions != null && resources.getKidStorer() != null) {
+            resources.getKidStorer().removeKidDataChangeListener(kidSessions);
         }
         if (mainRoom != null) {
             mainRoom.destroy();

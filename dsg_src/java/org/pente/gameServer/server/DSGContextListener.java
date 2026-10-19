@@ -37,6 +37,7 @@ import org.pente.gameServer.client.web.LeaderBoard;
 import org.pente.gameServer.client.web.SiteStatsData;
 import org.pente.gameServer.core.*;
 import org.pente.gameServer.event.WebSocketEndpoint;
+import org.pente.gameServer.kids.KidLiveSessions;
 import org.pente.gameServer.tourney.CacheTourneyStorer;
 import org.pente.gameServer.tourney.MySQLTourneyStorer;
 import org.pente.gameServer.tourney.Tourney;
@@ -435,16 +436,39 @@ public class DSGContextListener implements ServletContextListener {
         }
     }
 
+    /**
+     * Mails buffered kid live chat on this (Tomcat shutdown) thread, within
+     * one budget shared by all servers. A failure on one server is logged and
+     * never blocks the rest of shutdown.
+     */
+    private static void flushKidLiveChat(Resources resources) {
+        if (resources == null) {
+            return;
+        }
+        long deadline = System.currentTimeMillis() + KidLiveSessions.SHUTDOWN_BUDGET_MILLIS;
+        for (Server s : resources.getServers()) {
+            try {
+                if (s.getKidSessions() != null) {
+                    s.getKidSessions().flushForShutdown(deadline);
+                }
+            } catch (Throwable t) {
+                log4j.error("Kid live-chat shutdown flush failed for server " + s.getServerData() + ".", t);
+            }
+        }
+    }
+
     public void contextDestroyed(ServletContextEvent servletContextEvent) {
+        ServletContext ctx = servletContextEvent.getServletContext();
+        Resources resources = (Resources)
+                ctx.getAttribute(Resources.class.getName());
+        // first: needs the player storer, kid storer and Redis still up
+        flushKidLiveChat(resources);
+
         if (gameStats != null) {
             gameStats.destroy();
         }
 
         // stop servers
-        ServletContext ctx = servletContextEvent.getServletContext();
-        Resources resources = (Resources)
-                ctx.getAttribute(Resources.class.getName());
-
         resources.getTbGameStorer().destroy();
         ((CacheTourneyStorer) resources.getTourneyStorer()).destroy();
         resources.getDsgPlayerStorer().destroy();

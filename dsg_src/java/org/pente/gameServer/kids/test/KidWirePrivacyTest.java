@@ -1,6 +1,10 @@
 package org.pente.gameServer.kids.test;
 
+import java.util.Map;
+import java.util.Set;
+
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import junit.framework.TestCase;
 import org.pente.gameServer.core.SimpleDSGPlayerData;
@@ -8,6 +12,7 @@ import org.pente.gameServer.event.DSGEventWrapper;
 import org.pente.gameServer.event.DSGJoinMainRoomEvent;
 import org.pente.gameServer.event.DSGLoginEvent;
 import org.pente.gameServer.event.DSGUpdatePlayerDataEvent;
+import org.pente.gameServer.kids.LiveKidState;
 import org.pente.gameServer.server.RedisConnectionManager;
 
 /** A kid's parentPid goes only to the kid's own login echo, never to other players. */
@@ -53,6 +58,31 @@ public class KidWirePrivacyTest extends TestCase {
         login.setMe(p);
         JsonObject body = body(login, "dsgLoginEvent");
         assertTrue(!body.getAsJsonObject("me").has("parentPid"));
+    }
+
+    public void testJoinEventDoesNotSerializeKidState() {
+        DSGJoinMainRoomEvent join = new DSGJoinMainRoomEvent("kid", kid());
+        join.setKidState(new LiveKidState(42, 7L, Set.of(9L), true, 1L));
+        JsonObject body = body(join, "dsgJoinMainRoomEvent");
+        assertTrue("kidState under " + body, !hasKey(body, "kidState"));
+        assertNotNull(join.getKidState());
+    }
+
+    private static boolean hasKey(JsonElement e, String key) {
+        if (e.isJsonObject()) {
+            for (Map.Entry<String, JsonElement> en : e.getAsJsonObject().entrySet()) {
+                if (en.getKey().equals(key) || hasKey(en.getValue(), key)) {
+                    return true;
+                }
+            }
+        } else if (e.isJsonArray()) {
+            for (JsonElement c : e.getAsJsonArray()) {
+                if (hasKey(c, key)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public void testRedisRoundTripKeepsParentPid() {

@@ -26,6 +26,7 @@ import org.pente.gameServer.client.GameTimerListener;
 import org.pente.gameServer.client.MilliSecondGameTimer;
 import org.pente.gameServer.core.*;
 import org.pente.gameServer.event.*;
+import org.pente.gameServer.kids.KidLiveSessions;
 import org.pente.gameServer.tourney.*;
 import org.pente.kingOfTheHill.KotHRanking;
 
@@ -368,6 +369,11 @@ public class ServerTable {
         }
     }
 
+    /** This server's kid sessions; null means no kid filtering (unit-test subclasses only). */
+    protected KidLiveSessions kidSessions() {
+        return server == null ? null : server.getKidSessions();
+    }
+
     public void handleText(String player, String text) {
 
         if (!isPlayerInTable(player)) {
@@ -379,10 +385,16 @@ public class ServerTable {
             // could try to implement this on client we'll see how slow this is
             DSGEvent event = new DSGTextTableEvent(player, tableNum, text);
             DSGPlayerData actor = getPlayerInMainRoom(player);
+            KidLiveSessions ks = kidSessions();
+            String where = "table " + tableNum;
             for (int i = 0; i < playersInTable.size(); i++) {
                 DSGPlayerData d = playersInTable.elementAt(i);
                 DSGIgnoreData ig = null;
                 if (d == null || actor == null) {
+                    continue;
+                }
+                // kid rules: drop silently, the sender is not told
+                if (ks != null && !ks.allowed(actor, d)) {
                     continue;
                 }
                 try {
@@ -393,6 +405,9 @@ public class ServerTable {
 
                 if (ig == null || !ig.getIgnoreChat()) {
                     dsgEventRouter.routeEvent(event, d.getName());
+                    if (ks != null) {
+                        ks.delivered(d, where, player, text, new Date());
+                    }
                 } else {
                     // lookup ig.id in map
                     // if not found, send msg to player that chat is ignored
@@ -3179,9 +3194,16 @@ public class ServerTable {
                 // if booted earlier, allow back in
                 bootTimes.remove(inviteEvent.getPlayerToInvite());
 
-                // send invite to player
+                // send invite to player, without its text when kid rules forbid chat
+                DSGInviteTableEvent toSend = inviteEvent;
+                KidLiveSessions ks = kidSessions();
+                if (ks != null && !ks.allowed(actor,
+                        getPlayerInMainRoom(inviteEvent.getPlayerToInvite()))) {
+                    toSend = new DSGInviteTableEvent(inviteEvent.getPlayer(), tableNum,
+                            inviteEvent.getPlayerToInvite(), "");
+                }
                 dsgEventRouter.routeEvent(
-                        inviteEvent, inviteEvent.getPlayerToInvite());
+                        toSend, inviteEvent.getPlayerToInvite());
             }
         } else {
             dsgEventRouter.routeEvent(
@@ -3209,7 +3231,16 @@ public class ServerTable {
                 playersInvited.remove(inviteResponseEvent.getPlayer());
             }
 
-            dsgEventRouter.routeEvent(inviteResponseEvent,
+            // send response, without its text when kid rules forbid chat
+            DSGInviteResponseTableEvent toSend = inviteResponseEvent;
+            KidLiveSessions ks = kidSessions();
+            DSGPlayerData responder = getPlayerInMainRoom(inviteResponseEvent.getPlayer());
+            if (ks != null && (responder == null || !ks.allowed(responder, actor))) {
+                toSend = new DSGInviteResponseTableEvent(inviteResponseEvent.getPlayer(), tableNum,
+                        inviteResponseEvent.getToPlayer(), "",
+                        inviteResponseEvent.getAccept(), inviteResponseEvent.getIgnore());
+            }
+            dsgEventRouter.routeEvent(toSend,
                     inviteResponseEvent.getToPlayer());
         }
 

@@ -25,6 +25,8 @@ import org.apache.log4j.*;
 
 import org.pente.gameServer.event.*;
 import org.pente.gameServer.core.*;
+import org.pente.gameServer.kids.KidLiveSessions;
+import org.pente.gameServer.kids.LiveKidState;
 
 public class ServerPlayer implements DSGEventListener {
 
@@ -146,6 +148,9 @@ public class ServerPlayer implements DSGEventListener {
                     // load player data, player prefs from db or cache
                     List<DSGPlayerPreference> prefs = null;
                     List<DSGIgnoreData> ignoreData = null;
+                    // loaded once per session; kid data changes refresh it in KidLiveSessions
+                    LiveKidState kidState = null;
+                    KidLiveSessions kidSessions = server.getKidSessions();
                     if (loginEvent.isGuest()) {
                         playerData = new SimpleDSGPlayerData();
                         playerData.setGuest(true);
@@ -159,6 +164,7 @@ public class ServerPlayer implements DSGEventListener {
                         playerData.setLastLoginDate(new Date());
                         playerData.setLastUpdateDate(new Date());
                         loginEvent.setMe(playerData);
+                        kidState = LiveKidState.notKid(playerData.getPlayerID());
 
                         //empty
                         prefs = new ArrayList<>();
@@ -166,6 +172,9 @@ public class ServerPlayer implements DSGEventListener {
                     } else {
                         try {
                             playerData = dsgPlayerStorer.loadPlayer(player);
+                            if (kidSessions != null) {
+                                kidState = kidSessions.load(playerData);
+                            }
                             prefs = dsgPlayerStorer.loadPlayerPreferences(
                                     playerData.getPlayerID());
                             ignoreData = dsgPlayerStorer.getIgnoreData(playerData.getPlayerID());
@@ -195,8 +204,10 @@ public class ServerPlayer implements DSGEventListener {
                     client.eventOccurred(loginEvent);
 
                     // join the main room
-                    eventOccurred(new DSGJoinMainRoomEvent(
-                            player, playerData));
+                    DSGJoinMainRoomEvent join = new DSGJoinMainRoomEvent(
+                            player, playerData);
+                    join.setKidState(kidState);
+                    eventOccurred(join);
 
                     // send the list of possible computer opponents to the client
                     for (Iterator<AIData> it = aiDataCollection.iterator(); it.hasNext(); ) {
