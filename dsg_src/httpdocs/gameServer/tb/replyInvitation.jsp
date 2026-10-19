@@ -225,7 +225,17 @@
                            <td>
                               <% String message = "";
                                  if (game.getInviterMessage() != null) {
-                                    message = filters.applyFilters(0, game.getInviterMessage().getMessage());
+                                    boolean kidHidden;
+                                    try {
+                                       DSGPlayerData viewer = me == null ? null : dsgPlayerStorer.loadPlayer(me);
+                                       kidHidden = org.pente.gameServer.kids.KidInvitationText.hidden(
+                                          globalResources.getKidChatPolicy(), viewer, game.getInviterMessage());
+                                    } catch (Exception e) {
+                                       kidHidden = true;
+                                    }
+                                    if (!kidHidden) {
+                                       message = filters.applyFilters(0, game.getInviterMessage().getMessage());
+                                    }
                                  } %>
                               <%= message %>
                            </td>

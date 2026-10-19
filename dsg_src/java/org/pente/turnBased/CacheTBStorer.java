@@ -29,6 +29,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
     private TourneyStorer tourneyStorer;
     private final CacheKOTHStorer kothStorer;
     private NotificationServer notificationServer;
+    private volatile org.pente.gameServer.kids.KidChatPolicy kidChatPolicy;
 
     RedisConnectionManager pente_cache = RedisConnectionManager.getInstance();
 
@@ -1828,6 +1829,13 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
             throw new TBStoreException("Invalid game, not found: " + gid);
         }
 
+        org.pente.gameServer.kids.KidChatPolicy policy = kidChatPolicy;
+        if (policy != null && !policy.allowed(message.getPid(),
+                game.getOpponent(message.getPid()))) {
+            log4j.debug("storeNewMessage(" + gid + ") dropped, kid chat rule");
+            return;
+        }
+
         synchronized (cacheTbLock) {
             game.addMessage(message);
             persistSet(game.getTbSet());
@@ -2010,6 +2018,16 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
     public void requestCancel(TBSet setArg, long requestorPid, String message) throws TBStoreException {
         TBSet set = loadSet(setArg.getSetId());
+        org.pente.gameServer.kids.KidChatPolicy policy = kidChatPolicy;
+        if (policy != null && message != null) {
+            long opponent = requestorPid == set.getPlayer1Pid()
+                    ? set.getPlayer2Pid() : set.getPlayer1Pid();
+            if (!policy.allowed(requestorPid, opponent)) {
+                log4j.debug("requestCancel(" + set.getSetId()
+                        + ") message dropped, kid chat rule");
+                message = null;
+            }
+        }
         synchronized (cacheTbLock) {
             //should do some error checking here but too lazy
             set.setCancelMsg(message);
@@ -2351,5 +2369,10 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
     public void setNotificationServer(NotificationServer notificationServer) {
         this.notificationServer = notificationServer;
+    }
+
+    /** Kid chat rule for move messages and cancel text; null means no rule. */
+    public void setKidChatPolicy(org.pente.gameServer.kids.KidChatPolicy policy) {
+        this.kidChatPolicy = policy;
     }
 }

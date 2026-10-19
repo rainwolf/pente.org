@@ -150,7 +150,17 @@
                            <td>
                               <% String message = "";
                                  if (set.getGame1().getInviterMessage() != null) {
-                                    message = filters.applyFilters(0, set.getGame1().getInviterMessage().getMessage());
+                                    boolean kidHidden;
+                                    try {
+                                       DSGPlayerData viewer = me == null ? null : dsgPlayerStorer.loadPlayer(me);
+                                       kidHidden = org.pente.gameServer.kids.KidInvitationText.hidden(
+                                          globalResources.getKidChatPolicy(), viewer, set.getGame1().getInviterMessage());
+                                    } catch (Exception e) {
+                                       kidHidden = true;
+                                    }
+                                    if (!kidHidden) {
+                                       message = filters.applyFilters(0, set.getGame1().getInviterMessage().getMessage());
+                                    }
                                  } %>
                               <%= message %>
                            </td>

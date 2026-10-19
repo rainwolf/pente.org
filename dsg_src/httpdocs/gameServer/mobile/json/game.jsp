@@ -40,8 +40,13 @@
               || loggedInStr.equals(player1.getName())
               || loggedInStr.equals(player2.getName());
       final com.jivesoftware.base.FilterChain f = filters;
+      final org.pente.gameServer.kids.KidChatPolicy kidPolicy = resources.getKidChatPolicy();
+      final DSGPlayerData kidViewer = visitor;
       GameResponse.EncodedMessages encodedMsgs = canSeeMessages
-              ? GameResponse.EncodedMessages.from(tbGame, m -> m.getMessage().length() == 1
+              ? GameResponse.EncodedMessages.from(tbGame, m ->
+                      org.pente.gameServer.kids.KidInvitationText.hidden(kidPolicy, kidViewer, m)
+                      ? ""
+                      : m.getMessage().length() == 1
                       ? m.getMessage()
                       : MessageEncoder.encodeMessage(f.applyFilters(0, m.getMessage())),
                       player1.getName(), player2.getName())

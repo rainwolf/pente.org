@@ -47,7 +47,16 @@
    for (int i = 0; i < game.getNumMoves(); i++) {
       moves += game.getMove(i) + ",";
    }
+   DSGPlayerData kidViewer = null;
+   org.pente.gameServer.kids.KidChatPolicy kidPolicy = globalResources.getKidChatPolicy();
+   String kidViewerName = (String) request.getAttribute("name");
+   if (kidViewerName != null) {
+      kidViewer = dsgPlayerStorer.loadPlayer(kidViewerName);
+   }
    for (TBMessage m : game.getMessages()) {
+      if (org.pente.gameServer.kids.KidInvitationText.hidden(kidPolicy, kidViewer, m)) {
+         continue;
+      }
       // bug in URLConverter
       if (m.getMessage().length() == 1) {
          messages += m.getMessage() + ",";

@@ -292,6 +292,7 @@ public class DSGContextListener implements ServletContextListener {
                     new MySQLTBGameStorer(dbHandler), dsgPlayerStorer, gameStorer,
                     dsgMessageStorer, kothStorer);
             tbGameStorer.setNotificationServer(notificationServer);
+            tbGameStorer.setKidChatPolicy(resources.getKidChatPolicy());
             resources.setTbGameStorer(tbGameStorer);
             log4j.info("contextInitialized(), created TBGameStorer");
 
