@@ -70,10 +70,12 @@ public class IndexResponse {
         public final boolean emailMe;
         public final int onlineFollowing;
         public final boolean personalizeAds;
+        public final Long parentPid;
 
         PlayerInfo(String name, int color, boolean showAds, boolean subscriber,
                    int livePlayers, boolean dbAccess, boolean emailMe,
-                   int onlineFollowing, boolean personalizeAds) {
+                   int onlineFollowing, boolean personalizeAds,
+                   Long parentPid) {
             this.name = name;
             this.color = color;
             this.showAds = showAds;
@@ -83,6 +85,7 @@ public class IndexResponse {
             this.emailMe = emailMe;
             this.onlineFollowing = onlineFollowing;
             this.personalizeAds = personalizeAds;
+            this.parentPid = parentPid;
         }
     }
 
@@ -392,7 +395,8 @@ public class IndexResponse {
                             dbAccess,
                             emailMe,
                             onlineFollowing,
-                            personalizeAds
+                            personalizeAds,
+                            playerData.getParentPid()
                     ),
                     buildKoth(myPID, subscriber),
                     buildRatingStats(dateFormat),
