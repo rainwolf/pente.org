@@ -159,6 +159,7 @@ Errors are `{"success": false, "error": "<string>"}` with the status below. Clie
 6. **A stale cached player is written back after a convert or release.** `parent_pid` must survive. Pinned: `parent_pid` absent from the generic UPDATE (Task 1) and the stale-object smoke (Task 1 Step 6).
 7. **A parent edit lands between the kid's `ServerPlayer` load and its main-room join.** Pinned: `testChangeBetweenLoadAndJoinIsApplied` and `testConvertBetweenLoadAndJoinBecomesKid` (Task 8).
 8. **A third-party page POSTs to `/gameServer/kids` with the parent's cookie.** Pinned: `KidsServletOriginTest` (Task 11) and HTTP scenario 12 (Task 13).
+9. **Server shuts down with kid live-chat buffered.** Each buffer must be mailed synchronously before Redis and the storers go away, within about 5 s in total; a buffer that is not mailed (budget spent, send failed) must stay in Redis for the next-leave path, never be lost or sent twice. Pinned: flush placed first in `contextDestroyed` (Task 9); `testShutdownFlushMailsSynchronouslyAndDeletesKeys`, `testShutdownFlushStopsAtBudgetAndKeepsRemainingKeys`, `testShutdownFlushSendFailureKeepsKey`, `testLeaveAfterShutdownFlushKeepsBuffer` (Task 8); `testLiveChatNowSendFailureReturnsFalse` (Task 5); live scenario 11 (Task 13).
 
 ---
 
@@ -374,7 +375,7 @@ Mirror all four in `schema.sql` (the column as the last `dsg_player` column plus
 
 **Files:**
 - Create: `J/message/TextMailer.java`
-- Modify: `J/message/BackgroundMailer.java` (implements `TextMailer`; new work type beside `Work`, `:31-41`; `internalDoWork` `:47` branches on the work type)
+- Modify: `J/message/BackgroundMailer.java` (implements `TextMailer`; new work type beside `Work`, `:31-41`; `internalDoWork` `:50` branches on the work type; new synchronous `mailTextNow` beside it)
 - Create: `J/gameServer/kids/KidCopyEmails.java`, `J/gameServer/kids/KidCopyMailer.java`
 - Modify: `Resources.java` (getter/setter), `DSGContextListener.java` (create after the policy)
 - Test: `J/gameServer/kids/test/RecordingTextMailer.java`, `KidCopyEmailsTest.java`, `KidCopyMailerTest.java`; add both tests to `build.xml`
@@ -382,7 +383,8 @@ Mirror all four in `schema.sql` (the column as the last `dsg_player` column plus
 **Interfaces:**
 - Consumes: `KidStorer.getSettings`, `DSGPlayerStorer.loadPlayer(long)`, `MapPlayerStorer`, `InMemoryKidStorer`.
 - Produces:
-  - `public interface TextMailer { void mailText(String toName, String toEmail, String subject, String body); }`. `BackgroundMailer.mailText` queues a plain-text email (From `smtpUser` as "Pente.org", Reply-To `noreply@pente.org`) on its existing worker thread.
+  - `public interface TextMailer { void mailText(String toName, String toEmail, String subject, String body); void mailTextNow(String toName, String toEmail, String subject, String body, int timeoutMillis) throws Exception; }`. `BackgroundMailer.mailText` queues a plain-text email (From `smtpUser` as "Pente.org", Reply-To `noreply@pente.org`) on its existing worker thread.
+  - `BackgroundMailer.mailTextNow` sends the same message **on the caller's thread** and throws on any failure. It builds `Properties` as `:61-65` do, plus `mail.smtp.connectiontimeout`, `mail.smtp.timeout` and `mail.smtp.writetimeout` set to `timeoutMillis`, and uses `Session.getInstance(props, null)`, **not** `Session.getDefaultInstance` (`:67`): the default instance caches the first `Properties` JVM-wide, so the timeouts would be ignored. The queued and synchronous paths share one private message builder. Not `SendMail2.sendMail`: it reads `System` `mail.smtp.*` properties, uses `getDefaultInstance` with no timeouts, and connects without the port (`SendMail2.java:79-84`, `:113`), so a hung SMTP connect could eat the whole Docker stop grace (Task 9 shutdown flush).
   - `KidCopyEmails` (pure; dates formatted `yyyy-MM-dd HH:mm` in UTC with suffix ` UTC`):
     - `static String pmSubject(String fromName, String toName, String subject)` → `"Pente.org message copy: " + fromName + " to " + toName + ": " + subject`
     - `static String pmBody(String kidName, String fromName, String toName, Date sent, String subject, String body)` → lines `From: `, `To: `, `Date: `, `Subject: `, a blank line, the body, a blank line, then `You get this copy because message copies are on for <kidName>. Change it at https://www.pente.org/gameServer/myprofile/kids`
@@ -393,7 +395,8 @@ Mirror all four in `schema.sql` (the column as the last `dsg_player` column plus
     - `public void copyPrivateMessage(DSGMessage m)` — for each side that is a kid with `copyMessages`, add its parent pid to a `LinkedHashSet`; mail each parent once. Never throws (logs).
     - `public void copyLiveChat(long kidPid, long parentPid, List<String> lines)` — nothing for an empty list. Never throws.
     - Both skip when `!emailEnabled`, or the parent is missing, inactive, or `!getEmailValid()`. Each mail logs `log4j.info("Kid copy queued: kid=" + kidPid + " parent=" + parentPid + " kind=pm|live")` (E2E greps this).
-  - Test helper `RecordingTextMailer implements TextMailer` with `public final List<String[]> sent` (`{toName, toEmail, subject, body}`).
+    - `public boolean copyLiveChatNow(long kidPid, long parentPid, List<String> lines, int timeoutMillis)` — the shutdown path (Task 8 `flushForShutdown`). Same skip rules as `copyLiveChat`; same subject and body. Sends through `mailer.mailTextNow(..., timeoutMillis)` on the caller's thread, never the `BackgroundWorker` queue (its thread is interrupted at shutdown and drops queued work, `BackgroundWorker.java:40-46`). Returns `true` when the mail was sent, the list is empty, or a skip rule applied (the buffer may then be deleted, the same outcome as the `leave` path, which drains before `copyLiveChat` skips). Returns `false` when the send throws (logged); the caller keeps the buffer. Never throws. On success logs `log4j.info("Kid copy sent: kid=" + kidPid + " parent=" + parentPid + " kind=live-shutdown")`.
+  - Test helper `RecordingTextMailer implements TextMailer` with `public final List<String[]> sent` (`{toName, toEmail, subject, body}`) for `mailText`, and for `mailTextNow`: `public final List<String[]> sentNow`, `public final List<Integer> nowTimeouts`, `public boolean failNow` (throws `new Exception("send failed")` before recording), `public Runnable onSendNow` (run first when non-null; Task 8 uses it to advance a fake clock).
   - `Resources.getKidCopyMailer()` / `setKidCopyMailer(KidCopyMailer)`. `DSGContextListener` builds `new KidCopyMailer(emailEnabled, new BackgroundMailer(<the same four mail.smtp.* init params CacheMessageStorer gets at :259-262>, dsgPlayerStorer), dsgPlayerStorer, kidStorer)`.
   - `public void destroy()` — destroys the mailer when it is a `BackgroundMailer` (its `BackgroundWorker` thread starts in the constructor, `BackgroundWorker.java:34-36`). `DSGContextListener.contextDestroyed` calls `resources.getKidCopyMailer().destroy()` next to `((CacheMessageStorer) ...).destroy()` (`:433`), so the second mailer thread does not leak.
 
@@ -407,9 +410,12 @@ Mirror all four in `schema.sql` (the column as the last `dsg_player` column plus
     - `testLiveChatCopySent` and `testEmptyLiveChatSendsNothing`.
     - `testStorerErrorDoesNotThrow`.
     - `testDestroyIgnoresNonBackgroundMailer`: `destroy()` with `RecordingTextMailer` does not throw.
+    - `testLiveChatNowSendsOnCallerThread`: `copyLiveChatNow(100, 1, two lines, 1234)` returns `true`; `sentNow.size() == 1` to `parent@example.invalid` with subject `liveChatSubject`; `sent` is empty; `nowTimeouts.get(0) == 1234`.
+    - `testLiveChatNowSendFailureReturnsFalse`: `failNow = true`; returns `false`, does not throw, `sentNow` empty.
+    - `testLiveChatNowSkippedByRulesReturnsTrue`: parent `email_valid` false; returns `true`, nothing in `sent` or `sentNow`.
 - [ ] **Step 2: Run** both with `TEST_ONE`. Expected: `javac` errors.
 - [ ] **Step 3: Implement.**
-- [ ] **Step 4: Run.** Expected `OK (4 tests)` and `OK (10 tests)`; `TEST_ALL` passes.
+- [ ] **Step 4: Run.** Expected `OK (4 tests)` and `OK (13 tests)`; `TEST_ALL` passes.
 - [ ] **Step 5: Commit.** `-m "Kids: parent copy emails through BackgroundMailer"`.
 
 ---
@@ -489,14 +495,17 @@ Mirror all four in `schema.sql` (the column as the last `dsg_player` column plus
 - Test: `J/gameServer/kids/test/InMemoryChatCopyStore.java`, `J/gameServer/kids/test/KidLiveSessionsTest.java`; add the test to `build.xml`
 
 **Interfaces:**
-- Consumes: `KidChatRules` (Task 2), `KidStorer`/`KidDataChangeListener` (Task 3), `KidCopyMailer.copyLiveChat` and `KidCopyEmails.liveChatLine` (Task 5).
+- Consumes: `KidChatRules` (Task 2), `KidStorer`/`KidDataChangeListener` (Task 3), `KidCopyMailer.copyLiveChat`, `KidCopyMailer.copyLiveChatNow` and `KidCopyEmails.liveChatLine` (Task 5).
 - Produces:
   - `public final class LiveKidState implements Serializable` — `LiveKidState(long pid, Long parentPid, Set<Long> whitelist, boolean copyLiveChat, long loadedSeq)`, getters, `isKid()`, `static LiveKidState notKid(long pid)` (`loadedSeq` 0). Immutable.
-  - `public interface ChatCopyStore { void append(String key, String line, int ttlSeconds); List<String> drain(String key); }`. `drain` returns all lines in order and deletes the key.
-  - `RedisChatCopyStore implements ChatCopyStore` — `RedisConnectionManager.getInstance().getJedis()`; `rpush` then `expire(key, ttl)`; `drain` is `lrange 0 -1` then `del`. When `getJedis()` is null or `!isAvailable()`, `append` does nothing and `drain` returns an empty list. Exceptions are logged and swallowed.
+  - `public interface ChatCopyStore { void append(String key, String line, int ttlSeconds); List<String> drain(String key); void restore(String key, List<String> lines, int ttlSeconds); }`. `drain` returns all lines in order and deletes the key. `restore` puts drained lines back **ahead of** anything appended since, in their original order, and resets the TTL (used when a shutdown send fails).
+  - `RedisChatCopyStore implements ChatCopyStore` — `RedisConnectionManager.getInstance().getJedis()`; `rpush` then `expire(key, ttl)`; `drain` is `lrange 0 -1` then `del`; `restore` is `lpush` of the lines in **reverse** order, then `expire(key, ttl)` (nothing for an empty list). When `getJedis()` is null or `!isAvailable()`, `append` and `restore` do nothing and `drain` returns an empty list. Exceptions are logged and swallowed.
   - `public class KidLiveSessions implements KidDataChangeListener`:
     - `public static final int BUFFER_TTL_SECONDS = 86400;`
-    - `KidLiveSessions(long serverId, DSGPlayerStorer players, KidStorer kids, ChatCopyStore copies, KidCopyMailer mailer)`
+    - `public static final long SHUTDOWN_BUDGET_MILLIS = 5000;` — total for all servers. Docker's default stop grace is 10 s (seconds) and `docker-compose.yml` sets no `stop_grace_period` for `pente.org`, so this leaves room for the rest of `contextDestroyed` and Tomcat.
+    - `public static final int SHUTDOWN_SEND_TIMEOUT_MILLIS = 1000;` — cap on each SMTP connect/read/write during the shutdown flush.
+    - `KidLiveSessions(long serverId, DSGPlayerStorer players, KidStorer kids, ChatCopyStore copies, KidCopyMailer mailer)` — delegates to the next one with `System::currentTimeMillis`.
+    - `KidLiveSessions(long serverId, DSGPlayerStorer players, KidStorer kids, ChatCopyStore copies, KidCopyMailer mailer, LongSupplier clock)` — the clock is only read by `flushForShutdown` (tests pass a fake).
     - `public LiveKidState load(DSGPlayerData d)` — takes `seq.incrementAndGet()` (an `AtomicLong`) **before** reading anything and stores it as `loadedSeq` (non-kids too). `notKid`-shaped state when `getParentPid()` is null. Otherwise whitelist plus `getSettings().isCopyLiveChat()`. On storer error: kid with an empty whitelist and copy off (fail closed). Never throws.
     - `public void join(String name, LiveKidState state)` — null state is ignored. If `changedAt.getOrDefault(pid, 0L) > state.getLoadedSeq()` (a parent edit landed between the `ServerPlayer` load and this join on the main-room pump), reload with `load(players.loadPlayer(pid))` before storing.
     - `public void leave(String name)` — removes the entry. When it was a kid: `flush(state)` = `drain(bufferKey(pid))`, then `mailer.copyLiveChat(pid, parentPid, lines)` if non-empty. Idempotent.
@@ -506,8 +515,10 @@ Mirror all four in `schema.sql` (the column as the last `dsg_player` column plus
     - `public void kidDataChanged(long kidPid)` — first `changedAt.put(kidPid, seq.incrementAndGet())` (a `ConcurrentHashMap<Long, Long>`), then for each joined entry with that pid, reload with `load(players.loadPlayer(kidPid))` and replace it (never adds a missing entry; `join` catches the not-yet-joined case). When the old state was a kid with `copyLiveChat` and the new one is not a kid or has copy off (release, toggle off), `flush(old)` so the buffer is mailed now instead of sitting until the TTL.
     - `String bufferKey(long pid)` → `"kids:livechat:" + serverId + ":" + pid`.
     - Map is a `ConcurrentHashMap` keyed by player name (rooms are name-keyed). `kidDataChanged` runs on servlet threads.
-    - Server shutdown does **not** drain: `contextDestroyed` destroys Redis (`DSGContextListener.java:434`) before the servers (`:447`), and `BackgroundWorker.destroy` interrupts the thread and drops queued mail, so a shutdown drain would lose the lines. The buffer stays in Redis under the same key (TTL 24 h) and is mailed with the kid's next `leave` on that server. Best effort, as the spec's live-chat note says.
-  - Test helper `InMemoryChatCopyStore` with `public boolean fail` (throws `RuntimeException` from both methods when true).
+    - `public int flushForShutdown(long deadlineMillis)` — the shutdown drain, called by `DSGContextListener.contextDestroyed` (Task 9) **before** any storer, mailer or Redis destroy. First sets `volatile boolean shuttingDown = true`. Then, for each joined entry that is a kid with `copyLiveChat`: if `clock.getAsLong() >= deadlineMillis`, stop (that key and every later one stay in Redis untouched). Otherwise `drain(bufferKey(pid))`; empty means next entry. Else `mailer.copyLiveChatNow(pid, parentPid, lines, (int) Math.max(1, Math.min(deadlineMillis - now, SHUTDOWN_SEND_TIMEOUT_MILLIS)))` on the calling thread. `true` means the buffer is gone (already drained) and the count goes up; `false` means `restore(bufferKey(pid), lines, BUFFER_TTL_SECONDS)`. Returns the number of sessions mailed. Never throws (catches per entry, logs, restores when lines were drained). Logs one `log4j.info("Kid live-chat shutdown flush: server=" + serverId + " mailed=" + n + " left=" + m)`.
+    - Once `shuttingDown` is set, `flush` (from `leave` and `kidDataChanged`) does nothing, so a `leave` during the rest of shutdown cannot drain a buffer into the `BackgroundWorker` queue that is about to be interrupted (`BackgroundWorker.java:40-46` drops queued work). `delivered` still appends.
+    - A buffer not mailed at shutdown (budget spent, send failed, or a kid's buffer from an earlier session who is not joined now) stays in Redis under the same key (TTL 24 h) and is mailed with the kid's next `leave` on that server, as before. Best effort, as the spec's live-chat note says.
+  - Test helper `InMemoryChatCopyStore` with `public boolean fail` (throws `RuntimeException` from all three methods when true) and `public List<String> lines(String key)` (a copy; empty when absent).
 
 - [ ] **Step 1: Write failing tests** (`MapPlayerStorer`, `InMemoryKidStorer`, `InMemoryChatCopyStore`, `RecordingTextMailer`; kid `kid` pid 100 parent 1, stranger `bob` 200, `amy` 300 on the whitelist):
   - `testNonKidLoadsNotKid`.
@@ -526,9 +537,15 @@ Mirror all four in `schema.sql` (the column as the last `dsg_player` column plus
   - `testConvertBetweenLoadAndJoinBecomesKid`: `s = load(bob)` (not a kid); set his `parentPid` in `MapPlayerStorer`; `kidDataChanged(200)`; `join("bob", s)` gives `get("bob").isKid()`.
   - `testReleaseWhileConnectedMailsBuffer`: kid with copy on, one `delivered` line, then clear `parentPid` in `MapPlayerStorer` and `kidDataChanged(100)`: `recording.sent.size() == 1` and the key is empty.
   - `testBufferFromEarlierSessionMailedAtNextLeave`: a line appended to `bufferKey(100)` before `join`, then `join` + `leave`, gives one mail containing it.
+  - Shutdown tests use the six-argument constructor with a fake clock (`long[] now = {1000}`, `() -> now[0]`) and a second kid `kid2` pid 101, parent 1, copy on:
+  - `testShutdownFlushMailsSynchronouslyAndDeletesKeys`: `kid` and `kid2` joined, one `delivered` line each; `flushForShutdown(now[0] + 5000)` returns 2; `recording.sentNow.size() == 2`, `recording.sent` is empty (nothing queued); `lines(bufferKey(100))` and `lines(bufferKey(101))` are empty; every `nowTimeouts` value is `<= SHUTDOWN_SEND_TIMEOUT_MILLIS`.
+  - `testShutdownFlushStopsAtBudgetAndKeepsRemainingKeys`: same setup; `recording.onSendNow = () -> now[0] += 6000`; returns 1; `sentNow.size() == 1`; exactly one of the two keys is empty and the other still holds its one line (map order is not fixed, so assert one-and-one).
+  - `testShutdownFlushSendFailureKeepsKey`: `kid` joined, two `delivered` lines; `recording.failNow = true`; returns 0; `lines(bufferKey(100))` equals the two lines in their original order.
+  - `testLeaveAfterShutdownFlushKeepsBuffer`: after the failing flush above, `recording.failNow = false` and `leave("kid")`: `sent` and `sentNow` are empty and the key still holds both lines (falls back to the next-leave path after restart).
+  - `testShutdownFlushSkipsKidsWithCopyOff`: `kid` joined with copy off, a line appended to `bufferKey(100)` directly; returns 0, nothing sent, the line is still there.
 - [ ] **Step 2: Run.** `TEST_ONE org.pente.gameServer.kids.test.KidLiveSessionsTest`. Expected: `javac` error.
 - [ ] **Step 3: Implement.**
-- [ ] **Step 4: Run.** Expected `OK (16 tests)`; `TEST_ALL` passes.
+- [ ] **Step 4: Run.** Expected `OK (21 tests)`; `TEST_ALL` passes.
 - [ ] **Step 5: Commit.** `-m "Kids: live-room kid sessions with Redis live-chat copy buffer"`.
 
 ---
@@ -542,6 +559,7 @@ Mirror all four in `schema.sql` (the column as the last `dsg_player` column plus
 - Modify: `J/gameServer/server/ServerMainRoom.java` (`handleText` `:74-110`, `handleJoin` `:112-130`, `handleExit` `:160-170`, new helper)
 - Modify: `J/gameServer/server/TournamentServerMainRoom.java` (`handleJoin` `:107-122`, `handleExit` `:129-137`)
 - Modify: `J/gameServer/server/ServerTable.java` (`handleText` `:371-410`, `handleInvite` `:3172-3184`, `handleInviteResponse` `:3194-3215`, new helper)
+- Modify: `J/gameServer/server/DSGContextListener.java` (`contextDestroyed` `:418`: shutdown flush ahead of the destroys at `:428-434`)
 - Test: extend `J/gameServer/kids/test/KidWirePrivacyTest.java`; create `J/gameServer/server/test/ServerTableKidTest.java` and `J/gameServer/server/test/ServerMainRoomKidTest.java` (package `org.pente.gameServer.server.test`); add both to `build.xml` next to `ArenaServerTableJoinRequestTest`
 
 **Interfaces:**
@@ -554,6 +572,11 @@ Mirror all four in `schema.sql` (the column as the last `dsg_player` column plus
   - `handleText` (main room, where `"lobby"`; table, where `"table " + tableNum`): for each recipient, `if (ks != null && !ks.allowed(actor, d)) continue;` before the ignore lookup. After every `dsgEventRouter.routeEvent(event, d.getName())` add `ks.delivered(d, where, player, text, new Date())`. No message to the sender about kid filtering.
   - `handleInvite`: at the routing point, when `!ks.allowed(actor, invitee)`, route `new DSGInviteTableEvent(inviteEvent.getPlayer(), tableNum, inviteEvent.getPlayerToInvite(), "")` instead of `inviteEvent`.
   - `handleInviteResponse`: when the responder (`getPlayerInMainRoom(inviteResponseEvent.getPlayer())`) and `actor` are not allowed, route `new DSGInviteResponseTableEvent(inviteResponseEvent.getPlayer(), tableNum, inviteResponseEvent.getToPlayer(), "", inviteResponseEvent.getAccept(), inviteResponseEvent.getIgnore())` instead. The `ignore` handling below is unchanged.
+  - `DSGContextListener.contextDestroyed` (`:418`): the **first** statements of the method. Move the `Resources` lookup (`:424-426`) above `gameStats.destroy()` (`:419-421`), then add `private static void flushKidLiveChat(Resources resources)`, called right after it:
+    - `long deadline = System.currentTimeMillis() + KidLiveSessions.SHUTDOWN_BUDGET_MILLIS;` once, shared by all servers.
+    - `for (Server s : resources.getServers())` (`Resources.java:129` returns `List<Server>`): `if (s.getKidSessions() != null) s.getKidSessions().flushForShutdown(deadline);`, each in its own `try`/`catch (Throwable t)` that logs and continues, so a kid-flush problem never blocks the rest of shutdown.
+    - It runs before `getTbGameStorer().destroy()` (`:428`), `getDsgPlayerStorer().destroy()` (`:430`), the message storer and kid copy mailer destroys (`:433`, Task 5) and `RedisConnectionManager.getInstance().destroy()` (`:434`), so the player storer, kid storer and Redis are all still up. Sends run on Tomcat's shutdown thread through `KidCopyMailer.copyLiveChatNow`, never the `BackgroundWorker` queue.
+    - Worst case is about 5 s (`SHUTDOWN_BUDGET_MILLIS`) plus one `SHUTDOWN_SEND_TIMEOUT_MILLIS` per SMTP phase of the send already running at the deadline; Docker's default 10 s stop grace applies (`docker-compose.yml` sets no `stop_grace_period`).
 
 - [ ] **Step 1: Add the failing tests.**
   - `KidWirePrivacyTest.testJoinEventDoesNotSerializeKidState`: a join event with `setKidState(new LiveKidState(42, 7L, Set.of(9L), true, 1L))` encodes with no `kidState` key anywhere under `dsgJoinMainRoomEvent`.
@@ -563,7 +586,7 @@ Mirror all four in `schema.sql` (the column as the last `dsg_player` column plus
 - [ ] **Step 2: Run.** `TEST_ONE` for `org.pente.gameServer.kids.test.KidWirePrivacyTest`, `org.pente.gameServer.server.test.ServerTableKidTest`, `org.pente.gameServer.server.test.ServerMainRoomKidTest`. Expected: `javac` errors (`setKidState`, `kidSessions`).
 - [ ] **Step 3: Implement** everything under Files.
 - [ ] **Step 4: Run.** Expected `OK (6 tests)`, `OK (7 tests)`, `OK (3 tests)`. Then `TEST_ALL` passes, and `TEST_ONE org.pente.gameServer.server.test.ServerTableDrawScoringTest` passes (it subclasses `ServerTable` and is not in `test`).
-- [ ] **Step 5: Deploy smoke.** `./justCompile`; expected `BUILD SUCCESSFUL`. Then `grep -i exception` over the last 200 lines of `dockerMain/logs/dsg/gameServer.log`. Expected: nothing new mentioning `Kid`. Live behaviour is verified in Task 13.
+- [ ] **Step 5: Deploy smoke.** `./justCompile`; expected `BUILD SUCCESSFUL`. Then `grep -i exception` over the last 200 lines of `dockerMain/logs/dsg/gameServer.log`. Expected: nothing new mentioning `Kid`. Then `docker compose -f docker-compose.yml restart pente.org` (as `justCompile:14` does) and grep the log for `Kid live-chat shutdown flush: server=`: one line per live server, `mailed=0 left=0` (no kids connected). Live behaviour, including a restart with a buffered kid, is verified in Task 13.
 - [ ] **Step 6: Commit.** `-m "Kids: filter lobby, table and invite text per recipient in the live server"`.
 
 ---
@@ -720,6 +743,7 @@ Mirror all four in `schema.sql` (the column as the last `dsg_player` column plus
   8. Reconnect: the kid logs in again right after closing. The stranger rule still holds (remove graviton, then graviton's `g3` does not reach the kid).
   9. Table invite: graviton creates a table and invites the kid with `inviteText` `hi`. The kid receives `dsgInviteTableEvent` with `inviteText` `""`.
   10. Table text: the kid sits at graviton's table (or watches it). graviton says `t1` at the table: the kid does not get it; iostest watching the same table does. The kid says `t2`: graviton does not get it.
+  11. Restart with a buffered kid (shutdown flush): the kid connected with `copyLiveChat=Y`, iostest says `p2` so the kid's `kids:livechat:*` key holds a line. Run `docker compose -f docker-compose.yml restart pente.org` from the repo root while the kid is still connected. Expected: `gameServer.log` has `Kid copy sent: kid=<kid> parent=<iostest> kind=live-shutdown` and `Kid live-chat shutdown flush: server=… mailed=1 left=0`, and after the container is back `redis-cli KEYS 'kids:livechat:*'` is empty. If local SMTP refuses the send, the expected outcome is instead `mailed=0 left=1`, the key still present with its line and a TTL between 1 and 86400; then the kid logs in and disconnects again, and the log gains `kind=live` and the key is gone (next-leave fallback). Report which branch ran. Run this scenario last: the restart drops every live connection.
 - [ ] **Step 5: Restore and clean up.**
   - Release `kidse2e1` and set its `status` to inactive via SQL (or leave it; it's local dev data). Note which in the report.
   - Run `restore.sql` for iostest.
@@ -734,7 +758,7 @@ Mirror all four in `schema.sql` (the column as the last `dsg_player` column plus
   - PMs (T6), broadcast (T6), lobby and table (T9), invite text (T9).
   - TB invitation/move/resign (T7), open-invitation display to kids (T7), cancel message (T7), decline PM (T6), opponent-attributed notices (T6).
   - System lines unchanged; push notifications follow the refusals (T6).
-- **Copies:** PM copies (T5, T6), live-chat buffer with TTL, flush on logout/close/boot, Redis-down skip, empty session (T8, T9). Website page and confirmation landing (T11, T12). Listener refresh (T3, T8).
+- **Copies:** PM copies (T5, T6), live-chat buffer with TTL, flush on logout/close/boot, synchronous flush at server shutdown with budget and next-leave fallback (T5, T8, T9, T13 live 11), Redis-down skip, empty session (T8, T9). Website page and confirmation landing (T11, T12). Listener refresh (T3, T8).
 - **Decisions this plan makes where the spec leaves a choice (builder's choice):**
   - Live filtering is silent, with no new websocket events.
   - Invite text is blanked rather than the invite refused.
@@ -746,6 +770,6 @@ Mirror all four in `schema.sql` (the column as the last `dsg_player` column plus
   - `parent_pid` is written only by `KidStorer.setParentPid` (and the create insert), never by the generic player UPDATE.
   - `convert` answers the same success for kid, parent and admin targets and sends nothing.
   - Cookie-authenticated POSTs to `/gameServer/kids` need a same-host `Origin`/`Referer`.
-  - Live-chat buffers are not drained at server shutdown (they stay in Redis and go out with the next session's mail).
+  - Live-chat buffers are drained at server shutdown (user decision 2026-10-19): `flushForShutdown` runs first in `contextDestroyed`, mails each joined kid's buffer synchronously via `copyLiveChatNow` / `BackgroundMailer.mailTextNow` (timeouts set, `Session.getInstance`), within a shared 5 s budget. Unsent buffers (budget spent, send failure, kid not joined) stay in Redis (TTL 24 h) and go out with the kid's next `leave`. After the flush, `leave` no longer drains, so nothing is queued onto the mailer thread that shutdown interrupts. Not `SendMail2`: no timeouts and JVM-wide default session.
   - Conversion GET shows a confirm button and only POST converts.
 - **Not in scope (spec):** forums, profiles/avatars, existing messages, `EmailPlayerServlet` (unmapped dead code per recon).
