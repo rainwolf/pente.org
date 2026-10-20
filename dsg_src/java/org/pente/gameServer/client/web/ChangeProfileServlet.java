@@ -20,6 +20,7 @@ import org.apache.log4j.*;
 import com.jivesoftware.base.*;
 
 import org.pente.gameServer.core.*;
+import org.pente.gameServer.kids.KidAccountRules;
 import org.pente.gameServer.server.*;
 import org.pente.jive.DSGUserManager;
 
@@ -84,6 +85,8 @@ public class ChangeProfileServlet extends HttpServlet {
             redirectPage = "/gameServer/myprofileDonor.jsp";
         } else if (command.equals("prefs")) {
             redirectPage = "/gameServer/myprofilePrefs.jsp";
+        } else if (command.equals("kids")) {
+            redirectPage = "/gameServer/myprofileKids.jsp";
         }
 
         try {
@@ -190,6 +193,16 @@ public class ChangeProfileServlet extends HttpServlet {
                     if (homepage != null) {
                         homepage = homepage.trim();
                     }
+
+                    boolean isKid = dsgPlayerData.getParentPid() != null;
+                    if (isKid && changeProfileError == null) {
+                        changeProfileError = KidAccountRules.profileChangeError(
+                                true, dsgPlayerData.getEmail(), email, password);
+                        if (email.isEmpty()) {
+                            email = dsgPlayerData.getEmail();
+                        }
+                    }
+                    emailVisible = KidAccountRules.emailVisibleFor(isKid, emailVisible);
 
                     if (changeProfileError != null) {
                     } else if (!password.equals(passwordConfirm)) {

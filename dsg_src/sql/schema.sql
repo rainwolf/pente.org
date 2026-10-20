@@ -131,7 +131,9 @@ CREATE TABLE `dsg_player` (
   `admin` enum('Y','N') NOT NULL DEFAULT 'N',
   `timezone` varchar(100) DEFAULT 'America/New_York',
   `mobile_adult` enum('Y','N') NOT NULL DEFAULT 'Y',
-  PRIMARY KEY (`pid`)
+  `parent_pid` bigint(20) unsigned DEFAULT NULL,
+  PRIMARY KEY (`pid`),
+  KEY `parent_pid_key` (`parent_pid`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `dsg_player_avatar`;
@@ -185,6 +187,38 @@ CREATE TABLE `dsg_player_prefs` (
   `last_update_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`pid`,`pref_name`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `dsg_kid_whitelist`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `dsg_kid_whitelist` (
+  `kid_pid` bigint(20) unsigned NOT NULL,
+  `allowed_pid` bigint(20) unsigned NOT NULL,
+  `last_update_date` datetime NOT NULL,
+  UNIQUE KEY `kid_allowed` (`kid_pid`,`allowed_pid`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `dsg_kid_settings`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `dsg_kid_settings` (
+  `kid_pid` bigint(20) unsigned NOT NULL,
+  `copy_messages` char(1) NOT NULL DEFAULT 'N',
+  `copy_live_chat` char(1) NOT NULL DEFAULT 'N',
+  PRIMARY KEY (`kid_pid`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `dsg_kid_link_request`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `dsg_kid_link_request` (
+  `code` varchar(64) NOT NULL,
+  `parent_pid` bigint(20) unsigned NOT NULL,
+  `kid_pid` bigint(20) unsigned NOT NULL,
+  `creation_date` datetime NOT NULL,
+  PRIMARY KEY (`code`),
+  KEY `kid_pid_key` (`kid_pid`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `dsg_return_email`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;

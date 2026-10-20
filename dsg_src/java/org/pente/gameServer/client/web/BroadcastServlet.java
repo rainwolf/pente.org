@@ -6,10 +6,13 @@ package org.pente.gameServer.client.web;
 
 import org.apache.log4j.Category;
 import org.pente.gameServer.core.*;
+import org.pente.gameServer.kids.KidAccountRules;
+import org.pente.gameServer.kids.KidChatPolicy;
 import org.pente.gameServer.server.Resources;
 import org.pente.message.DSGMessage;
 import org.pente.message.DSGMessageStoreException;
 import org.pente.message.DSGMessageStorer;
+import org.pente.message.KidMessageRefusedException;
 import org.pente.notifications.NotificationServer;
 
 import jakarta.servlet.ServletConfig;
@@ -34,6 +37,7 @@ public class BroadcastServlet extends HttpServlet {
     private transient DSGPlayerStorer dsgPlayerStorer;
     private transient NotificationServer notificationServer;
     private transient DSGMessageStorer dsgMessageStorer;
+    private transient KidChatPolicy kidChatPolicy;
 
     private transient ServletContext ctx;
 
@@ -49,6 +53,7 @@ public class BroadcastServlet extends HttpServlet {
             dsgPlayerStorer = resources.getDsgPlayerStorer();
             notificationServer = resources.getNotificationServer();
             dsgMessageStorer = resources.getDsgMessageStorer();
+            kidChatPolicy = resources.getKidChatPolicy();
         } catch (Throwable t) {
             log4j.error("Problem in init()", t);
         }
@@ -82,6 +87,11 @@ public class BroadcastServlet extends HttpServlet {
             return;
         }
 
+        if (playerData.getParentPid() != null) {
+            handleError(request, response, KidAccountRules.KID_BROADCAST_ERROR);
+            return;
+        }
+
         if (!notificationServer.canBroadcast(playerData.getPlayerID())) {
             handleError(request, response, "You can't broadcast more than once per hour.");
             return;
@@ -110,6 +120,9 @@ public class BroadcastServlet extends HttpServlet {
         }
 
         for (long pid : recipients) {
+            if (kidChatPolicy != null && !kidChatPolicy.allowed(playerData.getPlayerID(), pid)) {
+                continue;
+            }
             DSGMessage message = new DSGMessage();
             message.setCreationDate(new java.util.Date());
             message.setFromPid(playerData.getPlayerID());
@@ -121,6 +134,9 @@ public class BroadcastServlet extends HttpServlet {
                     "\n\nThis is an automated server message.");
             try {
                 dsgMessageStorer.createMessage(message);
+            } catch (KidMessageRefusedException e) {
+                log4j.info("BroadcastServlet: kid rule refused broadcast to " + pid + ": " + e.getMessage());
+                continue;
             } catch (DSGMessageStoreException e) {
                 log4j.error("BroadcastServlet: error sending messages " + e);
                 handleError(request, response, "error sending messages");

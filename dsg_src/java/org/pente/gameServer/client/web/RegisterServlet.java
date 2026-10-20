@@ -31,9 +31,6 @@ public class RegisterServlet extends HttpServlet {
 
     private transient UsernameFilter usernameFilter;
 
-    private static final DSGAuthToken adminToken =
-            new DSGAuthToken(22000000000002L);
-
     public void init(ServletConfig config) throws ServletException {
 
         super.init(config);
@@ -175,21 +172,12 @@ public class RegisterServlet extends HttpServlet {
             int registerResult = RegisterHandler.SUCCESS;
             String encryptedPassword = passwordHelper.encrypt(password);
 
-            // preserve the dweebo name!
-            if (name.indexOf("dwe") >= 0) {
-                registerResult = RegisterHandler.ERROR_NAME_TAKEN;
-            } else if (name.startsWith("mm")) {
-                registerResult = RegisterHandler.ERROR_NAME_TAKEN;
-            } else if (name.indexOf("mm_ai") >= 0) {
-                registerResult = RegisterHandler.ERROR_NAME_TAKEN;
-            } else if (name.indexOf("admin") >= 0) {
-                registerResult = RegisterHandler.ERROR_NAME_TAKEN;
-            } else if (name.indexOf("guest") >= 0) {
-                registerResult = RegisterHandler.ERROR_NAME_TAKEN;
-            } else if (usernameFilter != null && usernameFilter.isOffensive(name)) {
-                // same message as a taken name: the mobile apps only detect
-                // failure by that exact text
-                log4j.info("Register: name rejected by username filter: " + name);
+            if (ReservedNames.isReserved(name, usernameFilter)) {
+                if (usernameFilter != null && usernameFilter.isOffensive(name)) {
+                    // same message as a taken name: the mobile apps only detect
+                    // failure by that exact text
+                    log4j.info("Register: name rejected by username filter: " + name);
+                }
                 registerResult = RegisterHandler.ERROR_NAME_TAKEN;
             }
 
@@ -225,33 +213,7 @@ public class RegisterServlet extends HttpServlet {
                     session.setAttribute("password", password);
                     session.setAttribute("ip", request.getRemoteAddr());
 
-                    try {
-                        ForumFactory forumFactory = ForumFactory.getInstance(
-                                adminToken);
-                        UserManager userManager = forumFactory.getUserManager();
-                        User newUser = userManager.getUser(name);
-
-                        // set default properties for forums
-                        newUser.setProperty("jiveThreadRange", "15");
-                        newUser.setProperty("jiveTimeZoneID", "America/New_York");
-                        newUser.setProperty("jiveAutoWatchNewTopics", "true");
-                        newUser.setProperty("jiveAutoWatchReplies", "true");
-                        newUser.setProperty("jiveAutoAddEmailWatch", "true");
-
-                        // add watch for news forum
-                        if (emailUpdates) {
-                            WatchManager watchManager = forumFactory.getWatchManager();
-                            Forum newsForum = forumFactory.getForum(4);
-                            Watch emailUpdatesWatch = watchManager.createWatch(
-                                    newUser, newsForum);
-                            emailUpdatesWatch.setWatchType(Watch.EMAIL_WATCH);
-                            emailUpdatesWatch.setExpirable(false);
-                        }
-
-                    } catch (Throwable t) {
-                        log4j.error("Problem adding watch during " +
-                                "registration for player " + name, t);
-                    }
+                    ForumUserSetup.initNewUser(name, emailUpdates);
 
                     DSGPlayerData dsgPlayerData = null;
                     try {

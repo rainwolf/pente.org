@@ -214,4 +214,9 @@ public interface DSGPlayerData extends Cloneable, java.io.Serializable {
     public boolean isMobileAdult();
 
     public void setMobileAdult(boolean isAdult);
+
+    /** Parent's pid when this player is a kid account; null otherwise. */
+    public Long getParentPid();
+
+    public void setParentPid(Long parentPid);
 }

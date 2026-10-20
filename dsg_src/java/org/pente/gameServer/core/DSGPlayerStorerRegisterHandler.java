@@ -25,6 +25,10 @@ public class DSGPlayerStorerRegisterHandler implements RegisterHandler {
 
     private static final int MAX_EMAIL_LEN = 100;
 
+    /** 5-16 letters, digits or underscores; the one password rule for /join, profile and kids. */
+    public static final java.util.regex.Pattern PASSWORD_PATTERN =
+            java.util.regex.Pattern.compile("[\\p{L}\\p{Nd}_]{5,16}");
+
     private DSGPlayerStorer dsgPlayerStorer;
 
     private static Category cat = Category.getInstance(DSGPlayerStorerRegisterHandler.class.getName());
@@ -53,16 +57,9 @@ public class DSGPlayerStorerRegisterHandler implements RegisterHandler {
             }
         }
 
-        if (password.length() < 5 || password.length() > 16) {
+        if (!PASSWORD_PATTERN.matcher(password).matches()) {
             return false;
         }
-
-        for (int i = 0; i < password.length(); i++) {
-            if (!Character.isLetterOrDigit(password.charAt(i)) && password.charAt(i) != '_') {
-                return false;
-            }
-        }
-
 
         if (email.length() > MAX_EMAIL_LEN) {
             return false;

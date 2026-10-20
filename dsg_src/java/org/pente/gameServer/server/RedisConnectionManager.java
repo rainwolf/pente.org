@@ -99,6 +99,16 @@ public class RedisConnectionManager {
      */
     public static final String PID_TO_IGNORES = "pid:ignores";
 
+    /**
+     * CacheKidStorer: kid pid (long) -> HashSet<Long> whitelisted pids
+     */
+    public static final String PID_TO_KID_WHITELIST = "pid:kid_whitelist";
+
+    /**
+     * CacheKidStorer: kid pid (long) -> KidSettings
+     */
+    public static final String PID_TO_KID_SETTINGS = "pid:kid_settings";
+
     public static final String PID_TO_AVATAR = "pid:avatar";
 
     /**

@@ -37,6 +37,7 @@ import org.pente.gameServer.client.web.LeaderBoard;
 import org.pente.gameServer.client.web.SiteStatsData;
 import org.pente.gameServer.core.*;
 import org.pente.gameServer.event.WebSocketEndpoint;
+import org.pente.gameServer.kids.KidLiveSessions;
 import org.pente.gameServer.tourney.CacheTourneyStorer;
 import org.pente.gameServer.tourney.MySQLTourneyStorer;
 import org.pente.gameServer.tourney.Tourney;
@@ -169,6 +170,23 @@ public class DSGContextListener implements ServletContextListener {
             resources.setEmailEnabled(emailEnabled.booleanValue());
             log4j.info("contextInitialized(), emailEnabled=" + emailEnabled);
 
+            org.pente.gameServer.kids.CacheKidStorer kidStorer =
+                new org.pente.gameServer.kids.CacheKidStorer(
+                    new org.pente.gameServer.kids.MySQLKidStorer(dbHandler));
+            resources.setKidStorer(kidStorer);
+            ctx.setAttribute(org.pente.gameServer.kids.KidStorer.class.getName(), kidStorer);
+            resources.setKidChatPolicy(
+                new org.pente.gameServer.kids.StorerKidChatPolicy(dsgPlayerStorer, kidStorer));
+            resources.setKidCopyMailer(new org.pente.gameServer.kids.KidCopyMailer(
+                emailEnabled.booleanValue(),
+                new org.pente.message.BackgroundMailer(
+                    ctx.getInitParameter("mail.smtp.host"),
+                    Integer.parseInt(ctx.getInitParameter("mail.smtp.port")),
+                    ctx.getInitParameter("mail.smtp.user"),
+                    ctx.getInitParameter("mail.smtp.password"),
+                    dsgPlayerStorer),
+                dsgPlayerStorer, kidStorer));
+
 
             // setup storers
             GameStorer gameStorer = new MySQLPenteGameStorer(dbHandler,
@@ -261,6 +279,8 @@ public class DSGContextListener implements ServletContextListener {
                     ctx.getInitParameter("mail.smtp.user"),
                     ctx.getInitParameter("mail.smtp.password"),
                     dsgPlayerStorer);
+            ((CacheMessageStorer) dsgMessageStorer).setKidSupport(
+                    resources.getKidChatPolicy(), resources.getKidCopyMailer());
             resources.setDsgMessageStorer(dsgMessageStorer);
             log4j.info("contextInitialized(), created DSGMessageStorer");
 
@@ -273,6 +293,7 @@ public class DSGContextListener implements ServletContextListener {
                     new MySQLTBGameStorer(dbHandler), dsgPlayerStorer, gameStorer,
                     dsgMessageStorer, kothStorer);
             tbGameStorer.setNotificationServer(notificationServer);
+            tbGameStorer.setKidChatPolicy(resources.getKidChatPolicy());
             resources.setTbGameStorer(tbGameStorer);
             log4j.info("contextInitialized(), created TBGameStorer");
 
@@ -415,22 +436,48 @@ public class DSGContextListener implements ServletContextListener {
         }
     }
 
+    /**
+     * Mails buffered kid live chat on this (Tomcat shutdown) thread, within
+     * one budget shared by all servers. A failure on one server is logged and
+     * never blocks the rest of shutdown.
+     */
+    private static void flushKidLiveChat(Resources resources) {
+        if (resources == null) {
+            return;
+        }
+        long deadline = System.currentTimeMillis() + KidLiveSessions.SHUTDOWN_BUDGET_MILLIS;
+        for (Server s : resources.getServers()) {
+            try {
+                if (s.getKidSessions() != null) {
+                    s.getKidSessions().flushForShutdown(deadline);
+                }
+            } catch (Throwable t) {
+                log4j.error("Kid live-chat shutdown flush failed for server " + s.getServerData() + ".", t);
+            }
+        }
+    }
+
     public void contextDestroyed(ServletContextEvent servletContextEvent) {
+        ServletContext ctx = servletContextEvent.getServletContext();
+        Resources resources = (Resources)
+                ctx.getAttribute(Resources.class.getName());
+        // first: needs the player storer, kid storer and Redis still up
+        flushKidLiveChat(resources);
+
         if (gameStats != null) {
             gameStats.destroy();
         }
 
         // stop servers
-        ServletContext ctx = servletContextEvent.getServletContext();
-        Resources resources = (Resources)
-                ctx.getAttribute(Resources.class.getName());
-
         resources.getTbGameStorer().destroy();
         ((CacheTourneyStorer) resources.getTourneyStorer()).destroy();
         resources.getDsgPlayerStorer().destroy();
         resources.getKOTHStorer().destroy();
         ((CacheNotificationServer) resources.getNotificationServer()).destroy();
         ((CacheMessageStorer) resources.getDsgMessageStorer()).destroy();
+        if (resources.getKidCopyMailer() != null) {
+            resources.getKidCopyMailer().destroy();
+        }
         RedisConnectionManager.getInstance().destroy();
 
         for (Timer timer : timers) {

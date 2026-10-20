@@ -62,6 +62,12 @@ public class AgeVerificationServlet extends HttpServlet {
                 return;
             }
 
+            if (player.getParentPid() != null) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                out.print("{\"result\":failed,\"error\":\"kid_account\"}");
+                return;
+            }
+
             player.setMobileAdult(adult);
             dsgPlayerStorer.updatePlayer(player);
 

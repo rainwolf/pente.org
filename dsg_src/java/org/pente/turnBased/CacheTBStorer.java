@@ -29,6 +29,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
     private TourneyStorer tourneyStorer;
     private final CacheKOTHStorer kothStorer;
     private NotificationServer notificationServer;
+    private volatile org.pente.gameServer.kids.KidChatPolicy kidChatPolicy;
 
     RedisConnectionManager pente_cache = RedisConnectionManager.getInstance();
 
@@ -314,18 +315,26 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         undoLastMove(gid, tbGame.getNumMoves() - tbGame.containsDoublePass() + 1);
 
         long toPid = tbGame.getCurrentPlayer(), fromPid = tbGame.getOpponent(toPid);
-        DSGMessage message = new DSGMessage();
-        message.setFromPid(fromPid);
-        message.setToPid(toPid);
-        message.setSubject("Dead stones");
-        message.setBody("Your dead stones suggestion was declined. \n\nGame continues. \n\n");
-        message.setCreationDate(new java.util.Date());
+        DSGMessage message = noticeMessage(fromPid, toPid, "Dead stones",
+                "Your dead stones suggestion was declined. \n\nGame continues. \n\n");
         try {
             dsgMessageStorer.createMessage(message, false);
         } catch (DSGMessageStoreException e) {
             e.printStackTrace();
         }
         notificationServer.sendMessageNotification("pente.org", message.getToPid(), message.getMid(), message.getSubject());
+    }
+
+    /** A server-generated game notice, exempt from the kid chat rule. */
+    public static DSGMessage noticeMessage(long fromPid, long toPid, String subject, String body) {
+        DSGMessage message = new DSGMessage();
+        message.setFromPid(fromPid);
+        message.setToPid(toPid);
+        message.setSubject(subject);
+        message.setBody(body);
+        message.setCreationDate(new java.util.Date());
+        message.setSystemNotice(true);
+        return message;
     }
 
     public void hideGame(long gid, byte hiddenBy) {
@@ -1250,21 +1259,23 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                 String aWinText = game.isDraw() ? drawGameWinSetText : winText;
                 String aLossText = game.isDraw() ? drawGameLoseSetText : lossText;
 
-                DSGMessage winMessage = new DSGMessage();
-                winMessage.setFromPid(loserData.getPlayerID());
-                winMessage.setToPid(winnerData.getPlayerID());
-                winMessage.setSubject(winSubj);
-                winMessage.setBody(aWinText);
-                winMessage.setCreationDate(new java.util.Date());
-                dsgMessageStorer.createMessage(winMessage, false);
+                DSGMessage winMessage = noticeMessage(loserData.getPlayerID(),
+                        winnerData.getPlayerID(), winSubj, aWinText);
+                try {
+                    dsgMessageStorer.createMessage(winMessage, false);
+                } catch (DSGMessageStoreException e) {
+                    log4j.error("CacheTBStorer, problem storing win message for game " +
+                            game.getGid(), e);
+                }
 
-                DSGMessage loseMessage = new DSGMessage();
-                loseMessage.setFromPid(winnerData.getPlayerID());
-                loseMessage.setToPid(loserData.getPlayerID());
-                loseMessage.setSubject(loseSubj);
-                loseMessage.setBody(aLossText);
-                loseMessage.setCreationDate(new java.util.Date());
-                dsgMessageStorer.createMessage(loseMessage, false);
+                DSGMessage loseMessage = noticeMessage(winnerData.getPlayerID(),
+                        loserData.getPlayerID(), loseSubj, aLossText);
+                try {
+                    dsgMessageStorer.createMessage(loseMessage, false);
+                } catch (DSGMessageStoreException e) {
+                    log4j.error("CacheTBStorer, problem storing lose message for game " +
+                            game.getGid(), e);
+                }
 
                 if (game.getEventId() == kothStorer.getEventId(game.getGame())) {
                     if (set.isCompleted() && game.isRated() && !set.isDraw()) {
@@ -1818,6 +1829,13 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
             throw new TBStoreException("Invalid game, not found: " + gid);
         }
 
+        org.pente.gameServer.kids.KidChatPolicy policy = kidChatPolicy;
+        if (policy != null && !policy.allowed(message.getPid(),
+                game.getOpponent(message.getPid()))) {
+            log4j.debug("storeNewMessage(" + gid + ") dropped, kid chat rule");
+            return;
+        }
+
         synchronized (cacheTbLock) {
             game.addMessage(message);
             persistSet(game.getTbSet());
@@ -2000,6 +2018,16 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
     public void requestCancel(TBSet setArg, long requestorPid, String message) throws TBStoreException {
         TBSet set = loadSet(setArg.getSetId());
+        org.pente.gameServer.kids.KidChatPolicy policy = kidChatPolicy;
+        if (policy != null && message != null) {
+            long opponent = requestorPid == set.getPlayer1Pid()
+                    ? set.getPlayer2Pid() : set.getPlayer1Pid();
+            if (!policy.allowed(requestorPid, opponent)) {
+                log4j.debug("requestCancel(" + set.getSetId()
+                        + ") message dropped, kid chat rule");
+                message = null;
+            }
+        }
         synchronized (cacheTbLock) {
             //should do some error checking here but too lazy
             set.setCancelMsg(message);
@@ -2341,5 +2369,10 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
     public void setNotificationServer(NotificationServer notificationServer) {
         this.notificationServer = notificationServer;
+    }
+
+    /** Kid chat rule for move messages and cancel text; null means no rule. */
+    public void setKidChatPolicy(org.pente.gameServer.kids.KidChatPolicy policy) {
+        this.kidChatPolicy = policy;
     }
 }

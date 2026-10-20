@@ -25,6 +25,7 @@ import org.apache.log4j.*;
 
 import org.pente.gameServer.core.*;
 import org.pente.gameServer.event.*;
+import org.pente.gameServer.kids.KidLiveSessions;
 import org.pente.gameServer.tourney.*;
 
 public class ServerMainRoom {
@@ -52,6 +53,11 @@ public class ServerMainRoom {
         this.resources = resources;
         this.dsgEventRouter = dsgEventRouter;
         this.dsgPlayerStorer = resources.getDsgPlayerStorer();
+    }
+
+    /** This server's kid sessions; null means no kid filtering (unit-test subclasses only). */
+    protected KidLiveSessions kidSessions() {
+        return server == null ? null : server.getKidSessions();
     }
 
     public Collection<DSGPlayerData> getPlayersInMainRoom() {
@@ -82,9 +88,14 @@ public class ServerMainRoom {
             // could try to implement this on client we'll see how slow this is
             DSGEvent event = new DSGTextMainRoomEvent(player, text);
             DSGPlayerData actor = playersInMainRoom.get(player);
+            KidLiveSessions ks = kidSessions();
 
             for (Iterator<DSGPlayerData> i = playersInMainRoom.values().iterator(); i.hasNext(); ) {
                 DSGPlayerData d = i.next();
+                // kid rules: drop silently, the sender is not told
+                if (ks != null && !ks.allowed(actor, d)) {
+                    continue;
+                }
                 DSGIgnoreData ig = null;
                 try {
                     ig = dsgPlayerStorer.getIgnoreData(d.getPlayerID(), actor.getPlayerID());
@@ -94,6 +105,9 @@ public class ServerMainRoom {
 
                 if (ig == null || !ig.getIgnoreChat()) {
                     dsgEventRouter.routeEvent(event, d.getName());
+                    if (ks != null) {
+                        ks.delivered(d, "lobby", player, text, new Date());
+                    }
                 } else {
 
                     // lookup ig.id in map
@@ -124,6 +138,10 @@ public class ServerMainRoom {
             //DSGPlayerData joinPlayerData =
             //    dsgPlayerStorer.loadPlayer(joinEvent.getPlayer());
 
+            KidLiveSessions ks = kidSessions();
+            if (ks != null) {
+                ks.join(joinEvent.getPlayer(), joinEvent.getKidState());
+            }
             playersInMainRoom.put(joinEvent.getPlayer(), joinEvent.getDSGPlayerData());
 
             sendPlayerList(joinEvent.getPlayer());
@@ -164,6 +182,10 @@ public class ServerMainRoom {
         if (isPlayerInMainRoom(exitEvent.getPlayer())) {
 
             playersInMainRoom.remove(exitEvent.getPlayer());
+            KidLiveSessions ks = kidSessions();
+            if (ks != null) {
+                ks.leave(exitEvent.getPlayer());
+            }
 
             server.routeEventToAllTables(exitEvent);
 

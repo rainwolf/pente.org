@@ -75,6 +75,17 @@ public class SimpleDSGPlayerData implements DSGPlayerData, Serializable {
         this.mobileAdult = mobileAdult;
     }
 
+    // Not transient: Redis caches players with Java serialization.
+    private Long parentPid;
+
+    public Long getParentPid() {
+        return parentPid;
+    }
+
+    public void setParentPid(Long parentPid) {
+        this.parentPid = parentPid;
+    }
+
     private Vector<DSGPlayerGameData> gameData;
 
     public SimpleDSGPlayerData() {

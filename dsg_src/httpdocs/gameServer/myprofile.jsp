@@ -12,6 +12,7 @@
       throw new Exception("Illegal access attempted");
    }
 
+   boolean managedKid = dsgPlayerData.getParentPid() != null;
    String changeProfileError = (String) request.getAttribute("changeProfileError");
    String changeProfileSuccess = (String) request.getAttribute("changeProfileSuccess");
 %>
@@ -106,7 +107,8 @@
                   </td>
                   <td>
                      <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
-                        <input type="password" name="changePassword" size="16" maxlength="16">
+                        <input type="password" name="changePassword" size="16" maxlength="16"<%= managedKid ? " disabled" : "" %>>
+                        <% if (managedKid) { %>Managed by your parent<% } %>
                      </font>
                   </td>
                </tr>
@@ -118,7 +120,8 @@
                   </td>
                   <td>
                      <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
-                        <input type="password" name="changePasswordConfirm" size="16" maxlength="16">
+                        <input type="password" name="changePasswordConfirm" size="16" maxlength="16"<%= managedKid ? " disabled" : "" %>>
+                        <% if (managedKid) { %>Managed by your parent<% } %>
                      </font>
                   </td>
                </tr>
@@ -143,7 +146,8 @@
                   <td>
                      <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
                         <input type="text" name="changeEmail" size="30" maxlength="100"
-                               value="<%= dsgPlayerData.getEmail() %>">
+                               value="<%= dsgPlayerData.getEmail() %>"<%= managedKid ? " readonly" : "" %>>
+                        <% if (managedKid) { %>Managed by your parent<% } %>
                      </font>
                   </td>
                </tr>
@@ -155,8 +159,9 @@
                   </td>
                   <td>
                      <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
-                        <% String checked = dsgPlayerData.getEmailVisible() ? "checked" : ""; %>
-                        <input type="checkbox" name="changeEmailVisible" <%= checked %> value="Y">
+                        <% String checked = !managedKid && dsgPlayerData.getEmailVisible() ? "checked" : ""; %>
+                        <input type="checkbox" name="changeEmailVisible" <%= checked %> value="Y"<%= managedKid ? " disabled" : "" %>>
+                        <% if (managedKid) { %>Managed by your parent<% } %>
                      </font>
                   </td>
                </tr>

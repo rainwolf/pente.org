@@ -6,6 +6,7 @@ public class SimpleLoginAccessController implements LoginAccessController {
             {"gameServer/play.jsp",
                     "gameServer/myprofile",
                     "gameServer/myprofile/donor",
+                    "gameServer/myprofile/kids",
                     "gameServer/newMessage.jsp",
                     "gameServer/mymessages",
                     "gameServer/profile.jsp",

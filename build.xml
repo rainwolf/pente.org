@@ -80,6 +80,14 @@
             <arg value="org.pente.gameServer.server.test.ArenaServerTableJoinRequestTest"/>
         </java>
         <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.server.test.ServerTableKidTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.server.test.ServerMainRoomKidTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
             <jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
             <classpath refid="test-classpath"/>
             <arg value="org.pente.gameServer.server.test.ServerSocketEarlyFrameTest"/>
@@ -95,6 +103,63 @@
         <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
             <classpath refid="test-classpath"/>
             <arg value="org.pente.gameServer.core.test.UsernameFilterTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.kids.test.KidAccountEmailsTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.kids.test.KidsServletOriginTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.core.test.ReservedNamesTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.kids.test.KidAccountRulesTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.kids.test.KidWirePrivacyTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.kids.test.KidChatRulesTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.kids.test.CacheKidStorerRedisTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.kids.test.StorerKidChatPolicyTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.kids.test.KidCopyEmailsTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.kids.test.KidCopyMailerTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.kids.test.CacheMessageStorerKidTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.turnBased.test.CacheTBStorerKidTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.kids.test.KidInvitationTextTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.kids.test.KidLiveSessionsTest"/>
         </java>
     </target>
 

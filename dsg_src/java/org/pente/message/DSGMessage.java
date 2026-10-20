@@ -13,6 +13,8 @@ public class DSGMessage {
     private Date creationDate;
     private boolean read;
     private boolean viewable;
+    // server-generated notice exempt from the kid chat rule; not persisted
+    private boolean systemNotice;
 
     public String getBody() {
         return body;
@@ -84,5 +86,13 @@ public class DSGMessage {
 
     public void setViewable(boolean viewable) {
         this.viewable = viewable;
+    }
+
+    public boolean isSystemNotice() {
+        return systemNotice;
+    }
+
+    public void setSystemNotice(boolean systemNotice) {
+        this.systemNotice = systemNotice;
     }
 }

@@ -21,6 +21,7 @@ package org.pente.gameServer.server;
 
 import org.pente.gameServer.core.DSGPlayerStoreException;
 import org.pente.gameServer.event.*;
+import org.pente.gameServer.kids.KidLiveSessions;
 import org.pente.gameServer.tourney.*;
 
 import java.util.ArrayList;
@@ -113,6 +114,10 @@ public class TournamentServerMainRoom extends ServerMainRoom {
                             DSGMainRoomErrorEvent.ALREADY_IN_MAIN_ROOM),
                     joinEvent.getPlayer());
         } else {
+            KidLiveSessions ks = kidSessions();
+            if (ks != null) {
+                ks.join(joinEvent.getPlayer(), joinEvent.getKidState());
+            }
             playersInMainRoom.put(joinEvent.getPlayer(), joinEvent.getDSGPlayerData());
 
             sendPlayerList(joinEvent.getPlayer());
@@ -131,6 +136,10 @@ public class TournamentServerMainRoom extends ServerMainRoom {
         if (isPlayerInMainRoom(exitEvent.getPlayer())) {
 
             playersInMainRoom.remove(exitEvent.getPlayer());
+            KidLiveSessions ks = kidSessions();
+            if (ks != null) {
+                ks.leave(exitEvent.getPlayer());
+            }
 
             server.routeEventToAllTables(exitEvent);
 

@@ -29,6 +29,7 @@ public class DSGUpdatePlayerDataEvent extends AbstractDSGEvent {
         DSGPlayerData dataCopy = (DSGPlayerData) data.clone();
         dataCopy.setPassword("");
         dataCopy.setEmail("");
+        dataCopy.setParentPid(null);
         this.data = dataCopy;
     }
 

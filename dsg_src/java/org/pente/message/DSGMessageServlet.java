@@ -303,6 +303,12 @@ public class DSGMessageServlet extends HttpServlet {
                         handleError(request, response, "Player is ignoring your messages.", errorRedirectPage);
                         return;
                     }
+                    org.pente.gameServer.kids.KidChatPolicy policy = resources.getKidChatPolicy();
+                    if (policy != null && !policy.allowed(
+                            playerData.getPlayerID(), toPlayerData.getPlayerID())) {
+                        handleError(request, response, kidRefusedText(playerData), errorRedirectPage);
+                        return;
+                    }
                 }
 
                 m.setBody(body);
@@ -347,12 +353,22 @@ public class DSGMessageServlet extends HttpServlet {
                 log4j.error("MessageServlet, lookup to player error.", dpse);
                 handleError(request, response, "Player " + to + " not found.", errorRedirectPage);
                 return;
+            } catch (KidMessageRefusedException kmre) {
+                log4j.info("MessageServlet create refused by kid rule: " + kmre.getMessage());
+                handleError(request, response, kidRefusedText(playerData), errorRedirectPage);
             } catch (DSGMessageStoreException dmse) {
                 log4j.error("MessageServlet create error.", dmse);
                 handleError(request, response, "Database error, please try again later.", errorRedirectPage);
             }
         }
 
+    }
+
+    /** Kid senders see the kid text; anyone writing to a kid sees the ignore text. */
+    private static String kidRefusedText(DSGPlayerData sender) {
+        return sender.getParentPid() != null ?
+                org.pente.gameServer.kids.KidAccountRules.KID_PM_ERROR :
+                "Player is ignoring your messages.";
     }
 
     private void handleError(HttpServletRequest request,
