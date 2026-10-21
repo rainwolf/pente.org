@@ -6,7 +6,7 @@
    '<%= tourney.getName() %>', '<%= round.getRound() %>', '1');">View Games in Games History</a></b>
 <br>
 <br>
-<table border="0" cellspacing="0" cellpadding="0">
+<table class="appscroll" border="0" cellspacing="0" cellpadding="0">
    <tr>
       <td valign="top">
          <b>Matches</b>

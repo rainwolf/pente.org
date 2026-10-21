@@ -1,0 +1,136 @@
+/* Mobile shell for pages opened from the pente.org apps. Loaded by top.jsp only when
+   the page opted in (mobileShell) and the user agent is an app; everything is scoped under body.app. */
+body.app {
+    font-size: 15px;
+    -webkit-text-size-adjust: 100%;
+    background-image: none; /* the green band behind the hidden header */
+}
+
+/* app provides its own navigation; !important beats the help table's td display rule below */
+body.app #header,
+body.app #footer,
+body.app .helptoc,
+body.app .helptoc + td {
+    display: none !important;
+}
+
+body.app #wrapper {
+    width: auto;
+    max-width: 100%;
+    margin: 0;
+}
+
+body.app .pagebody {
+    margin-right: 0;
+    padding: 0 12px;
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+body.app .pagebody table {
+    max-width: 100%;
+}
+
+/* the layout tables must not grow with their content (hack.css #wrapper clips overflow) */
+body.app #main,
+body.app .pagebody table[width="100%"]:not(.appscroll) {
+    table-layout: fixed;
+    width: 100%;
+}
+
+body.app .pagebody table[width="100%"]:not(.appscroll) td {
+    overflow-wrap: break-word;
+}
+
+/* empty right-hand ad column of the details row */
+body.app .pagebody table[width="100%"] > tbody > tr > td[valign="top"][align="right"] {
+    width: 1px;
+    padding: 0;
+}
+
+/* help: drop the fixed 800 px table (direct cells only, nested help tables keep their layout) */
+body.app .pagebody > table[width="800"] {
+    width: 100%;
+}
+
+body.app .pagebody > table[width="800"] > tbody > tr > td {
+    display: block;
+    width: auto;
+}
+
+/* wide data tables scroll inside themselves, never the page. They keep their natural
+   (content) width so board cells do not overlap; the block box is the scroll container. */
+body.app .pagebody table.appscroll,
+body.app .pagebody table[width="400"],
+body.app .pagebody table[width="480"],
+body.app .pagebody table[width="500"] {
+    display: block;
+    width: auto;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* elimination round boards are fixed-size canvases; scale them so the table fits the phone.
+   Click handler is not coordinate based (whole canvas opens the game), so scaling is safe. */
+body.app .pagebody table.appscroll canvas {
+    max-width: 100%;
+    height: auto;
+}
+
+body.app img {
+    max-width: 100%;
+    height: auto;
+}
+
+body.app p,
+body.app td,
+body.app th,
+body.app li,
+body.app font {
+    font-size: 15px;
+}
+
+body.app h2 {
+    font-size: 16px;
+}
+
+/* touch targets */
+body.app input[type="submit"],
+body.app input[type="button"],
+body.app button {
+    font-size: 16px;
+    min-height: 44px;
+    padding: 6px 14px;
+}
+
+/* 44 px tap area, 22 px visible box */
+body.app input[type="checkbox"],
+body.app input[type="radio"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 44px;
+    height: 44px;
+    margin: 0 2px 0 0;
+    vertical-align: middle;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 22px 22px;
+    background-color: transparent;
+    border: 0;
+}
+
+body.app input[type="checkbox"] {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 22'%3E%3Crect x='1' y='1' width='20' height='20' rx='3' fill='white' stroke='%23555' stroke-width='2'/%3E%3C/svg%3E");
+}
+
+body.app input[type="checkbox"]:checked {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 22'%3E%3Crect x='1' y='1' width='20' height='20' rx='3' fill='%232b8a2e' stroke='%23555' stroke-width='2'/%3E%3Cpath d='M5 11.5l4 4 8-9' fill='none' stroke='white' stroke-width='2.5'/%3E%3C/svg%3E");
+}
+
+body.app input[type="radio"] {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 22'%3E%3Ccircle cx='11' cy='11' r='10' fill='white' stroke='%23555' stroke-width='2'/%3E%3C/svg%3E");
+}
+
+body.app input[type="radio"]:checked {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 22'%3E%3Ccircle cx='11' cy='11' r='10' fill='white' stroke='%23555' stroke-width='2'/%3E%3Ccircle cx='11' cy='11' r='5' fill='%232b8a2e'/%3E%3C/svg%3E");
+}
