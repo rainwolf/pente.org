@@ -41,4 +41,29 @@ public class KidCopyEmailsTest extends TestCase {
                 + "You get this copy because message copies are on for kid. "
                 + "Change it at https://www.pente.org/gameServer/myprofile/kids", body);
     }
+
+    public void testTbLineFormat() {
+        assertEquals("Move 12, 2026-10-19 14:03 UTC, graviton: good luck",
+                KidCopyEmails.tbLine(12, WHEN, "graviton", "good luck"));
+    }
+
+    public void testTbLineWithoutDate() {
+        assertEquals("Move 12, graviton: good luck",
+                KidCopyEmails.tbLine(12, null, "graviton", "good luck"));
+    }
+
+    public void testTbSubject() {
+        assertEquals("Pente.org game messages: kid vs graviton (Pente)",
+                KidCopyEmails.tbSubject("kid", "graviton", "Pente"));
+    }
+
+    public void testTbBodyExact() {
+        String body = KidCopyEmails.tbBody("kid", "kid", "graviton", "Pente", 50000000001234L,
+                Arrays.asList("Move 1, kid: hi", "Move 2, graviton: gg"));
+        assertEquals("Turn-based game messages between kid and graviton (Pente):\n\n"
+                + "Move 1, kid: hi\nMove 2, graviton: gg\n\n"
+                + "View the game: https://www.pente.org/gameServer/tb/game?gid=50000000001234&command=load\n\n"
+                + "You get this copy because turn-based game message copies are on for kid. "
+                + "Change it at https://www.pente.org/gameServer/myprofile/kids", body);
+    }
 }

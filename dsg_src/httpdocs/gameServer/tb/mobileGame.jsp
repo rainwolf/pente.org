@@ -61,7 +61,7 @@
       moves = ",";
    }
 // if (loggedInStr.equals("rainwolf") || loggedInStr.equals(p1.getName()) || loggedInStr.equals(p2.getName())) {
-   if ("rainwolf".equals(loggedInStr) || loggedInStr.equals(p1.getName()) || loggedInStr.equals(p2.getName())) {
+   if ("rainwolf".equals(loggedInStr) || loggedInStr.equals(p1.getName()) || loggedInStr.equals(p2.getName()) || Boolean.TRUE.equals(request.getAttribute(org.pente.gameServer.kids.KidParentAccess.REQUEST_ATTR))) {
       final com.jivesoftware.base.FilterChain msgFilters = filters;
       for (TBMessageThread.Entry entry : TBMessageThread.entries(game,
             m -> m.getMessage().length() == 1 // bug in URLConverter

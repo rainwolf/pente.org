@@ -294,6 +294,9 @@ public class DSGContextListener implements ServletContextListener {
                     dsgMessageStorer, kothStorer);
             tbGameStorer.setNotificationServer(notificationServer);
             tbGameStorer.setKidChatPolicy(resources.getKidChatPolicy());
+            if (resources.getKidCopyMailer() != null) {
+                tbGameStorer.setGameEndListener(resources.getKidCopyMailer()::copyTbTranscript);
+            }
             resources.setTbGameStorer(tbGameStorer);
             log4j.info("contextInitialized(), created TBGameStorer");
 

@@ -1,17 +1,23 @@
 package org.pente.gameServer.kids;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Category;
 
+import org.pente.game.GridStateFactory;
 import org.pente.gameServer.core.DSGPlayerData;
 import org.pente.gameServer.core.DSGPlayerStorer;
 import org.pente.message.BackgroundMailer;
 import org.pente.message.DSGMessage;
 import org.pente.message.TextMailer;
+import org.pente.turnBased.TBGame;
+import org.pente.turnBased.TBMessage;
 
 /** Emails parents copies of their kids' private messages and live chat. */
 public class KidCopyMailer {
@@ -65,6 +71,60 @@ public class KidCopyMailer {
             }
         } catch (Throwable t) {
             log4j.error("Kid message copy failed", t);
+        }
+    }
+
+    /** Emails each opted-in kid's parent the game's messages once the game has ended. */
+    public void copyTbTranscript(TBGame game) {
+        try {
+            if (game == null || !KidTbTranscript.started(game)) {
+                return;
+            }
+            List<TBMessage> messages = KidTbTranscript.ordered(game);
+            if (messages.isEmpty()) {
+                return;
+            }
+            DSGPlayerData p1 = players.loadPlayer(game.getPlayer1Pid());
+            DSGPlayerData p2 = players.loadPlayer(game.getPlayer2Pid());
+            if (p1 == null || p2 == null) {
+                return;
+            }
+            // parent pid -> kid whose copy it is; first kid wins, one mail per parent
+            Map<Long, DSGPlayerData> parents = new LinkedHashMap<Long, DSGPlayerData>();
+            DSGPlayerData[] sides = {p1, p2};
+            for (DSGPlayerData side : sides) {
+                Long parent = side.getParentPid();
+                if (parent != null && !parents.containsKey(parent)
+                        && kids.getSettings(side.getPlayerID()).isCopyTbMessages()) {
+                    parents.put(parent, side);
+                }
+            }
+            if (parents.isEmpty()) {
+                return;
+            }
+            String gameName = GridStateFactory.getGameName(game.getGame());
+            List<String> lines = new ArrayList<String>();
+            for (TBMessage m : messages) {
+                String author = m.getPid() == p1.getPlayerID() ? p1.getName()
+                        : m.getPid() == p2.getPlayerID() ? p2.getName() : "Pente.org";
+                lines.add(KidCopyEmails.tbLine(m.getMoveNum(), m.getDate(), author, m.getMessage()));
+            }
+            for (Map.Entry<Long, DSGPlayerData> e : parents.entrySet()) {
+                DSGPlayerData parent = usableParent(e.getKey());
+                if (parent == null) {
+                    continue;
+                }
+                DSGPlayerData kid = e.getValue();
+                DSGPlayerData opponent = kid == p1 ? p2 : p1;
+                mailer.mailText(parent.getName(), parent.getEmail(),
+                        KidCopyEmails.tbSubject(kid.getName(), opponent.getName(), gameName),
+                        KidCopyEmails.tbBody(kid.getName(), p1.getName(), p2.getName(),
+                                gameName, game.getGid(), lines));
+                log4j.info("Kid copy queued: kid=" + kid.getPlayerID() + " parent=" + e.getKey()
+                        + " kind=tb gid=" + game.getGid() + " messages=" + lines.size());
+            }
+        } catch (Throwable t) {
+            log4j.error("Kid TB transcript copy failed", t);
         }
     }
 

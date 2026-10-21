@@ -110,7 +110,8 @@
       DSGPlayerData meData = dsgPlayerStorer.loadPlayer(me);
       if (turnBased &&
          (game.getPlayer1Data().getUserID() == meData.getPlayerID() ||
-            game.getPlayer2Data().getUserID() == meData.getPlayerID())) {
+            game.getPlayer2Data().getUserID() == meData.getPlayerID() ||
+            Boolean.TRUE.equals(request.getAttribute(org.pente.gameServer.kids.KidParentAccess.REQUEST_ATTR)))) {
 
          showMessages = true;
 

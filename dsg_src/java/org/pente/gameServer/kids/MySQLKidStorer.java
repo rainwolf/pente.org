@@ -114,12 +114,13 @@ public class MySQLKidStorer implements KidStorer {
             try {
                 con = dbHandler.getConnection();
                 stmt = con.prepareStatement(
-                    "select copy_messages, copy_live_chat from dsg_kid_settings where kid_pid = ?");
+                    "select copy_messages, copy_live_chat, copy_tb_messages from dsg_kid_settings where kid_pid = ?");
                 stmt.setLong(1, kidPid);
                 result = stmt.executeQuery();
                 if (result.next()) {
                     return new KidSettings(kidPid,
-                        "Y".equals(result.getString(1)), "Y".equals(result.getString(2)));
+                        "Y".equals(result.getString(1)), "Y".equals(result.getString(2)),
+                        "Y".equals(result.getString(3)));
                 }
                 return KidSettings.off(kidPid);
             } finally {
@@ -141,11 +142,13 @@ public class MySQLKidStorer implements KidStorer {
     public void storeSettings(KidSettings s) throws DSGPlayerStoreException {
         String m = s.isCopyMessages() ? "Y" : "N";
         String c = s.isCopyLiveChat() ? "Y" : "N";
+        String t = s.isCopyTbMessages() ? "Y" : "N";
         update("storing kid settings for " + s.getKidPid(),
-            "insert into dsg_kid_settings (kid_pid, copy_messages, copy_live_chat) " +
-            "values (?, ?, ?) on duplicate key update " +
-            "copy_messages = values(copy_messages), copy_live_chat = values(copy_live_chat)",
-            s.getKidPid(), m, c);
+            "insert into dsg_kid_settings (kid_pid, copy_messages, copy_live_chat, copy_tb_messages) " +
+            "values (?, ?, ?, ?) on duplicate key update " +
+            "copy_messages = values(copy_messages), copy_live_chat = values(copy_live_chat), " +
+            "copy_tb_messages = values(copy_tb_messages)",
+            s.getKidPid(), m, c, t);
     }
 
     public void deleteKidData(long kidPid) throws DSGPlayerStoreException {

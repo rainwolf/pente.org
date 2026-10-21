@@ -30,6 +30,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
     private final CacheKOTHStorer kothStorer;
     private NotificationServer notificationServer;
     private volatile org.pente.gameServer.kids.KidChatPolicy kidChatPolicy;
+    private volatile TBGameEndListener gameEndListener;
 
     RedisConnectionManager pente_cache = RedisConnectionManager.getInstance();
 
@@ -934,6 +935,8 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
                     // store game in DSG game db, and update DSG ratings
                     storeGameDSG(data, set);
+
+                    notifyGameEnded(data.game);
 
                 } catch (InterruptedException e) {
                     // no action, if killed thread will see in next loop
@@ -1971,6 +1974,7 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
         TBSet set = loadSet(s.getSetId());
         loadWaitingSets();
+        List<TBGame> cancelledGames = new ArrayList<TBGame>();
         synchronized (cacheTbLock) {
             if (set.isWaitingSet()) {
                 pente_cache.hremove(RedisConnectionManager.TB_WAITING_SET_IDS, set.getSetId());
@@ -1980,11 +1984,13 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
                 if (set.getGame1().getState() == TBGame.STATE_ACTIVE) {
                     set.getGame1().setState(TBGame.STATE_CANCEL);
                     set.getGame1().setCompletionDate(new Date());
+                    cancelledGames.add(set.getGame1());
                 }
                 if (set.getGame2() != null &&
                         set.getGame2().getState() == TBGame.STATE_ACTIVE) {
                     set.getGame2().setState(TBGame.STATE_CANCEL);
                     set.getGame2().setCompletionDate(new Date());
+                    cancelledGames.add(set.getGame2());
                 }
                 set.setCancelMsg("");
                 set.setCancelPid(0);
@@ -2002,6 +2008,10 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
 
         synchronized (cacheTbLock) {
             evictSet(set);
+        }
+
+        for (TBGame cancelled : cancelledGames) {
+            notifyGameEnded(cancelled);
         }
     }
 
@@ -2374,5 +2384,22 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
     /** Kid chat rule for move messages and cancel text; null means no rule. */
     public void setKidChatPolicy(org.pente.gameServer.kids.KidChatPolicy policy) {
         this.kidChatPolicy = policy;
+    }
+
+    /** Called once per ended or agreed-cancelled game; null means none. */
+    public void setGameEndListener(TBGameEndListener listener) {
+        this.gameEndListener = listener;
+    }
+
+    private void notifyGameEnded(TBGame game) {
+        TBGameEndListener listener = gameEndListener;
+        if (listener == null) {
+            return;
+        }
+        try {
+            listener.gameEnded(game);
+        } catch (Throwable t) {
+            log4j.error("Game end listener failed for " + game.getGid(), t);
+        }
     }
 }

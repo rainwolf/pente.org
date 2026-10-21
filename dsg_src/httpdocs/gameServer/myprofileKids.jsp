@@ -147,12 +147,16 @@
       cm.checked = !!k.copyMessages;
       var cl = el("input", null, {type: "checkbox"});
       cl.checked = !!k.copyLiveChat;
+      var ct = el("input", null, {type: "checkbox"});
+      ct.checked = !!k.copyTbMessages;
       function saveSettings() {
          post({action: "settings", kidPid: k.kidPid,
-               copyMessages: cm.checked ? "Y" : "N", copyLiveChat: cl.checked ? "Y" : "N"});
+               copyMessages: cm.checked ? "Y" : "N", copyLiveChat: cl.checked ? "Y" : "N",
+               copyTbMessages: ct.checked ? "Y" : "N"});
       }
       cm.addEventListener("change", saveSettings);
       cl.addEventListener("change", saveSettings);
+      ct.addEventListener("change", saveSettings);
       var l1 = el("label", " Email me copies of private messages");
       l1.insertBefore(cm, l1.firstChild);
       var l2 = el("label", " Email me copies of live game room chat");
@@ -161,6 +165,30 @@
       var d2 = box.appendChild(el("div", null, {style: "margin:8px 0;"}));
       d2.appendChild(l2);
       d2.appendChild(el("div", LIVE_NOTE, {style: "font-size:0.85em;color:#666;"}));
+      var l3 = el("label", " Turn-based game messages");
+      l3.insertBefore(ct, l3.firstChild);
+      var d3 = box.appendChild(el("div", null, {style: "margin:8px 0;"}));
+      d3.appendChild(l3);
+      d3.appendChild(el("div", "One email per game when it ends, with every message from both players.", {style: "font-size:0.85em;color:#666;"}));
+
+      box.appendChild(el("h4", "Active turn-based games"));
+      var gl = el("ul");
+      box.appendChild(gl);
+      fetch(URL + "?action=activeGames&kidPid=" + encodeURIComponent(k.kidPid), {credentials: "same-origin"})
+         .then(function (r) { return r.json(); })
+         .then(function (g) {
+            if (!g.success) { gl.appendChild(el("li", g.error || "Could not load games.")); return; }
+            if (!g.games || g.games.length === 0) { gl.appendChild(el("li", "No active turn-based games.")); return; }
+            g.games.forEach(function (x) {
+               var li = el("li");
+               li.appendChild(el("a", x.gameName + " vs " + x.opponentName,
+                  {href: "/gameServer/tb/game?gid=" + encodeURIComponent(x.gid) + "&command=load"}));
+               li.appendChild(document.createTextNode(" - " + (x.kidsTurn ? k.name : x.opponentName) + "'s turn" +
+                  (x.lastMoveDate > 0 ? ", last move " + new Date(x.lastMoveDate).toLocaleString() : "")));
+               gl.appendChild(li);
+            });
+         })
+         .catch(function () { gl.appendChild(el("li", "Could not load games.")); });
 
       box.appendChild(button("Release", function () {
          if (confirm("Release " + k.name + "? They will become a normal account.")) {

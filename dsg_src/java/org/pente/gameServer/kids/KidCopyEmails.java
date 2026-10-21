@@ -54,4 +54,31 @@ public final class KidCopyEmails {
                 .append(kidName).append(". Change it at ").append(KIDS_URL);
         return sb.toString();
     }
+
+    public static String tbSubject(String kidName, String opponentName, String gameName) {
+        return "Pente.org game messages: " + kidName + " vs " + opponentName
+                + " (" + gameName + ")";
+    }
+
+    public static String tbLine(int moveNum, Date when, String author, String text) {
+        if (when == null) {
+            return "Move " + moveNum + ", " + author + ": " + text;
+        }
+        return "Move " + moveNum + ", " + format(when) + ", " + author + ": " + text;
+    }
+
+    public static String tbBody(String kidName, String p1Name, String p2Name,
+                                String gameName, long gid, List<String> lines) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Turn-based game messages between ").append(p1Name).append(" and ")
+                .append(p2Name).append(" (").append(gameName).append("):\n\n");
+        for (String line : lines) {
+            sb.append(line).append("\n");
+        }
+        sb.append("\nView the game: https://www.pente.org/gameServer/tb/game?gid=")
+                .append(gid).append("&command=load\n\n")
+                .append("You get this copy because turn-based game message copies are on for ")
+                .append(kidName).append(". Change it at ").append(KIDS_URL);
+        return sb.toString();
+    }
 }

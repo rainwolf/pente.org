@@ -38,7 +38,8 @@
       DSGPlayerData player2 = dsgPlayerStorer.loadPlayer(tbGame.getPlayer2Pid());
       boolean canSeeMessages = "rainwolf".equals(loggedInStr)
               || loggedInStr.equals(player1.getName())
-              || loggedInStr.equals(player2.getName());
+              || loggedInStr.equals(player2.getName())
+              || org.pente.gameServer.kids.KidParentAccess.isParentOf(visitor, player1, player2);
       final com.jivesoftware.base.FilterChain f = filters;
       final org.pente.gameServer.kids.KidChatPolicy kidPolicy = resources.getKidChatPolicy();
       final DSGPlayerData kidViewer = visitor;
