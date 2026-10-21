@@ -205,6 +205,7 @@ CREATE TABLE `dsg_kid_settings` (
   `kid_pid` bigint(20) unsigned NOT NULL,
   `copy_messages` char(1) NOT NULL DEFAULT 'N',
   `copy_live_chat` char(1) NOT NULL DEFAULT 'N',
+  `copy_tb_messages` char(1) NOT NULL DEFAULT 'N',
   PRIMARY KEY (`kid_pid`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;

@@ -79,6 +79,25 @@ public class CacheKidStorerRedisTest extends TestCase {
         assertEquals(10L, (long) notified.get(0));
     }
 
+    public void testSettingsTbFlagRoundTrip() throws Exception {
+        cache.storeSettings(new KidSettings(10, false, false, true));
+        KidSettings s = cache.getSettings(10);
+        assertTrue(s.isCopyTbMessages());
+        assertTrue(!s.isCopyMessages());
+        assertTrue(!s.isCopyLiveChat());
+    }
+
+    public void testThreeArgSettingsHasTbOff() throws Exception {
+        assertTrue(!new KidSettings(10, true, true).isCopyTbMessages());
+        assertTrue(!KidSettings.off(10).isCopyTbMessages());
+    }
+
+    public void testTbFlagSurvivesRedisSerialization() throws Exception {
+        KidSettings s = (KidSettings) RedisConnectionManager.deserialize(
+            RedisConnectionManager.serialize(new KidSettings(10, false, false, true)));
+        assertTrue(s.isCopyTbMessages());
+    }
+
     public void testDeleteKidDataClearsBoth() throws Exception {
         cache.addToWhitelist(10, 20);
         cache.storeSettings(new KidSettings(10, true, true));

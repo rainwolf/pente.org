@@ -61,6 +61,7 @@ public class KidsServlet extends HttpServlet {
         String name;
         boolean copyMessages;
         boolean copyLiveChat;
+        boolean copyTbMessages;
         List<PlayerEntry> whitelist;
     }
 
@@ -337,7 +338,10 @@ public class KidsServlet extends HttpServlet {
                 ? current.isCopyMessages() : flag(request, "copyMessages");
         boolean copyLiveChat = request.getParameter("copyLiveChat") == null
                 ? current.isCopyLiveChat() : flag(request, "copyLiveChat");
-        kidStorer.storeSettings(new KidSettings(kid.getPlayerID(), copyMessages, copyLiveChat));
+        boolean copyTbMessages = request.getParameter("copyTbMessages") == null
+                ? current.isCopyTbMessages() : flag(request, "copyTbMessages");
+        kidStorer.storeSettings(new KidSettings(kid.getPlayerID(), copyMessages, copyLiveChat,
+                copyTbMessages));
         logAction("settings", me, kid.getPlayerID());
         success(response, me, null);
     }
@@ -462,6 +466,7 @@ public class KidsServlet extends HttpServlet {
                 e.name = kid.getName();
                 e.copyMessages = s.isCopyMessages();
                 e.copyLiveChat = s.isCopyLiveChat();
+                e.copyTbMessages = s.isCopyTbMessages();
                 e.whitelist = whitelist(kid);
                 reply.kids.add(e);
             }
