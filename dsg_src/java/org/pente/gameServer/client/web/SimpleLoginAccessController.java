@@ -15,6 +15,7 @@ public class SimpleLoginAccessController implements LoginAccessController {
                     "gameServer/deletePlayer.jsp",
                     "gameServer/who.jsp",
                     "gameServer/tournaments/tournamentSignup.jsp",
+                    "gameServer/tournaments/tournamentWithdraw.jsp",
                     "gameServer/forums/settings!tab.jspa",
                     "gameServer/forums/editwatches!default.jspa",
                     "gameServer/viewLiveGames",

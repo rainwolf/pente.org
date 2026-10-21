@@ -62,6 +62,12 @@
          <% } else { %>
          <% if (tournamentPlayers.contains(dsgPlayerData.getPlayerID())) { %>
          You are currently signed up for this tournament.<br>
+         <% if (TourneyWithdraw.isRegistrationOpen(tourney, resources.getTourneyStorer().getUpcomingTournies(), new java.util.Date())) { %>
+         <form method="get" action="tournamentWithdraw.jsp">
+            <input type="hidden" name="eid" value="<%= eid %>">
+            <input type="submit" value="Withdraw from this tournament">
+         </form>
+         <% } %>
          <% } else {
             DSGPlayerGameData game = dsgPlayerData.getPlayerGameData(tourney.getGame()); %>
 
