@@ -79,9 +79,27 @@ public class KidParentAccessTest extends TestCase {
         assertTrue(!KidParentAccess.isParentOf(P, players, 100, 200));
     }
 
-    public void testHistoryRequestorPid() {
-        assertEquals(100L, KidParentAccess.historyRequestorPid(P, K));
-        assertEquals(200L, KidParentAccess.historyRequestorPid(X, K));
-        assertEquals(1L, KidParentAccess.historyRequestorPid(P, X));
+    public void testHistoryRequestorPidTb() {
+        // parent sees kid's private TB games in history
+        assertEquals(100L, KidParentAccess.historyRequestorPid(P, K, true));
+        // non-parent sees neither
+        assertEquals(200L, KidParentAccess.historyRequestorPid(X, K, true));
+        assertEquals(1L, KidParentAccess.historyRequestorPid(P, X, true));
+    }
+
+    public void testHistoryRequestorPidLiveNeverExempt() {
+        // parent must NOT see kid's private live games: behaves as on main
+        assertEquals(1L, KidParentAccess.historyRequestorPid(P, K, false));
+        assertEquals(200L, KidParentAccess.historyRequestorPid(X, K, false));
+    }
+
+    public void testCanReadGameOnlyTb() {
+        MapPlayerStorer players = new MapPlayerStorer();
+        players.put(P);
+        players.put(K);
+        players.put(X);
+        assertTrue(KidParentAccess.canReadGame(P, players, 100, 200, true));
+        assertTrue(!KidParentAccess.canReadGame(P, players, 100, 200, false));
+        assertTrue(!KidParentAccess.canReadGame(X, players, 100, 300, true));
     }
 }

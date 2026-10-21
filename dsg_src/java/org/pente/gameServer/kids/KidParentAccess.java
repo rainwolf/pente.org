@@ -46,9 +46,22 @@ public final class KidParentAccess {
         }
     }
 
-    /** The pid whose private games the viewer may see in profile's game history. */
-    public static long historyRequestorPid(DSGPlayerData viewer, DSGPlayerData profile) {
-        if (isParentOf(viewer, profile, null)) {
+    /**
+     * Parent read access applies to turn-based games only (they carry the
+     * messages the parent may read). Private live games stay hidden.
+     */
+    public static boolean canReadGame(DSGPlayerData viewer, DSGPlayerStorer players,
+                                      long p1Pid, long p2Pid, boolean tbGame) {
+        return tbGame && isParentOf(viewer, players, p1Pid, p2Pid);
+    }
+
+    /**
+     * The pid whose private games the viewer may see in profile's game history.
+     * The parent exemption applies only when listing turn-based games.
+     */
+    public static long historyRequestorPid(DSGPlayerData viewer, DSGPlayerData profile,
+                                           boolean tbGame) {
+        if (tbGame && isParentOf(viewer, profile, null)) {
             return profile.getPlayerID();
         }
         return viewer.getPlayerID();

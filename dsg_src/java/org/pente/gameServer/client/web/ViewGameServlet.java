@@ -83,9 +83,13 @@ public class ViewGameServlet extends HttpServlet {
             GameData game = new DefaultGameData();
             resources.getGameStorer().loadGame(gid, game);
 
-            boolean parentViewer = KidParentAccess.isParentOf(playerData,
+            TBGame tbGame = resources.getTbGameStorer().loadGame(gid);
+
+            // parent exemption is for turn-based games only; private live games stay hidden
+            boolean parentViewer = KidParentAccess.canReadGame(playerData,
                     resources.getDsgPlayerStorer(),
-                    game.getPlayer1Data().getUserID(), game.getPlayer2Data().getUserID());
+                    game.getPlayer1Data().getUserID(), game.getPlayer2Data().getUserID(),
+                    tbGame != null);
             request.setAttribute(KidParentAccess.REQUEST_ATTR, Boolean.valueOf(parentViewer));
 
             if (game.isPrivateGame() && !parentViewer &&
@@ -95,9 +99,6 @@ public class ViewGameServlet extends HttpServlet {
                 handleError(request, response, "Game id invalid, please try again.", redirectPage);
                 return;
             }
-
-            TBGame tbGame = resources.getTbGameStorer().loadGame(gid);
-
 
             request.setAttribute("game", game);
             if (tbGame != null) {

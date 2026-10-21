@@ -116,7 +116,8 @@ public class ViewGamesServlet extends HttpServlet {
 
             List<GameData> games = resources.getDsgGameLookup().search(
                     name, playerData.getPlayerID(), playerData.getNameColorRGB(),
-                    KidParentAccess.historyRequestorPid(meData, playerData),
+                    KidParentAccess.historyRequestorPid(meData, playerData,
+                            org.pente.game.GridStateFactory.isTurnbasedGame(game)),
                     game, startSeq, 100);
             int count;
             int myWins;
