@@ -145,10 +145,11 @@ public class ResignServlet extends HttpServlet {
                         message.setSeqNbr(2);
                         message.setPid(game.getCurrentPlayer());
                     }
-                    tbGameStorer.resignGame(game);
+                    // store before resigning so the queued end game carries it
                     if (message != null) {
                         tbGameStorer.storeNewMessage(game.getGid(), message);
                     }
+                    tbGameStorer.resignGame(game);
                 }
 
                 String isMobile = request.getParameter("mobile");

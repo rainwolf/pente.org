@@ -171,6 +171,10 @@
         </java>
         <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
             <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.kids.test.KidTbTranscriptTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
             <arg value="org.pente.turnBased.test.CacheTBStorerGameEndTest"/>
         </java>
         <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
