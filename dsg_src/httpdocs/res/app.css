@@ -70,6 +70,13 @@ body.app .pagebody table[width="500"] {
     -webkit-overflow-scrolling: touch;
 }
 
+/* elimination round boards are fixed-size canvases; scale them so the table fits the phone.
+   Click handler is not coordinate based (whole canvas opens the game), so scaling is safe. */
+body.app .pagebody table.appscroll canvas {
+    max-width: 100%;
+    height: auto;
+}
+
 body.app img {
     max-width: 100%;
     height: auto;
