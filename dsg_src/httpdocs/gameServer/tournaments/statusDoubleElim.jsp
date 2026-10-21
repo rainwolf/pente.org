@@ -8,7 +8,7 @@
    '<%= gameName %>', 'Pente.org',
    '<%= tourney.getName() %>', '<%= round.getRound() %>', '<%= (j + 1)%>');">View Games in Games History</a></b>
 <br>
-<table width="100%" border="1" cellspacing="0" cellpadding="1" bordercolor="black">
+<table class="appscroll" width="100%" border="1" cellspacing="0" cellpadding="1" bordercolor="black">
    <tr bgcolor="<%= bgColor1 %>">
       <th width="25%" align="center"><font color="white">Player 1</font></th>
       <th width="25%" align="center"><font color="white">Result</font></th>

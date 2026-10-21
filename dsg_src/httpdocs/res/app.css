@@ -6,13 +6,11 @@ body.app {
     background-image: none; /* the green band behind the hidden header */
 }
 
-/* app provides its own navigation */
+/* app provides its own navigation; !important beats the help table's td display rule below */
 body.app #header,
 body.app #footer,
 body.app .helptoc,
-body.app .pagebody > table td.helptoc,
-body.app .helptoc + td,
-body.app .pagebody > table td.helptoc + td {
+body.app .helptoc + td {
     display: none !important;
 }
 
@@ -24,7 +22,7 @@ body.app #wrapper {
 
 body.app .pagebody {
     margin-right: 0;
-    padding: 0 10px;
+    padding: 0 12px;
     box-sizing: border-box;
     max-width: 100%;
 }
@@ -33,11 +31,15 @@ body.app .pagebody table {
     max-width: 100%;
 }
 
-/* the page layout table must not grow with its content (hack.css #wrapper clips overflow) */
+/* the layout tables must not grow with their content (hack.css #wrapper clips overflow) */
 body.app #main,
-body.app .pagebody table[width="100%"] {
+body.app .pagebody table[width="100%"]:not(.appscroll) {
     table-layout: fixed;
     width: 100%;
+}
+
+body.app .pagebody table[width="100%"]:not(.appscroll) td {
+    overflow-wrap: break-word;
 }
 
 /* empty right-hand ad column of the details row */
@@ -46,28 +48,19 @@ body.app .pagebody table[width="100%"] > tbody > tr > td[valign="top"][align="ri
     padding: 0;
 }
 
-body.app .pagebody table[width="100%"] td {
-    overflow-wrap: break-word;
-}
-
-/* layout tables that wrap a fixed-width data table scroll as one block */
-body.app .pagebody table:has(> tbody > tr > td > table[width="400"]),
-body.app .pagebody table:has(> tbody > tr > td > table[width="500"]) {
-    display: block;
-    overflow-x: auto;
-}
-
-/* help: drop the fixed 800 px table */
+/* help: drop the fixed 800 px table (direct cells only, nested help tables keep their layout) */
 body.app .pagebody > table[width="800"] {
     width: 100%;
 }
 
-body.app .pagebody > table[width="800"] td {
+body.app .pagebody > table[width="800"] > tbody > tr > td {
     display: block;
     width: auto;
 }
 
-/* fixed-width data tables scroll inside themselves, not the page */
+/* wide data tables scroll inside themselves, never the page. They keep their natural
+   (content) width so board cells do not overlap; the block box is the scroll container. */
+body.app .pagebody table.appscroll,
 body.app .pagebody table[width="400"],
 body.app .pagebody table[width="480"],
 body.app .pagebody table[width="500"] {
@@ -75,13 +68,6 @@ body.app .pagebody table[width="500"] {
     width: auto;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-}
-
-/* swiss matches table: boards need their natural width, the wrapping block scrolls */
-body.app .pagebody table[width="400"] {
-    display: table;
-    width: max-content;
-    max-width: none;
 }
 
 body.app img {
@@ -97,6 +83,10 @@ body.app font {
     font-size: 15px;
 }
 
+body.app h2 {
+    font-size: 16px;
+}
+
 /* touch targets */
 body.app input[type="submit"],
 body.app input[type="button"],
@@ -106,13 +96,34 @@ body.app button {
     padding: 6px 14px;
 }
 
+/* 44 px tap area, 22 px visible box */
 body.app input[type="checkbox"],
 body.app input[type="radio"] {
-    width: 22px;
-    height: 22px;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 44px;
+    height: 44px;
+    margin: 0 2px 0 0;
     vertical-align: middle;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 22px 22px;
+    background-color: transparent;
+    border: 0;
 }
 
-body.app h2 {
-    font-size: 16px;
+body.app input[type="checkbox"] {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 22'%3E%3Crect x='1' y='1' width='20' height='20' rx='3' fill='white' stroke='%23555' stroke-width='2'/%3E%3C/svg%3E");
+}
+
+body.app input[type="checkbox"]:checked {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 22'%3E%3Crect x='1' y='1' width='20' height='20' rx='3' fill='%232b8a2e' stroke='%23555' stroke-width='2'/%3E%3Cpath d='M5 11.5l4 4 8-9' fill='none' stroke='white' stroke-width='2.5'/%3E%3C/svg%3E");
+}
+
+body.app input[type="radio"] {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 22'%3E%3Ccircle cx='11' cy='11' r='10' fill='white' stroke='%23555' stroke-width='2'/%3E%3C/svg%3E");
+}
+
+body.app input[type="radio"]:checked {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 22'%3E%3Ccircle cx='11' cy='11' r='10' fill='white' stroke='%23555' stroke-width='2'/%3E%3Ccircle cx='11' cy='11' r='5' fill='%232b8a2e'/%3E%3C/svg%3E");
 }
