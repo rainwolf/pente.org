@@ -169,7 +169,7 @@
       l3.insertBefore(ct, l3.firstChild);
       var d3 = box.appendChild(el("div", null, {style: "margin:8px 0;"}));
       d3.appendChild(l3);
-      d3.appendChild(el("div", "One email per game ends, every message both players.", {style: "font-size:0.85em;color:#666;"}));
+      d3.appendChild(el("div", "One email per game when it ends, with every message from both players.", {style: "font-size:0.85em;color:#666;"}));
 
       box.appendChild(el("h4", "Active turn-based games"));
       var gl = el("ul");
