@@ -69,11 +69,15 @@ public class TourneyWithdrawTest extends TestCase {
     }
 
     public void testMessages() {
-        assertEquals("Registration for Swiss Cup closed, so you can no longer withdraw.",
+        assertEquals("Registration for Swiss Cup is closed, so you can no longer withdraw.",
                 TourneyWithdraw.message(Result.REGISTRATION_CLOSED, "Swiss Cup"));
-        assertEquals("You withdrawn from Swiss Cup. You can sign up again while registration open.",
+        assertEquals("You have withdrawn from Swiss Cup. You can sign up again while registration is open.",
                 TourneyWithdraw.message(Result.OK, "Swiss Cup"));
-        assertEquals("You not signed up for Swiss Cup.",
+        assertEquals("You are not signed up for Swiss Cup.",
                 TourneyWithdraw.message(Result.NOT_REGISTERED, "Swiss Cup"));
+        assertEquals("You must be logged in to withdraw from a tournament.",
+                TourneyWithdraw.message(Result.NOT_LOGGED_IN, null));
+        assertEquals("Tournament not found.",
+                TourneyWithdraw.message(Result.NO_TOURNEY, null));
     }
 }

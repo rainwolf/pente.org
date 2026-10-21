@@ -51,15 +51,15 @@ public final class TourneyWithdraw {
     public static String message(Result r, String tourneyName) {
         switch (r) {
             case OK:
-                return "You withdrawn from " + tourneyName + ". You can sign up again while registration open.";
+                return "You have withdrawn from " + tourneyName + ". You can sign up again while registration is open.";
             case NOT_LOGGED_IN:
-                return "You must logged in withdraw from tournament.";
+                return "You must be logged in to withdraw from a tournament.";
             case NO_TOURNEY:
                 return "Tournament not found.";
             case REGISTRATION_CLOSED:
-                return "Registration for " + tourneyName + " closed, so you can no longer withdraw.";
+                return "Registration for " + tourneyName + " is closed, so you can no longer withdraw.";
             case NOT_REGISTERED:
-                return "You not signed up for " + tourneyName + ".";
+                return "You are not signed up for " + tourneyName + ".";
             default:
                 throw new IllegalArgumentException("Unknown result: " + r);
         }
