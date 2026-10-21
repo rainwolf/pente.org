@@ -8,6 +8,8 @@ import org.pente.gameServer.mobile.MobileJsonHelper;
 import org.pente.gameServer.server.PasswordHelper;
 import org.pente.gameServer.server.Resources;
 import org.pente.gameServer.server.SendMail2;
+import org.pente.turnBased.TBGameStorer;
+import org.pente.turnBased.TBStoreException;
 
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletContext;
@@ -42,6 +44,7 @@ public class KidsServlet extends HttpServlet {
 
     private transient CacheDSGPlayerStorer players;
     private transient CacheKidStorer kidStorer;
+    private transient TBGameStorer tbGameStorer;
     private transient RegisterHandler registerHandler;
     private transient PasswordHelper passwordHelper;
     private transient MySQLDSGReturnEmailStorer returnEmailStorer;
@@ -65,6 +68,12 @@ public class KidsServlet extends HttpServlet {
         List<PlayerEntry> whitelist;
     }
 
+    private static class ActiveGamesReply {
+        boolean success;
+        long kidPid;
+        List<KidActiveGames.Entry> games;
+    }
+
     private static class KidsReply {
         boolean success;
         String error;
@@ -83,6 +92,7 @@ public class KidsServlet extends HttpServlet {
             Resources resources = (Resources) ctx.getAttribute(Resources.class.getName());
             players = resources.getDsgPlayerStorer();
             kidStorer = resources.getKidStorer();
+            tbGameStorer = resources.getTbGameStorer();
             registerHandler = new DSGPlayerStorerRegisterHandler(players);
             passwordHelper = (PasswordHelper) ctx.getAttribute(PasswordHelper.class.getName());
             returnEmailStorer = (MySQLDSGReturnEmailStorer)
@@ -140,7 +150,14 @@ public class KidsServlet extends HttpServlet {
                 error(response, HttpServletResponse.SC_UNAUTHORIZED, KidAccountRules.LOGIN_REQUIRED);
                 return;
             }
+            if ("activeGames".equals(request.getParameter("action"))) {
+                activeGames(request, response, me);
+                return;
+            }
             success(response, me, null);
+        } catch (TBStoreException e) {
+            log4j.error("Kids: GET activeGames failed", e);
+            error(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, KidAccountRules.DATABASE);
         } catch (DSGPlayerStoreException e) {
             log4j.error("Kids: GET failed", e);
             error(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, KidAccountRules.DATABASE);
@@ -193,6 +210,21 @@ public class KidsServlet extends HttpServlet {
             log4j.error("Kids: POST failed", e);
             error(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, KidAccountRules.DATABASE);
         }
+    }
+
+    private void activeGames(HttpServletRequest request, HttpServletResponse response, DSGPlayerData me)
+            throws DSGPlayerStoreException, TBStoreException, IOException {
+        DSGPlayerData kid = ownedKid(request, response, me);
+        if (kid == null) {
+            return;
+        }
+        ActiveGamesReply reply = new ActiveGamesReply();
+        reply.success = true;
+        reply.kidPid = kid.getPlayerID();
+        reply.games = KidActiveGames.build(kid.getPlayerID(),
+                tbGameStorer.loadSets(kid.getPlayerID()), players);
+        logAction("activeGames", me, kid.getPlayerID());
+        write(response, HttpServletResponse.SC_OK, reply);
     }
 
     private void create(HttpServletRequest request, HttpServletResponse response, DSGPlayerData me)
@@ -481,7 +513,7 @@ public class KidsServlet extends HttpServlet {
         write(response, status, reply);
     }
 
-    private void write(HttpServletResponse response, int status, KidsReply reply) throws IOException {
+    private void write(HttpServletResponse response, int status, Object reply) throws IOException {
         response.setStatus(status);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
