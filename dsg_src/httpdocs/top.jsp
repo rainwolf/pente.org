@@ -21,6 +21,12 @@
    }
 
    String topTitle = (String) pageContext.getAttribute("title");
+
+   boolean appShell = Boolean.TRUE.equals(pageContext.getAttribute("mobileShell"))
+      && AppClient.isApp(request.getHeader("User-Agent"));
+   if (appShell) {
+      pageContext.setAttribute("pageWidth", "100%");
+   }
 %>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html dir="ltr" xmlns="http://www.w3.org/1999/xhtml" lang="en">
@@ -34,6 +40,9 @@
    <meta name="keywords"
          content="play free pente game online multiplayer gomoku keryo d-pente g-pente poof-pente dweebo tournaments forums rankings ratings live five in row game database pente rules pente strategy">
    <!-- <meta name="viewport" content="width=device-width"> -->
+<% if (appShell) { %>
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+<% } %>
 
 <%--   <script type="text/javascript">--%>
 <%--      <!----%>
@@ -73,9 +82,12 @@
 
    <link href="/res/<%= style %>" media="all" rel="Stylesheet" type="text/css">
    <link href="/res/hack.css" media="all" rel="Stylesheet" type="text/css">
+<% if (appShell) { %>
+   <link href="/res/app.css" media="all" rel="Stylesheet" type="text/css">
+<% } %>
 
 </head>
-<body>
+<body<%= appShell ? " class=\"app\"" : "" %>>
 <div id="wrapper">
    <div id="header">
 

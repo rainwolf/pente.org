@@ -27,6 +27,7 @@
    pageContext.setAttribute("title", title);
 %>
 
+<% pageContext.setAttribute("mobileShell", Boolean.TRUE); %>
 <%@ include file="../begin.jsp" %>
 
 <script type="text/javascript" src="/gameServer/js/go.js"></script>

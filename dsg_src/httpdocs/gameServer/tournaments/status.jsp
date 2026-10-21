@@ -14,6 +14,7 @@
    pageContext.setAttribute("title", title);
 %>
 
+<% pageContext.setAttribute("mobileShell", Boolean.TRUE); %>
 <%@ include file="../begin.jsp" %>
 
 <table border="0" cellpadding="0" cellspacing="0" width="480">

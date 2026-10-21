@@ -27,6 +27,7 @@
 %>
 <% pageContext.setAttribute("current", file.startsWith("faq") ? "FAQ" : "Help"); %>
 <% pageContext.setAttribute("title", file.startsWith("faq") ? "FAQ" : "Help"); %>
+<% pageContext.setAttribute("mobileShell", Boolean.TRUE); %>
 <%@ include file="../top.jsp" %>
 
 <style type="text/css">
@@ -40,7 +41,7 @@
 <div class="pagebody">
    <table width="800" border="0" cellspacing="0" cellpadding="0">
       <tr>
-         <td valign="top" nowrap bgcolor="#deecde">
+         <td class="helptoc" valign="top" nowrap bgcolor="#deecde">
             <font color="black" size="2" face="Verdana, Arial, Helvetica, sans-serif">
                <b>Table of Contents</b><br>
             </font>

@@ -114,6 +114,10 @@
         </java>
         <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
             <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.server.test.AppClientTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
             <arg value="org.pente.gameServer.core.test.ReservedNamesTest"/>
         </java>
         <java classname="junit.textui.TestRunner" fork="true" failonerror="true">

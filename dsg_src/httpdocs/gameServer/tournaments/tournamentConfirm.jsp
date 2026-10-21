@@ -31,6 +31,7 @@
 %>
 
 
+<% pageContext.setAttribute("mobileShell", Boolean.TRUE); %>
 <%@ include file="../begin.jsp" %>
 
 <%
