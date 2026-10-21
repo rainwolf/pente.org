@@ -12,11 +12,14 @@
 
     int eid = -1;
     Tourney tourney = null;
+    boolean eidOk = true;
     try {
         eid = Integer.parseInt(request.getParameter("eid"));
+    } catch (NumberFormatException ignored) {
+        eidOk = false;
+    }
+    if (eidOk) {
         tourney = resources.getTourneyStorer().getTourneyDetails(eid);
-    } catch (Throwable ignored) {
-        tourney = null;
     }
 
     boolean badOrigin = false;
@@ -40,7 +43,6 @@
         }
     }
 
-    String currentPage = "Sign-up";
     String title = (tourney == null ? "Tournament" : tourney.getName()) + " Withdraw";
     pageContext.setAttribute("title", title);
     pageContext.setAttribute("mobileShell", Boolean.TRUE);
