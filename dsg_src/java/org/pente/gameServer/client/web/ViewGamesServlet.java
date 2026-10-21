@@ -16,6 +16,7 @@ import org.pente.gameDatabase.SimpleGameStorerSearchRequestData;
 import org.pente.gameDatabase.SimpleGameStorerSearchRequestFilterData;
 import org.pente.gameDatabase.SimpleGameStorerSearchResponseData;
 import org.pente.gameServer.core.*;
+import org.pente.gameServer.kids.KidParentAccess;
 import org.pente.gameServer.server.*;
 import org.pente.turnBased.*;
 
@@ -115,7 +116,7 @@ public class ViewGamesServlet extends HttpServlet {
 
             List<GameData> games = resources.getDsgGameLookup().search(
                     name, playerData.getPlayerID(), playerData.getNameColorRGB(),
-                    meData.getPlayerID(),
+                    KidParentAccess.historyRequestorPid(meData, playerData),
                     game, startSeq, 100);
             int count;
             int myWins;

@@ -60,7 +60,7 @@
       moves = ",";
    }
 // if (loggedInStr.equals("rainwolf") || loggedInStr.equals(p1.getName()) || loggedInStr.equals(p2.getName())) {
-   if (loggedInStr.equals(p1.getName()) || loggedInStr.equals(p2.getName())) {
+   if (loggedInStr.equals(p1.getName()) || loggedInStr.equals(p2.getName()) || Boolean.TRUE.equals(request.getAttribute(org.pente.gameServer.kids.KidParentAccess.REQUEST_ATTR))) {
       for (TBMessage m : game.getMessages()) {
          // bug in URLConverter
          if (m.getMessage().length() == 1) {

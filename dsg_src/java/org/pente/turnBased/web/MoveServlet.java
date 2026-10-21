@@ -11,6 +11,7 @@ import org.pente.gameServer.tourney.TourneyStorer;
 import org.pente.notifications.NotificationServer;
 import org.pente.turnBased.*;
 import org.pente.gameServer.core.*;
+import org.pente.gameServer.kids.KidParentAccess;
 import org.pente.gameServer.server.*;
 
 import org.apache.log4j.*;
@@ -117,9 +118,11 @@ public class MoveServlet extends HttpServlet {
 
             request.setAttribute("game", game);
 
+            DSGPlayerData p1 = null;
+            DSGPlayerData p2 = null;
             try {
-                DSGPlayerData p1 = dsgPlayerStorer.loadPlayer(game.getPlayer1Pid());
-                DSGPlayerData p2 = dsgPlayerStorer.loadPlayer(game.getPlayer2Pid());
+                p1 = dsgPlayerStorer.loadPlayer(game.getPlayer1Pid());
+                p2 = dsgPlayerStorer.loadPlayer(game.getPlayer2Pid());
                 request.setAttribute("p1", p1);
                 request.setAttribute("p2", p2);
 
@@ -130,6 +133,8 @@ public class MoveServlet extends HttpServlet {
             }
 
             if (command.equals("load")) {
+                boolean parentViewer = KidParentAccess.isParentOf(playerData, p1, p2);
+                request.setAttribute(KidParentAccess.REQUEST_ATTR, Boolean.valueOf(parentViewer));
                 if (game.getState() == TBGame.STATE_ACTIVE &&
                         game.getCurrentPlayer() == playerData.getPlayerID()) {
                     request.setAttribute("myTurn", "true");
@@ -137,7 +142,10 @@ public class MoveServlet extends HttpServlet {
                 if (playerData.getPlayerID() != game.getPlayer1Pid() &&
                         playerData.getPlayerID() != game.getPlayer2Pid()) {
 
-                    if (game.getTbSet().isPrivateGame() || game.isHidden()) {
+                    // a non-player never moves: explicit guard for the parent
+                    request.setAttribute("myTurn", "false");
+
+                    if (!parentViewer && (game.getTbSet().isPrivateGame() || game.isHidden())) {
                         log4j.error("MoveServlet, trying to view hidden or private game");
                         handleError(request, response, "Invalid game, game hidden or private and other player trying to view it.");
                         return;
@@ -155,7 +163,7 @@ public class MoveServlet extends HttpServlet {
 //					}
 
                     // else if complete, show game but restrict messages
-                    request.setAttribute("showMessages", Boolean.valueOf(playerData.isAdmin()));
+                    request.setAttribute("showMessages", Boolean.valueOf(playerData.isAdmin() || parentViewer));
                 }
 
                 // if someone requested a cancel for the set

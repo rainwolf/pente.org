@@ -63,7 +63,7 @@ sid=<%=set.getSetId()%>
    DSGPlayerData player1 = dsgPlayerStorer.loadPlayer(tbGame.getPlayer1Pid()), player2 = dsgPlayerStorer.loadPlayer(tbGame.getPlayer2Pid()), visitor = dsgPlayerStorer.loadPlayer(loggedInStr);
    DSGPlayerGameData p1Data = player1.getPlayerGameData(tbGame.getGame());
 
-   if ("rainwolf".equals(loggedInStr) || loggedInStr.equals(player1.getName()) || loggedInStr.equals(player2.getName())) {
+   if ("rainwolf".equals(loggedInStr) || loggedInStr.equals(player1.getName()) || loggedInStr.equals(player2.getName()) || org.pente.gameServer.kids.KidParentAccess.isParentOf(visitor, player1, player2)) {
 
       final com.jivesoftware.base.FilterChain msgFilters = filters;
       for (TBMessageThread.Entry entry : TBMessageThread.entries(tbGame,

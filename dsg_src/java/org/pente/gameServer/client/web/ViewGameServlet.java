@@ -10,6 +10,7 @@ import org.apache.log4j.*;
 
 import org.pente.game.*;
 import org.pente.gameServer.core.*;
+import org.pente.gameServer.kids.KidParentAccess;
 import org.pente.gameServer.server.*;
 import org.pente.turnBased.*;
 
@@ -82,7 +83,12 @@ public class ViewGameServlet extends HttpServlet {
             GameData game = new DefaultGameData();
             resources.getGameStorer().loadGame(gid, game);
 
-            if (game.isPrivateGame() &&
+            boolean parentViewer = KidParentAccess.isParentOf(playerData,
+                    resources.getDsgPlayerStorer(),
+                    game.getPlayer1Data().getUserID(), game.getPlayer2Data().getUserID());
+            request.setAttribute(KidParentAccess.REQUEST_ATTR, Boolean.valueOf(parentViewer));
+
+            if (game.isPrivateGame() && !parentViewer &&
                     playerData.getPlayerID() != game.getPlayer1Data().getUserID() &&
                     playerData.getPlayerID() != game.getPlayer2Data().getUserID()) {
                 log4j.error("Illegal access to private game " + player + " " + game.getGameID());
