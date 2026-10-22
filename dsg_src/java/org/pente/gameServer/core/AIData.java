@@ -36,7 +36,7 @@ public class AIData implements java.io.Serializable, Cloneable {
     private int game;
 
     public AIData() {
-        validGames = new int[3];
+        validGames = new int[12];
         for (int i = 0; i < validGames.length; i++) {
             validGames[i] = -1;
         }
