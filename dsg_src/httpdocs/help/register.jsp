@@ -10,6 +10,7 @@
    Please read the following information before registering:<br>
    <a href="helpWindow.jsp?file=privacyPolicy">Privacy Policy</a><br>
    <a href="helpWindow.jsp?file=ratedPolicy">Rated Game Policy</a><br>
+   <a href="helpWindow.jsp?file=kidAccounts">Kid Accounts</a> (for parents)<br>
    <br>
 
    Your player name must contain only letters, digits and the underscore character
@@ -20,5 +21,5 @@
    more information about Pente.org and register later.<br>
    <br>
    <b><a href="helpWindow.jsp?file=gettingStarted">&lt;&lt; Getting Started</a>&nbsp;&nbsp;&nbsp;
-      <b><a href="helpWindow.jsp?file=myprofile">&gt;&gt; My Profile</a><br>
+      <b><a href="helpWindow.jsp?file=kidAccounts">&gt;&gt; Kid Accounts</a><br>
 </font>
