@@ -25,10 +25,11 @@ import org.pente.game.GridStateFactory;
  *  Supported games (canonical ids): Pente=1, Keryo=3, Poof=11, Connect6=13,
  *  Boat=15, O-Pente=25, plus their even Speed twins (normalized in the shim).
  *
- *  MECHANISM ONLY: this class is deliberately NOT registered in
- *  dsg_src/conf/ai_config.xml. Future activation just adds a config entry with
- *  the binaryPath / dataDirectory options — XMLAIConfigurator and
- *  AIPlayerFactory.getAIPlayerThreaded pick it up with zero code changes.
+ *  Registered in ai_config.xml as "mmai" (non-speed games only: the
+ *  moveTimeoutSeconds option is static, so speed twins are not registered).
+ *  The entry supplies the binaryPath / dataDirectory options —
+ *  XMLAIConfigurator and AIPlayerFactory.getAIPlayerThreaded pick it up with
+ *  zero code changes.
  *  Note the dataDirectory must exist inside the runtime container (the Docker
  *  image only ships the binary at /usr/local/bin/mmai_player). The engine-data
  *  directory option is spelled "dataDirectory"; "configDirectory" is accepted

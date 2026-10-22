@@ -18,5 +18,28 @@
       </option>
     </options>
   </aiPlayer>
+  <aiPlayer>
+    <name>mmai</name>
+    <className>org.pente.gameServer.server.MMAIPlayer</className>
+    <numLevels>8</numLevels>
+    <validGames>
+      <validGame>Pente</validGame>
+      <validGame>Keryo-Pente</validGame>
+      <validGame>Poof-Pente</validGame>
+      <validGame>Connect6</validGame>
+      <validGame>Boat-Pente</validGame>
+      <validGame>O-Pente</validGame>
+    </validGames>
+    <options>
+      <option>
+        <optionName>binaryPath</optionName>
+        <optionValue>/usr/local/bin/mmai_player</optionValue>
+      </option>
+      <option>
+        <optionName>dataDirectory</optionName>
+        <optionValue>@conf@/marksAI</optionValue>
+      </option>
+    </options>
+  </aiPlayer>
 </ai>
 
