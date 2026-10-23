@@ -101,8 +101,8 @@ public class CancelInvitationServlet extends HttpServlet {
                 return;
             }
 
-//             beginner sets cannot be canceled
-            if (set.getInvitationRestriction() == TBSet.BEGINNER) {
+            // beginner sets cannot be canceled, except by subscribers
+            if (set.getInvitationRestriction() == TBSet.BEGINNER && !inviter.hasPlayerDonated()) {
                 List<TBSet> waitingSets = tbGameStorer.loadWaitingSets();
                 int total = 0, thisGame = 0;
                 for (TBSet s : waitingSets) {
