@@ -126,6 +126,10 @@
         </java>
         <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
             <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.core.test.AgeBandTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
             <arg value="org.pente.gameServer.kids.test.KidAccountRulesTest"/>
         </java>
         <java classname="junit.textui.TestRunner" fork="true" failonerror="true">

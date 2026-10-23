@@ -132,6 +132,7 @@ CREATE TABLE `dsg_player` (
   `timezone` varchar(100) DEFAULT 'America/New_York',
   `mobile_adult` enum('Y','N') NOT NULL DEFAULT 'Y',
   `parent_pid` bigint(20) unsigned DEFAULT NULL,
+  `mobile_age_band` enum('UNDER_13','13_15','16_17','18_PLUS') DEFAULT NULL,
   PRIMARY KEY (`pid`),
   KEY `parent_pid_key` (`parent_pid`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;

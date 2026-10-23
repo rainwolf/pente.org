@@ -94,6 +94,7 @@ public class KidAccountRules {
         data.setPlayerType(DSGPlayerData.HUMAN);
         data.setParentPid(Long.valueOf(parent.getPlayerID()));
         data.setMobileAdult(false);
+        data.setMobileAgeBand(null);
         data.setStatus(DSGPlayerData.ACTIVE);
         Date now = new Date();
         data.setRegisterDate(now);

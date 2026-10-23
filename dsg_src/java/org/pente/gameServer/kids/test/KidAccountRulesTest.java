@@ -200,6 +200,7 @@ public class KidAccountRulesTest extends TestCase {
         assertEquals(parent.getEmail(), k.getEmail());
         assertTrue(!k.getEmailValid());
         assertTrue(!k.isMobileAdult());
+        assertNull(k.getMobileAgeBand());
         assertTrue(!k.getEmailVisible());
         assertEquals("America/Chicago", k.getTimezone());
         assertEquals(DSGPlayerData.UNKNOWN, k.getSex());

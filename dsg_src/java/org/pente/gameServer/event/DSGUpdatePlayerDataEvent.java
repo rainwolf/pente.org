@@ -30,6 +30,7 @@ public class DSGUpdatePlayerDataEvent extends AbstractDSGEvent {
         dataCopy.setPassword("");
         dataCopy.setEmail("");
         dataCopy.setParentPid(null);
+        dataCopy.setMobileAgeBand(null);
         this.data = dataCopy;
     }
 
