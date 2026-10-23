@@ -25,14 +25,6 @@
    if (hill != null) {
       iAmMember = hill.hasPlayer(myPid);
    }
-//   List prefs = dsgPlayerStorer.loadPlayerPreferences(dsgPlayerData.getPlayerID());
-//   boolean personalizeAds = false;
-//   for (Iterator it = prefs.iterator(); it.hasNext(); ) {
-//      DSGPlayerPreference p = (DSGPlayerPreference) it.next();
-//      if (p.getName().equals("personalizeAds")) {
-//         personalizeAds = ((Boolean) p.getValue()).booleanValue();
-//      }
-//   }
 %>
 
 <table>

@@ -109,15 +109,6 @@
 
    String cancelRequested = "false";
 %>
-<% if (meData.showAds()) { %>
-<center>
-   <div id="senseReplace" style="width:728px;height:90px;" top="50%"></div>
-   <%@include file="728x90ad.jsp" %>
-   <script type="text/javascript">
-      sensePage();
-   </script>
-</center>
-<% } %>
 
 
 <table align="left" border="0" colspacing="1" colpadding="1">

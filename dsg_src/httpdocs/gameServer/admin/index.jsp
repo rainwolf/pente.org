@@ -40,7 +40,6 @@
 <a href="http://www.pente.org/gameServer/forums/forum.jspa?forumID=10&start=0">Admin Forum</a><br>
 <a href="http://my.sagonet.com">SAGO Server Managment</a><br>
 <a href="http://www.winning-moves.com/affiliates/login.htm">Winning Moves</a><br>
-<a href="https://www.google.com/adsense/?hl=en_US">Google Adsense</a><br>
 <a href="http://www.cafepress.com/cp/members/">Cafepress</a><br>
 <% } else { %>
 
