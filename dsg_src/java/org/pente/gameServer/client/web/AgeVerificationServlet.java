@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.log4j.Category;
+import org.pente.gameServer.core.AgeBand;
 import org.pente.gameServer.core.CacheDSGPlayerStorer;
 import org.pente.gameServer.core.DSGPlayerData;
 import org.pente.gameServer.core.DSGPlayerPreference;
@@ -43,14 +44,19 @@ public class AgeVerificationServlet extends HttpServlet {
 
         response.setContentType("application/json;charset=UTF-8");
         String name = (String) request.getAttribute("name");
-        String adultParam = request.getParameter("adult");
-        boolean adult = adultParam != null && (adultParam.equalsIgnoreCase("true") || adultParam.equals("1") || adultParam.equalsIgnoreCase("y") || adultParam.equalsIgnoreCase("yes"));
+        String band = AgeBand.parse(request.getParameter("band"));
 
         PrintWriter out = response.getWriter();
 
         if (name == null || name.isEmpty()) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            out.print("{\"result\":failed,\"error\":\"missing_name\"}");
+            out.print("{\"result\":\"failed\",\"error\":\"missing_name\"}");
+            return;
+        }
+
+        if (band == null) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            out.print("{\"result\":\"failed\",\"error\":\"invalid_band\"}");
             return;
         }
 
@@ -58,29 +64,30 @@ public class AgeVerificationServlet extends HttpServlet {
             DSGPlayerData player = dsgPlayerStorer.loadPlayer(name);
             if (player == null || !player.isActive()) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                out.print("{\"result\":failed,\"error\":\"invalid_player\"}");
+                out.print("{\"result\":\"failed\",\"error\":\"invalid_player\"}");
                 return;
             }
 
             if (player.getParentPid() != null) {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                out.print("{\"result\":failed,\"error\":\"kid_account\"}");
+                out.print("{\"result\":\"failed\",\"error\":\"kid_account\"}");
                 return;
             }
 
-            player.setMobileAdult(adult);
+            player.setMobileAgeBand(band);
+            player.setMobileAdult(AgeBand.isAdult(band));
             dsgPlayerStorer.updatePlayer(player);
 
-            out.print("{\"result\":success,\"adult\":" + adult + "}");
+            out.print("{\"result\":\"success\",\"band\":\"" + band + "\"}");
 
         } catch (DSGPlayerStoreException e) {
             cat.error("Error accessing player store", e);
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            out.print("{\"result\":failed,\"error\":\"server_error\"}");
+            out.print("{\"result\":\"failed\",\"error\":\"server_error\"}");
         } catch (Throwable t) {
             cat.error("Unexpected error in AgeVerificationServlet", t);
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            out.print("{\"result\":failed,\"error\":\"server_error\"}");
+            out.print("{\"result\":\"failed\",\"error\":\"server_error\"}");
         }
     }
 

@@ -215,6 +215,11 @@ public interface DSGPlayerData extends Cloneable, java.io.Serializable {
 
     public void setMobileAdult(boolean isAdult);
 
+    /** UNDER_13, 13_15, 16_17, 18_PLUS or null when unknown. */
+    public String getMobileAgeBand();
+
+    public void setMobileAgeBand(String band);
+
     /** Parent's pid when this player is a kid account; null otherwise. */
     public Long getParentPid();
 

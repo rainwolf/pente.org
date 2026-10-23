@@ -166,6 +166,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                                 "de_register_date = ?, " +
                                 "status = ?, " +
                                 "mobile_adult = ?, " +
+                                "mobile_age_band = ?, " +
                                 // don't ever update hash_code since
                                 // players may update password then
                                 // use old (now invalid) hash_code
@@ -194,6 +195,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                 }
                 stmt.setString(paramNum++, Character.valueOf(dsgPlayerData.getStatus()).toString());
                 stmt.setString(paramNum++, dsgPlayerData.isMobileAdult() ? "Y" : "N");
+                stmt.setString(paramNum++, dsgPlayerData.getMobileAgeBand());
                 stmt.setTimestamp(paramNum++, new Timestamp(dsgPlayerData.getLastUpdateDate().getTime()));
                 stmt.setString(paramNum++, Character.valueOf(dsgPlayerData.getPlayerType()).toString());
                 stmt.setString(paramNum++, dsgPlayerData.getNote());
@@ -239,7 +241,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                                 "dsg_player.de_register_date, dsg_player.status, " +
                                 "dsg_player.hash_code, dsg_player.last_update_date, " +
                                 "dsg_player.player_type, dsg_player.note, dsg_player.admin, " +
-                                "dsg_player.timezone, dsg_player.mobile_adult, dsg_player.parent_pid " +
+                                "dsg_player.timezone, dsg_player.mobile_adult, dsg_player.parent_pid, dsg_player.mobile_age_band " +
                                 "from player, dsg_player " +
                                 "where player.pid = dsg_player.pid " +
                                 "and player.pid = ?");
@@ -297,7 +299,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                                 "dsg_player.de_register_date, dsg_player.status, " +
                                 "dsg_player.hash_code, dsg_player.last_update_date, " +
                                 "dsg_player.player_type, dsg_player.note, dsg_player.admin, " +
-                                "dsg_player.timezone, dsg_player.mobile_adult, dsg_player.parent_pid " +
+                                "dsg_player.timezone, dsg_player.mobile_adult, dsg_player.parent_pid, dsg_player.mobile_age_band " +
                                 "from player, dsg_player " +
                                 "where player.pid = dsg_player.pid " +
                                 "and player.name = ? " +
@@ -595,6 +597,7 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
         dsgPlayerData.setMobileAdult(result.getString(resultNum++).equals("Y"));
         long parentPid = result.getLong(resultNum++);
         dsgPlayerData.setParentPid(result.wasNull() ? null : Long.valueOf(parentPid));
+        dsgPlayerData.setMobileAgeBand(result.getString(resultNum++));
 
         return dsgPlayerData;
     }

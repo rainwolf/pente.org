@@ -75,6 +75,17 @@ public class SimpleDSGPlayerData implements DSGPlayerData, Serializable {
         this.mobileAdult = mobileAdult;
     }
 
+    // Age band reported by the mobile apps; null = unknown. Serialized with the player (Redis cache).
+    private String mobileAgeBand;
+
+    public String getMobileAgeBand() {
+        return mobileAgeBand;
+    }
+
+    public void setMobileAgeBand(String mobileAgeBand) {
+        this.mobileAgeBand = mobileAgeBand;
+    }
+
     // Not transient: Redis caches players with Java serialization.
     private Long parentPid;
 

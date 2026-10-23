@@ -20,6 +20,7 @@ public class DSGJoinMainRoomEvent extends AbstractDSGEvent implements DSGMainRoo
         dataCopy.setPassword("");
         dataCopy.setEmail("");
         dataCopy.setParentPid(null);
+        dataCopy.setMobileAgeBand(null);
         setDSGPlayerData(dataCopy);
     }
 

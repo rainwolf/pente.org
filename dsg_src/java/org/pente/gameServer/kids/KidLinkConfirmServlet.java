@@ -93,6 +93,7 @@ public class KidLinkConfirmServlet extends HttpServlet {
             }
             DSGPlayerData fresh = players.loadPlayer(kidPid);
             fresh.setMobileAdult(false);
+            fresh.setMobileAgeBand(null);
             players.updatePlayer(fresh);
             kidStorer.setParentPid(kidPid, Long.valueOf(parent.getPlayerID()));
             players.refreshPlayer(fresh.getName());

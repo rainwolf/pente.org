@@ -50,3 +50,7 @@ dsg_src/mmai/mmai_player
 dockerMail/opendkim/keys/
 *.private
 graphify-out/
+
+# Local-only compose overrides (disable services via profile "off")
+docker-compose.override.yml
+docker-compose-replica.override.yml
