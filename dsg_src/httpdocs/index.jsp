@@ -56,22 +56,6 @@
 <div class="pagebody">
    <div style="float:left;width:160px;height:600px;margin-right:10px;">
 
-      <%--<script type="text/javascript"--%>
-      <%--src="http://pagead2.googlesyndication.com/pagead/show_ads.js">--%>
-      <%--</script>--%>
-
-      <%--<script type="text/javascript"><!----%>
-      <%--google_ad_client = "ca-pub-3326997956703582";--%>
-      <%--/* penteORG1 */--%>
-      <%--google_ad_slot = "5736319846";--%>
-      <%--google_ad_width = 160;--%>
-      <%--google_ad_height = 600;--%>
-      <%--//-->--%>
-      <%--</script>--%>
-      <%--<script type="text/javascript"--%>
-      <%--src="http://pagead2.googlesyndication.com/pagead/show_ads.js">--%>
-      <%--</script>--%>
-
       <%--<script>--%>
       <%--  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){--%>
       <%--  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),--%>

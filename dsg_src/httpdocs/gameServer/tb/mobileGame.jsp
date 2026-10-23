@@ -153,29 +153,9 @@
    boolean myTurnBool = !"false".equals(myTurn);
    DSGPlayerData meData = dsgPlayerStorer.loadPlayer(me);
    boolean amIaPlayer = game.getPlayer1Pid() == meData.getPlayerID() || game.getPlayer2Pid() == meData.getPlayerID();
-//   List prefs = dsgPlayerStorer.loadPlayerPreferences(meData.getPlayerID());
-//   boolean personalizeAds = false;
-//   for (Iterator it = prefs.iterator(); it.hasNext(); ) {
-//      DSGPlayerPreference p = (DSGPlayerPreference) it.next();
-//      if (p.getName().equals("personalizeAds")) {
-//         personalizeAds = ((Boolean) p.getValue()).booleanValue();
-//      }
-//   }
 
    String cancelRequested = "false";
 %>
-<%--<% if (meData.showAds()) { %>--%>
-<%--<center>--%>
-<%--   <script>(adsbygoogle = window.adsbygoogle || []).requestNonPersonalizedAds =--%>
-<%--   <%=(personalizeAds ? "0" : "1")%>--%>
-<%--   </script>--%>
-<%--   <div id="senseReplace" style="width:728px;height:90px;" top="50%"></div>--%>
-<%--   <%@include file="728x90ad.jsp" %>--%>
-<%--   <script type="text/javascript">--%>
-<%--      addLoadEvent(sensePage);--%>
-<%--   </script>--%>
-<%--</center>--%>
-<%--<% } %>--%>
 
 
 <table border="0" colspacing="1" colpadding="1">

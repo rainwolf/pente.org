@@ -33,10 +33,6 @@
    String displayName = name == null ? "guest" : name;
    String password = (String) request.getAttribute("password");
    String guest = (String) request.getParameter("guest");
-   DSGPlayerData meData = null;
-   if (guest == null) {
-      meData = dsgPlayerStorer.loadPlayer(name);
-   }
 
    String pluginStr = request.getParameter("plugin");
    boolean plugin = pluginStr != null && pluginStr.equals("true");
@@ -83,13 +79,6 @@
    <tr>
       <td width="10">&nbsp;</td>
       <td align="left" width="475">
-         <% if (guest != null || meData == null || meData.showAds()) { %>
-         <iframe src="/gameServer/appletAd.jsp" width="475" height="60" scrolling="no" frameborder="0" marginwidth="0"
-                 marginheight="0">
-            <%-- for browsers that do not support iframe --%>
-            <%@ include file="amazonHeaderPlay.jsp" %>
-         </iframe>
-         <% } %>
       </td>
       <td align="right" valign="top" width="150">
          <img src="<%= request.getContextPath() %>/gameServer/images/logo2.png">
@@ -223,10 +212,4 @@
       </td>
    </tr>
 </table>
-<script src="http://www.google-analytics.com/urchin.js" type="text/javascript">
-</script>
-<script type="text/javascript">
-   _uacct = "UA-1958590-1";
-   urchinTracker();
-</script>
 </html>

@@ -82,7 +82,6 @@ public class LoginFilter implements Filter {
                     uri.startsWith("/favicon.ico") ||
                     uri.startsWith("/gameServer/lib") ||
                     uri.startsWith("/gameServer/avatar") ||
-                    uri.startsWith("/gameServer/appletAd.jsp") ||
                     uri.startsWith("/gameServer/META-INF/")) {
                 filterChain.doFilter(request, response);
                 return;
@@ -104,8 +103,7 @@ public class LoginFilter implements Filter {
             String userAgent = httpRequest.getHeader("User-Agent");
             boolean spider = false;
             if (userAgent != null) {
-                if (userAgent.contains("Mediapartners-Google") ||
-                        userAgent.contains("Googlebot") ||
+                if (userAgent.contains("Googlebot") ||
                         userAgent.contains("Yahoo! Slurp") ||
                         userAgent.startsWith("msnbot")) {
 

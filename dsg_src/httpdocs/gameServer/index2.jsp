@@ -128,18 +128,6 @@
 <%--</script>--%>
 
 
-<% if (!dsgPlayerData.hasPlayerDonated()) { %>
-<div id="senseReplace" style="width:728px;height:90px;" top="50%"></div>
-<%@ include file="728x90ad.jsp" %>
-<br style="clear:both">
-<% } %>
-<% if (!dsgPlayerData.hasPlayerDonated()) { %>
-<script type="text/javascript">
-   sensePage();
-</script>
-<% } %>
-<%--
---%>
 
 
 <div style="font-family:Verdana, Arial, Helvetica, sans-serif;
@@ -328,14 +316,6 @@
 
 </form>
 <br>
-<%--
-<% if (!dsgPlayerData.hasPlayerDonated()) { %>
-<div align="left">
-<%@include file="dashboardad.jsp" %>
-</div>
-<br>
-<% } %>
---%>
 
 
 <div style="width:100%;height:175px;margin-top:10px;">
@@ -654,11 +634,6 @@ You haven't completed any rated games yet.<br>
 <td valign="top" align="right">
    <%@ include file="leaderboard.jsp" %>
 
-      <% if (!dsgPlayerData.hasPlayerDonated()) { %>
-   <div class="box" style="background-color:white; border: 1px solid white;">
-      <%@ include file="dash200ad.jsp" %>
-   </div>
-      <% } %>
    <%@ include file="whobox.jsp" %>
    <%@ include file="donorsbox.jsp" %>
    <%@ include file="mobile.jsp" %>

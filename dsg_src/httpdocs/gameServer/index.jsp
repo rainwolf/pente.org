@@ -31,7 +31,6 @@
 
    int refresh = 5;
    String grs = "800";
-   Boolean personalizeAds = null;
    List prefs = dsgPlayerStorer.loadPlayerPreferences(
       dsgPlayerData.getPlayerID());
    for (Iterator it = prefs.iterator(); it.hasNext(); ) {
@@ -40,8 +39,6 @@
          refresh = ((Integer) p.getValue());
       } else if (p.getName().equals("gameRoomSize")) {
          grs = (String) p.getValue();
-      } else if (p.getName().equals("personalizeAds")) {
-         personalizeAds = ((Boolean) p.getValue()).booleanValue();
       }
    }
    if (refresh != 0) {
@@ -285,17 +282,6 @@
 <%--</script>--%>
 
 
-<%--<% if (dsgPlayerData.showAds()) { %>--%>
-<%--<script>(adsbygoogle = window.adsbygoogle || []).requestNonPersonalizedAds =<%=(personalizeAds != null && personalizeAds?"0":"1")%>;</script>--%>
-<%--<div id="senseReplace" style="width:728px;height:90px;" top="50%"></div>--%>
-<%--<%@ include file="728x90ad.jsp" %>--%>
-<%--<br style="clear:both">--%>
-<%--<script type="text/javascript">--%>
-<%--   addLoadEvent(sensePage);--%>
-<%--</script>--%>
-<%--<% } %>--%>
-<%--
---%>
 
 
 <div style="font-family:Verdana, Arial, Helvetica, sans-serif;
@@ -412,15 +398,6 @@
       </ul>
    </div>
    <% } %>
-   <%--   <% if (dsgPlayerData.showAds() && personalizeAds == null) { %>--%>
-   <%--   <div align="left"--%>
-   <%--        style="position:relative;padding:4px;font-weight:bold;border:2px <%= textColor2 %> solid; background:#ffd0a7">--%>
-   <%--      Pente.org now offers a choice between personalized or non-personalized ads. Ads are non-personalized by default,--%>
-   <%--      but this warning appears because you--%>
-   <%--      have not yet registered a preference in your <a href="/gameServer/myprofile/prefs">settings</a>. Doing so will--%>
-   <%--      make this warning disappear.--%>
-   <%--   </div>--%>
-   <%--   <% } %>--%>
 </div>
 <%-- todo find actual width of avatar in case less than 80 --%>
 <div style="margin-left:10px;float:left;width:25%;">
@@ -618,14 +595,6 @@
 </table>
 
 
-<%--
-<% if (!dsgPlayerData.hasPlayerDonated()) { %>
-<div align="left">
-<%@include file="dashboardad.jsp" %>
-</div>
-<br>
-<% } %>
---%>
 
 
 <div style="width:100%;height:135px;margin-top:10px;">
@@ -1098,12 +1067,6 @@ You haven't completed any rated games yet.<br>
 <td valign="top" align="right">
    <%@ include file="leaderboard.jsp" %>
    <%@ include file="kothBox.jsp" %>
-
-   <%--      <% if (dsgPlayerData.showAds()) { %>--%>
-   <%--   <div class="box" style="background-color:white; border: 1px solid white;">--%>
-   <%--      <%@ include file="dash200ad.jsp" %>--%>
-   <%--   </div>--%>
-   <%--      <% } %>--%>
 
    <%@ include file="whobox.jsp" %>
    <%@ include file="mobile.jsp" %>
