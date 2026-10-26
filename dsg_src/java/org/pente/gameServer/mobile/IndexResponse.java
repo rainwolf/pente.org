@@ -137,10 +137,11 @@ public class IndexResponse {
         public final String rated;
         public final int opponentColor;
         public final int opponentTourneyWinner;
+        public final int gameId;
 
         InvitationEntry(long setId, String gameName, String opponentName, int opponentRating,
                         String color, int daysPerMove, String rated,
-                        int opponentColor, int opponentTourneyWinner) {
+                        int opponentColor, int opponentTourneyWinner, int gameId) {
             this.setId = setId;
             this.gameName = gameName;
             this.opponentName = opponentName;
@@ -150,6 +151,7 @@ public class IndexResponse {
             this.rated = rated;
             this.opponentColor = opponentColor;
             this.opponentTourneyWinner = opponentTourneyWinner;
+            this.gameId = gameId;
         }
     }
 
@@ -164,10 +166,11 @@ public class IndexResponse {
         public final String rated;
         public final int opponentColor;
         public final int opponentTourneyWinner;
+        public final int gameId;
 
         GameEntry(long gid, String gameName, String opponentName, int opponentRating,
                   String color, int numMoves, String timeLeft, String rated,
-                  int opponentColor, int opponentTourneyWinner) {
+                  int opponentColor, int opponentTourneyWinner, int gameId) {
             this.gid = gid;
             this.gameName = gameName;
             this.opponentName = opponentName;
@@ -178,6 +181,7 @@ public class IndexResponse {
             this.rated = rated;
             this.opponentColor = opponentColor;
             this.opponentTourneyWinner = opponentTourneyWinner;
+            this.gameId = gameId;
         }
     }
 
@@ -191,10 +195,11 @@ public class IndexResponse {
         public final String rated;
         public final int inviterColor;
         public final int inviterTourneyWinner;
+        public final int gameId;
 
         OpenInvitationEntry(long setId, String gameName, String inviterName, int inviterRating,
                             String color, int daysPerMove, String rated,
-                            int inviterColor, int inviterTourneyWinner) {
+                            int inviterColor, int inviterTourneyWinner, int gameId) {
             this.setId = setId;
             this.gameName = gameName;
             this.inviterName = inviterName;
@@ -204,6 +209,7 @@ public class IndexResponse {
             this.rated = rated;
             this.inviterColor = inviterColor;
             this.inviterTourneyWinner = inviterTourneyWinner;
+            this.gameId = gameId;
         }
     }
 
@@ -515,7 +521,8 @@ public class IndexResponse {
                         s.getGame1().getDaysPerMove(),
                         ratedStr,
                         MobileJsonHelper.playerColorNonZero(d),
-                        d.getTourneyWinner()
+                        d.getTourneyWinner(),
+                        s.getGame1().getGame()
                 ));
             }
             return result;
@@ -558,7 +565,8 @@ public class IndexResponse {
                         GridStateFactory.getGameName(s.getGame1().getGame()),
                         opponentName, opponentRating, color,
                         s.getGame1().getDaysPerMove(), ratedStr,
-                        opponentColor, opponentTourneyWinner
+                        opponentColor, opponentTourneyWinner,
+                        s.getGame1().getGame()
                 ));
             }
             return result;
@@ -584,7 +592,8 @@ public class IndexResponse {
                         Utilities.getTimeLeft(g.getTimeoutDate().getTime()),
                         ratedStr,
                         MobileJsonHelper.playerColorNonZero(d),
-                        d.getTourneyWinner()
+                        d.getTourneyWinner(),
+                        g.getGame()
                 ));
             }
             return result;
@@ -619,7 +628,8 @@ public class IndexResponse {
                         s.getGame1().getDaysPerMove(),
                         ratedStr,
                         MobileJsonHelper.playerColorNonZero(d),
-                        d.getTourneyWinner()
+                        d.getTourneyWinner(),
+                        s.getGame1().getGame()
                 ));
             }
             return result;
