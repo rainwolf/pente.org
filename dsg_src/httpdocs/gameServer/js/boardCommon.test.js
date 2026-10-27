@@ -18,7 +18,7 @@ const colorLines = gameScriptSrc
 const base = {
   PENTE: 1, KERYO: 3, GOMOKU: 5, DPENTE: 7, GPENTE: 9, POOF_PENTE: 11,
   CONNECT6: 13, BOAT_PENTE: 15, DKERYO: 17, GO: 19, GO9: 21, GO13: 23,
-  OPENTE: 25, SWAP2PENTE: 27, SWAP2KERYO: 29, RENJU: 31,
+  OPENTE: 25, SWAP2PENTE: 27, SWAP2KERYO: 29, RENJU: 31, TOMBSTONE: 33,
 };
 const GAME = {};
 for (const [name, id] of Object.entries(base)) {
@@ -43,11 +43,12 @@ const FAMILIES = [
   { names: ['SWAP2PENTE'],  color: 'swap2PenteColor',  replay: 'replayPenteGame' },
   { names: ['SWAP2KERYO'],  color: 'swap2KeryoColor',  replay: 'replayKeryoPenteGame' },
   { names: ['RENJU'],       color: 'renjuColor',       replay: 'replayRenjuGame' },
+  { names: ['TOMBSTONE'],   color: 'tombstoneColor',   replay: 'replayTombstoneGame' },
 ];
 
 const REPLAY_FNS = [
   'replayPenteGame','replayKeryoPenteGame','replayGomokuGame','replayRenjuGame','replayGPenteGame',
-  'replayPoofPenteGame','replayConnect6Game','replayGoGame','replayOPenteGame',
+  'replayPoofPenteGame','replayConnect6Game','replayGoGame','replayOPenteGame','replayTombstoneGame',
 ];
 
 let lastCalled = null;
