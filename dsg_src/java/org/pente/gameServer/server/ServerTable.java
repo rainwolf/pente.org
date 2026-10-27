@@ -608,6 +608,7 @@ public class ServerTable {
             }
 
             sendMoves(player);
+            sendTombstoneTurnState(player);
 
             if (timed && (state == DSGGameStateTableEvent.GAME_IN_PROGRESS ||
                     state == DSGGameStateTableEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN)) {
@@ -648,6 +649,24 @@ public class ServerTable {
             dsgEventRouter.routeEvent(
                     new DSGMoveTableEvent(tableNum, gridState.getMoves()),
                     toPlayer);
+        }
+    }
+
+    /**
+     * A bulk move list cannot tell "dead stone pending" from "dead stone
+     * skipped"; tell a joining client when the trailing turn was closed
+     * without one. Sent after the bulk list, to that client only.
+     */
+    protected void sendTombstoneTurnState(String toPlayer) {
+        if (gridState instanceof TombstoneState) {
+            TombstoneState ts = (TombstoneState) gridState;
+            if (ts.isTrailingTurnClosedWithoutDead()) {
+                DSGPlayerData mover = playingPlayers[ts.getColor(ts.getNumMoves() - 1)];
+                dsgEventRouter.routeEvent(
+                        new DSGTombstoneSkipDeadTableEvent(
+                                mover != null ? mover.getName() : null, tableNum, true),
+                        toPlayer);
+            }
         }
     }
 

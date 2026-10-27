@@ -256,6 +256,10 @@ public class ServerTableTombstoneTest extends TestCase {
             playersInTable.add(d);
         }
 
+        void sendTurnState(String p) {
+            sendTombstoneTurnState(p);
+        }
+
         void useGame(Game g) {
             game = g;
             gridState = GridStateFactory.createGridState(g.getId(), 19, 19);
@@ -515,5 +519,43 @@ public class ServerTableTombstoneTest extends TestCase {
         assertEquals(DSGTableErrorEvent.CANT_UNDO, a.get(0).getError());
         assertEquals(DSGTableErrorEvent.CANT_UNDO, b.get(0).getError());
         assertFalse(t.undoFlag());
+    }
+
+    public void testSilentSkipAfterOwnOnlyTurn() {
+        TombTable t = new TombTable(true, 5, 33, 34);
+        turn(t, "alice", 180, -1);
+        t.handleMove("bob", 200);
+        t.handleTombstoneSkipDead(new DSGTombstoneSkipDeadTableEvent("bob", 3, false));
+        t.sendTurnState("sam");
+        List<DSGTombstoneSkipDeadTableEvent> s = to(t, "sam", DSGTombstoneSkipDeadTableEvent.class);
+        assertEquals(1, s.size());
+        assertTrue(s.get(0).isSilent());
+        assertEquals("bob", s.get(0).getPlayer());
+    }
+
+    public void testNoSilentSkipWhileAwaitingDead() {
+        TombTable t = new TombTable(true, 5, 33, 34);
+        turn(t, "alice", 180, -1);
+        t.handleMove("bob", 200);
+        t.sendTurnState("sam");
+        assertEquals(0, to(t, "sam", DSGTombstoneSkipDeadTableEvent.class).size());
+    }
+
+    public void testNoSilentSkipAfterCentreOrDeadEntry() {
+        TombTable t = new TombTable(true, 5, 33, 34);
+        turn(t, "alice", 180, -1);
+        t.sendTurnState("sam");
+        turn(t, "bob", 200, 201);
+        t.sendTurnState("sam");
+        assertEquals(0, to(t, "sam", DSGTombstoneSkipDeadTableEvent.class).size());
+    }
+
+    public void testNonTombstoneTableSendsNothing() {
+        TombTable t = new TombTable(true, 5, 1, 2);
+        t.useGame(GridStateFactory.PENTE_GAME);
+        t.handleMove("alice", 180);
+        t.handleMove("bob", 200);
+        t.sendTurnState("sam");
+        assertEquals(0, to(t, "sam", DSGTombstoneSkipDeadTableEvent.class).size());
     }
 }
