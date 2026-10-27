@@ -211,6 +211,60 @@ public class TombstoneState extends GridStateDecorator implements HashCalculator
         return false;
     }
 
+    private void finishHistory() {
+        if (awaitingDead) {
+            closeTurn(lastEntryIsPass());
+        }
+    }
+
+    /**
+     * Replays data into a fresh state and closes any trailing open turn as a skip.
+     * Spec 5.4: no caller may take the result (winner, game over, draw) of a finished
+     * game from a replayed state; the stored winner is authoritative.
+     */
+    public GridState getInstance(MoveData data) {
+        TombstoneState s = new TombstoneState();
+        for (int i = 0; i < data.getNumMoves(); i++) {
+            s.addMove(data.getMove(i));
+        }
+        s.finishHistory();
+        return s;
+    }
+
+    private void rebuild(int keep) {
+        int[] codes = getMoves();
+        clear();
+        for (int i = 0; i < keep; i++) {
+            addMove(codes[i]);
+        }
+    }
+
+    public int undoTurn() {
+        int len = getLastTurnLength();
+        if (len == 0) throw new IllegalStateException("nothing to undo");
+        rebuild(getNumMoves() - len);
+        finishHistory();
+        return len;
+    }
+
+    public void undoMove() {
+        if (getNumMoves() == 0) return;
+        rebuild(getNumMoves() - 1);
+    }
+
+    public boolean canPlayerUndo(int seat) {
+        return !gameOver && !awaitingDead && turnCount > 1 && playerOfTurn(turnCount - 1) == seat;
+    }
+
+    public int getLastTurnLength() {
+        return TombstoneCodes.lastTurnLength(getMoves(), getNumMoves());
+    }
+
+    public boolean isTrailingTurnClosedWithoutDead() {
+        return !awaitingDead && getNumMoves() > 1
+                && TombstoneCodes.isOwnEntry(getMove(getNumMoves() - 1));
+    }
+
     public void clear() {
         gridState.clear();
         captures[1] = 0;
