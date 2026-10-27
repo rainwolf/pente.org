@@ -56,6 +56,18 @@ public class ServerPlayer implements DSGEventListener {
     private static Category log4j =
             Category.getInstance(ServerPlayer.class.getName());
 
+    // Preferences a client may set over the websocket (the AWT client's
+    // PreferenceHandler.storePref callers). Everything else, e.g. "weekend",
+    // "tb", "pentedb" or "beta", is only changeable via the website/server.
+    // "gameState" is stored server-side by ServerTable, not through here.
+    private static final Set<String> CLIENT_SETTABLE_PREFS = new HashSet<String>(
+            Arrays.asList("tableSize", "playJoinSound", "playInviteSound",
+                    "chatTimestamp", "showPlayerJoinExit", "gameOptions", "ims"));
+
+    static boolean isClientSettablePref(String name) {
+        return name != null && CLIENT_SETTABLE_PREFS.contains(name);
+    }
+
     public ServerPlayer(Server server,
                         DSGEventToPlayerRouter dsgEventToPlayerRouter,
                         ServerSocketDSGEventHandler client,
@@ -291,9 +303,10 @@ public class ServerPlayer implements DSGEventListener {
                 try {
                     DSGPlayerPreference pref = ((DSGPreferenceEvent) dsgEvent).
                             getPref();
-                    // weekend days are cooldown-limited and only changeable via the website
-                    if ("weekend".equals(pref.getName())) {
-                        log4j.warn(psid() + "Refused weekend preference change over websocket");
+                    // only an allowlist of display/sound prefs is client-settable;
+                    // e.g. weekend days are cooldown-limited, tb is donor-granted
+                    if (!isClientSettablePref(pref.getName())) {
+                        log4j.warn(psid() + "Refused preference change over websocket: " + pref.getName());
                     } else {
                         dsgPlayerStorer.storePlayerPreference(
                                 playerData.getPlayerID(), pref);
