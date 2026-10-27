@@ -77,6 +77,19 @@ public final class TombstoneTurnRows {
         return out;
     }
 
+    /**
+     * Pairs turns into move-list rows: each element is {player 1's turn, player 2's turn},
+     * the second being null while player 2 has not yet moved. Turns alternate players, so the
+     * column follows the turn number, never the stored-entry index.
+     */
+    public static List<Row[]> pairs(List<Row> turns) {
+        List<Row[]> out = new ArrayList<Row[]>();
+        for (int i = 0; i < turns.size(); i += 2) {
+            out.add(new Row[]{turns.get(i), i + 1 < turns.size() ? turns.get(i + 1) : null});
+        }
+        return out;
+    }
+
     private static Row own(int number, int i, int c) {
         if (validOwn(c)) {
             return new Row(number, i, i, c, -1, TombstoneCodes.turnLabel(c, -1));

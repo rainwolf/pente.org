@@ -27,6 +27,19 @@ public class TombstoneTurnRowsTest extends TestCase {
         return b.toString();
     }
 
+    public void testPairsAlternateColumnsByTurn() {
+        int[] c = {180, 181, 561, 722, 722, 361, 200};
+        List<TombstoneTurnRows.Row[]> p = TombstoneTurnRows.pairs(TombstoneTurnRows.rows(c, c.length));
+        assertEquals(3, p.size());
+        assertEquals(1, p.get(0)[0].number);
+        assertEquals(2, p.get(0)[1].number);
+        assertEquals(3, p.get(1)[0].number);
+        assertEquals(4, p.get(1)[1].number);
+        assertEquals(5, p.get(2)[0].number);
+        assertNull(p.get(2)[1]);
+        assertEquals(0, TombstoneTurnRows.pairs(TombstoneTurnRows.rows(new int[0], 0)).size());
+    }
+
     public void testEmpty() { assertEquals(0, TombstoneTurnRows.rows(new int[0], 0).size()); }
 
     public void testCentreOnly() { assertEquals("1:0-0:K10|", labels(TombstoneTurnRows.rows(new int[]{180}, 1))); }

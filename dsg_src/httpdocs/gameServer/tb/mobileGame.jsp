@@ -469,12 +469,13 @@
                                                     String coordinateLetters[] = {"A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T"};
                                                     int row = 0;
                                        if (isTombstone) {
-                                          for (TombstoneTurnRows.Row r : TombstoneTurnRows.rows(game)) {
-                                       %>
+                                          for (TombstoneTurnRows.Row[] pr : TombstoneTurnRows.pairs(TombstoneTurnRows.rows(game))) {
+                                       %>
                                     <tr>
-                                       <td width="10%" align="center"><%= r.number %></td>
-                                       <td onclick='selectMove(<%= r.end %>)' id='<%= r.end %>' width="90%" align="center"><%= r.label %></td>
-                                    </tr>
+<td width="10%" align="center"><%= ++row %></td>
+<td onclick='selectMove(<%= pr[0].end %>)' id='<%= pr[0].end %>' width="45%" align="center"><%= pr[0].label %></td>
+<% if (pr[1] != null) { %><td onclick='selectMove(<%= pr[1].end %>)' id='<%= pr[1].end %>' width="45%" align="center"><%= pr[1].label %></td><% } else { %><td></td><% } %>
+</tr>
                                        <%
                                           }
                                        } else {
