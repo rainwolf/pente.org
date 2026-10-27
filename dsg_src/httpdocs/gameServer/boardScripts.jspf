@@ -1,0 +1,7 @@
+<%-- Shared board JS. The ?v=<file mtime> query changes on every deploy that changes the file,
+     so browsers never pair a freshly served page with a stale cached copy (Tomcat sends no
+     max-age, so browsers cache these heuristically for days). Include after gameConstants.jspf.
+     No declarations or variables here: listedMobileGame.jsp includes this and is itself
+     statically included more than once per page. --%>
+<script src="/gameServer/tb/gameScript.js?v=<%= new java.io.File(String.valueOf(application.getRealPath("/gameServer/tb/gameScript.js"))).lastModified() %>"></script>
+<script src="/gameServer/js/boardCommon.js?v=<%= new java.io.File(String.valueOf(application.getRealPath("/gameServer/js/boardCommon.js"))).lastModified() %>"></script>
