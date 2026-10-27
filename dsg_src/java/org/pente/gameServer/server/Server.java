@@ -228,6 +228,11 @@ public class Server {
 
     //    For TCP sockets
     public void addPlayerSocket(Socket socket) {
+        if (!ExperimentalServer.acceptsNativeSocket(serverData)) {
+            log4j.info("Refused native socket on " + name + " from " + socket.getInetAddress());
+            try { socket.close(); } catch (java.io.IOException e) { /* nothing to do */ }
+            return;
+        }
 
         ServerSocketDSGEventHandler socketDSGEventHandler =
                 new ServerSocketDSGEventHandler(socket);
