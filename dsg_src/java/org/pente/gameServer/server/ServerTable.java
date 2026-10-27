@@ -907,6 +907,10 @@ public class ServerTable {
         } else if (!actor.isAdmin() && !isPlayerOwner(changeStateEvent.getPlayer())) {
             status = DSGTableErrorEvent.NOT_TABLE_OWNER;
         }
+        // the event is broadcast as is on a table-type change, so refuse a game this server doesn't offer first
+        else if (!ExperimentalServer.gameAllowed(serverData, requestedGame(changeStateEvent).getId())) {
+            status = DSGTableErrorEvent.UNKNOWN;
+        }
         // if only changed table type, don't reset anything else
         else if (changeStateEvent.getTableType() != tableType) {
             tableType = changeStateEvent.getTableType();
@@ -923,8 +927,6 @@ public class ServerTable {
             status = DSGTableErrorEvent.COMPUTER_SITTING;
         } else if (serverData.isTournament()) {
             status = DSGTableErrorEvent.TOURNAMENT_GAME;
-        } else if (!ExperimentalServer.gameAllowed(serverData, requestedGame(changeStateEvent).getId())) {
-            status = DSGTableErrorEvent.UNKNOWN;
         } else {
 
             int minutes = changeStateEvent.getInitialMinutes();

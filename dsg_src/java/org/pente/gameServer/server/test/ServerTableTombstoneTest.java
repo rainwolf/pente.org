@@ -297,6 +297,12 @@ public class ServerTableTombstoneTest extends TestCase {
             }
         }
 
+        void dsgPlayerStorerStub() {
+            dsgPlayerStorer = (DSGPlayerStorer) Proxy.newProxyInstance(
+                DSGPlayerStorer.class.getClassLoader(), new Class<?>[]{DSGPlayerStorer.class},
+                (proxy, method, args) -> null);
+        }
+
         void useGame(Game g) {
             game = g;
             gridState = GridStateFactory.createGridState(g.getId(), 19, 19);
@@ -651,6 +657,24 @@ public class ServerTableTombstoneTest extends TestCase {
         assertEquals(1, errs.size());
         assertEquals(DSGTableErrorEvent.UNKNOWN, errs.get(0).getError());
         assertEquals(GridStateFactory.TOMBSTONE, errs.get(0).getGame());
+        assertEquals(GridStateFactory.TOMBSTONE, t.currentGame().getId());
+    }
+
+    public void testTableTypeChangeCannotCarryDisallowedGame() {
+        TombTable t = new TombTable(true, 5, 33, 34);        // Experimental: Tombstone rows only
+        t.asExperimental();
+        t.useGame(GridStateFactory.TOMBSTONE_GAME);
+        t.state(DSGGameStateTableEvent.NO_GAME_IN_PROGRESS);
+        t.dsgPlayerStorerStub();
+        int before = t.tableType();
+        DSGChangeStateTableEvent e = change(t, GridStateFactory.PENTE, 5);
+        e.setTableType(before + 1);                          // different table type: takes the table-type-only branch
+        t.handleChangeState(e);
+        List<DSGChangeStateTableErrorEvent> errs = to(t, "alice", DSGChangeStateTableErrorEvent.class);
+        assertEquals(1, errs.size());
+        assertEquals(DSGTableErrorEvent.UNKNOWN, errs.get(0).getError());
+        assertEquals(before, t.tableType());                 // table unchanged
+        assertEquals(0, to(t, "bob", DSGChangeStateTableEvent.class).size());   // nothing broadcast
         assertEquals(GridStateFactory.TOMBSTONE, t.currentGame().getId());
     }
 
