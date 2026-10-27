@@ -1281,6 +1281,73 @@ public class ServerTable {
         }
     }
 
+    public void handleTombstoneSkipDead(DSGTombstoneSkipDeadTableEvent e) {
+        String player = e.getPlayer();
+        int error = NO_ERROR;
+        if (!isPlayerInTable(player)) {
+            error = DSGTableErrorEvent.NOT_IN_TABLE;
+        } else {
+            int seat = getPlayerSeat(player);
+            if (seat == NOT_SITTING) {
+                error = DSGTableErrorEvent.NOT_SITTING;
+            } else if (state == DSGGameStateTableEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN) {
+                error = DSGTableErrorEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN;
+            } else if (state == DSGGameStateTableEvent.NO_GAME_IN_PROGRESS ||
+                    state == DSGGameStateTableEvent.WAIT_GAME_TWO_OF_SET) {
+                error = DSGTableErrorEvent.NO_GAME_IN_PROGRESS;
+            } else if (!(gridState instanceof TombstoneState)) {
+                error = DSGTableErrorEvent.INVALID_MOVE;
+            } else if (gridState.getCurrentPlayer() != seat) {
+                error = DSGTableErrorEvent.NOT_TURN;
+            } else if (!((TombstoneState) gridState).isAwaitingDeadStone()) {
+                error = DSGTableErrorEvent.NOT_AWAITING_DEAD_STONE;
+            } else {
+                TombstoneState ts = (TombstoneState) gridState;
+                synchronized (this) {
+                    ts.skipDeadStone();
+                    if (timed) {
+                        timers[seat].stop();
+                        if (shouldTimerRun()) {
+                            if (initialMinutes == 0) {
+                                timers[seat].reset();
+                            } else {
+                                timers[seat].increment(incrementalSeconds);
+                                timers[seat].incrementMillis((int) pingManager.getPingTime(player));
+                            }
+                        }
+                        moveTimes.set(moveTimes.size() - 1,
+                                new Time(timers[seat].getMinutes(), timers[seat].getSeconds()));
+                    }
+                    if (undoRequested) {
+                        broadcastTable(new DSGUndoReplyTableEvent(player, tableNum, false));
+                        undoRequested = false;
+                    }
+                    if (cancelRequested) {
+                        broadcastTable(new DSGCancelReplyTableEvent(player, tableNum, false));
+                        cancelRequested = false;
+                        cancelRequestedBy = null;
+                    }
+                    broadcastTable(new DSGTombstoneSkipDeadTableEvent(player, tableNum, false));
+                    if (timed) {
+                        broadCastPlayerTimer(seat);
+                    }
+                    activityLogger.updateGameState(sid, tableNum, gridState.getHash(),
+                            gridState.getMoves());
+                    if (ts.isGameOver()) {
+                        gameOver(true, playingPlayers[1].getName(), playingPlayers[2].getName(),
+                                false, false, false);
+                    } else if (timed) {
+                        timers[ts.getCurrentPlayer()].go();
+                    }
+                }
+            }
+        }
+        if (error != NO_ERROR) {
+            dsgEventRouter.routeEvent(
+                    new DSGTombstoneSkipDeadTableErrorEvent(player, tableNum, error), player);
+        }
+    }
+
     public void handleSwap2Pass(DSGSwap2PassTableEvent swap2PassEvent) {
         boolean swap2 = game == GridStateFactory.SWAP2PENTE_GAME || game == GridStateFactory.SPEED_SWAP2PENTE_GAME ||
                 game == GridStateFactory.SWAP2KERYO_GAME || game == GridStateFactory.SPEED_SWAP2KERYO_GAME;

@@ -3,6 +3,7 @@ package org.pente.gameServer.server.test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.Vector;
 
 import junit.framework.TestCase;
@@ -26,6 +27,10 @@ import org.pente.gameServer.event.DSGMoveTableEvent;
 import org.pente.gameServer.event.DSGGameStateTableEvent;
 import org.pente.gameServer.event.DSGTableErrorEvent;
 import org.pente.gameServer.event.DSGPingEvent;
+import org.pente.gameServer.event.DSGCancelReplyTableEvent;
+import org.pente.gameServer.event.DSGTombstoneSkipDeadTableErrorEvent;
+import org.pente.gameServer.event.DSGTombstoneSkipDeadTableEvent;
+import org.pente.gameServer.event.DSGUndoReplyTableEvent;
 import org.pente.gameServer.server.ActivityLogger;
 import org.pente.gameServer.server.PingManager;
 import org.pente.gameServer.server.Resources;
@@ -241,6 +246,13 @@ public class ServerTableTombstoneTest extends TestCase {
             cancelRequested = b;
         }
 
+        void addSpectator(String name) {
+            SimpleDSGPlayerData d = new SimpleDSGPlayerData();
+            d.setName(name);
+            d.setPlayerType(DSGPlayerData.HUMAN);
+            playersInTable.add(d);
+        }
+
         void useGame(Game g) {
             game = g;
             gridState = GridStateFactory.createGridState(g.getId(), 19, 19);
@@ -340,5 +352,111 @@ public class ServerTableTombstoneTest extends TestCase {
         t.handleMove("alice", 184);
         assertEquals(Arrays.asList("false|alice|bob"), t.gameOvers);
         assertEquals(t.grid().getNumMoves(), t.times().size());
+    }
+
+    public void testOwnThenSkipClosesTurnWithOneIncrement() {
+        TombTable t = new TombTable(true, 5, 33, 34);
+        turn(t, "alice", 180, -1);
+        t.handleMove("bob", 200);
+        t.handleTombstoneSkipDead(new DSGTombstoneSkipDeadTableEvent("bob", 3, false));
+        assertEquals(1, t.grid().getCurrentPlayer());
+        assertEquals(2, t.times().size());
+        assertEquals(5, t.times().get(1).getMinutes());
+        assertEquals(10, t.times().get(1).getSeconds());
+        assertEquals(1, t.timer(2).incrementCalls);
+        assertTrue(t.timer(1).isRunning());
+        List<DSGTombstoneSkipDeadTableEvent> a = to(t, "alice", DSGTombstoneSkipDeadTableEvent.class);
+        assertEquals(1, a.size());
+        assertFalse(a.get(0).isSilent());
+        assertEquals("bob", a.get(0).getPlayer());
+        assertEquals(1, to(t, "bob", DSGTombstoneSkipDeadTableEvent.class).size());
+    }
+
+    public void testSixEmptyTurnsDrawViaSkip() {
+        TombTable t = new TombTable(true, 5, 33, 34);
+        turn(t, "alice", 180, -1);
+        String[] movers = {"bob", "alice", "bob", "alice", "bob", "alice"};
+        for (int i = 0; i < 6; i++) {
+            t.handleMove(movers[i], TombstoneCodes.OWN_PASS);
+            assertTrue("draws only on a skip", t.gameOvers.isEmpty());
+            t.handleTombstoneSkipDead(new DSGTombstoneSkipDeadTableEvent(movers[i], 3, false));
+        }
+        assertEquals(Arrays.asList("true|alice|bob"), t.gameOvers);
+    }
+
+    private static void assertSkipError(Consumer<TombTable> setup, String sender, int code) {
+        TombTable t = new TombTable(true, 5, 33, 34);
+        t.handleMove("alice", 180);
+        setup.accept(t);
+        if (t.grid().getNumMoves() == 0) {
+            t.handleMove("alice", 180);
+        }
+        int moves = t.grid().getNumMoves();
+        int times = t.times().size();
+        t.handleTombstoneSkipDead(new DSGTombstoneSkipDeadTableEvent(sender, 3, false));
+        List<DSGTombstoneSkipDeadTableErrorEvent> errs =
+            to(t, sender, DSGTombstoneSkipDeadTableErrorEvent.class);
+        assertEquals(1, errs.size());
+        assertEquals(code, errs.get(0).getError());
+        for (String other : new String[]{"alice", "bob"}) {
+            if (!other.equals(sender)) {
+                assertEquals(0, to(t, other, DSGTombstoneSkipDeadTableErrorEvent.class).size());
+            }
+        }
+        assertEquals(moves, t.grid().getNumMoves());
+        assertEquals(times, t.times().size());
+    }
+
+    public void testSkipErrorCodes() {
+        assertSkipError(table -> {}, "carol", DSGTableErrorEvent.NOT_IN_TABLE);
+        assertSkipError(table -> table.addSpectator("sam"), "sam", DSGTableErrorEvent.NOT_SITTING);
+        assertSkipError(table -> table.state(DSGGameStateTableEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN),
+            "bob", DSGTableErrorEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN);
+        assertSkipError(table -> table.state(DSGGameStateTableEvent.NO_GAME_IN_PROGRESS),
+            "bob", DSGTableErrorEvent.NO_GAME_IN_PROGRESS);
+        assertSkipError(table -> table.state(DSGGameStateTableEvent.WAIT_GAME_TWO_OF_SET),
+            "bob", DSGTableErrorEvent.NO_GAME_IN_PROGRESS);
+        assertSkipError(table -> table.useGame(GridStateFactory.PENTE_GAME), "bob",
+            DSGTableErrorEvent.INVALID_MOVE);
+        assertSkipError(table -> table.handleMove("bob", 200), "alice", DSGTableErrorEvent.NOT_TURN);
+        assertSkipError(table -> {}, "bob", DSGTableErrorEvent.NOT_AWAITING_DEAD_STONE);
+    }
+
+    public void testSkipDeclinesPendingUndoAndCancel() {
+        TombTable t = new TombTable(true, 5, 33, 34);
+        turn(t, "alice", 180, -1);
+        t.handleMove("bob", 200);
+        t.undoFlag(true);
+        t.cancelFlag(true);
+        t.handleTombstoneSkipDead(new DSGTombstoneSkipDeadTableEvent("bob", 3, false));
+        assertFalse(t.undoFlag());
+        List<DSGUndoReplyTableEvent> r = to(t, "alice", DSGUndoReplyTableEvent.class);
+        assertEquals(1, r.size());
+        assertFalse(r.get(0).getAccepted());
+        assertEquals(1, to(t, "alice", DSGCancelReplyTableEvent.class).size());
+    }
+
+    public void testUntimedSkipTouchesNoClock() {
+        TombTable t = new TombTable(false, 5, 33, 34);
+        turn(t, "alice", 180, -1);
+        t.handleMove("bob", 200);
+        t.handleTombstoneSkipDead(new DSGTombstoneSkipDeadTableEvent("bob", 3, false));
+        assertEquals(0, t.times().size());
+        for (int s = 1; s <= 2; s++) {
+            assertEquals(0, t.timer(s).goCalls + t.timer(s).stopCalls + t.timer(s).incrementCalls);
+        }
+        assertEquals(1, t.grid().getCurrentPlayer());
+    }
+
+    public void testZeroMinuteSkipResetsClockOnce() {
+        TombTable t = new TombTable(true, 0, 33, 34);
+        turn(t, "alice", 180, -1);
+        t.handleMove("bob", 200);
+        int resets = t.timer(2).resetCalls;
+        t.handleTombstoneSkipDead(new DSGTombstoneSkipDeadTableEvent("bob", 3, false));
+        assertEquals(resets + 1, t.timer(2).resetCalls);
+        assertEquals(0, t.timer(2).incrementCalls);
+        assertEquals(0, t.times().get(1).getMinutes());
+        assertEquals(10, t.times().get(1).getSeconds());
     }
 }
