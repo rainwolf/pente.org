@@ -746,8 +746,10 @@
       playedMove = -1;
       lastMove = moves[drawUntilMove - 1];
 
-      if (cycleCheck) {
-         document.getElementById("cycleCheck").checked = cycleCheck;
+      // the checkbox is only rendered when it is the viewer's turn
+      var cycleBox = document.getElementById("cycleCheck");
+      if (cycleCheck && cycleBox) {
+         cycleBox.checked = cycleCheck;
       }
    }
 
