@@ -321,6 +321,9 @@ public class SimpleGameStorerSearchRequestFilterFormat implements ObjectFormat {
                 throw new Exception("Game can't be null");
             }
             filterData.setGame(GridStateFactory.getGameId(gameStr));
+            if (GridStateFactory.isTombstone(filterData.getGame())) {
+                throw new Exception("Game not supported in the game database");
+            }
 
             if (site != null) {
                 filterData.setSite(URLDecoder.decode(

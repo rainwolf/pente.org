@@ -128,11 +128,18 @@ public class GameSearchHandler {
         return "mine".equals(scope) || "both".equals(scope);
     }
 
+    private static void rejectTombstone(GameSearchRequest req) {
+        if (GridStateFactory.isTombstone(req.game)) {
+            throw new IllegalArgumentException("variant not supported");
+        }
+    }
+
     /**
      * Archive-scope search. Split out from {@link #handle} so the DB-backed
      * test can exercise it without a servlet container.
      */
     public GameSearchResponse search(GameSearchRequest req) throws Exception {
+        rejectTombstone(req);
         return archiveSearch(req);
     }
 
@@ -148,6 +155,7 @@ public class GameSearchHandler {
     public GameSearchResponse search(GameSearchRequest req, long pid)
             throws Exception {
 
+        rejectTombstone(req);
         String scope = notEmpty(req.scope) ? req.scope : "archive";
         if ("mine".equals(scope)) {
             return mineSearch(req, pid);
