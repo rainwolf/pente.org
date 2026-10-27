@@ -16,6 +16,7 @@ import org.pente.game.MySQLGameVenueStorer;
 import org.pente.game.SimpleGameEventData;
 import org.pente.game.Time;
 import org.pente.game.TombstoneCodes;
+import org.pente.game.TombstoneState;
 import org.pente.gameServer.client.GameTimer;
 import org.pente.gameServer.client.GameTimerListener;
 import org.pente.gameServer.core.DSGPlayerData;
@@ -31,6 +32,8 @@ import org.pente.gameServer.event.DSGCancelReplyTableEvent;
 import org.pente.gameServer.event.DSGTombstoneSkipDeadTableErrorEvent;
 import org.pente.gameServer.event.DSGTombstoneSkipDeadTableEvent;
 import org.pente.gameServer.event.DSGUndoReplyTableEvent;
+import org.pente.gameServer.event.DSGUndoRequestTableErrorEvent;
+import org.pente.gameServer.event.DSGUndoRequestTableEvent;
 import org.pente.gameServer.server.ActivityLogger;
 import org.pente.gameServer.server.PingManager;
 import org.pente.gameServer.server.Resources;
@@ -458,5 +461,59 @@ public class ServerTableTombstoneTest extends TestCase {
         assertEquals(0, t.timer(2).incrementCalls);
         assertEquals(0, t.times().get(1).getMinutes());
         assertEquals(10, t.times().get(1).getSeconds());
+    }
+
+    public void testUndoTwoEntryTurn() {
+        TombTable t = new TombTable(true, 5, 33, 34);
+        turn(t, "alice", 180, -1);
+        turn(t, "bob", 200, 201);
+        t.handleUndoRequest(new DSGUndoRequestTableEvent("bob", 3));
+        t.handleUndoReply(new DSGUndoReplyTableEvent("alice", 3, true));
+        assertEquals(1, t.grid().getNumMoves());
+        assertEquals(1, t.times().size());
+        assertEquals(2, t.grid().getCurrentPlayer());
+        assertEquals(5, t.timer(2).getMinutes());
+        assertEquals(0, t.timer(2).getSeconds());            // increment taken back
+    }
+
+    public void testUndoOwnOnlyTurnClosedBySkip() {
+        TombTable t = new TombTable(true, 5, 33, 34);
+        turn(t, "alice", 180, -1);
+        t.handleMove("bob", 200);
+        t.handleTombstoneSkipDead(new DSGTombstoneSkipDeadTableEvent("bob", 3, false));
+        t.handleUndoRequest(new DSGUndoRequestTableEvent("bob", 3));
+        t.handleUndoReply(new DSGUndoReplyTableEvent("alice", 3, true));
+        assertEquals(1, t.grid().getNumMoves());
+        assertEquals(1, t.times().size());
+        assertFalse(((TombstoneState) t.grid()).isAwaitingDeadStone());
+    }
+
+    public void testUndoRestoresAcceptorsPostIncrementTimeAfterSkip() {
+        TombTable t = new TombTable(true, 5, 33, 34);
+        turn(t, "alice", 180, -1);
+        t.handleMove("bob", 200);
+        t.handleTombstoneSkipDead(new DSGTombstoneSkipDeadTableEvent("bob", 3, false)); // bob 5:10
+        turn(t, "alice", 220, 221);                                                      // alice 5:10
+        t.handleUndoRequest(new DSGUndoRequestTableEvent("alice", 3));
+        t.handleUndoReply(new DSGUndoReplyTableEvent("bob", 3, true));
+        assertEquals(2, t.grid().getNumMoves());
+        assertEquals(2, t.times().size());
+        assertEquals(5, t.timer(2).getMinutes());
+        assertEquals(10, t.timer(2).getSeconds());           // bob restored post-increment
+        assertEquals(5, t.timer(1).getMinutes());
+        assertEquals(0, t.timer(1).getSeconds());            // alice loses her increment
+    }
+
+    public void testNoUndoMidTurnOrOfCentre() {
+        TombTable t = new TombTable(true, 5, 33, 34);
+        turn(t, "alice", 180, -1);
+        t.handleUndoRequest(new DSGUndoRequestTableEvent("alice", 3));
+        t.handleMove("bob", 200);
+        t.handleUndoRequest(new DSGUndoRequestTableEvent("bob", 3));
+        List<DSGUndoRequestTableErrorEvent> a = to(t, "alice", DSGUndoRequestTableErrorEvent.class);
+        List<DSGUndoRequestTableErrorEvent> b = to(t, "bob", DSGUndoRequestTableErrorEvent.class);
+        assertEquals(DSGTableErrorEvent.CANT_UNDO, a.get(0).getError());
+        assertEquals(DSGTableErrorEvent.CANT_UNDO, b.get(0).getError());
+        assertFalse(t.undoFlag());
     }
 }

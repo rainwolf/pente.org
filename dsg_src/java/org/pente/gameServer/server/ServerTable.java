@@ -2338,7 +2338,12 @@ public class ServerTable {
                     drawOfferedBySeat = 0;
 
                     int oldCurrentPlayer = gridState.getCurrentPlayer();
-                    gridState.undoMove();
+                    int removedEntries = 1;
+                    if (gridState instanceof TombstoneState) {
+                        removedEntries = ((TombstoneState) gridState).undoTurn();
+                    } else {
+                        gridState.undoMove();
+                    }
                     int newCurrentPlayer = gridState.getCurrentPlayer();
 
                     // in D-pente, 1st player makes 1st 4 moves, so if they
@@ -2346,7 +2351,9 @@ public class ServerTable {
                     // or connect6
                     if (timed && oldCurrentPlayer != newCurrentPlayer) {
                         // remove the last move time
-                        moveTimes.removeLast();
+                        for (int r = 0; r < removedEntries; r++) {
+                            moveTimes.removeLast();
+                        }
 
 
                         timers[oldCurrentPlayer].stop();
