@@ -2103,6 +2103,11 @@ public class ServerTable {
                                             timers[oldCurrentPlayer].getSeconds());
 
                             moveTimes.add(newTime);
+                        } else if (gridState instanceof TombstoneState) {
+                            // own entry, turn stays open: snapshot only; the
+                            // increment (or reset) happens once, on the dead entry
+                            moveTimes.add(new Time(timers[oldCurrentPlayer].getMinutes(),
+                                    timers[oldCurrentPlayer].getSeconds()));
                         } else {  // same player
                             if (shouldTimerRun()) {
                                 if (initialMinutes == 0) {
@@ -2169,7 +2174,9 @@ public class ServerTable {
 //                        if (initialMinutes == 0) {
 //                            timers[newCurrentPlayer].adjust(0, incrementalSeconds);
 //                        }
-                        if (oldCurrentPlayer != newCurrentPlayer || initialMinutes == 0) {
+                        if (gridState instanceof TombstoneState
+                                ? oldCurrentPlayer != newCurrentPlayer
+                                : (oldCurrentPlayer != newCurrentPlayer || initialMinutes == 0)) {
                             timers[newCurrentPlayer].go();
                         }
                         // if playing d-pente, start timer for p1 after 1st move
