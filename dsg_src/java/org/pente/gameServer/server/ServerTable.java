@@ -280,6 +280,9 @@ public class ServerTable {
                         for (DSGPlayerPreference pref : prefs) {
                             if (pref.getName().equals("gameState")) {
                                 DSGChangeStateTableEvent e = (DSGChangeStateTableEvent) pref.getValue();
+                                if (!ExperimentalServer.gameAllowed(serverData, requestedGame(e).getId())) {
+                                    break;
+                                }
                                 initialMinutes = e.getInitialMinutes();
                                 incrementalSeconds = e.getIncrementalSeconds();
                                 game = GridStateFactory.getGame(e.getGame());
@@ -299,6 +302,9 @@ public class ServerTable {
                 initialMinutes = 10;
                 incrementalSeconds = 5;
                 game = GridStateFactory.PENTE_GAME;
+                if (!ExperimentalServer.gameAllowed(serverData, game.getId())) {
+                    game = ExperimentalServer.defaultGame(serverData);
+                }
             }
         }
         gameTime = null;
@@ -877,6 +883,21 @@ public class ServerTable {
         playerClickedPlay[seat] = false;
     }
 
+    /**
+     * The game a change-state request asks for, after the same speed/normal
+     * conversion handleChangeState applies.
+     */
+    protected Game requestedGame(DSGChangeStateTableEvent e) {
+        Game g = GridStateFactory.getGame(e.getGame());
+        boolean speed = e.getTimed() && Game.isSpeedGame(e.getInitialMinutes(), e.getIncrementalSeconds());
+        if (speed && !g.isSpeed()) {
+            g = GridStateFactory.getSpeedGame(g);
+        } else if (!speed && g.isSpeed()) {
+            g = GridStateFactory.getNormalGame(g);
+        }
+        return g;
+    }
+
     public void handleChangeState(DSGChangeStateTableEvent changeStateEvent) {
 
         int status = NO_ERROR;
@@ -902,6 +923,8 @@ public class ServerTable {
             status = DSGTableErrorEvent.COMPUTER_SITTING;
         } else if (serverData.isTournament()) {
             status = DSGTableErrorEvent.TOURNAMENT_GAME;
+        } else if (!ExperimentalServer.gameAllowed(serverData, requestedGame(changeStateEvent).getId())) {
+            status = DSGTableErrorEvent.UNKNOWN;
         } else {
 
             int minutes = changeStateEvent.getInitialMinutes();

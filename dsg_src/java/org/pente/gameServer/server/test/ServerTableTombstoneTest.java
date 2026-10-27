@@ -1,5 +1,6 @@
 package org.pente.gameServer.server.test;
 
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,9 +21,15 @@ import org.pente.game.TombstoneState;
 import org.pente.gameServer.client.GameTimer;
 import org.pente.gameServer.client.GameTimerListener;
 import org.pente.gameServer.core.DSGPlayerData;
+import org.pente.gameServer.core.DSGPlayerPreference;
+import org.pente.gameServer.core.DSGPlayerStorer;
+import org.pente.gameServer.core.ExperimentalServer;
 import org.pente.gameServer.core.ServerData;
 import org.pente.gameServer.core.SimpleDSGPlayerData;
 import org.pente.gameServer.event.DSGEvent;
+import org.pente.gameServer.event.DSGChangeStateTableErrorEvent;
+import org.pente.gameServer.event.DSGChangeStateTableEvent;
+import org.pente.gameServer.event.DSGJoinTableEvent;
 import org.pente.gameServer.event.DSGMoveTableErrorEvent;
 import org.pente.gameServer.event.DSGMoveTableEvent;
 import org.pente.gameServer.event.DSGGameStateTableEvent;
@@ -258,6 +265,36 @@ public class ServerTableTombstoneTest extends TestCase {
 
         void sendTurnState(String p) {
             sendTombstoneTurnState(p);
+        }
+
+        int tableType() {
+            return tableType;
+        }
+
+        void asExperimental() {
+            serverData.setServerId(ExperimentalServer.ID);
+            serverData.setName(ExperimentalServer.NAME);
+        }
+
+        void ownerIsGuest() {
+            ((SimpleDSGPlayerData) getPlayerInMainRoom("alice")).setGuest(true);
+        }
+
+        void createFromPreference(final DSGChangeStateTableEvent saved) {
+            dsgPlayerStorer = (DSGPlayerStorer) Proxy.newProxyInstance(
+                DSGPlayerStorer.class.getClassLoader(), new Class<?>[]{DSGPlayerStorer.class},
+                (proxy, method, args) -> {
+                    if (method.getName().equals("loadPlayerPreferences")) {
+                        return java.util.Arrays.asList(new DSGPlayerPreference("gameState", saved));
+                    }
+                    return null;
+                });
+            resetTable(new DSGJoinTableEvent("alice", 3));
+            for (GameTimer tm : timers) {
+                if (tm != null) {
+                    tm.destroy();
+                }
+            }
         }
 
         void useGame(Game g) {
@@ -557,5 +594,87 @@ public class ServerTableTombstoneTest extends TestCase {
         t.handleMove("bob", 200);
         t.sendTurnState("sam");
         assertEquals(0, to(t, "sam", DSGTombstoneSkipDeadTableEvent.class).size());
+    }
+
+    private static DSGChangeStateTableEvent change(TombTable t, int game, int minutes) {
+        DSGChangeStateTableEvent e = new DSGChangeStateTableEvent("alice", 3);
+        e.setGame(game);
+        e.setInitialMinutes(minutes);
+        e.setIncrementalSeconds(0);
+        e.setTimed(true);
+        e.setRated(false);
+        e.setTableType(t.tableType());   // unchanged table type
+        return e;
+    }
+
+    public void testChangeToTombstoneRejectedWithoutEventRow() {
+        TombTable t = new TombTable(true, 5, 1, 2);          // KOTH-like: Pente rows only
+        t.useGame(GridStateFactory.PENTE_GAME);
+        t.state(DSGGameStateTableEvent.NO_GAME_IN_PROGRESS);
+        int resets = t.timer(1).resetCalls;
+        t.handleChangeState(change(t, GridStateFactory.TOMBSTONE, 20));
+        List<DSGChangeStateTableErrorEvent> errs = to(t, "alice", DSGChangeStateTableErrorEvent.class);
+        assertEquals(1, errs.size());
+        assertEquals(DSGTableErrorEvent.UNKNOWN, errs.get(0).getError());
+        assertEquals(GridStateFactory.PENTE, errs.get(0).getGame());
+        assertEquals(GridStateFactory.PENTE, t.currentGame().getId());
+        assertEquals(5, t.initialMinutes());                 // nothing applied
+        assertEquals(resets, t.timer(1).resetCalls);
+    }
+
+    public void testSpeedTombstoneCheckedAfterConversion() {
+        TombTable t = new TombTable(true, 20, 1, 2, 33);     // normal Tombstone row only
+        t.useGame(GridStateFactory.PENTE_GAME);
+        t.state(DSGGameStateTableEvent.NO_GAME_IN_PROGRESS);
+        t.handleChangeState(change(t, GridStateFactory.TOMBSTONE, 5));   // 5+0 is speed -> 34
+        assertEquals(1, to(t, "alice", DSGChangeStateTableErrorEvent.class).size());
+        assertEquals(GridStateFactory.PENTE, t.currentGame().getId());
+    }
+
+    public void testChangeToTombstoneAllowedWhenOffered() {
+        TombTable t = new TombTable(true, 5, 1, 2, 33, 34);
+        t.useGame(GridStateFactory.PENTE_GAME);
+        t.state(DSGGameStateTableEvent.NO_GAME_IN_PROGRESS);
+        t.ownerIsGuest();
+        t.handleChangeState(change(t, GridStateFactory.TOMBSTONE, 20));
+        assertEquals(0, to(t, "alice", DSGChangeStateTableErrorEvent.class).size());
+        assertEquals(GridStateFactory.TOMBSTONE, t.currentGame().getId());
+    }
+
+    public void testChangeToPenteRejectedOnExperimental() {
+        TombTable t = new TombTable(true, 5, 33, 34);        // Experimental: Tombstone rows only
+        t.asExperimental();
+        t.useGame(GridStateFactory.TOMBSTONE_GAME);
+        t.state(DSGGameStateTableEvent.NO_GAME_IN_PROGRESS);
+        t.handleChangeState(change(t, GridStateFactory.PENTE, 20));
+        List<DSGChangeStateTableErrorEvent> errs = to(t, "alice", DSGChangeStateTableErrorEvent.class);
+        assertEquals(1, errs.size());
+        assertEquals(DSGTableErrorEvent.UNKNOWN, errs.get(0).getError());
+        assertEquals(GridStateFactory.TOMBSTONE, errs.get(0).getGame());
+        assertEquals(GridStateFactory.TOMBSTONE, t.currentGame().getId());
+    }
+
+    public void testTombstonePreferenceIgnoredWithoutEventRow() {
+        TombTable t = new TombTable(true, 5, 1, 2);          // Main-Room-like: no Tombstone rows
+        DSGChangeStateTableEvent saved = change(t, GridStateFactory.TOMBSTONE, 20);  // as saved on Experimental
+        t.createFromPreference(saved);
+        assertEquals(GridStateFactory.PENTE, t.currentGame().getId());   // no-preference default
+        assertEquals(10, t.initialMinutes());
+    }
+
+    public void testTombstonePreferenceRestoredWhenOffered() {
+        TombTable t = new TombTable(true, 5, 33, 34);
+        t.asExperimental();
+        t.createFromPreference(change(t, GridStateFactory.TOMBSTONE, 20));
+        assertEquals(GridStateFactory.TOMBSTONE, t.currentGame().getId());
+        assertEquals(20, t.initialMinutes());
+    }
+
+    public void testNewTableOnExperimentalOpensAsTombstone() {
+        TombTable t = new TombTable(true, 5, 33, 34);
+        t.asExperimental();
+        t.createFromPreference(change(t, GridStateFactory.PENTE, 20));   // Pente preference saved on server 1
+        assertEquals(GridStateFactory.TOMBSTONE, t.currentGame().getId()); // preference ignored, default is Tombstone
+        assertEquals(10, t.initialMinutes());
     }
 }
