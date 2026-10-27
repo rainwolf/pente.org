@@ -506,12 +506,8 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
                 }
                 for (int i = numMovesInDb; i < state.getNumMoves(); i++) {
                     stmt.setInt(2, i);
-                    // last move sets next_move to 361
-                    if (i == state.getNumMoves() - 1) {
-                        stmt.setInt(3, 361);
-                    } else {
-                        stmt.setInt(3, data.getMove(i + 1));
-                    }
+                    // last move sets next_move to the archive sentinel: 723 for Tombstone, else 361
+                    stmt.setInt(3, archiveNextMove(data, game, i, state.getNumMoves()));
                     stmt.setLong(4, state.getHash(i));
                     stmt.setInt(5, state.getRotation(i));
                     stmt.setInt(6, game);
@@ -764,20 +760,7 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
                 gameData.setGame(GridStateFactory.getGameName(game));
 
                 log4j.debug("get moves");
-                if (game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO ||
-                        game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9 ||
-                        game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13) {
-                    moveStmt = con.prepareStatement("select next_move, move_num " +
-                            "from " + MOVE_TABLE + " " +
-                            "where gid = ? " +
-                            "order by move_num");
-                } else {
-                    moveStmt = con.prepareStatement("select next_move, move_num " +
-                            "from " + MOVE_TABLE + " " +
-                            "where gid = ? " +
-                            "and next_move != 361 " +
-                            "order by move_num");
-                }
+                moveStmt = con.prepareStatement(loadMovesSql(game));
                 moveStmt.setLong(1, gameID);
 
                 moveResult = moveStmt.executeQuery();
@@ -930,6 +913,7 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
             gameStmt = con.prepareStatement(gameQueryStr, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 //            gameStmt.setLong(1, gameID);
 
+            // keeps the 361 filter: webdb rejects Tombstone ids before calling loadGames
             String movesQueryStr = "select next_move, move_num, gid " +
                     "from " + MOVE_TABLE + " " +
                     "where gid in (" + gidsString + ") " +
@@ -1113,4 +1097,24 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
         return results;
     }
 
+
+    public static int archiveNextMove(GameData data, int game, int row, int numRows) {
+        return row == numRows - 1 ? TombstoneCodes.archiveNoNextMove(game) : data.getMove(row + 1);
+    }
+
+    public static String loadMovesSql(int game) {
+        if (game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO ||
+                game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9 ||
+                game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13) {
+            return "select next_move, move_num " +
+                    "from " + MOVE_TABLE + " " +
+                    "where gid = ? " +
+                    "order by move_num";
+        }
+        return "select next_move, move_num " +
+                "from " + MOVE_TABLE + " " +
+                "where gid = ? " +
+                "and next_move != " + TombstoneCodes.archiveNoNextMove(game) + " " +
+                "order by move_num";
+    }
 }
