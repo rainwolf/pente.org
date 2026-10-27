@@ -60,13 +60,18 @@ public class DSGMoveTableEvent extends AbstractDSGTableEvent {
         return moves;
     }
 
+    public static String formatMoveForLog(int m) {
+        if (m >= 0 && m <= 360) return coordinates.getCoordinate(m);
+        return "#" + m;
+    }
+
     public String toString() {
         if (getNumMoves() == 1) {
-            return "move " + coordinates.getCoordinate(move) + " " + super.toString();
+            return "move " + formatMoveForLog(move) + " " + super.toString();
         } else {
             String r = "moves ";
             for (int i = 0; i < moves.length; i++) {
-                r += coordinates.getCoordinate(moves[i]);
+                r += formatMoveForLog(moves[i]);
                 if (i < moves.length - 1) r += ",";
             }
             r += " " + super.toString();

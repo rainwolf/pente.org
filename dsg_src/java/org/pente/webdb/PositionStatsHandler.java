@@ -173,6 +173,11 @@ public class PositionStatsHandler {
         PositionStatsResponse resp = new PositionStatsResponse();
         resp.nextMoves = new ArrayList<PositionStatsResponse.NextMove>();
 
+        // Tombstone codes (>= 361) cannot be decoded here; report no games.
+        if (GridStateFactory.isTombstone(game)) {
+            return resp;
+        }
+
         // An empty move list has no position to hash. Non-Go positions always
         // begin with the center stone, so numMoves >= 1 in practice; the guard
         // just keeps getHash() from indexing an empty state.

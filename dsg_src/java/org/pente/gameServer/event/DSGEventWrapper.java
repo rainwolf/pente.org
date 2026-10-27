@@ -91,6 +91,8 @@ public class DSGEventWrapper {
     private DSGRenjuAcceptDrawTableEvent dsgRenjuAcceptDrawTableEvent;
     private DSGRenjuRejectDrawTableEvent dsgRenjuRejectDrawTableEvent;
     private DSGRenjuDrawTableErrorEvent dsgRenjuDrawTableErrorEvent;
+    private DSGTombstoneSkipDeadTableEvent dsgTombstoneSkipDeadTableEvent;
+    private DSGTombstoneSkipDeadTableErrorEvent dsgTombstoneSkipDeadTableErrorEvent;
 
     public DSGEventWrapper(Object o) {
         Field[] fields = DSGEventWrapper.class.getDeclaredFields();
@@ -764,6 +766,22 @@ public class DSGEventWrapper {
 
     public void setDsgRenjuDrawTableErrorEvent(DSGRenjuDrawTableErrorEvent dsgRenjuDrawTableErrorEvent) {
         this.dsgRenjuDrawTableErrorEvent = dsgRenjuDrawTableErrorEvent;
+    }
+
+    public DSGTombstoneSkipDeadTableEvent getDsgTombstoneSkipDeadTableEvent() {
+        return dsgTombstoneSkipDeadTableEvent;
+    }
+
+    public void setDsgTombstoneSkipDeadTableEvent(DSGTombstoneSkipDeadTableEvent dsgTombstoneSkipDeadTableEvent) {
+        this.dsgTombstoneSkipDeadTableEvent = dsgTombstoneSkipDeadTableEvent;
+    }
+
+    public DSGTombstoneSkipDeadTableErrorEvent getDsgTombstoneSkipDeadTableErrorEvent() {
+        return dsgTombstoneSkipDeadTableErrorEvent;
+    }
+
+    public void setDsgTombstoneSkipDeadTableErrorEvent(DSGTombstoneSkipDeadTableErrorEvent dsgTombstoneSkipDeadTableErrorEvent) {
+        this.dsgTombstoneSkipDeadTableErrorEvent = dsgTombstoneSkipDeadTableErrorEvent;
     }
 }
 

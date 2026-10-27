@@ -24,6 +24,7 @@ import org.pente.gameServer.client.GameTimer;
 import org.pente.gameServer.client.MilliSecondGameTimer;
 import org.pente.gameServer.core.DSGPlayerData;
 import org.pente.gameServer.core.DSGPlayerStorer;
+import org.pente.gameServer.core.ExperimentalServer;
 import org.pente.gameServer.core.LiveSet;
 import org.pente.gameServer.core.MySQLDSGReturnEmailStorer;
 import org.pente.gameServer.event.*;
@@ -361,6 +362,10 @@ public class ArenaServerTable extends ServerTable {
             game = GridStateFactory.getSpeedGame(game);
         } else if (!speed && game.isSpeed()) {
             game = GridStateFactory.getNormalGame(game);
+        }
+        if (!ExperimentalServer.gameAllowed(serverData, game.getId())) {
+            Game d = ExperimentalServer.defaultGame(serverData);
+            game = speed ? GridStateFactory.getSpeedGame(d) : d;
         }
 
         rated = joinEvent.isRated();

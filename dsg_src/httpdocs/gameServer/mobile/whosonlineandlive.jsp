@@ -39,6 +39,7 @@
 // TimeZone tz = TimeZone.getTimeZone(dsgPlayerData.getTimezone());
    dateFormat = new SimpleDateFormat("MM/dd/yyyy");
    for (WhosOnlineRoom room : rooms) {
+      if (ExperimentalServer.isExperimentalRoom(room.getName())) { continue; }
 //        if ("web".equals(room.getName())) {
 //            continue;
 //        }

@@ -122,6 +122,46 @@ public class MySQLServerStorer {
         }
     }
 
+    /**
+     * Creates the server row with this explicit id if absent (never updates an
+     * existing row, so an admin deactivation survives reboots). Returns true
+     * when the row stored under id carries the expected name.
+     */
+    public static boolean ensureServer(DBHandler dbHandler, int id, String name,
+            int port) throws Throwable {
+
+        Connection con = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        try {
+            con = dbHandler.getConnection();
+            stmt = con.prepareStatement(
+                    "insert ignore into dsg_server (id, name, port, tournament, active, " +
+                    "creation_date, last_mod_date, private) " +
+                    "values (?, ?, ?, 'N', 'Y', sysdate(), sysdate(), 'N')");
+            stmt.setInt(1, id);
+            stmt.setString(2, name);
+            stmt.setInt(3, port);
+            stmt.executeUpdate();
+            stmt.close();
+
+            stmt = con.prepareStatement("select name from dsg_server where id = ?");
+            stmt.setInt(1, id);
+            rs = stmt.executeQuery();
+            return rs.next() && name.equals(rs.getString(1));
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (stmt != null) {
+                stmt.close();
+            }
+            if (con != null) {
+                dbHandler.freeConnection(con);
+            }
+        }
+    }
+
     public static void removeServer(DBHandler dbHandler, long id)
             throws Throwable {
 

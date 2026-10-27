@@ -280,6 +280,9 @@ public class ServerTable {
                         for (DSGPlayerPreference pref : prefs) {
                             if (pref.getName().equals("gameState")) {
                                 DSGChangeStateTableEvent e = (DSGChangeStateTableEvent) pref.getValue();
+                                if (!ExperimentalServer.gameAllowed(serverData, requestedGame(e).getId())) {
+                                    break;
+                                }
                                 initialMinutes = e.getInitialMinutes();
                                 incrementalSeconds = e.getIncrementalSeconds();
                                 game = GridStateFactory.getGame(e.getGame());
@@ -299,6 +302,9 @@ public class ServerTable {
                 initialMinutes = 10;
                 incrementalSeconds = 5;
                 game = GridStateFactory.PENTE_GAME;
+                if (!ExperimentalServer.gameAllowed(serverData, game.getId())) {
+                    game = ExperimentalServer.defaultGame(serverData);
+                }
             }
         }
         gameTime = null;
@@ -608,6 +614,7 @@ public class ServerTable {
             }
 
             sendMoves(player);
+            sendTombstoneTurnState(player);
 
             if (timed && (state == DSGGameStateTableEvent.GAME_IN_PROGRESS ||
                     state == DSGGameStateTableEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN)) {
@@ -648,6 +655,24 @@ public class ServerTable {
             dsgEventRouter.routeEvent(
                     new DSGMoveTableEvent(tableNum, gridState.getMoves()),
                     toPlayer);
+        }
+    }
+
+    /**
+     * A bulk move list cannot tell "dead stone pending" from "dead stone
+     * skipped"; tell a joining client when the trailing turn was closed
+     * without one. Sent after the bulk list, to that client only.
+     */
+    protected void sendTombstoneTurnState(String toPlayer) {
+        if (gridState instanceof TombstoneState) {
+            TombstoneState ts = (TombstoneState) gridState;
+            if (ts.isTrailingTurnClosedWithoutDead()) {
+                DSGPlayerData mover = playingPlayers[ts.getColor(ts.getNumMoves() - 1)];
+                dsgEventRouter.routeEvent(
+                        new DSGTombstoneSkipDeadTableEvent(
+                                mover != null ? mover.getName() : null, tableNum, true),
+                        toPlayer);
+            }
         }
     }
 
@@ -858,6 +883,21 @@ public class ServerTable {
         playerClickedPlay[seat] = false;
     }
 
+    /**
+     * The game a change-state request asks for, after the same speed/normal
+     * conversion handleChangeState applies.
+     */
+    protected Game requestedGame(DSGChangeStateTableEvent e) {
+        Game g = GridStateFactory.getGame(e.getGame());
+        boolean speed = e.getTimed() && Game.isSpeedGame(e.getInitialMinutes(), e.getIncrementalSeconds());
+        if (speed && !g.isSpeed()) {
+            g = GridStateFactory.getSpeedGame(g);
+        } else if (!speed && g.isSpeed()) {
+            g = GridStateFactory.getNormalGame(g);
+        }
+        return g;
+    }
+
     public void handleChangeState(DSGChangeStateTableEvent changeStateEvent) {
 
         int status = NO_ERROR;
@@ -883,6 +923,8 @@ public class ServerTable {
             status = DSGTableErrorEvent.COMPUTER_SITTING;
         } else if (serverData.isTournament()) {
             status = DSGTableErrorEvent.TOURNAMENT_GAME;
+        } else if (!ExperimentalServer.gameAllowed(serverData, requestedGame(changeStateEvent).getId())) {
+            status = DSGTableErrorEvent.UNKNOWN;
         } else {
 
             int minutes = changeStateEvent.getInitialMinutes();
@@ -1278,6 +1320,73 @@ public class ServerTable {
         }
         if (error != NO_ERROR) {
             log4j.info(psid() + "Swap Event error: " + error);
+        }
+    }
+
+    public void handleTombstoneSkipDead(DSGTombstoneSkipDeadTableEvent e) {
+        String player = e.getPlayer();
+        int error = NO_ERROR;
+        if (!isPlayerInTable(player)) {
+            error = DSGTableErrorEvent.NOT_IN_TABLE;
+        } else {
+            int seat = getPlayerSeat(player);
+            if (seat == NOT_SITTING) {
+                error = DSGTableErrorEvent.NOT_SITTING;
+            } else if (state == DSGGameStateTableEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN) {
+                error = DSGTableErrorEvent.GAME_WAITING_FOR_PLAYER_TO_RETURN;
+            } else if (state == DSGGameStateTableEvent.NO_GAME_IN_PROGRESS ||
+                    state == DSGGameStateTableEvent.WAIT_GAME_TWO_OF_SET) {
+                error = DSGTableErrorEvent.NO_GAME_IN_PROGRESS;
+            } else if (!(gridState instanceof TombstoneState)) {
+                error = DSGTableErrorEvent.INVALID_MOVE;
+            } else if (gridState.getCurrentPlayer() != seat) {
+                error = DSGTableErrorEvent.NOT_TURN;
+            } else if (!((TombstoneState) gridState).isAwaitingDeadStone()) {
+                error = DSGTableErrorEvent.NOT_AWAITING_DEAD_STONE;
+            } else {
+                TombstoneState ts = (TombstoneState) gridState;
+                synchronized (this) {
+                    ts.skipDeadStone();
+                    if (timed) {
+                        timers[seat].stop();
+                        if (shouldTimerRun()) {
+                            if (initialMinutes == 0) {
+                                timers[seat].reset();
+                            } else {
+                                timers[seat].increment(incrementalSeconds);
+                                timers[seat].incrementMillis((int) pingManager.getPingTime(player));
+                            }
+                        }
+                        moveTimes.set(moveTimes.size() - 1,
+                                new Time(timers[seat].getMinutes(), timers[seat].getSeconds()));
+                    }
+                    if (undoRequested) {
+                        broadcastTable(new DSGUndoReplyTableEvent(player, tableNum, false));
+                        undoRequested = false;
+                    }
+                    if (cancelRequested) {
+                        broadcastTable(new DSGCancelReplyTableEvent(player, tableNum, false));
+                        cancelRequested = false;
+                        cancelRequestedBy = null;
+                    }
+                    broadcastTable(new DSGTombstoneSkipDeadTableEvent(player, tableNum, false));
+                    if (timed) {
+                        broadCastPlayerTimer(seat);
+                    }
+                    activityLogger.updateGameState(sid, tableNum, gridState.getHash(),
+                            gridState.getMoves());
+                    if (ts.isGameOver()) {
+                        gameOver(true, playingPlayers[1].getName(), playingPlayers[2].getName(),
+                                false, false, false);
+                    } else if (timed) {
+                        timers[ts.getCurrentPlayer()].go();
+                    }
+                }
+            }
+        }
+        if (error != NO_ERROR) {
+            dsgEventRouter.routeEvent(
+                    new DSGTombstoneSkipDeadTableErrorEvent(player, tableNum, error), player);
         }
     }
 
@@ -2103,6 +2212,11 @@ public class ServerTable {
                                             timers[oldCurrentPlayer].getSeconds());
 
                             moveTimes.add(newTime);
+                        } else if (gridState instanceof TombstoneState) {
+                            // own entry, turn stays open: snapshot only; the
+                            // increment (or reset) happens once, on the dead entry
+                            moveTimes.add(new Time(timers[oldCurrentPlayer].getMinutes(),
+                                    timers[oldCurrentPlayer].getSeconds()));
                         } else {  // same player
                             if (shouldTimerRun()) {
                                 if (initialMinutes == 0) {
@@ -2169,7 +2283,9 @@ public class ServerTable {
 //                        if (initialMinutes == 0) {
 //                            timers[newCurrentPlayer].adjust(0, incrementalSeconds);
 //                        }
-                        if (oldCurrentPlayer != newCurrentPlayer || initialMinutes == 0) {
+                        if (gridState instanceof TombstoneState
+                                ? oldCurrentPlayer != newCurrentPlayer
+                                : (oldCurrentPlayer != newCurrentPlayer || initialMinutes == 0)) {
                             timers[newCurrentPlayer].go();
                         }
                         // if playing d-pente, start timer for p1 after 1st move
@@ -2264,7 +2380,12 @@ public class ServerTable {
                     drawOfferedBySeat = 0;
 
                     int oldCurrentPlayer = gridState.getCurrentPlayer();
-                    gridState.undoMove();
+                    int removedEntries = 1;
+                    if (gridState instanceof TombstoneState) {
+                        removedEntries = ((TombstoneState) gridState).undoTurn();
+                    } else {
+                        gridState.undoMove();
+                    }
                     int newCurrentPlayer = gridState.getCurrentPlayer();
 
                     // in D-pente, 1st player makes 1st 4 moves, so if they
@@ -2272,7 +2393,9 @@ public class ServerTable {
                     // or connect6
                     if (timed && oldCurrentPlayer != newCurrentPlayer) {
                         // remove the last move time
-                        moveTimes.removeLast();
+                        for (int r = 0; r < removedEntries; r++) {
+                            moveTimes.removeLast();
+                        }
 
 
                         timers[oldCurrentPlayer].stop();
