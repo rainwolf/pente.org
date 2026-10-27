@@ -227,6 +227,9 @@ public class NewGameServlet extends HttpServlet {
             privateGame = true;
         }
         if (koth && error == null) {
+            error = kothUnavailableError(game);
+        }
+        if (koth && error == null) {
             if (!rated) {
                 error = "King of the Hill games must be rated sets";
             }
@@ -462,6 +465,11 @@ public class NewGameServlet extends HttpServlet {
      * the pente variants but black in Go and renju, so the invitation colour
      * choice maps to a different player slot for these games.
      */
+    public static String kothUnavailableError(int game) {
+        return GridStateFactory.isTombstone(game) ?
+                "King of the Hill is not available for Tombstone Pente." : null;
+    }
+
     public static boolean isBlackFirst(int game) {
         return game == GridStateFactory.TB_GO ||
                 game == GridStateFactory.TB_GO9 ||

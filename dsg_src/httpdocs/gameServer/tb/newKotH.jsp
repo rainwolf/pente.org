@@ -144,7 +144,8 @@
                      <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
                         <select size="1" id="game" name="game" disabled="true">
                               <% Game games[] = GridStateFactory.getTbGames();
-            for (int i = 0; i < games.length; i++) { %>
+            for (int i = 0; i < games.length; i++) {
+               if (GridStateFactory.isTombstone(games[i].getId())) continue; %>
                            <option value="<%= games[i].getId() %>"><%= games[i].getName() %>
                            </option>
                            <%--
