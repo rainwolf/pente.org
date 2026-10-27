@@ -10,9 +10,6 @@ public class ActivityTableData {
     private int moves[];
     private boolean rated;
 
-    private static final GridCoordinates gridCoordinates =
-            new AlphaNumericGridCoordinates(19, 19);
-
     public ActivityTableData(long serverId, int tableNum, long hashCode,
                              int moves[], boolean rated) {
         this.serverId = serverId;
@@ -42,7 +39,7 @@ public class ActivityTableData {
         String m = "";
         if (moves == null) return m;
         for (int i = 0; i < moves.length; i++) {
-            m += gridCoordinates.getCoordinate(moves[i]);
+            m += org.pente.gameServer.event.DSGMoveTableEvent.formatMoveForLog(moves[i]);
             if (i != moves.length - 1) {
                 m += ",";
             }
