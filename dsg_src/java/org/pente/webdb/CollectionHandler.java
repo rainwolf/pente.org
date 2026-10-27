@@ -117,7 +117,8 @@ public class CollectionHandler {
             // The webdb storage model reconstructs moves[0] as the center move,
             // so off-center variants (go family, double-move / swap2 openings)
             // would corrupt silently — reject them per item.
-            if (GridStateFactory.firstMoveCanBeOffCenter(g.game)) {
+            if (GridStateFactory.isTombstone(g.game)
+                    || GridStateFactory.firstMoveCanBeOffCenter(g.game)) {
                 resp.errors.add(new ImportResponse.Error(i,
                         "variant not supported for import"));
                 continue;
@@ -178,6 +179,10 @@ public class CollectionHandler {
         int game = intParam(request, "game", 0);
         if (game <= 0) {
             JsonHttp.error(response, 400, "bad_request", "game is required");
+            return;
+        }
+        if (GridStateFactory.isTombstone(game)) {
+            JsonHttp.error(response, 400, "bad_request", "variant not supported");
             return;
         }
         int offset = intParam(request, "offset", 0);

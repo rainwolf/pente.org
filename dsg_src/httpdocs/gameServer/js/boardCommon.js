@@ -1,8 +1,8 @@
 // Shared board-viewer helpers. Single source for board color + replay dispatch.
 // Depends on globals defined elsewhere and loaded FIRST:
 //   - GAME            : game-id constants, emitted by gameConstants.jspf
-//   - color vars      : penteColor, keryoPenteColor, ... swap2KeryoColor, renjuColor  (tb/gameScript.js)
-//   - replay*Game     : replayPenteGame, ... replayOPenteGame             (tb/gameScript.js)
+//   - color vars      : penteColor, keryoPenteColor, ... swap2KeryoColor, renjuColor, tombstoneColor  (tb/gameScript.js)
+//   - replay*Game     : replayPenteGame, ... replayOPenteGame, replayTombstoneGame (tb/gameScript.js)
 //   - whiteCaptures / blackCaptures / game : page-level globals on each viewer page
 // Unknown game ids throw on purpose, so a mis-set id fails loudly in the console.
 
@@ -39,6 +39,8 @@ function getBoardColor(game) {
          return swap2PenteColor;
       case GAME.SWAP2KERYO: case GAME.SPEED_SWAP2KERYO: case GAME.TB_SWAP2KERYO:
          return swap2KeryoColor;
+      case GAME.TOMBSTONE: case GAME.SPEED_TOMBSTONE: case GAME.TB_TOMBSTONE:
+         return tombstoneColor;
       default:
          throw new Error("getBoardColor: unknown game id " + game);
    }
@@ -78,6 +80,8 @@ function replayMoves(abstractBoard, movesList, until) {
          replayGoGame(abstractBoard, movesList, until); break;
       case GAME.OPENTE: case GAME.SPEED_OPENTE: case GAME.TB_OPENTE:
          replayOPenteGame(abstractBoard, movesList, until); break;
+      case GAME.TOMBSTONE: case GAME.SPEED_TOMBSTONE: case GAME.TB_TOMBSTONE:
+         replayTombstoneGame(abstractBoard, movesList, until); break;
       default:
          throw new Error("replayMoves: unknown game id " + game);
    }

@@ -28,6 +28,7 @@
       game.getOpponent(meData.getPlayerID()));
 
    boolean isGo = game.getGame() == GridStateFactory.TB_GO || game.getGame() == GridStateFactory.TB_GO9 || game.getGame() == GridStateFactory.TB_GO13;
+   boolean isTombstone = game.getGame() == GridStateFactory.TB_TOMBSTONE;
    int gridSize = 19;
    if (game.getGame() == GridStateFactory.TB_GO9) {
       gridSize = 9;
@@ -135,11 +136,15 @@
       boardContext.fill();
       drawGrid(boardContext, boardColor, gridSize, true);
       drawGame();
+      if (isTombstoneGame(game)) {
+         tombstoneDrawLastMarks(moves, drawUntilMove);
+      } else {
       lastMove = moves[drawUntilMove - 1];
       drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
       if (game === 63 && moves.length > 1) {
          lastMove = moves[drawUntilMove - 2];
          drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
+      }
       }
       if (currentMove !== -1) {
          var cell = document.getElementById('' + currentMove);
@@ -253,6 +258,17 @@
                               <%
 String coordinateLetters[] = {"A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T"};
 int row = 0;
+if (isTombstone) {
+   for (org.pente.turnBased.web.TombstoneTurnRows.Row[] pr : org.pente.turnBased.web.TombstoneTurnRows.pairs(org.pente.turnBased.web.TombstoneTurnRows.rows(game))) {
+%>
+                           <tr>
+<td width="10%" align="center"><%= ++row %></td>
+<td onclick='selectMove(<%= pr[0].end %>)' id='<%= pr[0].end %>' width="45%" align="center"><%= pr[0].label %></td>
+<% if (pr[1] != null) { %><td onclick='selectMove(<%= pr[1].end %>)' id='<%= pr[1].end %>' width="45%" align="center"><%= pr[1].label %></td><% } else { %><td></td><% } %>
+</tr>
+<%
+   }
+} else {
 for( int i = 0; i < game.getNumMoves(); i++ ) {
     if ((game.getGame() != 63) && (i % 2 == 0)) {
     %>
@@ -298,6 +314,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
    <%
          }
       }
+   }
    %>
 </table>
 </div>
@@ -543,6 +560,10 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
    }
 
    function goBack() {
+      if (isTombstoneGame(game)) {
+         if (moves.length > 0) selectMove(tombstoneStep(moves, drawUntilMove, -1) - 1);
+         return;
+      }
       if (drawUntilMove > 1) {
          if (game === 63 && drawUntilMove > 1) {
             if ((drawUntilMove % 2) === 1) {
@@ -575,6 +596,10 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
    }
 
    function goForward() {
+      if (isTombstoneGame(game)) {
+         if (moves.length > 0) selectMove(tombstoneStep(moves, drawUntilMove, 1) - 1);
+         return;
+      }
       if (drawUntilMove < moves.length) {
          drawUntilMove = drawUntilMove + 1;
          if (game === 63 && drawUntilMove > 1) {
@@ -676,6 +701,9 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
    init();
    replayGame(abstractBoard, moves, moves.length);
    drawGame();
+   if (isTombstoneGame(game)) {
+      if (moves.length > 0) selectMove(moves.length - 1);
+   } else {
    lastMove = moves[drawUntilMove - 1];
    drawRedDot(lastMove % 19, Math.floor(lastMove / 19));
    if (game === 63 && moves.length > 1) {
@@ -684,6 +712,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
       selectMove(drawUntilMove - 2);
    } else {
       selectMove(drawUntilMove - 1);
+   }
    }
    document.getElementById("movesTable").scrollTop = document.getElementById("movesTable").scrollHeight;
 </script>
@@ -696,4 +725,4 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
 <br><br>
 
 
-<%@ include file="../end.jsp" %>
+<%@ include file="../end.jsp" %>

@@ -210,11 +210,15 @@
             init();
             replayGame(abstractBoard, moves, moves.length);
             drawGame();
+            if (isTombstoneGame(game)) {
+               tombstoneDrawLastMarks(moves, moves.length);
+            } else {
             lastMove = moves[drawUntilMove - 1];
             drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
             if (game === 63 && moves.length > 1) {
                lastMove = moves[drawUntilMove - 2];
                drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
+            }
             }
          </script>
 

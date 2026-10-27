@@ -27,6 +27,7 @@ public interface DSGTableErrorEvent extends DSGTableEvent {
     public static final int GUEST_NOT_ALLOWED = 23;
     public static final int WAIT_GAME_TWO_OF_SET = 24;
     public static final int NO_DRAW_OFFERED = 25;
+    public static final int NOT_AWAITING_DEAD_STONE = 26;
 
     public static final int UNKNOWN = 99;
 

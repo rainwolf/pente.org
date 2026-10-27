@@ -4,6 +4,7 @@ import org.pente.game.GridStateFactory;
 import org.pente.gameServer.client.web.WhosOnlineRoom;
 import org.pente.gameServer.core.DSGPlayerData;
 import org.pente.gameServer.core.DSGPlayerGameData;
+import org.pente.gameServer.core.ExperimentalServer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.List;
 /**
  * Serializes all live server rooms plus the website room (whosonlineandlive.jsp).
  * Gson serializes {@code List<RoomEntry>} directly to a JSON array.
+ * The Experimental server's room is skipped.
  */
 public class WhosonlineAndLiveResponse {
 
@@ -51,6 +53,9 @@ public class WhosonlineAndLiveResponse {
     public static List<RoomEntry> build(List<WhosOnlineRoom> rooms) {
         List<RoomEntry> result = new ArrayList<>();
         for (WhosOnlineRoom room : rooms) {
+            if (ExperimentalServer.isExperimentalRoom(room.getName())) {
+                continue;
+            }
             result.add(new RoomEntry(room));
         }
         return result;

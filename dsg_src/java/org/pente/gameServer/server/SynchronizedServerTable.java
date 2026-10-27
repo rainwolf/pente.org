@@ -176,6 +176,8 @@ public class SynchronizedServerTable implements DSGEventListener {
                             serverTable.handleRejectGoState(dsgRejectGoStateEvent);
                     case DSGSwap2PassTableEvent dsgSwap2PassTableEvent ->
                             serverTable.handleSwap2Pass(dsgSwap2PassTableEvent);
+                    case DSGTombstoneSkipDeadTableEvent dsgTombstoneSkipDeadTableEvent ->
+                            serverTable.handleTombstoneSkipDead(dsgTombstoneSkipDeadTableEvent);
                     case DSGArenaRequestJoinTableEvent dsgArenaRequestJoinTableEvent ->
                             serverTable.handleArenaRequestJoin(dsgArenaRequestJoinTableEvent);
                     case DSGArenaRejectTableJoinEvent dsgArenaRejectTableJoinEvent ->

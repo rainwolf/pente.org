@@ -73,6 +73,28 @@ public class DSGContextListener implements ServletContextListener {
 
     private List<Timer> timers = null;
 
+    /**
+     * Boot-time server offerings as {Integer serverId, int[] games, String eventName},
+     * in boot order. Pure, so it is testable without a database.
+     */
+    public static List<Object[]> serverOfferings() {
+        int[] goGames = {
+                GridStateFactory.GO, GridStateFactory.SPEED_GO,
+                GridStateFactory.GO9, GridStateFactory.SPEED_GO9,
+                GridStateFactory.GO13, GridStateFactory.SPEED_GO13};
+        List<Object[]> rows = new ArrayList<Object[]>();
+        // servers 1 (Main Room) and 37 (Beginners): all live + speed games
+        rows.add(new Object[]{1, GridStateFactory.LIVE_GAMES, MySQLGameVenueStorer.LIVE_EVENT});
+        rows.add(new Object[]{37, GridStateFactory.LIVE_GAMES, MySQLGameVenueStorer.LIVE_EVENT});
+        // server 46 (Go): the 3 Go variants and their speed variants
+        rows.add(new Object[]{46, goGames, MySQLGameVenueStorer.LIVE_EVENT});
+        // server 45 (King of the Hill): koth of all normal + speed variants
+        rows.add(new Object[]{45, GridStateFactory.LIVE_GAMES, MySQLGameVenueStorer.KOTH_EVENT});
+        // Experimental: Tombstone only
+        rows.add(new Object[]{ExperimentalServer.ID, ExperimentalServer.GAMES, MySQLGameVenueStorer.LIVE_EVENT});
+        return rows;
+    }
+
     public void contextInitialized(ServletContextEvent servletContextEvent) {
         // Google Play Billing (spec 2026-10-11 section 4.1): a blank PLAY_ACCOUNT_ID_SECRET must stop startup.
         // This runs outside the try below on purpose: that catch only logs, so a throw there would not fail the context.
@@ -128,22 +150,24 @@ public class DSGContextListener implements ServletContextListener {
                 gameVenueStorer.registerAllGames(2);
 
                 // keep each server's offered games in sync with GridStateFactory
-                // so adding a game only means adding its ids to the arrays below.
+                // so adding a game only means adding its ids there.
                 // idempotent; runs before setupLiveGameServers() reads offerings.
-                // the Arena server (in-memory, id 0) copies its games from server
-                // 1 in setupArenaServers(), so it inherits the live+speed set.
-                int[] liveGames = GridStateFactory.LIVE_GAMES;
-                int[] goGames = {
-                        GridStateFactory.GO, GridStateFactory.SPEED_GO,
-                        GridStateFactory.GO9, GridStateFactory.SPEED_GO9,
-                        GridStateFactory.GO13, GridStateFactory.SPEED_GO13};
-                // servers 1 (Main Room) and 37 (Beginners): all live + speed games
-                MySQLServerStorer.addServerGames(dbHandler, 1, 2, liveGames, MySQLGameVenueStorer.LIVE_EVENT);
-                MySQLServerStorer.addServerGames(dbHandler, 37, 2, liveGames, MySQLGameVenueStorer.LIVE_EVENT);
-                // server 46 (Go): the 3 Go variants and their speed variants
-                MySQLServerStorer.addServerGames(dbHandler, 46, 2, goGames, MySQLGameVenueStorer.LIVE_EVENT);
-                // server 45 (King of the Hill): koth of all normal + speed variants
-                MySQLServerStorer.addServerGames(dbHandler, 45, 2, liveGames, MySQLGameVenueStorer.KOTH_EVENT);
+                // servers 1/37/45/46 never get Tombstone; Experimental gets only
+                // Tombstone; the Arena server (in-memory, id 0) copies server 1
+                // in setupArenaServers(), so it inherits the live+speed set.
+                for (Object[] row : serverOfferings()) {
+                    int serverId = (Integer) row[0];
+                    int[] games = (int[]) row[1];
+                    String eventName = (String) row[2];
+                    if (serverId == ExperimentalServer.ID
+                            && !MySQLServerStorer.ensureServer(dbHandler, ExperimentalServer.ID,
+                                    ExperimentalServer.NAME, ExperimentalServer.PORT)) {
+                        log4j.error("dsg_server id " + ExperimentalServer.ID
+                                + " is not the Experimental server; not offering Tombstone");
+                        continue;
+                    }
+                    MySQLServerStorer.addServerGames(dbHandler, serverId, 2, games, eventName);
+                }
             } catch (Throwable t) {
                 log4j.error("Problem registering games / server offerings at boot", t);
             }

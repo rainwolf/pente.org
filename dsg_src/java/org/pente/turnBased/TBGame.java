@@ -325,6 +325,8 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
                     cp = -1;
                 }
             }
+        } else if (game == GridStateFactory.TB_TOMBSTONE) {
+            cp = org.pente.game.TombstoneCodes.currentPlayer(getMoves(), getNumMoves());
         } else if (game == GridStateFactory.TB_CONNECT6) {
             cp = ((moves.size() + 1) / 2) % 2 + 1;
         } else if (game == GridStateFactory.TB_RENJU) {
@@ -361,6 +363,10 @@ public class TBGame implements org.pente.game.MoveData, Serializable {
 
     public int getNumMoves() {
         return moves.size();
+    }
+
+    public int getLastTurnLength() {
+        return org.pente.game.TombstoneCodes.lastTurnLength(getMoves(), getNumMoves());
     }
 
     public long getPlayer(int seat) {

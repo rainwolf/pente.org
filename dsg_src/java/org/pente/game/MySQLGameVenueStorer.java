@@ -683,16 +683,16 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
         ensureGameEvents(siteId, rows);
     }
 
-    public void registerAllGames(int siteId) throws Exception {
-
-        log4j.info("MySQLGameVenueStorer.registerAllGames(" + siteId + ")");
-
-        // Derive everything from the authoritative GridStateFactory arrays so
-        // adding a game only means adding its ids there.  Every live id needs a
-        // "Live Game" event and a "King of the Hill" event; every turn-based id
-        // needs a "Turn-based Game" event and a "King of the Hill" event.  This
-        // matches how the live storer, MySQLTBGameStorer and the KOTH storer
-        // resolve their event_id (see CacheKOTHStorer's LIVE_GAMES/TB_GAMES loop).
+    /**
+     * The (game, eventName) rows registered at boot. Derived from the
+     * authoritative GridStateFactory arrays so adding a game only means adding
+     * its ids there. Every live id needs a "Live Game" event and a "King of the
+     * Hill" event; every turn-based id a "Turn-based Game" and a KOTH event.
+     * This matches how the live storer, MySQLTBGameStorer and the KOTH storer
+     * resolve their event_id (see CacheKOTHStorer's LIVE_GAMES/TB_GAMES loop).
+     * The NON_KOTH_* games (Tombstone) get only their live / turn-based row.
+     */
+    public static List<Object[]> allGameEventRows() {
         List<Object[]> rows = new ArrayList<Object[]>();
         for (int game : GridStateFactory.LIVE_GAMES) {
             rows.add(new Object[]{game, LIVE_EVENT});
@@ -702,8 +702,20 @@ public class MySQLGameVenueStorer implements GameVenueStorer {
             rows.add(new Object[]{game, TB_EVENT});
             rows.add(new Object[]{game, KOTH_EVENT});
         }
+        for (int game : GridStateFactory.NON_KOTH_LIVE_GAMES) {
+            rows.add(new Object[]{game, LIVE_EVENT});
+        }
+        for (int game : GridStateFactory.NON_KOTH_TB_GAMES) {
+            rows.add(new Object[]{game, TB_EVENT});
+        }
+        return rows;
+    }
 
-        ensureGameEvents(siteId, rows);
+    public void registerAllGames(int siteId) throws Exception {
+
+        log4j.info("MySQLGameVenueStorer.registerAllGames(" + siteId + ")");
+
+        ensureGameEvents(siteId, allGameEventRows());
     }
 
     // Idempotently insert each (game, name) row at the given site, then rebuild

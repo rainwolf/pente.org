@@ -4,6 +4,7 @@ import org.pente.game.GridStateFactory;
 import org.pente.gameServer.client.web.WhosOnlineRoom;
 import org.pente.gameServer.core.DSGPlayerData;
 import org.pente.gameServer.core.DSGPlayerGameData;
+import org.pente.gameServer.core.ExperimentalServer;
 import org.pente.gameServer.core.ServerData;
 
 import java.util.ArrayList;
@@ -51,12 +52,16 @@ public class LiveServersResponse {
     }
 
     /**
-     * @param servers all server descriptors from {@code Resources.getServerData()}
+     * @param servers all server descriptors from {@code Resources.getServerData()};
+     *                the Experimental server is skipped
      * @param rooms   current who's-online rooms to match against server names
      */
     public static List<ServerEntry> build(Iterable<ServerData> servers, List<WhosOnlineRoom> rooms) {
         List<ServerEntry> result = new ArrayList<>();
         for (ServerData data : servers) {
+            if (ExperimentalServer.isExperimental(data)) {
+                continue;
+            }
             List<DSGPlayerData> serverPlayers = Collections.emptyList();
             for (WhosOnlineRoom room : rooms) {
                 if (data.getName().equals(room.getName())) {

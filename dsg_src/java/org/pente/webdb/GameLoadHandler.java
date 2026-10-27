@@ -9,6 +9,7 @@ import org.apache.log4j.*;
 
 import org.pente.game.GameData;
 import org.pente.game.GameStorer;
+import org.pente.game.GridStateFactory;
 
 import org.pente.webdb.dto.GameDetailResponse;
 import org.pente.webdb.dto.GameHeader;
@@ -58,6 +59,8 @@ public class GameLoadHandler {
                 return;
             }
             JsonHttp.ok(response, resp);
+        } catch (IllegalArgumentException e) {
+            JsonHttp.error(response, 400, "bad_request", e.getMessage());
         } catch (Exception e) {
             cat.error("games/" + gid + " load failed", e);
             JsonHttp.error(response, 500, "server_error", "game load failed");
@@ -82,6 +85,9 @@ public class GameLoadHandler {
         // g.private = 'N' guard. F1.
         if (gd.isPrivateGame()) {
             return null;
+        }
+        if (GridStateFactory.isTombstone(GridStateFactory.getGameId(gd.getGame()))) {
+            throw new IllegalArgumentException("variant not supported");
         }
 
         GameDetailResponse resp = new GameDetailResponse();

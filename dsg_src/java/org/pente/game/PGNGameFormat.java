@@ -211,12 +211,13 @@ public class PGNGameFormat implements GameFormat {
         // bogus coordinate. Match case-insensitively on "renju" rather than
         // any one exact name so no renju variant is missed.
         boolean isRenju = data.getGame() != null && data.getGame().toLowerCase().contains("renju");
+        boolean isTombstone = data.getGame() != null && data.getGame().toLowerCase().contains("tombstone");
 
         int j = 1;
         for (int i = 0; i < data.getNumMoves(); i++) {
 
             int move = data.getMove(i);
-            String moveStr = formatMoveToken(move, isRenju);
+            String moveStr = isTombstone ? TombstoneCodes.pgnToken(move) : formatMoveToken(move, isRenju);
 
             // whites move
             if (i % 2 == 0) {
@@ -345,6 +346,7 @@ public class PGNGameFormat implements GameFormat {
                     // call site above) so alternate names such as
                     // "Turn-based Renju" are also recognized.
                     boolean isRenju = gameHeader != null && gameHeader.toLowerCase().contains("renju");
+                    boolean isTombstone = gameHeader != null && gameHeader.toLowerCase().contains("tombstone");
 
                     StringTokenizer moveTokenizer = new StringTokenizer(line, " ");
                     while (moveTokenizer.hasMoreTokens()) {
@@ -358,7 +360,7 @@ public class PGNGameFormat implements GameFormat {
                                 data.setStatus(GameData.STATUS_FORCE_RESIGN);
                                 continue;
                             }
-                            int moveInt = parseMoveToken(move, isRenju);
+                            int moveInt = isTombstone ? TombstoneCodes.parsePgnToken(move) : parseMoveToken(move, isRenju);
                             if (moveInt != -1) {
                                 data.addMove(moveInt);
                             }

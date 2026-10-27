@@ -82,6 +82,15 @@ public class SimpleGridState implements GridState {
         moves = new Vector<>();
     }
 
+    /** Create a grid state whose hash storage holds maxEntries entries
+     *  (the default constructors hold 720).
+     */
+    public SimpleGridState(int boardSizeX, int boardSizeY, int maxEntries) {
+        this(boardSizeX, boardSizeY);
+        hashes = new long[maxEntries][9];
+        rots = new int[maxEntries];
+    }
+
     /** Create a new grid state with a specified size and add the moves
      *  contained in the passed in MoveData to the board.
      *  @param data MoveData containing a list of moves

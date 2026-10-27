@@ -12,6 +12,7 @@ var oPenteColor = '#52BE80';
 var swap2PenteColor = "#E5AA70";
 var swap2KeryoColor = "#50C878";
 var renjuColor = "#D98880";
+var tombstoneColor = "#D7BDE2";
 
 var abstractBoard = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -38,6 +39,8 @@ var whiteCaptures = 0, blackCaptures = 0;
 var c6Move1 = -1, c6Move2 = -1,
    dPenteMove1 = -1, dPenteMove2 = -1, dPenteMove3 = -1, dPenteMove4 = -1,
    swap2Move1 = -1, swap2Move2 = -1, swap2Move3 = -1;
+var tsOwn = -1, tsDead = -1;
+var TOMBSTONE_DEAD_OFFSET = 361, TOMBSTONE_OWN_PASS = 722, TOMBSTONE_DEAD = 3;
 
 var stoneCanvas = document.getElementById("stone");
 var stoneContext = stoneCanvas.getContext("2d");
@@ -681,6 +684,27 @@ function drawRedDot(i, j) {
 }
 
 function drawStone(i, j, color) {
+   if (color === 3) {
+      boardContext.save();
+      let dx = indentWidth + stepX * (i + 1) + stepX / 2;
+      let dy = indentHeight + stepY * (j + 1) + stepY / 2;
+      boardContext.beginPath();
+      boardContext.arc(dx, dy, radius, 0, Math.PI * 2, true);
+      dx -= radius / 8;
+      dy -= radius / 8;
+      boardContext.shadowColor = 'DimGray';
+      boardContext.shadowBlur = 1;
+      boardContext.shadowOffsetX = radius / 8;
+      boardContext.shadowOffsetY = radius / 8;
+      let deadGradient = boardContext.createRadialGradient(dx, dy, radius / 8, dx, dy, radius);
+      deadGradient.addColorStop(0, '#C8C8C8');
+      deadGradient.addColorStop(1, '#6E6E6E');
+      boardContext.fillStyle = deadGradient;
+      boardContext.fill();
+      boardContext.closePath();
+      boardContext.restore();
+      return;
+   }
    if (color < 1 || color > 2) {
       return;
    }
@@ -1645,3 +1669,194 @@ function replayOPenteGame(abstractBoard, movesList, until) {
 
 
 
+
+// ---- Tombstone Pente helpers (codes: own 0..360, dead 361..721, own pass 722) ----
+
+function isTombstoneGame(g) {
+   return g === GAME.TOMBSTONE || g === GAME.SPEED_TOMBSTONE || g === GAME.TB_TOMBSTONE;
+}
+
+function tombstoneDecode(code) {
+   if (code >= 0 && code <= 360) {
+      return {kind: 'own', point: code};
+   }
+   if (code >= TOMBSTONE_DEAD_OFFSET && code <= 721) {
+      return {kind: 'dead', point: code - TOMBSTONE_DEAD_OFFSET};
+   }
+   if (code === TOMBSTONE_OWN_PASS) {
+      return {kind: 'pass', point: -1};
+   }
+   return {kind: 'invalid', point: -1};
+}
+
+function tombstoneTurns(movesList, until) {
+   let n = (until === undefined) ? movesList.length : Math.min(until, movesList.length);
+   let turns = [];
+   let ownCount = 0;
+   let open = null;
+   for (let i = 0; i < n; i++) {
+      let d = tombstoneDecode(movesList[i]);
+      if (d.kind === 'own' || d.kind === 'pass') {
+         let player = (ownCount === 0) ? 1 : ((ownCount % 2 === 1) ? 2 : 1);
+         ownCount++;
+         open = {player: player, own: movesList[i], dead: -1, start: i, end: i};
+         turns.push(open);
+      } else if (d.kind === 'dead') {
+         if (open !== null && open.dead === -1 && open.start !== 0 && open.end === i - 1) {
+            open.dead = movesList[i];
+            open.end = i;
+            open = null;
+         } else {
+            turns.push({player: 0, own: -1, dead: movesList[i], start: i, end: i});
+            open = null;
+         }
+      } else {
+         turns.push({player: 0, own: movesList[i], dead: -1, start: i, end: i});
+         open = null;
+      }
+   }
+   return turns;
+}
+
+function tombstoneCurrentPlayer(movesList) {
+   let count = 0;
+   for (let i = 0; i < movesList.length; i++) {
+      let k = tombstoneDecode(movesList[i]).kind;
+      if (k === 'own' || k === 'pass') {
+         count++;
+      }
+   }
+   return (count % 2) + 1;
+}
+
+function replayTombstoneGame(abstractBoard, movesList, until) {
+   resetAbstractBoard(abstractBoard);
+   let turns = tombstoneTurns(movesList, until);
+   for (let t = 0; t < turns.length; t++) {
+      let turn = turns[t];
+      let entries = [];
+      for (let i = turn.start; i <= turn.end; i++) {
+         entries.push(movesList[i]);
+      }
+      for (let e = 0; e < entries.length; e++) {
+         let d = tombstoneDecode(entries[e]);
+         if (d.kind === 'own' && turn.player !== 0) {
+            let x = d.point % 19, y = Math.floor(d.point / 19);
+            abstractBoard[x][y] = turn.player;
+            detectPenteCapture(abstractBoard, x, y, turn.player);
+         } else if (d.kind === 'dead') {
+            abstractBoard[d.point % 19][Math.floor(d.point / 19)] = TOMBSTONE_DEAD;
+         }
+      }
+   }
+}
+
+function tombstoneLabel(code) {
+   let d = tombstoneDecode(code);
+   if (d.kind === 'invalid') {
+      return '?';
+   }
+   if (d.kind === 'pass') {
+      return 'PASS';
+   }
+   let name = coordinateLetters[d.point % 19] + (19 - Math.floor(d.point / 19));
+   return d.kind === 'dead' ? 'dead ' + name : name;
+}
+
+function tombstoneTurnLabel(turn) {
+   let dead = turn.dead === -1 ? '' : tombstoneLabel(turn.dead).replace(/^dead /, '');
+   if (turn.own === -1) {
+      return 'PASS - ' + dead;
+   }
+   let s = tombstoneLabel(turn.own);
+   if (turn.dead !== -1) {
+      s += ' - ' + dead;
+   }
+   return s;
+}
+
+function tombstoneTbButtonState(ownPick, deadPick) {
+   if (ownPick === -1) {
+      return {label: 'Place only a dead stone', action: 'ownPass'};
+   }
+   if (deadPick === -1) {
+      return {label: 'Submit without dead stone', action: 'submitOwn'};
+   }
+   return {label: 'Submit', action: 'submitBoth'};
+}
+
+function tombstoneTbClick(ownPick, deadPick, point, cellValue) {
+   if (cellValue !== 0) {
+      return {tsOwn: -1, tsDead: -1};
+   }
+   if (ownPick === -1) {
+      return {tsOwn: point, tsDead: deadPick};
+   }
+   if (deadPick === -1) {
+      return {tsOwn: ownPick, tsDead: point};
+   }
+   return {tsOwn: ownPick, tsDead: deadPick};
+}
+
+function tombstonePreviewCodes(ownPick, deadPick) {
+   if (ownPick === -1) {
+      return [];
+   }
+   if (deadPick === -1) {
+      return [ownPick];
+   }
+   return [ownPick, TOMBSTONE_DEAD_OFFSET + deadPick];
+}
+
+function tombstoneSubmitMoves(ownPick, deadPick) {
+   if (ownPick === -1) {
+      return null;
+   }
+   if (deadPick === -1) {
+      return "" + ownPick;
+   }
+   return ownPick + "," + (TOMBSTONE_DEAD_OFFSET + deadPick);
+}
+
+function tombstoneLastMarks(movesList, until) {
+   let turns = tombstoneTurns(movesList, until);
+   if (turns.length === 0) {
+      return [];
+   }
+   let last = turns[turns.length - 1];
+   let marks = [];
+   if (last.own !== -1 && tombstoneDecode(last.own).kind === 'own') {
+      marks.push(last.own);
+   }
+   if (last.dead !== -1) {
+      marks.push(last.dead - TOMBSTONE_DEAD_OFFSET);
+   }
+   return marks;
+}
+
+function tombstoneStep(movesList, until, dir) {
+   let turns = tombstoneTurns(movesList);
+   let bounds = turns.map(function (t) { return t.end + 1; });
+   if (dir < 0) {
+      let best = bounds.length > 0 ? bounds[0] : 0;
+      for (let i = 0; i < bounds.length; i++) {
+         if (bounds[i] < until) {
+            best = bounds[i];
+         }
+      }
+      return best;
+   }
+   for (let i = 0; i < bounds.length; i++) {
+      if (bounds[i] > until) {
+         return bounds[i];
+      }
+   }
+   return movesList.length;
+}
+
+function tombstoneDrawLastMarks(movesList, until) {
+   let marks = tombstoneLastMarks(movesList, until);
+   for (let i = 0; i < marks.length; i++) {
+      drawRedDot(marks[i] % 19, Math.floor(marks[i] / 19));
+   }
+}

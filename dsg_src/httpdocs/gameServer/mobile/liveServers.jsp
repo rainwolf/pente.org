@@ -26,6 +26,7 @@
    List<WhosOnlineRoom> rooms = new ArrayList<>(WhosOnline.getPlayers(globalResources, sessionListener));
 
    for (ServerData data : globalResources.getServerData()) {
+      if (ExperimentalServer.isExperimental(data)) { continue; }
       String serverAndPlayers = "";
       String serverName = data.getName();
 //      if (serverName.toLowerCase().contains("arena")) {

@@ -18,6 +18,11 @@
 
    String action = request.getParameter("action");
    Tourney tourney = null;
+   String tourneyError = null;
+   if ("add".equals(action) && GridStateFactory.isTombstone(Integer.parseInt(request.getParameter("game")))) {
+      tourneyError = "Tournaments are not available for Tombstone Pente.";
+      action = null;   // skip the insert block below
+   }
    if (action != null && action.equals("add")) {
 
       System.out.print("------------ here game " + request.getParameter("game"));
@@ -100,6 +105,7 @@
 <% if (tourney != null) { %>
 New tourney "<%= tourney.getName() %>" successfully created.<br>
 <% } %>
+<% if (tourneyError != null) { %><b><%= tourneyError %></b><br><% } %>
 
 <font size="5">Add new tournament</font><br>
 <br>
@@ -115,7 +121,8 @@ New tourney "<%= tourney.getName() %>" successfully created.<br>
          <td>
             <select name="game">
                <% Game games[] = GridStateFactory.getAllGames();
-                  for (int i = 1; i < games.length; i++) { %>
+                  for (int i = 1; i < games.length; i++) {
+                     if (GridStateFactory.isTombstone(games[i].getId())) continue; %>
                <option <% if (i == 1) { %>selected
                        <% } %>value="<%= games[i].getId() %>"><%= GridStateFactory.getDisplayName(games[i].getId()) %>
                </option>

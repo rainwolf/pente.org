@@ -1693,6 +1693,9 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
         if (game.getState() != TBGame.STATE_ACTIVE) {
             throw new TBStoreException("Game is not active: " + gid);
         }
+        if (game.getGame() == GridStateFactory.TB_TOMBSTONE && game.getNumMoves() > 0) {
+            throw new InvalidMoveException("Tombstone turns must use storeTombstoneTurn");
+        }
 
 
         // check that it is a valid move
@@ -1804,6 +1807,110 @@ public class CacheTBStorer implements TBGameStorer, TourneyListener {
             baseStorer.storeNewMove(gid, actualMoveNum, move);
         }
 
+        baseStorer.updateGameAfterMove(game);
+    }
+
+    /**
+     * Stores a whole Tombstone turn (own stone/pass, optionally plus a dead
+     * stone) in one persistSet. All validation runs before any mutation, so a
+     * rejected turn writes nothing. message may be null.
+     */
+    public void storeTombstoneTurn(long gid, int[] turn, TBMessage message)
+            throws TBStoreException {
+        log4j.debug("CacheTbStorer.storeTombstoneTurn(" + gid + ")");
+
+        cacheStats.incrementMovesMade();
+
+        TBGame game = loadGame(gid);
+        if (game == null) {
+            throw new TBStoreException("Invalid game, not found: " + gid);
+        }
+        if (game.getState() != TBGame.STATE_ACTIVE) {
+            throw new TBStoreException("Game is not active: " + gid);
+        }
+
+        String err = TombstoneCodes.validateTurnShape(turn);
+        if (err != null) {
+            throw new InvalidMoveException(err);
+        }
+
+        TombstoneState s = (TombstoneState) GridStateFactory.createGridState(
+                GridStateFactory.TB_TOMBSTONE, game);
+        List<Integer> kept = new ArrayList<Integer>();
+
+        if (!s.isValidMove(turn[0], s.getCurrentPlayer())) {
+            throw new InvalidMoveException("Invalid move [" + turn[0] +
+                    "] for Tombstone Pente game: " + gid);
+        }
+        s.addMove(turn[0]);
+        kept.add(turn[0]);
+
+        if (turn.length == 2) {
+            if (s.isGameOver()) {
+                log4j.debug("storeTombstoneTurn(" + gid + ") dead stone discarded after win");
+            } else {
+                if (!s.isValidMove(turn[1], s.getCurrentPlayer())) {
+                    throw new InvalidMoveException("Invalid move [" + turn[1] +
+                            "] for Tombstone Pente game: " + gid);
+                }
+                s.addMove(turn[1]);
+                kept.add(turn[1]);
+            }
+        }
+        if (!s.isGameOver() && s.isAwaitingDeadStone()) {
+            s.skipDeadStone();
+        }
+
+        boolean attach = message != null;
+        if (attach) {
+            org.pente.gameServer.kids.KidChatPolicy policy = kidChatPolicy;
+            if (policy != null && !policy.allowed(message.getPid(),
+                    game.getOpponent(message.getPid()))) {
+                log4j.debug("storeTombstoneTurn(" + gid + ") message dropped, kid chat rule");
+                attach = false;
+            }
+        }
+
+        // `game` is a private copy (see storeNewMove); safe to mutate before the lock.
+        int firstMoveNum = game.getNumMoves();
+        for (int code : kept) {
+            game.addMove(code);
+        }
+        long newTimeout = Utilities.calculateNewTimeout(game, dsgPlayerStorer);
+
+        boolean gameOver;
+        synchronized (cacheTbLock) {
+            game.setTimeoutDate(new Date(newTimeout));
+            game.setUndoRequested(false);
+            game.setDrawOffered(false);
+            gameOver = s.isGameOver();
+            if (gameOver) {
+                game.end();
+                game.setWinner(s.getWinner());
+            }
+            if (attach) {
+                message.setMoveNum(game.getNumMoves());
+                message.setSeqNbr(TBMessageThread.nextSeqNbr(
+                        game.getMessages(), game.getNumMoves()));
+                game.addMessage(message);
+            }
+            persistSet(game.getTbSet());
+        }
+
+        if (attach) {
+            baseStorer.storeNewMessage(gid, message);
+        }
+
+        if (gameOver) {
+            int reason = (game.getWinner() == 0)
+                    ? EndGameRunnable.Data.REASON_DRAW
+                    : EndGameRunnable.Data.REASON_WIN;
+            endGameRunnable.endGame(game, reason);
+        }
+
+        for (int k = 0; k < kept.size(); k++) {
+            baseStorer.storeNewMove(gid, firstMoveNum + k, kept.get(k));
+        }
         baseStorer.updateGameAfterMove(game);
     }
 
