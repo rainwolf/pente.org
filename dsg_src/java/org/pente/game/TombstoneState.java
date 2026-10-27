@@ -225,7 +225,23 @@ public class TombstoneState extends GridStateDecorator implements HashCalculator
     }
 
     public long calcHash(long cHash, int p, int move, int rot) {
-        return cHash; // replaced in Plan A Task 4
+        if (TombstoneCodes.isOwnPass(move)) return cHash;
+        if (TombstoneCodes.isDeadStone(move)) {
+            return cHash ^ ZobristUtil.rand[ZobristUtil.TOMBSTONE_DEAD_ROW]
+                    [rotateMove(TombstoneCodes.pointOf(move), rot)];
+        }
+        int last = getNumMoves() - 1;
+        int c = entryPlayer[last];
+        long h = cHash ^ ZobristUtil.rand[c - 1][rotateMove(move, rot)];
+        for (int i = 0; i < lastCapturedCount; i++) {
+            h ^= ZobristUtil.rand[(3 - c) - 1][rotateMove(lastCapturedPoints[i], rot)];
+        }
+        int row = c == 1 ? 2 : 3;
+        int before = c == 1 ? capturesBefore1[last] : capturesBefore2[last];
+        int after = captures[c];
+        if (before > 0) h ^= ZobristUtil.rand[row][before];
+        if (after > 0) h ^= ZobristUtil.rand[row][after];
+        return h;
     }
 
     public void printBoard() {
