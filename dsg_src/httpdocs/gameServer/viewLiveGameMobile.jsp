@@ -19,6 +19,7 @@
    GameData game = (GameData) request.getAttribute("game");
    TBGame tbGame = (TBGame) request.getAttribute("tbGame");
    int gameId = GridStateFactory.getGameId(game.getGame()) + 50;//add 50 for tb
+   boolean isTombstone = TombstoneTurnRows.isTombstoneGameName(game.getGame());
 
    String moves = "";
    for (int i = 0; i < game.getNumMoves(); i++) {
@@ -256,6 +257,16 @@
                                        <%
 String coordinateLetters[] = {"A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T"};
 int row = 0;
+if (isTombstone) {
+   for (TombstoneTurnRows.Row r : TombstoneTurnRows.rows(game)) {
+%>
+                           <tr>
+                              <td width="10%" align="center"><%= r.number %></td>
+                              <td onclick='selectMove(<%= r.end %>)' id='<%= r.end %>' width="90%" align="center"><%= r.label %></td>
+                           </tr>
+<%
+   }
+} else {
 for( int i = 0; i < game.getNumMoves(); i++ ) {
     if ((gameId != 63) && (i % 2 == 0)) {
     %>
@@ -292,6 +303,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
                      <%
                            }
                         }
+}
                      %>
                   </table>
                   </div>
@@ -495,11 +507,15 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
       boardContext.fill();
       drawGrid(boardContext, boardColor, gridSize, true);
       drawGame();
+      if (isTombstoneGame(game)) {
+         tombstoneDrawLastMarks(moves, drawUntilMove);
+      } else {
       lastMove = moves[drawUntilMove - 1];
       drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
       if (game === 63 && moves.length > 1) {
          lastMove = moves[drawUntilMove - 2];
          drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
+      }
       }
       if (currentMove != -1) {
          var cell = document.getElementById('' + currentMove);
@@ -525,18 +541,26 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
          boardContext.fill();
          drawGrid(boardContext, boardColor, gridSize, true);
          drawGame();
+         if (isTombstoneGame(game)) {
+            tombstoneDrawLastMarks(moves, moves.length);
+         } else {
          lastMove = moves[moves.length - 1];
          drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
          if (game === 63 && moves.length > 1) {
             lastMove = moves[moves.length - 2];
             drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
          }
+         }
          document.getElementById("movesTable").scrollTop = document.getElementById("movesTable").scrollHeight;
       }
+      if (isTombstoneGame(game)) {
+         if (moves.length > 0) selectMove(moves.length - 1);
+      } else {
       if (game === 63 && moves.length > 1) {
          selectMove(drawUntilMove - 2);
       } else {
          selectMove(drawUntilMove - 1);
+      }
       }
    }
 
@@ -556,6 +580,10 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
    }
 
    function goBack() {
+      if (isTombstoneGame(game)) {
+         if (moves.length > 0) selectMove(tombstoneStep(moves, drawUntilMove, -1) - 1);
+         return;
+      }
       if (drawUntilMove > 1) {
          if (game === 63 && drawUntilMove > 1) {
             if ((drawUntilMove % 2) === 1) {
@@ -588,6 +616,10 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
    }
 
    function goForward() {
+      if (isTombstoneGame(game)) {
+         if (moves.length > 0) selectMove(tombstoneStep(moves, drawUntilMove, 1) - 1);
+         return;
+      }
       if (drawUntilMove < moves.length) {
          drawUntilMove = drawUntilMove + 1;
          if (game === 63 && drawUntilMove > 1) {
@@ -623,6 +655,9 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
    init();
    replayGame(abstractBoard, moves, moves.length);
    drawGame();
+   if (isTombstoneGame(game)) {
+      if (moves.length > 0) selectMove(moves.length - 1);
+   } else {
    lastMove = moves[drawUntilMove - 1];
    drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
    if (game === 63 && moves.length > 1) {
@@ -631,6 +666,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
       selectMove(drawUntilMove - 2);
    } else {
       selectMove(drawUntilMove - 1);
+   }
    }
    document.getElementById("movesTable").scrollTop = document.getElementById("movesTable").scrollHeight;
 
@@ -647,11 +683,15 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
       boardContext.fill();
       drawGrid(boardContext, boardColor, gridSize, true);
       drawGame();
+      if (isTombstoneGame(game)) {
+         tombstoneDrawLastMarks(moves, drawUntilMove);
+      } else {
       lastMove = moves[drawUntilMove - 1];
       drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
       if (game === 63 && moves.length > 1) {
          lastMove = moves[drawUntilMove - 2];
          drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
+      }
       }
    }
 
@@ -660,7 +700,12 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
       encoder.setRepeat(1);
       encoder.setDelay(1000);
       encoder.start();
-      if (game === 63 && moves.length > 1) {
+      if (isTombstoneGame(game)) {
+         tombstoneTurns(moves).forEach(function (t) {
+            drawBoardUntilMove(t.end);
+            encoder.addFrame(boardContext);
+         });
+      } else if (game === 63 && moves.length > 1) {
          drawBoardUntilMove(0);
          encoder.addFrame(boardContext);
          for (var i = 1; i < moves.length / 2; i++) {

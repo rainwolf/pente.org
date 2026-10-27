@@ -302,13 +302,12 @@ public class MoveServlet extends HttpServlet {
                     return;
                 }
                 if (game.getNumMoves() > 1) {
-                    int numMoves = 1;
-                    if (game.getGame() == GridStateFactory.TB_CONNECT6) {
-                        numMoves += 1;
+                    int numMoves = undoEntryCount(game);
+                    if (numMoves > 0) {
+                        ((CacheTBStorer) tbGameStorer).undoLastMove(gid, numMoves);
+                        NotificationServer notificationServer = resources.getNotificationServer();
+                        notificationServer.sendMoveNotification(playerData.getName(), game.getCurrentPlayer(), game.getGid(), GridStateFactory.getGameName(game.getGame()));
                     }
-                    ((CacheTBStorer) tbGameStorer).undoLastMove(gid, numMoves);
-                    NotificationServer notificationServer = resources.getNotificationServer();
-                    notificationServer.sendMoveNotification(playerData.getName(), game.getCurrentPlayer(), game.getGid(), GridStateFactory.getGameName(game.getGame()));
                 }
 
                 log4j.debug("forward to game page");
@@ -618,6 +617,16 @@ public class MoveServlet extends HttpServlet {
                             tbGameStorer.hideGame(game.getGid(), (byte) (3 - game.getHiddenBy()));
                         }
                     }
+                } else if (game.getGame() == GridStateFactory.TB_TOMBSTONE) {
+                    String err = TombstoneCodes.validateTurnShape(moves);
+                    if (err != null) {
+                        log4j.error("MoveServlet, invalid tombstone turn " + moveStr + ": " + gid);
+                        handleError(request, response, err);
+                        return;
+                    }
+                    // The storer sets moveNum/seqNbr to the post-turn row count and attaches the
+                    // message before endGame (spec correction 7); never via openingMessage.
+                    ((CacheTBStorer) tbGameStorer).storeTombstoneTurn(game.getGid(), moves, message);
                 } else if (game.getGame() == GridStateFactory.TB_CONNECT6) {
                     log4j.debug("MoveServlet, store moves " + moves[0] + "," + moves[1]);
                     if (moves.length != 2) {
@@ -797,5 +806,13 @@ public class MoveServlet extends HttpServlet {
         request.setAttribute("error", errorMessage);
         getServletContext().getRequestDispatcher(errorRedirectPage).forward(
                 request, response);
+    }
+
+    /** Number of stored entries an accepted undo removes. */
+    public static int undoEntryCount(TBGame game) {
+        if (game.getGame() == GridStateFactory.TB_TOMBSTONE) {
+            return game.getLastTurnLength();
+        }
+        return game.getGame() == GridStateFactory.TB_CONNECT6 ? 2 : 1;
     }
 }
