@@ -222,6 +222,50 @@
             <classpath refid="test-classpath"/>
             <arg value="org.pente.gameServer.mobile.test.MobileServerListFilterTest"/>
         </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.game.test.TombstoneStateTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.game.test.TombstoneCodesTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.game.test.TombstoneFactoryTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.game.test.TombstoneUndoReplayTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.game.test.TombstoneZobristTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.game.test.PGNTombstoneTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.turnBased.test.CacheTBStorerTombstoneTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.turnBased.test.TBGameTombstoneTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.turnBased.web.test.MoveServletTombstoneTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.turnBased.web.test.NewGameServletTombstoneTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.turnBased.web.test.TombstoneTurnRowsTest"/>
+        </java>
     </target>
 
     <!-- Run a single test class: ant test-one -Dtest=org.pente.gameServer.server.test.RedisConnectionManagerTest -->
