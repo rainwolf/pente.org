@@ -145,6 +145,7 @@ public class CacheTBStorerTombstoneTest extends TestCase {
         long gid = active(180);
         cache.storeTombstoneTurn(gid, new int[] {722, 361}, null);
         assertStored(gid, 180, 722, 361);
+        assertLog("move:1:722", "move:2:361", "update");
     }
 
     public void testPassOnly() throws Exception {
