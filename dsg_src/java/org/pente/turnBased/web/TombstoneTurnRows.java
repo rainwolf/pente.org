@@ -68,7 +68,7 @@ public final class TombstoneTurnRows {
                     out.set(out.size() - 1, new Row(last.number, last.start, i, last.own, c,
                             TombstoneCodes.turnLabel(last.own, c)));
                 } else {
-                    out.add(new Row(out.size() + 1, i, i, -1, c, TombstoneCodes.entryLabel(c)));
+                    out.add(new Row(out.size() + 1, i, i, -1, c, TombstoneCodes.turnLabel(TombstoneCodes.OWN_PASS, c)));
                 }
             } else {
                 out.add(new Row(out.size() + 1, i, i, -1, -1, "?"));

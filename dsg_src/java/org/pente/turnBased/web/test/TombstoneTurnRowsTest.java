@@ -33,19 +33,19 @@ public class TombstoneTurnRowsTest extends TestCase {
 
     public void testMixedTurns() {
         int[] c = {180, 181, 561, 722, 722, 361, 200};
-        assertEquals("1:0-0:K10|2:1-2:L10 + dead L9|3:3-3:PASS|4:4-5:PASS + dead A19|5:6-6:L9|",
+        assertEquals("1:0-0:K10|2:1-2:L10 - L9|3:3-3:PASS|4:4-5:PASS - A19|5:6-6:L9|",
                 labels(TombstoneTurnRows.rows(c, c.length)));
     }
 
     public void testOrphanDeadEntryGetsOwnRow() {
-        assertEquals("1:0-0:K10|2:1-1:dead L9|", labels(TombstoneTurnRows.rows(new int[]{180, 561}, 2)));
-        assertEquals("1:0-0:K10|2:1-2:L10 + dead L9|3:3-3:dead M9|",
+        assertEquals("1:0-0:K10|2:1-1:PASS - L9|", labels(TombstoneTurnRows.rows(new int[]{180, 561}, 2)));
+        assertEquals("1:0-0:K10|2:1-2:L10 - L9|3:3-3:PASS - M9|",
                 labels(TombstoneTurnRows.rows(new int[]{180, 181, 561, 562}, 4)));
     }
 
     public void testOutOfRangeCodeNeverThrows() {
         assertEquals("1:0-0:K10|2:1-1:?|", labels(TombstoneTurnRows.rows(new int[]{180, 999}, 2)));
-        assertEquals("1:0-0:K10|2:1-1:?|3:2-2:dead L9|", labels(TombstoneTurnRows.rows(new int[]{180, 999, 561}, 3)));
+        assertEquals("1:0-0:K10|2:1-1:?|3:2-2:PASS - L9|", labels(TombstoneTurnRows.rows(new int[]{180, 999, 561}, 3)));
     }
 
     public void testRespectsN() { assertEquals("1:0-0:K10|", labels(TombstoneTurnRows.rows(new int[]{180, 181}, 1))); }

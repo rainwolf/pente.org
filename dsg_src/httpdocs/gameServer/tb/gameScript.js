@@ -1764,12 +1764,13 @@ function tombstoneLabel(code) {
 }
 
 function tombstoneTurnLabel(turn) {
+   let dead = turn.dead === -1 ? '' : tombstoneLabel(turn.dead).replace(/^dead /, '');
    if (turn.own === -1) {
-      return tombstoneLabel(turn.dead);
+      return 'PASS - ' + dead;
    }
    let s = tombstoneLabel(turn.own);
    if (turn.dead !== -1) {
-      s += ' + ' + tombstoneLabel(turn.dead);
+      s += ' - ' + dead;
    }
    return s;
 }

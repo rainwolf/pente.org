@@ -101,8 +101,9 @@ public class TombstoneCodesTest extends TestCase {
         assertEquals("dead K10", TombstoneCodes.entryLabel(361 + 180));
         assertEquals("K10", TombstoneCodes.turnLabel(180, -1));
         assertEquals("PASS", TombstoneCodes.turnLabel(722, -1));
-        assertEquals("K10 + dead L10", TombstoneCodes.turnLabel(180, 361 + 181));
-        assertEquals("PASS + dead A19", TombstoneCodes.turnLabel(722, 361));
+        assertEquals("K10 - L10", TombstoneCodes.turnLabel(180, 361 + 181));
+        assertEquals("PASS - A19", TombstoneCodes.turnLabel(722, 361));
+        assertEquals("PASS - K10", TombstoneCodes.turnLabel(722, 361 + 180));
         try { TombstoneCodes.entryLabel(723); fail("723 is not an entry"); } catch (IllegalArgumentException expected) { }
         try { TombstoneCodes.entryLabel(-1); fail("-1 is not an entry"); } catch (IllegalArgumentException expected) { }
     }

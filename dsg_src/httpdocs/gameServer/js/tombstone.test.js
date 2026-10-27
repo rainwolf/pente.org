@@ -73,11 +73,11 @@ is(nonzero, 1); is(cell(9, 9), 1);
 // labels
 is(ctx.tombstoneLabel(180), 'K10'); is(ctx.tombstoneLabel(722), 'PASS');
 is(ctx.tombstoneLabel(561), 'dead L9'); is(ctx.tombstoneLabel(999), '?');
-is(ctx.tombstoneTurnLabel({ own: 181, dead: 561 }), 'L10 + dead L9');
-is(ctx.tombstoneTurnLabel({ own: 722, dead: 361 }), 'PASS + dead A19');
+is(ctx.tombstoneTurnLabel({ own: 181, dead: 561 }), "L10 - L9");
+is(ctx.tombstoneTurnLabel({ own: 722, dead: 361 }), "PASS - A19");
 is(ctx.tombstoneTurnLabel({ own: 181, dead: -1 }), 'L10');
 is(ctx.tombstoneTurnLabel({ own: 722, dead: -1 }), 'PASS');
-is(ctx.tombstoneTurnLabel({ own: -1, dead: 561 }), 'dead L9');
+is(ctx.tombstoneTurnLabel({ own: -1, dead: 561 }), "PASS - L9");
 
 // button state
 eq(ctx.tombstoneTbButtonState(-1, -1), { label: 'Place only a dead stone', action: 'ownPass' });

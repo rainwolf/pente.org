@@ -86,7 +86,10 @@ public final class TombstoneCodes {
 
     public static String turnLabel(int ownCode, int deadCodeOrMinus1) {
         String s = entryLabel(ownCode);
-        if (deadCodeOrMinus1 != -1) s += " + " + entryLabel(deadCodeOrMinus1);
+        if (deadCodeOrMinus1 != -1) {
+            if (!isDeadStone(deadCodeOrMinus1)) throw new IllegalArgumentException("not a dead stone: " + deadCodeOrMinus1);
+            s += " - " + coordinate(deadCodeOrMinus1 - DEAD_OFFSET);
+        }
         return s;
     }
 
