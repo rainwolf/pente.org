@@ -36,6 +36,8 @@ public class GridStateFactory {
     public static final int SPEED_SWAP2KERYO = SWAP2KERYO + 1;
     public static final int RENJU = 31;
     public static final int SPEED_RENJU = RENJU + 1;
+    public static final int TOMBSTONE = 33;
+    public static final int SPEED_TOMBSTONE = TOMBSTONE + 1;
 
     public static final int[] LIVE_GAMES = {
             PENTE, SPEED_PENTE,
@@ -75,6 +77,14 @@ public class GridStateFactory {
     public static final int TB_SWAP2PENTE = TB_START + SWAP2PENTE;
     public static final int TB_SWAP2KERYO = TB_START + SWAP2KERYO;
     public static final int TB_RENJU = TB_START + RENJU;
+    public static final int TB_TOMBSTONE = TB_START + TOMBSTONE;
+
+    // Registered at boot without King of the Hill events (spec 7.3); live ids are
+    // offered only by the Experimental server (spec 7.2); kept out of
+    // LIVE_GAMES/TB_GAMES/ALL_GAMES, which the KOTH code and the existing
+    // servers' offerings use.
+    public static final int[] NON_KOTH_LIVE_GAMES = {TOMBSTONE, SPEED_TOMBSTONE};
+    public static final int[] NON_KOTH_TB_GAMES = {TB_TOMBSTONE};
 
     public static final int[] TB_GAMES = {
             TB_PENTE, TB_KERYO, TB_GOMOKU, TB_DPENTE, TB_GPENTE, TB_POOF_PENTE,
@@ -135,6 +145,9 @@ public class GridStateFactory {
     public static final Game RENJU_GAME = new Game(RENJU, "Renju", false);
     public static final Game SPEED_RENJU_GAME = new Game(SPEED_RENJU, "Speed Renju", true);
     public static final Game TB_RENJU_GAME = new Game(TB_RENJU, "Renju", false);
+    public static final Game TOMBSTONE_GAME = new Game(TOMBSTONE, "Tombstone Pente", false);
+    public static final Game SPEED_TOMBSTONE_GAME = new Game(SPEED_TOMBSTONE, "Speed Tombstone Pente", true);
+    public static final Game TB_TOMBSTONE_GAME = new Game(TB_TOMBSTONE, "Tombstone Pente", false);
 
     private static final Game allGames[] = {
             null, PENTE_GAME, SPEED_PENTE_GAME, KERYO_GAME, SPEED_KERYO_GAME,
@@ -146,11 +159,12 @@ public class GridStateFactory {
             OPENTE_GAME, SPEED_OPENTE_GAME, SWAP2PENTE_GAME, SPEED_SWAP2PENTE_GAME,
             SWAP2KERYO_GAME, SPEED_SWAP2KERYO_GAME,
             RENJU_GAME, SPEED_RENJU_GAME,
+            TOMBSTONE_GAME, SPEED_TOMBSTONE_GAME,
             TB_PENTE_GAME, TB_KERYO_GAME, TB_GOMOKU_GAME, TB_DPENTE_GAME,
             TB_GPENTE_GAME, TB_POOF_PENTE_GAME, TB_CONNECT6_GAME,
             TB_BOAT_PENTE_GAME, TB_DKERYO_GAME, TB_GO_GAME,
             TB_GO9_GAME, TB_GO13_GAME, TB_OPENTE_GAME, TB_SWAP2PENTE_GAME, TB_SWAP2KERYO_GAME,
-            TB_RENJU_GAME
+            TB_RENJU_GAME, TB_TOMBSTONE_GAME
     };
     private static final Game displaygames[] = {
             PENTE_GAME,
@@ -169,6 +183,7 @@ public class GridStateFactory {
             SWAP2PENTE_GAME,
             SWAP2KERYO_GAME,
             RENJU_GAME,
+            TOMBSTONE_GAME,
             new Game(TB_PENTE, "Turn-based Pente", false),
             new Game(TB_KERYO, "Turn-based Keryo-Pente", false),
             new Game(TB_GOMOKU, "Turn-based Gomoku", false),
@@ -185,6 +200,7 @@ public class GridStateFactory {
             new Game(TB_SWAP2PENTE, "Turn-based Swap2-Pente", false),
             new Game(TB_SWAP2KERYO, "Turn-based Swap2-Keryo", false),
             new Game(TB_RENJU, "Turn-based Renju", false),
+            new Game(TB_TOMBSTONE, "Turn-based Tombstone Pente", false),
             SPEED_PENTE_GAME,
             SPEED_KERYO_GAME,
             SPEED_GOMOKU_GAME,
@@ -200,7 +216,8 @@ public class GridStateFactory {
             SPEED_OPENTE_GAME,
             SPEED_SWAP2PENTE_GAME,
             SPEED_SWAP2KERYO_GAME,
-            SPEED_RENJU_GAME
+            SPEED_RENJU_GAME,
+            SPEED_TOMBSTONE_GAME
     };
 
     private static final Game normalGames[] = {
@@ -211,7 +228,7 @@ public class GridStateFactory {
             DKERYO_GAME,
             GO_GAME, GO9_GAME, GO13_GAME,
             OPENTE_GAME, SWAP2PENTE_GAME, SWAP2KERYO_GAME,
-            RENJU_GAME
+            RENJU_GAME, TOMBSTONE_GAME
     };
     private static final Game speedGames[] = {
             SPEED_PENTE_GAME, SPEED_KERYO_GAME,
@@ -221,7 +238,7 @@ public class GridStateFactory {
             SPEED_DKERYO_GAME,
             SPEED_GO_GAME, SPEED_GO9_GAME, SPEED_GO13_GAME,
             SPEED_OPENTE_GAME, SPEED_SWAP2PENTE_GAME, SPEED_SWAP2KERYO_GAME,
-            SPEED_RENJU_GAME
+            SPEED_RENJU_GAME, SPEED_TOMBSTONE_GAME
     };
     private static final Game tbGames[] = {
             TB_PENTE_GAME, TB_KERYO_GAME,
@@ -231,7 +248,7 @@ public class GridStateFactory {
             TB_DKERYO_GAME,
             TB_GO_GAME, TB_GO9_GAME, TB_GO13_GAME,
             TB_OPENTE_GAME, TB_SWAP2PENTE_GAME, TB_SWAP2KERYO_GAME,
-            TB_RENJU_GAME
+            TB_RENJU_GAME, TB_TOMBSTONE_GAME
     };
 
     private static final GridState gridStates[] = new GridState[getNumGames() + 1];
@@ -376,6 +393,11 @@ public class GridStateFactory {
                 // the requested size (like GO9/GO13). RenjuState configures its
                 // own wrapped gomoku (overlines on, win rules + Taraguchi-10).
                 return new RenjuState(15, 15);
+            case TOMBSTONE:
+            case SPEED_TOMBSTONE:
+            case TB_TOMBSTONE:
+                // Tombstone is always 19x19 and ignores x/y.
+                return new TombstoneState();
         }
 
         return null;
@@ -398,7 +420,7 @@ public class GridStateFactory {
     }
 
     public static boolean isValidGame(int game) {
-        return game >= PENTE && game <= SPEED_RENJU;
+        return game >= PENTE && game <= SPEED_TOMBSTONE;
     }
 
     public static String getGameName(int game) {
@@ -424,7 +446,11 @@ public class GridStateFactory {
     }
 
     public static int getMaxGameId() {
-        return TB_RENJU;
+        return TB_TOMBSTONE;
+    }
+
+    public static boolean isTombstone(int game) {
+        return game == TOMBSTONE || game == SPEED_TOMBSTONE || game == TB_TOMBSTONE;
     }
 
     public static Game[] getAllGames() {

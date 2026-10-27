@@ -120,4 +120,9 @@ public final class TombstoneCodes {
         if (!PGNGameFormat.formatCoordinates(p).equalsIgnoreCase(s)) return -1;
         return p;
     }
+
+    /** The pente_move.next_move "no next move" sentinel for a game (spec 9.1). */
+    public static int archiveNoNextMove(int game) {
+        return GridStateFactory.isTombstone(game) ? ARCHIVE_NO_NEXT_MOVE : 361;
+    }
 }

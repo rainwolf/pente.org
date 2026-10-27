@@ -67,7 +67,7 @@ public class RenjuFactoryTest extends TestCase {
 
         assertTrue(GridStateFactory.isValidGame(GridStateFactory.RENJU));
         assertTrue(GridStateFactory.isValidGame(GridStateFactory.SPEED_RENJU));
-        assertEquals(GridStateFactory.TB_RENJU, GridStateFactory.getMaxGameId());
+        assertEquals(GridStateFactory.TB_TOMBSTONE, GridStateFactory.getMaxGameId());
     }
 
     public void testNormalSpeedTurnbasedMappings() {
