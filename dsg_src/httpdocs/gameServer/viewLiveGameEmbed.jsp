@@ -334,8 +334,7 @@ for( int i = 0; i < game.getNumMoves(); i++ ) {
 
 
 <%@ include file="gameConstants.jspf" %>
-<script src="/gameServer/tb/gameScript.js"></script>
-<script src="/gameServer/js/boardCommon.js"></script>
+<%@ include file="boardScripts.jspf" %>
 
 <script type="text/javascript">
    var moves = [<%=moves.substring(0, moves.length() - 1)%>];
