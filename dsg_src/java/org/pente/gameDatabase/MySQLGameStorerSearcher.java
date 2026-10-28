@@ -678,6 +678,7 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
                     "where m.hash_key = " + hash + " " +
                     "and m.move_num = " + moveNum + " " +
                     "and m.game = " + game + " " +
+                    "and m.private = 'N' " +
                     (includeGameTable ? "and g.game = " + game + " " : "") + //thinking is that the game table might be primary table if filtering by certain things
                     where1 +
                     "group by m.next_move, m.rotation, m.winner";
@@ -689,6 +690,7 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
                 "where m.hash_key = " + hash + " " +
                 "and m.move_num = " + moveNum + " " +
                 "and m.game = " + game + " " +
+                "and m.private = 'N' " +
                 "and g.game = " + game + " " +
                 where1 + ") as d1 " +
                 "union all " +
@@ -697,6 +699,7 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
                 "where m.hash_key = " + hash + " " +
                 "and m.move_num = " + moveNum + " " +
                 "and m.game = " + game + " " +
+                "and m.private = 'N' " +
                 "and g.game = " + game + " " +
                 where2 + ") as d2 " +
                 ") as main group by nextm, rot, win";
@@ -711,6 +714,7 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
                     "where m.hash_key = " + hash + " " +
                     "and m.move_num = " + moveNum + " " +
                     "and m.game = " + gm + " " +
+                    "and m.private = 'N' " +
                     (includeGameTable ? "and g.game = " + gm + " " : "") +
                     where1 +
                     "order by m.play_date desc " +
@@ -722,6 +726,7 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
                 "where m.hash_key = " + hash + " " +
                 "and m.move_num = " + moveNum + " " +
                 "and m.game = " + gm + " " +
+                "and m.private = 'N' " +
                 "and g.game = " + gm + " " +
                 where1 +
                 "union all " +
@@ -730,6 +735,7 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
                 "where m.hash_key = " + hash + " " +
                 "and m.move_num = " + moveNum + " " +
                 "and m.game = " + gm + " " +
+                "and m.private = 'N' " +
                 "and g.game = " + gm + " " +
                 where2 +
                 ") as main order by play_d desc " +
