@@ -627,11 +627,11 @@
             <td width="170px">
                <div class="buttonwrapper" style="margin-top:5px;">
                   <a class="boldbuttons" href="/gameServer/db" target="_blank" rel="noopener noreferrer"
-                     style="margin-right:5px;"><span>Pente DB</span></a>
+                     style="margin-right:5px;"><span>Pente DB (alpha)</span></a>
                </div>
             </td>
             <td style="vertical-align:middle">
-               (alpha) Search the DB, explore lines and threats, ask the AI
+               Search the DB, explore lines and threats, ask the AI
             </td>
          </tr>
          <tr>

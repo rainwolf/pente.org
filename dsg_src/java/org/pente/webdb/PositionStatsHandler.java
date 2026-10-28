@@ -376,6 +376,8 @@ public class PositionStatsHandler {
         boolean haveSection = f != null && notEmpty(f.section);
         boolean haveAfter = f != null && notEmpty(f.afterDate);
         boolean haveBefore = f != null && notEmpty(f.beforeDate);
+        boolean r1 = f != null && f.player1RatingAbove > 0;
+        boolean r2 = f != null && f.player2RatingAbove > 0;
         boolean haveWinner = f != null && f.winner != WINNER_UNKNOWN;
 
         // Resolve venue names to ids. An UNRESOLVABLE name causes the predicate
@@ -405,7 +407,8 @@ public class PositionStatsHandler {
         // (players, resolved site/event, round, section, dates); winner is
         // an m.* column. Unfiltered stats are then index-only on pente_move.
         boolean needGame = p1 || p2 || useSite || useEvent || haveRound
-                || haveSection || haveAfter || haveBefore;
+                || haveSection || haveAfter || haveBefore
+                || r1 || r2;
         StringBuilder from = new StringBuilder("from pente_move m");
         if (needGame) {
             from.append(", pente_game g");
@@ -432,10 +435,16 @@ public class PositionStatsHandler {
         }
 
         if (p1) {
-            appendPlayerPredicate(where, params, "p1", f.player1Seat, f.player1Name);
+            appendPlayerPredicate(where, params, "p1", f.player1Seat, f.player1Name,
+                    f.player1RatingAbove);
+        } else if (r1) {
+            appendRatingPredicate(where, params, f.player1Seat, f.player1RatingAbove);
         }
         if (p2) {
-            appendPlayerPredicate(where, params, "p2", f.player2Seat, f.player2Name);
+            appendPlayerPredicate(where, params, "p2", f.player2Seat, f.player2Name,
+                    f.player2RatingAbove);
+        } else if (r2) {
+            appendRatingPredicate(where, params, f.player2Seat, f.player2RatingAbove);
         }
 
         if (useSite) {
@@ -478,18 +487,52 @@ public class PositionStatsHandler {
      * The name is bound lower-cased against {@code player.name_lower}.
      */
     private void appendPlayerPredicate(StringBuilder where, List<Object> params,
-                                       String alias, int seat, String name) {
-
+                                       String alias, int seat, String name,
+                                       int ratingAbove) {
+        boolean rated = ratingAbove > 0;
         if (seat == PositionStatsRequest.Filters.SEAT_ALL) {
-            where.append(" and (g.player1_pid = ").append(alias)
-                    .append(".pid or g.player2_pid = ").append(alias).append(".pid)");
+            if (rated) {
+                where.append(" and ((g.player1_pid = ").append(alias)
+                        .append(".pid and g.player1_rating >= ?)")
+                        .append(" or (g.player2_pid = ").append(alias)
+                        .append(".pid and g.player2_rating >= ?))");
+                params.add(Integer.valueOf(ratingAbove));
+                params.add(Integer.valueOf(ratingAbove));
+            } else {
+                where.append(" and (g.player1_pid = ").append(alias)
+                        .append(".pid or g.player2_pid = ").append(alias).append(".pid)");
+            }
         } else if (seat == 2) {
             where.append(" and g.player2_pid = ").append(alias).append(".pid");
+            if (rated) {
+                where.append(" and g.player2_rating >= ?");
+                params.add(Integer.valueOf(ratingAbove));
+            }
         } else {
             where.append(" and g.player1_pid = ").append(alias).append(".pid");
+            if (rated) {
+                where.append(" and g.player1_rating >= ?");
+                params.add(Integer.valueOf(ratingAbove));
+            }
         }
         where.append(" and ").append(alias).append(".name_lower = ?");
         params.add(name.trim().toLowerCase());
+    }
+
+    /** Rating-only predicate for a player slot that has no name. */
+    private void appendRatingPredicate(StringBuilder where, List<Object> params,
+                                       int seat, int ratingAbove) {
+        if (seat == PositionStatsRequest.Filters.SEAT_ALL) {
+            where.append(" and (g.player1_rating >= ? or g.player2_rating >= ?)");
+            params.add(Integer.valueOf(ratingAbove));
+            params.add(Integer.valueOf(ratingAbove));
+        } else if (seat == 2) {
+            where.append(" and g.player2_rating >= ?");
+            params.add(Integer.valueOf(ratingAbove));
+        } else {
+            where.append(" and g.player1_rating >= ?");
+            params.add(Integer.valueOf(ratingAbove));
+        }
     }
 
     private static void bind(PreparedStatement stmt, List<Object> params)

@@ -62,5 +62,11 @@ public class PositionStatsRequest {
 
         /** {@code 0} = any; otherwise {@code m.winner = winner} (1 or 2). */
         public int winner;
+
+        /** Player-slot 1 rating floor: strict {@code >}; {@code <= 0} = off. */
+        public int player1RatingAbove;
+
+        /** Player-slot 2 rating floor: strict {@code >}; {@code <= 0} = off. */
+        public int player2RatingAbove;
     }
 }

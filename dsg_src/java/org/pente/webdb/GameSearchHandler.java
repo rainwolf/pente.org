@@ -481,12 +481,20 @@ public class GameSearchHandler {
         if (p2) {
             from.append(", player p2");
         }
-        needsGameJoin = p1 || p2;
+        boolean r1 = f.player1RatingAbove > 0;
+        boolean r2 = f.player2RatingAbove > 0;
+        needsGameJoin = p1 || p2 || r1 || r2;
         if (p1) {
-            appendPlayerPredicate(where, params, "p1", f.player1Seat, f.player1Name);
+            appendPlayerPredicate(where, params, "p1", f.player1Seat, f.player1Name,
+                    f.player1RatingAbove);
+        } else if (r1) {
+            appendRatingPredicate(where, params, f.player1Seat, f.player1RatingAbove);
         }
         if (p2) {
-            appendPlayerPredicate(where, params, "p2", f.player2Seat, f.player2Name);
+            appendPlayerPredicate(where, params, "p2", f.player2Seat, f.player2Name,
+                    f.player2RatingAbove);
+        } else if (r2) {
+            appendRatingPredicate(where, params, f.player2Seat, f.player2RatingAbove);
         }
 
         // Venue filters: an UNRESOLVABLE site/event name causes the predicate to
@@ -540,17 +548,52 @@ public class GameSearchHandler {
     }
 
     private void appendPlayerPredicate(StringBuilder where, List<Object> params,
-                                       String alias, int seat, String name) {
+                                       String alias, int seat, String name,
+                                       int ratingAbove) {
+        boolean rated = ratingAbove > 0;
         if (seat == PositionStatsRequest.Filters.SEAT_ALL) {
-            where.append(" and (g.player1_pid = ").append(alias)
-                    .append(".pid or g.player2_pid = ").append(alias).append(".pid)");
+            if (rated) {
+                where.append(" and ((g.player1_pid = ").append(alias)
+                        .append(".pid and g.player1_rating >= ?)")
+                        .append(" or (g.player2_pid = ").append(alias)
+                        .append(".pid and g.player2_rating >= ?))");
+                params.add(Integer.valueOf(ratingAbove));
+                params.add(Integer.valueOf(ratingAbove));
+            } else {
+                where.append(" and (g.player1_pid = ").append(alias)
+                        .append(".pid or g.player2_pid = ").append(alias).append(".pid)");
+            }
         } else if (seat == 2) {
             where.append(" and g.player2_pid = ").append(alias).append(".pid");
+            if (rated) {
+                where.append(" and g.player2_rating >= ?");
+                params.add(Integer.valueOf(ratingAbove));
+            }
         } else {
             where.append(" and g.player1_pid = ").append(alias).append(".pid");
+            if (rated) {
+                where.append(" and g.player1_rating >= ?");
+                params.add(Integer.valueOf(ratingAbove));
+            }
         }
         where.append(" and ").append(alias).append(".name_lower = ?");
         params.add(name.trim().toLowerCase());
+    }
+
+    /** Rating-only predicate for a player slot that has no name. */
+    private void appendRatingPredicate(StringBuilder where, List<Object> params,
+                                       int seat, int ratingAbove) {
+        if (seat == PositionStatsRequest.Filters.SEAT_ALL) {
+            where.append(" and (g.player1_rating >= ? or g.player2_rating >= ?)");
+            params.add(Integer.valueOf(ratingAbove));
+            params.add(Integer.valueOf(ratingAbove));
+        } else if (seat == 2) {
+            where.append(" and g.player2_rating >= ?");
+            params.add(Integer.valueOf(ratingAbove));
+        } else {
+            where.append(" and g.player1_rating >= ?");
+            params.add(Integer.valueOf(ratingAbove));
+        }
     }
 
     private static int clampLimit(int requested) {
