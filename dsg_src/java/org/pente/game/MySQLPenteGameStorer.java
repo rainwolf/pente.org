@@ -468,8 +468,8 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
 
                         stmt = con.prepareStatement("update " + MOVE_TABLE + " " +
                                 "set winner = ?, play_date = play_date where gid = ?");
-                        stmt.setLong(1, data.getGameID());
-                        stmt.setInt(2, data.getWinner());
+                        stmt.setInt(1, data.getWinner());
+                        stmt.setLong(2, data.getGameID());
                         stmt.executeUpdate();
                     }
                 } else {

@@ -213,4 +213,20 @@ public class PenteMovePrivateWriteTest extends TestCase {
         }
         assertEquals(1, seen);
     }
+
+    public void testWinnerUpdateBindsWinnerThenGid() throws Exception {
+        storedPrivate = "N";
+        GameData d = game(false);
+        d.setWinner(1);
+        store(d, false, true);
+        int seen = 0;
+        for (Exec e : executed) {
+            if (e.sql.startsWith("update pente_move set winner")) {
+                seen++;
+                assertEquals(e.sql, Integer.valueOf(1), e.params.get(1));
+                assertEquals(e.sql, Long.valueOf(42L), e.params.get(2));
+            }
+        }
+        assertEquals(1, seen);
+    }
 }
