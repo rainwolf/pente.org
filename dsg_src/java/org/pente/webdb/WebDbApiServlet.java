@@ -88,6 +88,38 @@ public class WebDbApiServlet extends HttpServlet {
         }
     }
 
+    /**
+     * Central subscriber-only gate: every request, whatever its HTTP method
+     * or path, must pass {@link WebDbAuth#requireDbAccess} before it reaches
+     * any {@code doXxx} dispatch — except {@code GET}/{@code HEAD /ping},
+     * which stays open and reports {@code dbAccess}. Gating here (not per
+     * endpoint) means a newly added endpoint cannot forget the check.
+     */
+    @Override
+    protected void service(HttpServletRequest request,
+                           HttpServletResponse response)
+            throws ServletException, IOException {
+
+        String path = pathOf(request);
+        String method = request.getMethod();
+        boolean open = "/ping".equals(path)
+                && ("GET".equals(method) || "HEAD".equals(method));
+
+        if (!open) {
+            response.setHeader("Cache-Control", "no-store");
+            try {
+                if (!WebDbAuth.requireDbAccess(request, response,
+                        dsgPlayerStorer)) {
+                    return;
+                }
+            } catch (Throwable t) {
+                serverError(response, path, t);
+                return;
+            }
+        }
+        super.service(request, response);
+    }
+
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response)
             throws ServletException, IOException {
@@ -213,16 +245,22 @@ public class WebDbApiServlet extends HttpServlet {
 
     /**
      * {@code GET /api/db/ping} — liveness plus current auth identity.
-     * Returns {@code {"ok":true,"auth":"<name-or-null>"}}.
+     * Returns {@code {"ok":true,"auth":"<name-or-null>","dbAccess":<bool>}};
+     * {@code dbAccess} is false when anonymous. Not gated (see
+     * {@link #service}).
      */
     private void handlePing(HttpServletRequest request,
                             HttpServletResponse response) throws IOException {
 
         String name = (String) request.getAttribute("name");
+        boolean dbAccess = WebDbAuth.hasDbAccess(
+                WebDbAuth.loadSessionPlayer(request, dsgPlayerStorer),
+                System.currentTimeMillis());
 
         Map<String, Object> body = new LinkedHashMap<String, Object>();
         body.put("ok", Boolean.TRUE);
         body.put("auth", name); // null when anonymous
+        body.put("dbAccess", dbAccess);
 
         JsonHttp.ok(response, body);
     }
@@ -241,7 +279,9 @@ public class WebDbApiServlet extends HttpServlet {
      */
     private static void setCacheControl(HttpServletResponse response, String path) {
         if ("/venues".equals(path)) {
-            response.setHeader("Cache-Control", "public, max-age=300");
+            // private: the response is now subscriber-gated, so shared
+            // caches must not replay it to unauthenticated callers.
+            response.setHeader("Cache-Control", "private, max-age=300");
         } else {
             response.setHeader("Cache-Control", "no-store");
         }
