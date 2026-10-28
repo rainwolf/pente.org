@@ -31,7 +31,7 @@ public class GameSearchPagingOrderTest extends TestCase {
 
     public void testPositionShapeOrdersByDateThenGid() {
         String sql = GameSearchHandler.pagedGidSql(
-                "m.gid", "from pente_move m join pente_game g on g.gid = m.gid", " where m.hash_key = ?", "m.play_date");
+                "m.gid", "from pente_move m", " where m.hash_key = ? and m.private = 'N'", "m.play_date");
         assertTrue(sql, sql.contains("order by m.play_date desc, m.gid desc limit ? offset ?"));
     }
 }
