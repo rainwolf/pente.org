@@ -282,8 +282,6 @@
 <%--</script>--%>
 
 
-
-
 <div style="font-family:Verdana, Arial, Helvetica, sans-serif;
  float:left;width:70%">
 
@@ -595,9 +593,7 @@
 </table>
 
 
-
-
-<div style="width:100%;height:135px;margin-top:10px;">
+<div style="width:100%;height:160px;margin-top:10px;">
    <div style="width:43%;float:left;border:1px solid black;height:100%;overflow:auto;">
       <h2 style="background: #e5e5e5"><span style="padding-left:5px;">In the <a
          href="/gameServer/forums"><span>Forums</span></a></span></h2>
@@ -625,6 +621,17 @@
                Search and filter <span
                style="color:<%= textColor2 %>;font-weight:bold"><%= numberFormat.format(siteStatsData.getNumGames()) %></span>
                games by position
+            </td>
+         </tr>
+         <tr title="alpha means things can break and saved lines can be lost">
+            <td width="170px">
+               <div class="buttonwrapper" style="margin-top:5px;">
+                  <a class="boldbuttons" href="/gameServer/db" target="_blank" rel="noopener noreferrer"
+                     style="margin-right:5px;"><span>Pente DB</span></a>
+               </div>
+            </td>
+            <td style="vertical-align:middle">
+               (alpha) Search the DB, explore lines and threats, ask the AI
             </td>
          </tr>
          <tr>
