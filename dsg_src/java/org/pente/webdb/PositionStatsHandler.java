@@ -57,6 +57,8 @@ public class PositionStatsHandler {
     private static final int[] NO_MOVES = new int[0];
 
     private final DBHandler dbHandler;
+    /** Archive aggregation handler (replica, or primary fallback). */
+    final DBHandler archiveDb;
     private final GameVenueStorer gameVenueStorer;
     /** Personal ("mine") stats source; null for an archive-only handler. */
     private final MySQLWebDbStorer webDbStorer;
@@ -68,6 +70,13 @@ public class PositionStatsHandler {
      * populated for {@code scope="mine"}/{@code "both"} (see {@link #computeStats}).
      */
     private final StatsCache statsCache = new StatsCache();
+
+    /**
+     * Disabled 2026-10-28 by owner while measuring replica performance: when
+     * false, the stats cache is neither read nor written. Flip to true to
+     * re-enable.
+     */
+    static final boolean STATS_CACHE_ENABLED = false;
 
     /**
      * Archive-only handler (no {@code scope="mine"}/{@code "both"} support).
@@ -87,7 +96,19 @@ public class PositionStatsHandler {
                                 GameVenueStorer gameVenueStorer,
                                 MySQLWebDbStorer webDbStorer,
                                 DSGPlayerStorer playerStorer) {
+        this(dbHandler, dbHandler, gameVenueStorer, webDbStorer, playerStorer);
+    }
+
+    /**
+     * As above, with a separate (read-only replica) handler for the archive
+     * aggregation; {@code dbHandler} stays the primary.
+     */
+    public PositionStatsHandler(DBHandler dbHandler, DBHandler archiveDb,
+                                GameVenueStorer gameVenueStorer,
+                                MySQLWebDbStorer webDbStorer,
+                                DSGPlayerStorer playerStorer) {
         this.dbHandler = dbHandler;
+        this.archiveDb = archiveDb;
         this.gameVenueStorer = gameVenueStorer;
         this.webDbStorer = webDbStorer;
         this.playerStorer = playerStorer;
@@ -202,7 +223,7 @@ public class PositionStatsHandler {
         // different orientation, is a genuinely different response.
         boolean archiveOnly = wantArchive && !wantMine;
         StatsCache.Key cacheKey = null;
-        if (archiveOnly) {
+        if (archiveOnly && STATS_CACHE_ENABLED) {
             cacheKey = StatsCache.keyOf(game, hash, numMoves, resp.rotation,
                     req.filters);
             PositionStatsResponse cached = statsCache.get(cacheKey);
@@ -216,12 +237,12 @@ public class PositionStatsHandler {
         if (wantArchive) {
             Connection con = null;
             try {
-                con = dbHandler.getConnection();
+                con = archiveDb.getConnection();
                 aggregateArchive(con, state, hash, numMoves, game, currentPlayer,
                         req.filters, acc);
             } finally {
                 if (con != null) {
-                    dbHandler.freeConnection(con);
+                    archiveDb.freeConnection(con);
                 }
             }
         }
@@ -230,7 +251,7 @@ public class PositionStatsHandler {
         }
 
         finalizeStats(acc, resp);
-        if (archiveOnly) {
+        if (archiveOnly && STATS_CACHE_ENABLED) {
             statsCache.put(cacheKey, resp);
         }
         return resp;

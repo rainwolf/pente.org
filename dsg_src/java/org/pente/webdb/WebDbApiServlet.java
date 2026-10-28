@@ -32,7 +32,20 @@ public class WebDbApiServlet extends HttpServlet {
     private static Category cat =
             Category.getInstance(WebDbApiServlet.class.getName());
 
+    /**
+     * Context attribute names under which {@code DSGContextListener}
+     * publishes the read-only replica ({@code dsg_ro}) {@link DBHandler} and
+     * the {@link GameStorer} built on it.
+     */
+    public static final String RO_DB_ATTR = DBHandler.class.getName() + ".ro";
+    public static final String RO_GAME_STORER_ATTR =
+            GameStorer.class.getName() + ".ro";
+
     private static DBHandler dbHandler;
+    /** Replica handler for heavy archive reads; primary if absent. */
+    private static DBHandler dbHandlerRo;
+    /** Archive game loader on the replica; primary storer if absent. */
+    private static GameStorer gameStorerRo;
     private static DSGPlayerStorer dsgPlayerStorer;
     private static GameStorer gameStorer;
     private static GameVenueStorer gameVenueStorer;
@@ -66,18 +79,32 @@ public class WebDbApiServlet extends HttpServlet {
             gameStorerSearcher = (GameStorerSearcher)
                     ctx.getAttribute(GameStorerSearcher.class.getName());
 
+            // Heavy archive reads go to the replica. Writes, auth/access
+            // checks and the personal webdb_* tables stay on the primary
+            // (read-after-write; replica lag). Fall back to the primary if
+            // the replica handler was not published.
+            dbHandlerRo = (DBHandler) ctx.getAttribute(RO_DB_ATTR);
+            gameStorerRo = (GameStorer) ctx.getAttribute(RO_GAME_STORER_ATTR);
+            if (dbHandlerRo == null || gameStorerRo == null) {
+                cat.warn("read-only replica handler not available in the "
+                        + "servlet context; webdb archive reads fall back "
+                        + "to the primary database");
+                dbHandlerRo = dbHandler;
+                gameStorerRo = gameStorer;
+            }
+
             // Personal collection + analyses persistence (Task 5). The auth'd
             // "my games" / "my analyses" / scope endpoints build on this.
             webDbStorer = new MySQLWebDbStorer(dbHandler);
 
             positionStatsHandler = new PositionStatsHandler(
-                    dbHandler, gameVenueStorer, webDbStorer, dsgPlayerStorer);
+                    dbHandler, dbHandlerRo, gameVenueStorer, webDbStorer, dsgPlayerStorer);
             gameSearchHandler = new GameSearchHandler(
-                    dbHandler, gameStorer, gameVenueStorer, webDbStorer,
+                    dbHandler, dbHandlerRo, gameStorerRo, gameVenueStorer, webDbStorer,
                     dsgPlayerStorer);
-            gameLoadHandler = new GameLoadHandler(gameStorer);
+            gameLoadHandler = new GameLoadHandler(gameStorerRo);
             venuesHandler = new VenuesHandler(gameVenueStorer);
-            playersHandler = new PlayersHandler(dbHandler);
+            playersHandler = new PlayersHandler(dbHandlerRo);
             collectionHandler =
                     new CollectionHandler(webDbStorer, dsgPlayerStorer);
             analysesHandler =
