@@ -21,6 +21,7 @@
               maxTotal="100" maxIdle="30" maxWaitMillis="10000"
               testWhileIdle="true" testOnBorrow="false"
               timeBetweenEvictionRunsMillis="5000" numTestsPerEvictionRun="-1"
+              minEvictableIdleTimeMillis="-1"
               validationQueryTimeout="5"
               removeAbandonedOnBorrow="true" removeAbandonedTimeout="30"
               username="${MYSQL_RO_USER}" password="${MYSQL_RO_PASSWORD}"

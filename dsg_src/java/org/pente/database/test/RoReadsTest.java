@@ -140,6 +140,46 @@ public class RoReadsTest extends TestCase {
         assertEquals(2, db.freed.size());
     }
 
+    public void testReadOrDefaultSwallowsQueryErrors() throws Exception {
+        FakeDb db = new FakeDb(new boolean[0], new boolean[0]);
+        String r = RoReads.readOrDefault(db, con -> {
+            throw new SQLException("syntax", "42000");
+        }, "dflt");
+        assertEquals("dflt", r);
+        assertEquals(1, db.handedOut.size());
+        assertEquals(1, db.freed.size());
+    }
+
+    public void testReadOrDefaultRethrowsConnectionErrors() throws Exception {
+        FakeDb db = new FakeDb(new boolean[0], new boolean[0]);
+        try {
+            RoReads.readOrDefault(db, con -> {
+                throw new SQLException("tunnel down", "08S01");
+            }, "dflt");
+            fail("expected SQLException");
+        } catch (SQLException e) {
+            assertEquals("tunnel down", e.getMessage());
+        }
+    }
+
+    public void testReadOrDefaultRethrowsBorrowFailure() throws Exception {
+        DBHandler failing = new DBHandler() {
+            public Connection getConnection() throws SQLException {
+                throw new SQLException("pool timeout", "08001");
+            }
+            public void freeConnection(Connection con) {
+            }
+            public void destroy() {
+            }
+        };
+        try {
+            RoReads.readOrDefault(failing, con -> "x", "dflt");
+            fail("expected SQLException");
+        } catch (SQLException e) {
+            assertEquals("pool timeout", e.getMessage());
+        }
+    }
+
     public void testAsyncJoinUnwrapsCause() throws Exception {
         CompletableFuture<String> f = RoReads.async(() -> {
             throw new SQLException("bad", "42000");

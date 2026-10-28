@@ -111,31 +111,21 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
             StatsResult stats = new StatsResult();
             CompletableFuture<Integer> statsFuture = null;
             if (filterData.doGetNextMoves()) {
-                statsFuture = RoReads.async(() -> {
-                    try {
-                        return RoReads.withConnection(dbHandler, c ->
+                // query errors are logged and yield 0; borrow/connection errors propagate
+                statsFuture = RoReads.async(() ->
+                        RoReads.readOrDefault(dbHandler, c ->
                                 getSearchResults(requestData, stats, filterOptionsFrom,
                                         finalIncludeGameTable, filterOptionsWhere, filterOptionsParams,
                                         filterOptionsFrom2, filterOptionsWhere2, filterOptionsParams2,
-                                        finalUnion, c));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    return 0;
-                });
+                                        finalUnion, c), 0));
             }
-            CompletableFuture<List<GameData>> gamesFuture = RoReads.async(() -> {
-                try {
-                    return RoReads.withConnection(dbHandler, c ->
+            CompletableFuture<List<GameData>> gamesFuture = RoReads.async(() ->
+                    RoReads.readOrDefault(dbHandler, c ->
                             getMatchingGames(requestData, filterOptionsFromMatching,
                                     finalIncludeGameTable, filterOptionsWhereTmp,
                                     filterOptionsParams, filterOptionsFrom2, filterOptionsWhere2,
-                                    filterOptionsParams2, finalUnion, c));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return new ArrayList<GameData>();
-            });
+                                    filterOptionsParams2, finalUnion, c),
+                            new ArrayList<GameData>()));
 
             // results are applied here, on the calling thread, in the former order
             if (statsFuture != null) {

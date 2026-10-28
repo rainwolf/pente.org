@@ -78,6 +78,25 @@ public final class RoReads {
         }
     }
 
+    /**
+     * Like {@link #withConnection}, but a query-level failure inside {@code fn} is
+     * logged and {@code dflt} returned. Connection-level failures (and failures to
+     * borrow a connection at all) are rethrown so callers see them.
+     */
+    public static <T> T readOrDefault(DBHandler db, SqlFn<T> fn, T dflt) throws Exception {
+        return withConnection(db, con -> {
+            try {
+                return fn.apply(con);
+            } catch (Exception e) {
+                if (connectionBroken(e, con)) {
+                    throw e;
+                }
+                e.printStackTrace();
+                return dflt;
+            }
+        });
+    }
+
     /** Run {@code work} on the shared RO executor. */
     public static <T> CompletableFuture<T> async(Work<T> work) {
         CompletableFuture<T> f = new CompletableFuture<>();
