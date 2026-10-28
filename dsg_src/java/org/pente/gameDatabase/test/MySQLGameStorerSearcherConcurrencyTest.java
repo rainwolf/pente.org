@@ -62,7 +62,10 @@ public class MySQLGameStorerSearcherConcurrencyTest extends TestCase {
         assertNotNull(stats);
         assertNotNull(matching);
         assertTrue(stats, stats.indexOf("pente_game") < 0);
-        assertTrue(matching, matching.contains("pente_game"));
+        // no game-level filter: matching also omits pente_game (m.private = 'N' is the guard)
+        assertTrue(matching, matching.indexOf("pente_game") < 0);
+        assertTrue(matching, matching.contains("m.private = 'N'"));
+        assertTrue(matching, matching.indexOf("g.private") < 0);
     }
 
     public void testNoNextMovesSkipsStatsQuery() throws Exception {

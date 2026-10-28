@@ -94,12 +94,12 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
 
             int totalGameCount = 0;
 
-            StringBuffer filterOptionsWhereTmp = new StringBuffer();
-            filterOptionsWhereTmp.append(filterOptionsWhere);
-            filterOptionsWhereTmp.append("and g.private = 'N' ");
-            // getMatchingGames appends the game table to the FROM it is given when the
-            // filters did not already include it; it must not leak into the stats query
-            // that runs concurrently, so the matching task gets its own copy.
+            // pente_game is only joined (and g.private checked) when a game-level filter
+            // already needs it; otherwise m.private = 'N' carries the privacy guard.
+            StringBuffer filterOptionsWhereTmp = new StringBuffer(
+                    matchingFromWhere(includeGameTable, "", filterOptionsWhere.toString())[1]);
+            // the matching task gets its own copy of the FROM, separate from the stats query
+            // that runs concurrently.
             StringBuffer filterOptionsFromMatching = new StringBuffer(filterOptionsFrom);
 
             boolean finalIncludeGameTable = includeGameTable;
@@ -151,6 +151,15 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
         long endTime = System.currentTimeMillis();
         long totalTime = endTime - startTime;
         log4j.debug("search time: " + totalTime);
+    }
+
+    /**
+     * WHERE tail for the matching-games query. When no filter needs pente_game the
+     * query omits it (m.private = 'N' is the denormalized guard); otherwise the
+     * existing join stays and g.private = 'N' is added. Returns {from, where}.
+     */
+    public static String[] matchingFromWhere(boolean includeGameTable, String from, String where) {
+        return new String[]{from, includeGameTable ? where + "and g.private = 'N' " : where};
     }
 
     private void addGameTable(StringBuffer filterOptionsFrom,
@@ -589,9 +598,6 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
             long hash = state.getHash();
             int gm = requestData.getGameStorerSearchRequestFilterData().getGame();
 
-            if (!includeGameTable) {
-                addGameTable(filterOptionsFrom, filterOptionsWhere);
-            }
 //			String qryString = 
 //				"select m.gid " +
 //				"from " + move_table + " m " + filterOptionsFrom.toString() +
