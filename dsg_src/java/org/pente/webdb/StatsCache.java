@@ -154,6 +154,8 @@ final class StatsCache {
         private final String afterDate;
         private final String beforeDate;
         private final int winner;
+        private final int player1RatingAbove;
+        private final int player2RatingAbove;
 
         Key(int game, long hash, int moveNum, int rotation,
             PositionStatsRequest.Filters f) {
@@ -173,6 +175,8 @@ final class StatsCache {
                 this.afterDate = null;
                 this.beforeDate = null;
                 this.winner = 0;
+                this.player1RatingAbove = 0;
+                this.player2RatingAbove = 0;
             } else {
                 this.player1Name = f.player1Name;
                 this.player1Seat = f.player1Seat;
@@ -185,6 +189,8 @@ final class StatsCache {
                 this.afterDate = f.afterDate;
                 this.beforeDate = f.beforeDate;
                 this.winner = f.winner;
+                this.player1RatingAbove = f.player1RatingAbove;
+                this.player2RatingAbove = f.player2RatingAbove;
             }
         }
 
@@ -203,6 +209,8 @@ final class StatsCache {
                     && player1Seat == k.player1Seat
                     && player2Seat == k.player2Seat
                     && winner == k.winner
+                    && player1RatingAbove == k.player1RatingAbove
+                    && player2RatingAbove == k.player2RatingAbove
                     && Objects.equals(player1Name, k.player1Name)
                     && Objects.equals(player2Name, k.player2Name)
                     && Objects.equals(site, k.site)
@@ -219,7 +227,9 @@ final class StatsCache {
                     player1Name, Integer.valueOf(player1Seat),
                     player2Name, Integer.valueOf(player2Seat),
                     site, event, round, section, afterDate, beforeDate,
-                    Integer.valueOf(winner));
+                    Integer.valueOf(winner),
+                    Integer.valueOf(player1RatingAbove),
+                    Integer.valueOf(player2RatingAbove));
         }
     }
 }
