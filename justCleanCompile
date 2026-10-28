@@ -3,6 +3,6 @@
 set -gx JAVA_HOME /opt/homebrew/opt/openjdk@21/
 rm -r deploy/*
 rm -r deployClasses/*
-rsync -vurtd --exclude-from exclude_compile.txt --stats --progress dsg_src/java/ deploy/
+rsync -vurtd --delete-excluded --exclude-from exclude_compile.txt --stats --progress dsg_src/java/ deploy/
 clear; printf '\e[3J';
 ant
