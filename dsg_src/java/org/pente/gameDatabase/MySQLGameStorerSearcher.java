@@ -456,37 +456,9 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
 //				filterOptionsWhere.toString() +
 //				"group by m.next_move, m.rotation, m.winner";
             String qryString = null;
-            if (!union) {
-                qryString =
-                        "select m.next_move, m.rotation, m.winner, count(*) " +
-                                "from " + move_table + " m " + filterOptionsFrom.toString() +
-                                "where m.hash_key = " + hash + " " +
-                                "and m.move_num = " + (requestData.getNumMoves() - 1) + " " +
-                                "and m.game = " + game + " " +
-                                (includeGameTable ? "and g.game = " + game + " " : "") + //thinking is that the game table might be primary table if filtering by certain things
-                                filterOptionsWhere.toString() +
-                                "group by m.next_move, m.rotation, m.winner";
-            } else {
-                qryString =
-                        "select nextm, rot, win, count(*) " +
-                                "from ( " +
-                                "select * from (select m.next_move as nextm, m.rotation as rot, m.winner as win " +
-                                "from " + move_table + " m " + filterOptionsFrom.toString() +
-                                "where m.hash_key = " + hash + " " +
-                                "and m.move_num = " + (requestData.getNumMoves() - 1) + " " +
-                                "and m.game = " + game + " " +
-                                "and g.game = " + game + " " +
-                                filterOptionsWhere.toString() + ") as d1 " +
-                                "union all " +
-                                "select * from (select m.next_move as nextm, m.rotation as rot, m.winner as win " +
-                                "from " + move_table + " m " + filterOptionsFrom2.toString() +
-                                "where m.hash_key = " + hash + " " +
-                                "and m.move_num = " + (requestData.getNumMoves() - 1) + " " +
-                                "and m.game = " + game + " " +
-                                "and g.game = " + game + " " +
-                                filterOptionsWhere2.toString() + ") as d2 " +
-                                ") as main group by nextm, rot, win";
-            }
+            qryString = statsSql(move_table, hash, requestData.getNumMoves() - 1, game, includeGameTable,
+                    filterOptionsFrom.toString(), filterOptionsWhere.toString(),
+                    filterOptionsFrom2.toString(), filterOptionsWhere2.toString(), union);
             log4j.debug("queryString (getSearchResults) :" + qryString);
 
             stmt = con.prepareStatement(qryString);
@@ -626,40 +598,10 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
 
             //qryString += "limit " + limitStart + ", " + limitLen;
 
-            String qryString = null;
-
-            if (!union) {
-                qryString =
-                        "select m.gid " +
-                                "from " + move_table + " m " + filterOptionsFrom.toString() +
-                                "where m.hash_key = " + hash + " " +
-                                "and m.move_num = " + (requestData.getNumMoves() - 1) + " " +
-                                "and m.game = " + gm + " " +
-                                (includeGameTable ? "and g.game = " + gm + " " : "") +
-                                filterOptionsWhere.toString() +
-                                "order by m.play_date desc " +
-                                "limit " + limitStart + ", " + limitLen;
-            } else {
-                qryString =
-                        "select gid from ( " +
-                                "select m.gid as gid, m.play_date as play_d " +
-                                "from " + move_table + " m " + filterOptionsFrom.toString() +
-                                "where m.hash_key = " + hash + " " +
-                                "and m.move_num = " + (requestData.getNumMoves() - 1) + " " +
-                                "and m.game = " + gm + " " +
-                                "and g.game = " + gm + " " +
-                                filterOptionsWhere.toString() +
-                                "union all " +
-                                "select m.gid, m.play_date as play_d " +
-                                "from " + move_table + " m " + filterOptionsFrom2.toString() +
-                                "where m.hash_key = " + hash + " " +
-                                "and m.move_num = " + (requestData.getNumMoves() - 1) + " " +
-                                "and m.game = " + gm + " " +
-                                "and g.game = " + gm + " " +
-                                filterOptionsWhere2.toString() +
-                                ") as main order by play_d desc " +
-                                "limit " + limitStart + ", " + limitLen;
-            }
+            String qryString = matchingGamesSql(move_table, hash, requestData.getNumMoves() - 1, gm, includeGameTable,
+                    filterOptionsFrom.toString(), filterOptionsWhere.toString(),
+                    filterOptionsFrom2.toString(), filterOptionsWhere2.toString(),
+                    union, limitStart, limitLen);
 
             log4j.debug("queryString (getMatchingGames) : " + qryString);
 
@@ -725,5 +667,78 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
             }
         }
         return 0;
+    }
+
+    public static String statsSql(String moveTable, long hash, int moveNum, int game, boolean includeGameTable,
+                           String from1, String where1, String from2, String where2,
+                           boolean union) {
+        if (!union) {
+            return "select m.next_move, m.rotation, m.winner, count(*) " +
+                    "from " + moveTable + " m " + from1 +
+                    "where m.hash_key = " + hash + " " +
+                    "and m.move_num = " + moveNum + " " +
+                    "and m.game = " + game + " " +
+                    "and m.private = 'N' " +
+                    (includeGameTable ? "and g.game = " + game + " " : "") + //thinking is that the game table might be primary table if filtering by certain things
+                    where1 +
+                    "group by m.next_move, m.rotation, m.winner";
+        }
+        return "select nextm, rot, win, count(*) " +
+                "from ( " +
+                "select * from (select m.next_move as nextm, m.rotation as rot, m.winner as win " +
+                "from " + moveTable + " m " + from1 +
+                "where m.hash_key = " + hash + " " +
+                "and m.move_num = " + moveNum + " " +
+                "and m.game = " + game + " " +
+                "and m.private = 'N' " +
+                "and g.game = " + game + " " +
+                where1 + ") as d1 " +
+                "union all " +
+                "select * from (select m.next_move as nextm, m.rotation as rot, m.winner as win " +
+                "from " + moveTable + " m " + from2 +
+                "where m.hash_key = " + hash + " " +
+                "and m.move_num = " + moveNum + " " +
+                "and m.game = " + game + " " +
+                "and m.private = 'N' " +
+                "and g.game = " + game + " " +
+                where2 + ") as d2 " +
+                ") as main group by nextm, rot, win";
+    }
+
+    public static String matchingGamesSql(String moveTable, long hash, int moveNum, int gm, boolean includeGameTable,
+                                   String from1, String where1, String from2, String where2,
+                                   boolean union, String limitStart, String limitLen) {
+        if (!union) {
+            return "select m.gid " +
+                    "from " + moveTable + " m " + from1 +
+                    "where m.hash_key = " + hash + " " +
+                    "and m.move_num = " + moveNum + " " +
+                    "and m.game = " + gm + " " +
+                    "and m.private = 'N' " +
+                    (includeGameTable ? "and g.game = " + gm + " " : "") +
+                    where1 +
+                    "order by m.play_date desc " +
+                    "limit " + limitStart + ", " + limitLen;
+        }
+        return "select gid from ( " +
+                "select m.gid as gid, m.play_date as play_d " +
+                "from " + moveTable + " m " + from1 +
+                "where m.hash_key = " + hash + " " +
+                "and m.move_num = " + moveNum + " " +
+                "and m.game = " + gm + " " +
+                "and m.private = 'N' " +
+                "and g.game = " + gm + " " +
+                where1 +
+                "union all " +
+                "select m.gid, m.play_date as play_d " +
+                "from " + moveTable + " m " + from2 +
+                "where m.hash_key = " + hash + " " +
+                "and m.move_num = " + moveNum + " " +
+                "and m.game = " + gm + " " +
+                "and m.private = 'N' " +
+                "and g.game = " + gm + " " +
+                where2 +
+                ") as main order by play_d desc " +
+                "limit " + limitStart + ", " + limitLen;
     }
 }

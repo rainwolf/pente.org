@@ -437,10 +437,14 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
 
             int numMovesInDb = 0;
             boolean gameComplete = false;
+            // pente_move.private mirrors pente_game.private; for a game already
+            // stored the stored flag wins over the caller's GameData
+            String movePrivate = data.isPrivateGame() ? "Y" : "N";
 
             // if the game was already stored, then get the status of the game
             if (gameAlreadyStored) {
                 GameData gameStatusData = getGameStatus(con, data.getGameID());
+                movePrivate = gameStatusData.isPrivateGame() ? "Y" : "N";
 
                 // if the game has no winner (game isn't over yet) then
                 // get the number of moves in the game
@@ -463,9 +467,9 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
                         stmt.executeUpdate();
 
                         stmt = con.prepareStatement("update " + MOVE_TABLE + " " +
-                                "set winner = ? where gid = ?");
-                        stmt.setLong(1, data.getGameID());
-                        stmt.setInt(2, data.getWinner());
+                                "set winner = ?, play_date = play_date where gid = ?");
+                        stmt.setInt(1, data.getWinner());
+                        stmt.setLong(2, data.getGameID());
                         stmt.executeUpdate();
                     }
                 } else {
@@ -483,8 +487,8 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
                 // store moves
                 stmt = con.prepareStatement("insert into " + MOVE_TABLE + " " +
                         "(gid, move_num, next_move, hash_key, rotation, game, winner, " +
-                        " play_date, seconds_left) " +
-                        "values(?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                        " play_date, seconds_left, private) " +
+                        "values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
                 stmt.setLong(1, data.getGameID());
 
                 if (numMovesInDb == 0 && state.getNumMoves() > 0 && firstMoveCanBeOffCenter(game)) {
@@ -501,6 +505,7 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
                     } else {
                         stmt.setInt(9, 0);
                     }
+                    stmt.setString(10, movePrivate);
 
                     stmt.executeUpdate();
                 }
@@ -519,6 +524,7 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
                     } else {
                         stmt.setInt(9, 0);
                     }
+                    stmt.setString(10, movePrivate);
 
                     stmt.executeUpdate();
                 }
@@ -603,7 +609,7 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
 
         try {
 
-            gameStmt = con.prepareStatement("select play_date, winner " +
+            gameStmt = con.prepareStatement("select play_date, winner, private " +
                     "from " + GAME_TABLE + " " +
                     "where gid = ?");
             gameStmt.setLong(1, gameID);
@@ -617,6 +623,7 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
                 gameData.setDate(new java.util.Date(playDate.getTime()));
 
                 gameData.setWinner(gameResult.getInt(2));
+                gameData.setPrivateGame("Y".equals(gameResult.getString(3)));
             }
 
         } finally {

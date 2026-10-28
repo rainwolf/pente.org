@@ -886,11 +886,12 @@ CREATE TABLE `pente_move` (
   `rotation` tinyint(3) unsigned NOT NULL DEFAULT 0,
   `game` tinyint(3) unsigned NOT NULL DEFAULT 0,
   `winner` tinyint(3) unsigned NOT NULL DEFAULT 0,
+  `private` enum('Y','N') NOT NULL DEFAULT 'Y',
   `play_date` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `seconds_left` smallint(5) unsigned DEFAULT NULL,
   PRIMARY KEY (`gid`,`hash_key`,`move_num`),
-  KEY `hash_key` (`hash_key`,`move_num`,`game`,`next_move`,`rotation`,`winner`),
-  KEY `hash_key_2` (`hash_key`,`move_num`,`game`,`play_date`)
+  KEY `hash_key` (`hash_key`,`move_num`,`game`,`private`,`next_move`,`rotation`,`winner`),
+  KEY `hash_key_2` (`hash_key`,`move_num`,`game`,`private`,`play_date`,`gid`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `pente_renju_offer`;
