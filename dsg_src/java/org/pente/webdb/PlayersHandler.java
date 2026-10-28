@@ -9,6 +9,7 @@ import jakarta.servlet.http.*;
 import org.apache.log4j.*;
 
 import org.pente.database.DBHandler;
+import org.pente.database.RoReads;
 
 /**
  * Endpoint logic for {@code GET /api/db/players?q=al} — player-name
@@ -66,44 +67,43 @@ public class PlayersHandler {
                     "q must be at least " + MIN_QUERY + " characters");
         }
 
-        List<String> names = new ArrayList<String>();
-        Connection con = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        try {
-            con = dbHandler.getConnection();
-            // name_lower is indexed; LIMIT is a fixed constant, not user input.
-            // Escape LIKE metacharacters in the user input so a query like "%%"
-            // is matched as a literal prefix (returning nothing) rather than a
-            // full-table wildcard scan that defeats the 2-char minimum. F5.
-            stmt = con.prepareStatement("select name from player "
-                    + "where name_lower like ? escape '\\\\' "
-                    + "order by name_lower limit " + LIMIT);
-            stmt.setString(1, escapeLike(trimmed.toLowerCase()) + "%");
-            rs = stmt.executeQuery();
-            while (rs.next()) {
-                names.add(rs.getString(1));
-            }
-        } finally {
-            if (rs != null) {
-                try {
-                    rs.close();
-                } catch (SQLException e) {
-                    // ignore
+        final String pattern = escapeLike(trimmed.toLowerCase()) + "%";
+        // read-only pool: one retry on a fresh connection if a pooled one died while idle
+        return RoReads.withConnection(dbHandler, con -> {
+            List<String> names = new ArrayList<String>();
+            PreparedStatement stmt = null;
+            ResultSet rs = null;
+            try {
+                // name_lower is indexed; LIMIT is a fixed constant, not user input.
+                // Escape LIKE metacharacters in the user input so a query like "%%"
+                // is matched as a literal prefix (returning nothing) rather than a
+                // full-table wildcard scan that defeats the 2-char minimum. F5.
+                stmt = con.prepareStatement("select name from player "
+                        + "where name_lower like ? escape '\\\\' "
+                        + "order by name_lower limit " + LIMIT);
+                stmt.setString(1, pattern);
+                rs = stmt.executeQuery();
+                while (rs.next()) {
+                    names.add(rs.getString(1));
+                }
+            } finally {
+                if (rs != null) {
+                    try {
+                        rs.close();
+                    } catch (SQLException e) {
+                        // ignore
+                    }
+                }
+                if (stmt != null) {
+                    try {
+                        stmt.close();
+                    } catch (SQLException e) {
+                        // ignore
+                    }
                 }
             }
-            if (stmt != null) {
-                try {
-                    stmt.close();
-                } catch (SQLException e) {
-                    // ignore
-                }
-            }
-            if (con != null) {
-                dbHandler.freeConnection(con);
-            }
-        }
-        return names;
+            return names;
+        });
     }
 
     /**

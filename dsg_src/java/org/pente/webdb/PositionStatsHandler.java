@@ -11,6 +11,7 @@ import jakarta.servlet.http.*;
 import org.apache.log4j.*;
 
 import org.pente.database.DBHandler;
+import org.pente.database.RoReads;
 import org.pente.game.GameEventData;
 import org.pente.game.GameSiteData;
 import org.pente.game.GameVenueStorer;
@@ -232,19 +233,19 @@ public class PositionStatsHandler {
             }
         }
 
-        Acc acc = new Acc();
+        Acc acc;
 
         if (wantArchive) {
-            Connection con = null;
-            try {
-                con = archiveDb.getConnection();
+            // read-only pool: one retry on a fresh connection if a pooled one died
+            // while idle; each attempt folds into its own accumulator
+            acc = RoReads.withConnection(archiveDb, con -> {
+                Acc a = new Acc();
                 aggregateArchive(con, state, hash, numMoves, game, currentPlayer,
-                        req.filters, acc);
-            } finally {
-                if (con != null) {
-                    archiveDb.freeConnection(con);
-                }
-            }
+                        req.filters, a);
+                return a;
+            });
+        } else {
+            acc = new Acc();
         }
         if (wantMine) {
             aggregatePersonal(pid, state, hash, numMoves, game, currentPlayer, acc);

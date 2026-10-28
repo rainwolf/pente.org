@@ -2,6 +2,7 @@ package org.pente.webdb;
 
 import java.io.IOException;
 import java.sql.*;
+import java.util.concurrent.CompletableFuture;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -11,6 +12,7 @@ import jakarta.servlet.http.*;
 import org.apache.log4j.*;
 
 import org.pente.database.DBHandler;
+import org.pente.database.RoReads;
 import org.pente.game.GameData;
 import org.pente.game.GameEventData;
 import org.pente.game.GameSiteData;
@@ -264,18 +266,19 @@ public class GameSearchHandler {
         ArchiveQuery q = buildArchive(game, moves, req.filters);
 
         GameSearchResponse resp = new GameSearchResponse();
-        Connection con = null;
-        try {
-            con = archiveDb.getConnection();
-            resp.total = count(con, q.from, q.where, q.params);
+        // The count and the page are independent reads; run the count on its own
+        // connection while the page chain (gids, then hydrate) runs on another, so
+        // the count's network round trip is off the critical path. Each borrows
+        // inside its task. Results are assigned here, on the calling thread.
+        CompletableFuture<Long> totalFuture = RoReads.async(() ->
+                RoReads.withConnection(archiveDb, con -> count(con, q.from, q.where, q.params)));
+        List<GameHeader> games = RoReads.withConnection(archiveDb, con -> {
             List<Long> gids = selectGids(con, q.gidCol, q.from, q.where,
                     q.orderCol, q.params, limit, offset);
-            resp.games = hydrate(con, gids, game, source);
-        } finally {
-            if (con != null) {
-                archiveDb.freeConnection(con);
-            }
-        }
+            return hydrate(con, gids, game, source);
+        });
+        resp.games = games;
+        resp.total = RoReads.join(totalFuture);
         return resp;
     }
 

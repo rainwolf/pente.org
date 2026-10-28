@@ -829,6 +829,212 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
     }
 
 
+    /** The game row (without moves) plus the variant id the move filter needs. */
+    private static final class RoGameHeader {
+        GameData data;
+        int game;
+    }
+
+    /**
+     * Same result as {@code loadGame(gameID, null)}, but built for a high-latency
+     * read-only replica where each query costs a network round trip: the game row
+     * and both players come back in one joined query, and the moves and Renju
+     * swap offers in one more, run concurrently on a second connection. Two
+     * queries and one round trip on the critical path instead of five serial
+     * queries. Read-only; returns null when the game does not exist.
+     */
+    public GameData loadGameRo(final long gameID) throws Exception {
+
+        CompletableFuture<List<int[]>> movesFuture = RoReads.async(
+                () -> RoReads.withConnection(dbHandler, c -> loadMoveAndOfferRows(c, gameID)));
+
+        RoGameHeader header = RoReads.withConnection(dbHandler, c -> loadGameHeaderRo(c, gameID));
+        if (header == null) {
+            return null;
+        }
+        GameData gameData = header.data;
+        int game = header.game;
+
+        List<int[]> rows = RoReads.join(movesFuture);
+
+        if (!firstMoveCanBeOffCenter(game)) {
+            gameData.addMove(GridStateFactory.getCenterMove(game));
+        }
+        // same filter as loadMovesSql: the no-next-move marker row is dropped, except for Go
+        boolean keepAll = isGo(game);
+        int noNextMove = keepAll ? 0 : TombstoneCodes.archiveNoNextMove(game);
+        java.util.List<Integer> offers = new java.util.ArrayList<Integer>();
+        for (int[] r : rows) {
+            if (r[0] == 0) {
+                if (keepAll || r[1] != noNextMove) {
+                    gameData.addMove(r[1]);
+                }
+            } else {
+                offers.add(r[1]);
+            }
+        }
+        if (!offers.isEmpty()) {
+            int[] arr = new int[offers.size()];
+            for (int i = 0; i < arr.length; i++) {
+                arr[i] = offers.get(i);
+            }
+            gameData.setRenjuOffers(arr);
+        }
+        log4j.debug("loadGameRo(" + gameID + ") end");
+        return gameData;
+    }
+
+    /** Moves (k=0, ordered by move_num) then Renju offers (k=1, by offer_num) in one query. */
+    private List<int[]> loadMoveAndOfferRows(Connection con, long gameID) throws SQLException {
+        List<int[]> rows = new ArrayList<>();
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        try {
+            stmt = con.prepareStatement(
+                    "select 0 k, next_move v, move_num s from " + MOVE_TABLE + " where gid = ? " +
+                            "union all " +
+                            "select 1, move, offer_num from pente_renju_offer where gid = ? " +
+                            "order by k, s");
+            stmt.setLong(1, gameID);
+            stmt.setLong(2, gameID);
+            rs = stmt.executeQuery();
+            while (rs.next()) {
+                rows.add(new int[]{rs.getInt(1), rs.getInt(2)});
+            }
+        } finally {
+            if (rs != null) {
+                try { rs.close(); } catch (SQLException ex) { }
+            }
+            if (stmt != null) {
+                try { stmt.close(); } catch (SQLException ex) { }
+            }
+        }
+        return rows;
+    }
+
+    private RoGameHeader loadGameHeaderRo(Connection con, long gameID) throws Exception {
+        PreparedStatement gameStmt = null;
+        ResultSet gameResult = null;
+        try {
+            gameStmt = con.prepareStatement(
+                    "select g.site_id, g.event_id, g.round, g.section, g.play_date, g.timer, " +
+                            "g.rated, g.initial_time, g.incremental_time, g.player1_pid, " +
+                            "g.player2_pid, g.player1_rating, g.player2_rating, g.winner, g.game, g.swapped, g.private, g.status, g.swap2pass, g.renju_swaps, " +
+                            "p1.name, p1.site_id, p2.name, p2.site_id " +
+                            "from " + GAME_TABLE + " g " +
+                            "left join " + PLAYER_TABLE + " p1 on p1.pid = g.player1_pid " +
+                            "left join " + PLAYER_TABLE + " p2 on p2.pid = g.player2_pid " +
+                            "where g.gid = ?");
+            gameStmt.setLong(1, gameID);
+            gameResult = gameStmt.executeQuery();
+            if (!gameResult.next()) {
+                return null;
+            }
+
+            GameData gameData = new DefaultGameData();
+            gameData.setGameID(gameID);
+
+            int siteID = gameResult.getInt(1);
+            int game = gameResult.getInt(15);
+
+            GameSiteData siteData = gameVenueStorer.getGameSiteData(game, siteID);
+            gameData.setSite(siteData.getName());
+            gameData.setShortSite(siteData.getShortSite());
+            gameData.setSiteURL(siteData.getURL());
+
+            int eventID = gameResult.getInt(2);
+            GameEventData eventData = gameVenueStorer.getGameEventData(
+                    game, eventID, siteData.getName());
+            if (eventData != null) {
+                gameData.setEvent(eventData.getName());
+            } else {
+                gameData.setEvent("");
+            }
+
+            gameData.setRound(gameResult.getString(3));
+            gameData.setSection(gameResult.getString(4));
+
+            Timestamp playDate = gameResult.getTimestamp(5);
+            gameData.setDate(new java.util.Date(playDate.getTime()));
+
+            String timed = gameResult.getString(6);
+            if (timed.equals("S") || timed.equals("I")) {
+                gameData.setTimed(true);
+            } else {
+                gameData.setTimed(false);
+            }
+
+            gameData.setRated(MySQLDBHandler.getBooleanValueFromDBString(gameResult.getString(7)));
+            gameData.setInitialTime(gameResult.getInt(8));
+            gameData.setIncrementalTime(gameResult.getInt(9));
+
+            // loadPlayer(): a player counts only when the venue resolves and the
+            // player row belongs to that site; otherwise null (and setRating then
+            // fails exactly as in loadGame)
+            int playerSiteID = gameVenueStorer.getSiteID(gameData.getSite());
+
+            long player1_pid = gameResult.getLong(10);
+            int player1_rating = gameResult.getInt(12);
+            PlayerData player1Data = joinedPlayer(gameResult, player1_pid, 21, 22, playerSiteID);
+            player1Data.setRating(player1_rating);
+            gameData.setPlayer1Data(player1Data);
+
+            long player2_pid = gameResult.getLong(11);
+            PlayerData player2Data = joinedPlayer(gameResult, player2_pid, 23, 24, playerSiteID);
+            int player2_rating = gameResult.getInt(13);
+            player2Data.setRating(player2_rating);
+            gameData.setPlayer2Data(player2Data);
+
+            gameData.setWinner(gameResult.getInt(14));
+            gameData.setSwapped(gameResult.getString(16).equals("Y"));
+
+            gameData.setPrivateGame(gameResult.getString(17).equals("Y"));
+            gameData.setStatus(gameResult.getString(18));
+            gameData.setSwap2Pass(gameResult.getInt(19) == 1);
+
+            int renjuSwaps = gameResult.getInt(20);
+            if (!gameResult.wasNull()) {
+                gameData.setRenjuSwaps(renjuSwaps);
+            }
+
+            gameData.setGame(GridStateFactory.getGameName(game));
+
+            RoGameHeader header = new RoGameHeader();
+            header.data = gameData;
+            header.game = game;
+            return header;
+        } finally {
+            if (gameResult != null) {
+                gameResult.close();
+            }
+            if (gameStmt != null) {
+                gameStmt.close();
+            }
+        }
+    }
+
+    private static PlayerData joinedPlayer(ResultSet rs, long pid, int nameCol, int siteCol,
+                                           int expectedSiteID) throws SQLException {
+        if (expectedSiteID == -1) {
+            return null;
+        }
+        String name = rs.getString(nameCol);
+        int playerSite = rs.getInt(siteCol);
+        if (rs.wasNull() || playerSite != expectedSiteID) {
+            return null;
+        }
+        PlayerData playerData = new DefaultPlayerData();
+        playerData.setUserID(pid);
+        playerData.setUserIDName(name);
+        return playerData;
+    }
+
+    private static boolean isGo(int game) {
+        return game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO ||
+                game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9 ||
+                game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13;
+    }
+
     private Map<Long, PlayerData> loadPlayers(Connection con, List<Long> playerIDs) throws Exception {
 
         PreparedStatement stmt = null;
@@ -893,15 +1099,7 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
         PreparedStatement gameStmt = null;
         ResultSet gameResult = null;
 
-//        PreparedStatement playerStmt = null;
-//        ResultSet playerResult = null;
-
-        PreparedStatement moveStmt = null;
-        ResultSet moveResult = null;
-
         List<GameData> results = new ArrayList<>();
-
-        Connection con2 = null;
 
         if (gameIDs.isEmpty()) {
             return results;
@@ -911,77 +1109,35 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
 
             String gidsString = gameIDs.stream().map(String::valueOf).collect(Collectors.joining(","));
             log4j.debug("loadGames(" + gidsString + ") start");
-//            System.out.println("loadGames(" + gidsString + ") start");
-            String gameQueryStr = "select site_id, event_id, round, section, play_date, timer, " +
-                    "rated, initial_time, incremental_time, player1_pid, " +
-                    "player2_pid, player1_rating, player2_rating, winner, game, swapped, private, status, gid, swap2pass " +
-                    "from " + GAME_TABLE + " " +
-                    "where gid in (" + gidsString + ") order by gid";
+
+            // The moves are independent of the games query: load them on their own
+            // connection, concurrently, so the two queries cost one network round
+            // trip instead of two. The connection is borrowed inside the task.
+            CompletableFuture<Map<Long, List<Integer>>> movesFuture = RoReads.async(
+                    () -> RoReads.withConnection(dbHandler, con2 -> loadMovesMap(con2, gidsString)));
+
+            // Players come from the same query (player.pid is the primary key, so the
+            // joins cannot duplicate game rows); columns 21-24 are p1.pid, p1.name,
+            // p2.pid, p2.name.
+            String gameQueryStr = "select g.site_id, g.event_id, g.round, g.section, g.play_date, g.timer, " +
+                    "g.rated, g.initial_time, g.incremental_time, g.player1_pid, " +
+                    "g.player2_pid, g.player1_rating, g.player2_rating, g.winner, g.game, g.swapped, g.private, g.status, g.gid, g.swap2pass, " +
+                    "p1.pid, p1.name, p2.pid, p2.name " +
+                    "from " + GAME_TABLE + " g " +
+                    "left join " + PLAYER_TABLE + " p1 on p1.pid = g.player1_pid " +
+                    "left join " + PLAYER_TABLE + " p2 on p2.pid = g.player2_pid " +
+                    "where g.gid in (" + gidsString + ") order by g.gid";
             gameStmt = con.prepareStatement(gameQueryStr, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-//            gameStmt.setLong(1, gameID);
+            gameResult = gameStmt.executeQuery();
 
-            // keeps the 361 filter: webdb rejects Tombstone ids before calling loadGames
-            String movesQueryStr = "select next_move, move_num, gid " +
-                    "from " + MOVE_TABLE + " " +
-                    "where gid in (" + gidsString + ") " +
-                    "and next_move != 361 " +
-                    "order by gid, move_num";
+            Map<Long, List<Integer>> movesMap = RoReads.join(movesFuture);
 
-//            String playerQueryStr = "select player1_pid, player2_pid " +
-//                    "from " + GAME_TABLE + " " +
-//                    "where gid in (" + gidsString +") order by gid";
-
-//            gameResult = gameStmt.executeQuery();
-
-
-            con2 = dbHandler.getConnection();
-
-            log4j.debug("get moves");
-            moveStmt = con2.prepareStatement(movesQueryStr, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-//            moveResult = moveStmt.executeQuery();
-            Map<Long, List<Integer>> movesMap = new HashMap<>();
-
-            PreparedStatement finalGameStmt = gameStmt;
-            PreparedStatement finalMoveStmt = moveStmt;
-            Stream<Supplier<ResultSet>> tasks = Stream.of(
-                    () -> executeQuery(finalGameStmt),
-                    () -> executeQuery(finalMoveStmt) //, () -> querySQL(playerQueryStr)
-            );
-            List<ResultSet> lists = tasks
-                    // Supply all the tasks for execution and collect CompletableFutures
-                    .map(CompletableFuture::supplyAsync)//.collect(Collectors.toList())
-                    // Join all the CompletableFutures to gather the results
-//                    .stream()
-                    .map(CompletableFuture::join).collect(Collectors.toList());
-
-//            gameResult = querySQL(con, gameQueryStr);
-//            moveResult = querySQL(con, movesQueryStr);
-            gameResult = lists.get(0);
-            moveResult = lists.get(1);
-//            playerResult = lists.get(2);
-
-            while (moveResult.next()) {
-                int move = moveResult.getInt(1);
-                long gid = moveResult.getLong(3);
-                if (movesMap.get(gid) == null) {
-                    List<Integer> moves = new ArrayList<>();
-                    moves.add(move);
-                    movesMap.put(gid, moves);
-                } else {
-                    movesMap.get(gid).add(move);
-                }
-            }
-
-//            playerStmt = con.prepareStatement(playerQueryStr);
-//            playerResult = playerStmt.executeQuery();
-            Map<Long, Boolean> playerMap = new HashMap<>();
+            // one shared PlayerData per pid, as the former separate player query built
+            Map<Long, PlayerData> playerDataMap = new HashMap<>();
             while (gameResult.next()) {
-                long player1_pid = gameResult.getLong(10);
-                long player2_pid = gameResult.getLong(11);
-                playerMap.put(player1_pid, true);
-                playerMap.put(player2_pid, true);
+                addJoinedPlayer(playerDataMap, gameResult, 21, 22);
+                addJoinedPlayer(playerDataMap, gameResult, 23, 24);
             }
-            Map<Long, PlayerData> playerDataMap = loadPlayers(con, new ArrayList<>(playerMap.keySet()));
             gameResult.beforeFirst();
 
             log4j.debug("select data complete");
@@ -1079,24 +1235,6 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
             if (gameStmt != null) {
                 gameStmt.close();
             }
-
-//            if (playerResult != null) {
-//                playerResult.close();
-//            }
-//            if (playerStmt != null) {
-//                playerStmt.close();
-//            }
-
-            if (moveResult != null) {
-                moveResult.close();
-            }
-            if (moveStmt != null) {
-                moveStmt.close();
-            }
-
-            if (con2 != null) {
-                dbHandler.freeConnection(con2);
-            }
         }
 
         Collections.sort(results, (o1, o2) -> o2.getDate().compareTo(o1.getDate()));
@@ -1105,14 +1243,58 @@ public class MySQLPenteGameStorer extends MySQLGameStorer {
     }
 
 
+    private static void addJoinedPlayer(Map<Long, PlayerData> map, ResultSet rs,
+                                        int pidCol, int nameCol) throws SQLException {
+        long pid = rs.getLong(pidCol);
+        if (rs.wasNull() || map.containsKey(pid)) {
+            return;
+        }
+        PlayerData playerData = new DefaultPlayerData();
+        playerData.setUserID(pid);
+        playerData.setUserIDName(rs.getString(nameCol));
+        map.put(pid, playerData);
+    }
+
+    // keeps 361 filter: webdb rejects Tombstone ids before calling loadGames
+    private Map<Long, List<Integer>> loadMovesMap(Connection con, String gidsString) throws SQLException {
+        Map<Long, List<Integer>> movesMap = new HashMap<>();
+        PreparedStatement moveStmt = null;
+        ResultSet moveResult = null;
+        try {
+            moveStmt = con.prepareStatement("select next_move, move_num, gid " +
+                    "from " + MOVE_TABLE + " " +
+                    "where gid in (" + gidsString + ") " +
+                    "and next_move != 361 " +
+                    "order by gid, move_num");
+            moveResult = moveStmt.executeQuery();
+            while (moveResult.next()) {
+                int move = moveResult.getInt(1);
+                long gid = moveResult.getLong(3);
+                List<Integer> moves = movesMap.get(gid);
+                if (moves == null) {
+                    moves = new ArrayList<>();
+                    movesMap.put(gid, moves);
+                }
+                moves.add(move);
+            }
+        } finally {
+            if (moveResult != null) {
+                moveResult.close();
+            }
+            if (moveStmt != null) {
+                moveStmt.close();
+            }
+        }
+        return movesMap;
+    }
+
+
     public static int archiveNextMove(GameData data, int game, int row, int numRows) {
         return row == numRows - 1 ? TombstoneCodes.archiveNoNextMove(game) : data.getMove(row + 1);
     }
 
     public static String loadMovesSql(int game) {
-        if (game == GridStateFactory.GO || game == GridStateFactory.SPEED_GO ||
-                game == GridStateFactory.GO9 || game == GridStateFactory.SPEED_GO9 ||
-                game == GridStateFactory.GO13 || game == GridStateFactory.SPEED_GO13) {
+        if (isGo(game)) {
             return "select next_move, move_num " +
                     "from " + MOVE_TABLE + " " +
                     "where gid = ? " +
