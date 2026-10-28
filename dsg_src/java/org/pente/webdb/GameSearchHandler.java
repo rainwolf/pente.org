@@ -61,6 +61,8 @@ public class GameSearchHandler {
     private static final int[] NO_MOVES = new int[0];
 
     private final DBHandler dbHandler;
+    /** Handler for archive reads (replica, or primary fallback). */
+    final DBHandler archiveDb;
     private final GameStorer gameStorer;
     private final GameVenueStorer gameVenueStorer;
     /** Personal ("mine") collection source; null for an archive-only handler. */
@@ -85,7 +87,21 @@ public class GameSearchHandler {
                              GameVenueStorer gameVenueStorer,
                              MySQLWebDbStorer webDbStorer,
                              DSGPlayerStorer playerStorer) {
+        this(dbHandler, dbHandler, gameStorer, gameVenueStorer, webDbStorer,
+                playerStorer);
+    }
+
+    /**
+     * As above, with a separate (read-only replica) handler for archive
+     * count/select/hydrate; {@code dbHandler} stays the primary.
+     */
+    public GameSearchHandler(DBHandler dbHandler, DBHandler archiveDb,
+                             GameStorer gameStorer,
+                             GameVenueStorer gameVenueStorer,
+                             MySQLWebDbStorer webDbStorer,
+                             DSGPlayerStorer playerStorer) {
         this.dbHandler = dbHandler;
+        this.archiveDb = archiveDb;
         this.gameStorer = gameStorer;
         this.gameVenueStorer = gameVenueStorer;
         this.webDbStorer = webDbStorer;
@@ -250,14 +266,14 @@ public class GameSearchHandler {
         GameSearchResponse resp = new GameSearchResponse();
         Connection con = null;
         try {
-            con = dbHandler.getConnection();
+            con = archiveDb.getConnection();
             resp.total = count(con, q.from, q.where, q.params);
             List<Long> gids = selectGids(con, q.gidCol, q.from, q.where,
                     q.orderCol, q.params, limit, offset);
             resp.games = hydrate(con, gids, game, source);
         } finally {
             if (con != null) {
-                dbHandler.freeConnection(con);
+                archiveDb.freeConnection(con);
             }
         }
         return resp;

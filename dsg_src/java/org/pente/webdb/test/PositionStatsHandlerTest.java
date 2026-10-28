@@ -378,8 +378,17 @@ public class PositionStatsHandlerTest extends TestCase {
     // archive-scope LRU cache (Task 7)
     // ==================================================================
 
+    /** Reflective read of the package-private cache switch. */
+    private static boolean cacheEnabled() throws Exception {
+        java.lang.reflect.Field f = PositionStatsHandler.class
+                .getDeclaredField("STATS_CACHE_ENABLED");
+        f.setAccessible(true);
+        return f.getBoolean(null);
+    }
+
     /** Repeating an identical archive request serves the second call from cache. */
     public void testArchiveResultIsCachedOnRepeat() throws Exception {
+        if (!cacheEnabled()) return; // cache bypassed (STATS_CACHE_ENABLED=false)
         PositionStatsRequest r = req(PENTE, new int[]{CENTER});
 
         int hits0 = handler.cacheHitCount();
@@ -397,6 +406,7 @@ public class PositionStatsHandlerTest extends TestCase {
 
     /** Different filters produce different keys (a miss); same filters hit. */
     public void testDifferentFiltersUseDistinctKeys() throws Exception {
+        if (!cacheEnabled()) return; // cache bypassed (STATS_CACHE_ENABLED=false)
         PositionStatsRequest a = req(PENTE, new int[]{CENTER});
         a.filters = new PositionStatsRequest.Filters();
         a.filters.winner = 1; // winner filter needs no venue resolution

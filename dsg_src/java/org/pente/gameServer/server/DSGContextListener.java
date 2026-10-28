@@ -218,6 +218,9 @@ public class DSGContextListener implements ServletContextListener {
             PlayerStorer playerStorer = (PlayerStorer) gameStorer;
             GameStorer gameStorerRo = new MySQLPenteGameStorer(dbHandlerRo,
                     gameVenueStorer);
+            // Replica handles for the webdb JSON API's heavy archive reads.
+            ctx.setAttribute(org.pente.webdb.WebDbApiServlet.RO_DB_ATTR, dbHandlerRo);
+            ctx.setAttribute(org.pente.webdb.WebDbApiServlet.RO_GAME_STORER_ATTR, gameStorerRo);
             GameStorerSearcher gameStorerSearcher = new MySQLGameStorerSearcher(
                     dbHandlerRo, gameStorerRo, gameVenueStorer);
 
