@@ -29,6 +29,9 @@ it is documentation only. It covers deploying the `react_pentedb` app (served un
    `docker-compose.yml` hot-mounts. A running container keeps using whatever `web.xml` was baked
    into it at its last build, so the `/api/db/*` servlet mapping only takes effect once this step
    completes (see `build-deploy-serving.md` §2 for the full evidence trail).
+   The same applies to `DbDeepLinkFilter` (SPA deep-link fallback for `/gameServer/db/*`): its `web.xml`
+   mapping also needs this image rebuild; `./justCompile` plus a restart alone deploys the class but never
+   maps it, so reloading `/gameServer/db/p/1/180` would still 404.
 
 3. **Sync the React build:** `sync_gameServer.sh`.
    This builds and rsyncs `react_pentedb/build/` to

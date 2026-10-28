@@ -248,6 +248,17 @@
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
+    <!-- SPA fallback: reloads of pentedb client routes (/gameServer/db/g/123 etc.) serve index.html.
+         Declared after LoginFilter so login rules apply first. -->
+    <filter>
+        <filter-name>DbDeepLinkFilter</filter-name>
+        <filter-class>org.pente.filter.DbDeepLinkFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>DbDeepLinkFilter</filter-name>
+        <url-pattern>/gameServer/db/*</url-pattern>
+    </filter-mapping>
+
     <!-- jive filter mappings -->
     <filter-mapping>
         <filter-name>Set Character Encoding</filter-name>
