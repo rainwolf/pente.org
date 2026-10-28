@@ -28,9 +28,14 @@ rsync -vurtz --checksum --stats --progress ../react_pentedb/build/ debian@pente.
 
 ./justCompile || exit 1
 
-rsync -vurtz --checksum --stats --progress deployClasses/org/ debian@pente.org:~/dockerMain/orgClasses/ || exit 1
+set -l rsync_log (mktemp)
+rsync -vurtz --checksum --stats --progress --log-file=$rsync_log --log-file-format='%i %n' deployClasses/org/ debian@pente.org:~/dockerMain/orgClasses/ || begin; rm -f $rsync_log; exit 1; end
+set -l synced_count (grep -cE ' [<>]f' $rsync_log)
+rm -f $rsync_log
 
-if test -n "$SKIP_PROD_RESTART"
+if test "$synced_count" -eq 0
+    echo "No classes changed, skipping restart of pente.org"
+else if test -n "$SKIP_PROD_RESTART"
     echo "Skipping restart of pente.org, caller will handle it"
 else
     echo "Restarting pente.org"
