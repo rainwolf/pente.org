@@ -401,9 +401,15 @@ public class PositionStatsHandler {
         boolean useSite = siteId != null;
         boolean useEvent = eventId != null;
 
-        // Always join pente_game so the private guard (and any game-level filter)
-        // applies; production pays this join cost too. F1.
-        StringBuilder from = new StringBuilder("from pente_move m, pente_game g");
+        // pente_game is joined only when a game-level filter is applied
+        // (players, resolved site/event, round, section, dates); winner is
+        // an m.* column. Unfiltered stats are then index-only on pente_move.
+        boolean needGame = p1 || p2 || useSite || useEvent || haveRound
+                || haveSection || haveAfter || haveBefore;
+        StringBuilder from = new StringBuilder("from pente_move m");
+        if (needGame) {
+            from.append(", pente_game g");
+        }
         if (p1) {
             from.append(", player p1");
         }
@@ -417,11 +423,13 @@ public class PositionStatsHandler {
         params.add(Integer.valueOf(numMoves - 1));
         params.add(Integer.valueOf(game));
 
-        where.append(" and m.gid = g.gid and g.game = ?");
-        params.add(Integer.valueOf(game));
+        // Private archive games are never included in position statistics.
+        where.append(" and m.private = 'N'");
 
-        // Private archive games are never included in position statistics. F1.
-        where.append(" and g.private = 'N'");
+        if (needGame) {
+            where.append(" and m.gid = g.gid and g.game = ?");
+            params.add(Integer.valueOf(game));
+        }
 
         if (p1) {
             appendPlayerPredicate(where, params, "p1", f.player1Seat, f.player1Name);
