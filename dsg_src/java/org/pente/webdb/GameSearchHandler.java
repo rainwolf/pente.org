@@ -364,14 +364,25 @@ public class GameSearchHandler {
         }
     }
 
+    /**
+     * SQL for one archive page. {@code play_date} is NOT unique, so offset paging on it alone can
+     * duplicate or skip games with equal dates between pages; {@code <gidCol> desc} is appended as
+     * a deterministic tie-breaker (gid is unique per row of this query). Personal-collection pages
+     * already break ties ({@code order by imported desc, wgid desc} in MySQLWebDbStorer.listGames),
+     * and scope "both" pages are slices of those two ordered lists.
+     */
+    public static String pagedGidSql(String gidCol, String from, String where, String orderCol) {
+        return "select " + gidCol + " " + from + where
+                + " order by " + orderCol + " desc, " + gidCol + " desc limit ? offset ?";
+    }
+
     /** The paged {@code select <gidCol> ... order by <orderCol> desc}. */
     private List<Long> selectGids(Connection con, String gidCol, String from,
                                   String where, String orderCol,
                                   List<Object> baseParams, int limit, int offset)
             throws SQLException {
 
-        String sql = "select " + gidCol + " " + from + where
-                + " order by " + orderCol + " desc limit ? offset ?";
+        String sql = pagedGidSql(gidCol, from, where, orderCol);
         List<Object> params = new ArrayList<Object>(baseParams);
         params.add(Integer.valueOf(limit));
         params.add(Integer.valueOf(offset));
