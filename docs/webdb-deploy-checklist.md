@@ -32,6 +32,8 @@ it is documentation only. It covers deploying the `react_pentedb` app (served un
    The same applies to `DbDeepLinkFilter` (SPA deep-link fallback for `/gameServer/db/*`): its `web.xml`
    mapping also needs this image rebuild; `./justCompile` plus a restart alone deploys the class but never
    maps it, so reloading `/gameServer/db/p/1/180` would still 404.
+   The `jdbc/dsg_ro` pool settings (`META-INF/dockercontext.xml`: no validate-on-borrow,
+   5 s background idle validation) are also baked into the image, so they need this rebuild too.
 
 3. **Sync the React build:** `sync_gameServer.sh`.
    This builds and rsyncs `react_pentedb/build/` to

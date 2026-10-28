@@ -9,6 +9,7 @@ import org.apache.log4j.*;
 
 import org.pente.game.GameData;
 import org.pente.game.GameStorer;
+import org.pente.game.MySQLPenteGameStorer;
 import org.pente.game.GridStateFactory;
 
 import org.pente.webdb.dto.GameDetailResponse;
@@ -76,7 +77,11 @@ public class GameLoadHandler {
         // loadGame(gid, null) returns null when the row does not exist; for an
         // existing game it reconstructs the move list (center-prepended for
         // non-Go variants) and any Renju swap offers.
-        GameData gd = gameStorer.loadGame(gid, null);
+        // On the high-latency read-only replica the Ro variant needs 2 queries
+        // (1 round trip) instead of 5 serial ones; same result.
+        GameData gd = (gameStorer instanceof MySQLPenteGameStorer)
+                ? ((MySQLPenteGameStorer) gameStorer).loadGameRo(gid)
+                : gameStorer.loadGame(gid, null);
         if (gd == null) {
             return null;
         }

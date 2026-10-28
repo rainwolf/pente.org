@@ -36,6 +36,14 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
     private static final Category log4j = Category.getInstance(
             MySQLGameStorerSearcher.class.getName());
 
+    /** What the next-moves (stats) query produced; applied to the response by search(). */
+    private static final class StatsResult {
+        volatile boolean rotationSet;
+        volatile int rotation;
+        volatile int total;
+        volatile List<GameStorerSearchResponseMoveData> moves = new ArrayList<>();
+    }
+
     private DBHandler dbHandler;
     private GameStorer gameStorer;
     private GameVenueStorer gameVenueStorer;
@@ -53,7 +61,6 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
 
     public void search(GameStorerSearchRequestData requestData, GameStorerSearchResponseData responseData) throws Exception {
         long startTime = System.currentTimeMillis();
-        Connection con = null, extraCon = null;
 
         responseData.setGameStorerSearchRequestData(requestData);
 
@@ -84,68 +91,75 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
         }
 
         try {
-            con = dbHandler.getConnection();
-            extraCon = dbHandler.getConnection();
 
             int totalGameCount = 0;
 
-            StringBuffer filterOptionsWhereTmp = new StringBuffer();
-            filterOptionsWhereTmp.append(filterOptionsWhere);
-            filterOptionsWhereTmp.append("and g.private = 'N' ");
+            // pente_game is only joined (and g.private checked) when a game-level filter
+            // already needs it; otherwise m.private = 'N' carries the privacy guard.
+            StringBuffer filterOptionsWhereTmp = new StringBuffer(
+                    matchingFromWhere(includeGameTable, "", filterOptionsWhere.toString())[1]);
+            // the matching task gets its own copy of the FROM, separate from the stats query
+            // that runs concurrently.
+            StringBuffer filterOptionsFromMatching = new StringBuffer(filterOptionsFrom);
 
-            Connection finalCon = con;
             boolean finalIncludeGameTable = includeGameTable;
             boolean finalUnion = union;
-            Connection finalExtraCon = extraCon;
-            int finalTotalGameCount = totalGameCount;
-            Stream<Supplier<Integer>> tasks = Stream.of(
-                    () -> {
-                        try {
-                            return getTotalGameCount(requestData, responseData, finalCon, filterOptionsFrom, filterOptionsWhere, filterOptionsParams, filterOptionsFrom2, filterOptionsWhere2, filterOptionsParams2, finalIncludeGameTable, finalUnion, finalTotalGameCount);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        return 0;
-                    },
-                    () -> {
-                        try {
-                            return getMatchingGames(requestData, responseData,
-                                    filterOptionsFrom, finalIncludeGameTable, filterOptionsWhereTmp,
-                                    filterOptionsParams, filterOptionsFrom2, filterOptionsWhere2,
-                                    filterOptionsParams2, finalUnion, finalExtraCon);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        return 0;
-                    }
-            );
-            List<Integer> lists = tasks
-                    .map(CompletableFuture::supplyAsync)
-                    .map(CompletableFuture::join).collect(Collectors.toList());
 
-            totalGameCount = lists.getFirst();
+            // The two queries are independent and each runs on its own pooled
+            // connection (borrowed inside the task) so they overlap on the network:
+            // submit both before joining either.
+            StatsResult stats = new StatsResult();
+            CompletableFuture<Integer> statsFuture = null;
+            if (filterData.doGetNextMoves()) {
+                // query errors are logged and yield 0; borrow/connection errors propagate
+                statsFuture = RoReads.async(() ->
+                        RoReads.readOrDefault(dbHandler, c ->
+                                getSearchResults(requestData, stats, filterOptionsFrom,
+                                        finalIncludeGameTable, filterOptionsWhere, filterOptionsParams,
+                                        filterOptionsFrom2, filterOptionsWhere2, filterOptionsParams2,
+                                        finalUnion, c), 0));
+            }
+            CompletableFuture<List<GameData>> gamesFuture = RoReads.async(() ->
+                    RoReads.readOrDefault(dbHandler, c ->
+                            getMatchingGames(requestData, filterOptionsFromMatching,
+                                    finalIncludeGameTable, filterOptionsWhereTmp,
+                                    filterOptionsParams, filterOptionsFrom2, filterOptionsWhere2,
+                                    filterOptionsParams2, finalUnion, c),
+                            new ArrayList<GameData>()));
+
+            // results are applied here, on the calling thread, in the former order
+            if (statsFuture != null) {
+                totalGameCount = RoReads.join(statsFuture);
+                if (stats.rotationSet) {
+                    responseData.setRotation(stats.rotation);
+                }
+                for (GameStorerSearchResponseMoveData moveData : stats.moves) {
+                    responseData.addSearchResponseMoveData(moveData);
+                }
+            }
+            for (GameData game : RoReads.join(gamesFuture)) {
+                responseData.addGame(game);
+            }
 
             requestData.getGameStorerSearchRequestFilterData().setTotalGameNum(
                     totalGameCount);
             log4j.debug("total matched games = " + requestData.getGameStorerSearchRequestFilterData().getTotalGameNum());
 
         } finally {
-            dbHandler.freeConnection(con);
-            dbHandler.freeConnection(extraCon);
+            // nothing to release: each task borrows and frees its own connection
         }
         long endTime = System.currentTimeMillis();
         long totalTime = endTime - startTime;
         log4j.debug("search time: " + totalTime);
     }
 
-    private int getTotalGameCount(GameStorerSearchRequestData requestData, GameStorerSearchResponseData responseData, Connection con, StringBuffer filterOptionsFrom, StringBuffer filterOptionsWhere, Vector<Object> filterOptionsParams, StringBuffer filterOptionsFrom2, StringBuffer filterOptionsWhere2, Vector<Object> filterOptionsParams2, boolean includeGameTable, boolean union, int totalGameCount) throws Exception {
-        if (requestData.getGameStorerSearchRequestFilterData().doGetNextMoves()) {
-            totalGameCount = getSearchResults(requestData,
-                    responseData, filterOptionsFrom, includeGameTable,
-                    filterOptionsWhere, filterOptionsParams,
-                    filterOptionsFrom2, filterOptionsWhere2, filterOptionsParams2, union, con);
-        }
-        return totalGameCount;
+    /**
+     * WHERE tail for the matching-games query. When no filter needs pente_game the
+     * query omits it (m.private = 'N' is the denormalized guard); otherwise the
+     * existing join stays and g.private = 'N' is added. Returns {from, where}.
+     */
+    public static String[] matchingFromWhere(boolean includeGameTable, String from, String where) {
+        return new String[]{from, includeGameTable ? where + "and g.private = 'N' " : where};
     }
 
     private void addGameTable(StringBuffer filterOptionsFrom,
@@ -421,7 +435,7 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
     }
 
     protected int getSearchResults(GameStorerSearchRequestData requestData,
-                                   GameStorerSearchResponseData responseData,
+                                   StatsResult out,
                                    StringBuffer filterOptionsFrom,
                                    boolean includeGameTable,
                                    StringBuffer filterOptionsWhere,
@@ -440,7 +454,8 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
         GridState state = GridStateFactory.createGridState(
                 requestData.getGameStorerSearchRequestFilterData().getGame(),
                 requestData);
-        responseData.setRotation(state.getRotation());
+        out.rotation = state.getRotation();
+        out.rotationSet = true;
         long hash = state.getHash();
         int currentPlayer = requestData.getNumMoves() % 2 + 1;
 
@@ -536,7 +551,7 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
             }
 
             for (GameStorerSearchResponseMoveData moveData : moveResponses.values()) {
-                responseData.addSearchResponseMoveData(moveData);
+                out.moves.add(moveData);
             }
 
         } finally {
@@ -547,12 +562,12 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
                 stmt.close();
             }
         }
+        out.total = totalGameCount;
         return totalGameCount;
     }
 
 
-    protected int getMatchingGames(GameStorerSearchRequestData requestData,
-                                   GameStorerSearchResponseData responseData,
+    protected List<GameData> getMatchingGames(GameStorerSearchRequestData requestData,
 //                                    int totalGameCount,
                                    StringBuffer filterOptionsFrom,
                                    boolean includeGameTable,
@@ -566,6 +581,7 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
         PreparedStatement stmt = null;
         ResultSet results = null;
         List<Long> gids = new ArrayList<>();
+        List<GameData> games = new ArrayList<>();
 
         try {
 
@@ -582,9 +598,6 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
             long hash = state.getHash();
             int gm = requestData.getGameStorerSearchRequestFilterData().getGame();
 
-            if (!includeGameTable) {
-                addGameTable(filterOptionsFrom, filterOptionsWhere);
-            }
 //			String qryString = 
 //				"select m.gid " +
 //				"from " + move_table + " m " + filterOptionsFrom.toString() +
@@ -652,9 +665,8 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
 //            }
 
             // load matched games into response object
-            List<GameData> games = ((MySQLPenteGameStorer) gameStorer).loadGames(con, gids);
-            for (GameData game : games) {
-                responseData.addGame(game);
+            if (!gids.isEmpty()) {
+                games = ((MySQLPenteGameStorer) gameStorer).loadGames(con, gids);
             }
 
         } finally {
@@ -666,7 +678,7 @@ public class MySQLGameStorerSearcher implements GameStorerSearcher {
                 stmt.close();
             }
         }
-        return 0;
+        return games;
     }
 
     public static String statsSql(String moveTable, long hash, int moveNum, int game, boolean includeGameTable,

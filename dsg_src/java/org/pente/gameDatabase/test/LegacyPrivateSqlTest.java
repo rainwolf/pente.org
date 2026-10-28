@@ -110,4 +110,27 @@ public class LegacyPrivateSqlTest extends TestCase {
         assertEquals(stats, 2, count(stats, "and m.game = 51 and m.private = 'N' "));
         assertEquals(page, 2, count(page, "and m.game = 51 and m.private = 'N' "));
     }
+
+    // ---- A1: pente_game join only when a game-level filter needs it ----
+
+    public void testMatchingNoGameFilterOmitsPenteGame() {
+        String[] fw = MySQLGameStorerSearcher.matchingFromWhere(false, "", "");
+        String sql = MySQLGameStorerSearcher.matchingGamesSql(T, 123L, 4, 51, false,
+                fw[0], fw[1], "", "", false, "0", "100");
+        assertEquals("select m.gid from pente_move m where m.hash_key = 123 and m.move_num = 4 " +
+                "and m.game = 51 and m.private = 'N' order by m.play_date desc limit 0, 100", sql);
+        assertTrue(sql, sql.indexOf("pente_game") < 0);
+        assertTrue(sql, sql.contains("m.private = 'N'"));
+    }
+
+    public void testMatchingPlayerFilterKeepsJoinAndGPrivate() {
+        String[] fw = MySQLGameStorerSearcher.matchingFromWhere(true, FROM_G,
+                "and m.gid = g.gid and g.player1_pid = p1.pid and (p1.name_lower = ?  ) ");
+        String sql = MySQLGameStorerSearcher.matchingGamesSql(T, 123L, 4, 51, true,
+                fw[0], fw[1], "", "", false, "0", "10");
+        assertEquals("select m.gid from pente_move m , pente_game g , player p1 where m.hash_key = 123 and m.move_num = 4 " +
+                "and m.game = 51 and m.private = 'N' and g.game = 51 " +
+                "and m.gid = g.gid and g.player1_pid = p1.pid and (p1.name_lower = ?  ) and g.private = 'N' " +
+                "order by m.play_date desc limit 0, 10", sql);
+    }
 }
