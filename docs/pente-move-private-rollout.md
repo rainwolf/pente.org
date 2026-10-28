@@ -78,13 +78,15 @@ Query A expects `COLUMN_DEFAULT` = `'Y'` (fail-closed default). That default is 
 
 ## Rehearsal results (local stack)
 
-Fill in during the owner's local rehearsal. Leave blank until measured.
+Measured 2026-10-28 on the local stack (MariaDB 13.0.2, restored 2026-10-02 production dump, 36.17M `pente_move` rows).
 
-- ALTER duration (section 1): ________
-- Backfill duration (sections 2 + 3): ________
-- Section 4 (`ALGORITHM=INSTANT`) outcome: ________
-- Replica replay duration: ________
-- Verify results (A–G): ________
+- ALTER duration (section 1): 431 s (7 min 11 s), "Repair by sorting".
+- Backfill duration (sections 2 + 3): 342 s for 839,332 private-game rows + 10 s for 90 orphan rows.
+- Section 4 (`ALGORITHM=INSTANT`) outcome: succeeded in 0 s on MyISAM.
+- Replica replay duration: caught up 12 min 25 s after the primary's ALTER finished (05:24:47 → 05:37:12 UTC), peak lag about 12 min, no SQL errors. App stop to replica caught up: 20 min 11 s.
+- Verify results (A–G): A/B column and both indexes as expected (default `'Y'`). C = 0, D = 0. Distribution Y 839,422 / N 35,334,301, identical on the replica. F = 0 (app stopped). G: all three query shapes use `hash_key`/`hash_key_2` with "Using index", no `pente_game` access.
+- Query timings, game 1 empty-board position, `SQL_NO_CACHE`, cold / warm: stats GROUP BY 0.62 s / 0.33 s, newest-50 page 0.8 ms / 0.3 ms (milliseconds), COUNT 0.35 s / 0.25 s. Before: 2.3–3.8 s per query.
+- Not measured locally: the HTTP endpoint timings (step 12; the test account lacks `dbAccess`) and a freshly stored game's `private` rows (step 10; covered by `PenteMovePrivateWriteTest`). Check both in production.
 
 The rehearsal **must confirm that section 4's `ALGORITHM=INSTANT` succeeds on MyISAM** (the table engine assumed here). If it fails, stop and decide before production. Do not drop the clause to force it through.
 
