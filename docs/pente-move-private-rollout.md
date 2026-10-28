@@ -48,9 +48,11 @@ Query A expects `COLUMN_DEFAULT` = `'Y'` (fail-closed default). That default is 
 6. Sync the **writer build** (Task 2) and start the `pente.org` container. Downtime ends here.
    - Every new move row now carries an explicit flag. The default is `'Y'`.
    - Old readers keep working on the replica, since they never name `private`.
-   - The replica is now replaying the ALTER. Replication waits behind it. This is the **stale period**: the replica lags the primary until replay finishes. Announce it to users before this step.
+   - The replica starts lagging during step 4, once the primary's ALTER is binlogged. Replication waits behind it. This is the **stale period**: the replica lags the primary until replay finishes. Announce it to users before step 4.
 7. Watch the replica with `SHOW ALL SLAVES STATUS;` until `Slave_SQL_Running: Yes`, no error, and `Seconds_Behind_Master = 0`. Record how long the replay took.
 8. Run the verify file on the replica. The `private` counts must match the primary's step 5 counts, plus any games stored since.
+   - Query F (play_date guard) is primary-only: it was checked at step 5. Do not expect 0 on the replica, because new games exist.
+   - Queries C, D and E scan ~36M (million) rows each: minutes of load on a replica serving live traffic. Run them at low traffic.
 9. Store a test game (or wait for a real one). Check that its move rows carry the game's `private` value on both servers.
 10. Deploy the reader builds (Tasks 3–5) with `sync_gameServer.sh` (no `web.xml` change). Only now do readers query the replica, which must have the column.
 11. Re-enable the backup job.
@@ -59,7 +61,7 @@ Query A expects `COLUMN_DEFAULT` = `'Y'` (fail-closed default). That default is 
 ## Announcements and downtime
 
 - Downtime = primary migration + verify (steps 2–5).
-- Announce the stale period: the replica lags from step 6 until replay finishes (step 7). Size it from the rehearsal replay duration.
+- Announce the stale period before step 4: the replica lags from step 4 (once the ALTER is binlogged) until replay finishes (step 7). Size it from the rehearsal replay duration.
 
 ## Rollback
 

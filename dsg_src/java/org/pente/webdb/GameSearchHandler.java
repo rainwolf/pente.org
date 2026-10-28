@@ -282,12 +282,16 @@ public class GameSearchHandler {
     }
 
     /**
-     * Build the archive FROM/WHERE (and bind params) for a request. Both query
-     * shapes ALWAYS join {@code pente_game g} and append {@code g.private = 'N'}
-     * so private archive games are never returned by the public search endpoint
-     * — this mirrors production {@code MySQLGameStorerSearcher}, which always
-     * appends the same guard (F1). The position-constrained shape pays the
-     * {@code pente_game} join cost unconditionally, exactly as production does.
+     * Build the archive FROM/WHERE (and bind params) for a request. Private
+     * archive games are never returned by the public search endpoint (F1):
+     * <ul>
+     * <li>Position mode (moves given) filters {@code m.private = 'N'} on
+     * {@code pente_move}. It joins {@code pente_game g}
+     * ({@code m.gid = g.gid and g.game = ?}) only when a game-level filter
+     * applies: players, resolved site/event, round, section or dates.</li>
+     * <li>Filter-only mode scans {@code pente_game} and keeps
+     * {@code g.private = 'N'}.</li>
+     * </ul>
      */
     private ArchiveQuery buildArchive(int game, int[] moves,
                                       PositionStatsRequest.Filters f)
@@ -300,9 +304,9 @@ public class GameSearchHandler {
         String orderCol;
 
         if (moves.length > 0) {
-            // Position-constrained: hash the position and match pente_move. We
-            // always join pente_game so the private guard (and any game-level
-            // filter) can be applied; production pays this join cost too.
+            // Position-constrained: hash the position and match pente_move.
+            // The private guard is m.private, so pente_game is joined only
+            // when a game-level filter needs it (see the filter check below).
             GridState state =
                     GridStateFactory.createGridState(game, moveDataOf(moves));
             long hash = state.getHash();
@@ -464,7 +468,7 @@ public class GameSearchHandler {
                                PositionStatsRequest.Filters f, String winnerCol)
             throws Exception {
 
-        boolean game_ = false;
+        boolean needsGameJoin = false;
         if (f == null) {
             return false;
         }
@@ -477,7 +481,7 @@ public class GameSearchHandler {
         if (p2) {
             from.append(", player p2");
         }
-        game_ = p1 || p2;
+        needsGameJoin = p1 || p2;
         if (p1) {
             appendPlayerPredicate(where, params, "p1", f.player1Seat, f.player1Name);
         }
@@ -492,14 +496,14 @@ public class GameSearchHandler {
             GameSiteData sd = gameVenueStorer.getGameSiteData(game, f.site);
             if (sd != null) {
                 where.append(" and g.site_id = ?");
-                game_ = true;
+                needsGameJoin = true;
                 params.add(Integer.valueOf(sd.getSiteID()));
                 if (notEmpty(f.event)) {
                     GameEventData ed =
                             gameVenueStorer.getGameEventData(game, f.event, f.site);
                     if (ed != null) {
                         where.append(" and g.event_id = ?");
-                        game_ = true;
+                        needsGameJoin = true;
                         params.add(Integer.valueOf(ed.getEventID()));
                     }
                     // Unresolvable event name: omit the event predicate.
@@ -509,22 +513,22 @@ public class GameSearchHandler {
         }
         // An event without a site cannot resolve; production omits it, so do we.
         if (notEmpty(f.round)) {
-            game_ = true;
+            needsGameJoin = true;
             where.append(" and g.round = ?");
             params.add(f.round);
         }
         if (notEmpty(f.section)) {
-            game_ = true;
+            needsGameJoin = true;
             where.append(" and g.section = ?");
             params.add(f.section);
         }
         if (notEmpty(f.afterDate)) {
-            game_ = true;
+            needsGameJoin = true;
             where.append(" and g.play_date > ?");
             params.add(toTimestamp(f.afterDate));
         }
         if (notEmpty(f.beforeDate)) {
-            game_ = true;
+            needsGameJoin = true;
             where.append(" and g.play_date < ?");
             params.add(toTimestamp(f.beforeDate));
         }
@@ -532,7 +536,7 @@ public class GameSearchHandler {
             where.append(" and ").append(winnerCol).append(" = ?");
             params.add(Integer.valueOf(f.winner));
         }
-        return game_;
+        return needsGameJoin;
     }
 
     private void appendPlayerPredicate(StringBuilder where, List<Object> params,
