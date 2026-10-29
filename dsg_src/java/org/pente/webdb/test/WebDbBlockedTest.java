@@ -181,7 +181,7 @@ public class WebDbBlockedTest extends TestCase {
         assertEquals(403, r.status);
         assertEquals("blocked", r.errorCode());
         assertEquals(1, log.calls.size());
-        assertEquals(0L, log.calls.get(0).hash);
+        assertEquals(WebDbAuth.NO_POSITION_HASH, log.calls.get(0).hash);
         assertEquals(0, log.calls.get(0).moves.length);
         assertEquals("webdb games/123", log.calls.get(0).search);
     }
@@ -250,6 +250,33 @@ public class WebDbBlockedTest extends TestCase {
             assertFalse(WebDbAuth.viewDbBlocked(true, logger,
                     request("carol", "192.168.5.5"), 0, new int[0], "t"));
         }
+    }
+
+    /**
+     * A table that was just started (no updateGameState yet) holds hash 0 and
+     * null moves. A hash-0 request (games/{gid}, empty moves, tombstone) must
+     * not trip over it: alice is still blocked by the in-live-rated-game check.
+     */
+    public void testFreshTableHashZeroPlayerBlocked() throws Exception {
+        ActivityLogger logger = realLogger();
+        logger.joinPlayer(new ActivityData("alice", "10.1.2.3", 1));
+        logger.joinPlayer(new ActivityData("bob", "10.7.7.7", 1));
+        logger.startGame(1, 1, "alice", "bob", true);
+        assertTrue(WebDbAuth.viewDbBlocked(true, logger,
+                get("alice").req, 0, new int[0], "t"));
+        assertTrue(WebDbAuth.viewDbBlocked(true, logger,
+                get("alice").req, 0, null, "t"));
+        assertFalse(WebDbAuth.viewDbBlocked(true, logger,
+                request("carol", "192.168.5.5"), 0, new int[0], "t"));
+
+        // games/{gid} for alice is 403 blocked
+        GameLoadHandler h = new GameLoadHandler(null);
+        h.setActivityLogger(logger);
+        Resp r = get("alice");
+        h.handle(r.req, r.resp, "123");
+        r.flush();
+        assertEquals(403, r.status);
+        assertEquals("blocked", r.errorCode());
     }
 
     public void testTurnBasedRatedPlayerNotBlocked() throws Exception {

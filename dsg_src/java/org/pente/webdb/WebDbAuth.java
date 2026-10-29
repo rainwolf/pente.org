@@ -141,6 +141,18 @@ public final class WebDbAuth {
     public static final boolean VIEWDB_BLOCK_ENABLED = true;
 
     /**
+     * Hash sent to {@code ActivityLogger.viewDb} in place of {@code 0} (no
+     * moves / tombstone / games/{gid}). A freshly started live table holds
+     * hash 0 with null moves until its first {@code updateGameState}, and
+     * {@code findGameMatch} NPEs on it when the request hash is also 0, which
+     * skips the in-live-rated-game player check. A non-zero sentinel skips such
+     * tables on the hash compare; it can never match a real table either,
+     * because {@code findGameMatch} needs more than 2 moves and equal move
+     * counts, while these requests carry 0 moves.
+     */
+    public static final long NO_POSITION_HASH = Long.MIN_VALUE;
+
+    /**
      * Canonical position hash for the {@code viewDb} check: the same value the
      * game room feeds {@code ActivityLogger.updateGameState}
      * ({@code ServerTable}: {@code gridState.getHash()}). {@code 0} when there
@@ -191,7 +203,8 @@ public final class WebDbAuth {
             return logger.viewDb(new ActivityData(
                             (String) request.getAttribute("name"),
                             request.getRemoteAddr()),
-                    hash, moves == null ? new int[0] : moves, search);
+                    hash == 0L ? NO_POSITION_HASH : hash,
+                    moves == null ? new int[0] : moves, search);
         } catch (RuntimeException e) {
             cat.error("viewDb check failed for " + search
                     + "; treating as not blocked", e);
