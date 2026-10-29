@@ -23,6 +23,7 @@ import org.pente.game.GridStateFactory;
 import org.pente.game.MoveData;
 import org.pente.game.MySQLPenteGameStorer;
 import org.pente.gameServer.core.DSGPlayerStorer;
+import org.pente.gameServer.server.ActivityLogger;
 
 import org.pente.webdb.dto.GameHeader;
 import org.pente.webdb.dto.GameSearchRequest;
@@ -110,6 +111,13 @@ public class GameSearchHandler {
         this.playerStorer = playerStorer;
     }
 
+    /** Legacy blocked check ({@code viewDb}); null means never blocked. */
+    private ActivityLogger activityLogger;
+
+    public void setActivityLogger(ActivityLogger activityLogger) {
+        this.activityLogger = activityLogger;
+    }
+
     /** Servlet entry point: read JSON, run the search, write JSON (or error). */
     public void handle(HttpServletRequest request,
                        HttpServletResponse response) throws IOException {
@@ -130,6 +138,19 @@ public class GameSearchHandler {
         }
 
         try {
+            // Reject a bad liveOrTurnBased before any scope-specific path
+            // (mineSearch included) so it is a 400 on every path.
+            GameStateFilters.liveMode(req.filters);
+            if (activityLogger != null && WebDbAuth.viewDbBlocked(
+                    activityLogger, request,
+                    WebDbAuth.positionHash(req.game, req.moves), req.moves,
+                    "webdb games/search game=" + req.game)) {
+                GameSearchResponse blocked = new GameSearchResponse();
+                blocked.games = new ArrayList<GameHeader>();
+                blocked.blocked = true;
+                JsonHttp.ok(response, blocked);
+                return;
+            }
             GameSearchResponse resp = search(req, pid);
             JsonHttp.ok(response, resp);
         } catch (IllegalArgumentException e) {

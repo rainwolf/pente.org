@@ -12,6 +12,7 @@ import org.pente.database.*;
 import org.pente.game.*;
 import org.pente.gameServer.core.*;
 import org.pente.gameDatabase.*;
+import org.pente.gameServer.server.ActivityLogger;
 
 /**
  * JSON API servlet for the pente position/game database, mapped to
@@ -103,6 +104,13 @@ public class WebDbApiServlet extends HttpServlet {
                     dbHandler, dbHandlerRo, gameStorerRo, gameVenueStorer, webDbStorer,
                     dsgPlayerStorer);
             gameLoadHandler = new GameLoadHandler(gameStorerRo);
+            // Legacy viewDb blocked parity (B5); null (not published) means
+            // requests are never blocked.
+            ActivityLogger activityLogger = (ActivityLogger)
+                    ctx.getAttribute(ActivityLogger.class.getName());
+            positionStatsHandler.setActivityLogger(activityLogger);
+            gameSearchHandler.setActivityLogger(activityLogger);
+            gameLoadHandler.setActivityLogger(activityLogger);
             venuesHandler = new VenuesHandler(gameVenueStorer);
             playersHandler = new PlayersHandler(dbHandlerRo);
             collectionHandler =

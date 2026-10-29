@@ -6,8 +6,12 @@ import jakarta.servlet.http.*;
 
 import org.apache.log4j.*;
 
+import org.pente.game.GridState;
+import org.pente.game.GridStateFactory;
 import org.pente.gameServer.core.DSGPlayerData;
 import org.pente.gameServer.core.DSGPlayerStorer;
+import org.pente.gameServer.server.ActivityData;
+import org.pente.gameServer.server.ActivityLogger;
 
 /**
  * Auth helper for {@code /api/db/*} endpoints.
@@ -127,5 +131,71 @@ public final class WebDbAuth {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Kill switch for the legacy {@code ActivityLogger.viewDb} blocked check on
+     * {@code /api/db/*} (B5). Committed as {@code true} (owner decision);
+     * flipping it needs a rebuild and an owner-run redeploy.
+     */
+    public static final boolean VIEWDB_BLOCK_ENABLED = true;
+
+    /**
+     * Canonical position hash for the {@code viewDb} check: the same value the
+     * game room feeds {@code ActivityLogger.updateGameState}
+     * ({@code ServerTable}: {@code gridState.getHash()}). {@code 0} when there
+     * are no moves or the game is a tombstone code.
+     */
+    public static long positionHash(int game, int[] moves) {
+        if (moves == null || moves.length == 0
+                || GridStateFactory.isTombstone(game)) {
+            return 0L;
+        }
+        GridState state = GridStateFactory.createGridState(game);
+        for (int m : moves) {
+            state.addMove(m);
+        }
+        return state.getHash();
+    }
+
+    /**
+     * {@code true} when the legacy {@code viewDb} check blocks this request
+     * (banned, or the session player / address is in a live rated game, or the
+     * position matches a live rated table). Turn-based play is never blocked:
+     * only the live game room feeds {@link ActivityLogger}.
+     */
+    public static boolean viewDbBlocked(ActivityLogger logger,
+                                        HttpServletRequest request,
+                                        long hash, int[] moves,
+                                        String search) {
+        return viewDbBlocked(VIEWDB_BLOCK_ENABLED, logger, request, hash,
+                moves, search);
+    }
+
+    /**
+     * As {@link #viewDbBlocked(ActivityLogger, HttpServletRequest, long, int[], String)}
+     * with an explicit switch. {@code false} without calling the logger when
+     * disabled or no logger is wired; a {@link RuntimeException} from
+     * {@code viewDb} is logged and treated as not blocked (legacy
+     * {@code isBanned} also fails open). Public only so tests can drive the
+     * disabled path.
+     */
+    public static boolean viewDbBlocked(boolean enabled, ActivityLogger logger,
+                                        HttpServletRequest request,
+                                        long hash, int[] moves,
+                                        String search) {
+        if (!enabled || logger == null) {
+            return false;
+        }
+        try {
+            return logger.viewDb(new ActivityData(
+                            (String) request.getAttribute("name"),
+                            request.getRemoteAddr()),
+                    hash, moves == null ? new int[0] : moves, search);
+        } catch (RuntimeException e) {
+            cat.error("viewDb check failed for " + search
+                    + "; treating as not blocked", e);
+            return false;
+        }
     }
 }

@@ -11,6 +11,7 @@ import org.pente.game.GameData;
 import org.pente.game.GameStorer;
 import org.pente.game.MySQLPenteGameStorer;
 import org.pente.game.GridStateFactory;
+import org.pente.gameServer.server.ActivityLogger;
 
 import org.pente.webdb.dto.GameDetailResponse;
 import org.pente.webdb.dto.GameHeader;
@@ -34,6 +35,13 @@ public class GameLoadHandler {
         this.gameStorer = gameStorer;
     }
 
+    /** Legacy blocked check ({@code viewDb}); null means never blocked. */
+    private ActivityLogger activityLogger;
+
+    public void setActivityLogger(ActivityLogger activityLogger) {
+        this.activityLogger = activityLogger;
+    }
+
     /**
      * Servlet entry point. {@code gidStr} is the path segment after
      * {@code /games/}; a non-numeric value yields a 400 envelope and an unknown
@@ -49,6 +57,15 @@ public class GameLoadHandler {
         } catch (NumberFormatException e) {
             JsonHttp.error(response, HttpServletResponse.SC_BAD_REQUEST,
                     "bad_request", "invalid game id: " + gidStr);
+            return;
+        }
+
+        // Hash 0 and no moves (turn-based gids too): only the ban and the
+        // "playing a live rated game" checks apply.
+        if (WebDbAuth.viewDbBlocked(activityLogger, request, 0L, new int[0],
+                "webdb games/" + gid)) {
+            JsonHttp.error(response, HttpServletResponse.SC_FORBIDDEN,
+                    "blocked", "database unavailable during a rated game");
             return;
         }
 

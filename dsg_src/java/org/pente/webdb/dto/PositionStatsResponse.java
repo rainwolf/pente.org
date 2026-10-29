@@ -29,6 +29,12 @@ public class PositionStatsResponse {
     /** Candidate next moves, sorted by {@link NextMove#games} descending. */
     public List<NextMove> nextMoves;
 
+    /**
+     * {@code true} when the legacy {@code viewDb} check blocked this request
+     * (live rated game in progress, or banned); results are then empty.
+     */
+    public boolean blocked;
+
     /** Per-move aggregate: how a single continuation performed. */
     public static class NextMove {
 

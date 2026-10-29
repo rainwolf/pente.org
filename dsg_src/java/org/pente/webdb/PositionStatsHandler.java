@@ -19,6 +19,7 @@ import org.pente.game.GridState;
 import org.pente.game.GridStateFactory;
 import org.pente.game.MoveData;
 import org.pente.gameServer.core.DSGPlayerStorer;
+import org.pente.gameServer.server.ActivityLogger;
 
 import org.pente.webdb.dto.PositionStatsRequest;
 import org.pente.webdb.dto.PositionStatsResponse;
@@ -78,6 +79,13 @@ public class PositionStatsHandler {
      * re-enable.
      */
     static final boolean STATS_CACHE_ENABLED = false;
+
+    /** Legacy blocked check ({@code viewDb}); null means never blocked. */
+    private ActivityLogger activityLogger;
+
+    public void setActivityLogger(ActivityLogger activityLogger) {
+        this.activityLogger = activityLogger;
+    }
 
     /**
      * Archive-only handler (no {@code scope="mine"}/{@code "both"} support).
@@ -147,6 +155,20 @@ public class PositionStatsHandler {
         }
 
         try {
+            // Reject a bad liveOrTurnBased before any early return in compute
+            // (tombstone, empty moves) so it is a 400 on every path.
+            GameStateFilters.liveMode(req.filters);
+            if (activityLogger != null && WebDbAuth.viewDbBlocked(
+                    activityLogger, request,
+                    WebDbAuth.positionHash(req.game, req.moves), req.moves,
+                    "webdb position-stats game=" + req.game)) {
+                PositionStatsResponse blocked = new PositionStatsResponse();
+                blocked.nextMoves =
+                        new ArrayList<PositionStatsResponse.NextMove>();
+                blocked.blocked = true;
+                JsonHttp.ok(response, blocked);
+                return;
+            }
             PositionStatsResponse resp = compute(req, pid);
             JsonHttp.ok(response, resp);
         } catch (IllegalArgumentException e) {

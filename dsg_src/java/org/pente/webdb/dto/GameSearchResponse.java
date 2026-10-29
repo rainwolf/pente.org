@@ -19,4 +19,10 @@ public class GameSearchResponse {
 
     /** The current page of matching games, in query order. */
     public List<GameHeader> games;
+
+    /**
+     * {@code true} when the legacy {@code viewDb} check blocked this request
+     * (live rated game in progress, or banned); results are then empty.
+     */
+    public boolean blocked;
 }
