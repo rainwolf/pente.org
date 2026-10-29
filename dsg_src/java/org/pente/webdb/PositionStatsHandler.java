@@ -382,7 +382,8 @@ public class PositionStatsHandler {
      * Build the archive aggregation SQL with every value bound. Filter joins and
      * predicates mirror {@code MySQLGameStorerSearcher.initFilterOptions}: a join
      * to {@code pente_game g} (with {@code m.gid = g.gid}) is added only when a
-     * game-level filter is present, and player-name filters join {@code player}.
+     * game-level filter is present (including {@code excludeTimeouts} and
+     * {@code liveOrTurnBased}), and player-name filters join {@code player}.
      * Appends the bind values to {@code params} in positional order.
      */
     public String buildArchiveSql(int game, long hash, int numMoves,
@@ -430,7 +431,7 @@ public class PositionStatsHandler {
         // an m.* column. Unfiltered stats are then index-only on pente_move.
         boolean needGame = p1 || p2 || useSite || useEvent || haveRound
                 || haveSection || haveAfter || haveBefore
-                || r1 || r2;
+                || r1 || r2 || GameStateFilters.needsGame(f);
         StringBuilder from = new StringBuilder("from pente_move m");
         if (needGame) {
             from.append(", pente_game g");
@@ -493,6 +494,7 @@ public class PositionStatsHandler {
             where.append(" and g.play_date < ?");
             params.add(toTimestamp(f.beforeDate));
         }
+        GameStateFilters.append(where, params, f);
         if (haveWinner) {
             where.append(" and m.winner = ?");
             params.add(Integer.valueOf(f.winner));
