@@ -369,6 +369,50 @@ public class WebDbBlockedTest extends TestCase {
         assertEquals(0, log.calls.size());
     }
 
+    public void testMalformedDatePositionStats400BeforeBlockedCheck()
+            throws Exception {
+        PositionStatsHandler h = new PositionStatsHandler(null, nullVenues());
+        FakeLogger log = new FakeLogger(true, false);
+        h.setActivityLogger(log);
+        Resp r = post("alice", "{\"game\":1,\"moves\":[180],"
+                + "\"filters\":{\"afterDate\":\"not-a-date\"}}");
+        h.handle(r.req, r.resp);
+        r.flush();
+        assertEquals(400, r.status);
+        assertEquals("bad_request", r.errorCode());
+        assertEquals(0, log.calls.size());
+    }
+
+    public void testMalformedDateGameSearch400BeforeBlockedCheck()
+            throws Exception {
+        GameSearchHandler h = new GameSearchHandler(
+                null, null, null, nullVenues(), null, null);
+        FakeLogger log = new FakeLogger(true, false);
+        h.setActivityLogger(log);
+        Resp r = post("alice", "{\"game\":1,\"moves\":[180],"
+                + "\"filters\":{\"beforeDate\":\"2024-13-45\"}}");
+        h.handle(r.req, r.resp);
+        r.flush();
+        assertEquals(400, r.status);
+        assertEquals("bad_request", r.errorCode());
+        assertEquals(0, log.calls.size());
+    }
+
+    public void testTombstoneGameSearch400BeforeBlockedCheck()
+            throws Exception {
+        GameSearchHandler h = new GameSearchHandler(
+                null, null, null, nullVenues(), null, null);
+        FakeLogger log = new FakeLogger(true, false);
+        h.setActivityLogger(log);
+        Resp r = post("alice", "{\"game\":" + GridStateFactory.TOMBSTONE
+                + ",\"moves\":[180]}");
+        h.handle(r.req, r.resp);
+        r.flush();
+        assertEquals(400, r.status);
+        assertEquals("bad_request", r.errorCode());
+        assertEquals(0, log.calls.size());
+    }
+
     // ------------------------------------------------------------------
     // positionHash / DTO wire
     // ------------------------------------------------------------------

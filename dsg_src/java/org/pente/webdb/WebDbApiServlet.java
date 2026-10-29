@@ -33,15 +33,15 @@ public class WebDbApiServlet extends HttpServlet {
     private static Category cat =
             Category.getInstance(WebDbApiServlet.class.getName());
 
+    /** Optional capabilities advertised on {@code /ping} for client gating. */
+    static final List<String> FEATURES = List.of(
+            "excludeTimeouts", "liveOrTurnBased", "badges", "blocked");
+
     /**
      * Context attribute names under which {@code DSGContextListener}
      * publishes the read-only replica ({@code dsg_ro}) {@link DBHandler} and
      * the {@link GameStorer} built on it.
      */
-    /** Optional capabilities advertised on {@code /ping} for client gating. */
-    static final List<String> FEATURES = List.of(
-            "excludeTimeouts", "liveOrTurnBased", "badges", "blocked");
-
     public static final String RO_DB_ATTR = DBHandler.class.getName() + ".ro";
     public static final String RO_GAME_STORER_ATTR =
             GameStorer.class.getName() + ".ro";

@@ -158,6 +158,15 @@ public class PositionStatsHandler {
             // Reject a bad liveOrTurnBased before any early return in compute
             // (tombstone, empty moves) so it is a 400 on every path.
             GameStateFilters.liveMode(req.filters);
+            // Cheap request validation before the viewDb query (primary DB).
+            if (req.filters != null) {
+                if (notEmpty(req.filters.afterDate)) {
+                    toTimestamp(req.filters.afterDate);
+                }
+                if (notEmpty(req.filters.beforeDate)) {
+                    toTimestamp(req.filters.beforeDate);
+                }
+            }
             if (activityLogger != null && WebDbAuth.viewDbBlocked(
                     activityLogger, request,
                     WebDbAuth.positionHash(req.game, req.moves), req.moves,
@@ -181,7 +190,6 @@ public class PositionStatsHandler {
         }
     }
 
-    /** {@code scope="mine"}/{@code "both"} require an authenticated pid. */
     /**
      * Player (1 or 2) to move after {@code numMoves} stones. Connect6 (live,
      * speed and turn-based) places 1 stone then 2 per turn, so P1 moves when
@@ -198,6 +206,7 @@ public class PositionStatsHandler {
         return (numMoves % 2) + 1;
     }
 
+    /** {@code scope="mine"}/{@code "both"} require an authenticated pid. */
     private static boolean needsAuth(String scope) {
         return "mine".equals(scope) || "both".equals(scope);
     }

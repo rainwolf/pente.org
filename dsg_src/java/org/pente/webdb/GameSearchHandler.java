@@ -141,6 +141,16 @@ public class GameSearchHandler {
             // Reject a bad liveOrTurnBased before any scope-specific path
             // (mineSearch included) so it is a 400 on every path.
             GameStateFilters.liveMode(req.filters);
+            rejectTombstone(req);
+            // Cheap request validation before the viewDb query (primary DB).
+            if (req.filters != null) {
+                if (notEmpty(req.filters.afterDate)) {
+                    toTimestamp(req.filters.afterDate);
+                }
+                if (notEmpty(req.filters.beforeDate)) {
+                    toTimestamp(req.filters.beforeDate);
+                }
+            }
             if (activityLogger != null && WebDbAuth.viewDbBlocked(
                     activityLogger, request,
                     WebDbAuth.positionHash(req.game, req.moves), req.moves,
