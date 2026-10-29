@@ -182,6 +182,22 @@ public class PositionStatsHandler {
     }
 
     /** {@code scope="mine"}/{@code "both"} require an authenticated pid. */
+    /**
+     * Player (1 or 2) to move after {@code numMoves} stones. Connect6 (live,
+     * speed and turn-based) places 1 stone then 2 per turn, so P1 moves when
+     * {@code numMoves % 4} is 0 or 3; every other game alternates.
+     */
+    static int sideToMove(int game, int numMoves) {
+        if (game == GridStateFactory.CONNECT6
+                || game == GridStateFactory.SPEED_CONNECT6
+                || game == GridStateFactory.TB_CONNECT6
+                || game == GridStateFactory.TB_CONNECT6 + 1) { // 64: no named constant
+            int r = numMoves % 4;
+            return (r == 0 || r == 3) ? 1 : 2;
+        }
+        return (numMoves % 2) + 1;
+    }
+
     private static boolean needsAuth(String scope) {
         return "mine".equals(scope) || "both".equals(scope);
     }
@@ -233,7 +249,7 @@ public class PositionStatsHandler {
                 GridStateFactory.createGridState(game, moveDataOf(moves));
         long hash = state.getHash();
         resp.rotation = state.getRotation();
-        int currentPlayer = (numMoves % 2) + 1;
+        int currentPlayer = sideToMove(game, numMoves);
 
         boolean wantArchive = !"mine".equals(scope);              // archive or both
         boolean wantMine = "mine".equals(scope) || "both".equals(scope);
