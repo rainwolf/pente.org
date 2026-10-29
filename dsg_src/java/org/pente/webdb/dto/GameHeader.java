@@ -15,8 +15,8 @@ import org.pente.game.PlayerData;
  *
  * <pre>
  * {"gid": 123456, "source": "archive", "game": 1,
- *  "player1": {"name": "alice", "rating": 1810},
- *  "player2": {"name": "bob",   "rating": 1720},
+ *  "player1": {"name": "alice", "rating": 1810, "nameColor": -65536, "crown": 1},
+ *  "player2": {"name": "bob",   "rating": 1720, "nameColor": 0, "crown": 0},
  *  "winner": 1, "site": "Pente.org", "event": "...", "round": "1", "section": "",
  *  "playDate": "2019-05-01T12:00:00Z", "moveCount": 42}
  * </pre>
@@ -25,6 +25,12 @@ import org.pente.game.PlayerData;
  * {@code null} when the game carries no date. {@code winner} follows
  * {@link GameData}'s constants ({@code 0} unknown, {@code 1}/{@code 2} a player,
  * {@code 3} draw).
+ *
+ * <p>{@code nameColor} is the subscriber's ARGB name colour ({@code 0} for
+ * non-subscribers; stored black or no colour is {@code (255<<24)+1}) and
+ * {@code crown} the tournament crown code ({@code 0} none), both mobile-app
+ * parity. They are filled only on archive search results; other headers carry
+ * {@code 0}/{@code 0}.
  */
 public class GameHeader {
 
@@ -45,6 +51,12 @@ public class GameHeader {
     public static class Player {
         public String name;
         public int rating;
+        /** Subscriber ARGB name colour, {@code 0} when none. See class doc. */
+        public int nameColor;
+        /** Tournament crown code, {@code 0} when none. See class doc. */
+        public int crown;
+        /** Player id used to look badges up; transient so it is never on the wire. */
+        public transient long pid;
 
         public Player() {
         }
@@ -118,7 +130,9 @@ public class GameHeader {
         if (p == null) {
             return null;
         }
-        return new Player(p.getUserIDName(), p.getRating());
+        Player out = new Player(p.getUserIDName(), p.getRating());
+        out.pid = p.getUserID();
+        return out;
     }
 
     private static String isoUtc(Date d) {

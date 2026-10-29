@@ -346,6 +346,27 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
         }
     }
 
+    /**
+     * The subscriber level bits one {@code dsg_subscribers} row grants right now:
+     * {@code registeredLvl} when its payment window is still open, else 0. A
+     * monthly row ({@code ONEMONTH}, which wins when both bits are set) is open
+     * when paid after {@code lastMonth}; a yearly row ({@code ONEYEAR}) when paid
+     * after {@code lastYear}. A row with neither bit, or a null date, grants 0.
+     * Shared by {@link #getSubscriberData} and the webdb header badges.
+     */
+    public static int activeSubscriberBits(int registeredLvl, java.util.Date paymentDate,
+                                           Calendar lastMonth, Calendar lastYear) {
+        if (paymentDate == null) {
+            return 0;
+        }
+        if ((registeredLvl & ONEMONTH) != 0) {
+            return paymentDate.after(lastMonth.getTime()) ? registeredLvl : 0;
+        } else if ((registeredLvl & ONEYEAR) != 0) {
+            return paymentDate.after(lastYear.getTime()) ? registeredLvl : 0;
+        }
+        return 0;
+    }
+
     private void getSubscriberData(DSGPlayerData dsgPlayerData) throws DSGPlayerStoreException {
 
         Connection con = null;
@@ -374,28 +395,19 @@ public class MySQLDSGPlayerStorer implements DSGPlayerStorer {
                     paymentDate = Calendar.getInstance();
                     paymentDate.setTime(result.getDate("paymentdate"));
                     int registeredLvl = result.getInt(1);
-                    if ((registeredLvl & ONEMONTH) != 0) {
-                        if (paymentDate.after(lastMonth)) {
-                            level = level | registeredLvl;
+                    int bits = activeSubscriberBits(registeredLvl, paymentDate.getTime(), lastMonth, lastYear);
+                    if (bits != 0) {
+                        level = level | bits;
+                        if ((registeredLvl & ONEMONTH) != 0) {
                             paymentDate.add(java.util.Calendar.DATE, 31);
-                            if (expirationDate == null) {
-                                expirationDate = paymentDate;
-                            } else {
-                                if (paymentDate.after(expirationDate)) {
-                                    expirationDate = paymentDate;
-                                }
-                            }
-                        }
-                    } else if ((registeredLvl & ONEYEAR) != 0) {
-                        if (paymentDate.after(lastYear)) {
-                            level = level | registeredLvl;
+                        } else {
                             paymentDate.add(java.util.Calendar.YEAR, 1);
-                            if (expirationDate == null) {
+                        }
+                        if (expirationDate == null) {
+                            expirationDate = paymentDate;
+                        } else {
+                            if (paymentDate.after(expirationDate)) {
                                 expirationDate = paymentDate;
-                            } else {
-                                if (paymentDate.after(expirationDate)) {
-                                    expirationDate = paymentDate;
-                                }
                             }
                         }
                     }

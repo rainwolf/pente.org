@@ -275,7 +275,9 @@ public class GameSearchHandler {
         List<GameHeader> games = RoReads.withConnection(archiveDb, con -> {
             List<Long> gids = selectGids(con, q.gidCol, q.from, q.where,
                     q.orderCol, q.params, limit, offset);
-            return hydrate(con, gids, game, source);
+            List<GameHeader> page = hydrate(con, gids, game, source);
+            PlayerBadges.apply(con, page);
+            return page;
         });
         resp.games = games;
         resp.total = RoReads.join(totalFuture);
