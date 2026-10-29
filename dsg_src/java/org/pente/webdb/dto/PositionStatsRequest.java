@@ -28,7 +28,7 @@ public class PositionStatsRequest {
     /** Move list in the caller's orientation; may be empty. */
     public int[] moves;
 
-    /** {@code "archive"} (default) or {@code "mine"} (added in Task 6). */
+    /** {@code "archive"} (default), {@code "mine"} or {@code "both"}. */
     public String scope;
 
     /** Optional venue/player/date/winner filters; null means "no filters". */
@@ -63,10 +63,23 @@ public class PositionStatsRequest {
         /** {@code 0} = any; otherwise {@code m.winner = winner} (1 or 2). */
         public int winner;
 
-        /** Player-slot 1 rating floor: strict {@code >}; {@code <= 0} = off. */
+        /** Player-slot 1 rating floor: at least ({@code >=}); {@code <= 0} = off. */
         public int player1RatingAbove;
 
-        /** Player-slot 2 rating floor: strict {@code >}; {@code <= 0} = off. */
+        /** Player-slot 2 rating floor: at least ({@code >=}); {@code <= 0} = off. */
         public int player2RatingAbove;
+
+        /**
+         * When true, games with {@code g.status = 'T'} (timeout) are excluded.
+         * Legacy source: {@code MySQLGameStorerSearcher.java:393-415}.
+         */
+        public boolean excludeTimeouts;
+
+        /**
+         * {@code null}, {@code "all"} or blank = off; {@code "live"} or
+         * {@code "turnBased"} restricts by game id range. Case-sensitive; anything
+         * else is rejected. Legacy source: {@code MySQLGameStorerSearcher.java:393-415}.
+         */
+        public String liveOrTurnBased;
     }
 }

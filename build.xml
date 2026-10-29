@@ -236,6 +236,10 @@
         </java>
         <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
             <classpath refid="test-classpath"/>
+            <arg value="org.pente.webdb.test.GameStateFiltersTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
             <arg value="org.pente.gameServer.mobile.test.MobileServerListFilterTest"/>
         </java>
         <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
