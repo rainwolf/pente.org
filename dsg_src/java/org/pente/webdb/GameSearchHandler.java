@@ -559,6 +559,10 @@ public class GameSearchHandler {
             where.append(" and g.play_date < ?");
             params.add(toTimestamp(f.beforeDate));
         }
+        if (GameStateFilters.needsGame(f)) {
+            needsGameJoin = true;
+        }
+        GameStateFilters.append(where, params, f);
         if (f.winner != 0) {
             where.append(" and ").append(winnerCol).append(" = ?");
             params.add(Integer.valueOf(f.winner));
