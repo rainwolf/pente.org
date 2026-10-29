@@ -257,6 +257,18 @@ public class DbAccessGateTest extends TestCase {
         assertTrue(o.get("dbAccess").getAsBoolean());
     }
 
+    public void testPingFeatures() throws Exception {
+        Resp r = call("GET", "/ping", null);
+        assertEquals(200, r.status);
+        com.google.gson.JsonArray f =
+                json(r).getAsJsonObject().get("features").getAsJsonArray();
+        String[] want = {"excludeTimeouts", "liveOrTurnBased", "badges", "blocked"};
+        assertEquals(want.length, f.size());
+        for (int i = 0; i < want.length; i++) {
+            assertEquals(want[i], f.get(i).getAsString());
+        }
+    }
+
     public void testPingOnlyOpenForGet() throws Exception {
         assertEquals(401, call("POST", "/ping", null).status);
     }

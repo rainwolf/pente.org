@@ -38,6 +38,10 @@ public class WebDbApiServlet extends HttpServlet {
      * publishes the read-only replica ({@code dsg_ro}) {@link DBHandler} and
      * the {@link GameStorer} built on it.
      */
+    /** Optional capabilities advertised on {@code /ping} for client gating. */
+    static final List<String> FEATURES = List.of(
+            "excludeTimeouts", "liveOrTurnBased", "badges", "blocked");
+
     public static final String RO_DB_ATTR = DBHandler.class.getName() + ".ro";
     public static final String RO_GAME_STORER_ATTR =
             GameStorer.class.getName() + ".ro";
@@ -280,8 +284,11 @@ public class WebDbApiServlet extends HttpServlet {
 
     /**
      * {@code GET /api/db/ping} — liveness plus current auth identity.
-     * Returns {@code {"ok":true,"auth":"<name-or-null>","dbAccess":<bool>}};
-     * {@code dbAccess} is false when anonymous. Not gated (see
+     * Returns {@code {"ok":true,"auth":"<name-or-null>","dbAccess":<bool>,
+     * "features":["excludeTimeouts","liveOrTurnBased","badges","blocked"]}};
+     * {@code dbAccess} is false when anonymous. {@code features} lists the
+     * optional capabilities this server supports (see {@link #FEATURES});
+     * older servers omit it, which clients treat as none. Not gated (see
      * {@link #service}).
      */
     private void handlePing(HttpServletRequest request,
@@ -296,6 +303,7 @@ public class WebDbApiServlet extends HttpServlet {
         body.put("ok", Boolean.TRUE);
         body.put("auth", name); // null when anonymous
         body.put("dbAccess", dbAccess);
+        body.put("features", FEATURES);
 
         JsonHttp.ok(response, body);
     }
