@@ -12,6 +12,7 @@ import org.pente.database.*;
 import org.pente.game.*;
 import org.pente.gameServer.core.*;
 import org.pente.gameDatabase.*;
+import org.pente.gameServer.server.ActivityLogger;
 
 /**
  * JSON API servlet for the pente position/game database, mapped to
@@ -31,6 +32,10 @@ public class WebDbApiServlet extends HttpServlet {
 
     private static Category cat =
             Category.getInstance(WebDbApiServlet.class.getName());
+
+    /** Optional capabilities advertised on {@code /ping} for client gating. */
+    static final List<String> FEATURES = List.of(
+            "excludeTimeouts", "liveOrTurnBased", "badges", "blocked");
 
     /**
      * Context attribute names under which {@code DSGContextListener}
@@ -103,6 +108,13 @@ public class WebDbApiServlet extends HttpServlet {
                     dbHandler, dbHandlerRo, gameStorerRo, gameVenueStorer, webDbStorer,
                     dsgPlayerStorer);
             gameLoadHandler = new GameLoadHandler(gameStorerRo);
+            // Legacy viewDb blocked parity (B5); null (not published) means
+            // requests are never blocked.
+            ActivityLogger activityLogger = (ActivityLogger)
+                    ctx.getAttribute(ActivityLogger.class.getName());
+            positionStatsHandler.setActivityLogger(activityLogger);
+            gameSearchHandler.setActivityLogger(activityLogger);
+            gameLoadHandler.setActivityLogger(activityLogger);
             venuesHandler = new VenuesHandler(gameVenueStorer);
             playersHandler = new PlayersHandler(dbHandlerRo);
             collectionHandler =
@@ -272,8 +284,11 @@ public class WebDbApiServlet extends HttpServlet {
 
     /**
      * {@code GET /api/db/ping} — liveness plus current auth identity.
-     * Returns {@code {"ok":true,"auth":"<name-or-null>","dbAccess":<bool>}};
-     * {@code dbAccess} is false when anonymous. Not gated (see
+     * Returns {@code {"ok":true,"auth":"<name-or-null>","dbAccess":<bool>,
+     * "features":["excludeTimeouts","liveOrTurnBased","badges","blocked"]}};
+     * {@code dbAccess} is false when anonymous. {@code features} lists the
+     * optional capabilities this server supports (see {@link #FEATURES});
+     * older servers omit it, which clients treat as none. Not gated (see
      * {@link #service}).
      */
     private void handlePing(HttpServletRequest request,
@@ -288,6 +303,7 @@ public class WebDbApiServlet extends HttpServlet {
         body.put("ok", Boolean.TRUE);
         body.put("auth", name); // null when anonymous
         body.put("dbAccess", dbAccess);
+        body.put("features", FEATURES);
 
         JsonHttp.ok(response, body);
     }

@@ -156,6 +156,8 @@ final class StatsCache {
         private final int winner;
         private final int player1RatingAbove;
         private final int player2RatingAbove;
+        private final boolean excludeTimeouts;
+        private final String liveMode;
 
         Key(int game, long hash, int moveNum, int rotation,
             PositionStatsRequest.Filters f) {
@@ -177,6 +179,8 @@ final class StatsCache {
                 this.winner = 0;
                 this.player1RatingAbove = 0;
                 this.player2RatingAbove = 0;
+                this.excludeTimeouts = false;
+                this.liveMode = null;
             } else {
                 this.player1Name = f.player1Name;
                 this.player1Seat = f.player1Seat;
@@ -191,6 +195,8 @@ final class StatsCache {
                 this.winner = f.winner;
                 this.player1RatingAbove = f.player1RatingAbove;
                 this.player2RatingAbove = f.player2RatingAbove;
+                this.excludeTimeouts = f.excludeTimeouts;
+                this.liveMode = GameStateFilters.liveMode(f);
             }
         }
 
@@ -211,6 +217,8 @@ final class StatsCache {
                     && winner == k.winner
                     && player1RatingAbove == k.player1RatingAbove
                     && player2RatingAbove == k.player2RatingAbove
+                    && excludeTimeouts == k.excludeTimeouts
+                    && Objects.equals(liveMode, k.liveMode)
                     && Objects.equals(player1Name, k.player1Name)
                     && Objects.equals(player2Name, k.player2Name)
                     && Objects.equals(site, k.site)
@@ -229,7 +237,8 @@ final class StatsCache {
                     site, event, round, section, afterDate, beforeDate,
                     Integer.valueOf(winner),
                     Integer.valueOf(player1RatingAbove),
-                    Integer.valueOf(player2RatingAbove));
+                    Integer.valueOf(player2RatingAbove),
+                    Boolean.valueOf(excludeTimeouts), liveMode);
         }
     }
 }

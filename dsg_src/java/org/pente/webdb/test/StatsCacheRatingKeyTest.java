@@ -34,4 +34,40 @@ public class StatsCacheRatingKeyTest extends TestCase {
         r1b.player1RatingAbove = 1700;
         assertTrue(!k1.equals(StatsCache.keyOf(1, 7L, 3, 0, r1b)));
     }
+
+    public void testExcludeTimeoutsInKey() {
+        PositionStatsRequest.Filters plain = new PositionStatsRequest.Filters();
+        PositionStatsRequest.Filters f = new PositionStatsRequest.Filters();
+        f.excludeTimeouts = true;
+        assertTrue(!StatsCache.keyOf(1, 7L, 3, 0, plain).equals(StatsCache.keyOf(1, 7L, 3, 0, f)));
+    }
+
+    public void testLiveModeInKey() {
+        PositionStatsRequest.Filters plain = new PositionStatsRequest.Filters();
+        PositionStatsRequest.Filters live = new PositionStatsRequest.Filters();
+        live.liveOrTurnBased = "live";
+        PositionStatsRequest.Filters live2 = new PositionStatsRequest.Filters();
+        live2.liveOrTurnBased = "live";
+        PositionStatsRequest.Filters tb = new PositionStatsRequest.Filters();
+        tb.liveOrTurnBased = "turnBased";
+        Object kp = StatsCache.keyOf(1, 7L, 3, 0, plain);
+        Object kl = StatsCache.keyOf(1, 7L, 3, 0, live);
+        Object kt = StatsCache.keyOf(1, 7L, 3, 0, tb);
+        assertTrue(!kl.equals(kt));
+        assertTrue(!kl.equals(kp));
+        assertTrue(!kt.equals(kp));
+        Object kl2 = StatsCache.keyOf(1, 7L, 3, 0, live2);
+        assertEquals(kl, kl2);
+        assertEquals(kl.hashCode(), kl2.hashCode());
+    }
+
+    public void testAllEqualsUnset() {
+        PositionStatsRequest.Filters plain = new PositionStatsRequest.Filters();
+        PositionStatsRequest.Filters all = new PositionStatsRequest.Filters();
+        all.liveOrTurnBased = "all";
+        Object kp = StatsCache.keyOf(1, 7L, 3, 0, plain);
+        Object ka = StatsCache.keyOf(1, 7L, 3, 0, all);
+        assertEquals(kp, ka);
+        assertEquals(kp.hashCode(), ka.hashCode());
+    }
 }

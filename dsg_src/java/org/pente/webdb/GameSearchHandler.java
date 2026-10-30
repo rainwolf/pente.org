@@ -23,6 +23,7 @@ import org.pente.game.GridStateFactory;
 import org.pente.game.MoveData;
 import org.pente.game.MySQLPenteGameStorer;
 import org.pente.gameServer.core.DSGPlayerStorer;
+import org.pente.gameServer.server.ActivityLogger;
 
 import org.pente.webdb.dto.GameHeader;
 import org.pente.webdb.dto.GameSearchRequest;
@@ -110,6 +111,13 @@ public class GameSearchHandler {
         this.playerStorer = playerStorer;
     }
 
+    /** Legacy blocked check ({@code viewDb}); null means never blocked. */
+    private ActivityLogger activityLogger;
+
+    public void setActivityLogger(ActivityLogger activityLogger) {
+        this.activityLogger = activityLogger;
+    }
+
     /** Servlet entry point: read JSON, run the search, write JSON (or error). */
     public void handle(HttpServletRequest request,
                        HttpServletResponse response) throws IOException {
@@ -130,6 +138,29 @@ public class GameSearchHandler {
         }
 
         try {
+            // Reject a bad liveOrTurnBased before any scope-specific path
+            // (mineSearch included) so it is a 400 on every path.
+            GameStateFilters.liveMode(req.filters);
+            rejectTombstone(req);
+            // Cheap request validation before the viewDb query (primary DB).
+            if (req.filters != null) {
+                if (notEmpty(req.filters.afterDate)) {
+                    toTimestamp(req.filters.afterDate);
+                }
+                if (notEmpty(req.filters.beforeDate)) {
+                    toTimestamp(req.filters.beforeDate);
+                }
+            }
+            if (activityLogger != null && WebDbAuth.viewDbBlocked(
+                    activityLogger, request,
+                    WebDbAuth.positionHash(req.game, req.moves), req.moves,
+                    "webdb games/search game=" + req.game)) {
+                GameSearchResponse blocked = new GameSearchResponse();
+                blocked.games = new ArrayList<GameHeader>();
+                blocked.blocked = true;
+                JsonHttp.ok(response, blocked);
+                return;
+            }
             GameSearchResponse resp = search(req, pid);
             JsonHttp.ok(response, resp);
         } catch (IllegalArgumentException e) {
@@ -275,7 +306,9 @@ public class GameSearchHandler {
         List<GameHeader> games = RoReads.withConnection(archiveDb, con -> {
             List<Long> gids = selectGids(con, q.gidCol, q.from, q.where,
                     q.orderCol, q.params, limit, offset);
-            return hydrate(con, gids, game, source);
+            List<GameHeader> page = hydrate(con, gids, game, source);
+            PlayerBadges.apply(con, page);
+            return page;
         });
         resp.games = games;
         resp.total = RoReads.join(totalFuture);
@@ -559,6 +592,10 @@ public class GameSearchHandler {
             where.append(" and g.play_date < ?");
             params.add(toTimestamp(f.beforeDate));
         }
+        if (GameStateFilters.needsGame(f)) {
+            needsGameJoin = true;
+        }
+        GameStateFilters.append(where, params, f);
         if (f.winner != 0) {
             where.append(" and ").append(winnerCol).append(" = ?");
             params.add(Integer.valueOf(f.winner));

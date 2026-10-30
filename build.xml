@@ -236,6 +236,30 @@
         </java>
         <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
             <classpath refid="test-classpath"/>
+            <arg value="org.pente.webdb.test.GameStateFiltersTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.webdb.test.PositionStatsGameStateSqlTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.webdb.test.GameSearchGameStateSqlTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.webdb.test.PlayerBadgesTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.webdb.test.WebDbBlockedTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
+            <arg value="org.pente.webdb.PositionStatsSideToMoveTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
             <arg value="org.pente.gameServer.mobile.test.MobileServerListFilterTest"/>
         </java>
         <java classname="junit.textui.TestRunner" fork="true" failonerror="true">

@@ -19,6 +19,7 @@ import org.pente.game.GridState;
 import org.pente.game.GridStateFactory;
 import org.pente.game.MoveData;
 import org.pente.gameServer.core.DSGPlayerStorer;
+import org.pente.gameServer.server.ActivityLogger;
 
 import org.pente.webdb.dto.PositionStatsRequest;
 import org.pente.webdb.dto.PositionStatsResponse;
@@ -78,6 +79,13 @@ public class PositionStatsHandler {
      * re-enable.
      */
     static final boolean STATS_CACHE_ENABLED = false;
+
+    /** Legacy blocked check ({@code viewDb}); null means never blocked. */
+    private ActivityLogger activityLogger;
+
+    public void setActivityLogger(ActivityLogger activityLogger) {
+        this.activityLogger = activityLogger;
+    }
 
     /**
      * Archive-only handler (no {@code scope="mine"}/{@code "both"} support).
@@ -147,6 +155,29 @@ public class PositionStatsHandler {
         }
 
         try {
+            // Reject a bad liveOrTurnBased before any early return in compute
+            // (tombstone, empty moves) so it is a 400 on every path.
+            GameStateFilters.liveMode(req.filters);
+            // Cheap request validation before the viewDb query (primary DB).
+            if (req.filters != null) {
+                if (notEmpty(req.filters.afterDate)) {
+                    toTimestamp(req.filters.afterDate);
+                }
+                if (notEmpty(req.filters.beforeDate)) {
+                    toTimestamp(req.filters.beforeDate);
+                }
+            }
+            if (activityLogger != null && WebDbAuth.viewDbBlocked(
+                    activityLogger, request,
+                    WebDbAuth.positionHash(req.game, req.moves), req.moves,
+                    "webdb position-stats game=" + req.game)) {
+                PositionStatsResponse blocked = new PositionStatsResponse();
+                blocked.nextMoves =
+                        new ArrayList<PositionStatsResponse.NextMove>();
+                blocked.blocked = true;
+                JsonHttp.ok(response, blocked);
+                return;
+            }
             PositionStatsResponse resp = compute(req, pid);
             JsonHttp.ok(response, resp);
         } catch (IllegalArgumentException e) {
@@ -157,6 +188,22 @@ public class PositionStatsHandler {
             JsonHttp.error(response, 500, "server_error",
                     "position-stats computation failed");
         }
+    }
+
+    /**
+     * Player (1 or 2) to move after {@code numMoves} stones. Connect6 (live,
+     * speed and turn-based) places 1 stone then 2 per turn, so P1 moves when
+     * {@code numMoves % 4} is 0 or 3; every other game alternates.
+     */
+    static int sideToMove(int game, int numMoves) {
+        if (game == GridStateFactory.CONNECT6
+                || game == GridStateFactory.SPEED_CONNECT6
+                || game == GridStateFactory.TB_CONNECT6
+                || game == GridStateFactory.TB_CONNECT6 + 1) { // 64: no named constant
+            int r = numMoves % 4;
+            return (r == 0 || r == 3) ? 1 : 2;
+        }
+        return (numMoves % 2) + 1;
     }
 
     /** {@code scope="mine"}/{@code "both"} require an authenticated pid. */
@@ -211,7 +258,7 @@ public class PositionStatsHandler {
                 GridStateFactory.createGridState(game, moveDataOf(moves));
         long hash = state.getHash();
         resp.rotation = state.getRotation();
-        int currentPlayer = (numMoves % 2) + 1;
+        int currentPlayer = sideToMove(game, numMoves);
 
         boolean wantArchive = !"mine".equals(scope);              // archive or both
         boolean wantMine = "mine".equals(scope) || "both".equals(scope);
@@ -382,7 +429,8 @@ public class PositionStatsHandler {
      * Build the archive aggregation SQL with every value bound. Filter joins and
      * predicates mirror {@code MySQLGameStorerSearcher.initFilterOptions}: a join
      * to {@code pente_game g} (with {@code m.gid = g.gid}) is added only when a
-     * game-level filter is present, and player-name filters join {@code player}.
+     * game-level filter is present (including {@code excludeTimeouts} and
+     * {@code liveOrTurnBased}), and player-name filters join {@code player}.
      * Appends the bind values to {@code params} in positional order.
      */
     public String buildArchiveSql(int game, long hash, int numMoves,
@@ -430,7 +478,7 @@ public class PositionStatsHandler {
         // an m.* column. Unfiltered stats are then index-only on pente_move.
         boolean needGame = p1 || p2 || useSite || useEvent || haveRound
                 || haveSection || haveAfter || haveBefore
-                || r1 || r2;
+                || r1 || r2 || GameStateFilters.needsGame(f);
         StringBuilder from = new StringBuilder("from pente_move m");
         if (needGame) {
             from.append(", pente_game g");
@@ -493,6 +541,7 @@ public class PositionStatsHandler {
             where.append(" and g.play_date < ?");
             params.add(toTimestamp(f.beforeDate));
         }
+        GameStateFilters.append(where, params, f);
         if (haveWinner) {
             where.append(" and m.winner = ?");
             params.add(Integer.valueOf(f.winner));
