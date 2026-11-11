@@ -263,8 +263,8 @@ if (isTombstone) {
 %>
                            <tr>
 <td width="10%" align="center"><%= ++row %></td>
-<td onclick='selectMove(<%= pr[0].end %>)' id='<%= pr[0].end %>' width="45%" align="center"><%= pr[0].label %></td>
-<% if (pr[1] != null) { %><td onclick='selectMove(<%= pr[1].end %>)' id='<%= pr[1].end %>' width="45%" align="center"><%= pr[1].label %></td><% } else { %><td></td><% } %>
+<td onclick='selectMove(<%= pr[0].end %>)' id='<%= pr[0].end %>' width="45%" align="center"><%= pr[0].html %></td>
+<% if (pr[1] != null) { %><td onclick='selectMove(<%= pr[1].end %>)' id='<%= pr[1].end %>' width="45%" align="center"><%= pr[1].html %></td><% } else { %><td></td><% } %>
 </tr>
 <%
    }

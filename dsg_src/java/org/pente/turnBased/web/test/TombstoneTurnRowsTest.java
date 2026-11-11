@@ -40,6 +40,16 @@ public class TombstoneTurnRowsTest extends TestCase {
         assertEquals(0, TombstoneTurnRows.pairs(TombstoneTurnRows.rows(new int[0], 0)).size());
     }
 
+    public void testHtmlColoursOnlyTheDeadCoordinate() {
+        String span = "<span class=\"ts-dead\" style=\"color:#C62828\">";
+        java.util.List<TombstoneTurnRows.Row> r = TombstoneTurnRows.rows(new int[]{180, 181, 561, 722, 722, 361, 200, 562}, 8);
+        assertEquals("K10", r.get(0).html);
+        assertEquals("L10 - " + span + "L9</span>", r.get(1).html);
+        assertEquals("PASS", r.get(2).html);
+        assertEquals("PASS - " + span + "A19</span>", r.get(3).html);
+        assertEquals("L9 - " + span + "M9</span>", r.get(4).html);
+    }
+
     public void testEmpty() { assertEquals(0, TombstoneTurnRows.rows(new int[0], 0).size()); }
 
     public void testCentreOnly() { assertEquals("1:0-0:K10|", labels(TombstoneTurnRows.rows(new int[]{180}, 1))); }

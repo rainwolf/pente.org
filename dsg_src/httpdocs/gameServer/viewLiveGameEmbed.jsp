@@ -176,7 +176,7 @@ if (isTombstone) {
 %>
                            <tr>
                               <td width="10%" align="center"><%= r.number %></td>
-                              <td onclick='selectMove(<%= r.end %>)' id='<%= r.end %>' width="90%" align="center"><%= r.label %></td>
+                              <td onclick='selectMove(<%= r.end %>)' id='<%= r.end %>' width="90%" align="center"><%= r.html %></td>
                            </tr>
 <%
    }

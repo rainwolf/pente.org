@@ -215,6 +215,10 @@
                drawGame();
                if (isTombstoneGame(game)) {
                   tombstoneDrawLastMarks(moves, drawUntilMove);
+                  // navigating history cancels pending picks (back = undo)
+                  tsOwn = -1;
+                  tsDead = -1;
+                  tombstoneUpdateButton();
                } else {
                lastMove = moves[drawUntilMove - 1];
                drawRedDot(lastMove % gridSize, Math.floor(lastMove / gridSize));
@@ -469,12 +473,12 @@
                                                     String coordinateLetters[] = {"A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T"};
                                                     int row = 0;
                                        if (isTombstone) {
-                                          for (TombstoneTurnRows.Row[] pr : TombstoneTurnRows.pairs(TombstoneTurnRows.rows(game))) {
-                                       %>
+                                          for (TombstoneTurnRows.Row[] pr : TombstoneTurnRows.pairs(TombstoneTurnRows.rows(game))) {
+                                       %>
                                     <tr>
 <td width="10%" align="center"><%= ++row %></td>
-<td onclick='selectMove(<%= pr[0].end %>)' id='<%= pr[0].end %>' width="45%" align="center"><%= pr[0].label %></td>
-<% if (pr[1] != null) { %><td onclick='selectMove(<%= pr[1].end %>)' id='<%= pr[1].end %>' width="45%" align="center"><%= pr[1].label %></td><% } else { %><td></td><% } %>
+<td onclick='selectMove(<%= pr[0].end %>)' id='<%= pr[0].end %>' width="45%" align="center"><%= pr[0].html %></td>
+<% if (pr[1] != null) { %><td onclick='selectMove(<%= pr[1].end %>)' id='<%= pr[1].end %>' width="45%" align="center"><%= pr[1].html %></td><% } else { %><td></td><% } %>
 </tr>
                                        <%
                                           }
@@ -755,7 +759,7 @@
    function touchStart(evt) {
       touching = true;
       if (isTombstoneGame(game)) {
-         stoneColor = (tsOwn === -1) ? (tombstoneCurrentPlayer(moves) === 2) : 'dead';
+         stoneColor = (tsOwn !== -1 && tsDead === -1) ? 'dead' : (tombstoneCurrentPlayer(moves) === 2);
          tombstoneRedraw();
          return;
       }
@@ -1348,8 +1352,8 @@
       stoneContext.shadowOffsetY = iRadius / 8;
       if (color === 'dead') {
          let gradient = stoneContext.createRadialGradient(centerX, centerY, iRadius / 8, centerX, centerY, iRadius);
-         gradient.addColorStop(0, '#C8C8C8');
-         gradient.addColorStop(1, '#6E6E6E');
+         gradient.addColorStop(0, TOMBSTONE_DEAD_FILL_LIGHT);
+         gradient.addColorStop(1, TOMBSTONE_DEAD_FILL_DARK);
          stoneContext.fillStyle = gradient;
       } else if (color) {
          let gradient = stoneContext.createRadialGradient(centerX, centerY, iRadius / 8, centerX, centerY, iRadius);
@@ -1363,6 +1367,18 @@
          stoneContext.fillStyle = gradient;
       }
       stoneContext.fill();
+      if (color === 'dead') {
+         // outline in the placing player's colour (1 = white, 2 = black)
+         var deadOutline = tombstoneDeadOutline(tombstoneCurrentPlayer(moves));
+         if (deadOutline !== null) {
+            stoneContext.shadowColor = 'transparent';
+            stoneContext.beginPath();
+            stoneContext.arc(centerX + iRadius / 8, centerY + iRadius / 8, iRadius - iRadius / 10, 0, Math.PI * 2, true);
+            stoneContext.lineWidth = Math.max(2, iRadius / 5);
+            stoneContext.strokeStyle = deadOutline;
+            stoneContext.stroke();
+         }
+      }
       // boardContext.lineWidth = 5;
       // boardContext.strokeStyle = '#003300';
       // boardContext.stroke();

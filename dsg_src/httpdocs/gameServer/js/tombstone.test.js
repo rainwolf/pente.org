@@ -91,8 +91,12 @@ eq(click(-1, -1, 181, 0), [181, -1]);
 eq(click(181, -1, 200, 0), [181, 200]);
 eq(click(722, -1, 200, 0), [722, 200]);
 eq(click(181, -1, 181, 2), [-1, -1]);
-eq(click(181, 200, 200, 3), [-1, -1]);
-eq(click(181, 200, 50, 0), [181, 200]);
+eq(click(181, 200, 200, 3), [181, -1]);   // click dead preview: drop only the dead pick
+eq(click(181, 200, 181, 2), [-1, -1]);    // click own preview: drop both
+eq(click(181, 200, 50, 0), [50, -1]);     // both set + empty point: start turn over
+eq(click(181, 200, 77, 2), [181, 200]);   // historical stone: ignored
+eq(click(-1, -1, 77, 2), [-1, -1]);
+eq(click(181, -1, 77, 2), [181, -1]);
 
 // preview / submit
 eq(ctx.tombstonePreviewCodes(-1, -1), []); is(ctx.tombstoneSubmitMoves(-1, -1), null);
@@ -121,5 +125,31 @@ const calls = [];
 ctx.drawRedDot = (i, j) => calls.push([i, j]);
 ctx.tombstoneDrawLastMarks([180, 181, 561], 3);
 eq(calls, [[10, 9], [10, 10]]);
+
+// dead-stone owners (outline colour: player 1 = white, 2 = black)
+replay([180, 181, 561]);
+eq(ctx.tombstoneDeadOwners, { '10,10': 2 });
+replay([180, 181, 561, 722, 562]);
+eq(ctx.tombstoneDeadOwners, { '10,10': 2, '11,10': 1 });
+replay([180, 561]); // orphan dead entry: owner unknown
+eq(ctx.tombstoneDeadOwners, {});
+is(cell(10, 10), 3);
+replay([180]); // replay resets owners
+eq(ctx.tombstoneDeadOwners, {});
+
+// drawStone paints a pale red dead stone, outlined in the placer's colour
+const rec = { strokes: [], stops: [] };
+vm.runInContext('indentWidth = 0; indentHeight = 0; stepX = 20; stepY = 20; radius = 9;', ctx);
+ctx.boardContext = {
+  save() {}, restore() {}, beginPath() {}, closePath() {}, arc() {}, fill() {},
+  stroke() { rec.strokes.push(this.strokeStyle); },
+  createRadialGradient() { return { addColorStop: (o, c) => rec.stops.push(c) }; },
+};
+ctx.tombstoneDeadOwners = { '3,4': 1, '5,6': 2 };
+ctx.drawStone(3, 4, 3); eq(rec.strokes, ['white']);
+ctx.drawStone(5, 6, 3); eq(rec.strokes, ['white', 'black']);
+ctx.drawStone(7, 8, 3); eq(rec.strokes, ['white', 'black']); // owner unknown: plain, no outline
+eq(rec.stops.slice(0, 2), ['#E8A0A0', '#B85C5C']);
+is(ctx.tombstoneDeadOutline(1), 'white'); is(ctx.tombstoneDeadOutline(2), 'black'); is(ctx.tombstoneDeadOutline(0), null);
 
 console.log(`OK: ${n} tombstone assertions passed`);
