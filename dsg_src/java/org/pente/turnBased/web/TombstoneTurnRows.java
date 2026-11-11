@@ -17,6 +17,8 @@ public final class TombstoneTurnRows {
         public final int own;
         public final int dead;
         public final String label;
+        /** label as HTML: the dead-stone coordinate wrapped in span.ts-dead, dark red (coordinates are alphanumeric, so no escaping needed). */
+        public final String html;
 
         Row(int number, int start, int end, int own, int dead, String label) {
             this.number = number;
@@ -25,6 +27,10 @@ public final class TombstoneTurnRows {
             this.own = own;
             this.dead = dead;
             this.label = label;
+            int sep = label.lastIndexOf(" - ");
+            this.html = (dead != -1 && sep >= 0)
+                ? label.substring(0, sep + 3) + "<span class=\"ts-dead\" style=\"color:#C62828\">" + label.substring(sep + 3) + "</span>"
+                : label;
         }
     }
 

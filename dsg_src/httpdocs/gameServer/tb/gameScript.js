@@ -41,6 +41,10 @@ var c6Move1 = -1, c6Move2 = -1,
    swap2Move1 = -1, swap2Move2 = -1, swap2Move3 = -1;
 var tsOwn = -1, tsDead = -1;
 var TOMBSTONE_DEAD_OFFSET = 361, TOMBSTONE_OWN_PASS = 722, TOMBSTONE_DEAD = 3;
+// Dead-stone look: pale desaturated red, outlined in the placer's colour (player 1 = white, 2 = black).
+var TOMBSTONE_DEAD_FILL_LIGHT = '#E8A0A0', TOMBSTONE_DEAD_FILL_DARK = '#B85C5C';
+// "x,y" -> player (1/2) who placed that dead stone; rebuilt by replayTombstoneGame. Absent = owner unknown.
+var tombstoneDeadOwners = {};
 
 var stoneCanvas = document.getElementById("stone");
 var stoneContext = stoneCanvas.getContext("2d");
@@ -683,26 +687,52 @@ function drawRedDot(i, j) {
    boardContext.closePath();
 }
 
-function drawStone(i, j, color) {
-   if (color === 3) {
+function tombstoneDeadOutline(owner) {
+   if (owner === 1) {
+      return 'white';
+   }
+   if (owner === 2) {
+      return 'black';
+   }
+   return null;
+}
+
+function drawDeadTombstone(i, j, owner) {
+   boardContext.save();
+   let dx = indentWidth + stepX * (i + 1) + stepX / 2;
+   let dy = indentHeight + stepY * (j + 1) + stepY / 2;
+   let cx = dx, cy = dy;
+   boardContext.beginPath();
+   boardContext.arc(cx, cy, radius, 0, Math.PI * 2, true);
+   dx -= radius / 8;
+   dy -= radius / 8;
+   boardContext.shadowColor = 'DimGray';
+   boardContext.shadowBlur = 1;
+   boardContext.shadowOffsetX = radius / 8;
+   boardContext.shadowOffsetY = radius / 8;
+   let deadGradient = boardContext.createRadialGradient(dx, dy, radius / 8, dx, dy, radius);
+   deadGradient.addColorStop(0, TOMBSTONE_DEAD_FILL_LIGHT);
+   deadGradient.addColorStop(1, TOMBSTONE_DEAD_FILL_DARK);
+   boardContext.fillStyle = deadGradient;
+   boardContext.fill();
+   boardContext.closePath();
+   boardContext.restore();
+   let outline = tombstoneDeadOutline(owner);
+   if (outline !== null) {
       boardContext.save();
-      let dx = indentWidth + stepX * (i + 1) + stepX / 2;
-      let dy = indentHeight + stepY * (j + 1) + stepY / 2;
       boardContext.beginPath();
-      boardContext.arc(dx, dy, radius, 0, Math.PI * 2, true);
-      dx -= radius / 8;
-      dy -= radius / 8;
-      boardContext.shadowColor = 'DimGray';
-      boardContext.shadowBlur = 1;
-      boardContext.shadowOffsetX = radius / 8;
-      boardContext.shadowOffsetY = radius / 8;
-      let deadGradient = boardContext.createRadialGradient(dx, dy, radius / 8, dx, dy, radius);
-      deadGradient.addColorStop(0, '#C8C8C8');
-      deadGradient.addColorStop(1, '#6E6E6E');
-      boardContext.fillStyle = deadGradient;
-      boardContext.fill();
+      boardContext.arc(cx, cy, radius - radius / 10, 0, Math.PI * 2, true);
+      boardContext.lineWidth = Math.max(2, radius / 5);
+      boardContext.strokeStyle = outline;
+      boardContext.stroke();
       boardContext.closePath();
       boardContext.restore();
+   }
+}
+
+function drawStone(i, j, color) {
+   if (color === 3) {
+      drawDeadTombstone(i, j, tombstoneDeadOwners[i + ',' + j] || 0);
       return;
    }
    if (color < 1 || color > 2) {
@@ -1731,6 +1761,7 @@ function tombstoneCurrentPlayer(movesList) {
 
 function replayTombstoneGame(abstractBoard, movesList, until) {
    resetAbstractBoard(abstractBoard);
+   tombstoneDeadOwners = {};
    let turns = tombstoneTurns(movesList, until);
    for (let t = 0; t < turns.length; t++) {
       let turn = turns[t];
@@ -1745,7 +1776,11 @@ function replayTombstoneGame(abstractBoard, movesList, until) {
             abstractBoard[x][y] = turn.player;
             detectPenteCapture(abstractBoard, x, y, turn.player);
          } else if (d.kind === 'dead') {
-            abstractBoard[d.point % 19][Math.floor(d.point / 19)] = TOMBSTONE_DEAD;
+            let dx = d.point % 19, dy = Math.floor(d.point / 19);
+            abstractBoard[dx][dy] = TOMBSTONE_DEAD;
+            if (turn.player !== 0) {
+               tombstoneDeadOwners[dx + ',' + dy] = turn.player;
+            }
          }
       }
    }
@@ -1786,16 +1821,15 @@ function tombstoneTbButtonState(ownPick, deadPick) {
 }
 
 function tombstoneTbClick(ownPick, deadPick, point, cellValue) {
-   if (cellValue !== 0) {
-      return {tsOwn: -1, tsDead: -1};
-   }
-   if (ownPick === -1) {
-      return {tsOwn: point, tsDead: deadPick};
-   }
-   if (deadPick === -1) {
-      return {tsOwn: ownPick, tsDead: point};
-   }
-   return {tsOwn: ownPick, tsDead: deadPick};
+    if (cellValue !== 0) {
+        if (point === deadPick) { return {tsOwn: ownPick, tsDead: -1}; }
+        if (point === ownPick) { return {tsOwn: -1, tsDead: -1}; }
+        if (ownPick === -1 && deadPick === -1) { return {tsOwn: -1, tsDead: -1}; }
+        return {tsOwn: ownPick, tsDead: deadPick};
+    }
+    if (ownPick === -1) { return {tsOwn: point, tsDead: deadPick}; }
+    if (deadPick === -1) { return {tsOwn: ownPick, tsDead: point}; }
+    return {tsOwn: point, tsDead: -1};
 }
 
 function tombstonePreviewCodes(ownPick, deadPick) {
