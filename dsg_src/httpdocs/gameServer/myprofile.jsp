@@ -188,6 +188,19 @@
                      <select size="1" name="timezone">
                         <% String[][] timeZones = LocaleUtils.getTimeZoneList();
                            String timeZoneID = dsgPlayerData.getTimezone();
+                           boolean tzKnown = false;
+                           for (int i = 0; i < timeZones.length; i++) {
+                              if (timeZones[i][0].equals(timeZoneID)) { tzKnown = true; }
+                           }
+                           if (timeZoneID == null || timeZoneID.trim().isEmpty()) {
+                        %>
+                        <option value="" selected>-- choose timezone --</option>
+                        <% } else if (!tzKnown) {
+                              String tzEsc = timeZoneID.replace("&", "&amp;").replace("<", "&lt;")
+                                    .replace(">", "&gt;").replace("\"", "&quot;").replace("'", "&#39;");
+                        %>
+                        <option value="<%= tzEsc %>" selected><%= tzEsc %></option>
+                        <% }
                            for (int i = 0; i < timeZones.length; i++) {
                               boolean selected = timeZones[i][0].equals(timeZoneID);
                         %>
@@ -195,6 +208,19 @@
 
                               <%	} %>
                      </select>
+                     <%
+                        String timezoneChangeError = (String) request.getAttribute("timezoneChangeError");
+                        int timezoneDaysLeft = DSGPlayerPreference.weekendChangeDaysLeft(
+                              (Date) request.getAttribute("sharedClockLastChange"));
+                     %>
+                     <br>
+                     <% if (timezoneChangeError != null) { %>
+                     <span style="color:red"><font size="-1"><%= timezoneChangeError %></font></span><br>
+                     <% } %>
+                     <span style="color:red"><font size="-1">Timezone and weekend days share one limit: only one of them can be changed, once every <%= DSGPlayerPreference.WEEKEND_CHANGE_COOLDOWN_TEXT %>, because they affect turn-based timeouts.</font></span><br>
+                     <% if (timezoneDaysLeft > 0) { %>
+                     <span style="color:red"><font size="-1">You can change timezone or weekend days again in <%= timezoneDaysLeft %> day<%= timezoneDaysLeft == 1 ? "" : "s" %>.</font></span><br>
+                     <% } %>
                   </td>
                </tr>
                <tr>

@@ -138,6 +138,10 @@
         </java>
         <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
             <classpath refid="test-classpath"/>
+            <arg value="org.pente.gameServer.core.test.SharedChangeCooldownTest"/>
+        </java>
+        <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
+            <classpath refid="test-classpath"/>
             <arg value="org.pente.gameServer.kids.test.KidAccountRulesTest"/>
         </java>
         <java classname="junit.textui.TestRunner" fork="true" failonerror="true">
