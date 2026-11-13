@@ -72,6 +72,7 @@ public class ChangeProfileServlet extends HttpServlet {
         String viewProfileError = null;
         String changeProfileSuccess = null;
         String weekendChangeError = null;
+        String timezoneChangeError = null;
         DSGPlayerData dsgPlayerData = null;
 
         String pathinfo = request.getPathInfo();
@@ -273,12 +274,39 @@ public class ChangeProfileServlet extends HttpServlet {
                             dsgPlayerData.setAge(age);
                             dsgPlayerData.setSex(sex);
                             dsgPlayerData.setLocation(location);
+                            // timezone and weekend days share one change cooldown
+                            boolean restartSharedClock = false;
+                            List<DSGPlayerPreference> clockPrefs = null;
+                            if (DSGPlayerPreference.timezoneChanged(dsgPlayerData.getTimezone(), timezone)) {
+                                clockPrefs = dsgPlayerStorer.loadPlayerPreferences(
+                                        dsgPlayerData.getPlayerID());
+                                timezoneChangeError = DSGPlayerPreference.timezoneChangeCooldownError(
+                                        DSGPlayerPreference.sharedClockLastChange(clockPrefs));
+                                if (timezoneChangeError != null) {
+                                    // refused: keep stored timezone, save the rest
+                                    timezone = dsgPlayerData.getTimezone();
+                                    changeProfileSuccess = "Your other settings have been saved.";
+                                } else {
+                                    restartSharedClock = true;
+                                }
+                            }
+                            if (timezone == null || timezone.isEmpty()) {
+                                // blank/missing: leave the stored timezone alone
+                                timezone = dsgPlayerData.getTimezone();
+                            }
+                            if (restartSharedClock) {
+                                // store first: if this fails nothing has changed yet. Re-storing the
+                                // weekend pref bumps its last_update_date; it does not recompute
+                                // timeouts (only the prefs form calls updateDaysOff)
+                                dsgPlayerStorer.storePlayerPreference(
+                                        dsgPlayerData.getPlayerID(),
+                                        DSGPlayerPreference.sharedClockRestart(clockPrefs));
+                            }
                             dsgPlayerData.setTimezone(timezone);
                             dsgPlayerData.setHomepage(cleanHomepage(homepage));
 
                             dsgPlayerData.setLastUpdateDate(new Date());
                             dsgPlayerStorer.updatePlayer(dsgPlayerData);
-
 
                             // update jives caches of player data
                             UserManager um = UserManagerFactory.getInstance();
@@ -649,6 +677,16 @@ public class ChangeProfileServlet extends HttpServlet {
         request.setAttribute("changeProfileError", changeProfileError);
         request.setAttribute("changeProfileSuccess", changeProfileSuccess);
         request.setAttribute("weekendChangeError", weekendChangeError);
+        request.setAttribute("timezoneChangeError", timezoneChangeError);
+        if (redirectPage.equals("/gameServer/myprofile.jsp") && dsgPlayerData != null) {
+            try {
+                request.setAttribute("sharedClockLastChange",
+                        DSGPlayerPreference.sharedClockLastChange(
+                                dsgPlayerStorer.loadPlayerPreferences(dsgPlayerData.getPlayerID())));
+            } catch (Throwable t) {
+                log4j.error("Could not load timezone/weekend change date", t);
+            }
+        }
         getServletContext().getRequestDispatcher(redirectPage).forward(request, response);
     }
 

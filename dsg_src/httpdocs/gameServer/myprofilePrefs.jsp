@@ -194,9 +194,9 @@
             <% if (weekendChangeError != null) { %>
             <span style="color:red"><%= weekendChangeError %></span><br>
             <% } %>
-            <span style="color:red">Weekend days can only be changed once every <%= DSGPlayerPreference.WEEKEND_CHANGE_COOLDOWN_TEXT %>.</span><br>
+            <span style="color:red">Weekend days and timezone share one limit: only one of them can be changed, once every <%= DSGPlayerPreference.WEEKEND_CHANGE_COOLDOWN_TEXT %>, because they affect turn-based timeouts.</span><br>
             <% if (weekendDaysLeft > 0) { %>
-            <span style="color:red">You can change them again in <%= weekendDaysLeft %> day<%= weekendDaysLeft == 1 ? "" : "s" %>.</span><br>
+            <span style="color:red">You can change weekend days or timezone again in <%= weekendDaysLeft %> day<%= weekendDaysLeft == 1 ? "" : "s" %>.</span><br>
             <% } %>
             <font size="-2">Be careful when updating the weekend days, if you have any games with less
                than 2 days left for you to move and you change the weekend days, its possible
@@ -279,7 +279,7 @@
       <tr>
          <td>
             <br><br>
-            <input type="submit" value="Save changes">
+            <input type="submit" name="submit" value="Save changes">
          </td>
       </tr>
    </table>
