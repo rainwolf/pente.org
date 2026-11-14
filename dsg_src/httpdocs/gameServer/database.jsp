@@ -519,35 +519,28 @@
                       value="<%= data.getGameStorerSearchRequestData().getGameStorerSearchResponseOrder() %>">
                <input type="hidden" name="zippedPartNumParam"
                       value="<%= ((SimpleHtmlGameStorerSearchRequestData) data.getGameStorerSearchRequestData()).getStartZippedPartNum() %>">
-               <table width="100%" border="0">
-                  <tr>
-                     <td width="45%" align="center">
-                        <input type="button"
-                               style="background-color:#257626;color: white;font-size: 24px;padding: 5px 20px;"
-                               onclick="javascript:firstMove()" value=" << ">
-                        <input type="button"
-                               style="background-color:#257626;color: white;font-size: 24px;padding: 5px 20px;"
-                               onclick="javascript:backMove()" value="  <  ">
-                        <input type="button"
-                               style="background-color:#257626;color: white;font-size: 24px;padding: 5px 20px;"
-                               onclick="javascript:forwardMove()" value="  >  ">
-                        <input type="button"
-                               style="background-color:#257626;color: white;font-size: 24px;padding: 5px 20px;"
-                               onclick="javascript:lastMove()" value=" >> ">
-                     </td>
-                     <td width="55%" align="center">
-                        <input type="button"
-                               style="background-color:#257626;color: white;font-size: 24px;padding: 5px 20px;"
-                               onclick="javascript:resetGame()" value="Reset">
-                        <input type="button"
-                               style="background-color:#257626;color: white;font-size: 24px;padding: 5px 20px;"
-                               onclick="javascript:clearGame('K10')" value="Clear">
-                        <input type="button"
-                               style="background-color:#257626;color: white;font-size: 24px;padding: 5px 20px;"
-                               onclick="javascript:search()" value="Search">
-                     </td>
-                  </tr>
-               </table>
+               <style>
+                  .db-controls { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 12px 32px; margin: 12px 0; }
+                  .db-btn-group { display: flex; gap: 6px; }
+                  .db-btn { -webkit-appearance: none; appearance: none; background-color: #257626; color: #fff; border: none; border-radius: 6px; font-family: inherit; font-size: 18px; font-weight: bold; line-height: 1; padding: 10px 0; min-width: 52px; cursor: pointer; box-shadow: 0 1px 2px rgba(0, 0, 0, .25); }
+                  .db-btn-text { padding: 10px 18px; min-width: 84px; }
+                  .db-btn:hover { background-color: #1e5f1f; }
+                  .db-btn:active { background-color: #174a18; box-shadow: none; }
+                  .db-btn:focus-visible { outline: 2px solid #f5b400; outline-offset: 2px; }
+               </style>
+               <div class="db-controls">
+                  <div class="db-btn-group">
+                     <input type="button" class="db-btn" onclick="javascript:firstMove()" value="&laquo;" title="First move">
+                     <input type="button" class="db-btn" onclick="javascript:backMove()" value="&lsaquo;" title="Previous move">
+                     <input type="button" class="db-btn" onclick="javascript:forwardMove()" value="&rsaquo;" title="Next move">
+                     <input type="button" class="db-btn" onclick="javascript:lastMove()" value="&raquo;" title="Last move">
+                  </div>
+                  <div class="db-btn-group">
+                     <input type="button" class="db-btn db-btn-text" onclick="javascript:resetGame()" value="Reset">
+                     <input type="button" class="db-btn db-btn-text" onclick="javascript:clearGame('K10')" value="Clear">
+                     <input type="button" class="db-btn db-btn-text" onclick="javascript:search()" value="Search">
+                  </div>
+               </div>
             </form>
             <script language="javascript">
                var results = "<%= results.toString() %>";
