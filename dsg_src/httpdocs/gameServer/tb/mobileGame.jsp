@@ -265,14 +265,17 @@
          </script>
 
 
-         <br>
-         <br>
          <table>
             <tr>
                <td valign="top" width="70%">
 
 
                   <style>
+.tb-actions { display:flex; flex-wrap:wrap; align-items:center; gap:6px; width:600px; margin-top:10px; }
+.tb-actions > a.boldbuttons { float:none; margin:0; }
+.tb-actions > a.boldbuttons.tb-end { margin-left:auto; }
+.tb-actions > #drawOfferNote { order: 1; flex-basis: 100%; }
+.tb-nav a.boldbuttons { float:none; display:inline-block; width:110px; text-align:center; }
                      /* Don't reserve vertical space for the score/message boxes
                         when they have no content (no Go score, no chat). */
                      #scoreBox:empty, #messageBox:empty { display: none; }
@@ -311,38 +314,31 @@
                      boolean renjuComplete = game.getGame() == GridStateFactory.TB_RENJU
                                   && TBGame.RENJU_COMPLETE.equals(game.getRenjuPhase());
                   %>
-                  <div class="buttonwrapper" style="margin-top:5px; width:500px;">
+                  <div class="tb-actions">
                      <% if ("false".equals(myTurn) && isGo) { %>
-                     <a class="boldbuttons" href="javascript:drawTerritories();"
-                        style="margin-right:5px;"><span>Draw territory</span></a>
+                     <a class="boldbuttons" href="javascript:drawTerritories();"><span>Draw territory</span></a>
 
                      <% }%>
                      <% if (!"false".equals(myTurn) && (game.getDPenteState() != 2)) { %>
                      <% if (!renjuDecision && !isTombstone) { %>
-                     <a class="boldbuttons" href="javascript:submit();"
-                        style="margin-right:5px;"><span>Submit</span></a>
+                     <a class="boldbuttons" href="javascript:submit();"><span>Submit</span></a>
                      <% } %>
-                     <% if (isTombstone) { %><a class="boldbuttons" id="tombstoneBtn" href="javascript:tombstoneButton();" style="margin-right:5px;"><span id="tombstoneBtnLabel">Place only a dead stone</span></a><% } %>
+                     <% if (isTombstone) { %><a class="boldbuttons" id="tombstoneBtn" href="javascript:tombstoneButton();"><span id="tombstoneBtnLabel">Place only a dead stone</span></a><% } %>
                      <% if (isGo) { %>
-                     <a class="boldbuttons" href="javascript:submitPass();"
-                        style="margin-right:5px;"><span>Pass</span></a>
-                     <a class="boldbuttons" href="javascript:drawTerritories();"
-                        style="margin-right:5px;"><span>Draw territory</span></a>
+                     <a class="boldbuttons" href="javascript:submitPass();"><span>Pass</span></a>
+                     <a class="boldbuttons" href="javascript:drawTerritories();"><span>Draw territory</span></a>
                      <%--</div>--%>
                      <%--<div class="buttonwrapper" style="margin-top:5px; width:580px;">--%>
 
                      <% } %>
                      <% if (renjuComplete) { %>
-                     <a class="boldbuttons" href="javascript:submitPass();"
-                        style="margin-right:5px;"><span>Pass</span></a>
-                     <a class="boldbuttons" href="javascript:toggleDrawOffer();" id="drawOfferBtn"
-                        style="margin-right:5px;"><span>Draw?</span></a>
+                     <a class="boldbuttons" href="javascript:submitPass();"><span>Pass</span></a>
+                     <a class="boldbuttons" href="javascript:toggleDrawOffer();" id="drawOfferBtn"><span>Draw?</span></a>
                      <span id="drawOfferNote" style="display:none; font-weight:bold;">
                         Draw offer will be sent after you move</span>
                      <% if (game.isDrawOffered()) { %>
-                     <b style="margin-left:10px;">Draw offered</b>
-                     <a class="boldbuttons" href="javascript:acceptDraw();"
-                        style="margin-left:5px;"><span>Accept draw</span></a>
+                     <b>Draw offered</b>
+                     <a class="boldbuttons" href="javascript:acceptDraw();"><span>Accept draw</span></a>
                      <% } %>
                      <% } %>
                      <% } else if ((game.getPlayer1Pid() == meData.getPlayerID() || game.getPlayer2Pid() == meData.getPlayerID()) && game.isUndoRequested()) {
@@ -351,8 +347,7 @@
                      <%
                      } else if ((game.getPlayer1Pid() == meData.getPlayerID() || game.getPlayer2Pid() == meData.getPlayerID()) && meData.hasPlayerDonated() && game.getState() == TBGame.STATE_ACTIVE && (game.getDPenteState() != 2)) {
                      %>
-                     <a class="boldbuttons" href="javascript:requestUndo();"
-                        style="margin-right:5px;"><span>Request undo</span></a>
+                     <a class="boldbuttons" href="javascript:requestUndo();"><span>Request undo</span></a>
                      <% } else if ((game.getPlayer1Pid() == meData.getPlayerID() || game.getPlayer2Pid() == meData.getPlayerID()) && game.isDrawOffered()) {
                      %>
                      <b>Draw offered — awaiting reply</b>
@@ -361,52 +356,36 @@
                      %>
                      <% if (game.getDPenteState() == 2 && !"false".equals(myTurn)) { %>
                      <% if (game.getGame() == 77 || game.getGame() == 79) { %>
-                     <a class="boldbuttons" href="javascript:swap2PlayAsP1();"
-                        style="margin-right:5px;"><span>Play as P1 (white)</span></a>
-                     <a class="boldbuttons" href="javascript:swap2PlayAsP2();"
-                        style="margin-right:5px;"><span>Play as P2 (black)</span></a>
+                     <a class="boldbuttons" href="javascript:swap2PlayAsP1();"><span>Play as P1 (white)</span></a>
+                     <a class="boldbuttons" href="javascript:swap2PlayAsP2();"><span>Play as P2 (black)</span></a>
                      <% } else { %>
-                     <a class="boldbuttons" href="javascript:dPentePlayAsP1();"
-                        style="margin-right:5px;"><span>Play as P1 (white)</span></a>
-                     <a class="boldbuttons" href="javascript:dPentePlayAsP2();"
-                        style="margin-right:5px;"><span>Play as P2 (black)</span></a>
+                     <a class="boldbuttons" href="javascript:dPentePlayAsP1();"><span>Play as P1 (white)</span></a>
+                     <a class="boldbuttons" href="javascript:dPentePlayAsP2();"><span>Play as P2 (black)</span></a>
                      <% } %>
-                     <% if (game.getGame() == 77 || game.getGame() == 79 && game.getNumMoves() == 3) { %>
-                     <a class="boldbuttons" href="javascript:swap2pass();"
-                        style="margin-right:5px;"><span>Let P1 decide to swap</span></a>
+                     <% if ((game.getGame() == 77 || game.getGame() == 79) && game.getNumMoves() == 3) { %>
+                     <a class="boldbuttons" href="javascript:swap2pass();"><span>Let P1 decide to swap</span></a>
                      <% } %>
-                     &nbsp;
-                     <a class="boldbuttons" href="javascript:resign();"
-                        style="margin-left:50px;"><span>Resign</span></a>
-                     <a class="boldbuttons" href="javascript:requestCancel();"
-                        style="margin-left:5px;"><span>Cancel Set</span></a>
+                     <a class="boldbuttons tb-end" href="javascript:resign();"><span>Resign</span></a>
+                     <a class="boldbuttons" href="javascript:requestCancel();"><span>Cancel Set</span></a>
                      <%
                      } else if (!"false".equals(myTurn)) { %>
                      <% if (game.getGame() == GridStateFactory.TB_RENJU) {
                         String renjuPh = game.getRenjuPhase();
                         if (TBGame.RENJU_SWAP.equals(renjuPh) && game.getNumMoves() == 4) { %>
-                     <a class="boldbuttons" href="javascript:renjuSwapYes();"
-                        style="margin-right:5px;"><span>Swap (take over)</span></a>
-                     <span id="renjuOfferCount" style="margin-right:5px;">0/10</span>
-                     <a class="boldbuttons" href="javascript:renjuMoveBranch();"
-                        style="margin-right:5px;"><span>Don't swap — place 1 or 10</span></a>
+                     <a class="boldbuttons" href="javascript:renjuSwapYes();"><span>Swap (take over)</span></a>
+                     <span id="renjuOfferCount">0/10</span>
+                     <a class="boldbuttons" href="javascript:renjuMoveBranch();"><span>Don't swap — place 1 or 10</span></a>
                      <% } else if (TBGame.RENJU_SWAP.equals(renjuPh)) { %>
-                     <a class="boldbuttons" href="javascript:renjuSwapYes();"
-                        style="margin-right:5px;"><span>Swap (take over)</span></a>
-                     <a class="boldbuttons" href="javascript:renjuSwapNo();"
-                        style="margin-right:5px;"><span>Don't swap</span></a>
+                     <a class="boldbuttons" href="javascript:renjuSwapYes();"><span>Swap (take over)</span></a>
+                     <a class="boldbuttons" href="javascript:renjuSwapNo();"><span>Don't swap</span></a>
                      <% } else if (TBGame.RENJU_BRANCH.equals(renjuPh)) { %>
-                     <span id="renjuOfferCount" style="margin-right:5px;">0/10</span>
-                     <a class="boldbuttons" href="javascript:renjuMoveBranch();"
-                        style="margin-right:5px;"><span>Place 1 or offer 10</span></a>
+                     <span id="renjuOfferCount">0/10</span>
+                     <a class="boldbuttons" href="javascript:renjuMoveBranch();"><span>Place 1 or offer 10</span></a>
                      <% } else if (TBGame.RENJU_SELECTION.equals(renjuPh)) { %>
-                     <a class="boldbuttons" href="javascript:renjuSelect();"
-                        style="margin-right:5px;"><span>Place black's 5th + your 6th</span></a>
+                     <a class="boldbuttons" href="javascript:renjuSelect();"><span>Place black's 5th + your 6th</span></a>
                      <% } } %>
-                     <a class="boldbuttons" href="javascript:resign();"
-                        style="margin-left:100px;"><span>Resign</span></a>
-                     <a class="boldbuttons" href="javascript:requestCancel();"
-                        style="margin-left:5px;"><span>Cancel Set</span></a>
+                     <a class="boldbuttons tb-end" href="javascript:resign();"><span>Resign</span></a>
+                     <a class="boldbuttons" href="javascript:requestCancel();"><span>Cancel Set</span></a>
                      <%
                         }
                      %>
@@ -426,11 +405,6 @@
                <td valign="top">
 
                   <table align="right" border=0 width="300px">
-                     <tr>
-                        <td>
-                           <br>
-                        </td>
-                     </tr>
                      <tr>
                         <td>
 
@@ -537,15 +511,13 @@
    <% if (game.getDPenteState() != 2) { %>
    <tr>
       <td>
-         <table align="right" width="250px">
+         <table align="right" width="250px" class="tb-nav">
             <tr>
                <td width="50%" align="center">
-                  <a class="boldbuttons" href="javascript:goBack();"
-                     style="width:110px;"><span>back</span></a>
+                  <a class="boldbuttons" href="javascript:goBack();"><span>back</span></a>
                </td>
                <td align="center">
-                  <a class="boldbuttons" href="javascript:goForward();"
-                     style="width:110px;"><span>forward</span></a>
+                  <a class="boldbuttons" href="javascript:goForward();"><span>forward</span></a>
                </td>
             </tr>
          </table>

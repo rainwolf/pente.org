@@ -208,8 +208,11 @@
          </script>
 
 
-         <br>
-         <br>
+         <style>
+.tb-actions { display:flex; flex-wrap:wrap; align-items:center; gap:6px; width:600px; margin-top:10px; }
+.tb-actions > a.boldbuttons { float:none; margin:0; }
+.tb-actions > a.boldbuttons.tb-end { margin-left:auto; }
+         </style>
          <table>
             <tr>
                <td valign="top" width="70%">
@@ -225,14 +228,10 @@
                   </div>
 
 
-                  <br>
-                  <div id="scoreBox" style="width:550px; height:auto; "></div>
-                  <br>
-                  <br>
-                  <div id="messageBox" style="width:550px; height:auto; background: #cf9;"></div>
-                  <br>
+                  <div id="scoreBox" style="width:550px; height:auto; margin-top:10px;"></div>
+                  <div id="messageBox" style="width:550px; height:auto; background: #cf9; margin-top:10px;"></div>
                   <% if (!"false".equals(myTurn)) { %>
-                  Message: <input type="text" id="message" size="256" style="width:500px;">
+                  <div style="margin-top:10px;">Message: <input type="text" id="message" size="256" style="width:500px;"></div>
                   <br>
                   <br>
                   <label><input id="cycleCheck" name="cycleCheck" type="checkbox" onclick="changeCycle()"/> check
@@ -241,12 +240,10 @@
                   <br>
 
 
-                  <div class="buttonwrapper" style="margin-top:5px; width:500px;">
+                  <div class="tb-actions">
                      <% if (!"false".equals(myTurn) && (game.getDPenteState() != 2)) { %>
-                     <a class="boldbuttons" href="javascript:accept();"
-                        style="margin-right:5px;"><span>Accept</span></a>
-                     <a class="boldbuttons" href="javascript:decline();"
-                        style="margin-right:5px;"><span>Reject</span></a>
+                     <a class="boldbuttons" href="javascript:accept();"><span>Accept</span></a>
+                     <a class="boldbuttons" href="javascript:decline();"><span>Reject</span></a>
                      <%
                      } else if ((game.getPlayer1Pid() == meData.getPlayerID() || game.getPlayer2Pid() == meData.getPlayerID()) && game.isUndoRequested()) {
                      %>
@@ -254,15 +251,12 @@
                      <%
                      } else if ((game.getPlayer1Pid() == meData.getPlayerID() || game.getPlayer2Pid() == meData.getPlayerID()) && meData.hasPlayerDonated() && game.getState() == TBGame.STATE_ACTIVE && (game.getDPenteState() != 2)) {
                      %>
-                     <a class="boldbuttons" href="javascript:requestUndo();"
-                        style="margin-right:5px;"><span>Request undo</span></a>
+                     <a class="boldbuttons" href="javascript:requestUndo();"><span>Request undo</span></a>
                      <%
                         }
                         if (!"false".equals(myTurn)) { %>
-                     <a class="boldbuttons" href="javascript:resign();"
-                        style="margin-left:100px;"><span>Resign</span></a>
-                     <a class="boldbuttons" href="javascript:requestCancel();"
-                        style="margin-left:5px;"><span>Cancel Set</span></a>
+                     <a class="boldbuttons tb-end" href="javascript:resign();"><span>Resign</span></a>
+                     <a class="boldbuttons" href="javascript:requestCancel();"><span>Cancel Set</span></a>
                      <%
                         }
                      %>
@@ -282,11 +276,6 @@
                <td valign="top">
 
                   <table align="right" border=0 width="300px">
-                     <tr>
-                        <td>
-                           <br>
-                        </td>
-                     </tr>
                      <tr>
                         <td>
 
