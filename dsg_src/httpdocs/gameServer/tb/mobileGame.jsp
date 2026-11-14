@@ -1350,8 +1350,8 @@
          if (deadOutline !== null) {
             stoneContext.shadowColor = 'transparent';
             stoneContext.beginPath();
-            stoneContext.arc(centerX + iRadius / 8, centerY + iRadius / 8, iRadius - iRadius / 10, 0, Math.PI * 2, true);
-            stoneContext.lineWidth = Math.max(2, iRadius / 5);
+            stoneContext.arc(centerX + iRadius / 8, centerY + iRadius / 8, iRadius - iRadius / 16, 0, Math.PI * 2, true);
+            stoneContext.lineWidth = Math.max(1.5, iRadius / 8);
             stoneContext.strokeStyle = deadOutline;
             stoneContext.stroke();
          }

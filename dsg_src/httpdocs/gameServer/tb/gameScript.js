@@ -721,8 +721,8 @@ function drawDeadTombstone(i, j, owner) {
    if (outline !== null) {
       boardContext.save();
       boardContext.beginPath();
-      boardContext.arc(cx, cy, radius - radius / 10, 0, Math.PI * 2, true);
-      boardContext.lineWidth = Math.max(2, radius / 5);
+      boardContext.arc(cx, cy, radius - radius / 16, 0, Math.PI * 2, true);
+      boardContext.lineWidth = Math.max(1.5, radius / 8);
       boardContext.strokeStyle = outline;
       boardContext.stroke();
       boardContext.closePath();
