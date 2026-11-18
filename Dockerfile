@@ -9,7 +9,7 @@ RUN g++ -O2 -std=c++11 \
     /build/mmai/engine/Ai.cpp /build/mmai/engine/CPoint.cpp /build/mmai/main.cpp \
     -o /build/mmai_player
 
-FROM tomcat:11.0.11-jre21
+FROM tomcat:11.0.29-jre21-temurin-noble
 
 # - mount /etc/dsg/, /var/log/tomcat, /var/log/dsg outside of container, maybe /var/lib/dsg
 
