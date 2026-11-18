@@ -54,9 +54,6 @@ RUN mkdir -p /var/lib/dsg/gameServer/game && \
 #   echo "function l\n  ls -Alh \$argv\nend" > ~/.config/fish/functions/l.fish && \
 #   rm install
 
-# copy the other domains
-COPY submanifolddomains/ /usr/local/tomcat/
-
 # copy the react components (make sure they're built)
 COPY --from=live_build / /usr/local/tomcat/webapps/ROOT/gameServer/live
 COPY --from=mmai_build / /usr/local/tomcat/webapps/ROOT/gameServer/mmai
