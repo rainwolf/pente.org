@@ -4,6 +4,8 @@ clear; printf '\e[3J';
 
 rsync -vurtz --checksum --stats --progress dsg_src/httpdocs/gameServer/ debian@pente.org:~/dockerMain/gameServer/
 
+rsync -vurtz --checksum --stats --progress submanifolddomains/ debian@pente.org:~/submanifolddomains/
+
 echo "Building the live game room"
 cd ../react_live_game_room || exit
 npm run build || exit 1
