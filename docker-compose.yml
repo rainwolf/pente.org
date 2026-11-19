@@ -32,6 +32,9 @@ services:
       - ./dockerMain/logs:/var/log
       - ./dockerMain/logs/tomcat:/usr/local/tomcat/logs
       - ./dockerMain/well-known:/usr/local/tomcat/webapps/ROOT/.well-known
+      - ./submanifolddomains/submanifold:/usr/local/tomcat/submanifold
+      - ./submanifolddomains/othmanwsubmanifold:/usr/local/tomcat/othmanwsubmanifold
+      - ./submanifolddomains/pentelivesubmanifold:/usr/local/tomcat/pentelivesubmanifold
       - ./dockerMain/well-known:/usr/local/tomcat/submanifold/ROOT/.well-known
       - ./dockerMain/well-known:/usr/local/tomcat/othmanwsubmanifold/ROOT/.well-known
       - ./dockerMain/well-known:/usr/local/tomcat/pentelivesubmanifold/ROOT/.well-known
