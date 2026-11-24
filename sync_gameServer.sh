@@ -30,6 +30,18 @@ rsync -vurtz --checksum --stats --progress ../react_pentedb/build/ debian@pente.
 
 ./justCompile || exit 1
 
+open ~/mariposa/coding/keysCertificatesStuff.dmg
+sleep 5
+if not rsync -t --checksum debian@pente.org:~/dockerMain/ssl/keystore.p12 /Volumes/keysCertificatesStuff/keystore.p12
+    echo "WARNING: keystore backup to DMG failed"
+end
+
+# Refuse to deploy classes before prod has the keystore the game sockets now load.
+if not ssh debian@pente.org docker compose -f docker-compose.yml exec -T pente.org test -r /etc/ssl/pente/keystore.p12
+    echo "ERROR: prod pente.org container has no readable /etc/ssl/pente/keystore.p12 — do the SSL rollout (plan Task 8 steps 1-2) first. Not deploying classes."
+    exit 1
+end
+
 set -l rsync_log (mktemp)
 rsync -vurtz --checksum --stats --progress --log-file=$rsync_log --log-file-format='%i %n' deployClasses/org/ debian@pente.org:~/dockerMain/orgClasses/ || begin; rm -f $rsync_log; exit 1; end
 set -l synced_count (grep -cE ' [<>]f' $rsync_log)
