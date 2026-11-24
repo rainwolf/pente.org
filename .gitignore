@@ -37,6 +37,7 @@ dockerMail/postfix/*--
 settings.jar
 testMail
 MyDSKeyStore.jks
+dockerMain/ssl/
 *.crt
 *.key
 *.p12

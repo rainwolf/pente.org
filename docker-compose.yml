@@ -28,7 +28,7 @@ services:
     volumes:
       - ./dockerMain/config:/etc/dsg
       - ./dockerMain/etctomcat9:/usr/local/tomcat/conf
-      - ./dockerMain/MyDSKeyStore.jks:/var/lib/tomcat9/webapps/MyDSKeyStore.jks
+      - ./dockerMain/ssl:/etc/ssl/pente:ro
       - ./dockerMain/logs:/var/log
       - ./dockerMain/logs/tomcat:/usr/local/tomcat/logs
       - ./dockerMain/well-known:/usr/local/tomcat/webapps/ROOT/.well-known

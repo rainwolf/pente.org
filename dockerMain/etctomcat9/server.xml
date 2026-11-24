@@ -65,10 +65,10 @@
                    keyAlias="tomcat" keyPass="${SSL_PWD}" URIEncoding="UTF-8">
             <SSLHostConfig>
                 <Certificate
-                        certificateKeystoreFile="/var/lib/tomcat9/webapps/MyDSKeyStore.jks"
+                        certificateKeystoreFile="/etc/ssl/pente/keystore.p12"
                         certificateKeystorePassword="${SSL_PWD}"
                         certificateAlias="tomcat"
-                        certificateKeystoreType="JKS"
+                        certificateKeystoreType="PKCS12"
                         type="RSA"
                 />
             </SSLHostConfig>
