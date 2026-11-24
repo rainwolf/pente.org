@@ -49,6 +49,7 @@ public final class SslCertificateCheck implements Runnable {
             return;
         }
         Date diskEnd = disk.getNotAfter();
+        log.info("SSL certificate check: disk cert valid until " + diskEnd);
         boolean reloaded = false;
         List<String> behind = new ArrayList<>();
         List<Date> ends = new ArrayList<>();
@@ -62,6 +63,7 @@ public final class SslCertificateCheck implements Runnable {
                 if (end.before(diskEnd)) {
                     reloaded = true;
                     attempted = true;
+                    log.info("SSL certificate check: " + l.name() + " serves " + end + ", reloading");
                     l.reload();
                     X509Certificate after = l.served();
                     Date afterEnd = after.getNotAfter();
@@ -76,9 +78,9 @@ public final class SslCertificateCheck implements Runnable {
 
         if (reloaded) {
             if (behind.isEmpty()) {
-                notifier.accept("SSL certificate renewed, valid until " + day(diskEnd));
+                notify("SSL certificate renewed, valid until " + day(diskEnd));
             } else {
-                notifier.accept("SSL certificate reload failed for: " + String.join(", ", behind)
+                notify("SSL certificate reload failed for: " + String.join(", ", behind)
                         + ", disk cert valid until " + day(diskEnd));
             }
         }
@@ -89,10 +91,15 @@ public final class SslCertificateCheck implements Runnable {
             long days = Math.floorDiv(Duration.between(Instant.now(clock), minServed.toInstant()).toMillis(),
                     Duration.ofDays(1).toMillis());
             if (days < ALERT_DAYS) {
-                notifier.accept("SSL certificate expires in " + days + " days (" + day(minServed)
+                notify("SSL certificate expires in " + days + " days (" + day(minServed)
                         + "), renewal is not working");
             }
         }
+    }
+
+    private void notify(String message) {
+        log.info("SSL certificate check: admin notification: " + message);
+        notifier.accept(message);
     }
 
     private void fail(String message, Throwable t) {

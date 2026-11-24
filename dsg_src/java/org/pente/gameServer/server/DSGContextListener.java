@@ -58,6 +58,9 @@ import org.pente.turnBased.CacheTBStorer;
 import org.pente.turnBased.MySQLTBGameStorer;
 
 import java.io.File;
+import java.security.cert.X509Certificate;
+import java.time.Clock;
+import org.pente.gameServer.server.ssl.*;
 import java.io.FileInputStream;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -72,6 +75,7 @@ public class DSGContextListener implements ServletContextListener {
     private GameStats gameStats;
 
     private List<Timer> timers = null;
+    private Timer sslCheckTimer;
 
     /**
      * Boot-time server offerings as {Integer serverId, int[] games, String eventName},
@@ -357,6 +361,8 @@ public class DSGContextListener implements ServletContextListener {
 
             setupArenaServers(resources, ctx);
 
+            startSslCertificateCheck(resources);
+
             tourneyStorer.setupTBTournaments();
 
             // Google Play Billing (spec 2026-10-11 section 4): last, and isolated by install's own
@@ -368,6 +374,56 @@ public class DSGContextListener implements ServletContextListener {
 
         } catch (Throwable t) {
             log4j.error("Problem in contextInitialized()", t);
+        }
+    }
+
+    private void startSslCertificateCheck(Resources resources) {
+        try {
+            java.util.Collection<?> started = resources.getServers();
+            if (started.isEmpty()) {
+                log4j.warn("SSL certificate check not started: no game servers");
+                return;
+            }
+            final int gamePort = ((Server) started.iterator().next()).getServerData().getPort();
+            List<SslListener> listeners = new ArrayList<>();
+            listeners.add(new SslListener() {
+                public String name() { return "https"; }
+                public X509Certificate served() throws Exception {
+                    return ServedCertReader.read("localhost", 443, "pente.org", 10000);
+                }
+                public void reload() throws Exception {
+                    int n = TomcatSslReloader.reloadAll();
+                    log4j.info("SSL reload: " + n + " https endpoint(s) reloaded");
+                }
+            });
+            listeners.add(new SslListener() {
+                public String name() { return "game"; }
+                public X509Certificate served() throws Exception {
+                    return ServedCertReader.read("localhost", gamePort, "pente.org", 10000);
+                }
+                public void reload() throws Exception {
+                    char[] pwd = SslKeystore.password();
+                    GameSsl.keyManager().reload(SslKeystore.load(SslKeystore.PATH, pwd), pwd);
+                    log4j.info("SSL reload: game key manager reloaded");
+                }
+            });
+            SslCertificateCheck check = new SslCertificateCheck(
+                    () -> {
+                        char[] pwd = SslKeystore.password();
+                        return SslKeystore.leaf(SslKeystore.load(SslKeystore.PATH, pwd));
+                    },
+                    listeners, resources.getNotificationServer()::sendAdminNotification, Clock.systemUTC());
+            long period = Long.getLong("ssl.check.periodMinutes", 1440L);
+            sslCheckTimer = new Timer("ssl-cert-check", true);
+            sslCheckTimer.scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+                    check.run();
+                }
+            }, 2 * 60 * 1000L, period * 60 * 1000L);
+            log4j.info("SSL certificate check scheduled every " + period + " min, game port " + gamePort);
+        } catch (Throwable t) {
+            log4j.error("Could not start SSL certificate check", t);
         }
     }
 
@@ -510,6 +566,11 @@ public class DSGContextListener implements ServletContextListener {
         }
         RedisConnectionManager.getInstance().destroy();
 
+        if (sslCheckTimer != null) {
+            sslCheckTimer.cancel();
+            sslCheckTimer.purge();
+            sslCheckTimer = null;
+        }
         for (Timer timer : timers) {
             if (timer != null) {
                 timer.cancel();
