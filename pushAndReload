@@ -16,7 +16,7 @@ openssl pkcs12 -export -in fullchain.crt -inkey pente.org.key -name tomcat -pass
 
 # ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no rainwolf@development.pente.org chown rainwolf:tomcat8 MyDSKeyStore.jks
 # ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -t rainwolf@development.pente.org sudo ./restartTomcat.sh
-scp keystore.p12 debian@pente.org:~/dockerMain/ssl/keystore.p12.tmp && ssh debian@pente.org mv ~/dockerMain/ssl/keystore.p12.tmp ~/dockerMain/ssl/keystore.p12 || { echo "ERROR: keystore push failed, live keystore untouched" >&2; exit 1; }
+scp keystore.p12 debian@pente.org:~/dockerMain/ssl/keystore.p12.tmp && ssh debian@pente.org 'chmod 600 ~/dockerMain/ssl/keystore.p12.tmp && mv ~/dockerMain/ssl/keystore.p12.tmp ~/dockerMain/ssl/keystore.p12' || { echo "ERROR: keystore push failed, live keystore untouched" >&2; exit 1; }
 #ssh -t rainwolf@pente.org sudo /home/rainwolf/restartTomcat.sh
 # ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no rainwolf@pente.org chown rainwolf:tomcat8 MyDSKeyStore.jks
 # ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -t rainwolf@pente.org sudo ./restartTomcat.sh

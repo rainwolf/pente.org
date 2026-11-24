@@ -16,6 +16,7 @@ import org.apache.log4j.Category;
 public final class SslCertificateCheck implements Runnable {
     private static final Category log = Category.getInstance(SslCertificateCheck.class.getName());
 
+    // Lower together with RENEW_ALLOW in ssl-renewal/getssl.cfg if Let's Encrypt shortens cert lifetimes (a 45-day cert would alert permanently).
     static final int ALERT_DAYS = 45;
 
     private final Callable<X509Certificate> diskCert;

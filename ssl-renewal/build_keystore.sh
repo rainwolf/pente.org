@@ -3,14 +3,20 @@
 # Installed at /home/debian/letsencrypt/build_keystore.sh; run by getssl via RELOAD_CMD.
 # Usage: build_keystore.sh [ssl_dir]   (default /home/debian/dockerMain/ssl)
 set -euo pipefail
+umask 077
 
 SSL_DIR="${1:-/home/debian/dockerMain/ssl}"
-ENV_FILE="/home/debian/.env"
+ENV_FILE="${ENV_FILE:-/home/debian/.env}"
 
 # Take SSL_PWD from the environment, else from the one matching line of .env.
 # The .env is never sourced as shell.
 if [[ -z "${SSL_PWD:-}" && -r "$ENV_FILE" ]]; then
   SSL_PWD="$(grep -m1 '^SSL_PWD=' "$ENV_FILE" | sed 's/^SSL_PWD=//' || true)"
+  # Mimic docker compose: drop a trailing CR, then one pair of matching quotes.
+  SSL_PWD="${SSL_PWD%$'\r'}"
+  if [[ "$SSL_PWD" =~ ^\"(.*)\"$ || "$SSL_PWD" =~ ^\'(.*)\'$ ]]; then
+    SSL_PWD="${BASH_REMATCH[1]}"
+  fi
 fi
 if [[ -z "${SSL_PWD:-}" ]]; then
   echo "build_keystore: SSL_PWD not set in environment or $ENV_FILE" >&2
