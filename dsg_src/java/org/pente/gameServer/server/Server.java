@@ -33,8 +33,7 @@ import org.pente.gameServer.tourney.*;
 
 import org.pente.kingOfTheHill.*;
 
-import javax.net.ServerSocketFactory;
-import javax.net.ssl.SSLServerSocketFactory;
+import org.pente.gameServer.server.ssl.GameSsl;
 import jakarta.websocket.Session;
 
 
@@ -111,11 +110,8 @@ public class Server {
         this.kothStorer = resources.getKOTHStorer();
         this.followerStorer = resources.getFollowerStorer();
 
-        System.setProperty("javax.net.ssl.keyStore", "/var/lib/tomcat9/webapps/MyDSKeyStore.jks");
-        System.setProperty("javax.net.ssl.keyStorePassword", System.getenv("SSL_PWD"));
         try {
-            ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
-            gameServerSocket = ssf.createServerSocket(port);
+            gameServerSocket = GameSsl.serverSocketFactory().createServerSocket(port);
         } catch (Throwable t) {
             log4j.error("Server [" + name + "], could not listen on port: " +
                     port + ".", t);
