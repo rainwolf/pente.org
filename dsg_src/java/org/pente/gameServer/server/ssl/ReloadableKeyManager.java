@@ -31,6 +31,10 @@ public class ReloadableKeyManager extends X509ExtendedKeyManager {
         if (inner == null) throw new GeneralSecurityException("no X509ExtendedKeyManager available");
         X509Certificate leaf = SslKeystore.leaf(ks);
         if (leaf == null) throw new GeneralSecurityException("no certificate under alias " + SslKeystore.ALIAS);
+        X509Certificate[] chain = inner.getCertificateChain(SslKeystore.ALIAS);
+        if (inner.getPrivateKey(SslKeystore.ALIAS) == null || chain == null || chain.length == 0) {
+            throw new GeneralSecurityException("keystore alias " + SslKeystore.ALIAS + " has no usable private key and chain");
+        }
         current = leaf;
         delegate.set(inner);
     }

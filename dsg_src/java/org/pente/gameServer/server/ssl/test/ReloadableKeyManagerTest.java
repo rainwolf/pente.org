@@ -77,6 +77,20 @@ public class ReloadableKeyManagerTest extends TestCase {
         assertEquals(SslKeystore.leaf(b), ServedCertReader.read("localhost", port, "pente.org", 5000));
     }
 
+    public void testReloadRejectsCertOnlyKeystore() throws Exception {
+        int port = startServer(false);
+        KeyStore certOnly = KeyStore.getInstance("PKCS12");
+        certOnly.load(null, null);
+        certOnly.setCertificateEntry("tomcat", SslKeystore.leaf(b));
+        try {
+            km.reload(certOnly, PW);
+            fail("expected GeneralSecurityException");
+        } catch (java.security.GeneralSecurityException expected) {
+        }
+        assertEquals(SslKeystore.leaf(a), km.current());
+        assertEquals(SslKeystore.leaf(a), ServedCertReader.read("localhost", port, "pente.org", 5000));
+    }
+
     public void testOpenConnectionSurvivesReload() throws Exception {
         int port = startServer(true);
         SSLContext ctx = SSLContext.getInstance("TLS");
