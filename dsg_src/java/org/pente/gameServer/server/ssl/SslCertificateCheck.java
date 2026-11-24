@@ -1,0 +1,103 @@
+package org.pente.gameServer.server.ssl;
+
+import java.security.cert.X509Certificate;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.function.Consumer;
+import org.apache.log4j.Category;
+
+/** Daily check: reloads listeners serving an older certificate than the one on disk and notifies admins. */
+public final class SslCertificateCheck implements Runnable {
+    private static final Category log = Category.getInstance(SslCertificateCheck.class.getName());
+
+    static final int ALERT_DAYS = 45;
+
+    private final Callable<X509Certificate> diskCert;
+    private final List<SslListener> listeners;
+    private final Consumer<String> notifier;
+    private final Clock clock;
+
+    public SslCertificateCheck(Callable<X509Certificate> diskCert, List<SslListener> listeners,
+                               Consumer<String> notifier, Clock clock) {
+        this.diskCert = diskCert;
+        this.listeners = listeners;
+        this.notifier = notifier;
+        this.clock = clock;
+    }
+
+    @Override
+    public void run() {
+        try {
+            check();
+        } catch (Throwable t) {
+            fail("SSL certificate check failed: " + t, t);
+        }
+    }
+
+    private void check() {
+        X509Certificate disk;
+        try {
+            disk = diskCert.call();
+        } catch (Throwable e) {
+            fail("SSL certificate check failed: " + e, e);
+            return;
+        }
+        Date diskEnd = disk.getNotAfter();
+        boolean reloaded = false;
+        List<String> behind = new ArrayList<>();
+        Date minServed = null;
+
+        for (SslListener l : listeners) {
+            try {
+                X509Certificate served = l.served();
+                if (served.getNotAfter().before(diskEnd)) {
+                    reloaded = true;
+                    l.reload();
+                    served = l.served();
+                    if (served.getNotAfter().before(diskEnd)) behind.add(l.name());
+                }
+                Date end = served.getNotAfter();
+                if (minServed == null || end.before(minServed)) minServed = end;
+            } catch (Throwable e) {
+                fail("SSL certificate check failed for " + l.name() + ": " + e, e);
+            }
+        }
+
+        if (reloaded) {
+            if (behind.isEmpty()) {
+                notifier.accept("SSL certificate renewed, valid until " + day(diskEnd));
+            } else {
+                notifier.accept("SSL certificate reload failed for: " + String.join(", ", behind)
+                        + ", disk cert valid until " + day(diskEnd));
+            }
+        }
+
+        if (minServed != null) {
+            long days = Math.floorDiv(Duration.between(Instant.now(clock), minServed.toInstant()).toMillis(),
+                    Duration.ofDays(1).toMillis());
+            if (days < ALERT_DAYS) {
+                notifier.accept("SSL certificate expires in " + days + " days (" + day(minServed)
+                        + "), renewal is not working");
+            }
+        }
+    }
+
+    private void fail(String message, Throwable t) {
+        log.error(message, t);
+        try {
+            notifier.accept(message);
+        } catch (Throwable ignored) {
+            // run() must never throw
+        }
+    }
+
+    private static String day(Date d) {
+        return d.toInstant().atZone(ZoneOffset.UTC).toLocalDate().toString();
+    }
+}
