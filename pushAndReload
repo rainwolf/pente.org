@@ -8,8 +8,7 @@ export P=$(dirname "$0")
 cd letsencrypt
 cd pente.org
 
-openssl pkcs12 -export -in fullchain.crt -inkey pente.org.key -out fullchain_and_key.p12 -password pass:"$SSL_PWD" -name tomcat -legacy
-keytool -importkeystore -deststorepass "$SSL_PWD" -destkeypass "$SSL_PWD" -destkeystore MyDSKeyStore.jks -srckeystore fullchain_and_key.p12 -srcstoretype PKCS12 -srcstorepass "$SSL_PWD" -alias tomcat -deststoretype pkcs12
+openssl pkcs12 -export -in fullchain.crt -inkey pente.org.key -name tomcat -passout env:SSL_PWD -out keystore.p12
 #scp MyDSKeyStore.jks rainwolf@development.pente.org:/var/lib/tomcat9/webapps/
 #scp MyDSKeyStore.jks rainwolf@development.pente.org:~/dockerMain/
 #ssh rainwolf@development.pente.org sudo chown rainwolf:tomcat /var/lib/tomcat9/webapps/MyDSKeyStore.jks
@@ -17,9 +16,10 @@ keytool -importkeystore -deststorepass "$SSL_PWD" -destkeypass "$SSL_PWD" -destk
 
 # ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no rainwolf@development.pente.org chown rainwolf:tomcat8 MyDSKeyStore.jks
 # ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -t rainwolf@development.pente.org sudo ./restartTomcat.sh
-scp MyDSKeyStore.jks debian@pente.org:~/dockerMain/
+scp keystore.p12 debian@pente.org:~/dockerMain/ssl/keystore.p12.tmp
+ssh debian@pente.org mv ~/dockerMain/ssl/keystore.p12.tmp ~/dockerMain/ssl/keystore.p12
 #ssh -t rainwolf@pente.org sudo /home/rainwolf/restartTomcat.sh
 # ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no rainwolf@pente.org chown rainwolf:tomcat8 MyDSKeyStore.jks
 # ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -t rainwolf@pente.org sudo ./restartTomcat.sh
 
-mv MyDSKeyStore.jks /Volumes/keysCertificatesStuff/
+cp keystore.p12 /Volumes/keysCertificatesStuff/keystore.p12
