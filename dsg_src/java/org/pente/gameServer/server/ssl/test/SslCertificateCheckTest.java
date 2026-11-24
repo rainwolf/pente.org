@@ -76,8 +76,10 @@ public class SslCertificateCheckTest extends TestCase {
     public void testPartialReloadNamesListener() {
         Fake game = new Fake("game", short1, long90, false), web = new Fake("web", short1, long90, true);
         check(long90, clockAt(long90.getNotBefore().toInstant()), game, web).run();
-        assertEquals(1, messages.size());
+        assertEquals(2, messages.size());
         assertEquals("SSL certificate reload failed for: game, disk cert valid until " + date(long90), messages.get(0));
+        assertTrue(messages.get(1), messages.get(1).startsWith("SSL certificate expires in "));
+        assertTrue(messages.get(1), messages.get(1).endsWith(" days (" + date(short1) + "), renewal is not working"));
     }
 
     public void testExpiryAlertAt44DaysNotAt45() {
@@ -98,5 +100,19 @@ public class SslCertificateCheckTest extends TestCase {
         assertEquals(1, messages.size());
         assertTrue(messages.get(0).startsWith("SSL certificate check failed: "));
         assertEquals(0, a.reloads);
+    }
+
+    public void testReloadThrowsIsNotReportedRenewed() {
+        Fake bad = new Fake("bad", short1, long90, true) {
+            public void reload() { reloads++; throw new IllegalStateException("boom"); }
+        };
+        Fake ok = new Fake("ok", short1, long90, true);
+        check(long90, clockAt(long90.getNotBefore().toInstant()), bad, ok).run();
+        for (String m : messages) assertTrue(m, !m.startsWith("SSL certificate renewed"));
+        assertTrue(messages.toString(), messages.contains("SSL certificate check failed for bad: java.lang.IllegalStateException: boom"));
+        assertTrue(messages.toString(), messages.contains("SSL certificate reload failed for: bad, disk cert valid until " + date(long90)));
+        boolean alert = false;
+        for (String m : messages) alert |= m.startsWith("SSL certificate expires in ") && m.contains("(" + date(short1) + ")");
+        assertTrue(messages.toString(), alert);
     }
 }

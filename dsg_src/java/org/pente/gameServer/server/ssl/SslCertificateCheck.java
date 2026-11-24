@@ -51,20 +51,25 @@ public final class SslCertificateCheck implements Runnable {
         Date diskEnd = disk.getNotAfter();
         boolean reloaded = false;
         List<String> behind = new ArrayList<>();
-        Date minServed = null;
+        List<Date> ends = new ArrayList<>();
 
         for (SslListener l : listeners) {
+            boolean attempted = false;
             try {
                 X509Certificate served = l.served();
-                if (served.getNotAfter().before(diskEnd)) {
-                    reloaded = true;
-                    l.reload();
-                    served = l.served();
-                    if (served.getNotAfter().before(diskEnd)) behind.add(l.name());
-                }
                 Date end = served.getNotAfter();
-                if (minServed == null || end.before(minServed)) minServed = end;
+                ends.add(end);
+                if (end.before(diskEnd)) {
+                    reloaded = true;
+                    attempted = true;
+                    l.reload();
+                    X509Certificate after = l.served();
+                    Date afterEnd = after.getNotAfter();
+                    if (afterEnd.before(diskEnd)) behind.add(l.name());
+                    if (afterEnd.after(end)) ends.set(ends.size() - 1, afterEnd);
+                }
             } catch (Throwable e) {
+                if (attempted) behind.add(l.name());
                 fail("SSL certificate check failed for " + l.name() + ": " + e, e);
             }
         }
@@ -78,6 +83,8 @@ public final class SslCertificateCheck implements Runnable {
             }
         }
 
+        Date minServed = null;
+        for (Date d : ends) if (minServed == null || d.before(minServed)) minServed = d;
         if (minServed != null) {
             long days = Math.floorDiv(Duration.between(Instant.now(clock), minServed.toInstant()).toMillis(),
                     Duration.ofDays(1).toMillis());
